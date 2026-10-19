@@ -136,12 +136,13 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double MIN_PITCH = -15;
     private static final double MAX_PITCH = 20;
     /**
-     * How fast the trim learns, in degrees a tick per block a second the climb is off, and only while the climb is
-     * within this many blocks a second of the one wanted and the nose within this many degrees of where it is wanted:
-     * in a big change of height, or while the nose is still swinging round, learning would only wind it up.
+     * How fast the trim learns, in degrees a tick per block a second the climb is off, counting no more than this
+     * many blocks a second off, so a big change of height learns no faster than a small one; and only while the nose
+     * is within this many degrees of where it is wanted and not held at either end of its range: while the nose is
+     * still swinging round, or pinned at a limit, learning would only wind it up.
      */
     private static final double TRIM_RATE = 0.01;
-    private static final double TRIM_CLIMB_WINDOW = 3;
+    private static final double TRIM_CLIMB_LIMIT = 3;
     private static final double TRIM_WINDOW = 3;
     /** The engines' signal at the speed being held, and how much it changes per block a second off that speed. */
     private static final double CRUISE_THRUST = 6;
@@ -588,8 +589,9 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Landing, the nose comes up no further than at rotation, so the tail stays clear of the ground.
             double maxPitch = landing ? ROTATION_PITCH : MAX_PITCH;
             targetPitch = Mth.clamp(trim + CLIMB_GAIN * climbError - CLIMB_DAMPING * climbRate, MIN_PITCH, maxPitch);
-            if (Math.abs(climbError) < TRIM_CLIMB_WINDOW && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
-                trim = Mth.clamp(trim + TRIM_RATE * climbError, MIN_PITCH, MAX_PITCH);
+            boolean pinned = targetPitch <= MIN_PITCH || targetPitch >= maxPitch;
+            if (!pinned && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
+                trim = Mth.clamp(trim + TRIM_RATE * Mth.clamp(climbError, -TRIM_CLIMB_LIMIT, TRIM_CLIMB_LIMIT), MIN_PITCH, MAX_PITCH);
             }
             thrust = holdSpeed(speed, targetSpeed);
             if (!landing) {
