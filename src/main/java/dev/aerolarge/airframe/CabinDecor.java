@@ -3,7 +3,11 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.LightStripBlock;
+import java.util.List;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LadderBlock;
@@ -35,6 +39,24 @@ final class CabinDecor {
     private static final int STARLIGHT_HEADROOM = 6;
     /** Over the floor up to this row the windows are the main deck's; any higher, the upper deck's. */
     private static final int MAIN_WINDOWS_TOP = 3;
+    /**
+     * Where the zones are divided from one another, in metres from the nose: the business class from the forward doors
+     * and from the pool, the pool from the mid doors and those from the gym hall, the aft doors from the gym hall and
+     * from the lounge. These stations and the one either side are left free for the dividers.
+     */
+    private static final double[] DIVIDERS = {13.5, 17.5, 23.5, 26.5, 48.5, 51.5};
+    /** The potted plants along the lounge bar's back shelf, in turn. */
+    private static final List<Block> SHELF_PLANTS = List.of(Blocks.POTTED_FLOWERING_AZALEA, Blocks.POTTED_BLUE_ORCHID, Blocks.POTTED_ORANGE_TULIP);
+    /** Every this many stations along the bar's back shelf, a potted plant. */
+    private static final int SHELF_SPACING = 3;
+    /** Every this many stations along the bar, a spore blossom hanging over it. */
+    private static final int BAR_BLOSSOM_SPACING = 4;
+    /** Every this many stations along each side of the pool, a potted azalea between patches of moss. */
+    private static final int PLANTER_SPACING = 4;
+    /** A spore blossom hangs no lower than this many rows over the floor, clear of heads. */
+    private static final int BLOSSOM_CLEARANCE = 4;
+    /** How many stations either side of a passenger door the potted bamboo stands: just outside the door's aisle. */
+    private static final int BAMBOO_FROM_DOOR = 3;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -47,6 +69,8 @@ final class CabinDecor {
     void apply() {
         highDive();
         starlightCeiling();
+        // After the ceiling: spore blossoms hang from it.
+        greenery();
     }
 
     /** The first station of a zone, in metres from the nose, as the fit-out rounds it. */
@@ -64,6 +88,55 @@ final class CabinDecor {
     }
 
     /**
+     * The moon pool's basin as the fit-out left it: the first and last stations where its water lies flush with the
+     * floor down the centreline, and how far across from the middle the water reaches halfway along.
+     */
+    private record Basin(int first, int last, int halfWidth) {
+        int middle() {
+            return (first + last) / 2;
+        }
+    }
+
+    /** The moon pool's basin; null where the airliner has none. */
+    @Nullable
+    private Basin basin() {
+        int first = -1;
+        int last = -1;
+        for (int z = from(CabinFitOut.POOL); z <= to(CabinFitOut.POOL); z++) {
+            if (isWater(0, floor, z)) {
+                first = first < 0 ? z : first;
+                last = z;
+            }
+        }
+        if (first < 0) {
+            return null;
+        }
+        int halfWidth = 0;
+        while (isWater(halfWidth + 1, floor, (first + last) / 2)) {
+            halfWidth++;
+        }
+        return new Basin(first, last, halfWidth);
+    }
+
+    /**
+     * Whether a station is kept free for a divider between two zones: within a station of where one stands, or of the
+     * middle of the gym hall's court.
+     */
+    private boolean keptForDivider(int z) {
+        for (double station : DIVIDERS) {
+            if (Math.abs(z - (int) Math.round(station * layout.scale())) <= 1) {
+                return true;
+            }
+        }
+        return Math.abs(z - courtMiddle()) <= 1;
+    }
+
+    /** The station across the middle of the gym hall's court, its centre line. */
+    private int courtMiddle() {
+        return (from(CabinFitOut.GYM) + to(CabinFitOut.GYM)) / 2;
+    }
+
+    /**
      * The diving tower (Sprungturm) on the pool's front rim: a white column standing on the pool's bottom at the head
      * of the basin, a ladder up its front from the rim, and from its top a board out over the middle of the pool with
      * a springboard at its tip. Glass rails either side of the top keep anyone from stepping off it onto the rim; off
@@ -71,28 +144,16 @@ final class CabinDecor {
      * narrow, or the crown too low to bounce under.
      */
     private void highDive() {
-        int fromZ = from(CabinFitOut.POOL);
-        int toZ = to(CabinFitOut.POOL);
-        int first = -1;
-        int last = -1;
-        for (int z = fromZ; z <= toZ; z++) {
-            if (isWater(0, floor, z)) {
-                first = first < 0 ? z : first;
-                last = z;
-            }
-        }
-        if (first < 0) {
+        Basin basin = basin();
+        if (basin == null) {
             return;
         }
-        int middle = (first + last) / 2;
-        int halfWidth = 0;
-        while (isWater(halfWidth + 1, floor, middle)) {
-            halfWidth++;
-        }
         int x = TOWER_X;
+        int first = basin.first();
+        int middle = basin.middle();
         int rim = first - 1;
         int top = floor + (int) Math.round(PLATFORM_METRES * layout.scale());
-        if (halfWidth < Math.abs(x) + 1 || middle - first < 2 || !towerFits(x, rim, first, middle, top)) {
+        if (basin.halfWidth() < Math.abs(x) + 1 || middle - first < 2 || !towerFits(x, rim, first, middle, top)) {
             return;
         }
         BlockState column = Blocks.SMOOTH_QUARTZ.defaultBlockState();
@@ -214,5 +275,117 @@ final class CabinDecor {
     /** Whether what is here hangs something from the crown: a pendant light's cable, or a chain. */
     private boolean isHanger(int x, int y, int z) {
         return isCable(x, y, z) || layout.stateAt(x, y, z).is(Blocks.CHAIN);
+    }
+
+    /**
+     * Greenery along the walls and overhead, never underfoot in an aisle: potted flowers along the lounge bar's back
+     * shelf and spore blossoms hanging from the starlit ceiling over the bar, drifting their spores down; potted
+     * azaleas in patches of moss along the pool's sides, and over its rim planters of moss hung under the crown, a
+     * spore blossom under each; and potted bamboo either side of each passenger door, just clear of its aisle.
+     */
+    private void greenery() {
+        barGreenery();
+        poolGreenery();
+        doorBamboo();
+    }
+
+    /** The lounge bar's: its back shelf is the row of barrels along the starboard wall, its counter in front of them. */
+    private void barGreenery() {
+        int fromZ = from(CabinFitOut.LOUNGE);
+        int plants = 0;
+        for (int z = fromZ + 1; z < to(CabinFitOut.LOUNGE); z++) {
+            int shelf = layout.besideWall(1, floor + 1, z);
+            if (shelf == 0 || !layout.stateAt(shelf, floor + 1, z).is(Blocks.BARREL)) {
+                continue;
+            }
+            if ((z - fromZ) % SHELF_SPACING == 0 && layout.isOpen(shelf, floor + 2, z)) {
+                layout.furnish(shelf, floor + 2, z, SHELF_PLANTS.get(plants++ % SHELF_PLANTS.size()).defaultBlockState());
+            }
+            if ((z - fromZ) % BAR_BLOSSOM_SPACING == BAR_BLOSSOM_SPACING / 2) {
+                hangBlossom(shelf - 1, z, state -> state.is(AerolargeRegistry.STARLIGHT_PANEL.get()));
+            }
+        }
+    }
+
+    /**
+     * The pool's: a potted azalea every few stations along each side against the wall, with moss either side of it,
+     * and two planters over each side of the rim, a quarter of the way in from either end of the basin.
+     */
+    private void poolGreenery() {
+        Basin basin = basin();
+        if (basin == null) {
+            return;
+        }
+        int quarter = (basin.last() - basin.first()) / 4;
+        for (int side : new int[]{1, -1}) {
+            for (int z = basin.first() + 1; z <= basin.last(); z += PLANTER_SPACING) {
+                int x = layout.besideWall(side, floor + 1, z);
+                if (x == 0 || keptForDivider(z) || !layout.isOpen(x, floor + 1, z)) {
+                    continue;
+                }
+                layout.furnish(x, floor + 1, z, Blocks.POTTED_FLOWERING_AZALEA.defaultBlockState());
+                for (int dz : new int[]{-1, 1}) {
+                    if (!keptForDivider(z + dz)) {
+                        layout.furnish(x, floor + 1, z + dz, Blocks.MOSS_CARPET.defaultBlockState());
+                    }
+                }
+            }
+            int rim = side * (basin.halfWidth() + 1);
+            hangingPlanter(rim, basin.first() + quarter);
+            hangingPlanter(rim, basin.last() - quarter);
+        }
+    }
+
+    /**
+     * A planter of moss hung under the crown over this spot, a spore blossom under it: at this station, or failing that
+     * the one behind or ahead, where it would hide no upper window and keeps clear of the dividers.
+     */
+    private void hangingPlanter(int x, int z) {
+        int side = Integer.signum(x);
+        for (int at : new int[]{z, z + 1, z - 1}) {
+            int top = layout.ceiling(x, at);
+            if (keptForDivider(at) || !layout.isOpen(x, top, at) || top - 1 < floor + BLOSSOM_CLEARANCE
+                || CabinWindowBlock.isPane(layout.stateAt(x + side, top, at))) {
+                continue;
+            }
+            layout.set(x, top, at, Blocks.MOSS_BLOCK.defaultBlockState());
+            hangBlossom(x, at, state -> state.is(Blocks.MOSS_BLOCK));
+            return;
+        }
+    }
+
+    /**
+     * A spore blossom hung from the underside of whatever the column's ceiling is, if the test accepts it and it is
+     * high enough to clear heads.
+     */
+    private void hangBlossom(int x, int z, Predicate<BlockState> anchor) {
+        int y = floor + BLOSSOM_CLEARANCE;
+        if (!layout.isOpen(x, y, z)) {
+            return;
+        }
+        while (layout.isOpen(x, y + 1, z)) {
+            y++;
+        }
+        if (anchor.test(layout.stateAt(x, y + 1, z))) {
+            layout.set(x, y, z, Blocks.SPORE_BLOSSOM.defaultBlockState());
+        }
+    }
+
+    /**
+     * Potted bamboo against both walls either side of each passenger door, where the station is plain cabin, its
+     * floor not made over into one of the rooms.
+     */
+    private void doorBamboo() {
+        for (double station : AirframeShape.PASSENGER_DOORS) {
+            int door = (int) Math.round(station * layout.scale());
+            for (int z : new int[]{door - BAMBOO_FROM_DOOR, door + BAMBOO_FROM_DOOR}) {
+                for (int side : new int[]{1, -1}) {
+                    int x = layout.besideWall(side, floor + 1, z);
+                    if (x != 0 && !keptForDivider(z) && layout.isCabinFloor(0, floor, z)) {
+                        layout.furnish(x, floor + 1, z, Blocks.POTTED_BAMBOO.defaultBlockState());
+                    }
+                }
+            }
+        }
     }
 }

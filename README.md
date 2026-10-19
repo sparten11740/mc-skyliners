@@ -26,8 +26,10 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   board out over the middle of the pool with a springboard at its tip), a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
-  Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights. The seats are
-  Create's, so they can be sat in.
+  Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights. Plants line
+  the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
+  ceiling over the bar and from planters of moss hung over the pool's rim, potted azaleas in moss along the pool's
+  sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
   Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
   the cabin, they hang on the back of each row, facing the one behind.
 
