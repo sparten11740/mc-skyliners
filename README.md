@@ -84,7 +84,8 @@ tiller, a small handwheel (use it to steer right a notch, sneak and use to steer
 on the captain's side of it and the captain's handset on the first officer's; right beside the captain is the window
 shades' control, and beside the first officer the drop release. The dimmer steps every light in the cabin from bright
 to dimmed (as for take-off and landing) to a blue night glow and back, the change running down the cabin front to
-back; at night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light. The window
+back; at night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light, and the WC,
+the crew room and the lavatories keep their lights on as dimmed, as an airliner's lavatories do. The window
 shades' control runs every cabin window's shade down, or up again, the same way, with the whirr of their motors. A
 closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
 

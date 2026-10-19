@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
@@ -423,10 +424,10 @@ final class CabinDividers {
     /**
      * Lavatories either side of the archway into the gym hall, built onto the back of its wall the way an airliner's
      * are into the monuments by its doors: each a cubicle from the archway's side out to the hull, between the wall and
-     * the gym hall, under a ceiling at a room's height with a cabin light in it. A toilet stands against the hull and a
-     * basin with its tap by the archway, the door between them opening onto the doors' aisle under a picture of a
-     * person. The door is a wooden one, as no hull door is: one opened in flight does not let the air out. Only on a
-     * side with room for all of it.
+     * the gym hall, under a ceiling at a room's height with a cabin light in it, kept on at night. A toilet stands
+     * against the hull and a basin with its tap by the archway, the door between them opening onto the doors' aisle
+     * under a picture of a person. The door is a wooden one, as no hull door is: one opened in flight does not let the
+     * air out. Only on a side with room for all of it.
      */
     private void lavatories(Section wall, int gym) {
         int front = wall.z();
@@ -464,7 +465,7 @@ final class CabinDividers {
                     layout.set(side * x, ceiling, z, partition);
                 }
             }
-            layout.set(side * (basin + outer) / 2, ceiling, (front + gym) / 2, layout.palette().light());
+            layout.set(side * (basin + outer) / 2, ceiling, (front + gym) / 2, CabinLightBlock.keptOn(layout.palette().light()));
             layout.set(side * outer, floor + 1, front + 1,
                 AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState().setValue(VacuumToiletBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
             layout.set(side * basin, floor + 1, front + 1,

@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
@@ -18,7 +19,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * The WC and the crew room behind the flight deck, in both blueprints: on its raised floor between the cockpit door
  * and the steps down into the cabin, the WC to port and the crew room to starboard of the aisle that joins the two.
  * Each is walled off from the aisle and the cabin with the hull's own panels, up to the crown, under a ceiling of
- * them at a room's height for a player with a cabin light set into it, and has a door onto the aisle at its back.
+ * them at a room's height for a player with a cabin light set into it, kept on at night as a lavatory's is, and has a
+ * door onto the aisle at its back.
  * The WC has a toilet and a basin with its tap; the crew room a couch of seats along the hull and a small galley
  * counter: an oven, and a cupboard with a coffee machine on it. Walls and furniture only go into open space.
  */
@@ -47,7 +49,7 @@ final class CrewRooms {
         this.front = front;
         this.back = back;
         this.wall = layout.palette().hull();
-        this.light = layout.palette().light();
+        this.light = CabinLightBlock.keptOn(layout.palette().light());
     }
 
     void apply() {
