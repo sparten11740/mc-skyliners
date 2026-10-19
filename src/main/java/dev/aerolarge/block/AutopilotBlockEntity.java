@@ -182,11 +182,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** The roll is still gaining speed while it gains more than this, in blocks per second every second. */
     private static final double STILL_ACCELERATING = 0.4;
     /**
-     * Landing: the speed it slows to, as a share of the rotation speed (a quarter above it, the least the cruise speed
-     * should be, so the wings still lift); the rate it sinks at, in blocks a second; how much less it sinks per block
-     * nearer the ground; and the rate it touches down at, half what a butter landing has to stay under.
+     * Landing: the speed it slows to, as a share of the rotation speed (a little above it: in the thick air low down,
+     * any faster and it flies nose down, so it comes down on its nose wheel and the wings lift it off again); the rate
+     * it sinks at, in blocks a second; how much less it sinks per block nearer the ground; and the rate it touches down
+     * at, half what a butter landing has to stay under.
      */
-    private static final double APPROACH_MARGIN = 1.25;
+    private static final double APPROACH_MARGIN = 1.1;
     private static final double LANDING_SINK_RATE = 3;
     private static final double FLARE_GAIN = 0.2;
     private static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;

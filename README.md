@@ -99,7 +99,7 @@ tiller and the parking brake. While it flies it shows its phase, speed, height, 
 everyone on the flight deck.
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
-the heading it is on, slows to a quarter above the rotation speed (`rotateSpeed`) and sinks 3 blocks a second,
+the heading it is on, slows to a tenth above the rotation speed (`rotateSpeed`) and sinks 3 blocks a second,
 banking less the lower it gets; from 15 blocks above the ground it flares, sinking ever more slowly, to touch down at
 half a block a second. Down, it idles the engines, lowers the nose and brakes to a stop, steering along the heading
 with the nose wheel; then it pulls the thrust levers to idle, centres the tiller, sets the parking brake and
