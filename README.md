@@ -29,7 +29,8 @@ face. It refuses while anything is in the way and says where; sneak to build thr
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
 blocks cut to the fuselage's curve; cabin lights in the crown, the walls and the hold and LED strips along the tops
-of the cabin walls keep it bright, and nothing spawns inside it on its own. Outside it carries red and green navigation lights on the wingtips with white strobes,
+of the cabin walls keep it bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
+above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. Each engine is heard spooling up and down with its
 thrust, quieter from inside the cabin, and high up it leaves a contrail.
 

@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "front": "aerolarge:block/overhead_bin",
+    "side": "aerolarge:block/overhead_bin_side",
+    "bottom": "aerolarge:block/overhead_bin_bottom",
+    "particle": "aerolarge:block/overhead_bin_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        3,
+        3
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#bottom"
+        }
+      }
+    }
+  ]
+}

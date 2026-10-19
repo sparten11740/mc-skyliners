@@ -25,6 +25,8 @@ import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
+import dev.aerolarge.block.OverheadBinBlock;
+import dev.aerolarge.block.OverheadBinBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PendantLightBlock;
@@ -299,9 +301,17 @@ public final class AerolargeRegistry {
         "light_cable", LightCableBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noCollission().noOcclusion()
     );
+    /** The overhead lockers along the cabin walls. */
+    public static final DeferredBlock<OverheadBinBlock> OVERHEAD_BIN = BLOCKS.registerBlock(
+        "overhead_bin", OverheadBinBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(1.5F).sound(SoundType.WOOD).noOcclusion().isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OverheadBinBlockEntity>> OVERHEAD_BIN_ENTITY =
+        BLOCK_ENTITIES.register("overhead_bin", () -> BlockEntityType.Builder.of(OverheadBinBlockEntity::new, OVERHEAD_BIN.get()).build(null));
     public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
+    public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -322,7 +332,7 @@ public final class AerolargeRegistry {
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
-            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM
+            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

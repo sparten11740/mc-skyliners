@@ -386,9 +386,10 @@ function dropsItself(name) {
   }
 }
 
-// The cabin's lights, drawn facing north. The light strip: a glowing bar along the top of the wall it is fixed to.
-// The pendant light: a slim black cable down to a flat grey shade, glowing underneath; the cable alone for the blocks
-// above it.
+// The cabin's lining and lights, drawn facing north. The light strip: a glowing bar along the top of the wall it is
+// fixed to. The pendant light: a slim black cable down to a flat grey shade, glowing underneath; the cable alone for
+// the blocks above it. The overhead locker: a white bin against the wall, its door facing out, the passenger service
+// panel underneath; open, its door shows the luggage inside.
 {
   write(`assets/${ID}/models/block/light_strip.json`, boxes(
     { strip: `${ID}:block/light_strip`, particle: `${ID}:block/light_strip` },
@@ -409,7 +410,18 @@ function dropsItself(name) {
     [[[7.5, 0, 7.5], [8.5, 16, 8.5], "#cable"]],
   ));
   write(`assets/${ID}/blockstates/light_cable.json`, { variants: { "": { model: `${ID}:block/light_cable` } } });
-  for (const name of ["light_strip", "pendant_light", "light_cable"]) {
+  for (const open of [false, true]) {
+    const name = `overhead_bin${open ? "_open" : ""}`;
+    write(`assets/${ID}/models/block/${name}.json`, boxes(
+      { front: `${ID}:block/${name}`, side: `${ID}:block/overhead_bin_side`, bottom: `${ID}:block/overhead_bin_bottom`, particle: `${ID}:block/overhead_bin_side` },
+      [[[0, 3, 3], [16, 16, 16], { north: "#front", down: "#bottom", all: "#side" }]],
+    ));
+  }
+  write(`assets/${ID}/blockstates/overhead_bin.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((open) =>
+      [`facing=${facing},open=${open}`, { model: `${ID}:block/overhead_bin${open ? "_open" : ""}`, y }]))),
+  });
+  for (const name of ["light_strip", "pendant_light", "light_cable", "overhead_bin"]) {
     write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
     dropsItself(name);
     cubes[name] = null;
@@ -499,7 +511,7 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 const GROUND = ["landing_target", "tower_radio"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable"];
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -537,6 +549,7 @@ shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:i
 shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
+shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -634,6 +647,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.light_cable": "Light Cable",
+  "block.aerolarge.overhead_bin": "Overhead Locker",
+  "container.aerolarge.overhead_bin": "Overhead Locker",
   "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
   "block.aerolarge.seatbelt_switch": "Seatbelt Switch",
   "message.aerolarge.seatbelts.on": "Seatbelt signs on",

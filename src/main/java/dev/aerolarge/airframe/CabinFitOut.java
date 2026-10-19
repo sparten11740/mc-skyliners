@@ -37,6 +37,11 @@ final class CabinFitOut {
         lounge(from(LOUNGE), to(LOUNGE));
     }
 
+    /** Whether overhead lockers go along the walls at this station, in metres from the nose: everywhere but the gym hall. */
+    static boolean lockersFit(double metres) {
+        return metres < GYM[0] || metres > GYM[1];
+    }
+
     private int from(double[] zone) {
         return (int) Math.ceil(zone[0] * layout.scale());
     }

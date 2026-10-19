@@ -447,8 +447,10 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
-// The cabin's lights. The LED strip: cool white, brightest along its middle. The light cable: black. The pendant's
-// shade: brushed dark grey.
+// The cabin's lining and lights. The LED strip: cool white, brightest along its middle. The light cable: black. The
+// pendant's shade: brushed dark grey. The overhead locker: off-white plastic, its door with a rounded edge and a
+// latch; open, the dark inside with a blue suitcase; underneath, the passenger service panel with two reading lights
+// and an air vent.
 {
   texture(blockOutput, "light_strip", (x, y) => {
     const glow = 1 - Math.abs(y - 7.5) / 8;
@@ -456,6 +458,27 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
   texture(blockOutput, "light_cable", () => [0x18, 0x19, 0x1b], 2);
   texture(blockOutput, "pendant_shade", (x, y) => (y % 4 === 0 ? [0x3c, 0x40, 0x46] : [0x4a, 0x4f, 0x56]), 3);
+  const PLASTIC = [0xe6, 0xe4, 0xde];
+  const PLASTIC_EDGE = [0xc8, 0xc6, 0xbf];
+  texture(blockOutput, "overhead_bin", (x, y) => {
+    if (y === 0 || y === 15 || x === 0 || x === 15) return PLASTIC_EDGE;
+    if (y === 2 && x >= 6 && x <= 9) return [0x50, 0x54, 0x5a];
+    return y > 11 ? [0xdc, 0xda, 0xd3] : PLASTIC;
+  }, 2);
+  texture(blockOutput, "overhead_bin_open", (x, y) => {
+    if (y === 0 || y === 15 || x === 0 || x === 15) return PLASTIC_EDGE;
+    const suitcase = x >= 3 && x <= 11 && y >= 6 && y <= 13;
+    if (suitcase) return y === 6 || x === 3 || x === 11 ? [0x14, 0x2c, 0x60] : [0x1f, 0x45, 0x94];
+    if (x >= 6 && x <= 8 && y === 5) return [0x20, 0x20, 0x22];
+    return [0x26, 0x28, 0x2c];
+  }, 2);
+  texture(blockOutput, "overhead_bin_side", (x, y) => (x === 0 || y === 0 ? PLASTIC_EDGE : PLASTIC), 2);
+  texture(blockOutput, "overhead_bin_bottom", (x, y) => {
+    if (Math.hypot(x - 4, y - 4) < 1.6 || Math.hypot(x - 11, y - 4) < 1.6) return [0xf8, 0xe0, 0x90];
+    if (Math.hypot(x - 7.5, y - 10.5) < 2.2) return Math.hypot(x - 7.5, y - 10.5) < 1 ? [0x30, 0x32, 0x36] : [0x9a, 0xa0, 0xa6];
+    if (y === 7) return [0xb0, 0xb4, 0xba];
+    return [0xc8, 0xcc, 0xd0];
+  }, 2);
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

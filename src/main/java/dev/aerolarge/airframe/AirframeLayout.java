@@ -149,7 +149,7 @@ public final class AirframeLayout {
         if (furnished) {
             new CabinFitOut(layout).apply();
         }
-        new CabinLining(layout).apply(0, (int) Math.ceil(LENGTH * layout.scale));
+        new CabinLining(layout).apply(furnished ? CabinFitOut::lockersFit : metres -> true, 0, (int) Math.ceil(LENGTH * layout.scale));
         layout.skydiving();
         layout.seatbeltSigns();
         layout.shell();
@@ -618,12 +618,12 @@ public final class AirframeLayout {
     }
 
     /**
-     * "Fasten seatbelts" signs in both cabin walls along the cabin, above head height, each lit through a relay beside
-     * it; the seatbelt switch in the panel is wired to them all.
+     * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, each lit
+     * through a relay beside it; the seatbelt switch in the panel is wired to them all.
      */
     private void seatbeltSigns() {
         List<BlockPos> relays = new ArrayList<>();
-        int head = floorY + 5;
+        int head = floorY + 4;
         for (double station : SEATBELT_SIGN_STATIONS) {
             int z = (int) Math.round(station * scale);
             for (int side : new int[]{1, -1}) {
