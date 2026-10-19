@@ -708,8 +708,9 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DUTY_FREE_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(DUTY_FREE_COUNTER);
     public static final DeferredHolder<SoundEvent, SoundEvent> SHOP_BELL = sound("shop_bell");
     public static final DeferredHolder<SoundEvent, SoundEvent> CASH_REGISTER = sound("cash_register");
-    /** The pilot's flight helmet, its visor down over the eyes. */
+    /** The pilot's flight helmet, its visor down over the eyes, and the beep of the head-up display it shows coming on. */
     public static final DeferredItem<PilotHelmetItem> PILOT_HELMET = ITEMS.register("pilot_helmet", () -> new PilotHelmetItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUD_ON = sound("hud_on");
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(

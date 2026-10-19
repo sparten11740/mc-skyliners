@@ -193,6 +193,8 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   Object.assign(sounds, holdAndTailSounds());
+  // The pilot's head-up display coming on as the pilot helmet goes on.
+  sounds.hud_on = { subtitle: `subtitles.${ID}.hud_on`, sounds: [{ name: `${ID}:hud_on` }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -1045,6 +1047,8 @@ const DUTY_FREE_LANG = {
   "item.aerolarge.pilot_cap": "Pilot Cap",
   "block.aerolarge.model_airliner": "Model Airliner",
   "item.aerolarge.pilot_helmet": "Pilot Helmet",
+  "item.aerolarge.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
+  "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
 };
 
 // The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The

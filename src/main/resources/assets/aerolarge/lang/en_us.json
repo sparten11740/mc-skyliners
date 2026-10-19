@@ -323,6 +323,8 @@
   "item.aerolarge.pilot_cap": "Pilot Cap",
   "block.aerolarge.model_airliner": "Model Airliner",
   "item.aerolarge.pilot_helmet": "Pilot Helmet",
+  "item.aerolarge.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
+  "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
   "block.aerolarge.springboard": "Springboard",
   "subtitles.aerolarge.springboard_boing": "Springboard boings",
   "block.aerolarge.starlight_panel": "Starlight Panel",

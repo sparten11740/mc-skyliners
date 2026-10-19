@@ -17,9 +17,9 @@ public final class AerolargeClientConfig {
             .comment("Shake the camera aboard the airliner: rumbling down the runway, thumping onto it, swaying in flight.")
             .define("cameraShake", true);
         PILOT_HUD = builder
-            .comment("Show the pilot's head-up display on the flight deck of an assembled airliner: the speed in the top left corner,",
-                "the height in the top right, the heading and the attitude at the top in the middle, with what the autopilot does",
-                "and the speed, height and heading it is set to.")
+            .comment("Show the pilot's head-up display in a pilot helmet's visor on the flight deck of an assembled airliner: the",
+                "speed in the top left corner, the height in the top right, the heading and the attitude at the top in the middle,",
+                "with what the autopilot does and the speed, height and heading it is set to.")
             .define("pilotHud", true);
         TAIL_CAMERA_FEED = builder
             .comment("Show the live picture from the camera on top of the fin on the flight deck's tail camera display. It draws",

@@ -1,17 +1,21 @@
 package dev.aerolarge.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.AerolargeClientConfig;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.block.AutopilotBlockEntity.Phase;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.ScreenDrawing.Align;
+import dev.aerolarge.item.PilotHelmetItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -19,6 +23,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
@@ -31,23 +36,25 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.joml.Matrix4f;
 
 /**
- * The pilots' head-up display: while the local player is on the flight deck of an assembled airliner, within reach of
- * its autopilot (as from either pilot's seat), how it flies in the top corners of the screen, in the flight deck's
- * glass-cockpit colours (see {@link AutopilotScreenRenderer}) on dark glass, with what the autopilot is set to in
- * magenta. Top left the speed on a moving tape, the speed set as a magenta bug beside it and a green arrow to the speed
- * ten seconds on; under it a picture of what the autopilot is doing, and its name. Top right the height the autopilot
- * holds (its own block's) on a moving tape, the height set as a magenta bug, the ground rising up the tape as a brown
- * band once it is near and a bar beside it that climbs green or sinks amber; under it the wheels' height above the
- * ground and the climb or sink with an arrow. At the top in the middle a heading strip with the heading set as a
- * magenta bug, the autopilot's mode (straight on or round a circle) beside it, and under it a small attitude
- * indicator: sky and ground, the pitch ladder and the bank pointer, clear of the crosshair. Pictures and colours carry
- * it, and numbers only where the number is the point, so that it works for players who cannot read yet.
+ * The pilots' head-up display, shown by the visor of a pilot helmet: while the local player wears one on the flight
+ * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies in the top
+ * corners of the screen, in the flight deck's glass-cockpit colours (see {@link AutopilotScreenRenderer}) on dark
+ * glass, with what the autopilot is set to in magenta. Top left the speed on a moving tape, the speed set as a
+ * magenta bug beside it and a green arrow to the speed ten seconds on; under it a picture of what the autopilot is
+ * doing, and its name. Top right the height the autopilot holds (its own block's) on a moving tape, the height set as
+ * a magenta bug, the ground rising up the tape as a brown band once it is near and a bar beside it that climbs green
+ * or sinks amber; under it the wheels' height above the ground and the climb or sink with an arrow. At the top in the
+ * middle a heading strip with the heading set as a magenta bug, the autopilot's mode (straight on or round a circle)
+ * beside it, and under it a small attitude indicator: sky and ground, the pitch ladder and the bank pointer, clear of
+ * the crosshair. Pictures and colours carry it, and numbers only where the number is the point, so that it works for
+ * players who cannot read yet.
  *
  * <p>The airliner's attitude and height come from its pose as the client draws it, so the HUD moves as smoothly as the
  * airliner does; the autopilot's phase, mode and targets from what its block sends the clients. Its shapes are drawn
  * a batch at a time rather than one by one, so it costs a few draw calls a frame. It hides with the rest of the HUD
  * (F1), behind any screen, under the debug screen and while looking through an outside camera, and is off altogether
- * with {@code pilotHud} off in the client config.
+ * with {@code pilotHud} off in the client config. As it comes on it fades in, with a beep when it is the helmet going
+ * on that turns it on; walking back within reach of the autopilot with the helmet on, it only fades in.
  */
 public final class PilotHud {
     /** While no autopilot has been found, how often the airliner the player rides is searched for one, in ticks. */
@@ -66,6 +73,10 @@ public final class PilotHud {
     private static final double BANK_WARNING = 35;
     /** Vanilla draws the status effects' icons top right, in rows this tall: the helpful ones, then the harmful. */
     private static final int EFFECT_ROW = 26;
+    /** How long the HUD takes to fade in as it comes on, in milliseconds. */
+    private static final float FADE_IN_MILLIS = 600;
+    /** How loud the beep of the HUD coming on is, as a share of full volume: about as loud as a button's click. */
+    private static final float BEEP_VOLUME = 0.4F;
 
     /** How far in from the edges of the screen the glass stands, and its padding round what is on it, in GUI pixels. */
     private static final int MARGIN = 4;
@@ -161,8 +172,20 @@ public final class PilotHud {
     @Nullable
     private static Cockpit cockpit;
     private static int untilSearch;
+    /** Whether the HUD is on as of the last tick: the helmet on, within reach of the autopilot. */
+    private static boolean on;
+    /** Whether the player wore a pilot helmet as of the last tick, to tell it going on. */
+    private static boolean wearing;
+    /** How the HUD came on, while it waits to be drawn for the first time since; and when it was. */
+    private static Boot boot = Boot.NONE;
+    private static long bootedAt;
 
     private PilotHud() {
+    }
+
+    /** How the HUD came on: not since it was last drawn, as the helmet went on (with a beep), or otherwise. */
+    private enum Boot {
+        NONE, HELMET, QUIET
     }
 
     /**
@@ -262,12 +285,13 @@ public final class PilotHud {
 
     /**
      * Each tick: keeps hold of the autopilot of the airliner the player rides, finding it again once they ride another
-     * (or none), and takes in its speed for the trend arrow.
+     * (or none), takes in its speed for the trend arrow, and switches the HUD on or off.
      */
     public static void tick(ClientTickEvent.Post event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || !AerolargeClientConfig.PILOT_HUD.get()) {
             cockpit = null;
+            switchTo(false, false);
             return;
         }
         Cockpit held = cockpit;
@@ -283,23 +307,44 @@ public final class PilotHud {
         if (held != null) {
             held.sample();
         }
+        boolean helmet = PilotHelmetItem.worn(player);
+        switchTo(helmet && held != null && held.autopilot.canBeWorkedBy(player), helmet);
     }
 
-    /** Draws the HUD, if the player is where it shows and nothing hides it. */
+    /** Switches the HUD on or off; coming on, it waits to fade in, beeping first if the helmet has just gone on. */
+    private static void switchTo(boolean nowOn, boolean nowWearing) {
+        if (nowOn && !on) {
+            boot = nowWearing && !wearing ? Boot.HELMET : Boot.QUIET;
+        } else if (!nowOn) {
+            boot = Boot.NONE;
+        }
+        on = nowOn;
+        wearing = nowWearing;
+    }
+
+    /** Draws the HUD, if it is on and nothing hides it. */
     public static void overlay(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         Cockpit held = cockpit;
-        if (player == null || held == null || !shown(minecraft, player, held)) {
+        if (player == null || held == null || !on || hidden(minecraft, player)) {
             return;
         }
         Reading reading = held.read(player.level(), deltaTracker.getGameTimeDeltaPartialTick(true));
         if (reading == null) {
             return;
         }
+        if (boot != Boot.NONE) {
+            if (boot == Boot.HELMET) {
+                minecraft.getSoundManager().play(SimpleSoundInstance.forUI(AerolargeRegistry.HUD_ON.get(), 1F, BEEP_VOLUME));
+            }
+            boot = Boot.NONE;
+            bootedAt = Util.getMillis();
+        }
+        float fade = Math.min(1, (Util.getMillis() - bootedAt) / FADE_IN_MILLIS);
         AutopilotBlockEntity autopilot = held.autopilot;
         Targets targets = Targets.of(autopilot);
-        Canvas canvas = new Canvas(graphics, minecraft.font, (float) minecraft.getWindow().getGuiScale());
+        Canvas canvas = new Canvas(graphics, minecraft.font, (float) minecraft.getWindow().getGuiScale(), fade);
         int middle = graphics.guiWidth() / 2;
         speedPanel(canvas, MARGIN, MARGIN, autopilot.phase(), reading, targets.speed());
         altitudePanel(canvas, graphics.guiWidth() - MARGIN, MARGIN + effectsBelow(player), reading, targets.altitude());
@@ -308,13 +353,12 @@ public final class PilotHud {
     }
 
     /**
-     * Whether the HUD shows: the rest of the HUD showing, no screen open, and the player looking out
-     * through their own eyes within reach of the autopilot, as on the flight deck.
+     * Whether something hides the HUD while it is on: the rest of the HUD hidden, a screen open, or the player not
+     * looking out through their own eyes.
      */
-    private static boolean shown(Minecraft minecraft, LocalPlayer player, Cockpit held) {
-        return !minecraft.options.hideGui && minecraft.screen == null
-            && !minecraft.getDebugOverlay().showDebugScreen() && !PassengerCameras.looking() && minecraft.getCameraEntity() == player
-            && held.autopilot.canBeWorkedBy(player);
+    private static boolean hidden(Minecraft minecraft, LocalPlayer player) {
+        return minecraft.options.hideGui || minecraft.screen != null
+            || minecraft.getDebugOverlay().showDebugScreen() || PassengerCameras.looking() || minecraft.getCameraEntity() != player;
     }
 
     /** How far down the top right corner's figures move to clear the status effects' icons there. */
@@ -679,19 +723,29 @@ public final class PilotHud {
      * drawn, each run of shapes or of text drawn in one go as the next begins, rather than each shape on its own as
      * {@link GuiGraphics#fill} does. Pictures are drawn at once instead, so whatever they go over is flushed first.
      * Positions are in GUI pixels, fractions and all; text lands on whole screen pixels, so it stays sharp at any GUI
-     * scale.
+     * scale. Everything is drawn as see-through as the HUD is faded in.
      */
     private static final class Canvas {
+        /** Text this faint is not drawn: the font draws a colour with next to no alpha fully opaque. */
+        private static final int FAINTEST_TEXT = 0x04000000;
+
         private final GuiGraphics graphics;
         private final Font font;
         private final float guiScale;
         private final Matrix4f matrix;
+        private final float fade;
 
-        Canvas(GuiGraphics graphics, Font font, float guiScale) {
+        Canvas(GuiGraphics graphics, Font font, float guiScale, float fade) {
             this.graphics = graphics;
             this.font = font;
             this.guiScale = guiScale;
+            this.fade = fade;
             matrix = graphics.pose().last().pose();
+        }
+
+        /** A colour as faded in. */
+        private int faded(int colour) {
+            return Math.round((colour >>> 24) * fade) << 24 | colour & 0xFFFFFF;
         }
 
         /** Dark glass, edged a shade lighter. */
@@ -762,7 +816,7 @@ public final class PilotHud {
         }
 
         private void vertex(VertexConsumer shapes, float x, float y, int colour) {
-            shapes.addVertex(matrix, x, y, 0).setColor(colour);
+            shapes.addVertex(matrix, x, y, 0).setColor(faded(colour));
         }
 
         void text(String text, float x, float y, int colour, Align align) {
@@ -771,12 +825,16 @@ public final class PilotHud {
 
         /** Text placed against x as aligned, centred on y. */
         void text(Component text, float x, float y, int colour, Align align) {
+            int drawn = faded(colour);
+            if (Integer.compareUnsigned(drawn, FAINTEST_TEXT) < 0) {
+                return;
+            }
             float left = switch (align) {
                 case LEFT -> x;
                 case CENTRE -> x - font.width(text) / 2F;
                 case RIGHT -> x - font.width(text);
             };
-            font.drawInBatch(text, snap(left), snap(y - TEXT_MIDDLE), colour, false, matrix, graphics.bufferSource(), Font.DisplayMode.NORMAL, 0,
+            font.drawInBatch(text, snap(left), snap(y - TEXT_MIDDLE), drawn, false, matrix, graphics.bufferSource(), Font.DisplayMode.NORMAL, 0,
                 LightTexture.FULL_BRIGHT);
         }
 
@@ -784,8 +842,13 @@ public final class PilotHud {
             return Math.round(at * guiScale) / guiScale;
         }
 
+        /** A picture, blended in as faded in: drawn at once, pictures are not blended by themselves. */
         void icon(Icon icon, int x, int y) {
-            icon.draw(graphics, x, y, 1, true);
+            RenderSystem.enableBlend();
+            graphics.setColor(1F, 1F, 1F, fade);
+            graphics.blit(icon.texture(), x, y, Icon.SIZE, Icon.SIZE, 0, 0, Icon.SIZE, Icon.SIZE, Icon.SIZE, Icon.SIZE);
+            graphics.setColor(1F, 1F, 1F, 1F);
+            RenderSystem.disableBlend();
         }
 
         /** Draws whatever is still waiting in a batch. */

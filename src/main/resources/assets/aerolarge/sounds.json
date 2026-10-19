@@ -266,5 +266,13 @@
         "pitch": 0.7
       }
     ]
+  },
+  "hud_on": {
+    "subtitle": "subtitles.aerolarge.hud_on",
+    "sounds": [
+      {
+        "name": "aerolarge:hud_on"
+      }
+    ]
   }
 }

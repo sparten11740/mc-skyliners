@@ -175,18 +175,20 @@ touching them opens the settings. Its left side is a moving map, heading up: the
 flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom
 back in.
 
-On the flight deck of an assembled airliner, within reach of the autopilot (in either pilot's seat, or standing at
-the pedestal), a head-up display fills the top corners of the screen, in the flight deck's colours, with whatever the
-autopilot is set to fly in magenta. Top left is the speed on a moving tape, the speed set as a magenta mark beside it
-and a green arrow to where the speed will be in ten seconds; under it a picture of what the autopilot is doing, and
-its name: taking off, climbing, cruising, descending, landing, braking to a stop after landing, or a red power symbol
-while it is off. Top right is the height on a moving tape (the autopilot's own, as it holds it), the height set as a
-magenta mark and, once it is near, the ground rising up the tape in brown; beside it a bar that climbs green or sinks
-amber, and under it the wheels' height above the ground and the climb or sink with an arrow. At the top in the
-middle is a heading strip with the heading set as a magenta mark and the mode beside it (straight on, or circling
-left or right with the circle's radius), and under it a small attitude indicator: sky and ground, the pitch ladder,
-and the bank pointer, amber past 35 degrees. It hides with the rest of the HUD (F1), behind any screen, under the
-debug screen and while you look through an outside camera; turn it off with `pilotHud` in the client config.
+Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
+either pilot's seat, or standing at the pedestal), its visor shows a head-up display in the top corners of the screen,
+in the flight deck's colours, with whatever the autopilot is set to fly in magenta; without the helmet there is none.
+Putting the helmet on there switches it on with a beep, and it fades in. Top left is the speed on a moving tape, the
+speed set as a magenta mark beside it and a green arrow to where the speed will be in ten seconds; under it a picture
+of what the autopilot is doing, and its name: taking off, climbing, cruising, descending, landing, braking to a stop
+after landing, or a red power symbol while it is off. Top right is the height on a moving tape (the autopilot's own,
+as it holds it), the height set as a magenta mark and, once it is near, the ground rising up the tape in brown; beside
+it a bar that climbs green or sinks amber, and under it the wheels' height above the ground and the climb or sink with
+an arrow. At the top in the middle is a heading strip with the heading set as a magenta mark and the mode beside it
+(straight on, or circling left or right with the circle's radius), and under it a small attitude indicator: sky and
+ground, the pitch ladder, and the bank pointer, amber past 35 degrees. It hides with the rest of the HUD (F1), behind
+any screen, under the debug screen and while you look through an outside camera; turn it off with `pilotHud` in the
+client config.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
@@ -342,8 +344,9 @@ or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free c
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
-the same way as the cap, and protects as much as a leather cap. Craft it from five iron ingots round a black stained
-glass pane, with two black wool under them for the ear cups, or buy it at a duty-free counter for 10 emeralds.
+the same way as the cap, and protects as much as a leather cap. On the flight deck its visor shows the pilots'
+head-up display (see Autopilot). Craft it from five iron ingots round a black stained glass pane, with two black wool
+under them for the ear cups, or buy it at a duty-free counter for 10 emeralds.
 
 ### Skydiving
 

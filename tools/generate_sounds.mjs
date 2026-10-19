@@ -256,6 +256,27 @@ writeSound("pa_chime", CHIME);
   writeSound("cash_register", samples);
 }
 
+// The pilot's head-up display coming on as the pilot helmet goes on: the visor's soft click down over the eyes, then
+// two quick electronic beeps, the second higher. Each beep is a sine with a little of its third harmonic, so it sounds
+// like a cockpit's tone rather than a pure whistle, faded in and out over a few milliseconds so it does not click.
+{
+  const samples = new Float64Array(Math.round(0.4 * RATE));
+  let low = 0;
+  for (let i = 0; i < Math.round(0.03 * RATE); i++) {
+    const t = i / RATE;
+    low += 0.3 * (random() * 2 - 1 - low);
+    samples[i] += 0.6 * Math.exp(-t / 0.006) * low;
+  }
+  for (const [start, frequency, length] of [[0.08, 1760, 0.06], [0.17, 2349.32, 0.1]]) {
+    for (let i = Math.round(start * RATE); i < Math.round((start + length) * RATE); i++) {
+      const t = i / RATE - start;
+      const envelope = Math.min(1, t / 0.005, (length - t) / 0.005);
+      samples[i] += 0.35 * envelope * (Math.sin(2 * Math.PI * frequency * t) + 0.15 * Math.sin(6 * Math.PI * frequency * t));
+    }
+  }
+  writeSound("hud_on", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
