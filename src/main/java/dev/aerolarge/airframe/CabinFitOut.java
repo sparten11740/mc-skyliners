@@ -34,7 +34,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * and so does the hull, but for the belly under the pool, which is glazed.
  */
 final class CabinFitOut {
-    private static final double[] BUSINESS = {13.5, 17.5};
+    /** Where each room starts and ends, in metres from the nose; {@link CabinDividers} walls them off. */
+    static final double[] BUSINESS = {13.5, 17.5};
     static final double[] POOL = {18.0, 23.0};
     static final double[] GYM = {27.5, 47.5};
     static final double[] LOUNGE = {52.0, 58.5};
@@ -71,6 +72,7 @@ final class CabinFitOut {
         // Before the lounge, which is furnished round it.
         new DutyFreeKiosk(layout).apply(from(LOUNGE), to(LOUNGE));
         lounge(from(LOUNGE), to(LOUNGE));
+        new CabinDividers(layout).apply();
         new CabinDecor(layout).apply();
         // Last: the screens go where the rest has left room, and on the backs of its seats.
         screens();

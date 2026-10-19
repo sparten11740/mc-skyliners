@@ -442,10 +442,20 @@ public final class AirframeLayout {
      * Whether one of the passenger doors, cut through the hull later, takes the station, or the controls set into the
      * hull just beside it (the airstairs' panel, a jump light).
      */
-    private boolean doorAt(int z) {
+    boolean doorAt(int z) {
         for (double station : PASSENGER_DOORS) {
             int fore = (int) Math.round(station * scale);
             if (z >= fore - 1 && z <= fore + 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether a seatbelt sign goes into the cabin walls at the station, once the cabin is fitted out. */
+    boolean seatbeltSignAt(int z) {
+        for (double station : SEATBELT_SIGN_STATIONS) {
+            if ((int) Math.round(station * scale) == z) {
                 return true;
             }
         }
