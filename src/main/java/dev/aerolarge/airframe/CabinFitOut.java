@@ -124,7 +124,9 @@ final class CabinFitOut {
                 // From the wall in: a console, a seat, a console and so on, leaving the aisle down the middle clear.
                 for (int k = 0, x = width - 1; k < BUSINESS_SEATS && x - 1 >= 1; k++, x -= 2) {
                     seat(side * x, z, seat);
+                    // The high back reaches a seated passenger's head, and the screen for the row behind is set into it.
                     layout.furnish(side * x, floor + 1, z + 1, back);
+                    layout.furnish(side * x, floor + EYES, z + 1, back);
                     layout.furnish(side * (x + 1), floor + 1, z, console);
                     layout.furnish(side * (x - 1), floor + 1, z, console);
                 }
@@ -396,14 +398,15 @@ final class CabinFitOut {
     /**
      * The screen on the back of the seat at this station for the seat behind it at that one: at seated eye height
      * just behind whatever stands at the seat's back (its high back, if it has one), so the screen is set into the
-     * back's rear face; none if that leaves no legroom in front of the seat behind.
+     * back's rear face; none if that leaves no legroom in front of the seat behind, or if the back does not reach up
+     * to eye height to hold it.
      */
     private void seatBack(int x, int z, int behind, BlockState screen) {
         int at = z + 1;
         while (at < behind && solid(x, floor + 1, at)) {
             at++;
         }
-        if (at < behind) {
+        if (at < behind && solid(x, floor + EYES, at - 1)) {
             layout.furnish(x, floor + EYES, at, screen);
         }
     }
