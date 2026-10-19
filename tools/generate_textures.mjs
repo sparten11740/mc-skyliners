@@ -317,6 +317,23 @@ mkdirSync(miscOutput, { recursive: true });
   }
   writeFileSync(resolve(miscOutput, "nav_glow.png"), encodePng(pixels));
 }
+// The glow deep in a running engine's intake, its renderer's red added over the dark: full round the root of the
+// spinner, fading away to nothing at the duct's wall. The texture spans the mouth; the spinner covers its middle.
+{
+  const SPINNER = 0.3;
+  const pixels = [];
+  for (let y = 0; y < 32; y++) {
+    const row = [];
+    for (let x = 0; x < 32; x++) {
+      const r = Math.hypot(x - 15.5, y - 15.5) / 16;
+      const fade = Math.max(0, Math.min(1, (1 - r) / (1 - SPINNER)));
+      const v = Math.round(255 * fade ** 1.5);
+      row.push([v, v, v, 255]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(miscOutput, "intake_glow.png"), encodePng(pixels));
+}
 
 // A contrail puff: a soft white round blob, see-through toward its edge.
 {

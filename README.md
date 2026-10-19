@@ -35,8 +35,11 @@ with it; cabin lights in the crown, the walls and the hold and LED strips along 
 bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
-and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. Each
-engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a contrail.
+and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. While
+an engine is at rest an iris shuts its intake; it opens as soon as the engine is asked for thrust, and behind the
+turning fan the engine glows a dull red, brighter the harder it runs, until it has spun down and the iris shuts again.
+Each engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a
+contrail.
 
 ### Flight deck
 
