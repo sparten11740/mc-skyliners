@@ -16,10 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Marker;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -87,10 +83,8 @@ public final class PassengerCameras {
         final float yRot;
         final float xRot;
         int camera;
-        /** Where the camera is among the airliner's blocks and the ways it faces in the airliner's frame. */
-        Vec3 point = Vec3.ZERO;
-        Vec3 forward = Vec3.ZERO;
-        Vec3 up = Vec3.ZERO;
+        /** Where the camera is fixed among the airliner's blocks. */
+        CameraMount where;
         /** How far the view leans with the airliner this frame, in degrees. */
         float roll;
         /** Whether the use key is still down from the press that got here, which must not step on again. */
@@ -110,38 +104,10 @@ public final class PassengerCameras {
             return OutsideCamera.values()[camera];
         }
 
-        /** Sets the camera up among the airliner's blocks: its place and the ways it faces, held level in its frame. */
+        /** Sets the camera up among the airliner's blocks. */
         void mount(int camera) {
             this.camera = camera;
-            OutsideCamera mount = camera();
-            Vec3 nose = Vec3.atLowerCornerOf(frame.nose().getNormal());
-            Vec3 starboard = Vec3.atLowerCornerOf(frame.nose().getClockWise().getNormal());
-            Vec3 above = new Vec3(0, 1, 0);
-            point = frame.origin().add(starboard.scale(mount.across * scale)).add(above.scale(mount.up * scale)).add(nose.scale(-mount.back * scale));
-            double yaw = Math.toRadians(mount.yaw);
-            double pitch = Math.toRadians(mount.pitch);
-            Vec3 level = nose.scale(Math.cos(yaw)).add(starboard.scale(Math.sin(yaw)));
-            forward = level.scale(Math.cos(pitch)).add(above.scale(Math.sin(pitch)));
-            up = level.scale(-Math.sin(pitch)).add(above.scale(Math.cos(pitch)));
-        }
-    }
-
-    /**
-     * What the view is drawn from: an entity of no size that is never added to the world, its eyes as high as the
-     * player's, so the view does not slide while the camera eases from the one's eye height to the other's.
-     */
-    private static final class Lens extends Marker {
-        private final float eyes;
-
-        Lens(Level level, float eyes) {
-            super(EntityType.MARKER, level);
-            this.eyes = eyes;
-            refreshDimensions();
-        }
-
-        @Override
-        public EntityDimensions getDimensions(Pose pose) {
-            return EntityDimensions.fixed(0, 0).withEyeHeight(eyes);
+            where = CameraMount.on(frame, scale, camera());
         }
     }
 
@@ -159,7 +125,9 @@ public final class PassengerCameras {
                 : "message.aerolarge.passenger_screen.not_assembled"), true);
             return;
         }
-        // The server's settings, the airliner's scale among them, reach the client as it joins.
+        // The server's settings, the airliner's scale among them, reach the client as it joins. The lens's eyes are as
+        // high as the player's, so the view does not slide while the camera eases from the one's eye height to the
+        // other's.
         Viewing view = new Viewing(screen, frame, AerolargeConfig.SCALE.get(), new Lens(player.level(), player.getEyeHeight()),
             minecraft.options.getCameraType(), player.getYRot(), player.getXRot());
         view.mount(0);
@@ -211,7 +179,7 @@ public final class PassengerCameras {
      * with it; false once no airliner holds the camera.
      */
     private static boolean place(Viewing view, float partialTick) {
-        SableClient.View seen = SableClient.view(view.point, view.forward, view.up, partialTick);
+        SableClient.View seen = view.where.view(partialTick);
         if (seen == null) {
             return false;
         }
