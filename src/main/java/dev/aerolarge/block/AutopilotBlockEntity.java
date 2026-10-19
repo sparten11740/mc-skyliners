@@ -222,7 +222,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double BANK_PER_BLOCK = 0.5;
     /**
      * Climbing out after take-off, it flies straight on along the runway, wings level, until this high above the
-     * ground; only then does it turn onto the heading or circle set.
+     * ground, or up at the height set where the ground below has risen to meet it; only then does it turn onto the
+     * heading or circle set.
      */
     private static final double TURN_HEIGHT = 30;
     /** Slower than this, in blocks a second, it has stopped. */
@@ -628,7 +629,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         boolean takingOff = phase == Phase.TAKEOFF;
         boolean rollingOut = phase == Phase.ROLLOUT;
         boolean onGround = takingOff || rollingOut;
-        if (climbingOut && !takingOff && radio >= TURN_HEIGHT) {
+        // Held at the height set over high ground, it would never get that high above it.
+        if (climbingOut && !takingOff && (radio >= TURN_HEIGHT || phase == Phase.CRUISE)) {
             climbingOut = false;
         }
         // Down the runway and climbing out it holds the heading it started on; the heading set is flown once it is

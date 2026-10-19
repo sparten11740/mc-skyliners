@@ -167,12 +167,13 @@ Engaged on an assembled airliner standing on the ground (the button says Take Of
 speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
 thrown down the cabin; it speeds up and slows down that gently in the air too), holding the heading it started on
 with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
-above the ground. Only then does it turn onto the heading or circle set, banking no steeper than its height allows
-(it never banks hard near the ground, and never more than 25 degrees), and it climbs on to the altitude set and
-holds height and speed there. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway
-by default) and the speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it
-finds. While it is engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust
-levers, the tiller and the parking brake. How it is flying shows on the pilots' head-up display (see below).
+above the ground (or at the altitude set, where the ground below rises that high). Only then does it turn onto the
+heading or circle set, banking no steeper than its height allows (it never banks hard near the ground, and never
+more than 25 degrees), and it climbs on to the altitude set and holds height and speed there. The altitude starts at
+the cruising height (`climbHeight`, 80 blocks above the runway by default) and the speed at `cruiseSpeed`. Engaged
+in the air, they start from the height, speed and heading it finds. While it is engaged, Apply flies the settings as
+changed, and Disengage hands the airliner back to the thrust levers, the tiller and the parking brake. How it is
+flying shows on the pilots' head-up display (see below).
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
 the heading it is on, slows until it flies with its nose level and sinks 3 blocks a second, banking less the lower it
