@@ -2,7 +2,9 @@ package dev.aerolarge.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -237,7 +239,8 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
 
     /**
      * Draws the curtain open if it was shut, or shut if it was open: the column used at once, the rest following it a
-     * column at a time out to the curtain's ends. A curtain still being drawn is left to finish first.
+     * column at a time out to the curtain's ends, each column on one scheduled tick (see {@link #tick}). A curtain
+     * still being drawn is left to finish first.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
@@ -246,12 +249,20 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
             if (curtain.stream().noneMatch(at -> level.getBlockTicks().hasScheduledTick(at, this))) {
                 boolean open = !state.getValue(OPEN);
                 Direction.Axis along = leftOf(state.getValue(FACING)).getAxis();
+                Set<BlockPos> drawn = new HashSet<>();
                 for (BlockPos at : curtain) {
+                    if (drawn.contains(at)) {
+                        continue;
+                    }
+                    List<BlockPos> column = column(level, at);
+                    drawn.addAll(column);
                     int columns = Math.abs(at.get(along) - pos.get(along));
                     if (columns == 0) {
-                        level.setBlock(at, level.getBlockState(at).setValue(OPEN, open), Block.UPDATE_CLIENTS);
+                        draw(level, column, open);
                     } else {
-                        level.scheduleTick(at, this, columns * TICKS_PER_COLUMN);
+                        Direction back = Direction.fromAxisAndDirection(along,
+                            pos.get(along) > at.get(along) ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+                        level.scheduleTick(followingFrom(level, column, back), this, columns * TICKS_PER_COLUMN);
                     }
                 }
                 swish(level, pos);
@@ -261,25 +272,45 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * A column's turn as the curtain is drawn: the column nearer the one used has just been drawn, so this one follows
-     * whichever neighbour is drawn differently, all the way up and down. The pieces further out are as this one was.
+     * A column's turn as the curtain is drawn. The column on its side toward the one used has just been drawn, and the
+     * one beyond it, further out, is still as this one is, so the whole column follows whichever neighbour is drawn
+     * differently. Each column is drawn on the one tick of one of its pieces: were every piece to tick, those after the
+     * first would see the column further out still drawn the old way and draw theirs back.
      */
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         Direction left = leftOf(state.getValue(FACING));
-        for (Direction way : new Direction[]{left, left.getOpposite(), Direction.DOWN, Direction.UP}) {
+        for (Direction way : new Direction[]{left, left.getOpposite()}) {
             BlockState next = level.getBlockState(pos.relative(way));
             if (carriesOn(state, way, next) && next.getValue(OPEN) != state.getValue(OPEN)) {
-                draw(level, pos, next.getValue(OPEN));
+                draw(level, column(level, pos), next.getValue(OPEN));
                 return;
             }
         }
     }
 
-    /** Draws the column of pieces through the position: it and every piece above and below it it is joined to. */
-    private static void draw(Level level, BlockPos pos, boolean open) {
+    /** The column of pieces through the position: it and every piece above and below it it is joined to. */
+    private static List<BlockPos> column(Level level, BlockPos pos) {
         JoinedBlocks.Join upAndDown = (piece, way, next) -> way.getAxis().isVertical() && carriesOn(piece, way, next);
-        for (BlockPos at : JoinedBlocks.from(level, pos, MOST_PIECES, upAndDown)) {
+        return JoinedBlocks.from(level, pos, MOST_PIECES, upAndDown);
+    }
+
+    /**
+     * The piece of a column that follows the column back toward the one used: one joined to its neighbour that way,
+     * as a column taller or shorter than the next has only some, or the first if none is.
+     */
+    private static BlockPos followingFrom(Level level, List<BlockPos> column, Direction back) {
+        for (BlockPos at : column) {
+            if (carriesOn(level.getBlockState(at), back, level.getBlockState(at.relative(back)))) {
+                return at;
+            }
+        }
+        return column.get(0);
+    }
+
+    /** Draws every piece of a column open or shut. */
+    private static void draw(Level level, List<BlockPos> column, boolean open) {
+        for (BlockPos at : column) {
             BlockState piece = level.getBlockState(at);
             if (piece.getValue(OPEN) != open) {
                 level.setBlock(at, piece.setValue(OPEN, open), Block.UPDATE_CLIENTS);
