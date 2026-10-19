@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -41,6 +42,12 @@ public abstract class CabinControlBlock extends HorizontalDirectionalBlock imple
 
     /** The target as the control's setting has it; the target itself if the control does not work it. */
     public abstract BlockState applyTo(BlockState control, BlockState target);
+
+    /** Heard now and then along the cabin as a setting sweeps through it; null for none. */
+    @Nullable
+    public SoundEvent sweepSound() {
+        return null;
+    }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {

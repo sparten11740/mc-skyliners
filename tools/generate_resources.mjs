@@ -161,6 +161,7 @@ cubes.engine_core = null;
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
+  sounds.shade_motor = { subtitle: `subtitles.${ID}.shade_motor`, sounds: [{ name: `${ID}:shade_motor` }] };
   for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
@@ -485,22 +486,42 @@ function dropsItself(name) {
   write(`assets/${ID}/models/item/basketball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/basketball` } });
 }
 
-// The cabin lights' dimmer: a small module on the panel, drawn facing north, its face and top showing the setting.
+// The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The
+// cabin lights' dimmer: bright, dim or night. The window shades' control: open or closed.
 {
+  const module = (name) => write(`assets/${ID}/models/block/${name}.json`, boxes(
+    { face: `${ID}:block/${name}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
+    [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
+  ));
   for (const level of ["bright", "dim", "night"]) {
-    write(`assets/${ID}/models/block/cabin_lights_${level}.json`, boxes(
-      { face: `${ID}:block/cabin_lights_${level}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
-      [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
-    ));
+    module(`cabin_lights_${level}`);
   }
   write(`assets/${ID}/blockstates/cabin_lights.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["bright", "dim", "night"].map((level) =>
       [`brightness=${level},facing=${facing}`, { model: `${ID}:block/cabin_lights_${level}`, y }]))),
   });
   write(`assets/${ID}/models/item/cabin_lights.json`, { parent: `${ID}:block/cabin_lights_bright` });
-  dropsItself("cabin_lights");
-  cubes.cabin_lights = null;
+  for (const shaded of [false, true]) {
+    module(`window_shades_${shaded ? "closed" : "open"}`);
+  }
+  write(`assets/${ID}/blockstates/window_shades.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((shaded) =>
+      [`facing=${facing},shaded=${shaded}`, { model: `${ID}:block/window_shades_${shaded ? "closed" : "open"}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/window_shades.json`, { parent: `${ID}:block/window_shades_open` });
+  for (const name of ["cabin_lights", "window_shades"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
 }
+
+// The cabin window with its shade down; its plain blockstate, from the cubes above, gives way to one for both.
+write(`assets/${ID}/models/block/cabin_window_shaded.json`, {
+  parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/cabin_window_shaded` }, render_type: "minecraft:translucent",
+});
+write(`assets/${ID}/blockstates/cabin_window.json`, {
+  variants: { "shaded=false": { model: `${ID}:block/cabin_window` }, "shaded=true": { model: `${ID}:block/cabin_window_shaded` } },
+});
 
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
@@ -628,6 +649,7 @@ shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecr
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
 shaped("scoreboard", ["BBB", "LGL", "BBB"], { B: "minecraft:black_concrete", L: "minecraft:redstone_lamp", G: "minecraft:glowstone" }, 1);
 shaped("ball_rack", ["IBI", "IBI"], { I: "minecraft:iron_bars", B: `${ID}:basketball` }, 1);
+shaped("window_shades", ["W", "P"], { W: "minecraft:white_wool", P: `${ID}:instrument_panel` }, 1);
 shaped("cabin_lights", ["G", "P"], { G: "minecraft:glowstone_dust", P: `${ID}:instrument_panel` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
@@ -738,6 +760,10 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.ball_bounce": "Basketball bounces",
   "subtitles.aerolarge.basket_swish": "Basket swishes",
   "subtitles.aerolarge.scoreboard_buzzer": "Scoreboard buzzes",
+  "block.aerolarge.window_shades": "Window Shades Control",
+  "message.aerolarge.window_shades.open": "Window shades going up",
+  "message.aerolarge.window_shades.closed": "Window shades coming down",
+  "subtitles.aerolarge.shade_motor": "Window shade whirrs",
   "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",

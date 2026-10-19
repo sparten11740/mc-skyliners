@@ -12,6 +12,7 @@ import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightsBlock;
+import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
@@ -27,6 +28,7 @@ import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.ThrustLeverBlock;
+import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.TillerBlock;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -108,8 +111,9 @@ public final class AirframeLayout {
     private BlockPos jumpSwitch;
     /** The seatbelt switch in the instrument panel; null without a flight deck. */
     private BlockPos seatbeltSwitch;
-    /** The cabin lights' dimmer, on the panel; null without a flight deck. */
+    /** The cabin lights' dimmer on the panel and the window shades' control by the captain; null without a flight deck. */
     private BlockPos cabinLights;
+    private BlockPos windowShades;
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
     private int minY = Integer.MAX_VALUE;
@@ -838,6 +842,12 @@ public final class AirframeLayout {
                 set(captainX, deck + 2, panelZ, AerolargeRegistry.HANDSET.get().defaultBlockState().setValue(HandsetBlock.FACING, Direction.SOUTH));
             }
         }
+        // The window shades' control on the captain's side console, just behind the tiller.
+        BlockPos shades = new BlockPos(-seatX - 1, deck + 1, pedestalZ + 1);
+        if (isOpen(shades.getX(), shades.getY(), shades.getZ())) {
+            windowShades = shades;
+            set(shades.getX(), shades.getY(), shades.getZ(), AerolargeRegistry.WINDOW_SHADES.get().defaultBlockState().setValue(WindowShadesBlock.FACING, Direction.EAST));
+        }
         // The Physics Assembler out of the way, against the wall behind the captain's seat.
         int assemblerZ = pedestalZ + 2;
         assemblerSpot = new BlockPos(-openHalfWidth(deck + 1, assemblerZ), deck + 1, assemblerZ);
@@ -1362,22 +1372,27 @@ public final class AirframeLayout {
     }
 
     /**
-     * Wires the cabin controls on the flight deck, once everything stands, to what they work: the dimmer to every
-     * light in the airliner that has a brightness, front to back, so its setting runs down the cabin.
+     * Wires the cabin controls on the flight deck, once everything stands, to what they work, front to back so each
+     * setting runs down the cabin: the dimmer to every light in the airliner that has a brightness, the window shades'
+     * control to every cabin window.
      */
     private void cabinControls() {
-        if (cabinLights == null) {
+        wire(cabinLights, state -> state.hasProperty(Brightness.PROPERTY) && !(state.getBlock() instanceof CabinControlBlock));
+        wire(windowShades, state -> state.getBlock() instanceof CabinWindowBlock);
+    }
+
+    private void wire(@Nullable BlockPos control, Predicate<BlockState> works) {
+        if (control == null) {
             return;
         }
-        List<BlockPos> lights = cells.entrySet().stream()
-            .filter(cell -> cell.getValue().hasProperty(Brightness.PROPERTY) && !(cell.getValue().getBlock() instanceof CabinControlBlock))
+        List<BlockPos> targets = cells.entrySet().stream()
+            .filter(cell -> works.test(cell.getValue()))
             .map(Map.Entry::getKey)
             .sorted(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX))
             .toList();
-        BlockPos at = cabinLights;
-        fittings.put(at, (blockEntity, rotation) -> {
-            if (blockEntity instanceof CabinControlBlockEntity control) {
-                control.configure(offsets(at, lights, rotation));
+        fittings.put(control, (blockEntity, rotation) -> {
+            if (blockEntity instanceof CabinControlBlockEntity cabinControl) {
+                cabinControl.configure(offsets(control, targets, rotation));
             }
         });
     }

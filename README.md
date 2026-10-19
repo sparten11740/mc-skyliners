@@ -47,7 +47,10 @@ altitude, vertical speed and heading once the airliner is assembled. Against the
 Physics Assembler.
 On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch,
 the captain's handset and the cabin lights' dimmer. The dimmer steps every light in the cabin from bright to dimmed
-(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back.
+(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back. On
+the captain's side console, just behind the tiller, is the window shades' control: it runs every cabin window's
+shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
+can open or close a window's own shade by using it.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.

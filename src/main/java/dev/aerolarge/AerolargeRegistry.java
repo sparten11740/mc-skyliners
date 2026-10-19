@@ -13,6 +13,7 @@ import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
+import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
@@ -48,6 +49,7 @@ import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
+import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
@@ -121,6 +123,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");
     /** The ding of the seatbelt signs coming on. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SEATBELT_DING = sound("seatbelt_ding");
+    /** The whirr of the window shades' motors. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHADE_MOTOR = sound("shade_motor");
     /** Basketball: the ball bouncing, the swish of a basket and the scoreboard's buzzer. */
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_BOUNCE = sound("ball_bounce");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASKET_SWISH = sound("basket_swish");
@@ -163,7 +167,7 @@ public final class AerolargeRegistry {
         "landing_gear_tire",
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 3.0F).sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never)
     );
-    public static final DeferredBlock<TransparentBlock> CABIN_WINDOW = BLOCKS.registerBlock("cabin_window", TransparentBlock::new, glass());
+    public static final DeferredBlock<CabinWindowBlock> CABIN_WINDOW = BLOCKS.registerBlock("cabin_window", CabinWindowBlock::new, glass());
     public static final DeferredBlock<TransparentBlock> COCKPIT_WINDOW = BLOCKS.registerBlock("cockpit_window", TransparentBlock::new, glass());
     public static final DeferredBlock<DoorBlock> AIRLINER_DOOR = BLOCKS.registerBlock(
         "airliner_door",
@@ -334,9 +338,14 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CabinLightsBlock> CABIN_LIGHTS = BLOCKS.registerBlock(
         "cabin_lights", CabinLightsBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
     );
+    /** The window shades' control on the flight deck. */
+    public static final DeferredBlock<WindowShadesBlock> WINDOW_SHADES = BLOCKS.registerBlock(
+        "window_shades", WindowShadesBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
+    );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CabinControlBlockEntity>> CABIN_CONTROL_ENTITY =
-        BLOCK_ENTITIES.register("cabin_control", () -> BlockEntityType.Builder.of(CabinControlBlockEntity::new, CABIN_LIGHTS.get()).build(null));
+        BLOCK_ENTITIES.register("cabin_control", () -> BlockEntityType.Builder.of(CabinControlBlockEntity::new, CABIN_LIGHTS.get(), WINDOW_SHADES.get()).build(null));
     public static final DeferredItem<BlockItem> CABIN_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LIGHTS);
+    public static final DeferredItem<BlockItem> WINDOW_SHADES_ITEM = ITEMS.registerSimpleBlockItem(WINDOW_SHADES);
 
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
@@ -376,7 +385,7 @@ public final class AerolargeRegistry {
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
-            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM,
+            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());

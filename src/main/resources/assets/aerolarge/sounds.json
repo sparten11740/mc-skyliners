@@ -127,6 +127,14 @@
       }
     ]
   },
+  "shade_motor": {
+    "subtitle": "subtitles.aerolarge.shade_motor",
+    "sounds": [
+      {
+        "name": "aerolarge:shade_motor"
+      }
+    ]
+  },
   "ball_bounce": {
     "subtitle": "subtitles.aerolarge.ball_bounce",
     "sounds": [

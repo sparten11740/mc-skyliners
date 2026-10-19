@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "W",
+    "P"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "P": {
+      "item": "aerolarge:instrument_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:window_shades",
+    "count": 1
+  }
+}

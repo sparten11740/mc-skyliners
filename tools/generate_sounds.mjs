@@ -138,6 +138,20 @@ function bell(samples, start, frequency, decay) {
   writeSound("seatbelt_ding", samples);
 }
 
+// The window shades' motor: a small electric whirr, rising as it spins up and falling as it stops.
+{
+  const samples = new Float64Array(Math.round(0.9 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const speed = Math.sin(Math.PI * t / 0.9);
+    phase += 2 * Math.PI * (90 + 60 * speed) / RATE;
+    const saw = 2 * ((phase / (2 * Math.PI)) % 1) - 1;
+    samples[i] = speed * (0.6 * saw + 0.25 * Math.sin(phase * 4) + 0.1 * (random() * 2 - 1));
+  }
+  writeSound("shade_motor", samples);
+}
+
 // Basketball. A bounce: a deep thud, falling in pitch as it dies, with the slap of the leather on top.
 {
   const samples = new Float64Array(Math.round(0.3 * RATE));

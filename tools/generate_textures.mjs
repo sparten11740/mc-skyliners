@@ -136,6 +136,17 @@ texture(blockOutput, "cabin_window", (x, y) => {
   return GLASS;
 });
 
+// The same window with its shade pulled down: the glass filled with the shade's pale plastic, a pull tab at its foot.
+texture(blockOutput, "cabin_window_shaded", (x, y) => {
+  const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
+  const dy = Math.max(Math.abs(y - 7.5) - 3.5, 0);
+  const corner = Math.hypot(dx, dy);
+  if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
+  if (corner > 1.9) return FRAME_DARK;
+  if (y >= 11 && x >= 6 && x <= 9) return [0x9c, 0xa0, 0xa6];
+  return y % 3 === 0 ? [0xd6, 0xd2, 0xc8] : [0xe2, 0xde, 0xd4];
+});
+
 // The windscreen: dark glass edge to edge, thin frame bars along the top and one side.
 texture(blockOutput, "cockpit_window", (x, y) => {
   if (y === 0 || x === 0) return FRAME_DARK;
@@ -527,6 +538,21 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "cabin_lights_dim", face((x, y) => (bulb(x, y) ? [0x9a, 0x70, 0x30] : null)), 1);
   texture(blockOutput, "cabin_lights_night", face((x, y) =>
     (Math.hypot(x - 7.5, y - 7.5) < 4.5 && Math.hypot(x - 9.5, y - 6) > 3.6 ? [0x70, 0x9c, 0xff] : null)), 1);
+}
+
+// The window shades' control: a dark face with a little window on it, blue sky when the shades are up, the pale
+// shade across it when they are down.
+{
+  for (const shaded of [false, true]) {
+    texture(blockOutput, `window_shades_${shaded ? "closed" : "open"}`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL_DARK;
+      const frame = x >= 4 && x <= 11 && y >= 3 && y <= 12;
+      const pane = x >= 5 && x <= 10 && y >= 4 && y <= 11;
+      if (pane) return shaded ? [0xe2, 0xde, 0xd4] : y < 8 ? [0x70, 0xb4, 0xf0] : [0x9c, 0xd0, 0xff];
+      if (frame) return [0xd8, 0xdc, 0xe0];
+      return [0x16, 0x18, 0x1c];
+    }, 1);
+  }
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

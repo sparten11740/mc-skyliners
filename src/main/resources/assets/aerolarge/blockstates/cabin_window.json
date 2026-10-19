@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "shaded=false": {
       "model": "aerolarge:block/cabin_window"
+    },
+    "shaded=true": {
+      "model": "aerolarge:block/cabin_window_shaded"
     }
   }
 }

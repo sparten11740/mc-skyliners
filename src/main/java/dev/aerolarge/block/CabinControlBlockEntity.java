@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,8 +18,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * and works the same in an airliner in flight, whose blocks keep their places relative to one another.
  */
 public class CabinControlBlockEntity extends BlockEntity {
-    /** Blocks set each tick of a sweep. */
+    /** Blocks set each tick of a sweep, and how many apart along it the control's sound is heard. */
     private static final int PER_TICK = 24;
+    private static final int SOUND_EVERY = 12;
 
     private List<BlockPos> targets = List.of();
     /** The next target a sweep sets; past the end when none is under way. */
@@ -49,6 +52,10 @@ public class CabinControlBlockEntity extends BlockEntity {
             BlockState set = control.applyTo(getBlockState(), was);
             if (set != was) {
                 level.setBlock(at, set, Block.UPDATE_CLIENTS);
+            }
+            SoundEvent sound = control.sweepSound();
+            if (sound != null && next % SOUND_EVERY == 0) {
+                level.playSound(null, at, sound, SoundSource.BLOCKS, 0.6F, 1.0F);
             }
         }
         setChanged();
