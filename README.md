@@ -135,6 +135,9 @@ Or drop it through the drop bay: hatch doors in the belly, behind the main gear.
 the bay to load it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop
 release on the first officer's side console, behind the parking brake, opens the bay doors on the first use and
 drops the next load on each use after that; sneak and use it to close them. A load leaves at the airliner's speed.
+With Ultrasplosive installed the bay also takes its nuke (the regular Fat
+Man, not Sundial), which leaves the bay as Ultrasplosive's flying nuke and goes off where it hits. Its blast reaches
+160 blocks, so the release only drops one from 200 blocks or more above the ground.
 
 ### A sturdy frame
 

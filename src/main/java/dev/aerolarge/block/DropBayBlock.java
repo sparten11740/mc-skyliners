@@ -25,9 +25,9 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * The drop bay in the airliner's belly, under the hold: its doors, and what waits behind them to be dropped (see
- * {@link DropBayBlockEntity}). Use a care package on it from the hold to load it; use it with an empty hand to count
- * what is aboard, sneaking to take the last load back out. The drop release on the flight deck opens the doors and
- * drops the loads.
+ * {@link DropBayBlockEntity}). Use a care package (or, with Ultrasplosive, a nuke) on it from the hold to load it; use
+ * it with an empty hand to count what is aboard, sneaking to take the last load back out. The drop release on the
+ * flight deck opens the doors and drops the loads.
  */
 public class DropBayBlock extends BaseEntityBlock {
     private static final MapCodec<DropBayBlock> CODEC = simpleCodec(DropBayBlock::new);
