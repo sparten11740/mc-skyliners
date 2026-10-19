@@ -356,6 +356,8 @@
   "subtitles.aerolarge.plug_door_hiss": "Door hisses",
   "subtitles.aerolarge.plug_door_latch": "Door latches",
   "block.aerolarge.pilot_seat": "Pilot Seat",
+  "block.aerolarge.rubber_duck": "Rubber Duck",
+  "subtitles.aerolarge.rubber_duck_squeak": "Rubber duck squeaks",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

@@ -367,6 +367,36 @@ writeSound("pa_chime", CHIME);
   writeSound("plug_door_latch", samples);
 }
 
+// Rubber ducks, with their own noise, so they never shift the sounds above. A squeak is air forced through the duck's
+// reed: a buzzy tone, its pitch swooping up and back down, rattling and breathy. squeak() adds one to the samples.
+const duckNoise = (() => {
+  let duckSeed = 0x6475636b;
+  return () => {
+    duckSeed = (Math.imul(duckSeed, 1664525) + 1013904223) | 0;
+    return (duckSeed >>> 0) / 4294967296;
+  };
+})();
+function squeak(samples, start, length, pitch, swoop) {
+  let phase = 0;
+  let breath = 0;
+  for (let i = Math.round(start * RATE); i < Math.min(samples.length, Math.round((start + length) * RATE)); i++) {
+    const along = (i / RATE - start) / length;
+    phase += (2 * Math.PI * pitch * (1 + swoop * Math.sin(Math.PI * along))) / RATE;
+    const buzz = 2 * ((phase / (2 * Math.PI)) % 1) - 1;
+    const rattle = 1 + 0.3 * Math.sin(2 * Math.PI * 70 * (i / RATE));
+    breath += 0.3 * (duckNoise() * 2 - 1 - breath);
+    const envelope = Math.min(1, along * 20) * Math.sqrt(Math.sin(Math.PI * along));
+    samples[i] += envelope * (rattle * (0.6 * buzz + 0.5 * Math.sin(phase)) + 0.35 * breath);
+  }
+}
+// The duck's squeak: squeezed and let go, two quick chirps, the second a little lower.
+{
+  const samples = new Float64Array(Math.round(0.3 * RATE));
+  squeak(samples, 0, 0.11, 820, 0.3);
+  squeak(samples, 0.15, 0.09, 700, 0.25);
+  writeSound("rubber_duck_squeak", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

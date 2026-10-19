@@ -1369,5 +1369,13 @@ blueprint("furnished_airliner_blueprint", true);
     return (x + 2 * y + Math.floor(random() * 2)) % 6 === 0 ? [0x34, 0x8c, 0xe0, 0xc8] : [0x6c, 0xc4, 0xf4, 0xb0];
   }, 0);
 }
+// Rubber ducks. The duck: bright yellow plastic. Beside its head, the same yellow with a black eye in the middle of the
+// three pixels square the model shows of it. Its beak: orange.
+{
+  const YELLOW = [0xff, 0xd0, 0x20];
+  texture(blockOutput, "rubber_duck", () => YELLOW, 4);
+  texture(blockOutput, "rubber_duck_eye", (x, y) => (x === 1 && y === 1 ? [0x10, 0x10, 0x14] : YELLOW), 0);
+  texture(blockOutput, "rubber_duck_beak", () => [0xf5, 0x8a, 0x1a], 3);
+}
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

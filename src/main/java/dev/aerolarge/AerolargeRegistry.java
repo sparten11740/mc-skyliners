@@ -64,6 +64,8 @@ import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
+import dev.aerolarge.block.RubberDuckBlock;
+import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
 import dev.aerolarge.block.SeatbeltSignBlock;
@@ -669,6 +671,16 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("suitcase", () -> BlockEntityType.Builder.of(SuitcaseBlockEntity::new, SUITCASE.get(), GOLDEN_SUITCASE.get()).build(null));
     public static final DeferredItem<BlockItem> SUITCASE_ITEM = ITEMS.registerSimpleBlockItem(SUITCASE);
     public static final DeferredItem<BlockItem> GOLDEN_SUITCASE_ITEM = ITEMS.registerSimpleBlockItem(GOLDEN_SUITCASE);
+    /** A little rubber duck to put down anywhere, or float in water, and its squeak. */
+    public static final DeferredBlock<RubberDuckBlock> RUBBER_DUCK = BLOCKS.registerBlock(
+        "rubber_duck", RubberDuckBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RubberDuckBlockEntity>> RUBBER_DUCK_ENTITY =
+        BLOCK_ENTITIES.register("rubber_duck", () -> BlockEntityType.Builder.of(RubberDuckBlockEntity::new, RUBBER_DUCK.get()).build(null));
+    public static final DeferredItem<BlockItem> RUBBER_DUCK_ITEM = ITEMS.registerSimpleBlockItem(RUBBER_DUCK);
+    public static final DeferredHolder<SoundEvent, SoundEvent> RUBBER_DUCK_SQUEAK = sound("rubber_duck_squeak");
 
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
     public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
@@ -792,7 +804,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
             MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
-            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM

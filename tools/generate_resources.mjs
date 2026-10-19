@@ -221,6 +221,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   Object.assign(sounds, plugDoorSounds());
+  Object.assign(sounds, rubberDuckSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -904,6 +905,59 @@ function holdAndTailLang() {
     "message.aerolarge.golden_suitcase.found": "A golden suitcase! %s of %s found",
     "advancements.aerolarge.first_flight.lost_and_found.title": "Lost and Found",
     "advancements.aerolarge.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
+  };
+}
+
+// Rubber ducks: their fittings, sound, recipes and names are in the functions below, which the shared lists further
+// down take in. The duck, drawn facing north from RubberDuckBlock.BOXES: a yellow body with its head on the front, an
+// eye either side of the head, an orange beak and a cocked tail. Its renderer draws it, sitting or afloat, so one model
+// serves every state; in the hand and the inventory it is drawn bigger, as it fills only a corner of its block.
+{
+  const duck = `${ID}:block/rubber_duck`;
+  const all = (texture) => Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }]));
+  // The head's sides show the eye in the middle of their three pixels square, the same on both.
+  const eye = { texture: "#eye", uv: [0, 0, 3, 3] };
+  write(`assets/${ID}/models/block/rubber_duck.json`, {
+    parent: "minecraft:block/block",
+    textures: { duck, eye: `${ID}:block/rubber_duck_eye`, beak: `${ID}:block/rubber_duck_beak`, particle: duck },
+    elements: [
+      { from: [5, 0, 5], to: [11, 3, 12], faces: all("#duck") },
+      { from: [6, 3, 5], to: [10, 6, 8], faces: { ...all("#duck"), east: eye, west: eye } },
+      { from: [7, 4, 3], to: [9, 5, 5], faces: all("#beak") },
+      { from: [6, 3, 11], to: [10, 4, 12], faces: all("#duck") },
+    ],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, 4, 0], scale: [1.1, 1.1, 1.1] },
+      ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
+      fixed: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [1, 1, 1] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 3, 0], scale: [0.75, 0.75, 0.75] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 4, 0], scale: [0.8, 0.8, 0.8] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 4, 0], scale: [0.8, 0.8, 0.8] },
+    },
+  });
+  facing("rubber_duck");
+  write(`assets/${ID}/models/item/rubber_duck.json`, { parent: duck });
+  dropsItself("rubber_duck");
+  cubes.rubber_duck = null;
+}
+// What of the ducks is fitted rather than built in: breakable, and no part of the airframe.
+function rubberDuckFittings() {
+  return ["rubber_duck"];
+}
+// The squeak: two quick squeezes of a rubber duck (see tools/generate_sounds.mjs).
+function rubberDuckSounds() {
+  return {
+    rubber_duck_squeak: { subtitle: `subtitles.${ID}.rubber_duck_squeak`, sounds: [{ name: `${ID}:rubber_duck_squeak` }] },
+  };
+}
+// A duck of yellow wool with a beak of orange dye.
+function rubberDuckRecipes() {
+  shaped("rubber_duck", ["O", "W"], { O: "minecraft:orange_dye", W: "minecraft:yellow_wool" }, 2);
+}
+function rubberDuckLang() {
+  return {
+    "block.aerolarge.rubber_duck": "Rubber Duck",
+    "subtitles.aerolarge.rubber_duck_squeak": "Rubber duck squeaks",
   };
 }
 
@@ -1684,6 +1738,7 @@ const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${gr
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
+FITTINGS.push(...rubberDuckFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1782,6 +1837,7 @@ holdAndTailRecipes();
 // The vacuum toilet: a bucket for its bowl in iron.
 shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
 flightDeckRecipes();
+rubberDuckRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2113,6 +2169,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
   ...flightDeckLang(),
+  ...rubberDuckLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

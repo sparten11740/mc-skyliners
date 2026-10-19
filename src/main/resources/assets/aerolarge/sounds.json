@@ -314,5 +314,13 @@
         "name": "aerolarge:plug_door_latch"
       }
     ]
+  },
+  "rubber_duck_squeak": {
+    "subtitle": "subtitles.aerolarge.rubber_duck_squeak",
+    "sounds": [
+      {
+        "name": "aerolarge:rubber_duck_squeak"
+      }
+    ]
   }
 }

@@ -292,6 +292,12 @@ replaces a block and never hurts anyone: the worst it does is bonk whoever it la
 under it, away from an airliner, only flushes. Both blueprints have one in the WC behind the flight deck, and the
 furnished airliner one in each lavatory by the gym hall (at the smallest scale there is room for neither).
 
+### Rubber ducks
+
+A Rubber Duck is a little yellow duck with an orange beak, to put down anywhere, its beak toward you. Put into water
+it floats, bobbing and rocking gently. Use it, or hit it, and it squeaks, with a wiggle and a few hearts. Yellow wool
+under an orange dye makes two.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it

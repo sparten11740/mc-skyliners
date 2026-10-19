@@ -21,6 +21,7 @@ import dev.aerolarge.client.PassengerCameras;
 import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
+import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.TabBanners;
@@ -127,6 +128,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PLUG_DOOR_ENTITY.get(), context -> new PlugDoorRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
