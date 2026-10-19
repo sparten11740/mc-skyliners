@@ -90,6 +90,11 @@ public final class AirframeLayout {
     private static final int SUSPENSION_STRENGTH = 180;
     /** How far from a block's middle, in blocks, its skin is looked for: past it either way the block is whole or empty. */
     private static final double SKIN_REACH = 1.5;
+    /**
+     * How nearly another way in from a piece of shell has to match the straightest one (as the cosine of its angle to
+     * the way the fuselage faces) for glass that way to count as the skin it closes over.
+     */
+    private static final double GLASS_TIE = 0.1;
     /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
@@ -633,9 +638,10 @@ public final class AirframeLayout {
     }
 
     /**
-     * The windscreen: the skin under the glass becomes cockpit glass, but for the posts that divide it into panes,
-     * which stay skin: the column down the middle, and in each row and on each side, the block facing closest to
-     * each side post's angle round the nose. The shell cuts the glass to the curve with the skin around it.
+     * The windscreen: the skin under the glass becomes cockpit glass, but for the posts that frame it into panes,
+     * which stay skin: in each row and on each side, the block facing closest to each side post's angle round the
+     * nose. The middle column is glass like the rest (it is counted with the starboard side), so the front is one
+     * wide pane. The shell cuts the glass to the curve with the skin around it.
      */
     private void windscreen() {
         BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
@@ -645,7 +651,7 @@ public final class AirframeLayout {
             for (int side : new int[]{1, -1}) {
                 List<BlockPos> row = new ArrayList<>();
                 for (int z = 0; z <= last; z++) {
-                    for (int x = side; Math.abs(x) <= halfWidth; x += side) {
+                    for (int x = side > 0 ? 0 : -1; Math.abs(x) <= halfWidth; x += side) {
                         BlockState state = stateAt(x, y, z);
                         boolean skin = state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock());
                         if (skin && Windscreen.covers((y + 0.5) / scale, (z + 0.5) / scale)) {
@@ -847,10 +853,22 @@ public final class AirframeLayout {
         return false;
     }
 
-    /** The skin block straight in from this one, against the way the fuselage faces there. */
+    /**
+     * The skin block this piece of shell closes over: the one straight in from it, against the way the fuselage faces
+     * there, unless the fuselage faces nearly as much another way and the block that way is glass. Along the glass's
+     * edges, where the skin turns, the glass then closes as glass instead of with specks of skin.
+     */
     private BlockState inward(BlockPos pos) {
         double[] out = AirframeShape.outward(pos.getX() / scale, (pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale);
         Direction in = Direction.getNearest(-out[0], -out[1], -out[2]);
+        double straight = -(in.getStepX() * out[0] + in.getStepY() * out[1] + in.getStepZ() * out[2]);
+        for (Direction side : Direction.values()) {
+            double along = -(side.getStepX() * out[0] + side.getStepY() * out[1] + side.getStepZ() * out[2]);
+            BlockState next = stateAt(pos.getX() + side.getStepX(), pos.getY() + side.getStepY(), pos.getZ() + side.getStepZ());
+            if ((side == in || along > 0 && along >= straight - GLASS_TIE) && next.getBlock() instanceof CockpitGlassBlock) {
+                return next;
+            }
+        }
         return stateAt(pos.getX() + in.getStepX(), pos.getY() + in.getStepY(), pos.getZ() + in.getStepZ());
     }
 
