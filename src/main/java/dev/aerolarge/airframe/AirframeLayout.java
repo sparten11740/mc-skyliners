@@ -146,8 +146,6 @@ public final class AirframeLayout {
     private final double scale;
     private final AirframePalette palette;
     private final ShellStyle style;
-    /** The snapped style's cut of the skin, once asked for. */
-    private SnappedShell snapped;
     /** The stations of the windscreen's side posts, by side (1 to starboard, -1 to port) and the post's angle. */
     private final Map<Integer, Map<Double, Integer>> postStations = new HashMap<>();
     private final Map<BlockPos, BlockState> cells = new HashMap<>();
@@ -534,17 +532,9 @@ public final class AirframeLayout {
      * to the curve, which a whole light would stick out of.
      */
     private void light(int x, int y, int z) {
-        boolean cut = style == ShellStyle.SNAPPED ? snapped().cut(x, y, z) : shapeAt(x, y, z) != ShellGeometry.WHOLE;
-        if (stateAt(x, y, z).is(palette.hull().getBlock()) && !cut) {
+        if (stateAt(x, y, z).is(palette.hull().getBlock()) && shapeAt(x, y, z) == ShellGeometry.WHOLE) {
             set(x, y, z, palette.light());
         }
-    }
-
-    private SnappedShell snapped() {
-        if (snapped == null) {
-            snapped = new SnappedShell(this);
-        }
-        return snapped;
     }
 
     /**
@@ -979,7 +969,7 @@ public final class AirframeLayout {
      */
     private void shell() {
         if (style == ShellStyle.SNAPPED) {
-            snapped().apply();
+            new SnappedShell(this).apply();
         } else {
             fittedShell();
         }

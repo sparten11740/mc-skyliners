@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.EmptyBlockGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -56,8 +54,6 @@ final class SnappedShell {
     private final Map<Long, Double> depths = new HashMap<>();
     private final Surface outer = new Surface(0);
     private final Surface inner = new Surface(SKIN_THICKNESS);
-    /** Whether each kind of block can give light in any of its states, as found. */
-    private final Map<Block, Boolean> lights = new HashMap<>();
 
     SnappedShell(AirframeLayout layout) {
         this.layout = layout;
@@ -151,14 +147,6 @@ final class SnappedShell {
             around.add(new BlockPos(i - (corner & 1), j - (corner >> 1 & 1), k - (corner >> 2 & 1)));
         }
         return around;
-    }
-
-    /**
-     * Whether the hull's skin is cut at a block: whether its corners leave some of it outside the surface. A whole
-     * light set into the skin would stick out of a cut.
-     */
-    boolean cut(int x, int y, int z) {
-        return outer.shape(new BlockPos(x, y, z)) != ShellGeometry.WHOLE;
     }
 
     /** Cuts the skin to the curve, outside all along the fuselage and inside in the nose, into the layout. */
@@ -329,8 +317,9 @@ final class SnappedShell {
     }
 
     /**
-     * Whether cabin air may be filled out to the surface: not where the Physics Assembler goes, nor beside a door or
-     * anything that can give light, even if it is off for now, which a filled side would shut in.
+     * Whether cabin air may be filled out to the surface: only where nothing but skin, the floor or more air stands
+     * beside it, and not where the Physics Assembler goes. A filled side against anything else, a door, a light, a
+     * seat or a screen, would bury its face in skin or shut its light in.
      */
     private boolean fillable(BlockPos pos) {
         if (pos.equals(layout.assemblerSpot())) {
@@ -338,9 +327,7 @@ final class SnappedShell {
         }
         for (Direction side : Direction.values()) {
             BlockState next = layout.stateAt(pos.getX() + side.getStepX(), pos.getY() + side.getStepY(), pos.getZ() + side.getStepZ());
-            boolean light = lights.computeIfAbsent(next.getBlock(), block -> block.getStateDefinition().getPossibleStates().stream()
-                .anyMatch(state -> state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) > 0));
-            if (next.is(AerolargeRegistry.AIRLINER_DOOR.get()) || light) {
+            if (!next.isAir() && !isSkin(next) && !next.is(layout.palette().floor().getBlock())) {
                 return false;
             }
         }
