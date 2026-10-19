@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " P ",
+    "PPP",
+    " S "
+  ],
+  "key": {
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "id": "aerolarge:model_airliner",
+    "count": 1
+  }
+}

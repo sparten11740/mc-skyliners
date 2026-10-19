@@ -630,10 +630,67 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
 
 // Duty free and the paper plane. The paper plane: a flat icon, folded into shape by its renderer in flight.
 write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/paper_plane` } });
+// Souvenirs. The pilot's cap, drawn as it sits on the head: worn, it is drawn there as its own model, the way a carved
+// pumpkin is, the model's box a little bigger than the head. A black band round the brow, a navy crown over it flaring
+// out at the top, a black peak drooping forward over the eyes, a gold cord across the front and a gold badge with
+// wings above it. In the inventory it is shown a little lower, as it only fills the top of its box.
+{
+  const cap = boxes(
+    { crown: `${ID}:item/pilot_cap_crown`, band: `${ID}:item/pilot_cap_band`, gold: `${ID}:item/pilot_cap_gold`, particle: `${ID}:item/pilot_cap_crown` },
+    [
+      [[1.2, 10, 1.2], [14.8, 11.6, 14.8], "#band"],
+      [[1, 11.6, 1], [15, 13.2, 15], "#crown"],
+      [[0.4, 13.2, 0.4], [15.6, 15.6, 15.6], "#crown"],
+      [[3.5, 10.4, 0.9], [12.5, 10.8, 1.2], "#gold"],
+      [[6.8, 11.7, 0.6], [9.2, 13.2, 1], "#gold"],
+      [[4.6, 12.2, 0.8], [11.4, 12.7, 1], "#gold"],
+    ],
+  );
+  // The peak reaches out past the front of the model's box, so its faces are given a patch of the texture of their own.
+  cap.elements.push({
+    from: [3.5, 9.6, -2.6], to: [12.5, 10.2, 1.2],
+    rotation: { origin: [8, 10, 1.2], axis: "x", angle: -22.5 },
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#band", uv: [0, 2, 4, 6] }])),
+  });
+  cap.display = { gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.625, 0.625, 0.625] } };
+  write(`assets/${ID}/models/item/pilot_cap.json`, cap);
+}
+// The model airliner on its stand, drawn nose north: a white fuselage with a blue cheat line, swept wings with an
+// engine under each, a tailplane and a blue fin, on a black pole and base.
+{
+  const model = boxes(
+    { white: `${ID}:block/airframe_panel`, blue: `${ID}:block/livery_panel`, engine: `${ID}:block/engine_intake`, stand: `${ID}:block/light_cable`,
+      particle: `${ID}:block/airframe_panel` },
+    [
+      [[5, 0, 5], [11, 1, 11], "#stand"],
+      [[7.5, 1, 7.5], [8.5, 6, 8.5], "#stand"],
+      [[7, 6, 1], [9, 8, 15], "#white"],
+      [[7.25, 6.25, 0], [8.75, 7.75, 1], "#white"],
+      [[6.9, 6.9, 2], [9.1, 7.2, 13], "#blue"],
+      [[1, 6.5, 7], [7, 7, 10], "#white"],
+      [[9, 6.5, 7], [15, 7, 10], "#white"],
+      [[3.5, 5.6, 7.2], [5, 6.5, 9.7], "#engine"],
+      [[11, 5.6, 7.2], [12.5, 6.5, 9.7], "#engine"],
+      [[4.5, 7.2, 12.5], [11.5, 7.6, 14.5], "#white"],
+      [[7.75, 8, 12], [8.25, 10, 15], "#blue"],
+      [[7.75, 10, 13.5], [8.25, 11.5, 15], "#blue"],
+    ],
+  );
+  // The wings sweep back from the fuselage.
+  model.elements[5].rotation = { origin: [7, 6.75, 8], axis: "y", angle: 22.5 };
+  model.elements[6].rotation = { origin: [9, 6.75, 8], axis: "y", angle: -22.5 };
+  write(`assets/${ID}/models/block/model_airliner.json`, model);
+  facing("model_airliner");
+  write(`assets/${ID}/models/item/model_airliner.json`, { parent: `${ID}:block/model_airliner` });
+  dropsItself("model_airliner");
+  cubes.model_airliner = null;
+}
 const DUTY_FREE_LANG = {
   "item.aerolarge.paper_plane": "Paper Plane",
   "entity.aerolarge.paper_plane": "Paper Plane",
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
+  "item.aerolarge.pilot_cap": "Pilot Cap",
+  "block.aerolarge.model_airliner": "Model Airliner",
 };
 
 // The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The
@@ -824,7 +881,8 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley"];
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
+  "model_airliner"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -902,8 +960,11 @@ shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:r
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("tail_camera_display", ["GGG", "PSP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, S: "minecraft:spyglass" }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
-// Duty free and the paper plane: a sheet of paper folds into a plane.
+// Duty free and the paper plane: a sheet of paper folds into a plane; a cap in the shape of a helmet, with a gold
+// badge; a model airliner, its fuselage and wings of airframe panel on a stick.
 shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
+shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
+shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).

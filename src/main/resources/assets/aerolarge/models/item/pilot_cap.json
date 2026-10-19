@@ -1,0 +1,299 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "crown": "aerolarge:item/pilot_cap_crown",
+    "band": "aerolarge:item/pilot_cap_band",
+    "gold": "aerolarge:item/pilot_cap_gold",
+    "particle": "aerolarge:item/pilot_cap_crown"
+  },
+  "elements": [
+    {
+      "from": [
+        1.2,
+        10,
+        1.2
+      ],
+      "to": [
+        14.8,
+        11.6,
+        14.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#band"
+        },
+        "south": {
+          "texture": "#band"
+        },
+        "east": {
+          "texture": "#band"
+        },
+        "west": {
+          "texture": "#band"
+        },
+        "up": {
+          "texture": "#band"
+        },
+        "down": {
+          "texture": "#band"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        11.6,
+        1
+      ],
+      "to": [
+        15,
+        13.2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crown"
+        },
+        "south": {
+          "texture": "#crown"
+        },
+        "east": {
+          "texture": "#crown"
+        },
+        "west": {
+          "texture": "#crown"
+        },
+        "up": {
+          "texture": "#crown"
+        },
+        "down": {
+          "texture": "#crown"
+        }
+      }
+    },
+    {
+      "from": [
+        0.4,
+        13.2,
+        0.4
+      ],
+      "to": [
+        15.6,
+        15.6,
+        15.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crown"
+        },
+        "south": {
+          "texture": "#crown"
+        },
+        "east": {
+          "texture": "#crown"
+        },
+        "west": {
+          "texture": "#crown"
+        },
+        "up": {
+          "texture": "#crown"
+        },
+        "down": {
+          "texture": "#crown"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        10.4,
+        0.9
+      ],
+      "to": [
+        12.5,
+        10.8,
+        1.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "down": {
+          "texture": "#gold"
+        }
+      }
+    },
+    {
+      "from": [
+        6.8,
+        11.7,
+        0.6
+      ],
+      "to": [
+        9.2,
+        13.2,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "down": {
+          "texture": "#gold"
+        }
+      }
+    },
+    {
+      "from": [
+        4.6,
+        12.2,
+        0.8
+      ],
+      "to": [
+        11.4,
+        12.7,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "down": {
+          "texture": "#gold"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        9.6,
+        -2.6
+      ],
+      "to": [
+        12.5,
+        10.2,
+        1.2
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          10,
+          1.2
+        ],
+        "axis": "x",
+        "angle": -22.5
+      },
+      "faces": {
+        "north": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#band",
+          "uv": [
+            0,
+            2,
+            4,
+            6
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -3,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    }
+  }
+}

@@ -923,6 +923,12 @@ blueprint("furnished_airliner_blueprint", true);
     if (y < 8) return ruled ? [0xc8, 0xd8, 0xf0] : [0xf6, 0xf6, 0xf0];
     return ruled ? [0xb4, 0xc2, 0xd8] : [0xdc, 0xdc, 0xd6];
   }, 2);
+
+  // Souvenirs. The pilot's cap: a navy crown of woven cloth, a glossy black band and peak, and gold for its cord and
+  // badge. The peak shows a patch from the third row down, that row a line of shine along its edge.
+  texture(itemOutput, "pilot_cap_crown", (x, y) => ((x + y) % 4 === 0 ? [0x1a, 0x22, 0x44] : [0x22, 0x2c, 0x56]), 3);
+  texture(itemOutput, "pilot_cap_band", (x, y) => (y === 2 ? [0x40, 0x44, 0x4c] : [0x12, 0x13, 0x16]), 1);
+  texture(itemOutput, "pilot_cap_gold", (x, y) => ((x + y) % 5 === 0 ? [0xff, 0xe8, 0x90] : GOLD), 2);
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

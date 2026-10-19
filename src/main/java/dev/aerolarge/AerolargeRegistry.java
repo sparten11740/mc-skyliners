@@ -42,6 +42,7 @@ import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
+import dev.aerolarge.block.ModelAirlinerBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.OverheadBinBlock;
@@ -79,6 +80,7 @@ import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
+import dev.aerolarge.item.PilotCapItem;
 import dev.aerolarge.item.TrolleyItem;
 import java.util.List;
 import java.util.function.Supplier;
@@ -533,6 +535,13 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<PaperPlaneItem> PAPER_PLANE_ITEM = ITEMS.register("paper_plane", () -> new PaperPlaneItem(new Item.Properties().stacksTo(16)));
     public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
+    /** Souvenirs: a pilot's cap to wear and a model of the airliner on its stand. */
+    public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredBlock<ModelAirlinerBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
+        "model_airliner", ModelAirlinerBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> MODEL_AIRLINER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_AIRLINER);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -564,7 +573,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
-            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, PAPER_PLANE_ITEM
+            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM
         )),
         new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),
         new TabSection("drops", List.of(

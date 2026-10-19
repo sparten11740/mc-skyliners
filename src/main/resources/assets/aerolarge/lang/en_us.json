@@ -297,6 +297,8 @@
   "item.aerolarge.paper_plane": "Paper Plane",
   "entity.aerolarge.paper_plane": "Paper Plane",
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
+  "item.aerolarge.pilot_cap": "Pilot Cap",
+  "block.aerolarge.model_airliner": "Model Airliner",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

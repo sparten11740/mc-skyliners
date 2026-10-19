@@ -212,6 +212,12 @@ in flight to catch it yourself, hit it to knock it down. Aboard an airliner in f
 would on the ground. Out through an open door (the rushing air of decompression takes one near it out too) it meets
 the still air outside at the airliner's speed, slows and glides down from the height it left at, hundreds of blocks.
 
+### Souvenirs
+
+A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
+helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
+or a shelf, its nose toward you. Both can be crafted.
+
 ### Skydiving
 
 By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes.
