@@ -184,8 +184,8 @@ thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rati
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`) are there
-from the title screen. The server settings belong to a world, so they open from the pause menu's Mods button while
-playing it in single player; on a dedicated server they are in the world's `serverconfig/aerolarge-server.toml`.
+from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
+while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
 
