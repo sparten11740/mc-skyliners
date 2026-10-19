@@ -28,7 +28,9 @@ face. It refuses while anything is in the way and says where; sneak to build thr
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
 blocks cut to the fuselage's curve, cabin lights in the crown, the walls and the hold keep it bright, and nothing
-spawns inside it on its own.
+spawns inside it on its own. Outside it carries red and green navigation lights on the wingtips with white strobes,
+a white tail light and red beacons above and below the fuselage. Each engine is heard spooling up and down with its
+thrust, quieter from inside the cabin, and high up it leaves a contrail.
 
 ### Flight deck
 
@@ -36,15 +38,24 @@ Steps at the front of the main deck lead up to the flight deck, raised so the pi
 windscreen: tinted glass cut to the nose's curve like the skin around it, framed into panes by posts.
 On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right: use one to push it
 a notch forward, sneak and use it to pull it back. Each drives its engine's thrusters through relays hidden in the
-nacelle, so splitting left and right steers the airliner on the ground. Behind the seats is the Physics Assembler.
+nacelle, so splitting left and right also steers the airliner on the ground. Beside the captain's seat is the nose
+wheel tiller (use it to steer right a notch, sneak and use to steer left) and beside the first officer's the parking
+brake, set when the airliner is built. A primary flight display in front of each seat shows attitude, airspeed,
+altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
+
+A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
+from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
+Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
+off with `cameraShake` in the client config.
 
 ### Autopilot
 
 The autopilot panel sits in the middle of the pedestal. Use it on an assembled airliner standing on the ground and
-it takes off: full thrust down the runway, holding the heading it started on by splitting the engines left against
-right, nose up at rotation speed, then a climb to the cruising height (`climbHeight`, 80 blocks above the runway by
-default), where it holds height and speed (`cruiseSpeed`). Use it again to hand the engines back to the thrust
-levers. While it flies it shows its phase, speed, height, pitch and bank to everyone on the flight deck.
+it takes off: brakes off, full thrust down the runway, holding the heading it started on with the nose wheel, nose
+up at rotation speed, then a climb to the cruising height (`climbHeight`, 80 blocks above the runway by default),
+where it holds height and speed (`cruiseSpeed`). Use it again to hand the airliner back to the thrust levers, the
+tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading to everyone
+on the flight deck.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
 control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). Sable's wings lift
@@ -60,14 +71,14 @@ redstone signal, or from the ground with the yellow call button on the front of 
 
 ### Flying it
 
-The finished airliner is covered by one stretch of Create's Super Glue, which is what the Physics Assembler takes as
-the structure, so everything you build inside it flies along. Fold the airstairs away and pull the thrust levers to
-idle, then assemble it. It rolls on Offroad wheel mounts fitted with large tires; the main gear stands just behind
-its centre of mass, worked out from Sable's block masses, so it rests on its nose gear. The wings and tail are built
-around a layer of Create Propulsion wing blocks, and every airframe block is in `#sable:super_light`. Which blocks
-are used is set in the server config (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and
-so is how hard the creative thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by
-default).
+The finished airliner is covered in Create's Super Glue, in overlapping stretches the Physics Assembler can find from
+anywhere in it; that is what it takes as the structure, so everything you build inside it flies along. Fold the
+airstairs away and pull the thrust levers to idle, then assemble it. It rolls on Offroad wheel mounts fitted with
+large tires, their suspension at its stiffest; the main gear stands just behind its centre of mass, worked out from
+Sable's block masses, so it rests on its nose gear. The wings and tail are built around a layer of Create Propulsion
+wing blocks, and every airframe block is in `#sable:super_light`. Which blocks are used is set in the server config
+(`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
+thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default).
 
 ## Building
 
@@ -86,6 +97,8 @@ from Sable through `SableFlight`. Assets are generated: `node tools/generate_tex
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
+`node tools/generate_sounds.mjs` writes the sounds with FFmpeg: the engine loop is synthesised, and the callouts are
+spoken by Windows' own speech synthesis ("Microsoft David"), so that part runs on Windows only.
 
 ## License
 
