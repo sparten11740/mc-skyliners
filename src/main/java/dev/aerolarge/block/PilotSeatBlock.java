@@ -58,8 +58,21 @@ public class PilotSeatBlock extends SeatBlock {
         Block.box(2, 0, 11, 14, 4.5, 15),
         Block.box(4, 4.5, 12, 12, 13, 15)
     );
+    /**
+     * What is solid of each half: the same but for the padding on the front of the back and of the headrest, as
+     * whoever gets up from the seat is set down over its middle, half a block wide, and would be wedged in it.
+     */
+    private static final VoxelShape LOWER_SOLID = Shapes.or(
+        Block.box(2, 0, 1, 14, 8, 12),
+        Block.box(2, 0, 13, 14, 16, 15),
+        Block.box(0.5, 5, 3.5, 2, 12, 12),
+        Block.box(14, 5, 3.5, 15.5, 12, 12)
+    );
+    private static final VoxelShape UPPER_SOLID = Block.box(2, 0, 13, 14, 13, 15);
     private static final Map<Direction, VoxelShape> LOWER_SHAPES = TurnedShapes.of(LOWER);
     private static final Map<Direction, VoxelShape> UPPER_SHAPES = TurnedShapes.of(UPPER);
+    private static final Map<Direction, VoxelShape> LOWER_SOLID_SHAPES = TurnedShapes.of(LOWER_SOLID);
+    private static final Map<Direction, VoxelShape> UPPER_SOLID_SHAPES = TurnedShapes.of(UPPER_SOLID);
 
     public PilotSeatBlock(Properties properties) {
         super(properties, DyeColor.BLACK);
@@ -122,7 +135,7 @@ public class PilotSeatBlock extends SeatBlock {
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return getShape(state, level, pos, context);
+        return (state.getValue(HALF) == DoubleBlockHalf.LOWER ? LOWER_SOLID_SHAPES : UPPER_SOLID_SHAPES).get(state.getValue(FACING));
     }
 
     /**
