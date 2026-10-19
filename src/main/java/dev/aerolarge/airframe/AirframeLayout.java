@@ -15,6 +15,7 @@ import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DropReleaseBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
@@ -29,6 +30,7 @@ import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
+import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.TailCameraDisplayBlock;
@@ -777,7 +779,8 @@ public final class AirframeLayout {
 
     /**
      * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, each lit
-     * through a relay beside it; the seatbelt switch in the panel is wired to them all.
+     * through a relay beside it; the seatbelt switch in the panel is wired to them all, and to every curtain the
+     * fit-out has hung, which it opens front to back as the signs come on.
      */
     private void seatbeltSigns() {
         List<BlockPos> relays = new ArrayList<>();
@@ -792,9 +795,13 @@ public final class AirframeLayout {
             return;
         }
         BlockPos at = seatbeltSwitch;
+        List<BlockPos> curtains = frontToBack(CurtainBlock::isCurtain);
         fittings.put(at, (blockEntity, rotation) -> {
             if (blockEntity instanceof LinkedControlBlockEntity control) {
                 control.configure(Map.of(SeatbeltSwitchBlock.SIGNS, offsets(at, relays, rotation)));
+            }
+            if (blockEntity instanceof SeatbeltSwitchBlockEntity seatbelts) {
+                seatbelts.configureCurtains(offsets(at, curtains, rotation));
             }
         });
     }
@@ -1853,16 +1860,21 @@ public final class AirframeLayout {
         if (control == null) {
             return;
         }
-        List<BlockPos> targets = cells.entrySet().stream()
-            .filter(cell -> works.test(cell.getValue()))
-            .map(Map.Entry::getKey)
-            .sorted(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX))
-            .toList();
+        List<BlockPos> targets = frontToBack(works);
         fittings.put(control, (blockEntity, rotation) -> {
             if (blockEntity instanceof CabinControlBlockEntity cabinControl) {
                 cabinControl.configure(offsets(control, targets, rotation));
             }
         });
+    }
+
+    /** Where the blocks the test accepts stand, front to back, then bottom to top and port to starboard. */
+    private List<BlockPos> frontToBack(Predicate<BlockState> test) {
+        return cells.entrySet().stream()
+            .filter(cell -> test.test(cell.getValue()))
+            .map(Map.Entry::getKey)
+            .sorted(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX))
+            .toList();
     }
 
     /** Moves everything up so the tires stand on y 0. */

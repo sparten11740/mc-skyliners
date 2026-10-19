@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -23,7 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * The seatbelt switch in the instrument panel: each use turns the airliner's "fasten seatbelts" signs on or off,
  * through the relays beside them, and while they are on, nobody seated aboard can get up (see
- * {@link dev.aerolarge.cabin.Seatbelts}). FACING is the way its face looks, toward the pilots.
+ * {@link dev.aerolarge.cabin.Seatbelts}). Turned on, it opens every curtain aboard (see
+ * {@link SeatbeltSwitchBlockEntity}). FACING is the way its face looks, toward the pilots.
  */
 public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements EntityBlock, LinkedControlBlockEntity.Driver {
     private static final MapCodec<SeatbeltSwitchBlock> CODEC = simpleCodec(SeatbeltSwitchBlock::new);
@@ -59,6 +62,9 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
             if (level.getBlockEntity(pos) instanceof Control control) {
                 control.resync();
             }
+            if (on && level.getBlockEntity(pos) instanceof SeatbeltSwitchBlockEntity seatbelts) {
+                seatbelts.openCurtains();
+            }
             player.displayClientMessage(Component.translatable(on ? "message.aerolarge.seatbelts.on" : "message.aerolarge.seatbelts.off"), true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
@@ -68,5 +74,15 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new SeatbeltSwitchBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide ? null : (tickLevel, pos, tickState, blockEntity) -> {
+            if (blockEntity instanceof SeatbeltSwitchBlockEntity seatbelts) {
+                seatbelts.tick();
+            }
+        };
     }
 }
