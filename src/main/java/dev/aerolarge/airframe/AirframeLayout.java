@@ -7,7 +7,6 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
-import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
@@ -15,6 +14,8 @@ import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.ShellBlock;
+import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.TillerBlock;
@@ -22,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,6 +66,8 @@ public final class AirframeLayout {
      * into the ground.
      */
     private static final int SUSPENSION_STRENGTH = 180;
+    /** How far from a block's middle, in blocks, its skin is looked for: past it either way the block is whole or empty. */
+    private static final double SKIN_REACH = 1.5;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -128,6 +133,7 @@ public final class AirframeLayout {
         if (furnished) {
             new CabinFitOut(layout).apply();
         }
+        layout.shell();
         layout.landingGear();
         layout.boardingStairs();
         layout.assembler();
@@ -207,6 +213,54 @@ public final class AirframeLayout {
         return AirframeShape.inFuselage(x / scale, (y + 0.5) / scale, (z + 0.5) / scale);
     }
 
+    private boolean inFuselage(BlockPos pos) {
+        return inFuselage(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /**
+     * How the fuselage's skin cuts through the block, as a {@link ShellGeometry} shape: the whole block where the skin
+     * lies beyond it, and -1 where it leaves next to nothing of it. The skin is found from the block's middle, straight
+     * out the way the fuselage faces there.
+     */
+    private int shapeAt(int x, int y, int z) {
+        double cx = x / scale;
+        double cy = (y + 0.5) / scale;
+        double cz = (z + 0.5) / scale;
+        double[] out = AirframeShape.outward(cx, cy, cz);
+        // How far out from the middle, in blocks, the skin lies: found by halving between a point inside and one out.
+        double in = -SKIN_REACH;
+        double beyond = SKIN_REACH;
+        if (AirframeShape.inFuselage(cx + out[0] * beyond / scale, cy + out[1] * beyond / scale, cz + out[2] * beyond / scale)) {
+            return ShellGeometry.WHOLE;
+        }
+        if (!AirframeShape.inFuselage(cx + out[0] * in / scale, cy + out[1] * in / scale, cz + out[2] * in / scale)) {
+            return -1;
+        }
+        for (int k = 0; k < 24; k++) {
+            double middle = (in + beyond) / 2;
+            if (AirframeShape.inFuselage(cx + out[0] * middle / scale, cy + out[1] * middle / scale, cz + out[2] * middle / scale)) {
+                in = middle;
+            } else {
+                beyond = middle;
+            }
+        }
+        double skin = (in + beyond) / 2;
+        return ShellGeometry.cut(out[0], out[1], out[2], 0.5 + out[0] * skin, 0.5 + out[1] * skin, 0.5 + out[2] * skin);
+    }
+
+    /** Whether the block at the position is the fuselage's skin: inside it and touching the outside. */
+    private boolean inSkin(BlockPos pos) {
+        if (!inFuselage(pos)) {
+            return false;
+        }
+        for (Direction side : Direction.values()) {
+            if (!inFuselage(pos.relative(side))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The hull: every block of the fuselage that touches the outside is skin, the rest is cabin and hold, split by
      * the main deck floor.
@@ -247,8 +301,9 @@ public final class AirframeLayout {
             for (int y : new int[]{mainRow, upperRow}) {
                 for (int side : new int[]{1, -1}) {
                     int x = side * (openHalfWidth(y, z) + 1);
-                    // Only where the hull there is a wall facing out sideways, with the cabin right behind it.
-                    if (openHalfWidth(y, z) >= 0 && has(x, y, z) && !inFuselage(x + side, y, z)) {
+                    // Only where the hull there is a wall facing out sideways, with the cabin right behind it, and
+                    // whole: not cut to the curve, which a window would stick out of.
+                    if (openHalfWidth(y, z) >= 0 && has(x, y, z) && !inFuselage(x + side, y, z) && shapeAt(x, y, z) == ShellGeometry.WHOLE) {
                         set(x, y, z, palette.cabinWindow());
                     }
                 }
@@ -283,9 +338,12 @@ public final class AirframeLayout {
         }
     }
 
-    /** Swaps a plain hull panel for a light; windows, doors and anything else stay. */
+    /**
+     * Swaps a plain hull panel for a light; windows, doors and anything else stay, and so does skin that will be cut
+     * to the curve, which a whole light would stick out of.
+     */
     private void light(int x, int y, int z) {
-        if (stateAt(x, y, z).is(palette.hull().getBlock())) {
+        if (stateAt(x, y, z).is(palette.hull().getBlock()) && shapeAt(x, y, z) == ShellGeometry.WHOLE) {
             set(x, y, z, palette.light());
         }
     }
@@ -359,15 +417,14 @@ public final class AirframeLayout {
     /**
      * Rounds off the airframe: every plain skin block that is the outer step of a curve, open to the outside on one
      * side and above or below it, gets its outer edge cut at 45 degrees. Only where the step runs on along the
-     * block, so the cuts line up into smooth facets along the fuselage, the nacelles and the wings' edges.
+     * block, so the cuts line up into smooth facets along the nacelles, the wings' edges and the tail.
      */
     private void fairings() {
         BlockState fairing = AerolargeRegistry.AIRFRAME_FAIRING.get().defaultBlockState();
         Map<BlockPos, BlockState> cut = new HashMap<>();
-        // Not on the nose: it curves every way at once there, and the cuts would only roughen it.
-        double noseEnd = NOSE_LENGTH * scale;
+        // Not on the fuselage: its skin is cut to the curve by the shell instead.
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
-            if (!cell.getValue().is(palette.hull().getBlock()) || cell.getKey().getZ() < noseEnd) {
+            if (!cell.getValue().is(palette.hull().getBlock()) || inFuselage(cell.getKey())) {
                 continue;
             }
             BlockPos pos = cell.getKey();
@@ -463,43 +520,108 @@ public final class AirframeLayout {
     }
 
     /**
-     * The windscreen: every hull block under the glass becomes invisible backing, and the one nearest the middle of
-     * the glass carries the renderer that draws the glass itself, curved, framed and wrapped around the nose.
+     * The windscreen: the skin under the glass becomes cockpit glass, but for the posts that divide it into panes,
+     * which stay skin: the column down the middle, and in each row and on each side, the block facing closest to
+     * each side post's angle round the nose. The shell cuts the glass to the curve with the skin around it.
      */
     private void windscreen() {
-        List<BlockPos> covered = new ArrayList<>();
+        BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
         int last = (int) Math.ceil(NOSE_LENGTH * scale);
         int halfWidth = (int) Math.ceil(WIDTH / 2 * scale) + 1;
-        for (int z = 0; z <= last; z++) {
-            for (int y = 0; y <= HEIGHT * scale; y++) {
-                for (int x = -halfWidth; x <= halfWidth; x++) {
-                    BlockState state = cells.get(new BlockPos(x, y, z));
-                    boolean skin = state != null && (state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock()));
-                    if (skin && Windscreen.covers((y + 0.5) / scale, (z + 0.5) / scale)) {
-                        covered.add(new BlockPos(x, y, z));
+        for (int y = 0; y <= HEIGHT * scale; y++) {
+            for (int side : new int[]{1, -1}) {
+                List<BlockPos> row = new ArrayList<>();
+                for (int z = 0; z <= last; z++) {
+                    for (int x = side; Math.abs(x) <= halfWidth; x += side) {
+                        BlockState state = stateAt(x, y, z);
+                        boolean skin = state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock());
+                        if (skin && Windscreen.covers((y + 0.5) / scale, (z + 0.5) / scale)) {
+                            row.add(new BlockPos(x, y, z));
+                        }
                     }
                 }
+                Set<BlockPos> posts = new HashSet<>();
+                for (double post : Windscreen.SIDE_POSTS) {
+                    row.stream()
+                        .filter(pos -> Math.abs(facing(pos) - post) <= Windscreen.POST_TOLERANCE)
+                        .min(Comparator.comparingDouble(pos -> Math.abs(facing(pos) - post)))
+                        .ifPresent(posts::add);
+                }
+                row.stream().filter(pos -> !posts.contains(pos)).forEach(pos -> set(pos.getX(), pos.getY(), pos.getZ(), glass));
             }
         }
-        if (covered.isEmpty()) {
-            return;
-        }
-        double middleY = (Windscreen.LOW + Windscreen.HIGH) / 2 * scale;
-        double middleZ = (Windscreen.front(Windscreen.HIGH) + Windscreen.REAR) / 2 * scale;
-        BlockPos anchor = covered.stream()
-            .min(Comparator.comparingDouble(pos -> Math.abs(pos.getX()) + Math.abs(pos.getY() - middleY) + Math.abs(pos.getZ() - middleZ)))
-            .orElseThrow();
-        BlockState backing = AerolargeRegistry.WINDSCREEN.get().defaultBlockState();
-        covered.forEach(pos -> set(pos.getX(), pos.getY(), pos.getZ(), backing));
-        set(anchor.getX(), anchor.getY(), anchor.getZ(), AerolargeRegistry.COCKPIT_WINDSCREEN.get().defaultBlockState());
-        // The anchor's position is taken here, before the layout is lifted onto its wheels: the glass is worked out
-        // in the same unlifted frame.
-        double airlinerScale = scale;
-        fittings.put(anchor, (blockEntity, rotation) -> {
-            if (blockEntity instanceof CockpitWindscreenBlockEntity windscreen) {
-                windscreen.configure(airlinerScale, anchor);
+    }
+
+    /** Which way the fuselage's skin faces at a block, in degrees round from straight ahead: 0 forward, 90 sideways. */
+    private double facing(BlockPos pos) {
+        double[] out = AirframeShape.outward(pos.getX() / scale, (pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale);
+        return Math.toDegrees(Math.atan2(Math.abs(out[0]), -out[2]));
+    }
+
+    /**
+     * Cuts the fuselage's skin to its curve. Every skin block the fuselage's surface passes through becomes shell, cut
+     * where the surface crosses it, and under the windscreen the glass is cut the same way. Outside blocks the surface
+     * still passes through get shell (or glass) of their own, so the skin closes into one smooth surface.
+     * Skin next to anything built onto the hull from outside, the wings, gear or exterior lights, stays as it is so
+     * nothing opens up around it, and no shell is added over the windows and doors set into the skin.
+     */
+    private void shell() {
+        BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
+        BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
+        Map<BlockPos, BlockState> shaped = new HashMap<>();
+        Set<BlockPos> outside = new HashSet<>();
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            BlockPos pos = cell.getKey();
+            boolean glazed = cell.getValue().is(glass.getBlock());
+            if (!glazed && !cell.getValue().is(palette.hull().getBlock()) || !inSkin(pos)) {
+                continue;
             }
-        });
+            for (Direction side : Direction.values()) {
+                if (!cells.containsKey(pos.relative(side))) {
+                    outside.add(pos.relative(side));
+                }
+            }
+            int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
+            if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false)) {
+                continue;
+            }
+            shaped.put(pos, (glazed ? glass : shell).setValue(ShellBlock.SHAPE, shape));
+        }
+        for (BlockPos pos : outside) {
+            int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
+            if (inFuselage(pos) || shape <= ShellGeometry.WHOLE || nextToFitting(pos, true)) {
+                continue;
+            }
+            shaped.put(pos, (onGlass(pos) ? glass : shell).setValue(ShellBlock.SHAPE, shape));
+        }
+        cells.putAll(shaped);
+    }
+
+    /** Whether the skin block straight in from this one, against the way the fuselage faces there, is glass. */
+    private boolean onGlass(BlockPos pos) {
+        double[] out = AirframeShape.outward(pos.getX() / scale, (pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale);
+        Direction in = Direction.getNearest(-out[0], -out[1], -out[2]);
+        return stateAt(pos.getX() + in.getStepX(), pos.getY() + in.getStepY(), pos.getZ() + in.getStepZ()).is(AerolargeRegistry.COCKPIT_GLASS.get());
+    }
+
+    /**
+     * Whether something other than skin is built onto the hull next to this block: whatever stands outside the
+     * fuselage and is not hull, glass or a light; with {@code setIn}, also whatever is set into the skin itself, like
+     * the windows and doors.
+     */
+    private boolean nextToFitting(BlockPos pos, boolean setIn) {
+        for (Direction side : Direction.values()) {
+            BlockPos next = pos.relative(side);
+            BlockState state = cells.get(next);
+            if (state == null || state.isAir() || state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())
+                || state.is(AerolargeRegistry.COCKPIT_GLASS.get())) {
+                continue;
+            }
+            if (!inFuselage(next) || setIn && inSkin(next)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

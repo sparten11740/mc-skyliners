@@ -90,14 +90,26 @@ write(`assets/${ID}/models/item/airliner_door.json`, { parent: "minecraft:item/g
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
-// The windscreen backing is invisible: its models only give the breaking particles. It drops nothing, and neither
-// does the relay hidden in the nacelles.
-for (const name of ["windscreen", "cockpit_windscreen"]) {
-  write(`assets/${ID}/models/block/${name}.json`, { textures: { particle: `${ID}:block/cockpit_window` } });
+// The skin and the windscreen cut to the hull's curve: one model each for every shape, baked by the mod's own
+// "shell" loader from the block's corners. They give back the part they are cut from. The relay hidden in the
+// nacelles drops nothing.
+for (const [name, skin, renderType, part] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", "airframe_panel"],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", "cockpit_window"],
+]) {
+  write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
+  write(`assets/${ID}/models/block/${name}.json`, {
+    loader: `${ID}:shell`,
+    render_type: renderType,
+    textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
+  });
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${part}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
   cubes[name] = null;
 }
-write(`assets/${ID}/blockstates/windscreen.json`, { variants: { "": { model: `${ID}:block/windscreen` } } });
-write(`assets/${ID}/blockstates/cockpit_windscreen.json`, { variants: { "": { model: `${ID}:block/cockpit_windscreen` } } });
 write(`assets/${ID}/blockstates/thrust_relay.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 write(`assets/${ID}/models/block/thrust_relay.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/thrust_relay` } });
 cubes.thrust_relay = null;
@@ -353,8 +365,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.landing_gear_tire": "Landing Gear Tire",
   "block.aerolarge.airstair_controller": "Airstair Controller",
   "block.aerolarge.airstair_call_button": "Airstair Call Button",
-  "block.aerolarge.windscreen": "Windscreen",
-  "block.aerolarge.cockpit_windscreen": "Cockpit Windscreen",
+  "block.aerolarge.airframe_shell": "Airframe Shell",
+  "block.aerolarge.cockpit_glass": "Cockpit Glass",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
   "block.aerolarge.instrument_panel": "Instrument Panel",

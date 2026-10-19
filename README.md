@@ -2,8 +2,8 @@
 
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
 wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
-a cabin floor over a cargo hold, six passenger doors and a cargo door, a flight deck behind a curved windscreen, swept
-wings with four engines, the tail, landing gear and folding airstairs.
+a cabin floor over a cargo hold, six passenger doors and a cargo door, a flight deck behind a wrap-around windscreen,
+swept wings with four engines, the tail, landing gear and folding airstairs.
 
 ## Requirements
 
@@ -26,14 +26,14 @@ face. It refuses while anything is in the way and says where; sneak to build thr
 `/aerolarge build <pos> <north|east|south|west> [furnished]`.
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
-and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull edges are
-rounded off with 45-degree fairings, cabin lights in the crown, the walls and the hold keep it bright, and nothing
+and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
+blocks cut to the fuselage's curve, cabin lights in the crown, the walls and the hold keep it bright, and nothing
 spawns inside it on its own.
 
 ### Flight deck
 
 Steps at the front of the main deck lead up to the flight deck, raised so the pilots look straight out through the
-curved, framed windscreen; from outside the nose is drawn as one smooth rounded skin with the windscreen set into it.
+windscreen: tinted glass cut to the nose's curve like the skin around it, framed into panes by posts.
 On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right: use one to push it
 a notch forward, sneak and use it to pull it back. Each drives its engine's thrusters through relays hidden in the
 nacelle, so splitting left and right steers the airliner on the ground. Behind the seats is the Physics Assembler.
@@ -79,9 +79,9 @@ The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save
 `run/saves/<save>`; drop Create, Sable, Create Aeronautics and Create Propulsion into `run/mods` to run with them.
 
 The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`
-and fitted out by `CabinFitOut`; `Windscreen` works out the nose skin and its glass from the same shape, which
-`CockpitWindscreenRenderer` draws; `AutopilotBlockEntity` flies, reading the airliner from Sable through
-`SableFlight`. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+and fitted out by `CabinFitOut`; the skin follows the curve in `ShellGeometry`'s shapes, which `ShellModel`
+bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity` flies, reading the airliner
+from Sable through `SableFlight`. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

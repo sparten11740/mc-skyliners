@@ -143,6 +143,14 @@ texture(blockOutput, "cockpit_window", (x, y) => {
   return COCKPIT_GLASS;
 });
 
+// The windscreen cut to the nose's curve: dark glass with no frame, its own posts being the hull, lighter toward
+// the top with a faint sheen across it, so each facet catches the light a little differently.
+texture(blockOutput, "cockpit_glass", (x, y) => {
+  const lift = Math.round((15 - y) * 1.2);
+  const sheen = x + y >= 6 && x + y <= 8 ? 26 : 0;
+  return [COCKPIT_GLASS[0] + lift + sheen, COCKPIT_GLASS[1] + lift + sheen, COCKPIT_GLASS[2] + lift + sheen, COCKPIT_GLASS[3]];
+});
+
 // Cabin carpet: a small diamond pattern on grey-blue.
 texture(blockOutput, "cabin_floor", (x, y) => {
   const d = (Math.abs((x % 8) - 4) + Math.abs((y % 8) - 4));

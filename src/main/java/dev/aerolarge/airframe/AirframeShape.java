@@ -111,14 +111,29 @@ final class AirframeShape {
     }
 
     static boolean inFuselage(double x, double y, double z) {
+        return field(x, y, z) <= 1;
+    }
+
+    /** Below 1 inside the fuselage, 1 on its skin, growing outward; 2 past either end. */
+    static double field(double x, double y, double z) {
         Section section = section(z);
         if (section == null) {
-            return false;
+            return 2;
         }
         double centre = (section.bottom() + section.top()) / 2;
         double radius = (section.top() - section.bottom()) / 2;
         return Math.pow(Math.abs(x) / section.halfWidth(), SECTION_EXPONENT)
-            + Math.pow(Math.abs(y - centre) / radius, SECTION_EXPONENT) <= 1;
+            + Math.pow(Math.abs(y - centre) / radius, SECTION_EXPONENT);
+    }
+
+    /** The way out of the fuselage from a point near its skin, a unit vector: where its field grows fastest. */
+    static double[] outward(double x, double y, double z) {
+        double h = 0.02;
+        double gx = field(x + h, y, z) - field(x - h, y, z);
+        double gy = field(x, y + h, z) - field(x, y - h, z);
+        double gz = field(x, y, z + h) - field(x, y, z - h);
+        double length = Math.sqrt(gx * gx + gy * gy + gz * gz);
+        return length < 1e-9 ? new double[]{0, 1, 0} : new double[]{gx / length, gy / length, gz / length};
     }
 
     /**

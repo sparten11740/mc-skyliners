@@ -5,8 +5,7 @@ import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
-import dev.aerolarge.block.CockpitWindscreenBlock;
-import dev.aerolarge.block.CockpitWindscreenBlockEntity;
+import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
@@ -17,11 +16,11 @@ import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
-import dev.aerolarge.block.WindscreenBlock;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -139,13 +138,13 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairControllerBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairControllerBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
 
-    /** The hull behind the curved windscreen, invisible and solid; one of them carries the windscreen's renderer. */
-    public static final DeferredBlock<WindscreenBlock> WINDSCREEN = BLOCKS.registerBlock("windscreen", WindscreenBlock::new, glass());
-    public static final DeferredBlock<CockpitWindscreenBlock> COCKPIT_WINDSCREEN = BLOCKS.registerBlock(
-        "cockpit_windscreen", CockpitWindscreenBlock::new, glass()
+    /** The skin and the windscreen cut to the curve of the hull; placed only by the blueprints, so they have no items. */
+    public static final DeferredBlock<ShellBlock> AIRFRAME_SHELL = BLOCKS.registerBlock(
+        "airframe_shell", properties -> new ShellBlock(properties, AerolargeRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW).noOcclusion()
     );
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CockpitWindscreenBlockEntity>> COCKPIT_WINDSCREEN_ENTITY =
-        BLOCK_ENTITIES.register("cockpit_windscreen", () -> BlockEntityType.Builder.of(CockpitWindscreenBlockEntity::new, COCKPIT_WINDSCREEN.get()).build(null));
+    public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
+        "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
+    );
     /** The flight deck: four thrust levers on the pedestal, the relays they drive in the nacelles, the instrument panel. */
     public static final DeferredBlock<ThrustLeverBlock> THRUST_LEVER = BLOCKS.registerBlock(
         "thrust_lever", ThrustLeverBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
@@ -259,6 +258,10 @@ public final class AerolargeRegistry {
     }
 
     static void register(IEventBus modEventBus) {
+        // The invisible backing the windscreen used to be drawn over, from before the nose was built of blocks: glass now.
+        for (String old : new String[]{"windscreen", "cockpit_windscreen"}) {
+            BLOCKS.addAlias(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, old), COCKPIT_GLASS.getId());
+        }
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
