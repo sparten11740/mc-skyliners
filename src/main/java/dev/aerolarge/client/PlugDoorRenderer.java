@@ -22,12 +22,12 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * Draws a plug door's panel, shut in its doorway or wherever it is in its swing, from the block entity in its bottom
- * left part. Shut, it is flush with the hull, white skin like the plating round it with the door's seam along its
- * edges, a window across its top and a flush handle across its bottom. Opening, a door hinged at the side lifts a
- * little and moves out of the frame, then is carried round on its arm, the way an airliner's is: the arm swings out
- * and forward about a hinge beside the doorway while the panel stays square to the hull, so it ends up flat against
- * the hull beside the doorway, its outside still facing out. A door hinged along its top, the cargo door, swings up
- * and out about its top edge instead. Shutting runs the same way back.
+ * left part. Shut, it is one panel flush with the hull, white skin like the plating round it with the door's seam
+ * right round it, one window in the middle of its top and a flush handle by the edge away from its hinge, inside and
+ * out alike. Opening, a door hinged at the side lifts a little and moves out of the frame, then is carried round on its
+ * arm, the way an airliner's is: the arm swings out and forward about a hinge beside the doorway while the panel stays
+ * square to the hull, so it ends up flat against the hull beside the doorway, its outside still facing out. A door
+ * hinged along its top, the cargo door, swings up and out about its top edge instead. Shutting runs the same way back.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from outside, y up from the sill, z out,
  * the hull's outer face at z 1.
@@ -53,11 +53,8 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     private static final int VIEW_DISTANCE = 1024;
     private static final ResourceLocation SKIN = texture("airframe_panel");
     private static final ResourceLocation ARM = texture("landing_gear");
-    /** The panel's faces by column (left, right as seen from outside) and row (bottom, middle, top). */
-    private static final ResourceLocation[][] FACES = {
-        {texture("plug_door_left_bottom"), texture("plug_door_left_middle"), texture("plug_door_left_top")},
-        {texture("plug_door_right_bottom"), texture("plug_door_right_middle"), texture("plug_door_right_top")},
-    };
+    /** The fewest rows a door's picture is drawn for: as short as the blueprints make a door. */
+    private static final int FEWEST_ROWS = 2;
 
     private static ResourceLocation texture(String name) {
         return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "block/" + name);
@@ -86,21 +83,23 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
             pose.translate(0, rows, 1);
             pose.mulPose(Axis.XN.rotationDegrees(TOP_SWING * ease(progress)));
             pose.translate(0, -rows, -1);
-            panel(paint, pose.last(), rows);
+            panel(paint, pose.last(), rows, hinge);
             pose.popPose();
         } else {
-            swing(paint, pose, rows, hinge == PlugDoorBlock.Hinge.RIGHT ? 1 : -1, progress);
+            swing(paint, pose, rows, hinge, progress);
         }
         pose.popPose();
     }
 
     /**
-     * A door hinged at its side, this far through its swing, the hinge to the right (side 1) or left (-1): out of the
-     * frame, then round on its arm, which reaches from a hinge just past the doorway's edge to the middle of the
-     * panel's inner face. A parallel arm turning half a circle carries the panel round with it square to the hull, from
-     * the doorway to beside it, as far again as the arm is long.
+     * A door hinged at its side, this far through its swing: out of the frame, then round on its arm, which reaches from
+     * a hinge just past the doorway's edge to the middle of the panel's inner face. A parallel arm turning half a circle
+     * carries the panel round with it square to the hull, from the doorway to beside it, as far again as the arm is
+     * long.
      */
-    private static void swing(Painter paint, PoseStack pose, int rows, int side, float progress) {
+    private static void swing(Painter paint, PoseStack pose, int rows, PlugDoorBlock.Hinge hinge, float progress) {
+        // Which way across the panel moves: to the right (1) for a hinge on the right, seen from outside, or the left.
+        int side = hinge == PlugDoorBlock.Hinge.RIGHT ? 1 : -1;
         float plug = ease(Math.clamp(progress / PLUG_SHARE, 0F, 1F));
         float turn = (float) Math.PI * ease(Math.clamp((progress - PLUG_SHARE) / (1 - PLUG_SHARE), 0F, 1F));
         float arm = (PlugDoorBlock.COLUMNS + GAP) / 2;
@@ -114,7 +113,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         }
         pose.pushPose();
         pose.translate(dx, dy, dz);
-        panel(paint, pose.last(), rows);
+        panel(paint, pose.last(), rows, hinge);
         pose.popPose();
     }
 
@@ -128,20 +127,31 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         pose.popPose();
     }
 
-    /** The panel shut in its doorway: its outside and inside faces, a texture to each block of them, and its edges. */
-    private static void panel(Painter paint, PoseStack.Pose pose, int rows) {
+    /**
+     * The panel shut in its doorway: its outside and inside faces, one picture of the whole door laid across its blocks,
+     * each block drawn with the light where it is, and its edges. The picture is of a door hinged on the left, seen from
+     * outside, so a door hinged on the right shows it mirrored, its handle on the edge away from the hinge; the inside
+     * is the same picture seen from behind, the window still in the middle and the handle by the same edge.
+     */
+    private static void panel(Painter paint, PoseStack.Pose pose, int rows, PlugDoorBlock.Hinge hinge) {
         float inner = 1 - THICK;
         TextureAtlasSprite skin = paint.sprite(SKIN);
+        TextureAtlasSprite face = paint.sprite(face(hinge, rows));
+        boolean mirrored = hinge == PlugDoorBlock.Hinge.RIGHT;
         for (int column = 0; column < PlugDoorBlock.COLUMNS; column++) {
+            float left = across(column, mirrored);
+            float right = across(column + 1, mirrored);
             for (int row = 0; row < rows; row++) {
-                int kind = row == 0 ? 0 : row == rows - 1 ? 2 : 1;
-                TextureAtlasSprite face = paint.sprite(FACES[column][kind]);
+                // The picture runs down from the door's top.
+                float top = (float) (rows - row - 1) / rows;
+                float bottom = (float) (rows - row) / rows;
                 int outside = paint.light(column, row, true);
-                // Seen from outside the faces read left to right; from inside, mirrored, so the window lines up.
                 paint.quad(pose, face, outside, 0, 0, 1,
-                    column, row, 1, 0, 1, column + 1, row, 1, 1, 1, column + 1, row + 1, 1, 1, 0, column, row + 1, 1, 0, 0);
+                    column, row, 1, left, bottom, column + 1, row, 1, right, bottom,
+                    column + 1, row + 1, 1, right, top, column, row + 1, 1, left, top);
                 paint.quad(pose, face, paint.light(column, row, false), 0, 0, -1,
-                    column + 1, row, inner, 0, 1, column, row, inner, 1, 1, column, row + 1, inner, 1, 0, column + 1, row + 1, inner, 0, 0);
+                    column + 1, row, inner, right, bottom, column, row, inner, left, bottom,
+                    column, row + 1, inner, left, top, column + 1, row + 1, inner, right, top);
                 if (row == 0) {
                     paint.quad(pose, skin, outside, 0, -1, 0,
                         column, 0, inner, 0, 0, column + 1, 0, inner, 1, 0, column + 1, 0, 1, 1, THICK, column, 0, 1, 0, THICK);
@@ -161,6 +171,21 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
                 }
             }
         }
+    }
+
+    /**
+     * How far across the door's picture, 0 to 1, the panel's edge this many blocks from its left (seen from outside)
+     * is: mirrored for a door hinged on the right.
+     */
+    private static float across(int x, boolean mirrored) {
+        float share = (float) x / PlugDoorBlock.COLUMNS;
+        return mirrored ? 1 - share : share;
+    }
+
+    /** The picture of a door hinged this way and this many rows tall. */
+    private static ResourceLocation face(PlugDoorBlock.Hinge hinge, int rows) {
+        String kind = hinge == PlugDoorBlock.Hinge.TOP ? "top" : "side";
+        return texture("plug_door_" + kind + "_" + Math.clamp(rows, FEWEST_ROWS, PlugDoorBlock.MOST_ROWS));
     }
 
     /** Eased in and out, so the panel starts and stops gently. */
