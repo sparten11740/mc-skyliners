@@ -368,13 +368,23 @@ function dropsItself(name) {
   }
 }
 
-// Buckling up. The seatbelt sign, dark or lit; the seatbelt switch in the panel, its lamp dark or lit, facing the
-// pilots.
+// Buckling up. The seatbelt sign, dark or lit: lit, it glows at full brightness whatever the light around, a backlit
+// sign that shows in a dark cabin without lighting it up. The seatbelt switch in the panel, its lamp dark or lit,
+// facing the pilots.
 {
+  write(`assets/${ID}/models/block/seatbelt_sign.json`, {
+    parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/seatbelt_sign` },
+  });
+  write(`assets/${ID}/models/block/seatbelt_sign_on.json`, {
+    parent: "minecraft:block/block",
+    textures: { all: `${ID}:block/seatbelt_sign_on`, particle: `${ID}:block/seatbelt_sign_on` },
+    elements: [{
+      from: [0, 0, 0], to: [16, 16, 16], shade: false,
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+        [face, { texture: "#all", cullface: face, neoforge_data: { block_light: 15, sky_light: 15 } }])),
+    }],
+  });
   for (const lit of [false, true]) {
-    write(`assets/${ID}/models/block/seatbelt_sign${lit ? "_on" : ""}.json`, {
-      parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` },
-    });
     write(`assets/${ID}/models/block/seatbelt_switch${lit ? "_on" : ""}.json`, {
       parent: "minecraft:block/orientable",
       textures: { front: `${ID}:block/seatbelt_switch${lit ? "_on" : ""}`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },

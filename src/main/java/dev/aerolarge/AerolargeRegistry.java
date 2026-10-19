@@ -380,8 +380,9 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SeatbeltSwitchBlockEntity>> SEATBELT_SWITCH_ENTITY =
         BLOCK_ENTITIES.register("seatbelt_switch", () -> BlockEntityType.Builder.of(SeatbeltSwitchBlockEntity::new, SEATBELT_SWITCH.get()).build(null));
+    /** Lit, the sign glows as a backlit sign does (its face is drawn at full brightness) but gives the cabin little light. */
     public static final DeferredBlock<SeatbeltSignBlock> SEATBELT_SIGN = BLOCKS.registerBlock(
-        "seatbelt_sign", SeatbeltSignBlock::new, glass().lightLevel(state -> state.getValue(SeatbeltSignBlock.LIT) ? 10 : 0)
+        "seatbelt_sign", SeatbeltSignBlock::new, glass().lightLevel(state -> state.getValue(SeatbeltSignBlock.LIT) ? 4 : 0)
     );
     public static final DeferredItem<BlockItem> SEATBELT_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SWITCH);
     public static final DeferredItem<BlockItem> SEATBELT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SIGN);
