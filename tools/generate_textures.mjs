@@ -321,6 +321,24 @@ texture(blockOutput, "autopilot", (x, y) => {
 // Thrust relay, hidden in the nacelle: a dark box with a red signal line.
 texture(blockOutput, "thrust_relay", (x, y) => (y === 7 || y === 8 ? [0xb0, 0x20, 0x20] : PANEL_DARK), 3);
 
+// The pilot seat. Its leather: charcoal, padded in channels, two seams running down it with a row of stitches beside
+// each, as the model lays the texture over the seat pan and the back. Its trim: a chrome piping, brightest along its
+// top. Its frame: dark steel, the edge of each part catching the light. The harness: navy webbing, lighter round its
+// edge.
+{
+  const LEATHER = [0x26, 0x28, 0x2c];
+  const SEAM = [0x18, 0x19, 0x1c];
+  const STITCH = [0x3e, 0x41, 0x47];
+  texture(blockOutput, "pilot_seat_leather", (x, y) => {
+    if (x === 5 || x === 10) return SEAM;
+    if ((x === 4 || x === 11) && y % 2 === 0) return STITCH;
+    return y % 4 === 3 ? [0x22, 0x24, 0x28] : LEATHER;
+  }, 3);
+  texture(blockOutput, "pilot_seat_trim", (x, y) => (y % 4 === 0 ? CHROME : y % 4 === 3 ? STEEL_DARK : STEEL), 2);
+  texture(blockOutput, "pilot_seat_frame", (x, y) => (x === 0 || y === 0 ? [0x52, 0x57, 0x5e] : [0x34, 0x38, 0x3e]), 3);
+  texture(blockOutput, "pilot_seat_harness", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? [0x4a, 0x5c, 0x80] : [0x24, 0x33, 0x52]), 2);
+}
+
 // Exterior lights: a coloured lens with a bright core, one per kind, and the soft round glow their renderer draws.
 const LENSES = {
   red: [0xe8, 0x20, 0x18],

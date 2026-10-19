@@ -37,6 +37,7 @@
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",
+    "aerolarge:pilot_seat",
     "aerolarge:airliner_door"
   ]
 }

@@ -8,6 +8,7 @@ import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -181,9 +183,13 @@ public final class Passengers {
         return null;
     }
 
-    /** Whether there is one of Create's seats at the spot, inside an airliner's hull, with nobody in it. */
+    /**
+     * Whether there is one of Create's seats at the spot, inside an airliner's hull, with nobody in it; not a pilot's
+     * seat, though it is one of Create's underneath.
+     */
     private static boolean freeSeat(Level level, BlockPos at) {
-        return level.getBlockState(at).getBlock() instanceof SeatBlock && Aboard.insideHull(level, at.above()) && !SeatBlock.isSeatOccupied(level, at);
+        Block seat = level.getBlockState(at).getBlock();
+        return seat instanceof SeatBlock && !(seat instanceof PilotSeatBlock) && Aboard.insideHull(level, at.above()) && !SeatBlock.isSeatOccupied(level, at);
     }
 
     /** A villager's sound and a puff of green sparkles where it is in the world, to show what it makes of things. */

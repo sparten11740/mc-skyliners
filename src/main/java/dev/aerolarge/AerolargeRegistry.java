@@ -60,6 +60,7 @@ import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.PendantLightBlock;
+import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
@@ -330,6 +331,10 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotBlockEntity>> AUTOPILOT_ENTITY =
         BLOCK_ENTITIES.register("autopilot", () -> BlockEntityType.Builder.of(AutopilotBlockEntity::new, AUTOPILOT.get()).build(null));
+    /** The pilots' seats: two blocks tall, sat in like Create's seats. */
+    public static final DeferredBlock<PilotSeatBlock> PILOT_SEAT = BLOCKS.registerBlock(
+        "pilot_seat", PilotSeatBlock::new, metal(MapColor.COLOR_BLACK).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
     /** The exterior lights: navigation lights, strobes and beacons on the wingtips, tail and fuselage. */
     public static final DeferredBlock<NavLightBlock> NAV_LIGHT = BLOCKS.registerBlock(
         "nav_light", NavLightBlock::new, glass().lightLevel(state -> 9).noCollission()
@@ -384,6 +389,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> TAIL_CAMERA_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(TAIL_CAMERA_DISPLAY);
     public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
     public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
+    public static final DeferredItem<BlockItem> PILOT_SEAT_ITEM = ITEMS.registerSimpleBlockItem(PILOT_SEAT);
     public static final DeferredItem<BlockItem> NAV_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(NAV_LIGHT);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
@@ -777,7 +783,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CALL_BUTTON_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
-            PILOT_HELMET,
+            PILOT_HELMET, PILOT_SEAT_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM

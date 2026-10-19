@@ -1390,6 +1390,93 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
   });
 }
 
+// The flight deck's pilot seats: their models here, their recipe and name in the functions after them, which the
+// shared lists further down take in. The seat is drawn facing north, the sitter's back to the south, in two halves.
+// The lower one: the seat pan on a column, on a plate across two floor rails, chrome piping along its front edge,
+// the back up to the shoulder blades with the harness's shoulder straps down it, and a padded armrest on a post either
+// side. The upper one: the top of the back narrowing at the shoulders, the straps over them, and the headrest with a
+// trim band along its top, right behind a sitter's head. In the hand both halves together, smaller. Only the lower
+// half drops the seat, as with doors.
+{
+  const textures = {
+    leather: `${ID}:block/pilot_seat_leather`, trim: `${ID}:block/pilot_seat_trim`, frame: `${ID}:block/pilot_seat_frame`,
+    harness: `${ID}:block/pilot_seat_harness`, particle: `${ID}:block/pilot_seat_leather`,
+  };
+  const part = (from, to, texture) => ({
+    from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])),
+  });
+  const lower = [
+    part([3, 0, 0.5], [4.5, 1, 15.5], "#frame"),
+    part([11.5, 0, 0.5], [13, 1, 15.5], "#frame"),
+    part([3, 1, 4.5], [13, 2, 11.5], "#frame"),
+    part([5.5, 2, 5], [10.5, 4.5, 11], "#frame"),
+    part([2, 4.5, 1], [14, 8, 12], "#leather"),
+    part([2, 7.5, 0.5], [14, 8.25, 1], "#trim"),
+    part([2, 4.5, 11], [14, 16, 15], "#leather"),
+    part([4.5, 8.5, 10.6], [6, 16, 11], "#harness"),
+    part([10, 8.5, 10.6], [11.5, 16, 11], "#harness"),
+    part([0.5, 10.5, 3.5], [2, 12, 12], "#leather"),
+    part([14, 10.5, 3.5], [15.5, 12, 12], "#leather"),
+    part([1, 4.5, 9.5], [2, 10.5, 11], "#frame"),
+    part([14, 4.5, 9.5], [15, 10.5, 11], "#frame"),
+  ];
+  const upper = [
+    part([2, 0, 11], [14, 3, 15], "#leather"),
+    part([3, 3, 11.5], [13, 4.5, 15], "#leather"),
+    part([4.5, 0, 10.6], [6, 3.5, 11], "#harness"),
+    part([10, 0, 10.6], [11.5, 3.5, 11], "#harness"),
+    part([4.5, 3.5, 10.6], [6, 4.75, 13], "#harness"),
+    part([10, 3.5, 10.6], [11.5, 4.75, 13], "#harness"),
+    part([4, 4.5, 12], [12, 12.5, 15], "#leather"),
+    part([5, 6, 11.5], [11, 11.5, 12], "#leather"),
+    part([4, 12.5, 12], [12, 13, 15], "#trim"),
+  ];
+  for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
+    write(`assets/${ID}/models/block/pilot_seat_${half}.json`, { parent: "minecraft:block/block", textures, elements });
+  }
+  write(`assets/${ID}/blockstates/pilot_seat.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => [false, true].map((water) =>
+      [`facing=${facing},half=${half},waterlogged=${water}`, { model: `${ID}:block/pilot_seat_${half}`, y }])))),
+  });
+  const raised = upper.map((element) => ({ ...element, from: [element.from[0], element.from[1] + 16, element.from[2]], to: [element.to[0], element.to[1] + 16, element.to[2]] }));
+  write(`assets/${ID}/models/item/pilot_seat.json`, {
+    parent: "minecraft:block/block",
+    textures,
+    elements: [...lower, ...raised],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
+      ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
+      fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+    },
+  });
+  write(`data/${ID}/loot_table/blocks/pilot_seat.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:pilot_seat` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:pilot_seat`, properties: { half: "lower" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/pilot_seat`,
+  });
+  cubes.pilot_seat = null;
+}
+// A pilot seat: black wool padding on an iron frame.
+function flightDeckRecipes() {
+  shaped("pilot_seat", ["  W", "WWW", "I I"], { W: "minecraft:black_wool", I: "minecraft:iron_ingot" }, 1);
+}
+function flightDeckLang() {
+  return {
+    "block.aerolarge.pilot_seat": "Pilot Seat",
+  };
+}
+
 for (const name of ["airliner_blueprint", "furnished_airliner_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
@@ -1577,7 +1664,7 @@ write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.incl
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
   ...structure.filter((b) => !b.endsWith("cabin_floor")),
   ...["createpropulsion:wing", "createpropulsion:creative_thruster", "createpropulsion:thruster", "offroad:wheel_mount",
-    "simulated:physics_assembler", "create:black_seat"].map((id) => ({ id, required: false })),
+    "simulated:physics_assembler"].map((id) => ({ id, required: false })),
 ]));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 
@@ -1665,6 +1752,7 @@ shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "mine
 holdAndTailRecipes();
 // The vacuum toilet: a bucket for its bowl in iron.
 shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
+flightDeckRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -1995,6 +2083,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...holdAndTailLang(),
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
+  ...flightDeckLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -39,6 +39,7 @@
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",
+    "aerolarge:pilot_seat",
     "aerolarge:airliner_door",
     {
       "id": "createpropulsion:wing",
@@ -58,10 +59,6 @@
     },
     {
       "id": "simulated:physics_assembler",
-      "required": false
-    },
-    {
-      "id": "create:black_seat",
       "required": false
     }
   ]
