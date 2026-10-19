@@ -1,0 +1,56 @@
+{
+  "replace": false,
+  "values": [
+    "aerolarge:airframe_panel",
+    "aerolarge:livery_panel",
+    "aerolarge:engine_intake",
+    "aerolarge:landing_gear",
+    "aerolarge:landing_gear_tire",
+    "aerolarge:cabin_window",
+    "aerolarge:cockpit_window",
+    "aerolarge:cabin_light",
+    "aerolarge:airstair_controller",
+    "aerolarge:airstair_call_button",
+    "aerolarge:airframe_shell",
+    "aerolarge:cockpit_glass",
+    "aerolarge:thrust_relay",
+    "aerolarge:airframe_fairing",
+    "aerolarge:engine_core",
+    "aerolarge:tiller",
+    "aerolarge:parking_brake",
+    "aerolarge:nav_light",
+    "aerolarge:jump_light",
+    "aerolarge:jump_switch",
+    "aerolarge:parachute_rack",
+    "aerolarge:autopilot_screen",
+    "aerolarge:flight_display",
+    "aerolarge:autopilot",
+    "aerolarge:thrust_lever",
+    "aerolarge:instrument_panel",
+    "aerolarge:airliner_door",
+    {
+      "id": "createpropulsion:wing",
+      "required": false
+    },
+    {
+      "id": "createpropulsion:creative_thruster",
+      "required": false
+    },
+    {
+      "id": "createpropulsion:thruster",
+      "required": false
+    },
+    {
+      "id": "offroad:wheel_mount",
+      "required": false
+    },
+    {
+      "id": "simulated:physics_assembler",
+      "required": false
+    },
+    {
+      "id": "create:black_seat",
+      "required": false
+    }
+  ]
+}

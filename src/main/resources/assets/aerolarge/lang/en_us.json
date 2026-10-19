@@ -63,6 +63,7 @@
   "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
   "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
   "message.aerolarge.landing_target.none": "No landings on this target yet",
+  "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak in creative mode to take them apart.",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",

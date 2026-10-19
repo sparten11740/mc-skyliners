@@ -32,6 +32,9 @@ public final class Aerolarge {
             event -> event.registrar("1").playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle));
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
+        NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
+        NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
+        NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event -> AerolargeCommand.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {

@@ -90,6 +90,12 @@ the instrument panel cycles every jump light in the airliner through off, red (s
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
 everyone nearby with its distance from the middle, and using the target shows the best landing so far.
 
+### A sturdy frame
+
+The airliner's frame and controls (hull, wings, engines, gear, windscreen, flight deck and the Create and Propulsion
+blocks it is built with) cannot be mined, broken in creative mode or blown up; the cabin floor and everything built
+on it can. A creative player who sneaks can still break them, to take an airliner apart on purpose.
+
 ### Airstairs
 
 The forward port door has folding airstairs. The Airstair Controller set into the hull beside the door folds them
