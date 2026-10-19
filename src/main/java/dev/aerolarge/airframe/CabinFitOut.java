@@ -1,6 +1,5 @@
 package dev.aerolarge.airframe;
 
-import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.CabinWindowBlock;
@@ -8,13 +7,16 @@ import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.ScoreboardBlock;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -42,16 +44,20 @@ final class CabinFitOut {
     private static final int BUSINESS_SEATS = 2;
     /** Seated eye height: passenger screens hang this many blocks over the floor, the row above the seats. */
     private static final int EYES = 2;
+    /** A station with at least this many seats across it is a row of seats; seats along a wall have one to a station. */
+    private static final int ROW_SEATS = 2;
     /**
-     * Rows of seats at most this many stations apart are one stretch of seating, each row's back carrying the screens
-     * for the row behind it; nearer than this to a row, the walls get no screens of their own.
+     * Rows of seats at most this far apart, in metres, are one stretch of seating, each row's backs carrying the
+     * screens for the row behind it; nearer than this to a row, the walls get no screens of their own.
      */
-    private static final int ROW_PITCH = 4;
+    private static final double ROW_REACH = 2.5;
     /** Along a wall, a screen at most every this many stations: one between each pair of windows. */
     private static final int WALL_SPACING = 2;
 
     private final AirframeLayout layout;
     private final int floor;
+    /** Every seat the fit-out has put in on the main deck: what the passenger screens are fitted to. */
+    private final Set<BlockPos> seats = new HashSet<>();
 
     CabinFitOut(AirframeLayout layout) {
         this.layout = layout;
@@ -78,6 +84,14 @@ final class CabinFitOut {
 
     private int to(double[] zone) {
         return (int) Math.floor(zone[1] * layout.scale());
+    }
+
+    /** Puts a seat on the main deck floor, where there is room for it, and remembers it for the passenger screens. */
+    private void seat(int x, int z, BlockState seat) {
+        if (layout.isOpen(x, floor + 1, z)) {
+            layout.set(x, floor + 1, z, seat);
+            seats.add(new BlockPos(x, floor + 1, z));
+        }
     }
 
     /** The narrowest the cabin gets at standing height over a stretch, so a rectangular room fits everywhere in it. */
@@ -109,7 +123,7 @@ final class CabinFitOut {
             for (int side : new int[]{1, -1}) {
                 // From the wall in: a console, a seat, a console and so on, leaving the aisle down the middle clear.
                 for (int k = 0, x = width - 1; k < BUSINESS_SEATS && x - 1 >= 1; k++, x -= 2) {
-                    layout.furnish(side * x, floor + 1, z, seat);
+                    seat(side * x, z, seat);
                     layout.furnish(side * x, floor + 1, z + 1, back);
                     layout.furnish(side * (x + 1), floor + 1, z, console);
                     layout.furnish(side * (x - 1), floor + 1, z, console);
@@ -271,7 +285,7 @@ final class CabinFitOut {
         BlockState bench = AirframePalette.seat(DyeColor.BLUE).orElse(Blocks.SPRUCE_SLAB.defaultBlockState());
         for (int z = fromZ + 3; z <= toZ - 3; z++) {
             if (Math.abs(z - middle) > 4) {
-                layout.furnish(width, floor + 1, z, bench);
+                seat(width, z, bench);
             }
         }
 
@@ -322,7 +336,7 @@ final class CabinFitOut {
                 if ((z - fromZ) % 2 == 1) {
                     layout.furnish(width - 2, floor + 1, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
                 }
-                layout.furnish(-width, floor + 1, z, sofa);
+                seat(-width, z, sofa);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {
                     layout.furnish(-width + 2, floor + 1, z, Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
                 }
@@ -348,34 +362,55 @@ final class CabinFitOut {
      */
     private void screens() {
         NavigableMap<Integer, Set<Integer>> rows = seatRows();
+        int reach = (int) Math.ceil(ROW_REACH * layout.scale());
         BlockState screen = AerolargeRegistry.PASSENGER_SCREEN.get().defaultBlockState();
         for (Map.Entry<Integer, Set<Integer>> row : rows.entrySet()) {
-            // The row behind is further toward the tail, south; the screens go in the legroom just behind this one.
+            // The row behind is further toward the tail, south.
             Map.Entry<Integer, Set<Integer>> behind = rows.higherEntry(row.getKey());
-            int pitch = behind == null ? 0 : behind.getKey() - row.getKey();
-            if (pitch < 2 || pitch > ROW_PITCH) {
+            if (behind == null || behind.getKey() - row.getKey() > reach) {
                 continue;
             }
             for (int x : row.getValue()) {
                 if (behind.getValue().contains(x)) {
-                    layout.furnish(x, floor + EYES, row.getKey() + 1, screen.setValue(PassengerScreenBlock.FACING, Direction.SOUTH));
+                    seatBack(x, row.getKey(), behind.getKey(), screen.setValue(PassengerScreenBlock.FACING, Direction.SOUTH));
                 }
             }
         }
         int length = (int) Math.ceil(AirframeShape.LENGTH * layout.scale());
         for (int side : new int[]{1, -1}) {
             BlockState facingIn = screen.setValue(PassengerScreenBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST);
-            int last = Integer.MIN_VALUE;
-            for (int z = 1; z < length; z++) {
+            // As if there were one just ahead of the nose, so the first station that fits gets one.
+            int last = -WALL_SPACING;
+            for (int z = 0; z < length; z++) {
                 int x = layout.besideWall(side, floor + EYES, z);
                 boolean fits = x != 0 && layout.isOpen(x, floor + EYES, z) && layout.isPlainHull(x + side, floor + EYES, z)
                     && windowAt(side, z - 1) && windowAt(side, z + 1);
-                if (fits && z - last >= WALL_SPACING && rows.subMap(z - ROW_PITCH, true, z + ROW_PITCH, true).isEmpty()) {
+                if (fits && z - last >= WALL_SPACING && rows.subMap(z - reach, true, z + reach, true).isEmpty()) {
                     layout.furnish(x, floor + EYES, z, facingIn);
                     last = z;
                 }
             }
         }
+    }
+
+    /**
+     * The screen on the back of the seat at this station for the seat behind it at that one: at seated eye height
+     * just behind whatever stands at the seat's back (its high back, if it has one), so the screen is set into the
+     * back's rear face; none if that leaves no legroom in front of the seat behind.
+     */
+    private void seatBack(int x, int z, int behind, BlockState screen) {
+        int at = z + 1;
+        while (at < behind && solid(x, floor + 1, at)) {
+            at++;
+        }
+        if (at < behind) {
+            layout.furnish(x, floor + EYES, at, screen);
+        }
+    }
+
+    /** Whether the block at this position fills it whole, like a seat's back, unlike a carpet or a slab. */
+    private boolean solid(int x, int y, int z) {
+        return layout.stateAt(x, y, z).isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
     }
 
     /** Whether a main deck window is in the wall on this side at this station, at seated eye height. */
@@ -385,18 +420,17 @@ final class CabinFitOut {
     }
 
     /**
-     * The rows of seats across the main deck: by station, where across each seat is, for every station with seats side
-     * by side. Seats one behind the other along a wall, like the gym hall's benches, are no row.
+     * The rows of seats across the main deck, from the seats the fit-out has put in: by station, where across each
+     * seat is, for every station with seats across it, whether side by side or either side of the aisle. Seats one
+     * behind the other along a wall, like the gym hall's benches, are no row.
      */
     private NavigableMap<Integer, Set<Integer>> seatRows() {
-        NavigableMap<Integer, Set<Integer>> seats = new TreeMap<>();
-        layout.cells().forEach((pos, state) -> {
-            if (pos.getY() == floor + 1 && state.getBlock() instanceof SeatBlock) {
-                seats.computeIfAbsent(pos.getZ(), z -> new TreeSet<>()).add(pos.getX());
-            }
-        });
-        seats.values().removeIf(row -> row.stream().noneMatch(x -> row.contains(x + 1)));
-        return seats;
+        NavigableMap<Integer, Set<Integer>> rows = new TreeMap<>();
+        for (BlockPos seat : seats) {
+            rows.computeIfAbsent(seat.getZ(), z -> new TreeSet<>()).add(seat.getX());
+        }
+        rows.values().removeIf(row -> row.size() < ROW_SEATS);
+        return rows;
     }
 
     /** A pendant light hung on its cable from the crown, its bottom the given height above the floor (or as low as fits). */
