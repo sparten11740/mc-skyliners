@@ -17,9 +17,10 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 /**
  * Fits out the main deck of the furnished airliner, front to back between the door aisles: an indoor pool sunk into
  * the hold so its water lies flush with the floor, a full-height gym hall (Turnhalle) over the wing box, and a lounge
- * with a bar in the tail, lit by pendant lights. Everything is vanilla blocks but the lights and the seats, which are
- * Create's so they can be sat in, and only ever goes into open cabin space or replaces cabin floor, so the hull, the
- * doors and the space in front of them stay as they were.
+ * with a bar in the tail, lit by pendant lights. Everything is vanilla blocks but the lights, the pool's glass and the
+ * seats, which are Create's so they can be sat in. It only ever goes into open cabin space or replaces cabin floor, so
+ * the doors and the space in front of them stay as they were, and so does the hull, but for the belly under the pool,
+ * which is glazed.
  */
 final class CabinFitOut {
     private static final double[] POOL = {13.5, 23.0};
@@ -63,8 +64,10 @@ final class CabinFitOut {
     }
 
     /**
-     * The pool: a basin of water flush with the floor, reaching down into the hold, lined with tiles and lit from
-     * below, a quartz rim to stand on, a diving board at the front and steps out at the back.
+     * The pool: a basin of water flush with the floor, reaching down into the hold, lined with tiles and lit from its
+     * walls just under the water line, a quartz rim to stand on, a diving board at the front and steps out at the
+     * back. It is a moon pool: its bottom is glass, and so is the belly of the hull under it, so swimmers look straight
+     * down through the airliner at the ground, or the clouds, below.
      */
     private void pool(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -74,6 +77,9 @@ final class CabinFitOut {
         }
         BlockState water = Blocks.WATER.defaultBlockState();
         BlockState tile = Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
+        BlockState lantern = Blocks.SEA_LANTERN.defaultBlockState();
+        // The windscreen's glass, the same as the belly's under it, so the two join without a seam.
+        BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
         for (int z = fromZ; z <= toZ; z++) {
             for (int x = -width; x <= width; x++) {
                 boolean inBasin = Math.abs(x) <= basin && z >= fromZ + 2 && z <= toZ - 2;
@@ -88,16 +94,32 @@ final class CabinFitOut {
                 }
             }
         }
-        // Line the basin: every open block in the hold that touches the water becomes tile, every fourth one on
-        // the bottom a light, so the water cannot run off into the hold.
+        // Line the basin: every open block in the hold that touches the water becomes glass under it and tile beside
+        // it, every fourth one of the walls just under the water line a light, so the water cannot run off into the
+        // hold.
         for (int z = fromZ + 1; z <= toZ - 1; z++) {
             for (int x = -basin - 1; x <= basin + 1; x++) {
                 for (int y = floor - 4; y < floor; y++) {
                     if (layout.isOpen(x, y, z) && touchesWater(x, y, z)) {
-                        boolean light = isWater(x, y + 1, z) && Math.floorMod(x + z, 4) == 0;
-                        layout.furnish(x, y, z, light ? Blocks.SEA_LANTERN.defaultBlockState() : tile);
+                        boolean light = y == floor - 1 && Math.floorMod(Math.abs(x) + z, 4) == 0;
+                        layout.furnish(x, y, z, isWater(x, y + 1, z) ? glass : light ? lantern : tile);
                     }
                 }
+            }
+        }
+        // The view down: under each column of water, whatever of the hold is still open below the glass bottom is
+        // glazed too, and the belly skin it ends on turns to glass, which the shell cuts to the curve with the skin
+        // around it. The pool lies between the nose gear and the main gear, so no gear leg meets the belly under it.
+        for (int z = fromZ + 2; z <= toZ - 2; z++) {
+            for (int x = -basin; x <= basin; x++) {
+                int y = floor;
+                while (isWater(x, y, z) || layout.stateAt(x, y, z).is(glass.getBlock())) {
+                    y--;
+                }
+                for (; layout.isOpen(x, y, z); y--) {
+                    layout.set(x, y, z, glass);
+                }
+                layout.glaze(x, y, z);
             }
         }
         BlockState board = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM);

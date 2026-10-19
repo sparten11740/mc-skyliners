@@ -219,6 +219,18 @@ public final class AirframeLayout {
         }
     }
 
+    /**
+     * Swaps a block of the hull's skin, a plain panel or a cabin light set into it, for cockpit glass, which the shell
+     * then cuts to the curve with the skin around it, as it does the windscreen's; anything else stays. It has to come
+     * before the shell pass, which is what does the cutting.
+     */
+    void glaze(int x, int y, int z) {
+        BlockState state = stateAt(x, y, z);
+        if (state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())) {
+            set(x, y, z, AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState());
+        }
+    }
+
     /** How far out from the centreline the cabin is open at this height and station; -1 where it is closed. */
     int openHalfWidth(int y, int z) {
         int x = -1;
