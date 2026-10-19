@@ -62,10 +62,18 @@ public final class Parachute {
         player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_ELYTRA.value(), SoundSource.PLAYERS, 1.0F, 0.7F);
     }
 
-    /** On the server: a client's player jumped while falling. */
+    /**
+     * On the server: a client's player jumped while falling. Its client has opened the parachute already; if it cannot
+     * open here (the server's fall lags the client's), the client is sent the packed one back.
+     */
     public static void handle(OpenParachute payload, IPayloadContext context) {
-        if (context.player() instanceof ServerPlayer player && canOpen(player)) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (canOpen(player)) {
             open(player);
+        } else {
+            player.inventoryMenu.sendAllDataToRemote();
         }
     }
 
