@@ -77,7 +77,6 @@ final class CabinFitOut {
         }
         BlockState water = Blocks.WATER.defaultBlockState();
         BlockState tile = Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
-        BlockState lantern = Blocks.SEA_LANTERN.defaultBlockState();
         // Clear glass, the same as the belly's under it, so the two join without a seam.
         BlockState glass = AerolargeRegistry.HULL_GLASS.get().defaultBlockState();
         for (int z = fromZ; z <= toZ; z++) {
@@ -96,13 +95,15 @@ final class CabinFitOut {
         }
         // Line the basin: every open block in the hold that touches the water becomes glass under it and tile beside
         // it, every fourth one of the walls just under the water line a light, so the water cannot run off into the
-        // hold.
+        // hold. The lights are cabin lights, so the flight deck dims them with the rest and the pool goes dark at
+        // night too.
+        BlockState light = AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState();
         for (int z = fromZ + 1; z <= toZ - 1; z++) {
             for (int x = -basin - 1; x <= basin + 1; x++) {
                 for (int y = floor - 4; y < floor; y++) {
                     if (layout.isOpen(x, y, z) && touchesWater(x, y, z)) {
-                        boolean light = y == floor - 1 && Math.floorMod(Math.abs(x) + z, 4) == 0;
-                        layout.furnish(x, y, z, isWater(x, y + 1, z) ? glass : light ? lantern : tile);
+                        boolean lit = y == floor - 1 && Math.floorMod(Math.abs(x) + z, 4) == 0;
+                        layout.furnish(x, y, z, isWater(x, y + 1, z) ? glass : lit ? light : tile);
                     }
                 }
             }
