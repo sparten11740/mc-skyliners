@@ -176,6 +176,11 @@ public class AutopilotBlockEntity extends BlockEntity {
      * is thrown about.
      */
     private static final double ORBIT_BANK = 20;
+    /**
+     * The most the speed it holds is changed by, in blocks a second every second: about a third of the pull of gravity,
+     * what an airliner's passengers feel on the runway, so nobody standing is thrown down the cabin.
+     */
+    private static final double MAX_ACCELERATION = 3;
     /** Engine signal split per degree off the heading, and the most it splits by. */
     private static final double YAW_GAIN = 0.4;
     private static final int YAW_SPLIT = 4;
@@ -262,6 +267,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double lastClimb;
     private double lastHeading;
     private int slowTicks;
+    /**
+     * The speed the engines are set to hold this tick: the speed set, reached from the speed it was going at no faster
+     * than {@link #MAX_ACCELERATION}.
+     */
+    private double speedCommand;
     /** Whether it is still climbing out after take-off, below {@link #TURN_HEIGHT}, holding the runway's heading. */
     private boolean climbingOut;
     /** Whether last tick's readings are real; false after loading, so the first tick does not see a jump. */
@@ -455,6 +465,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         lastSpeed = state.airspeed();
         lastClimb = state.velocity().y;
         lastHeading = state.heading();
+        speedCommand = state.airspeed();
         slowTicks = 0;
         primed = true;
     }
@@ -588,8 +599,11 @@ public class AutopilotBlockEntity extends BlockEntity {
             lastSpeed = speed;
             lastClimb = climb;
             lastHeading = state.heading();
+            speedCommand = speed;
             primed = true;
         }
+        // The speed held moves toward the one set no faster than an airliner speeds up or slows down.
+        speedCommand += Mth.clamp(targetSpeed - speedCommand, -MAX_ACCELERATION / 20, MAX_ACCELERATION / 20);
         double pitchRate = (pitch - lastPitch) * 20;
         double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         double climbRate = (climb - lastClimb) * 20;
@@ -614,8 +628,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             slowTicks = accelerating || speed < 2 ? 0 : slowTicks + 1;
             boolean rotate = speed >= rotateSpeed || slowTicks > 40;
             targetPitch = rotate ? ROTATION_PITCH : 0;
-            // Full thrust down the runway; from rotation on, the speed it will climb at.
-            thrust = rotate ? holdSpeed(speed, targetSpeed) : 15;
+            // Speeding up down the runway as fast as is comfortable, on to the speed it will climb at.
+            thrust = holdSpeed(speed, speedCommand);
             if (radio > AIRBORNE) {
                 phase = Phase.CLIMB;
                 // The pitch it lifts off at is where the trim starts learning from.
@@ -647,7 +661,7 @@ public class AutopilotBlockEntity extends BlockEntity {
                 targetSpeed = Mth.clamp(targetSpeed + APPROACH_SPEED_RATE * (attitude - APPROACH_ATTITUDE),
                     APPROACH_SLOWEST * rotateSpeed, MAX_SPEED);
             }
-            thrust = holdSpeed(speed, targetSpeed);
+            thrust = holdSpeed(speed, speedCommand);
             if (!landing) {
                 phase = Math.abs(heightToGo) < LEVEL_OFF ? Phase.CRUISE : heightToGo > 0 ? Phase.CLIMB : Phase.DESCENT;
             } else if (radio < Callouts.ON_GROUND) {

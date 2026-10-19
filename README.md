@@ -120,7 +120,8 @@ see its name. The game goes on behind the settings, and they close once you step
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off,
-full thrust down the runway, holding the heading it started on
+speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
+thrown down the cabin; it speeds up and slows down that gently in the air too), holding the heading it started on
 with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
 above the ground. Only then does it turn onto the heading or circle set, banking no steeper than its height allows
 (it never banks hard near the ground, and never more than 25 degrees), and it climbs on to the altitude set and
