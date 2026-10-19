@@ -58,14 +58,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -123,6 +126,17 @@ public final class AirframeLayout {
     private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
     /** Where along the belly the drop bay is, in metres from the nose: behind the main gear, ahead of the cargo door. */
     private static final double DROP_BAY_STATION = 44;
+    /**
+     * Where along the cabin the hatch down to the hold is, in metres from the nose: a few steps aft of the drop bay, so
+     * it can be reloaded in flight, just behind the gym hall's court and ahead of the aft doors' aisle.
+     */
+    private static final double HOLD_HATCH_STATION = 48;
+    /** How many stations forward of that the hatch may move, to keep its border out of the doors' aisle. */
+    private static final int HOLD_HATCH_SHIFT = 3;
+    /** Rows of floor either side of a pair of passenger doors kept clear as its aisle. */
+    private static final int DOOR_AISLE = 2;
+    /** A player's height in blocks: the hatch only opens onto a hold someone can stand up in. */
+    private static final int STANDING_ROOM = 2;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -201,6 +215,7 @@ public final class AirframeLayout {
         layout.skydiving();
         layout.seatbeltSigns();
         layout.dropBay();
+        layout.holdHatch();
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -775,6 +790,76 @@ public final class AirframeLayout {
                 }
             }
         }
+    }
+
+    /**
+     * The hatch down to the hold, so the drop bay can be reloaded in flight: a trapdoor in the cabin floor over a
+     * ladder down to the hold's floor, bolted to a post of hull panels, inside a border of yellow and black carpet. It
+     * stands on the port side, at the edge of the hold's floor where the ladder reaches all the way down, well away
+     * from the cargo door to starboard, whose rushing air reaches only a few steps in. Only where the floor there is
+     * whole, the cabin above it clear and the hold below open and tall enough to stand in (at the smallest scales it
+     * is a crawlspace), with its border clear of the doors' aisle; failing that, a station further forward.
+     */
+    private void holdHatch() {
+        int station = (int) Math.round(HOLD_HATCH_STATION * scale);
+        for (int z = station; z >= station - HOLD_HATCH_SHIFT; z--) {
+            if (!inDoorAisle(z - 1) && !inDoorAisle(z + 1) && holdHatch(z)) {
+                return;
+            }
+        }
+    }
+
+    /** Whether station z is in one of the passenger doors' aisles. */
+    private boolean inDoorAisle(int z) {
+        for (double station : PASSENGER_DOORS) {
+            int fore = (int) Math.round(station * scale);
+            if (z >= fore - DOOR_AISLE && z <= fore + DOOR_AISLE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The hatch at station z, if it fits there; whether it did. */
+    private boolean holdHatch(int z) {
+        int bottom = 0;
+        while (bottom < floorY && !isOpen(0, bottom, z)) {
+            bottom++;
+        }
+        if (floorY - bottom < STANDING_ROOM) {
+            return false;
+        }
+        int x = -openHalfWidth(bottom, z);
+        boolean fits = isOpen(x, floorY + 1, z) && isOpen(x, floorY + 2, z) && wholeFloor(x, z);
+        for (int y = bottom; y < floorY; y++) {
+            fits &= isOpen(x, y, z) && isOpen(x, y, z - 1);
+        }
+        if (!fits) {
+            return false;
+        }
+        // Hinged at the top of the floor's row, so it lies flush with the floor; it opens against the post's side,
+        // facing the way the ladder does, which is what lets an open hatch be climbed like the ladder under it.
+        set(x, floorY, z, AerolargeRegistry.FLOOR_HATCH.get().defaultBlockState()
+            .setValue(TrapDoorBlock.FACING, Direction.SOUTH)
+            .setValue(TrapDoorBlock.HALF, Half.TOP));
+        BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
+        for (int y = bottom; y < floorY; y++) {
+            set(x, y, z - 1, palette.hull());
+            set(x, y, z, ladder);
+        }
+        for (int dz = -1; dz <= 1; dz++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if ((dx != 0 || dz != 0) && wholeFloor(x + dx, z + dz)) {
+                    furnish(x + dx, floorY + 1, z + dz, (Math.floorMod(dx + dz, 2) == 0 ? Blocks.YELLOW_CARPET : Blocks.BLACK_CARPET).defaultBlockState());
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Whether the deck's floor at this column is a whole block to stand on, whatever it is laid with: no pool, no hole. */
+    private boolean wholeFloor(int x, int z) {
+        return stateAt(x, floorY, z).isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
     }
 
     /**

@@ -2,8 +2,8 @@
 
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
 wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
-a cabin floor over a cargo hold, six passenger doors and a cargo door, a flight deck behind a wrap-around windscreen,
-swept wings with four engines, the tail, landing gear and folding airstairs.
+a cabin floor over a cargo hold with a hatch down to it, six passenger doors and a cargo door, a flight deck behind
+a wrap-around windscreen, swept wings with four engines, the tail, landing gear and folding airstairs.
 
 ## Requirements
 
@@ -326,10 +326,13 @@ moment, then floats down under a parachute and lands as the same crate, contents
 whoever dropped it) hears how far from the nearest burning flare it came down. A crate keeps its contents when broken,
 like a shulker box.
 
-Or drop it through the drop bay: hatch doors in the belly, behind the main gear. From the hold, use a care package on
-the bay to load it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop
-release on the first officer's side console, behind the parking brake, opens the bay doors on the first use and
-drops the next load on each use after that; sneak and use it to close them. A load leaves at the airliner's speed.
+Or drop it through the drop bay: hatch doors in the belly, behind the main gear, loaded from the hold. Besides the
+cargo door from outside, the hold is reached through the hatch in the cabin floor a few steps aft of the bay, to port
+just behind the gym hall: a yellow and black border marks it and its lid shows a ladder. Open it by hand and climb
+down the ladder under it, so the bay can be reloaded in flight. From the hold, use a care package on the bay to load
+it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop release on the
+first officer's side console, behind the parking brake, opens the bay doors on the first use and drops the next load
+on each use after that; sneak and use it to close them. A load leaves at the airliner's speed.
 With Ultrasplosive installed the bay also takes its nuke (the regular Fat
 Man, not Sundial), which leaves the bay as Ultrasplosive's flying nuke and goes off where it hits. Its blast reaches
 160 blocks, so the release only drops one from 200 blocks or more above the ground.

@@ -32,6 +32,7 @@ import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
@@ -532,6 +533,11 @@ public final class AerolargeRegistry {
         "falling_crate", () -> EntityType.Builder.<FallingCrate>of(FallingCrate::new, MobCategory.MISC).sized(0.9F, 0.9F)
             .clientTrackingRange(16).updateInterval(2).build("falling_crate")
     );
+    /** The hatch in the cabin floor over the ladder down to the hold, so the drop bay can be reloaded in flight. */
+    public static final DeferredBlock<FloorHatchBlock> FLOOR_HATCH = BLOCKS.registerBlock(
+        "floor_hatch", FloorHatchBlock::new, metal(MapColor.COLOR_YELLOW).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> FLOOR_HATCH_ITEM = ITEMS.registerSimpleBlockItem(FLOOR_HATCH);
 
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
     public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
@@ -639,7 +645,7 @@ public final class AerolargeRegistry {
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
-            AIRSTAIR_CALL_BUTTON_ITEM
+            AIRSTAIR_CALL_BUTTON_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,

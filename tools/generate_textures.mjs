@@ -1145,4 +1145,15 @@ blueprint("furnished_airliner_blueprint", true);
   }, 1);
 }
 
+// The hold and the tail. The floor hatch down to the hold: a steel plate in a yellow-and-black hazard border with a
+// white ladder on it, so it reads as the way down without a word.
+{
+  const stripe = (x, y) => ((x + y) % 4 < 2 ? HAZARD : RUBBER);
+  texture(blockOutput, "floor_hatch", (x, y) => {
+    if (x <= 1 || y <= 1 || x >= 14 || y >= 14) return stripe(x, y);
+    if (x === 5 || x === 10 || (x > 5 && x < 10 && y % 3 === 0)) return INK;
+    return (x + y * 3) % 5 === 0 ? STEEL_DARK : STEEL;
+  });
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

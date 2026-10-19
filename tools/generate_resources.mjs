@@ -583,6 +583,37 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   random_sequence: `${ID}:blocks/cargo_crate`,
 });
 
+// The hold and the tail: their fittings, recipes and names are in the functions below, which the shared lists
+// further down take in. The floor hatch down to the hold: vanilla's trapdoor shapes over the hatch's own plate,
+// turned with the way it faces so its ladder runs along the airliner.
+{
+  const hatch = "floor_hatch";
+  for (const part of ["bottom", "top", "open"]) {
+    write(`assets/${ID}/models/block/${hatch}_${part}.json`, { parent: `minecraft:block/template_trapdoor_${part}`, textures: { texture: `${ID}:block/${hatch}` } });
+  }
+  write(`assets/${ID}/blockstates/${hatch}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["bottom", "top"].flatMap((half) => [
+      [`facing=${facing},half=${half},open=false`, { model: `${ID}:block/${hatch}_${half}`, y }],
+      [`facing=${facing},half=${half},open=true`, { model: `${ID}:block/${hatch}_open`, y }],
+    ]))),
+  });
+  write(`assets/${ID}/models/item/${hatch}.json`, { parent: `${ID}:block/${hatch}_bottom` });
+  dropsItself(hatch);
+  cubes[hatch] = null;
+}
+// What of the hold's and the den's is fitted rather than built in: breakable, and no part of the airframe.
+function holdAndTailFittings() {
+  return ["floor_hatch"];
+}
+function holdAndTailRecipes() {
+  shaped("floor_hatch", ["YTY"], { Y: "minecraft:yellow_dye", T: "minecraft:iron_trapdoor" }, 1);
+}
+function holdAndTailLang() {
+  return {
+    "block.aerolarge.floor_hatch": "Floor Hatch",
+  };
+}
+
 // Basketball, drawn facing north. The hoop: an orange ring on a dark bracket to the backboard, with its net hanging
 // below; the side it counts for does not show. The scoreboard: a dark face, the score drawn over it by its renderer.
 // The ball rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
@@ -1138,6 +1169,7 @@ const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${gr
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS];
+FITTINGS.push(...holdAndTailFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1230,6 +1262,7 @@ shaped("hide_and_seek_button", ["B", "N", "I"], { B: "minecraft:stone_button", N
 shaped("cabin_curtain", ["NSN", "WWW", "WWW"], { N: "minecraft:iron_nugget", S: "minecraft:stick", W: "minecraft:white_wool" }, 6);
 shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", D: "minecraft:white_dye" }, 8);
 shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
+holdAndTailRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -1554,6 +1587,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
   ...DUTY_FREE_LANG,
   ...cabinDecorLang,
+  ...holdAndTailLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
