@@ -282,5 +282,21 @@
         "name": "aerolarge:toilet_flush"
       }
     ]
+  },
+  "blue_ice_crack": {
+    "subtitle": "subtitles.aerolarge.blue_ice_crack",
+    "sounds": [
+      {
+        "name": "aerolarge:blue_ice_crack"
+      }
+    ]
+  },
+  "blue_ice_bonk": {
+    "subtitle": "subtitles.aerolarge.blue_ice_bonk",
+    "sounds": [
+      {
+        "name": "aerolarge:blue_ice_bonk"
+      }
+    ]
   }
 }

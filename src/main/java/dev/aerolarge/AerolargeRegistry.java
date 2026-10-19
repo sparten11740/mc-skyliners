@@ -46,6 +46,7 @@ import dev.aerolarge.block.JumpLightBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
+import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
@@ -83,6 +84,7 @@ import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
+import dev.aerolarge.entity.BlueIceChunk;
 import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.Trolley;
@@ -513,12 +515,28 @@ public final class AerolargeRegistry {
             .isValidSpawn(AerolargeRegistry::never).lightLevel(state -> 4)
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
-    /** The lavatories' vacuum toilets and their flush. */
+    /**
+     * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
+     * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
+     * away. Only a falling chunk leaves a lump, so it has no item and gives nothing back; nothing bumps into it, so it
+     * never stands in the way of a wheel.
+     */
     public static final DeferredBlock<VacuumToiletBlock> VACUUM_TOILET = BLOCKS.registerBlock(
         "vacuum_toilet", VacuumToiletBlock::new, metal(MapColor.SNOW).noOcclusion()
     );
     public static final DeferredItem<BlockItem> VACUUM_TOILET_ITEM = ITEMS.registerSimpleBlockItem(VACUUM_TOILET);
     public static final DeferredHolder<SoundEvent, SoundEvent> TOILET_FLUSH = sound("toilet_flush");
+    public static final DeferredHolder<EntityType<?>, EntityType<BlueIceChunk>> BLUE_ICE_CHUNK = ENTITY_TYPES.register(
+        "blue_ice_chunk", () -> EntityType.Builder.<BlueIceChunk>of(BlueIceChunk::new, MobCategory.MISC).sized(0.6F, 0.5F)
+            .clientTrackingRange(16).updateInterval(2).build("blue_ice_chunk")
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLUE_ICE_CRACK = sound("blue_ice_crack");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLUE_ICE_BONK = sound("blue_ice_bonk");
+    public static final DeferredBlock<LavIceBlock> LAV_ICE = BLOCKS.registerBlock(
+        "lav_ice", LavIceBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.2F).sound(SoundType.GLASS).noCollission().noOcclusion().noLootTable()
+            .pushReaction(PushReaction.DESTROY)
+    );
 
     /** A signal flare to mark a drop zone with a column of coloured smoke. */
     public static final DeferredBlock<SignalFlareBlock> SIGNAL_FLARE = BLOCKS.registerBlock(

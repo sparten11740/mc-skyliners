@@ -28,8 +28,8 @@ public final class Aboard {
     /** How far up and down from the eyes the hull is looked for: past the crown and the hold's belly. */
     private static final int HULL_UP = 48;
     private static final int HULL_DOWN = 32;
-    /** The hull, floor, windows and panels. */
-    private static final TagKey<Block> AIRFRAME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "airframe"));
+    /** The hull, floor, windows and panels: not the gear, nor what is fitted into the cabin. */
+    public static final TagKey<Block> AIRFRAME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "airframe"));
 
     private Aboard() {
     }

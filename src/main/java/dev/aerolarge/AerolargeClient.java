@@ -4,6 +4,7 @@ import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.client.AutopilotScreenRenderer;
+import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.FallingCrateRenderer;
@@ -128,5 +129,6 @@ public final class AerolargeClient {
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);
+        event.registerEntityRenderer(AerolargeRegistry.BLUE_ICE_CHUNK.get(), BlueIceChunkRenderer::new);
     }
 }

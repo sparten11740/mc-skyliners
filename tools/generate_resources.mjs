@@ -195,8 +195,10 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   Object.assign(sounds, holdAndTailSounds());
   // The pilot's head-up display coming on as the pilot helmet goes on.
   sounds.hud_on = { subtitle: `subtitles.${ID}.hud_on`, sounds: [{ name: `${ID}:hud_on` }] };
-  // The vacuum toilets' flush.
-  sounds.toilet_flush = { subtitle: `subtitles.${ID}.toilet_flush`, sounds: [{ name: `${ID}:toilet_flush` }] };
+  // The vacuum toilets' flush, and the blue ice they drop cracking as it lands, or bonking whoever it lands on.
+  for (const name of ["toilet_flush", "blue_ice_crack", "blue_ice_bonk"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -1468,10 +1470,16 @@ const cabinDecorLang = {};
   cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
 }
 
-// Vacuum toilets (see VacuumToiletBlock), and what they add to the lang file.
+// Vacuum toilets (see VacuumToiletBlock) and the blue ice they drop (see BlueIceChunk and LavIceBlock), and what they
+// add to the lang file.
 const VACUUM_TOILET_LANG = {
   "block.aerolarge.vacuum_toilet": "Vacuum Toilet",
+  "block.aerolarge.lav_ice": "Blue Lav Ice",
+  "entity.aerolarge.blue_ice_chunk": "Blue Ice",
   "subtitles.aerolarge.toilet_flush": "Vacuum toilet flushes",
+  "subtitles.aerolarge.blue_ice_crack": "Blue ice shatters",
+  "subtitles.aerolarge.blue_ice_bonk": "Bonk!",
+  "message.aerolarge.blue_ice.bonk": "Bonk! Blue ice from above",
 };
 // The vacuum toilet, drawn facing north against a wall panel along the south side of its block: a white shroud on a
 // narrower foot, the stainless bowl let into its top, a white seat on the rim, and the lid down over it or up against
@@ -1509,6 +1517,19 @@ const VACUUM_TOILET_LANG = {
   write(`assets/${ID}/models/item/vacuum_toilet.json`, { parent: `${ID}:block/vacuum_toilet_closed` });
   dropsItself("vacuum_toilet");
   cubes.vacuum_toilet = null;
+}
+// The lump of blue lav ice a chunk lands as: a slab of see-through blue ice with a smaller one frozen on top, turned
+// any way. Only a falling chunk leaves one: no item, and it drops nothing.
+{
+  const lump = boxes({ ice: `${ID}:block/lav_ice`, particle: `${ID}:block/lav_ice` }, [
+    [[3, 0, 3], [13, 5, 13], "#ice"],
+    [[4, 5, 5], [11, 8, 11], "#ice"],
+  ]);
+  // The smaller lump stands on the slab: it has no floor of its own.
+  delete lump.elements[1].faces.down;
+  lump.render_type = "minecraft:translucent";
+  write(`assets/${ID}/models/block/lav_ice.json`, lump);
+  write(`assets/${ID}/blockstates/lav_ice.json`, { variants: { "": Object.values(yRot).map((y) => ({ model: `${ID}:block/lav_ice`, y })) } });
 }
 
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);

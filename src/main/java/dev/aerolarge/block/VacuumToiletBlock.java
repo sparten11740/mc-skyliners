@@ -1,7 +1,12 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.Aboard;
+import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.entity.BlueIceChunk;
+import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +38,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the lid. A flush is what an airliner's is: a sharp, loud hiss as the vacuum snatches the bowl empty, swirling it,
  * and the thunk of the valve shutting; then the button stays lit for a few seconds while the vacuum builds up again,
  * and it will not flush till then. FACING is the way its front looks, its panel against the wall behind it.
+ *
+ * <p>A real airliner keeps what it flushes in a tank, but one with a leak is famous for letting it go as "blue ice",
+ * the blue toilet water frozen in a chunk under the belly. This one lets it go every time: a chunk of blue ice drops
+ * out of the airliner's belly under the toilet (see {@link BlueIceChunk}), at the airliner's own speed, so in flight it
+ * falls away behind and far below. A toilet with no airframe under it, in a house, only flushes.
  */
 public class VacuumToiletBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<VacuumToiletBlock> CODEC = simpleCodec(VacuumToiletBlock::new);
@@ -56,6 +66,13 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
     private static final double SWIRL_RADIUS = 0.17;
     private static final double SWIRL_SPEED = 0.12;
     private static final double SWIRL_INWARD = 0.3;
+    /**
+     * How far below the toilet the airliner's belly is looked for, in blocks per unit of scale: the fuselage is 8.4 m
+     * tall. And how far further down a chunk of ice may have to go to leave it, past what hangs under the belly there
+     * (a wing root is 1.9 m thick).
+     */
+    private static final double BELLY_REACH_PER_SCALE = 9;
+    private static final double HUNG_BELOW_PER_SCALE = 2;
     /**
      * The lid's clack going up or down, light as plastic is, and the button's click pressed while the vacuum builds up:
      * quiet, and higher than a stone button's.
@@ -128,8 +145,8 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * The flush: the hiss and the swirl in the bowl, set at the toilet itself, which Sable carries along with an
-     * assembled airliner.
+     * The flush: the hiss and the swirl in the bowl, and the chunk of blue ice dropped from the belly. The hiss and the
+     * swirl are set at the toilet itself, which Sable carries along with an assembled airliner.
      */
     private void flush(ServerLevel level, BlockPos pos, BlockState state) {
         level.setBlock(pos, state.setValue(FLUSHING, true), Block.UPDATE_ALL);
@@ -146,6 +163,40 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
                 -sin - cos * SWIRL_INWARD, 0, cos - sin * SWIRL_INWARD, SWIRL_SPEED);
         }
         level.sendParticles(ParticleTypes.BUBBLE_POP, bowl.x, bowl.y - 0.05, bowl.z, SWIRL / 2, SWIRL_RADIUS / 2, 0.02, SWIRL_RADIUS / 2, 0.02);
+        BlockPos below = belly(level, pos);
+        if (below == null) {
+            return;
+        }
+        Vec3 at = SableFlight.toWorld(level, Vec3.atCenterOf(below));
+        Vec3 velocity = SableFlight.velocity(level, Vec3.atCenterOf(pos)).scale(1.0 / SharedConstants.TICKS_PER_SECOND);
+        level.addFreshEntity(BlueIceChunk.of(level, at, velocity));
+    }
+
+    /**
+     * Where a chunk of blue ice leaves the airliner under a toilet: the first block open to the air under the lowest
+     * piece of airframe beneath it, past anything hung under that (a wing root, a fairing). Null where no airframe
+     * stands beneath the toilet (one put in a house), or nothing opens under it (an airliner sitting on its belly).
+     * Assembled, the airliner's plot holds nothing but the airliner, so under its belly is open sky.
+     */
+    @Nullable
+    private static BlockPos belly(Level level, BlockPos toilet) {
+        double scale = AerolargeConfig.SCALE.get();
+        BlockPos skin = null;
+        for (int down = 1; down <= BELLY_REACH_PER_SCALE * scale; down++) {
+            if (level.getBlockState(toilet.below(down)).is(Aboard.AIRFRAME)) {
+                skin = toilet.below(down);
+            }
+        }
+        if (skin == null) {
+            return null;
+        }
+        for (int down = 1; down <= 1 + HUNG_BELOW_PER_SCALE * scale; down++) {
+            BlockPos below = skin.below(down);
+            if (level.getBlockState(below).getCollisionShape(level, below).isEmpty() && level.getFluidState(below).isEmpty()) {
+                return below;
+            }
+        }
+        return null;
     }
 
     /** A point given in pixels across and along the model drawn facing north, turned to face the given way: in blocks. */

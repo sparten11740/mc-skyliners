@@ -308,6 +308,36 @@ writeSound("pa_chime", CHIME);
   }
   writeSound("toilet_flush", samples);
 }
+// Blue ice landing: the sharp crack of it breaking, a crackle of it splintering, and the tinkle of shards.
+{
+  const samples = new Float64Array(Math.round(0.7 * RATE));
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    const high = white - previous;
+    previous = white;
+    const crack = t < 0.025 ? 3 * (1 - t / 0.025) * white : 0;
+    const crackle = random() < 0.004 * Math.exp(-t / 0.12) ? (random() * 2 - 1) * 4 : 0;
+    samples[i] = crack + 1.2 * high * Math.exp(-t / 0.06) + crackle;
+  }
+  for (let shard = 0; shard < 7; shard++) {
+    bell(samples, 0.02 + random() * 0.25, 2800 + random() * 3000, 0.03 + random() * 0.04);
+  }
+  writeSound("blue_ice_crack", samples);
+}
+// Blue ice landing on someone: a cartoon bonk, a hollow knock dropping in pitch, with a click as it hits.
+{
+  const samples = new Float64Array(Math.round(0.35 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += 2 * Math.PI * (330 + 290 * Math.exp(-t / 0.03)) / RATE;
+    const envelope = Math.min(1, t / 0.002) * Math.exp(-t / 0.09);
+    samples[i] = envelope * (Math.sin(phase) + 0.3 * Math.sin(2.7 * phase)) + (t < 0.004 ? (random() * 2 - 1) * (1 - t / 0.004) : 0);
+  }
+  writeSound("blue_ice_bonk", samples);
+}
 
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;

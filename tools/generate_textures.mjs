@@ -1289,5 +1289,13 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "vacuum_toilet_button", (x, y) => ((x + y) % 4 === 0 ? [0x3c, 0x7e, 0xe8] : [0x24, 0x62, 0xd0]), 2);
   texture(blockOutput, "vacuum_toilet_button_lit", (x, y) => ((x + y) % 4 === 0 ? [0xe8, 0xfa, 0xff] : [0xa0, 0xe4, 0xff]), 2);
 }
+// Blue lav ice: the blue toilet water frozen, light blue and see-through, deeper blue in streaks where it froze in
+// layers, with a few white glints in it.
+{
+  texture(blockOutput, "lav_ice", (x, y) => {
+    if (random() < 0.05) return [0xf4, 0xfc, 0xff, 0xf0];
+    return (x + 2 * y + Math.floor(random() * 2)) % 6 === 0 ? [0x34, 0x8c, 0xe0, 0xc8] : [0x6c, 0xc4, 0xf4, 0xb0];
+  }, 0);
+}
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "aerolarge:block/lav_ice",
+        "y": 0
+      },
+      {
+        "model": "aerolarge:block/lav_ice",
+        "y": 90
+      },
+      {
+        "model": "aerolarge:block/lav_ice",
+        "y": 180
+      },
+      {
+        "model": "aerolarge:block/lav_ice",
+        "y": 270
+      }
+    ]
+  }
+}
