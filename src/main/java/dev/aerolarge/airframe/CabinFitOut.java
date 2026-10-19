@@ -1,10 +1,18 @@
 package dev.aerolarge.airframe;
 
+import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HoopBlock;
+import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.ScoreboardBlock;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
@@ -18,10 +26,10 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * Fits out the main deck of the furnished airliner, front to back between the door aisles: a business class just
  * behind the forward doors, big seats left and right of the aisle; an indoor moon pool sunk into the hold so its water
  * lies flush with the floor; a full-height gym hall (Turnhalle) over the wing box; and a lounge with a bar in the
- * tail, all lit by pendant lights. Everything is vanilla blocks but the lights, the pool's glass and the seats, which
- * are Create's so they can be sat in. It only ever goes into open cabin space or replaces cabin floor, so the doors
- * and the space in front of them stay as they were, and so does the hull, but for the belly under the pool, which is
- * glazed.
+ * tail, all lit by pendant lights; and passenger screens on the seat backs and the walls. Everything is vanilla blocks
+ * but the lights, the pool's glass, the screens and the seats, which are Create's so they can be sat in. It only ever
+ * goes into open cabin space or replaces cabin floor, so the doors and the space in front of them stay as they were,
+ * and so does the hull, but for the belly under the pool, which is glazed.
  */
 final class CabinFitOut {
     private static final double[] BUSINESS = {13.5, 17.5};
@@ -32,6 +40,15 @@ final class CabinFitOut {
     private static final double BUSINESS_PITCH = 1.5;
     /** How many business class seats stand side by side either side of the aisle. */
     private static final int BUSINESS_SEATS = 2;
+    /** Seated eye height: passenger screens hang this many blocks over the floor, the row above the seats. */
+    private static final int EYES = 2;
+    /**
+     * Rows of seats at most this many stations apart are one stretch of seating, each row's back carrying the screens
+     * for the row behind it; nearer than this to a row, the walls get no screens of their own.
+     */
+    private static final int ROW_PITCH = 4;
+    /** Along a wall, a screen at most every this many stations: one between each pair of windows. */
+    private static final int WALL_SPACING = 2;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -46,6 +63,8 @@ final class CabinFitOut {
         pool(from(POOL), to(POOL));
         gym(from(GYM), to(GYM));
         lounge(from(LOUNGE), to(LOUNGE));
+        // Last: the screens go where the rest has left room, and on the backs of its seats.
+        screens();
     }
 
     /** Whether overhead lockers go along the walls at this station, in metres from the nose: everywhere but the gym hall. */
@@ -319,6 +338,65 @@ final class CabinFitOut {
         for (int z = fromZ + 1; z <= toZ; z += 4) {
             hangLight(0, z, 5);
         }
+    }
+
+    /**
+     * Passenger screens, found from the seats and walls already laid out, so they follow whatever the fit-out holds.
+     * Where there are rows of seats, one on the back of each seat that has another right behind it in the next row,
+     * facing that passenger. Along the walls away from the rows, one between each pair of main deck windows at seated
+     * eye height, facing into the cabin: never over a window, and never by a door, which has no windows beside it.
+     */
+    private void screens() {
+        NavigableMap<Integer, Set<Integer>> rows = seatRows();
+        BlockState screen = AerolargeRegistry.PASSENGER_SCREEN.get().defaultBlockState();
+        for (Map.Entry<Integer, Set<Integer>> row : rows.entrySet()) {
+            // The row behind is further toward the tail, south; the screens go in the legroom just behind this one.
+            Map.Entry<Integer, Set<Integer>> behind = rows.higherEntry(row.getKey());
+            int pitch = behind == null ? 0 : behind.getKey() - row.getKey();
+            if (pitch < 2 || pitch > ROW_PITCH) {
+                continue;
+            }
+            for (int x : row.getValue()) {
+                if (behind.getValue().contains(x)) {
+                    layout.furnish(x, floor + EYES, row.getKey() + 1, screen.setValue(PassengerScreenBlock.FACING, Direction.SOUTH));
+                }
+            }
+        }
+        int length = (int) Math.ceil(AirframeShape.LENGTH * layout.scale());
+        for (int side : new int[]{1, -1}) {
+            BlockState facingIn = screen.setValue(PassengerScreenBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST);
+            int last = Integer.MIN_VALUE;
+            for (int z = 1; z < length; z++) {
+                int x = layout.besideWall(side, floor + EYES, z);
+                boolean fits = x != 0 && layout.isOpen(x, floor + EYES, z) && layout.isPlainHull(x + side, floor + EYES, z)
+                    && windowAt(side, z - 1) && windowAt(side, z + 1);
+                if (fits && z - last >= WALL_SPACING && rows.subMap(z - ROW_PITCH, true, z + ROW_PITCH, true).isEmpty()) {
+                    layout.furnish(x, floor + EYES, z, facingIn);
+                    last = z;
+                }
+            }
+        }
+    }
+
+    /** Whether a main deck window is in the wall on this side at this station, at seated eye height. */
+    private boolean windowAt(int side, int z) {
+        int x = layout.besideWall(side, floor + EYES, z);
+        return x != 0 && CabinWindowBlock.isPane(layout.stateAt(x + side, floor + EYES, z));
+    }
+
+    /**
+     * The rows of seats across the main deck: by station, where across each seat is, for every station with seats side
+     * by side. Seats one behind the other along a wall, like the gym hall's benches, are no row.
+     */
+    private NavigableMap<Integer, Set<Integer>> seatRows() {
+        NavigableMap<Integer, Set<Integer>> seats = new TreeMap<>();
+        layout.cells().forEach((pos, state) -> {
+            if (pos.getY() == floor + 1 && state.getBlock() instanceof SeatBlock) {
+                seats.computeIfAbsent(pos.getZ(), z -> new TreeSet<>()).add(pos.getX());
+            }
+        });
+        seats.values().removeIf(row -> row.stream().noneMatch(x -> row.contains(x + 1)));
+        return seats;
     }
 
     /** A pendant light hung on its cable from the crown, its bottom the given height above the floor (or as low as fits). */

@@ -24,6 +24,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below, a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
   with a bar and seats in the tail, all lit by pendant lights. The seats are Create's, so they can be sat in.
+  Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
+  the cabin, they hang on the back of each row, facing the one behind.
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run

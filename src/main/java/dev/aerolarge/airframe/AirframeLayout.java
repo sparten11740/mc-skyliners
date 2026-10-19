@@ -232,6 +232,11 @@ public final class AirframeLayout {
         return state != null && state.is(palette.floor().getBlock());
     }
 
+    /** Whether the block at this position is plain hull: no window, light or anything else set into it. */
+    boolean isPlainHull(int x, int y, int z) {
+        return stateAt(x, y, z).is(palette.hull().getBlock());
+    }
+
     /** Puts a fitting into the cabin; only where there was open space, so the hull is never cut into. */
     void furnish(int x, int y, int z, BlockState state) {
         if (isOpen(x, y, z)) {
