@@ -7,7 +7,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-/** Sent to everyone aboard as the airliner runs into rough air: how rough, from 0 to 1, and for how many ticks. */
+/**
+ * Sent to everyone aboard as the airliner runs into rough air: how rough (up to 1 in clear skies, more in rain and in
+ * a thunderstorm), and for how many ticks.
+ */
 public record TurbulencePayload(float strength, int ticks) implements CustomPacketPayload {
     public static final Type<TurbulencePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "turbulence"));
     public static final StreamCodec<ByteBuf, TurbulencePayload> STREAM_CODEC = StreamCodec.composite(

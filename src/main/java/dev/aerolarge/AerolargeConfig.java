@@ -87,7 +87,10 @@ public final class AerolargeConfig {
 
         builder.push("cabin");
         TURBULENCE = builder
-            .comment("Whether airliners in flight now and then run into rough air, shaking everyone aboard and throwing about whoever is not seated.")
+            .comment(
+                "Whether airliners in flight now and then run into rough air, shaking everyone aboard and throwing about whoever is not seated.",
+                "It comes a little more often and harder in rain, and much more often, longer and harder in a thunderstorm."
+            )
             .define("turbulence", true);
         VILLAGER_PASSENGERS = builder
             .comment(

@@ -72,7 +72,10 @@ included. Either way the message is left out of ordinary chat; use the handset o
 The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls, with a ding. While they are on,
 anyone seated aboard stays in their seat when they sneak to get up. In flight the airliner runs into rough air now
 and then, a few seconds of it about once a minute: everyone aboard feels the shake, and whoever is not sitting down
-is thrown about the cabin. Turn it off with `turbulence` in the server config.
+is thrown about the cabin. The weather makes it worse. In rain (or snow) it comes a little more often and is a little
+rougher; a thunderstorm brings heavy turbulence, about every 15 seconds, twice as long and up to nearly twice as
+hard: a stronger shake, and bumps that knock anyone standing off their feet. Only where something falls, though: a
+storm passing over a desert is as calm as clear skies. Turn it off with `turbulence` in the server config.
 
 ### Autopilot
 

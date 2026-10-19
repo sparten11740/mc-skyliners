@@ -24,7 +24,10 @@ public final class CameraShake {
     private static final float THUMP_PER_SINK = 0.4F;
     private static final float MAX_THUMP = 3F;
     private static final float THUMP_FADE = 0.82F;
-    /** The shake through the roughest air, in degrees, and how many ticks it takes to die away at the end. */
+    /**
+     * The shake through the roughest air of clear skies (strength 1; a storm's is stronger), in degrees, and how many
+     * ticks it takes to die away at the end.
+     */
     private static final float TURBULENCE = 1.6F;
     private static final float TURBULENCE_FADE_TICKS = 20;
     /** The airliner is on its wheels while it sits within this many blocks of the height it rests at on the ground. */
@@ -46,7 +49,7 @@ public final class CameraShake {
     private CameraShake() {
     }
 
-    /** The airliner the player rides has run into rough air, this rough (0 to 1), for this many ticks. */
+    /** The airliner the player rides has run into rough air, this rough (up to 1 in clear skies), for this many ticks. */
     public static void turbulence(float strength, int ticks) {
         roughStrength = strength;
         roughLeft = ticks;
