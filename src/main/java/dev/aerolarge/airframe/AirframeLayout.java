@@ -78,6 +78,8 @@ public final class AirframeLayout {
     private static final int LIGHT_SPACING = 6;
     /** How many blocks tall a cabin window is. */
     private static final int WINDOW_HEIGHT = 2;
+    /** How square to the side the hull has to face for a window there: the sideways share of its outward direction. */
+    private static final double WINDOW_FACING = 0.75;
     /**
      * Each wheel mount's suspension strength, Offroad's own 5 to 180 setting (its value box), set to the stiffest: at
      * the default of 10 a handful of wheels cannot carry an airliner, and their springs bottom out with the tires sunk
@@ -331,7 +333,8 @@ public final class AirframeLayout {
     /**
      * Two rows of cabin windows down each side, each window two blocks tall, taller than wide like an airliner's: one
      * row from eye level over the main deck up past the eyes of someone seated, the other where the upper deck's
-     * would be. They stand on every other station, never one a wall light or a door takes.
+     * would be. They stand on every other station, never one a wall light or a door takes, wherever the hull faces
+     * out sideways, flat or curved: the skin pass cuts them to the curve along with the skin around them.
      */
     private void windows() {
         int mainRow = floorY + 2;
@@ -347,40 +350,41 @@ public final class AirframeLayout {
                 continue;
             }
             for (int bottom : new int[]{mainRow, upperRow}) {
-                for (int side : new int[]{1, -1}) {
-                    window(side, bottom, z);
+                for (int y = bottom; y < bottom + WINDOW_HEIGHT; y++) {
+                    for (int side : new int[]{1, -1}) {
+                        window(side, y, z);
+                    }
                 }
             }
         }
     }
 
     /**
-     * One window on one side, up from row bottom at station z: a pane in each of its rows where the hull is a wall
-     * facing out sideways, with the cabin right behind it, and whole: not cut to the curve, which a window would stick
-     * out of. Panes right above one another are joined into one tall window.
+     * One row of a window on one side at station z: a pane in every hull block from the cabin's wall out to the skin,
+     * where the hull there faces out sideways. The skin pass joins the panes into tall windows once they are cut.
      */
-    private void window(int side, int bottom, int z) {
-        int[] xs = new int[WINDOW_HEIGHT];
-        boolean[] fits = new boolean[WINDOW_HEIGHT];
-        for (int i = 0; i < WINDOW_HEIGHT; i++) {
-            int y = bottom + i;
-            xs[i] = side * (openHalfWidth(y, z) + 1);
-            fits[i] = openHalfWidth(y, z) >= 0 && has(xs[i], y, z) && !inFuselage(xs[i] + side, y, z) && shapeAt(xs[i], y, z) == ShellGeometry.WHOLE;
+    private void window(int side, int y, int z) {
+        int open = openHalfWidth(y, z);
+        if (open < 0) {
+            return;
         }
-        for (int i = 0; i < WINDOW_HEIGHT; i++) {
-            if (fits[i]) {
-                boolean below = i > 0 && fits[i - 1] && xs[i - 1] == xs[i];
-                boolean above = i + 1 < WINDOW_HEIGHT && fits[i + 1] && xs[i + 1] == xs[i];
-                set(xs[i], bottom + i, z, palette.cabinWindow().setValue(CabinWindowBlock.DOWN, below).setValue(CabinWindowBlock.UP, above));
-            }
+        double[] out = AirframeShape.outward(side * (open + 1) / scale, (y + 0.5) / scale, (z + 0.5) / scale);
+        if (Math.abs(out[0]) < WINDOW_FACING) {
+            return;
+        }
+        for (int x = side * (open + 1); inFuselage(x, y, z) && stateAt(x, y, z).is(palette.hull().getBlock()); x += side) {
+            set(x, y, z, palette.cabinWindow());
         }
     }
 
-    /** Whether one of the passenger doors, cut through the hull later, takes the station. */
+    /**
+     * Whether one of the passenger doors, cut through the hull later, takes the station, or the controls set into the
+     * hull just beside it (the airstairs' panel, a jump light).
+     */
     private boolean doorAt(int z) {
         for (double station : PASSENGER_DOORS) {
             int fore = (int) Math.round(station * scale);
-            if (z == fore || z == fore + 1) {
+            if (z >= fore - 1 && z <= fore + 2) {
                 return true;
             }
         }
@@ -751,20 +755,23 @@ public final class AirframeLayout {
 
     /**
      * Cuts the fuselage's skin to its curve. Every skin block the fuselage's surface passes through becomes shell, cut
-     * where the surface crosses it, and under the windscreen the glass is cut the same way. Outside blocks the surface
-     * still passes through get shell (or glass) of their own, so the skin closes into one smooth surface.
+     * where the surface crosses it, and the windscreen's glass and the cabin windows are cut the same way. Outside
+     * blocks the surface still passes through get shell (or glass, or window) of their own, so the skin closes into one
+     * smooth surface. Cut or not, window panes right above one another are then joined into tall windows.
      * Skin next to anything built onto the hull from outside, the wings, gear or exterior lights, stays as it is so
-     * nothing opens up around it, and no shell is added over the windows and doors set into the skin.
+     * nothing opens up around it, and no shell is added over the doors set into the skin.
      */
     private void shell() {
         BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
         BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
+        BlockState curvedPane = AerolargeRegistry.CABIN_WINDOW_SHELL.get().defaultBlockState();
         Map<BlockPos, BlockState> shaped = new HashMap<>();
         Set<BlockPos> outside = new HashSet<>();
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
             BlockPos pos = cell.getKey();
             boolean glazed = cell.getValue().is(glass.getBlock());
-            if (!glazed && !cell.getValue().is(palette.hull().getBlock()) || !inSkin(pos)) {
+            boolean pane = CabinWindowBlock.isPane(cell.getValue());
+            if (!glazed && !pane && !cell.getValue().is(palette.hull().getBlock()) || !inSkin(pos)) {
                 continue;
             }
             for (Direction side : Direction.values()) {
@@ -776,36 +783,45 @@ public final class AirframeLayout {
             if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false)) {
                 continue;
             }
-            shaped.put(pos, (glazed ? glass : shell).setValue(ShellBlock.SHAPE, shape));
+            shaped.put(pos, (glazed ? glass : pane ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
         }
         for (BlockPos pos : outside) {
             int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
             if (inFuselage(pos) || shape <= ShellGeometry.WHOLE || nextToFitting(pos, true)) {
                 continue;
             }
-            shaped.put(pos, (onGlass(pos) ? glass : shell).setValue(ShellBlock.SHAPE, shape));
+            BlockState in = inward(pos);
+            shaped.put(pos, (in.is(glass.getBlock()) ? glass : CabinWindowBlock.isPane(in) ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
         }
         cells.putAll(shaped);
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            if (CabinWindowBlock.isPane(cell.getValue())) {
+                BlockPos pos = cell.getKey();
+                cell.setValue(cell.getValue()
+                    .setValue(CabinWindowBlock.UP, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() + 1, pos.getZ())))
+                    .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() - 1, pos.getZ()))));
+            }
+        }
     }
 
-    /** Whether the skin block straight in from this one, against the way the fuselage faces there, is glass. */
-    private boolean onGlass(BlockPos pos) {
+    /** The skin block straight in from this one, against the way the fuselage faces there. */
+    private BlockState inward(BlockPos pos) {
         double[] out = AirframeShape.outward(pos.getX() / scale, (pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale);
         Direction in = Direction.getNearest(-out[0], -out[1], -out[2]);
-        return stateAt(pos.getX() + in.getStepX(), pos.getY() + in.getStepY(), pos.getZ() + in.getStepZ()).is(AerolargeRegistry.COCKPIT_GLASS.get());
+        return stateAt(pos.getX() + in.getStepX(), pos.getY() + in.getStepY(), pos.getZ() + in.getStepZ());
     }
 
     /**
      * Whether something other than skin is built onto the hull next to this block: whatever stands outside the
-     * fuselage and is not hull, glass or a light; with {@code setIn}, also whatever is set into the skin itself, like
-     * the windows and doors.
+     * fuselage and is not hull, glass, a window or a light; with {@code setIn}, also whatever is set into the skin
+     * itself, like the doors.
      */
     private boolean nextToFitting(BlockPos pos, boolean setIn) {
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
             BlockState state = cells.get(next);
             if (state == null || state.isAir() || state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())
-                || state.is(AerolargeRegistry.COCKPIT_GLASS.get())) {
+                || state.is(AerolargeRegistry.COCKPIT_GLASS.get()) || CabinWindowBlock.isPane(state)) {
                 continue;
             }
             if (!inFuselage(next) || setIn && inSkin(next)) {
@@ -1468,7 +1484,7 @@ public final class AirframeLayout {
      */
     private void cabinControls() {
         wire(cabinLights, state -> state.hasProperty(Brightness.PROPERTY) && !(state.getBlock() instanceof CabinControlBlock));
-        wire(windowShades, state -> state.getBlock() instanceof CabinWindowBlock);
+        wire(windowShades, CabinWindowBlock::isPane);
     }
 
     private void wire(@Nullable BlockPos control, Predicate<BlockState> works) {

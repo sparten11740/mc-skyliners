@@ -46,7 +46,7 @@ public class WindowShadesBlock extends CabinControlBlock {
 
     @Override
     public BlockState applyTo(BlockState control, BlockState target) {
-        return target.getBlock() instanceof CabinWindowBlock ? target.setValue(SHADED, control.getValue(SHADED)) : target;
+        return CabinWindowBlock.isPane(target) ? target.setValue(SHADED, control.getValue(SHADED)) : target;
     }
 
     @Override

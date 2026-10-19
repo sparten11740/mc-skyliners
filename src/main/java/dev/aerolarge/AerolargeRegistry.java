@@ -15,6 +15,7 @@ import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.CabinWindowShellBlock;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
 import dev.aerolarge.block.CheckInDeskBlock;
@@ -235,6 +236,10 @@ public final class AerolargeRegistry {
     /** The skin and the windscreen cut to the curve of the hull; placed only by the blueprints, so they have no items. */
     public static final DeferredBlock<ShellBlock> AIRFRAME_SHELL = BLOCKS.registerBlock(
         "airframe_shell", properties -> new ShellBlock(properties, AerolargeRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW).noOcclusion()
+    );
+    /** A cabin window cut to the hull's curve, where the fuselage's side curves; placed only by the blueprints too. */
+    public static final DeferredBlock<CabinWindowShellBlock> CABIN_WINDOW_SHELL = BLOCKS.registerBlock(
+        "cabin_window_shell", properties -> new CabinWindowShellBlock(properties, AerolargeRegistry.CABIN_WINDOW), glass()
     );
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()

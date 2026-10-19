@@ -632,9 +632,10 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
 
 // The cabin window with its shade up or down, on its own or joined to the windows above and below it into one tall
 // window; its plain blockstate, from the cubes above, gives way to one for them all.
+const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", false, true], ["_middle", true, true]];
 {
   const variants = {};
-  for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], ["_top", false, true], ["_middle", true, true]]) {
+  for (const [joins, up, down] of WINDOW_JOINS) {
     for (const shaded of [false, true]) {
       const name = `cabin_window${joins}${shaded ? "_shaded" : ""}`;
       if (name !== "cabin_window") {
@@ -646,6 +647,28 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     }
   }
   write(`assets/${ID}/blockstates/cabin_window.json`, { variants });
+}
+// The same window cut to the hull's curve, every pane of it baked for every shape by the "shell" loader, with the
+// flat window's textures. It gives back a cabin window.
+{
+  const variants = {};
+  for (const [joins, up, down] of WINDOW_JOINS) {
+    for (const shaded of [false, true]) {
+      const texture = `${ID}:block/cabin_window${joins}${shaded ? "_shaded" : ""}`;
+      const name = `cabin_window_shell${joins}${shaded ? "_shaded" : ""}`;
+      write(`assets/${ID}/models/block/${name}.json`, {
+        loader: `${ID}:shell`, render_type: "minecraft:translucent", textures: { skin: texture, particle: texture },
+      });
+      variants[`down=${down},shaded=${shaded},up=${up}`] = { model: `${ID}:block/${name}` };
+    }
+  }
+  write(`assets/${ID}/blockstates/cabin_window_shell.json`, { variants });
+  write(`data/${ID}/loot_table/blocks/cabin_window_shell.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:cabin_window` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/cabin_window_shell`,
+  });
+  cubes.cabin_window_shell = null;
 }
 
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
@@ -863,6 +886,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.airstair_call_button": "Airstair Call Button",
   "block.aerolarge.airframe_shell": "Airframe Shell",
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
+  "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
   "block.aerolarge.hull_relay": "Hull Relay",
