@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.BlueIceChunk;
 import javax.annotation.Nullable;
@@ -12,8 +13,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -73,6 +77,12 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
      */
     private static final double BELLY_REACH_PER_SCALE = 9;
     private static final double HUNG_BELOW_PER_SCALE = 2;
+    /**
+     * How high above the ground a chunk has to be let go for Blue Ice, in metres scaled like the airliner: well clear of
+     * a runway. Standing as blocks, the airliner is itself the top of the ground under its belly, so only one in flight
+     * lets a chunk go that high.
+     */
+    private static final double AIRBORNE_METRES = 15;
     /**
      * The lid's clack going up or down, light as plastic is, and the button's click pressed while the vacuum builds up:
      * quiet, and higher than a stone button's.
@@ -130,7 +140,7 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
             } else if (state.getValue(FLUSHING)) {
                 server.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, BUTTON_VOLUME, BUTTON_PITCH);
             } else {
-                flush(server, pos, state);
+                flush(server, pos, state, player);
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
@@ -148,7 +158,7 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
      * The flush: the hiss and the swirl in the bowl, and the chunk of blue ice dropped from the belly. The hiss and the
      * swirl are set at the toilet itself, which Sable carries along with an assembled airliner.
      */
-    private void flush(ServerLevel level, BlockPos pos, BlockState state) {
+    private void flush(ServerLevel level, BlockPos pos, BlockState state, Player player) {
         level.setBlock(pos, state.setValue(FLUSHING, true), Block.UPDATE_ALL);
         level.scheduleTick(pos, this, RECHARGE);
         Direction facing = state.getValue(FACING);
@@ -170,6 +180,10 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
         Vec3 at = SableFlight.toWorld(level, Vec3.atCenterOf(below));
         Vec3 velocity = SableFlight.velocity(level, Vec3.atCenterOf(pos)).scale(1.0 / SharedConstants.TICKS_PER_SECOND);
         level.addFreshEntity(BlueIceChunk.of(level, at, velocity));
+        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
+        if (player instanceof ServerPlayer flusher && at.y - ground > AIRBORNE_METRES * AerolargeConfig.SCALE.get()) {
+            FirstFlight.BLUE_ICE.award(flusher);
+        }
     }
 
     /**

@@ -1,0 +1,20 @@
+{
+  "parent": "aerolarge:first_flight/cleared_for_takeoff",
+  "display": {
+    "icon": {
+      "id": "aerolarge:vacuum_toilet"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.blue_ice.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.blue_ice.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -34,7 +34,9 @@ public enum FirstFlight {
     /** Dived into the moon pool off its springboard or its tower in flight. */
     CANNONBALL,
     /** Found the golden suitcases hidden in an airliner's hold: "suitcase_1" and on, one criterion each. */
-    LOST_AND_FOUND;
+    LOST_AND_FOUND,
+    /** Flushed a vacuum toilet aboard an airliner in flight, dropping its blue ice from high over the ground. */
+    BLUE_ICE;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

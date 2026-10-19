@@ -1661,6 +1661,7 @@ const FIRST_FLIGHT = [
   ["air_mail", "cleared_for_takeoff", "paper_plane", "goal", "Air Mail", "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"],
   ["duty_free", "frequent_flyer", "duty_free_counter", "task", "Duty Free", "Spend emeralds at a duty-free counter"],
   ["cannonball", "cleared_for_takeoff", "springboard", "goal", "Cannonball", "Dive into the moon pool off its springboard or its tower while the airliner flies"],
+  ["blue_ice", "cleared_for_takeoff", "vacuum_toilet", "goal", "Blue Ice", "Flush an airliner's toilet in flight and drop blue ice on the world below"],
 ];
 for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
   write(`data/${ID}/advancement/first_flight/${name}.json`, {
