@@ -705,34 +705,45 @@ public final class AirframeLayout {
 
     /**
      * The windscreen: the skin under the glass becomes cockpit glass, but for the posts that frame it into panes,
-     * which stay skin: in each row and on each side, the block facing closest to each side post's angle round the
-     * nose. The middle column is glass like the rest (it is counted with the starboard side), so the front is one
+     * which stay skin. Each post stands upright at one station along the nose on each side: the one whose skin, at
+     * the pilots' eye level, faces closest to the post's angle round the nose. Picked row by row instead, the post
+     * would wander back a block every row or two up the curving nose and break up into specks of skin across the
+     * glass. The middle column is glass like the rest (it is counted with the starboard side), so the front is one
      * wide pane. The shell cuts the glass to the curve with the skin around it.
      */
     private void windscreen() {
         BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
         int last = (int) Math.ceil(NOSE_LENGTH * scale);
         int halfWidth = (int) Math.ceil(WIDTH / 2 * scale) + 1;
-        for (int y = 0; y <= HEIGHT * scale; y++) {
-            for (int side : new int[]{1, -1}) {
-                List<BlockPos> row = new ArrayList<>();
+        int eyes = (int) Math.floor(Windscreen.EYES * scale);
+        for (int side : new int[]{1, -1}) {
+            Map<Integer, List<BlockPos>> rows = new HashMap<>();
+            for (int y = 0; y <= HEIGHT * scale; y++) {
                 for (int z = 0; z <= last; z++) {
                     for (int x = side > 0 ? 0 : -1; Math.abs(x) <= halfWidth; x += side) {
                         BlockState state = stateAt(x, y, z);
                         boolean skin = state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock());
                         if (skin && Windscreen.covers((y + 0.5) / scale, (z + 0.5) / scale)) {
-                            row.add(new BlockPos(x, y, z));
+                            rows.computeIfAbsent(y, ignored -> new ArrayList<>()).add(new BlockPos(x, y, z));
                         }
                     }
                 }
-                Set<BlockPos> posts = new HashSet<>();
-                for (double post : Windscreen.SIDE_POSTS) {
-                    row.stream()
-                        .filter(pos -> Math.abs(facing(pos) - post) <= Windscreen.POST_TOLERANCE)
-                        .min(Comparator.comparingDouble(pos -> Math.abs(facing(pos) - post)))
-                        .ifPresent(posts::add);
+            }
+            Map<Double, Integer> stations = new HashMap<>();
+            for (double post : Windscreen.SIDE_POSTS) {
+                rows.getOrDefault(eyes, List.of()).stream()
+                    .filter(pos -> Math.abs(facing(pos) - post) <= Windscreen.POST_TOLERANCE)
+                    .min(Comparator.comparingDouble(pos -> Math.abs(facing(pos) - post)))
+                    .ifPresent(pos -> stations.put(post, pos.getZ()));
+            }
+            for (List<BlockPos> row : rows.values()) {
+                for (BlockPos pos : row) {
+                    boolean post = stations.entrySet().stream().anyMatch(station -> pos.getZ() == station.getValue()
+                        && Math.abs(facing(pos) - station.getKey()) <= Windscreen.POST_TOLERANCE);
+                    if (!post) {
+                        set(pos.getX(), pos.getY(), pos.getZ(), glass);
+                    }
                 }
-                row.stream().filter(pos -> !posts.contains(pos)).forEach(pos -> set(pos.getX(), pos.getY(), pos.getZ(), glass));
             }
         }
     }

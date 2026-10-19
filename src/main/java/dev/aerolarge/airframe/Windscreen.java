@@ -22,7 +22,10 @@ public final class Windscreen {
     static final double REAR = 0.72 * NOSE_LENGTH;
     /** The flight deck floor's top lies this many blocks below the pilots' eyes: a player's eye height. */
     static final double EYE_HEIGHT = 1.62;
-    /** The side posts, by which way the skin faces where they stand: degrees round from straight ahead. */
+    /**
+     * The side posts, by which way the skin faces where they stand at the pilots' eye level: degrees round from
+     * straight ahead. Each stands upright at that station all the way up the glass.
+     */
     static final double[] SIDE_POSTS = {70, 88};
     /** A post is only put where the skin faces within this many degrees of it. */
     static final double POST_TOLERANCE = 15;
