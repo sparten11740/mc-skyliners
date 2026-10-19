@@ -55,6 +55,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
         NeoForge.EVENT_BUS.addListener(TabBanners::draw);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::lend);
         NeoForge.EVENT_BUS.addListener(PassengerCameras::tick);
         NeoForge.EVENT_BUS.addListener(PassengerCameras::frame);
         NeoForge.EVENT_BUS.addListener(PassengerCameras::angles);

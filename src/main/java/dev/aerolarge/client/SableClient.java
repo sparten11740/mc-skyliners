@@ -119,37 +119,7 @@ public final class SableClient {
         return SABLE ? Access.view(point, forward, up, partialTick) : null;
     }
 
-    /**
-     * Where a point in the world lies among the blocks of the assembled airliner the block entity is part of, as the
-     * airliner lies this tick; null if it is not part of one.
-     */
-    @Nullable
-    static Vec3 toPlot(BlockEntity blockEntity, Vec3 point) {
-        return SABLE && blockEntity.getLevel() != null ? Access.toPlot(blockEntity, point) : null;
-    }
-
-    /**
-     * Where a point among an assembled airliner's blocks is in the world, as the airliner lies this tick, the way Sable
-     * places what stands on it; null once no airliner holds the point.
-     */
-    @Nullable
-    static Vec3 fromPlot(Vec3 point) {
-        return SABLE ? Access.fromPlot(point) : null;
-    }
-
     private static final class Access {
-        @Nullable
-        static Vec3 toPlot(BlockEntity blockEntity, Vec3 point) {
-            ClientSubLevel airliner = Sable.HELPER.getContainingClient(blockEntity);
-            return airliner == null ? null : airliner.logicalPose().transformPositionInverse(point);
-        }
-
-        @Nullable
-        static Vec3 fromPlot(Vec3 point) {
-            ClientSubLevel airliner = Sable.HELPER.getContainingClient(point);
-            return airliner == null ? null : airliner.logicalPose().transformPosition(point);
-        }
-
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
         }

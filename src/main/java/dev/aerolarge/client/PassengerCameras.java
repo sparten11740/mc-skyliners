@@ -15,6 +15,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
@@ -38,10 +39,11 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * steps on to the next and, after the last, back to the cabin; sneaking goes straight back. The view rides with the
  * airliner, placed afresh every frame as the airliner is drawn. The player stays where they are, seated or standing,
  * and nothing they do reaches the world while they look: a click only steps the camera on, and the sneak that leaves
- * the view does not also get them up from their seat. The airliner only carries a standing player while the view is
- * on them, so one standing is held on their spot in the cabin every tick, and put back on it as they leave. The hand,
- * the crosshair and the hotbar give way to the camera's name. The view goes back to the player as soon as the
- * airliner, the screen or the player is gone or out of reach. Only ever for the local player, on the client.
+ * the view does not also get them up from their seat. Minecraft only moves a player, so the airliner only carries one
+ * standing aboard and the server only hears where they are, while the view is on them: for each tick the view goes back
+ * to the player, still and kept from the keys, and the lens takes it again before the frame is drawn. The hand, the
+ * crosshair and the hotbar give way to the camera's name. The view goes back to the player as soon as the airliner, the
+ * screen or the player is gone or out of reach. Only ever for the local player, on the client.
  */
 public final class PassengerCameras {
     /** Further than this from the screen, in blocks, the player has left the airliner or been left behind. */
@@ -84,13 +86,6 @@ public final class PassengerCameras {
         final CameraType cameraType;
         final float yRot;
         final float xRot;
-        /**
-         * Where the player stood among the airliner's blocks, if they were standing aboard: they are kept there while
-         * they look, since the airliner only carries a player the view is on. Null for one seated, whom the seat
-         * carries, or not aboard.
-         */
-        @Nullable
-        final Vec3 standing;
         int camera;
         /** Where the camera is among the airliner's blocks and the ways it faces in the airliner's frame. */
         Vec3 point = Vec3.ZERO;
@@ -101,15 +96,14 @@ public final class PassengerCameras {
         /** Whether the use key is still down from the press that got here, which must not step on again. */
         boolean useHeld = true;
 
-        Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, double scale, Lens lens, LocalPlayer player, CameraType cameraType) {
+        Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, double scale, Lens lens, CameraType cameraType, float yRot, float xRot) {
             this.screen = screen;
             this.frame = frame;
             this.scale = scale;
             this.lens = lens;
             this.cameraType = cameraType;
-            this.yRot = player.getYRot();
-            this.xRot = player.getXRot();
-            this.standing = !player.isPassenger() && SableClient.isAboard(player, screen) ? SableClient.toPlot(screen, player.position()) : null;
+            this.yRot = yRot;
+            this.xRot = xRot;
         }
 
         OutsideCamera camera() {
@@ -166,8 +160,8 @@ public final class PassengerCameras {
             return;
         }
         // The server's settings, the airliner's scale among them, reach the client as it joins.
-        Viewing view = new Viewing(screen, frame, AerolargeConfig.SCALE.get(), new Lens(player.level(), player.getEyeHeight()), player,
-            minecraft.options.getCameraType());
+        Viewing view = new Viewing(screen, frame, AerolargeConfig.SCALE.get(), new Lens(player.level(), player.getEyeHeight()),
+            minecraft.options.getCameraType(), player.getYRot(), player.getXRot());
         view.mount(0);
         if (!place(view, minecraft.getTimer().getGameTimeDeltaPartialTick(true))) {
             return;
@@ -189,10 +183,7 @@ public final class PassengerCameras {
         }
     }
 
-    /**
-     * Gives the player their own view back, as it was, standing where they stood, so what the server is told next is
-     * where they belong; unless something else has taken the view over meanwhile.
-     */
+    /** Gives the player their own view back, as it was; unless something else has taken the view over meanwhile. */
     private static void leave(Minecraft minecraft) {
         Viewing view = viewing;
         if (view == null) {
@@ -201,31 +192,14 @@ public final class PassengerCameras {
         viewing = null;
         minecraft.options.setCameraType(view.cameraType);
         LocalPlayer player = minecraft.player;
-        if (player != null && minecraft.getCameraEntity() == view.lens) {
-            if (view.standing != null) {
-                keep(player, view.standing);
-            }
+        Entity camera = minecraft.getCameraEntity();
+        if (player != null && (camera == view.lens || camera == player)) {
             minecraft.setCameraEntity(player);
             player.setYRot(view.yRot);
             player.setXRot(view.xRot);
             player.yRotO = view.yRot;
             player.xRotO = view.xRot;
         }
-    }
-
-    /**
-     * Puts a passenger back on their spot among the airliner's blocks as the airliner lies now, still and not
-     * falling; false once no airliner holds the spot.
-     */
-    private static boolean keep(LocalPlayer player, Vec3 standing) {
-        Vec3 at = SableClient.fromPlot(standing);
-        if (at == null) {
-            return false;
-        }
-        player.setPos(at);
-        player.setDeltaMovement(Vec3.ZERO);
-        player.resetFallDistance();
-        return true;
     }
 
     private static void click(Minecraft minecraft) {
@@ -266,8 +240,25 @@ public final class PassengerCameras {
     }
 
     /**
-     * At the end of each tick: leaves the view once anything it needs is gone, keeps a standing passenger on their
-     * spot as the airliner has moved, and keeps the camera in first person.
+     * Before each tick the view goes back to the player, so they tick as they would looking themselves: carried by the
+     * airliner and heard by the server. Unless something else has taken the view over meanwhile.
+     */
+    public static void lend(ClientTickEvent.Pre event) {
+        Viewing view = viewing;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (view == null || minecraft.player == null) {
+            return;
+        }
+        if (minecraft.getCameraEntity() != view.lens) {
+            leave(minecraft);
+            return;
+        }
+        minecraft.setCameraEntity(minecraft.player);
+    }
+
+    /**
+     * At the end of each tick: leaves the view once anything it needs is gone or something else has taken it over;
+     * otherwise the lens takes the view back to be drawn from, in first person.
      */
     public static void tick(ClientTickEvent.Post event) {
         Viewing view = viewing;
@@ -276,16 +267,14 @@ public final class PassengerCameras {
         }
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
+        Entity camera = minecraft.getCameraEntity();
         boolean lost = player == null || !player.isAlive() || player.level() != view.lens.level() || view.screen.isRemoved()
-            || minecraft.getCameraEntity() != view.lens || !withinReach(player, view.screen);
+            || camera != player && camera != view.lens || !withinReach(player, view.screen);
         if (lost) {
             leave(minecraft);
             return;
         }
-        if (view.standing != null && !keep(player, view.standing)) {
-            leave(minecraft);
-            return;
-        }
+        minecraft.setCameraEntity(view.lens);
         if (!minecraft.options.getCameraType().isFirstPerson()) {
             minecraft.options.setCameraType(CameraType.FIRST_PERSON);
         }
@@ -343,11 +332,20 @@ public final class PassengerCameras {
     }
 
     /**
-     * Sneaking leaves the view, and never reaches the player while they look or until they let go of it afterwards:
-     * seated, it would get them up.
+     * The player does not walk or jump while they look. Sneaking leaves the view, and never reaches the player while
+     * they look or until they let go of it afterwards: seated, it would get them up.
      */
     public static void movement(MovementInputUpdateEvent event) {
         Input input = event.getInput();
+        if (viewing != null) {
+            input.leftImpulse = 0;
+            input.forwardImpulse = 0;
+            input.up = false;
+            input.down = false;
+            input.left = false;
+            input.right = false;
+            input.jumping = false;
+        }
         if (!input.shiftKeyDown) {
             holdingSneak = false;
             return;
