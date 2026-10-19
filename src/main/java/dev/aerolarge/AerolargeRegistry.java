@@ -386,11 +386,15 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SEATBELT_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SWITCH);
     public static final DeferredItem<BlockItem> SEATBELT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SIGN);
 
-    /** Modern cabin lighting: LED strips along the tops of the walls, and pendant lights hung on slim cables. */
+    /**
+     * Modern cabin lighting: LED strips along the tops of the walls, and pendant lights hung on slim cables. The strips
+     * give all a lamp can: no daylight comes in through the skin, and over most of the main deck they are what lights
+     * it.
+     */
     public static final DeferredBlock<LightStripBlock> LIGHT_STRIP = BLOCKS.registerBlock(
         "light_strip", LightStripBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
-            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(13))
+            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15))
     );
     public static final DeferredBlock<PendantLightBlock> PENDANT_LIGHT = BLOCKS.registerBlock(
         "pendant_light", PendantLightBlock::new,
