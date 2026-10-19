@@ -135,6 +135,14 @@
       }
     ]
   },
+  "trolley_squeak": {
+    "subtitle": "subtitles.aerolarge.trolley_squeak",
+    "sounds": [
+      {
+        "name": "aerolarge:trolley_squeak"
+      }
+    ]
+  },
   "ball_bounce": {
     "subtitle": "subtitles.aerolarge.ball_bounce",
     "sounds": [

@@ -13,6 +13,7 @@ import dev.aerolarge.client.ParachuteControls;
 import dev.aerolarge.client.ParachuteLayer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
+import dev.aerolarge.client.TrolleyRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -72,5 +73,6 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
+        event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
     }
 }

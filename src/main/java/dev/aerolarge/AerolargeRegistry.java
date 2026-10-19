@@ -27,6 +27,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
@@ -61,9 +62,12 @@ import dev.aerolarge.block.TowerRadioBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.FallingCrate;
+import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
+import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ParachuteItem;
+import dev.aerolarge.item.TrolleyItem;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -78,11 +82,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.BlockGetter;
@@ -138,6 +145,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> SEATBELT_DING = sound("seatbelt_ding");
     /** The whirr of the window shades' motors. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SHADE_MOTOR = sound("shade_motor");
+    /** The trolley's wheels squeaking. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> TROLLEY_SQUEAK = sound("trolley_squeak");
     /** Basketball: the ball bouncing, the swish of a basket and the scoreboard's buzzer. */
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_BOUNCE = sound("ball_bounce");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASKET_SWISH = sound("basket_swish");
@@ -405,6 +414,29 @@ public final class AerolargeRegistry {
             .clientTrackingRange(16).updateInterval(2).build("falling_crate")
     );
 
+    /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
+    public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
+    public static final DeferredItem<BlockItem> GALLEY_ITEM = ITEMS.registerSimpleBlockItem(GALLEY);
+    public static final DeferredHolder<EntityType<?>, EntityType<Trolley>> TROLLEY = ENTITY_TYPES.register(
+        "trolley", () -> EntityType.Builder.<Trolley>of(Trolley::new, MobCategory.MISC).sized(0.8F, 1.1F)
+            .clientTrackingRange(8).updateInterval(3).build("trolley")
+    );
+    public static final DeferredItem<TrolleyItem> TROLLEY_ITEM = ITEMS.register("trolley", () -> new TrolleyItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> CHICKEN_MEAL = ITEMS.registerSimpleItem(
+        "chicken_meal", new Item.Properties().food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.8F).build())
+    );
+    public static final DeferredItem<Item> PASTA_MEAL = ITEMS.registerSimpleItem(
+        "pasta_meal", new Item.Properties().food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.7F).build())
+    );
+    public static final DeferredItem<Item> PRETZELS = ITEMS.registerSimpleItem(
+        "pretzels", new Item.Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).fast().build())
+    );
+    /** A minute of Speed in a paper cup. */
+    public static final DeferredItem<CoffeeItem> AIRLINE_COFFEE = ITEMS.register("airline_coffee", () -> new CoffeeItem(new Item.Properties().food(
+        new FoodProperties.Builder().nutrition(1).saturationModifier(0.2F).alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 60 * 20, 0), 1.0F).build()
+    )));
+
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
         "basketball", () -> EntityType.Builder.<Basketball>of(Basketball::new, MobCategory.MISC).sized(0.4F, 0.4F)
@@ -444,7 +476,8 @@ public final class AerolargeRegistry {
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
             SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
-            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, DROP_RELEASE_ITEM
+            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, DROP_RELEASE_ITEM,
+            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE
         ).forEach(item -> output.accept(item.get())))
         .build());
 

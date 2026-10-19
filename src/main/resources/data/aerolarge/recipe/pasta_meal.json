@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "WMB"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:wheat"
+    },
+    "M": {
+      "item": "minecraft:brown_mushroom"
+    },
+    "B": {
+      "item": "minecraft:bowl"
+    }
+  },
+  "result": {
+    "id": "aerolarge:pasta_meal",
+    "count": 1
+  }
+}

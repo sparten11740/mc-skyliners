@@ -162,6 +162,7 @@ cubes.engine_core = null;
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
   sounds.shade_motor = { subtitle: `subtitles.${ID}.shade_motor`, sounds: [{ name: `${ID}:shade_motor` }] };
+  sounds.trolley_squeak = { subtitle: `subtitles.${ID}.trolley_squeak`, sounds: [{ name: `${ID}:trolley_squeak` }] };
   for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
@@ -483,6 +484,32 @@ for (const name of ["drop_bay", "drop_release"]) {
   cubes[name] = null;
 }
 
+// Cabin service. The galley: stainless cupboards with an oven and a coffee machine. The trolley, drawn as its item's
+// model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark wheels.
+// The meals, pretzels and coffee: flat icons.
+write(`assets/${ID}/models/block/galley.json`, {
+  parent: "minecraft:block/orientable",
+  textures: { front: `${ID}:block/galley_front`, side: `${ID}:block/galley_side`, top: `${ID}:block/galley_side` },
+});
+facing("galley");
+write(`assets/${ID}/models/item/galley.json`, { parent: `${ID}:block/galley` });
+dropsItself("galley");
+cubes.galley = null;
+write(`assets/${ID}/models/item/trolley.json`, boxes(
+  { side: `${ID}:item/trolley_side`, end: `${ID}:item/trolley_end`, top: `${ID}:item/trolley_top`, wheel: `${ID}:block/light_cable`,
+    particle: `${ID}:item/trolley_side` },
+  [
+    [[2.5, 2, 0.5], [13.5, 16, 15.5], { east: "#side", west: "#side", north: "#end", south: "#end", all: "#top" }],
+    [[3, 0, 1.5], [5, 2, 3.5], "#wheel"],
+    [[11, 0, 1.5], [13, 2, 3.5], "#wheel"],
+    [[3, 0, 12.5], [5, 2, 14.5], "#wheel"],
+    [[11, 0, 12.5], [13, 2, 14.5], "#wheel"],
+  ],
+));
+for (const food of ["chicken_meal", "pasta_meal", "pretzels", "airline_coffee"]) {
+  write(`assets/${ID}/models/item/${food}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${food}` } });
+}
+
 // The care package's crate: wooden, an orange parachute stencilled on its sides and a red cross on top, its front
 // (the way it is sent off) with a slatted door. Broken, it keeps what is packed in it, as a shulker box does.
 write(`assets/${ID}/models/block/cargo_crate.json`, {
@@ -673,7 +700,7 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 const GROUND = ["landing_target", "tower_radio"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack"];
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack", "galley"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -715,6 +742,12 @@ shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("signal_flare", ["P", "G", "S"], { P: "minecraft:paper", G: "minecraft:gunpowder", S: "minecraft:stick" }, 4);
 shaped("drop_bay", ["PTP", "P P", "PTP"], { P: `${ID}:airframe_panel`, T: "minecraft:iron_trapdoor" }, 1);
 shaped("drop_release", ["R", "P"], { R: "minecraft:redstone_torch", P: `${ID}:instrument_panel` }, 1);
+shaped("galley", ["III", "FCF", "III"], { I: "minecraft:iron_ingot", F: "minecraft:furnace", C: "minecraft:cauldron" }, 1);
+shaped("trolley", ["III", "ICI", "N N"], { I: "minecraft:iron_ingot", C: "minecraft:chest", N: "minecraft:iron_nugget" }, 1);
+shaped("chicken_meal", ["CPB"], { C: "minecraft:cooked_chicken", P: "minecraft:baked_potato", B: "minecraft:bowl" }, 1);
+shaped("pasta_meal", ["WMB"], { W: "minecraft:wheat", M: "minecraft:brown_mushroom", B: "minecraft:bowl" }, 1);
+shaped("pretzels", ["WSW"], { W: "minecraft:wheat", S: "minecraft:sugar" }, 4);
+shaped("airline_coffee", ["C", "M", "P"], { C: "minecraft:cocoa_beans", M: "minecraft:milk_bucket", P: "minecraft:paper" }, 2);
 shaped("cargo_crate", ["PSP", "PCP", "PPP"], { P: "minecraft:oak_planks", S: `${ID}:parachute`, C: "minecraft:chest" }, 1);
 shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
@@ -829,6 +862,20 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.drop_release.armed": "Bay doors open: use again to drop, sneak to close",
   "message.aerolarge.drop_release.safe": "Bay doors closed",
   "message.aerolarge.drop_release.no_bay": "This release is not wired to a drop bay",
+  "block.aerolarge.galley": "Galley",
+  "item.aerolarge.trolley": "Trolley",
+  "entity.aerolarge.trolley": "Trolley",
+  "item.aerolarge.chicken_meal": "Chicken Meal",
+  "item.aerolarge.pasta_meal": "Pasta Meal",
+  "item.aerolarge.pretzels": "Pretzels",
+  "item.aerolarge.airline_coffee": "Airline Coffee",
+  "message.aerolarge.trolley.served": "Chicken or pasta? %s for you (%s left on the trolley)",
+  "message.aerolarge.trolley.empty": "The trolley is empty: restock it at the galley",
+  "message.aerolarge.galley.rolled_out": "A full trolley, ready to go",
+  "message.aerolarge.galley.blocked": "No room in front of the galley for a trolley",
+  "message.aerolarge.galley.restocked": "Trolley restocked",
+  "message.aerolarge.galley.full": "The trolley is already full",
+  "subtitles.aerolarge.trolley_squeak": "Trolley squeaks",
   "block.aerolarge.cargo_crate": "Care Package",
   "container.aerolarge.cargo_crate": "Care Package",
   "entity.aerolarge.falling_crate": "Care Package",

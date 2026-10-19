@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "C",
+    "M",
+    "P"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:cocoa_beans"
+    },
+    "M": {
+      "item": "minecraft:milk_bucket"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "id": "aerolarge:airline_coffee",
+    "count": 2
+  }
+}

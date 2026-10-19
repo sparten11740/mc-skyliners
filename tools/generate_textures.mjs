@@ -536,6 +536,54 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// Cabin service. The galley: brushed steel cupboards, an oven door with a dark window on the front and a coffee
+// machine's spout. The trolley: aluminium with a red stripe and drawer lines, its ends a grid of drawers with
+// handles, its top a grey tray. The meals on their trays, a bag of pretzels and a paper cup of coffee.
+{
+  const ALU = [0xc4, 0xc9, 0xcf];
+  const ALU_DARK = [0x8e, 0x94, 0x9b];
+  texture(blockOutput, "galley_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? ALU_DARK : (x + y * 3) % 7 === 0 ? [0xb4, 0xb9, 0xbf] : ALU));
+  texture(blockOutput, "galley_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || y === 7) return ALU_DARK;
+    if (y > 7 && x >= 3 && x <= 12 && y >= 9 && y <= 13) return x === 3 || x === 12 || y === 9 || y === 13 ? [0x30, 0x32, 0x36] : [0x40, 0x26, 0x18];
+    if (y < 7 && x >= 9 && x <= 12 && y >= 2 && y <= 5) return [0x26, 0x28, 0x2c];
+    if (y < 7 && x >= 3 && x <= 5 && y >= 2 && y <= 4) return [0x60, 0x40, 0x28];
+    return ALU;
+  });
+  texture(itemOutput, "trolley_side", (x, y) => {
+    if (y >= 3 && y <= 4) return [0xc8, 0x20, 0x24];
+    if (x === 0 || x === 15 || y === 0 || y === 15) return ALU_DARK;
+    return y % 4 === 2 ? ALU_DARK : ALU;
+  }, 2);
+  texture(itemOutput, "trolley_end", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || y % 4 === 0) return ALU_DARK;
+    if (y % 4 === 2 && x >= 6 && x <= 9) return [0x30, 0x32, 0x36];
+    return ALU;
+  }, 2);
+  texture(itemOutput, "trolley_top", (x, y) => (x <= 1 || x >= 14 || y <= 1 || y >= 14 ? ALU_DARK : [0x9a, 0x9f, 0xa6]), 2);
+  const tray = (food) => (x, y) => {
+    if (y < 4 || y > 12 || x < 1 || x > 14) return CLEAR;
+    if (y === 4 || y === 12 || x === 1 || x === 14) return [0x50, 0x54, 0x5a];
+    return food(x, y) ?? [0xe8, 0xe8, 0xe2];
+  };
+  texture(itemOutput, "chicken_meal", tray((x, y) => (Math.hypot(x - 5.5, y - 8) < 2.6 ? [0xb8, 0x74, 0x34]
+    : x >= 9 && x <= 12 && y >= 6 && y <= 10 ? ((x + y) % 2 ? [0x40, 0x9c, 0x30] : [0xe0, 0x90, 0x30]) : null)), 0);
+  texture(itemOutput, "pasta_meal", tray((x, y) => (Math.hypot(x - 7.5, y - 8) < 3.4 ? ((x * 3 + y) % 4 === 0 ? [0xc8, 0x30, 0x20] : [0xf0, 0xd0, 0x70]) : null)), 0);
+  texture(itemOutput, "pretzels", (x, y) => {
+    if (x < 3 || x > 12 || y < 2 || y > 14) return CLEAR;
+    if (y <= 3) return [0x90, 0x94, 0x9a];
+    const knot = Math.abs(Math.hypot(x - 6, y - 8) - 2) < 0.8 || Math.abs(Math.hypot(x - 9.5, y - 8) - 2) < 0.8;
+    return knot ? [0x9c, 0x5a, 0x22] : [0x2a, 0x5c, 0xb0];
+  }, 0);
+  texture(itemOutput, "airline_coffee", (x, y) => {
+    const half = 3 + (y - 3) * 0.2;
+    if (y < 3 || y > 14 || Math.abs(x - 7.5) > half) return CLEAR;
+    if (y === 3) return [0x4a, 0x2c, 0x18];
+    if (y >= 7 && y <= 9) return [0x1c, 0x3d, 0x8c];
+    return [0xf4, 0xf4, 0xf0];
+  }, 0);
+}
+
 // The care package's crate: oak boards in a darker frame; on the sides an orange parachute stencil, on top a red
 // cross on white, on the front a door of slats.
 {

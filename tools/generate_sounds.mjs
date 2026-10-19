@@ -152,6 +152,18 @@ function bell(samples, start, frequency, decay) {
   writeSound("shade_motor", samples);
 }
 
+// A trolley's wheel squeaking: a thin wavering whistle.
+{
+  const samples = new Float64Array(Math.round(0.35 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += 2 * Math.PI * (1700 + 260 * Math.sin(2 * Math.PI * 9 * t)) / RATE;
+    samples[i] = Math.sin(Math.PI * t / 0.35) * (Math.sin(phase) + 0.3 * Math.sin(phase * 2.01));
+  }
+  writeSound("trolley_squeak", samples);
+}
+
 // Basketball. A bounce: a deep thud, falling in pitch as it dies, with the slap of the leather on top.
 {
   const samples = new Float64Array(Math.round(0.3 * RATE));

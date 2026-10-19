@@ -3,6 +3,7 @@ package dev.aerolarge.cabin;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.entity.Basketball;
+import dev.aerolarge.entity.Trolley;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -66,9 +67,12 @@ public final class Turbulence {
         }
     }
 
-    /** Whether rough air throws the entity about: anything alive standing about, not seated or flying, and loose balls. */
+    /**
+     * Whether rough air throws the entity about: anything alive standing about, not seated or flying, and loose balls
+     * and trolleys.
+     */
     private static boolean shaken(Entity entity) {
-        return (entity instanceof LivingEntity || entity instanceof Basketball) && !entity.isPassenger() && !entity.isSpectator()
-            && !(entity instanceof Player player && player.getAbilities().flying);
+        boolean loose = entity instanceof LivingEntity || entity instanceof Basketball || entity instanceof Trolley;
+        return loose && !entity.isPassenger() && !entity.isSpectator() && !(entity instanceof Player player && player.getAbilities().flying);
     }
 }

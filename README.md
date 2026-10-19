@@ -102,6 +102,13 @@ enough to coast past the top of the world, it cuts the engines itself, and hands
 airliner has slowed to 75 and is well below the top again. Without that, full thrust would loop the airliner or
 fling it off faster than the world can be generated around it.
 
+### Cabin service
+
+At the head of the lounge's bar is the galley. Use it to roll out a full trolley, or to restock the trolleys standing
+by it. Push a trolley down the aisle by walking into it (it squeaks); use it to be served the next of its meals: a
+chicken meal, airline coffee (a minute of Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it
+to fold it up and carry it. Galley, trolley and food can all be crafted.
+
 ### Basketball
 
 The gym hall's hoops are real: take a ball from the rack in the corner by either hoop and use it to throw it the way you

@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import net.minecraft.core.Direction;
@@ -213,7 +214,8 @@ final class CabinFitOut {
 
     /**
      * The lounge: carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in front,
-     * a row of red seats and low tables along the port wall, and plants in the corners.
+     * the galley that stocks the cabin crew's trolley at its head, a row of red seats and low tables along the port
+     * wall, and a plant in the other corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
@@ -245,7 +247,7 @@ final class CabinFitOut {
         }
         if (frontWidth >= 3) {
             layout.set(-frontWidth, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());
-            layout.set(frontWidth, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());
+            layout.set(frontWidth, floor + 1, fromZ, AerolargeRegistry.GALLEY.get().defaultBlockState().setValue(GalleyBlock.FACING, Direction.WEST));
         }
         for (int z = fromZ + 1; z <= toZ; z += 4) {
             hangLight(0, z, 5);
