@@ -829,11 +829,12 @@ public final class AirframeLayout {
                 set(x, deck, z, palette.floor());
             }
         }
-        // Steps from the main deck up to the flight deck's back edge, rising toward the nose.
+        // Steps from the main deck up to the flight deck's back edge, rising toward the nose; the top one stands level
+        // with the deck, so its high side runs flush onto the deck's floor.
         BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
-        for (int k = 1; deck - k > floorY; k++) {
+        for (int k = 1; deck + 1 - k > floorY; k++) {
             for (int x = -1; x <= 1; x++) {
-                furnish(x, deck - k, deckEnd + k, step);
+                furnish(x, deck + 1 - k, deckEnd + k, step);
             }
         }
 
@@ -1227,8 +1228,10 @@ public final class AirframeLayout {
             new BlockPos(door - 1, floorY, fore), new BlockPos(door - 2, floorY, fore),
             new BlockPos(door - 1, floorY, fore + 1), new BlockPos(door - 2, floorY, fore + 1)
         ), landing));
-        for (int k = 1; floorY - k >= ground; k++) {
-            stages.add(stage(List.of(new BlockPos(door - 1, floorY - k, fore - k), new BlockPos(door - 2, floorY - k, fore - k)), step));
+        // The top step stands level with the landing, so its high side runs flush onto it.
+        for (int k = 1; floorY + 1 - k >= ground; k++) {
+            int y = floorY + 1 - k;
+            stages.add(stage(List.of(new BlockPos(door - 1, y, fore - k), new BlockPos(door - 2, y, fore - k)), step));
         }
         stages.removeIf(List::isEmpty);
 
