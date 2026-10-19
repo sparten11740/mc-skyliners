@@ -20,9 +20,9 @@ import net.minecraft.world.phys.Vec3;
  * The flight deck's synthetic voice, watching the assembled airliner whether the autopilot flies it or the pilots
  * do: "V one" and "rotate" down the runway and "positive rate" climbing away; on the way down the radio altitude
  * (the wheels' height above the ground below) called out from a hundred to ten and "retard" just before touchdown;
- * and "bank angle" and "pull up" when it banks too far or sinks too fast too low. Each is heard by everyone aboard,
- * following them about the cabin. Climbing away and touching down gently are milestones for everyone aboard, too
- * (see {@link FirstFlight}).
+ * and "bank angle" and "pull up" when it banks too far or sinks too fast too low, politely. Each is heard by everyone
+ * aboard, following them about the cabin. Climbing away and touching down gently are milestones for everyone aboard,
+ * too (see {@link FirstFlight}).
  */
 final class Callouts {
     /** Radio altitudes called out on the way down, in blocks, from the highest. */
@@ -51,8 +51,11 @@ final class Callouts {
     private static final double FLOWN = 10;
     /** Touching down sinking slower than this, in blocks a second, is a butter landing; the autopilot aims under it. */
     static final double BUTTER_SINK = 1.0;
-    /** Ticks between repeats of a warning. */
-    private static final int WARNING_REPEAT = 60;
+    /**
+     * Ticks between repeats of a warning: long enough to say it and draw breath, tools/generate_sounds.mjs keeping
+     * every callout shorter (its CALLOUT_LONGEST).
+     */
+    private static final int WARNING_REPEAT = 80;
     /** Everyone this close to the flight deck hears the callouts: everyone aboard. */
     private static final double HEARING = 64;
 

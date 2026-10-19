@@ -8,7 +8,7 @@
     ]
   },
   "callout_v1": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_v1",
     "sounds": [
       {
         "name": "aerolarge:callout_v1"
@@ -16,7 +16,7 @@
     ]
   },
   "callout_rotate": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_rotate",
     "sounds": [
       {
         "name": "aerolarge:callout_rotate"
@@ -24,7 +24,7 @@
     ]
   },
   "callout_positive_rate": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_positive_rate",
     "sounds": [
       {
         "name": "aerolarge:callout_positive_rate"
@@ -32,7 +32,7 @@
     ]
   },
   "callout_100": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_100",
     "sounds": [
       {
         "name": "aerolarge:callout_100"
@@ -40,7 +40,7 @@
     ]
   },
   "callout_50": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_50",
     "sounds": [
       {
         "name": "aerolarge:callout_50"
@@ -48,7 +48,7 @@
     ]
   },
   "callout_40": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_40",
     "sounds": [
       {
         "name": "aerolarge:callout_40"
@@ -56,7 +56,7 @@
     ]
   },
   "callout_30": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_30",
     "sounds": [
       {
         "name": "aerolarge:callout_30"
@@ -64,7 +64,7 @@
     ]
   },
   "callout_20": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_20",
     "sounds": [
       {
         "name": "aerolarge:callout_20"
@@ -72,7 +72,7 @@
     ]
   },
   "callout_10": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_10",
     "sounds": [
       {
         "name": "aerolarge:callout_10"
@@ -80,7 +80,7 @@
     ]
   },
   "callout_retard": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_retard",
     "sounds": [
       {
         "name": "aerolarge:callout_retard"
@@ -88,7 +88,7 @@
     ]
   },
   "callout_bank_angle": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_bank_angle",
     "sounds": [
       {
         "name": "aerolarge:callout_bank_angle"
@@ -96,7 +96,7 @@
     ]
   },
   "callout_pull_up": {
-    "subtitle": "subtitles.aerolarge.callout",
+    "subtitle": "subtitles.aerolarge.callout_pull_up",
     "sounds": [
       {
         "name": "aerolarge:callout_pull_up"

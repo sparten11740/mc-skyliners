@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { mkdirSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
@@ -7,8 +7,9 @@ import { execFileSync } from "node:child_process";
 // Run from anywhere: node tools/generate_sounds.mjs
 // Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
-// - the cockpit callouts, spoken by Windows' own speech synthesis (System.Speech, the "Microsoft David" voice), so
-//   this part runs on Windows only. Deterministic apart from the voice, which is whatever Windows ships.
+// - the flight deck's voice, its callouts, spoken by Windows' own speech synthesis (System.Speech) and then reworked
+//   (see VOICE), so this part runs on Windows only. Deterministic apart from the voice, which is whatever Windows
+//   ships.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
 mkdirSync(output, { recursive: true });
@@ -257,11 +258,42 @@ function bell(samples, start, frequency, decay) {
   writeSound("cash_register", samples);
 }
 
-// The callouts, as the aircraft's synthetic voice would say them.
+// The flight deck's voice, for the callouts: a calm, very even, faintly synthetic woman's voice, the deadpan
+// politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line; its intonation is
+// then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see tunePitch), and
+// FFmpeg colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids, a faint metallic
+// sweep, the short echo of a hard little room and a touch of digital sheen. Tune it all here.
+const VOICE = {
+  // The speech synthesis voice. Windows PowerShell's System.Speech sees only the desktop voices; Zira is the woman's.
+  name: "Microsoft Zira Desktop",
+  // How fast it speaks, as SSML prosody: unhurried.
+  rate: "-5%",
+  // The note its pitch is centred on, in hertz: B flat below middle C, a little above the voice's own.
+  note: 233.08,
+  // How much of the voice's own rise and fall is taken out: 0 none, 1 all of it, leaving a robot's monotone.
+  flatten: 0.75,
+  // How far what is left of it is pulled to the nearest semitone: 0 not at all, 1 into hard steps.
+  quantise: 0.7,
+  // How loud the monotone buzz is under the voice.
+  buzz: 0.35,
+  // FFmpeg's filters after the buzz, in order.
+  filters: [
+    "highpass=f=140",
+    // Crisp high-mids.
+    "equalizer=f=2800:t=q:w=1.4:g=3",
+    // A faint metallic sweep.
+    "flanger=delay=0.8:depth=0.5:regen=30:width=35:speed=0.25",
+    // A hard little room.
+    "aecho=0.9:0.5:13|29:0.18|0.1",
+    // Digital sheen.
+    "aexciter=amount=1:drive=5:blend=0:freq=6500:ceil=14000",
+  ],
+};
+// The callouts: short and clear, the warnings with a word of manners. Each must be said within CALLOUT_LONGEST.
 const CALLOUTS = {
   callout_v1: "V one.",
   callout_rotate: "Rotate.",
-  callout_positive_rate: "Positive rate.",
+  callout_positive_rate: "Positive rate. Well done.",
   callout_100: "One hundred.",
   callout_50: "Fifty.",
   callout_40: "Forty.",
@@ -269,26 +301,221 @@ const CALLOUTS = {
   callout_20: "Twenty.",
   callout_10: "Ten.",
   callout_retard: "Retard. Retard.",
-  callout_bank_angle: "Bank angle. Bank angle.",
-  callout_pull_up: "Pull up. Pull up.",
+  callout_bank_angle: "Bank angle. Please do not do that.",
+  callout_pull_up: "Pull up. This is not a test.",
 };
-if (process.platform === "win32") {
-  for (const [name, text] of Object.entries(CALLOUTS)) {
-    const wav = join(scratch, `${name}.wav`);
-    const script = [
-      "Add-Type -AssemblyName System.Speech",
-      "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer",
-      "try { $s.SelectVoice('Microsoft David Desktop') } catch {}",
-      "$s.Rate = 1",
-      `$s.SetOutputToWaveFile('${wav.replace(/'/g, "''")}')`,
-      `$s.Speak('${text.replace(/'/g, "''")}')`,
-      "$s.Dispose()",
-    ].join("; ");
-    execFileSync("powershell", ["-NoProfile", "-Command", script]);
-    toOgg(wav, name);
+/**
+ * The longest a callout may run, in seconds: half a second less than a warning takes to repeat
+ * (Callouts.WARNING_REPEAT), for a breath between.
+ */
+const CALLOUT_LONGEST = 3.5;
+/**
+ * A line's level, as a share of its peak, under which its start and end count as quiet; the quiet is trimmed off but
+ * for this many seconds either side, the soft start of an "f" or "th" kept.
+ */
+const QUIET = 0.003;
+const QUIET_KEPT = 0.05;
+
+/** Reads a 16-bit mono PCM WAV's samples, from -1 to 1, checking it is at the generator's rate. */
+function readWav(path) {
+  const file = readFileSync(path);
+  let samples = null;
+  for (let offset = 12; offset + 8 <= file.length;) {
+    const id = file.toString("ascii", offset, offset + 4);
+    const size = file.readUInt32LE(offset + 4);
+    if (id === "fmt " && (file.readUInt16LE(offset + 10) !== 1 || file.readUInt32LE(offset + 12) !== RATE || file.readUInt16LE(offset + 22) !== 16)) {
+      throw new Error(`${path}: not 16-bit mono at ${RATE} Hz`);
+    }
+    if (id === "data") {
+      samples = new Float64Array(Math.floor(size / 2));
+      for (let i = 0; i < samples.length; i++) {
+        samples[i] = file.readInt16LE(offset + 8 + i * 2) / 32768;
+      }
+    }
+    offset += 8 + size + (size % 2);
   }
-} else {
+  return samples;
+}
+
+/**
+ * The voice's pitch tuned by machine: its own rise and fall mostly taken out and what is left pulled to the semitones
+ * round VOICE.note, keeping how long it takes to say and where its formants sit (pitch-synchronous overlap-add). The
+ * pitch is found through each voiced stretch as the lag the speech best repeats at, a pitch mark is put on each
+ * period's largest peak, and each period, cut out two periods long under a Hann window, is laid down again at the
+ * period of the pitch wanted. Unvoiced sounds go through at a steady spacing as they are.
+ */
+function tunePitch(x) {
+  const hop = Math.round(0.01 * RATE);
+  const frame = Math.round(0.03 * RATE);
+  const shortest = Math.floor(RATE / 450);
+  const longest = Math.ceil(RATE / 90);
+  let peak = 0;
+  x.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  const found = [];
+  for (let start = 0; start + frame + longest < x.length; start += hop) {
+    let energy = 0;
+    for (let i = 0; i < frame; i++) {
+      energy += x[start + i] ** 2;
+    }
+    let best = 0;
+    let bestLag = 0;
+    if (Math.sqrt(energy / frame) > 0.03 * peak) {
+      for (let lag = shortest; lag <= longest; lag++) {
+        let cross = 0;
+        let lagged = 0;
+        for (let i = 0; i < frame; i++) {
+          cross += x[start + i] * x[start + i + lag];
+          lagged += x[start + i + lag] ** 2;
+        }
+        const r = cross / Math.sqrt(energy * lagged + 1e-12);
+        if (r > best) {
+          best = r;
+          bestLag = lag;
+        }
+      }
+    }
+    found.push(best > 0.7 ? bestLag : 0);
+  }
+  // The middle of five neighbouring voiced frames, against slips of an octave.
+  const periods = found.map((period, i) => {
+    const near = found.slice(Math.max(0, i - 2), i + 3).filter((p) => p).sort((a, b) => a - b);
+    return period && near[Math.floor(near.length / 2)];
+  });
+  const voiced = periods.filter((p) => p).sort((a, b) => a - b);
+  if (voiced.length === 0) {
+    return x;
+  }
+  const middle = RATE / voiced[Math.floor(voiced.length / 2)];
+  const periodAt = (at) => periods[Math.min(periods.length - 1, Math.max(0, Math.floor((at - frame / 2) / hop)))] ?? 0;
+
+  const unvoicedStep = Math.round(0.006 * RATE);
+  const marks = [];
+  for (let at = 0; at < x.length;) {
+    const period = periodAt(at);
+    if (!period) {
+      marks.push({ at, period: unvoicedStep, voiced: false });
+      at += unvoicedStep;
+      continue;
+    }
+    let mark = at;
+    const reach = Math.round(0.3 * period);
+    for (let i = Math.max(0, at - reach); i <= Math.min(x.length - 1, at + reach); i++) {
+      if (Math.abs(x[i]) > Math.abs(x[mark])) {
+        mark = i;
+      }
+    }
+    const last = marks[marks.length - 1];
+    if (last && mark <= last.at) {
+      mark = last.at + Math.round(period / 2);
+    }
+    marks.push({ at: mark, period, voiced: true });
+    at = mark + period;
+  }
+
+  const tuned = new Float64Array(x.length);
+  const weight = new Float64Array(x.length);
+  let k = 0;
+  for (let at = marks[0].at; at < x.length;) {
+    while (k + 1 < marks.length && Math.abs(marks[k + 1].at - at) <= Math.abs(marks[k].at - at)) {
+      k++;
+    }
+    const mark = marks[k];
+    for (let i = -mark.period; i <= mark.period; i++) {
+      const from = mark.at + i;
+      const to = at + i;
+      if (from >= 0 && from < x.length && to >= 0 && to < x.length) {
+        const w = 0.5 + 0.5 * Math.cos((Math.PI * i) / (mark.period + 1));
+        tuned[to] += w * x[from];
+        weight[to] += w;
+      }
+    }
+    let step = mark.period;
+    if (mark.voiced) {
+      const semitones = Math.max(-8, Math.min(8, 12 * Math.log2(RATE / mark.period / middle))) * (1 - VOICE.flatten);
+      const stepped = semitones + VOICE.quantise * (Math.round(semitones) - semitones);
+      step = Math.round(RATE / (VOICE.note * 2 ** (stepped / 12)));
+    }
+    at += step;
+  }
+  // Divided by the windows' overlap, so a period laid down more often than it came does not come out louder.
+  return tuned.map((s, i) => s / Math.max(1, weight[i]));
+}
+
+/** The voice's colouring (see VOICE): the monotone buzz under it on VOICE.note, then the filters. */
+function colour(input, output) {
+  // A phase vocoder's frames with their phases zeroed ring at the frame rate: hop the frames at the note.
+  const hop = Math.round(RATE / VOICE.note);
+  const buzz = `afftfilt=real='hypot(re,im)':imag='0':win_size=${4 * hop}:overlap=0.75`;
+  const graph = `asplit[voice][robot];[robot]${buzz}[buzz];[voice][buzz]amix=inputs=2:weights='1 ${VOICE.buzz}':normalize=0,${VOICE.filters.join(",")}`;
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-filter_complex", graph, "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", output]);
+}
+
+/** The line with the quiet before and after it cut away, but for a moment either side, and its tail faded out. */
+function trim(samples) {
+  let peak = 0;
+  samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  const margin = Math.round(QUIET_KEPT * RATE);
+  const start = Math.max(0, samples.findIndex((s) => Math.abs(s) > QUIET * peak) - margin);
+  const end = Math.min(samples.length, samples.findLastIndex((s) => Math.abs(s) > QUIET * peak) + margin);
+  const kept = samples.slice(start, end);
+  for (let i = 0; i < margin && i < kept.length; i++) {
+    kept[kept.length - 1 - i] *= i / margin;
+  }
+  return kept;
+}
+
+/**
+ * Says every line with the speech synthesis, all in one go, into WAVs in the scratch folder; false, saying why, if
+ * the voice is not installed.
+ */
+function speak(lines) {
+  const ssml = (text) => {
+    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><prosody rate='${VOICE.rate}'>${escaped}</prosody></speak>`;
+  };
+  const said = join(scratch, "lines.json");
+  writeFileSync(said, JSON.stringify(Object.entries(lines).map(([name, text]) => ({ wav: join(scratch, `${name}.said.wav`), ssml: ssml(text) }))));
+  const quote = (text) => `'${text.replace(/'/g, "''")}'`;
+  const script = [
+    "$ProgressPreference = 'SilentlyContinue'",
+    "Add-Type -AssemblyName System.Speech",
+    "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer",
+    `if (-not ($s.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Name -eq ${quote(VOICE.name)} })) { exit 3 }`,
+    `$s.SelectVoice(${quote(VOICE.name)})`,
+    `$format = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(${RATE}, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)`,
+    `foreach ($line in (Get-Content -Raw -Encoding UTF8 ${quote(said)} | ConvertFrom-Json)) {`,
+    "  $s.SetOutputToWaveFile($line.wav, $format)",
+    "  $s.SpeakSsml($line.ssml)",
+    "  $s.SetOutputToNull()",
+    "}",
+    "$s.Dispose()",
+  ].join("\n");
+  try {
+    execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")]);
+    return true;
+  } catch (error) {
+    if (error.status === 3) {
+      console.log(`The voice "${VOICE.name}" is not installed: leaving the callouts as they are`);
+      return false;
+    }
+    throw error;
+  }
+}
+
+if (process.platform !== "win32") {
   console.log("Not on Windows: leaving the callouts as they are");
+} else if (speak(CALLOUTS)) {
+  for (const name of Object.keys(CALLOUTS)) {
+    const tuned = join(scratch, `${name}.tuned.wav`);
+    const coloured = join(scratch, `${name}.coloured.wav`);
+    writeWav(tuned, tunePitch(readWav(join(scratch, `${name}.said.wav`))));
+    colour(tuned, coloured);
+    const samples = trim(readWav(coloured));
+    if (samples.length > CALLOUT_LONGEST * RATE) {
+      throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${CALLOUT_LONGEST} s: shorten it or speed the voice up`);
+    }
+    writeSound(name, samples);
+  }
 }
 
 rmSync(scratch, { recursive: true, force: true });

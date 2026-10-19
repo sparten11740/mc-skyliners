@@ -96,8 +96,10 @@ a wall it stands upright, and put up against the underside of a block it hangs f
 one in the airliner. It reaches two blocks to the right of where it is put, as you face it, and needs the room there;
 it comes down whole. On an assembled airliner with an autopilot it shows that airliner's fin camera.
 
-A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
-from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
+The flight deck's voice, a calm, very even, faintly synthetic woman's voice, unfailingly polite and not easily
+impressed, calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground from a
+hundred down to ten, then retard), and warns of too much bank ("Bank angle. Please do not do that.") or sinking too
+fast too low ("Pull up. This is not a test."), whoever flies.
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
 
@@ -439,8 +441,11 @@ are generated: `node tools/generate_textures.mjs` writes the textures
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
-`node tools/generate_sounds.mjs` writes the sounds with FFmpeg: the engine loop is synthesised, and the callouts are
-spoken by Windows' own speech synthesis ("Microsoft David"), so that part runs on Windows only.
+`node tools/generate_sounds.mjs` writes the sounds with FFmpeg: the engine loop is synthesised, and the flight deck's
+voice (the callouts) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so that part runs on Windows only.
+The script then flattens the voice's intonation and tunes it to the semitones around one note, and FFmpeg adds a
+faint vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the settings for all of it are
+together in `VOICE`, to tune it.
 
 ## License
 

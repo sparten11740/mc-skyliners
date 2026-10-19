@@ -153,12 +153,28 @@ cubes.hull_relay = null;
 write(`assets/${ID}/blockstates/engine_core.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 cubes.engine_core = null;
 
-// The engines' sound and the callouts (see tools/generate_sounds.mjs), and the contrail particle.
+// The flight deck's voice (see tools/generate_sounds.mjs): each callout, subtitled with what it says.
+const VOICE_SUBTITLES = {
+  callout_v1: "Callout: V one",
+  callout_rotate: "Callout: Rotate",
+  callout_positive_rate: "Callout: Positive rate",
+  callout_100: "Callout: One hundred",
+  callout_50: "Callout: Fifty",
+  callout_40: "Callout: Forty",
+  callout_30: "Callout: Thirty",
+  callout_20: "Callout: Twenty",
+  callout_10: "Callout: Ten",
+  callout_retard: "Callout: Retard",
+  callout_bank_angle: "Callout: Bank angle!",
+  callout_pull_up: "Callout: Pull up!",
+};
+const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+
+// The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
-  const callouts = ["v1", "rotate", "positive_rate", "100", "50", "40", "30", "20", "10", "retard", "bank_angle", "pull_up"];
   const sounds = { engine: { subtitle: `subtitles.${ID}.engine`, sounds: [{ name: `${ID}:engine` }] } };
-  for (const callout of callouts) {
-    sounds[`callout_${callout}`] = { subtitle: `subtitles.${ID}.callout`, sounds: [{ name: `${ID}:callout_${callout}` }] };
+  for (const name of Object.keys(VOICE_SUBTITLES)) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
@@ -1568,7 +1584,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.brake.set": "Parking brake set",
   "message.aerolarge.brake.released": "Parking brake released",
   "subtitles.aerolarge.engine": "Jet engine roars",
-  "subtitles.aerolarge.callout": "Cockpit callout",
+  ...VOICE_LANG,
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",
