@@ -46,7 +46,8 @@ contrail.
 Steps at the front of the main deck lead up to the flight deck, raised so the pilots look straight out through the
 windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right across the front from
 the panel up over the crown, running back into side windows past the pilots' shoulders, framed by posts round the
-sides only.
+sides only. The pilots' two big seats, each a Create seat with a high back and an armrest, stand back where the nose
+leaves room for side consoles beside them, with room to move about behind them.
 On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right. They move together:
 use any of them to push all four a notch forward, sneak and use it to pull them back. Each drives its engine's
 thrusters through relays hidden in the nacelle. Beside the captain's seat is the nose wheel tiller (use it to steer

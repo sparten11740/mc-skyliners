@@ -61,6 +61,7 @@ import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,6 +69,7 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * The airliner cut into blocks, before it is put anywhere: every block of it, and air for every block of the cabin
@@ -98,6 +100,13 @@ public final class AirframeLayout {
     /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
+    /**
+     * How far either side of the middle the pilots' seat row reaches, in blocks: the pedestal's two levers, an armrest,
+     * the seat and the side console.
+     */
+    private static final int SEAT_ROW = 5;
+    /** How many blocks tall the pilots' seat backs stand. */
+    private static final int SEAT_BACK = 2;
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
     private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
     /** Where along the belly the drop bay is, in metres from the nose: behind the main gear, ahead of the cargo door. */
@@ -894,8 +903,10 @@ public final class AirframeLayout {
 
     /**
      * The flight deck: a raised floor in the nose at the height where the pilots look straight out through the
-     * windscreen, steps up to it from the main deck, the instrument panel along the front, and two seats either side
-     * of the pedestal with the four thrust levers, engines 1 to 4 from left to right as on the A380.
+     * windscreen, steps up to it from the main deck, the instrument panel across the nose with the glareshield filling
+     * the nose ahead of it, and two big seats either side of the pedestal with the four thrust levers, engines 1 to 4
+     * from left to right as on the A380. The seats stand where the nose first leaves room beside them for the
+     * pedestal and the side consoles, rather than squeezed into its narrowest part, so there is room all round them.
      */
     private void flightDeck() {
         int deck = Math.max(floorY + 1, Windscreen.deckRow(scale));
@@ -915,23 +926,29 @@ public final class AirframeLayout {
             }
         }
 
-        // The panel goes along the first station where two pilots fit side by side, the pedestal two rows back.
-        int panelZ = -1;
-        for (int z = 0; z <= deckEnd - 3; z++) {
-            if (openHalfWidth(deck + 1, z) >= 3 && openHalfWidth(deck + 1, z + 2) >= 3) {
-                panelZ = z;
-                break;
-            }
+        // The panel goes along the first station where the seat row two rows back has room for the pedestal, both big
+        // seats and the side consoles, and the autopilot screen fits on the panel; in a nose too narrow for that, the
+        // first where two pilots fit side by side at all.
+        int panelZ = panelStation(deck, deckEnd, SEAT_ROW, AutopilotScreenBlock.COLUMNS / 2);
+        if (panelZ < 0) {
+            panelZ = panelStation(deck, deckEnd, 3, -1);
         }
         if (panelZ < 0) {
             return;
         }
         BlockState panel = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.SOUTH);
         int panelWidth = openHalfWidth(deck + 1, panelZ);
-        for (int x = -panelWidth; x <= panelWidth; x++) {
-            set(x, deck + 1, panelZ, panel);
+        // The panel, and the glareshield: the nose ahead of it filled to the panel's height under the windscreen.
+        for (int z = 0; z <= panelZ; z++) {
+            int width = z == panelZ ? panelWidth : openHalfWidth(deck + 1, z);
+            for (int x = -width; x <= width; x++) {
+                set(x, deck + 1, z, panel);
+            }
         }
         int pedestalZ = panelZ + 2;
+        // The seats stand a block out from the levers, leaving room for an armrest, where the row has room for the side
+        // consoles beyond them; otherwise right beside the levers. Measured before the levers close off the row.
+        int seatX = openHalfWidth(deck + 1, pedestalZ) >= SEAT_ROW ? SEAT_ROW - 1 : 3;
         double[] engines = {-ENGINE_X[1], -ENGINE_X[0], ENGINE_X[0], ENGINE_X[1]};
         int[] leverX = {-2, -1, 1, 2};
         List<BlockPos> levers = new ArrayList<>();
@@ -947,7 +964,6 @@ public final class AirframeLayout {
                 }
             });
         }
-        int seatX = openHalfWidth(deck + 1, pedestalZ) >= 4 ? 4 : 3;
         // A flight display in the panel in front of each seat.
         for (int side : new int[]{1, -1}) {
             int displayX = side * Math.min(seatX, panelWidth);
@@ -956,8 +972,8 @@ public final class AirframeLayout {
             }
         }
         palette.seat().ifPresent(seat -> {
-            set(-seatX, deck + 1, pedestalZ, seat);
-            set(seatX, deck + 1, pedestalZ, seat);
+            pilotSeat(seat, -seatX, deck + 1, pedestalZ);
+            pilotSeat(seat, seatX, deck + 1, pedestalZ);
         });
         List<BlockPos> controls = new ArrayList<>(levers);
         BlockPos tiller = new BlockPos(-seatX - 1, deck + 1, pedestalZ);
@@ -1005,6 +1021,34 @@ public final class AirframeLayout {
         // The Physics Assembler out of the way, against the wall behind the captain's seat.
         int assemblerZ = pedestalZ + 2;
         assemblerSpot = new BlockPos(-openHalfWidth(deck + 1, assemblerZ), deck + 1, assemblerZ);
+    }
+
+    /**
+     * The first station along the nose where the instrument panel fits, its seat row two rows back at least
+     * {@code seatRow} open either side of the middle, and the row over the panel at least {@code screen} for the
+     * autopilot screen (-1 for none), with the seat backs and the Physics Assembler's spot behind the seats before
+     * {@code last}; -1 if there is none.
+     */
+    private int panelStation(int deck, int last, int seatRow, int screen) {
+        for (int z = 0; z + 4 <= last; z++) {
+            if (openHalfWidth(deck + 1, z) >= 3 && openHalfWidth(deck + 2, z) >= screen && openHalfWidth(deck + 1, z + 2) >= seatRow) {
+                return z;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * A pilot's seat, made big around one of Create's seats, still the one sat in: a high upholstered back behind it,
+     * and an armrest on the pedestal's side where the levers leave room for one. The side console outboard, with the
+     * tiller or the parking brake, is the other.
+     */
+    private void pilotSeat(BlockState seat, int x, int y, int z) {
+        set(x, y, z, seat);
+        for (int up = 0; up < SEAT_BACK; up++) {
+            furnish(x, y + up, z + 1, Blocks.BLACK_WOOL.defaultBlockState());
+        }
+        furnish(x - Integer.signum(x), y, z, Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
     }
 
     /**
