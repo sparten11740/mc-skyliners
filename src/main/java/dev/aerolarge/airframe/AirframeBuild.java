@@ -25,8 +25,8 @@ import net.minecraft.world.phys.AABB;
 /**
  * An airliner going up: its layout turned to face the right way and set at a spot in the world, then placed a few
  * thousand blocks a tick. Blocks are set without updating their neighbours: the layout already holds each one's
- * final state (both halves of every door, the hanging lanterns, the water at rest), and a neighbour update
- * halfway through would tear down a door whose other half is not placed yet.
+ * final state (both halves of every door, the curtains and tall windows joined up, the water at rest), and a
+ * neighbour update halfway through would tear down a door whose other half is not placed yet.
  */
 public final class AirframeBuild {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
