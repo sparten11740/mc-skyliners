@@ -19,6 +19,7 @@ import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
+import dev.aerolarge.client.TailCameraFeed;
 import dev.aerolarge.client.TrolleyRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -40,8 +41,9 @@ import net.neoforged.neoforge.common.NeoForge;
 /**
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
  * flight displays, autopilot screen, tail camera display, passenger screens and engine intakes, its engines' sound and
- * contrails, the camera shake aboard, the passenger screens' outside cameras, parachutes: opening them by jumping, and
- * the canopy over their wearers; the creative tab's section banners; and the settings screen in the Mods menu.
+ * contrails, the camera shake aboard, the passenger screens' outside cameras and the tail camera display's live
+ * picture, parachutes: opening them by jumping, and the canopy over their wearers; the creative tab's section banners;
+ * and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -67,6 +69,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(PassengerCameras::highlight);
         NeoForge.EVENT_BUS.addListener(PassengerCameras::guiLayer);
         NeoForge.EVENT_BUS.addListener(PassengerCameras::loggingOut);
+        NeoForge.EVENT_BUS.addListener(TailCameraFeed::frame);
+        NeoForge.EVENT_BUS.addListener(TailCameraFeed::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);
         modEventBus.addListener(AerolargeClient::onRegisterGeometryLoaders);
         modEventBus.addListener(AerolargeClient::onRegisterRenderers);

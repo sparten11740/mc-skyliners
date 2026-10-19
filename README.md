@@ -68,10 +68,17 @@ the captain's side console, just behind the tiller, is the window shades' contro
 shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
 can open or close a window's own shade by using it.
 Over the autopilot screen, in the middle where both pilots see it beside their own view ahead, is the tail camera
-display, a wide screen three blocks across like an A380's taxiing camera screen. Until it has a picture it shows a
-test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while the
-airliner stands as blocks. A Tail Camera Display can be crafted and put up in your own builds too: it reaches two
-blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole.
+display, a wide screen three blocks across like an A380's taxiing camera screen. Once the airliner is assembled it
+shows the live picture from the camera on top of the fin, the one the passenger screens look through (see below):
+the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL
+and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only while a
+display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without one it
+shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while
+the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or
+with `tailCameraFeed` off in the client config, where `tailCameraFps` and `tailCameraResolution` also set how often
+and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too: it
+reaches two blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole. On
+an assembled airliner with an autopilot it shows that airliner's fin camera.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
@@ -274,8 +281,8 @@ villager passenger's fare (Frequent Flyer).
 
 ### Settings
 
-The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`) are there
-from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
+The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake` and the tail
+camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
 while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
@@ -291,7 +298,8 @@ The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut
 and fitted out by `CabinFitOut`; the skin follows the curve in `ShellGeometry`'s shapes, which `ShellModel`
 bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity` flies, reading the airliner
 from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where
-each engine's core was told they are. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+each engine's core was told they are; `TailCameraFeed` draws the fin camera's picture through Veil's perspective
+renderer (Veil comes inside Sable's jar), the one place Veil is touched. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

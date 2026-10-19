@@ -27,12 +27,17 @@ repositories {
     maven("https://maven.ryanhcode.dev/releases") {
         content { includeGroupByRegex("dev\\.ryanhcode.*") }
     }
+    // Veil, the rendering library Sable ships inside its jar.
+    maven("https://maven.blamejared.com") {
+        content { includeGroup("foundry.veil") }
+    }
 }
 
 // Create is required: its Super Glue holds the airliner together for the Physics Assembler. The autopilot reads the
-// assembled airliner's position, attitude and speed from Sable; it only runs when Sable is installed. Both are only
-// compiled against; players bring the mods. Create Propulsion and Create Aeronautics (Simulated, Offroad) are only
-// named by registry id. To run them in a dev client, drop their jars (and Create's) into run/mods.
+// assembled airliner's position, attitude and speed from Sable; it only runs when Sable is installed. The tail camera
+// display draws the world from the fin through Veil, which comes inside Sable's jar. All are only compiled against;
+// players bring the mods. Create Propulsion and Create Aeronautics (Simulated, Offroad) are only named by registry id.
+// To run them in a dev client, drop their jars (and Create's) into run/mods.
 dependencies {
     // Create's published POM drags in JEI, FTB and more; only its classes are needed.
     compileOnly("com.simibubi.create:create-1.21.1:6.0.10-281:slim") { isTransitive = false }
@@ -41,6 +46,8 @@ dependencies {
     compileOnly("com.tterrag.registrate:Registrate:MC1.21-1.3.0+67")
     compileOnly("dev.ryanhcode.sable:sable-neoforge-1.21.1:2.0.5") { isTransitive = false }
     compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:1.6.0") { isTransitive = false }
+    // The version Sable 2.0.5 bundles.
+    compileOnly("foundry.veil:veil-neoforge-1.21.1:4.3.2") { isTransitive = false }
 }
 
 neoForge {

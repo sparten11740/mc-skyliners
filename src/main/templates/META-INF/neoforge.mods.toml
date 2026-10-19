@@ -11,7 +11,8 @@ A double-deck airliner the size of a building: one long hollow hull with a few d
 lifting wings, four engines worked from the cockpit, wheels to roll on and everything glued ready to assemble and fly.
 '''
 
-# Opens a few fields of the creative screen to the tab's section banners.
+# Opens a few fields of the creative screen to the tab's section banners, and of the level renderer to the tail
+# camera display's picture.
 [[accessTransformers]]
 file="META-INF/accesstransformer.cfg"
 

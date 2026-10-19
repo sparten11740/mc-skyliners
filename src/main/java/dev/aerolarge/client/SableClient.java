@@ -5,10 +5,12 @@ import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
+import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -28,8 +30,9 @@ import org.joml.Vector3dc;
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, how one is moving and lying for its
- * instruments, and where its outside cameras are as it flies. Every call works without Sable too (nothing is assembled
- * then); Sable's classes are only touched once it is known to be installed.
+ * instruments, and where its outside cameras are as it flies; and holding Sable's water occlusion off while a camera's
+ * picture is drawn. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
+ * once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -106,6 +109,38 @@ public final class SableClient {
         return SABLE && blockEntity.getLevel() != null ? Access.frame(blockEntity) : null;
     }
 
+    /** Which assembled airliner the block entity is part of, the same for all its blocks; null if it is not part of one. */
+    @Nullable
+    static UUID airliner(BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() != null ? Access.airliner(blockEntity) : null;
+    }
+
+    /**
+     * Draws something with Sable's water occlusion (which keeps water from being drawn inside a hull) held off, for a
+     * picture of the world drawn into a framebuffer of another size: Sable sizes the occlusion's own buffers to the one
+     * being drawn into, and would make them anew for every such picture and again for the frame after it. Without
+     * Sable, or a Sable whose water occlusion is not where it was, the drawing runs as it is.
+     */
+    static void withoutWaterOcclusion(Runnable drawing) {
+        if (!SABLE || !Access.waterOcclusionReachable) {
+            drawing.run();
+            return;
+        }
+        boolean enabled;
+        try {
+            enabled = Access.waterOcclusion(false);
+        } catch (LinkageError notThere) {
+            Access.waterOcclusionReachable = false;
+            drawing.run();
+            return;
+        }
+        try {
+            drawing.run();
+        } finally {
+            Access.waterOcclusion(enabled);
+        }
+    }
+
     /** Where a point fixed to an assembled airliner is in the world as it is drawn, and which ways it faces. */
     public record View(Vec3 eye, Vec3 forward, Vec3 up) {
     }
@@ -120,6 +155,9 @@ public final class SableClient {
     }
 
     private static final class Access {
+        /** False once Sable's water occlusion switch was found missing, as a later Sable might move it. */
+        static boolean waterOcclusionReachable = true;
+
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
         }
@@ -201,6 +239,19 @@ public final class SableClient {
                 ? new Vec3(centreline.x, bounds.minY(), tip)
                 : new Vec3(tip, bounds.minY(), centreline.z);
             return new Frame(origin, nose);
+        }
+
+        @Nullable
+        static UUID airliner(BlockEntity blockEntity) {
+            ClientSubLevel airliner = Sable.HELPER.getContainingClient(blockEntity);
+            return airliner == null ? null : airliner.getUniqueId();
+        }
+
+        /** Turns Sable's water occlusion on or off; whether it was on. */
+        static boolean waterOcclusion(boolean on) {
+            boolean was = WaterOcclusionRenderer.isEnabled();
+            WaterOcclusionRenderer.setIsEnabled(on);
+            return was;
         }
 
         @Nullable
