@@ -8,6 +8,7 @@ import dev.aerolarge.airframe.Windscreen;
 import dev.aerolarge.block.CockpitWindscreenBlock;
 import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -36,6 +37,8 @@ public class CockpitWindscreenRenderer implements BlockEntityRenderer<CockpitWin
             return;
         }
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(WHITE);
+        // Lit by the sky only: the anchor sits by a cabin light, which would make the outside of the nose glow at night.
+        light = LightTexture.pack(0, LightTexture.sky(light));
         pose.pushPose();
         // From nose-north to the way this airliner's nose points, about the anchor block's centre.
         pose.translate(0.5, 0, 0.5);

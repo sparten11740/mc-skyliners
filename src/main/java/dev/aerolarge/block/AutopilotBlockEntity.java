@@ -32,10 +32,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * an angle; the climb; and the cruise. Once airborne the height is held by the flight path, climbing below the
  * cruising height and level at it: Sable's wings lift by how far they meet the air at an angle, whichever side it
  * comes from, so the nose is held that angle (the angle of attack) above the way the airliner is really going, more
- * while it flies below its path and toward none while above it. The engines hold a speed that also follows the
- * height, so a high airliner sheds energy rather than being pushed further up. Switching it off hands the airliner
- * back to its controls: the thrust levers, the tiller and the parking brake. Whether it is engaged or not, it also
- * gives the flight deck its callouts (see {@link Callouts}).
+ * while it flies below its path and toward none while above it; with no angle the wings do not lift and the path
+ * bends down by itself. The engines hold the cruising speed throughout. Switching it off hands the airliner back
+ * to its controls: the thrust levers, the tiller and the parking brake. Whether it is engaged or not, it also gives
+ * the flight deck its callouts (see {@link Callouts}).
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -62,8 +62,6 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double TRIM_RATE = 0.02;
     /** Angle of attack added per degree the airliner flies below its path. */
     private static final double ATTACK_GAIN = 0.5;
-    /** Share of the cruising speed added per block below the cruising height (taken off above it). */
-    private static final double SPEED_PER_HEIGHT = 0.008;
     /** The engines' signal at the speed being held, and how much it changes per block a second off that speed. */
     private static final double CRUISE_THRUST = 6;
     private static final double SPEED_GAIN = 0.6;
@@ -194,16 +192,16 @@ public class AutopilotBlockEntity extends BlockEntity {
                 // The path to fly follows the height still to go: climbing below the cruising height, level at it,
                 // descending above it. Sable's wings lift by how far they meet the air at an angle, whichever side it
                 // comes from, so the nose is held that angle (the angle of attack) above the way the airliner is
-                // really going: more while it flies below its path, toward none while above it, plus a slow trim.
-                // The engines hold a speed that also follows the height, so a high airliner sheds energy rather than
-                // being pushed further up.
+                // really going: more while it flies below its path, toward none while above it, plus a slow trim. The
+                // engines hold the cruising speed throughout: easing off when high would only trade the speed for more
+                // height, a zoom climb.
                 double heightToGo = cruiseHeight - height;
                 double path = Mth.clamp(PATH_GAIN * heightToGo, -MAX_DESCENT_PATH, MAX_CLIMB_PATH);
                 double pathError = path - state.flightPath();
                 trim = Mth.clamp(trim + TRIM_RATE * pathError, 0, MAX_ANGLE_OF_ATTACK);
                 double angleOfAttack = Mth.clamp(trim + ATTACK_GAIN * pathError, 0, MAX_ANGLE_OF_ATTACK);
                 targetPitch = state.flightPath() + angleOfAttack;
-                thrust = holdSpeed(speed, cruiseSpeed * Mth.clamp(1 + SPEED_PER_HEIGHT * heightToGo, 0.6, 1.2));
+                thrust = holdSpeed(speed, cruiseSpeed);
                 if (phase == Phase.CLIMB && height > cruiseHeight - LEVEL_OFF) {
                     phase = Phase.CRUISE;
                 }
@@ -251,7 +249,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private void report(ServerLevel level, SableFlight.State state, double height) {
         Component status = Component.translatable("message.aerolarge.autopilot.status",
             Component.translatable("message.aerolarge.autopilot.phase." + phase.name().toLowerCase(Locale.ROOT)),
-            Math.round(state.airspeed()), String.format(Locale.ROOT, "%+d", Math.round(height)), Math.round(state.pitch()), Math.round(state.roll()));
+            Math.round(state.airspeed()), String.format(Locale.ROOT, "%+d", Math.round(height)), Math.round(state.pitch()), Math.round(state.roll()),
+            String.format(Locale.ROOT, "%03d", Math.floorMod(Math.round(state.heading()) + 180, 360)));
         level.players().stream()
             .filter(player -> player.position().distanceToSqr(state.position()) < 24 * 24)
             .forEach(player -> player.displayClientMessage(status, true));

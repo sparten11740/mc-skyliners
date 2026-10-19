@@ -375,7 +375,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the controls.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",
-  "message.aerolarge.autopilot.status": "AP %s  |  %s b/s  |  %s blocks  |  pitch %s°  bank %s°",
+  "message.aerolarge.autopilot.status": "AP %s  |  %s b/s  |  %s blocks  |  pitch %s°  bank %s°  |  hdg %s",
   "message.aerolarge.autopilot.phase.takeoff": "TAKE-OFF",
   "message.aerolarge.autopilot.phase.climb": "CLIMB",
   "message.aerolarge.autopilot.phase.cruise": "CRUISE",
