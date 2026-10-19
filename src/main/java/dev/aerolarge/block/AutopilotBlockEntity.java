@@ -144,9 +144,19 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double TRIM_RATE = 0.01;
     private static final double TRIM_CLIMB_LIMIT = 3;
     private static final double TRIM_WINDOW = 3;
-    /** The engines' signal at the speed being held, and how much it changes per block a second off that speed. */
+    /**
+     * The engines' signal it starts from at the speed being held, and how much it changes per block a second off that
+     * speed.
+     */
     private static final double CRUISE_THRUST = 6;
     private static final double SPEED_GAIN = 0.6;
+    /**
+     * How fast the signal that holds the speed is learnt, in signal a tick per block a second off it, counting no more
+     * than this many blocks a second off: the air thickens lower down and the drag changes with the attitude, so no
+     * one signal holds every speed at every height.
+     */
+    private static final double THRUST_TRIM_RATE = 0.005;
+    private static final double THRUST_TRIM_LIMIT = 5;
     /** Signal per degree of pitch or bank error, and per degree a second it is changing at (damping). */
     private static final double PITCH_GAIN = 0.75;
     private static final double PITCH_DAMPING = 0.4;
@@ -218,8 +228,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double orbitX;
     private double orbitZ;
     private double orbitRadius = DEFAULT_RADIUS;
-    /** The pitch that holds the height at this speed, learnt as it flies. */
+    /** The pitch that holds the height at this speed, and the engines' signal that holds the speed, learnt as it flies. */
     private double trim;
+    private double thrustTrim = CRUISE_THRUST;
     private double lastPitch;
     private double lastRoll;
     private double lastSpeed;
@@ -409,6 +420,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (phase == Phase.CRUISE) {
             trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
         }
+        thrustTrim = CRUISE_THRUST;
         lastPitch = state.pitch();
         lastRoll = state.roll();
         lastSpeed = state.airspeed();
@@ -681,9 +693,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Math.toDegrees(Math.atan2(-x, z));
     }
 
-    /** The engines' signal to hold a speed: down to idle when too fast, full when too slow. */
-    private static int holdSpeed(double speed, double target) {
-        return Mth.clamp((int) Math.round(CRUISE_THRUST + SPEED_GAIN * (target - speed)), 0, 15);
+    /**
+     * The engines' signal to hold a speed: down to idle when too fast, full when too slow, about the signal learnt to
+     * hold it. That is learnt only while the engines can still give what it asks; past idle or full, learning would
+     * only wind it up.
+     */
+    private int holdSpeed(double speed, double target) {
+        double error = target - speed;
+        double signal = thrustTrim + SPEED_GAIN * error;
+        if (signal > 0 && signal < 15) {
+            thrustTrim = Mth.clamp(thrustTrim + THRUST_TRIM_RATE * Mth.clamp(error, -THRUST_TRIM_LIMIT, THRUST_TRIM_LIMIT), 0, 15);
+        }
+        return Mth.clamp((int) Math.round(signal), 0, 15);
     }
 
     /** How high the bottom of the wheels is above the ground below the autopilot. */
@@ -785,6 +806,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.put("Controls", Relays.write(controls));
         saveTargets(tag);
         tag.putDouble("Trim", trim);
+        tag.putDouble("ThrustTrim", thrustTrim);
         tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
         tag.putBoolean("Governing", governing);
@@ -816,6 +838,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Saved as "Levers" before the tiller and the parking brake joined them.
             controls = Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY));
             trim = tag.getDouble("Trim");
+            // Saved before the signal that holds the speed was learnt.
+            thrustTrim = tag.contains("ThrustTrim") ? tag.getDouble("ThrustTrim") : CRUISE_THRUST;
             // Saved before a take-off held the runway's heading apart from the one set.
             runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");
