@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
@@ -27,7 +28,8 @@ import net.minecraft.world.phys.AABB;
  * The airstairs' memory and motor. It knows the flight as a list of stages, from the landing at the door down to the
  * bottom step, each a few blocks placed relative to itself, so the mechanism keeps working wherever the airliner
  * stands or flies. Folding takes the stages away from the bottom up; unfolding lays them out again from the door
- * down, one every few ticks, and stops early where a step meets the ground. The jet bridge runs on it too, laying out
+ * down, one every few ticks, and stops early where a step meets the ground. The airliner's airstairs also work the
+ * door they serve, opening it as they unfold and shutting it as they fold. The jet bridge runs on it too, laying out
  * a tunnel it plans afresh each time (see {@link JetBridgeBlockEntity}).
  */
 public class AirstairControllerBlockEntity extends BlockEntity {
@@ -49,6 +51,9 @@ public class AirstairControllerBlockEntity extends BlockEntity {
     /** Folding is held up by someone on the stairs; the chime has sounded. */
     private boolean waiting;
     private int cooldown;
+    /** Where the door the stairs serve is, from the controller: its bottom left part; null for none. */
+    @Nullable
+    private BlockPos door;
 
     public AirstairControllerBlockEntity(BlockPos pos, BlockState state) {
         this(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), pos, state);
@@ -58,11 +63,12 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
-    /** Hands the controller the stairs it was built with, already standing. */
-    public void configure(List<List<Step>> stages) {
+    /** Hands the controller the stairs it was built with, already standing, and where the door they serve is from it. */
+    public void configure(List<List<Step>> stages, BlockPos door) {
         this.stages = stages;
         this.out = stages.size();
         this.extending = true;
+        this.door = door;
         setChanged();
     }
 
@@ -93,7 +99,7 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         setChanged();
     }
 
-    /** Folds the stairs away if they are out or coming out, otherwise unfolds them. */
+    /** Folds the stairs away if they are out or coming out, otherwise unfolds them; the door they serve goes with them. */
     public void toggle() {
         extending = !extending;
         grounded = false;
@@ -102,6 +108,10 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         setChanged();
         if (level != null) {
             level.playSound(null, worldPosition, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.8F, extending ? 0.8F : 1.1F);
+            PlugDoorBlockEntity served = door == null ? null : PlugDoorBlockEntity.of(level, worldPosition.offset(door));
+            if (served != null) {
+                served.set(extending);
+            }
         }
     }
 
@@ -202,6 +212,9 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         tag.putInt("Out", out);
         tag.putBoolean("Extending", extending);
         tag.putBoolean("Grounded", grounded);
+        if (door != null) {
+            tag.put("Door", NbtUtils.writeBlockPos(door));
+        }
     }
 
     @Override
@@ -222,5 +235,6 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         out = Math.min(tag.getInt("Out"), stages.size());
         extending = tag.getBoolean("Extending");
         grounded = tag.getBoolean("Grounded");
+        door = NbtUtils.readBlockPos(tag, "Door").orElse(null);
     }
 }

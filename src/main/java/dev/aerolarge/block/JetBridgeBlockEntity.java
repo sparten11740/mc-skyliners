@@ -53,8 +53,9 @@ public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
     private static final BlockState BELLOWS = Blocks.BLACK_CONCRETE.defaultBlockState();
 
     private static final Predicate<BlockState> SOLID = state -> !state.isAir() && !state.canBeReplaced();
-    private static final Predicate<BlockState> DOOR =
-        state -> state.is(AerolargeRegistry.AIRLINER_DOOR.get()) && state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
+    /** A door's foot: a plug door's part on its sill, or the lower half of a door in an airliner built before them. */
+    private static final Predicate<BlockState> DOOR = state -> PlugDoorBlock.isSill(state)
+        || state.is(AerolargeRegistry.AIRLINER_DOOR.get()) && state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
 
     /** Where in the world the foot of the door it docked at was; null before it first docks. */
     @Nullable

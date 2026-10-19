@@ -3,7 +3,6 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.DutyFreeCounterBlock;
 import dev.aerolarge.cabin.Decompression;
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -72,21 +71,15 @@ final class DutyFreeKiosk {
     }
 
     /**
-     * The middles of the aft doors' doorways, (x, z) in the layout, where decompression's pull is measured from: each
-     * leaf's foot, in the hull's side at the main deck floor.
+     * The middles of the aft doors' doorways, (x, z) in the layout, where decompression's pull is measured from: across
+     * each door, in the hull's side at the main deck floor.
      */
     private List<Vec2> aftDoorways() {
-        List<Vec2> doorways = new ArrayList<>();
         int fore = (int) Math.round(AirframeShape.PASSENGER_DOORS[AirframeShape.PASSENGER_DOORS.length - 1] * layout.scale());
-        int reach = (int) Math.ceil(AirframeShape.WIDTH / 2 * layout.scale()) + 1;
-        for (int z = fore; z <= fore + 1; z++) {
-            for (int x = -reach; x <= reach; x++) {
-                if (layout.stateAt(x, floor + 1, z).is(AerolargeRegistry.AIRLINER_DOOR.get())) {
-                    doorways.add(new Vec2(x + 0.5F, z + 0.5F));
-                }
-            }
-        }
-        return doorways;
+        return layout.hullDoors().stream()
+            .filter(door -> door.fore() == fore && door.bottom() == floor + 1)
+            .map(AirframeLayout.HullDoor::middle)
+            .toList();
     }
 
     /**

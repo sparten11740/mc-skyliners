@@ -29,6 +29,7 @@ import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
@@ -76,6 +77,7 @@ import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.phys.Vec2;
 
 /**
  * The airliner cut into blocks, before it is put anywhere: every block of it, and air for every block of the cabin
@@ -137,6 +139,10 @@ public final class AirframeLayout {
     private static final int DOOR_AISLE = 2;
     /** A player's height in blocks: the hatch only opens onto a hold someone can stand up in. */
     private static final int STANDING_ROOM = 2;
+    /** How tall the main deck doors are, in metres: the A380's are 1.93 m. */
+    private static final double PASSENGER_DOOR_HEIGHT = 1.93;
+    /** How many rows tall the hold's cargo door is: all the hold leaves under the floor at the default scale. */
+    private static final int CARGO_DOOR_ROWS = 2;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -171,6 +177,10 @@ public final class AirframeLayout {
     /** The cabin lights' dimmer on the panel and the window shades' control by the captain; null without a flight deck. */
     private BlockPos cabinLights;
     private BlockPos windowShades;
+    /** The doors cut through the hull's sides, in the order they were cut. */
+    private final List<HullDoor> hullDoors = new ArrayList<>();
+    /** The blocks under the doorways, from each door's sill in to the cabin, which the skin pass keeps whole. */
+    private final Set<BlockPos> doorwayFloors = new HashSet<>();
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
     private int minY = Integer.MAX_VALUE;
@@ -202,13 +212,15 @@ public final class AirframeLayout {
             layout.engine(-x);
         }
         layout.controlJets();
+        // The passenger doors hinge on their forward edges, which seen from outside is the right edge to starboard and
+        // the left to port, and swing forward against the hull; the cargo door hinges along its top and swings up.
         for (double z : PASSENGER_DOORS) {
-            layout.door(1, z, layout.floorY + 1);
-            layout.door(-1, z, layout.floorY + 1);
+            layout.door(1, z, layout.floorY + 1, layout.passengerDoorRows(), PlugDoorBlock.Hinge.RIGHT);
+            layout.door(-1, z, layout.floorY + 1, layout.passengerDoorRows(), PlugDoorBlock.Hinge.LEFT);
         }
         // Only where the hold is tall enough to walk into; at the smallest scales it is a crawlspace.
-        if (layout.floorY - 2 >= 1) {
-            layout.door(1, CARGO_DOOR, layout.floorY - 2);
+        if (layout.floorY - CARGO_DOOR_ROWS >= 1) {
+            layout.door(1, CARGO_DOOR, layout.floorY - CARGO_DOOR_ROWS, CARGO_DOOR_ROWS, PlugDoorBlock.Hinge.TOP);
         }
         layout.fairings();
         layout.navLights();
@@ -483,11 +495,40 @@ public final class AirframeLayout {
     boolean doorAt(int z) {
         for (double station : PASSENGER_DOORS) {
             int fore = (int) Math.round(station * scale);
-            if (z >= fore - 1 && z <= fore + 2) {
+            if (z >= fore - 1 && z <= fore + PlugDoorBlock.COLUMNS) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * How many rows tall the main deck doors are: the A380's height at this scale, at least a player's, and no taller
+     * than a plug door may be, so a jet bridge's tunnel frames the whole door.
+     */
+    int passengerDoorRows() {
+        return Math.clamp(Math.round(PASSENGER_DOOR_HEIGHT * scale), STANDING_ROOM, PlugDoorBlock.MOST_ROWS);
+    }
+
+    /** The doors cut through the hull's sides so far. */
+    List<HullDoor> hullDoors() {
+        return hullDoors;
+    }
+
+    /**
+     * A door cut through the hull's side (1 to starboard, -1 to port): its forward station, the row of its sill, the
+     * column it stands in and how many rows tall it is.
+     */
+    record HullDoor(int side, int fore, int bottom, int outer, int rows) {
+        /** Where the door's bottom left part is, as seen from outside, which keeps its block entity. */
+        BlockPos controller() {
+            return new BlockPos(outer, bottom, side > 0 ? fore + PlugDoorBlock.COLUMNS - 1 : fore);
+        }
+
+        /** The middle of the doorway across its sill, (x, z): where decompression measures its pull from. */
+        Vec2 middle() {
+            return new Vec2(outer + 0.5F, fore + PlugDoorBlock.COLUMNS / 2F);
+        }
     }
 
     /** Whether a seatbelt sign goes into the cabin walls at the station, once the cabin is fitted out. */
@@ -786,8 +827,8 @@ public final class AirframeLayout {
         for (int side : new int[]{1, -1}) {
             jumpDoor(side, PASSENGER_DOORS[PASSENGER_DOORS.length - 1], floorY + 1, relays);
         }
-        if (floorY - 2 >= 1) {
-            jumpDoor(1, CARGO_DOOR, floorY - 2, relays);
+        if (floorY - CARGO_DOOR_ROWS >= 1) {
+            jumpDoor(1, CARGO_DOOR, floorY - CARGO_DOOR_ROWS, relays);
         }
         if (jumpSwitch == null || relays.isEmpty()) {
             return;
@@ -1026,13 +1067,19 @@ public final class AirframeLayout {
     }
 
     /**
-     * Whether a door is set into the skin right beside this block. The skin round a door stays whole: a door is flat,
-     * and skin cut to the curve beside it would leave a wedge of open air along its edges.
+     * Whether a door is set into the skin right beside this block, or the block is a doorway's floor. The skin round a
+     * door stays whole: a door is flat, and skin cut to the curve beside it would leave a wedge of open air along its
+     * edges; and a doorway's floor cut to the curve, where a door stands proud of the hull's curve, would trip whoever
+     * steps through.
      */
     boolean nextToDoor(BlockPos pos) {
+        if (doorwayFloors.contains(pos)) {
+            return true;
+        }
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
-            if (stateAt(next.getX(), next.getY(), next.getZ()).is(AerolargeRegistry.AIRLINER_DOOR.get())) {
+            BlockState state = stateAt(next.getX(), next.getY(), next.getZ());
+            if (PlugDoorBlock.isDoor(state) || state.is(AerolargeRegistry.AIRLINER_DOOR.get())) {
                 return true;
             }
         }
@@ -1662,54 +1709,60 @@ public final class AirframeLayout {
     }
 
     /**
-     * A two-leaf door, two blocks wide, cut through the hull on one side at station z, its bottom on row y, standing
-     * flat in one column at the hull's outermost reach there and framed by hull. Where the curve of the hull makes the
-     * wall more than a block thick, the rest is cut away so the door opens into the cabin.
+     * A plug door (see {@link PlugDoorBlock}), two blocks wide and {@code rows} tall, cut through the hull on one side
+     * at station z, its sill on row y, hinged on the given edge, standing flat in one column at the hull's outermost
+     * reach there and framed by hull. Where the curve of the hull makes the wall more than a block thick, the rest is
+     * cut away so the doorway opens into the cabin.
      */
-    private void door(int side, double station, int bottom) {
+    private void door(int side, double station, int bottom, int rows, PlugDoorBlock.Hinge hinge) {
         int fore = (int) Math.round(station * scale);
-        Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
-        // The whole door stands in one column, the outermost the hull reaches at any of its blocks: a door's halves
-        // must stand one on the other, and below the floor the hull curves in so fast that the lower row's skin can
-        // lie a block further in than the upper's.
+        Direction out = side > 0 ? Direction.EAST : Direction.WEST;
+        // The whole door stands in one column, the outermost the hull reaches at any of its blocks: its panel is flat,
+        // and below the floor the hull curves in so fast that the lower row's skin can lie a block further in than the
+        // upper's.
         int outer = 0;
-        for (int leaf = 0; leaf < 2; leaf++) {
-            for (int part = 0; part < 2; part++) {
-                int row = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
-                while (row != 0 && !inFuselage(row, bottom + part, fore + leaf)) {
-                    row -= side;
+        for (int z = fore; z < fore + PlugDoorBlock.COLUMNS; z++) {
+            for (int y = bottom; y < bottom + rows; y++) {
+                int x = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+                while (x != 0 && !inFuselage(x, y, z)) {
+                    x -= side;
                 }
-                if (Math.abs(row) > Math.abs(outer)) {
-                    outer = row;
+                if (Math.abs(x) > Math.abs(outer)) {
+                    outer = x;
                 }
             }
         }
-        for (int leaf = 0; leaf < 2; leaf++) {
-            int z = fore + leaf;
-            // The aft leaf's partner is ahead of it (north), the fore leaf's behind it (south); a leaf hinges on the
-            // side away from its partner, the way two doors placed side by side by hand pair up.
-            Direction partner = leaf == 0 ? Direction.SOUTH : Direction.NORTH;
-            DoorHingeSide hinge = partner == facing.getCounterClockWise() ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
-            for (int part = 0; part < 2; part++) {
-                int y = bottom + part;
+        HullDoor door = new HullDoor(side, fore, bottom, outer, rows);
+        hullDoors.add(door);
+        Direction right = out.getCounterClockWise();
+        BlockState part = AerolargeRegistry.PLUG_DOOR.get().defaultBlockState()
+            .setValue(PlugDoorBlock.FACING, out)
+            .setValue(PlugDoorBlock.HINGE, hinge);
+        for (int column = 0; column < PlugDoorBlock.COLUMNS; column++) {
+            BlockPos foot = door.controller().relative(right, column);
+            int z = foot.getZ();
+            doorwayFloors.add(new BlockPos(outer, bottom - 1, z));
+            for (int row = 0; row < rows; row++) {
+                int y = bottom + row;
                 for (int x = outer - side; x != 0 && has(x, y, z) && !isOpen(x, y, z); x -= side) {
                     set(x, y, z, Blocks.AIR.defaultBlockState());
+                    if (row == 0) {
+                        doorwayFloors.add(new BlockPos(x, y - 1, z));
+                    }
                 }
                 // Below the door the hull already curves inward: close the gap with a sill out to the door.
-                for (int x = outer; part == 0 && x != 0 && !has(x, y - 1, z); x -= side) {
+                for (int x = outer; row == 0 && x != 0 && !has(x, y - 1, z); x -= side) {
                     set(x, y - 1, z, palette.hull());
                 }
-                set(outer, y, z, AerolargeRegistry.AIRLINER_DOOR.get().defaultBlockState()
-                    .setValue(DoorBlock.FACING, facing)
-                    .setValue(DoorBlock.HINGE, hinge)
-                    .setValue(DoorBlock.HALF, part == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER));
+                set(outer, y, z, part.setValue(PlugDoorBlock.COLUMN, column).setValue(PlugDoorBlock.ROW, row));
             }
         }
         // A frame of hull round the doorway, flush with the door, wherever the curve leaves the hull short of it: the
         // jambs either side and the lintel above. The skin pass leaves it whole (see nextToDoor), so nothing gapes.
-        for (int y = bottom; y <= bottom + 2; y++) {
-            for (int z = fore - 1; z <= fore + 2; z++) {
-                if ((y == bottom + 2 || z == fore - 1 || z == fore + 2) && !has(outer, y, z)) {
+        for (int y = bottom; y <= bottom + rows; y++) {
+            for (int z = fore - 1; z <= fore + PlugDoorBlock.COLUMNS; z++) {
+                boolean frame = y == bottom + rows || z == fore - 1 || z == fore + PlugDoorBlock.COLUMNS;
+                if (frame && !has(outer, y, z)) {
                     set(outer, y, z, palette.hull());
                 }
             }
@@ -1737,8 +1790,10 @@ public final class AirframeLayout {
     /**
      * Folding airstairs up to the forward port door, the way passengers board: a landing in front of the door and a
      * two-wide flight running down toward the nose to the ground, built standing. The airstair controller set into
-     * the hull just ahead of the door folds them into nothing and back out, so they are out of the way for flight;
-     * a button beside it inside, one outside, and a call button on the nose gear for the ground crew work it.
+     * the hull just aft of the door folds them into nothing and back out, so they are out of the way for flight, and
+     * opens the door as they unfold and shuts it as they fold; a button beside it inside, one outside by the landing,
+     * and a call button on the nose gear for the ground crew work it. It is aft of the door, where the door, swung
+     * forward against the hull, leaves its outside button free.
      */
     private void boardingStairs() {
         int fore = (int) Math.round(PASSENGER_DOORS[0] * scale);
@@ -1761,20 +1816,30 @@ public final class AirframeLayout {
         }
         stages.removeIf(List::isEmpty);
 
-        // The controller is the hull block just ahead of the door, at the height of the door's upper half.
+        // The controller is the jamb just aft of the door, a block above its sill.
+        HullDoor served = hullDoors.stream()
+            .filter(hull -> hull.side() < 0 && hull.fore() == fore && hull.bottom() == floorY + 1)
+            .findFirst()
+            .orElse(null);
+        if (stages.isEmpty() || served == null) {
+            return;
+        }
         int row = floorY + 2;
-        int panelZ = fore - 1;
-        int panelX = -(openHalfWidth(row, panelZ) + 1);
-        if (stages.isEmpty() || panelX >= 0 || !has(panelX, row, panelZ)) {
+        int panelZ = fore + PlugDoorBlock.COLUMNS;
+        int panelX = served.outer();
+        if (!has(panelX, row, panelZ)) {
             return;
         }
         set(panelX, row, panelZ, AerolargeRegistry.AIRSTAIR_CONTROLLER.get().defaultBlockState());
         BlockState button = Blocks.POLISHED_BLACKSTONE_BUTTON.defaultBlockState().setValue(ButtonBlock.FACE, AttachFace.WALL);
-        set(panelX + 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.EAST));
+        if (isOpen(panelX + 1, row, panelZ)) {
+            set(panelX + 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.EAST));
+        }
         if (!has(panelX - 1, row, panelZ)) {
             set(panelX - 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.WEST));
         }
         BlockPos controller = new BlockPos(panelX, row, panelZ);
+        BlockPos servedDoor = served.controller().subtract(controller);
         List<List<AirstairControllerBlockEntity.Step>> relative = stages.stream()
             .map(stage -> stage.stream().map(at -> new AirstairControllerBlockEntity.Step(at.offset().subtract(controller), at.state())).toList())
             .toList();
@@ -1784,7 +1849,7 @@ public final class AirframeLayout {
                     BlockPos offset = at.offset().rotate(rotation);
                     BlockState turned = at.state().rotate(blockEntity.getLevel(), blockEntity.getBlockPos().offset(offset), rotation);
                     return new AirstairControllerBlockEntity.Step(offset, turned);
-                }).toList()).toList());
+                }).toList()).toList(), servedDoor.rotate(rotation));
             }
         });
 

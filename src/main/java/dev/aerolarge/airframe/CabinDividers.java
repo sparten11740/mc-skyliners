@@ -51,8 +51,6 @@ final class CabinDividers {
     private static final int SNAP = 2;
     /** How many blocks of headroom the lavatories have under their ceilings, as the WC behind the flight deck has. */
     private static final int HEADROOM = 3;
-    /** How high over the floor the exit signs hang: just over the doors, two blocks tall. */
-    private static final int EXIT_SIGN = 3;
     /**
      * The pictures, each row from the top as seen from the doors' side of its wall, '.' the wall itself and each letter
      * a colour of wool (see WOOL): a business class seat seen from the side, a drop of water, a basketball, a cup with
@@ -148,14 +146,15 @@ final class CabinDividers {
         exitSigns();
     }
 
-    /** A green running man on the wall over every passenger door's forward leaf, facing into the cabin. */
+    /** A green running man on the wall just over every passenger door, over its forward half, facing into the cabin. */
     private void exitSigns() {
+        int y = floor + 1 + layout.passengerDoorRows();
         for (double station : AirframeShape.PASSENGER_DOORS) {
             int z = (int) Math.round(station * layout.scale());
             for (int side : new int[]{1, -1}) {
-                int x = layout.besideWall(side, floor + EXIT_SIGN, z);
+                int x = layout.besideWall(side, y, z);
                 if (x != 0) {
-                    layout.furnish(x, floor + EXIT_SIGN, z, AerolargeRegistry.EXIT_SIGN.get().defaultBlockState()
+                    layout.furnish(x, y, z, AerolargeRegistry.EXIT_SIGN.get().defaultBlockState()
                         .setValue(ExitSignBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
                 }
             }
