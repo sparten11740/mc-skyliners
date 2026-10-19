@@ -343,12 +343,13 @@ final class CabinDecor {
      * The lounge's starlit ceiling: a dropped ceiling of starlight panels across the lounge, a block under the upper
      * deck's windows so it never cuts across one, with LED strips along its edges where it meets the walls. What hung
      * from the crown now hangs from it, the pendant lights and the duty-free kiosk's awning: their cables and chains
-     * stop at the panels, and what was above is taken down. The first and last rows are left to the lounge's ends.
-     * Left out where it would leave too little headroom.
+     * stop at the panels, and what was above is taken down. It reaches from the bulkhead at the lounge's front to the
+     * den's bookcase at its back, so no gap between them opens up into the crown; where either is missing, it stops a
+     * row short of the lounge's end. Left out where it would leave too little headroom.
      */
     private void starlightCeiling() {
-        int fromZ = from(CabinFitOut.LOUNGE) + 1;
-        int toZ = to(CabinFitOut.LOUNGE) - 1;
+        int fromZ = ceilingFront();
+        int toZ = ceilingBack(fromZ);
         int height = starlightHeight(fromZ, toZ);
         if (height - floor < STARLIGHT_HEADROOM) {
             return;
@@ -378,6 +379,31 @@ final class CabinDecor {
                 }
             }
         }
+    }
+
+    /**
+     * The starlit ceiling's first station: right behind the bulkhead at the lounge's front, found forward of the lounge
+     * short of the aft doors; a row into the lounge where none stands.
+     */
+    private int ceilingFront() {
+        int z = from(CabinFitOut.LOUNGE);
+        while (!CabinDividers.standsAt(layout, z - 1) && !layout.doorAt(z - 1)) {
+            z--;
+        }
+        return CabinDividers.standsAt(layout, z - 1) ? z : from(CabinFitOut.LOUNGE) + 1;
+    }
+
+    /**
+     * The starlit ceiling's last station, behind its first: right in front of the den's bookcase, which stands at most
+     * a station behind the lounge; a row short of the lounge's end where there is no den.
+     */
+    private int ceilingBack(int fromZ) {
+        for (int z = to(CabinFitOut.LOUNGE) + 1; z > fromZ; z--) {
+            if (layout.stateAt(0, floor + 1, z).is(AerolargeRegistry.SECRET_BOOKSHELF.get())) {
+                return z - 1;
+            }
+        }
+        return to(CabinFitOut.LOUNGE) - 1;
     }
 
     /**
