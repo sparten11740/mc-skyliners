@@ -120,12 +120,14 @@ final class CrewRooms {
     }
 
     /**
-     * The WC: the vacuum toilet in the front corner against the hull, its back to the bulkhead, and the basin in the
-     * front corner by the aisle, its tap on the bulkhead over it.
+     * The WC: the vacuum toilet in the front corner, its back to the hull and facing into the room, as the hull curving
+     * in over the corner leaves no room to stand in front of one facing aft (its back to the bulkhead where the hull is
+     * not right behind it); the basin in the front corner by the aisle, its tap on the bulkhead over it.
      */
     private void washroom(int side, int inner, int outer) {
-        layout.furnish(side * outer, deck + 1, front,
-            AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState().setValue(VacuumToiletBlock.FACING, Direction.SOUTH));
+        Direction intoRoom = side > 0 ? Direction.WEST : Direction.EAST;
+        layout.furnish(side * outer, deck + 1, front, AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState()
+            .setValue(VacuumToiletBlock.FACING, layout.isOpen(side * (outer + 1), deck + 1, front) ? Direction.SOUTH : intoRoom));
         int basin = side * inner;
         layout.furnish(basin, deck + 1, front,
             Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
