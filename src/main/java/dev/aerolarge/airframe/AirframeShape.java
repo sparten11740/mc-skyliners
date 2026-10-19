@@ -60,6 +60,8 @@ final class AirframeShape {
 
     /** Main deck doors on both sides: ahead of the cabin, between cabin and wing, and behind the wing. */
     static final double[] PASSENGER_DOORS = {11.5, 25.0, 50.0};
+    /** Where along the fuselage the anti-collision beacons sit, above and below, over the wing box. */
+    static final double BEACON_STATION = 34.0;
     /** The aft cargo door, starboard below the floor, clear behind the wing root like the real one. */
     static final double CARGO_DOOR = 49.0;
 

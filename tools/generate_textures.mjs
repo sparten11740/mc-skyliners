@@ -259,6 +259,40 @@ texture(blockOutput, "autopilot", (x, y) => {
 // Thrust relay, hidden in the nacelle: a dark box with a red signal line.
 texture(blockOutput, "thrust_relay", (x, y) => (y === 7 || y === 8 ? [0xb0, 0x20, 0x20] : PANEL_DARK), 3);
 
+// Exterior lights: a coloured lens with a bright core, one per kind, and the soft round glow their renderer draws.
+const LENSES = {
+  red: [0xe8, 0x20, 0x18],
+  green: [0x18, 0xd8, 0x40],
+  white: [0xf4, 0xf4, 0xf0],
+  strobe: [0xe0, 0xe8, 0xff],
+  beacon: [0xff, 0x30, 0x10],
+};
+for (const [kind, colour] of Object.entries(LENSES)) {
+  texture(blockOutput, `nav_light_${kind}`, (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r < 2.5) return [255, 255, 255];
+    const fade = Math.min(1, r / 9);
+    return colour.map((c) => clamp(Math.round(c * (1 - 0.35 * fade))));
+  }, 2);
+}
+const miscOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/misc");
+mkdirSync(miscOutput, { recursive: true });
+{
+  // 32x32: the glow is a large flare, and a 16x16 one shows its pixels.
+  const pixels = [];
+  for (let y = 0; y < 32; y++) {
+    const row = [];
+    for (let x = 0; x < 32; x++) {
+      const r = Math.hypot(x - 15.5, y - 15.5) / 16;
+      const a = Math.max(0, 1 - r);
+      const v = Math.round(255 * a * a);
+      row.push([v, v, v, 255]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(miscOutput, "nav_glow.png"), encodePng(pixels));
+}
+
 // The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
 // carries a gold star for the fittings.
 function blueprint(name, star) {

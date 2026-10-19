@@ -11,6 +11,7 @@ import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
+import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
@@ -113,6 +114,7 @@ public final class AirframeLayout {
             layout.door(1, CARGO_DOOR, layout.floorY - 2);
         }
         layout.fairings();
+        layout.navLights();
         layout.flightDeck();
         // Furnished before the gear goes on: the gear stands under the centre of mass, pool and all.
         if (furnished) {
@@ -387,6 +389,69 @@ public final class AirframeLayout {
     private boolean isSkin(BlockPos pos) {
         BlockState state = cells.get(pos);
         return state != null && (state.is(palette.hull().getBlock()) || state.is(AerolargeRegistry.AIRFRAME_FAIRING.get()));
+    }
+
+    /**
+     * The exterior lights: a red navigation light on the port wingtip and a green one on the starboard tip, each with
+     * a white strobe just behind it, a white light on the tail cone, and red beacons on top of and under the
+     * fuselage.
+     */
+    private void navLights() {
+        BlockState light = AerolargeRegistry.NAV_LIGHT.get().defaultBlockState();
+        for (int side : new int[]{1, -1}) {
+            Direction out = side > 0 ? Direction.EAST : Direction.WEST;
+            BlockPos tip = outermost(side);
+            if (tip != null) {
+                NavLightBlock.Kind nav = side > 0 ? NavLightBlock.Kind.GREEN : NavLightBlock.Kind.RED;
+                lamp(tip.relative(out), light.setValue(NavLightBlock.FACING, out).setValue(NavLightBlock.KIND, nav));
+                lamp(tip.relative(out).south(), light.setValue(NavLightBlock.FACING, out).setValue(NavLightBlock.KIND, NavLightBlock.Kind.STROBE));
+            }
+        }
+        int tail = -1;
+        int tailY = 0;
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            BlockPos pos = cell.getKey();
+            if (pos.getX() == 0 && !cell.getValue().isAir() && inFuselage(0, pos.getY(), pos.getZ()) && pos.getZ() > tail) {
+                tail = pos.getZ();
+                tailY = pos.getY();
+            }
+        }
+        if (tail >= 0) {
+            lamp(new BlockPos(0, tailY, tail + 1), light.setValue(NavLightBlock.FACING, Direction.SOUTH).setValue(NavLightBlock.KIND, NavLightBlock.Kind.WHITE));
+        }
+        int beaconZ = (int) Math.round(BEACON_STATION * scale);
+        int top = Integer.MIN_VALUE;
+        int bottom = Integer.MAX_VALUE;
+        for (int y = -16; y < HEIGHT * scale + 16; y++) {
+            if (has(0, y, beaconZ) && inFuselage(0, y, beaconZ)) {
+                top = Math.max(top, y);
+                bottom = Math.min(bottom, y);
+            }
+        }
+        if (top != Integer.MIN_VALUE) {
+            BlockState beacon = light.setValue(NavLightBlock.KIND, NavLightBlock.Kind.BEACON);
+            lamp(new BlockPos(0, top + 1, beaconZ), beacon.setValue(NavLightBlock.FACING, Direction.UP));
+            lamp(new BlockPos(0, bottom - 1, beaconZ), beacon.setValue(NavLightBlock.FACING, Direction.DOWN));
+        }
+    }
+
+    /** The wingtip: the wing's lifting layer at its outermost span station on one side, or null without wings. */
+    private BlockPos outermost(int side) {
+        BlockPos tip = null;
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            BlockPos pos = cell.getKey();
+            boolean wing = pos.getY() < HEIGHT * scale && !cell.getValue().isAir() && !inFuselage(pos.getX(), pos.getY(), pos.getZ());
+            if (wing && Integer.signum(pos.getX()) == side && (tip == null || Math.abs(pos.getX()) > Math.abs(tip.getX()))) {
+                tip = pos;
+            }
+        }
+        return tip;
+    }
+
+    private void lamp(BlockPos pos, BlockState state) {
+        if (!has(pos.getX(), pos.getY(), pos.getZ())) {
+            set(pos.getX(), pos.getY(), pos.getZ(), state);
+        }
     }
 
     /**

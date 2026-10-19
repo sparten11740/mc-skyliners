@@ -20,6 +20,7 @@
   "block.aerolarge.instrument_panel": "Instrument Panel",
   "message.aerolarge.thrust": "Engine %s thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
+  "block.aerolarge.nav_light": "Navigation Light",
   "block.aerolarge.tiller": "Nose Wheel Tiller",
   "block.aerolarge.parking_brake": "Parking Brake",
   "message.aerolarge.tiller.left": "Nose wheel: steering left",

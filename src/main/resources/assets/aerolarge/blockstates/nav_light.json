@@ -1,0 +1,134 @@
+{
+  "variants": {
+    "facing=up,kind=red": {
+      "model": "aerolarge:block/nav_light_red"
+    },
+    "facing=up,kind=green": {
+      "model": "aerolarge:block/nav_light_green"
+    },
+    "facing=up,kind=white": {
+      "model": "aerolarge:block/nav_light_white"
+    },
+    "facing=up,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe"
+    },
+    "facing=up,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon"
+    },
+    "facing=down,kind=red": {
+      "model": "aerolarge:block/nav_light_red",
+      "x": 180
+    },
+    "facing=down,kind=green": {
+      "model": "aerolarge:block/nav_light_green",
+      "x": 180
+    },
+    "facing=down,kind=white": {
+      "model": "aerolarge:block/nav_light_white",
+      "x": 180
+    },
+    "facing=down,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe",
+      "x": 180
+    },
+    "facing=down,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon",
+      "x": 180
+    },
+    "facing=north,kind=red": {
+      "model": "aerolarge:block/nav_light_red",
+      "x": 90
+    },
+    "facing=north,kind=green": {
+      "model": "aerolarge:block/nav_light_green",
+      "x": 90
+    },
+    "facing=north,kind=white": {
+      "model": "aerolarge:block/nav_light_white",
+      "x": 90
+    },
+    "facing=north,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe",
+      "x": 90
+    },
+    "facing=north,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon",
+      "x": 90
+    },
+    "facing=south,kind=red": {
+      "model": "aerolarge:block/nav_light_red",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=green": {
+      "model": "aerolarge:block/nav_light_green",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=white": {
+      "model": "aerolarge:block/nav_light_white",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east,kind=red": {
+      "model": "aerolarge:block/nav_light_red",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=green": {
+      "model": "aerolarge:block/nav_light_green",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=white": {
+      "model": "aerolarge:block/nav_light_white",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west,kind=red": {
+      "model": "aerolarge:block/nav_light_red",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=green": {
+      "model": "aerolarge:block/nav_light_green",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=white": {
+      "model": "aerolarge:block/nav_light_white",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=strobe": {
+      "model": "aerolarge:block/nav_light_strobe",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=beacon": {
+      "model": "aerolarge:block/nav_light_beacon",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

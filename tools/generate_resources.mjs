@@ -181,6 +181,33 @@ cubes.thrust_relay = null;
   }
 }
 
+// The exterior lights: a small lens on the face it is fixed to, pointing the way it shines (up in the model), one
+// model per kind; turned like an end rod for the other directions.
+{
+  const kinds = ["red", "green", "white", "strobe", "beacon"];
+  for (const kind of kinds) {
+    const face = { texture: "#lens" };
+    write(`assets/${ID}/models/block/nav_light_${kind}.json`, {
+      parent: "minecraft:block/block",
+      render_type: "minecraft:cutout",
+      textures: { lens: `${ID}:block/nav_light_${kind}`, particle: `${ID}:block/nav_light_${kind}` },
+      elements: [{ from: [5, 0, 5], to: [11, 5, 11], faces: { north: face, south: face, east: face, west: face, up: face, down: face } }],
+    });
+  }
+  write(`assets/${ID}/models/item/nav_light.json`, { parent: `${ID}:block/nav_light_red` });
+  const turns = { up: {}, down: { x: 180 }, north: { x: 90 }, south: { x: 90, y: 180 }, east: { x: 90, y: 90 }, west: { x: 90, y: 270 } };
+  write(`assets/${ID}/blockstates/nav_light.json`, {
+    variants: Object.fromEntries(Object.entries(turns).flatMap(([facing, turn]) =>
+      kinds.map((kind) => [`facing=${facing},kind=${kind}`, { model: `${ID}:block/nav_light_${kind}`, ...turn }]))),
+  });
+  write(`data/${ID}/loot_table/blocks/nav_light.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:nav_light` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/nav_light`,
+  });
+  cubes.nav_light = null;
+}
+
 // The instrument panel: screens on the front, plain panel elsewhere.
 write(`assets/${ID}/models/block/instrument_panel.json`, {
   parent: "minecraft:block/orientable",
@@ -279,6 +306,7 @@ shaped("thrust_lever", ["K", "S", "P"], { K: "minecraft:quartz", S: "minecraft:s
 shaped("instrument_panel", ["GGG", "RPR"], { G: "minecraft:black_stained_glass_pane", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 3);
 shaped("airframe_fairing", ["P ", "PP"], { P: `${ID}:airframe_panel` }, 4);
 shaped("autopilot", ["CRC", "RPR"], { C: "minecraft:comparator", R: "minecraft:redstone", P: `${ID}:instrument_panel` }, 1);
+shaped("nav_light", [" G ", "GTG"], { G: "minecraft:glass_pane", T: "minecraft:redstone_torch" }, 2);
 shaped("tiller", [" S ", "RPR"], { S: "minecraft:stick", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
@@ -305,6 +333,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.instrument_panel": "Instrument Panel",
   "message.aerolarge.thrust": "Engine %s thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
+  "block.aerolarge.nav_light": "Navigation Light",
   "block.aerolarge.tiller": "Nose Wheel Tiller",
   "block.aerolarge.parking_brake": "Parking Brake",
   "message.aerolarge.tiller.left": "Nose wheel: steering left",
