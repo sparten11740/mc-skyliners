@@ -23,6 +23,7 @@
   "block.aerolarge.nav_light": "Navigation Light",
   "block.aerolarge.engine_core": "Engine Core",
   "block.aerolarge.tiller": "Nose Wheel Tiller",
+  "block.aerolarge.flight_display": "Flight Display",
   "block.aerolarge.parking_brake": "Parking Brake",
   "message.aerolarge.tiller.left": "Nose wheel: steering left",
   "message.aerolarge.tiller.right": "Nose wheel: steering right",

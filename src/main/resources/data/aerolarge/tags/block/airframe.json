@@ -17,6 +17,7 @@
     "aerolarge:tiller",
     "aerolarge:parking_brake",
     "aerolarge:nav_light",
+    "aerolarge:flight_display",
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",

@@ -10,6 +10,7 @@ import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
+import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
@@ -551,6 +552,13 @@ public final class AirframeLayout {
             });
         }
         int seatX = openHalfWidth(deck + 1, pedestalZ) >= 4 ? 4 : 3;
+        // A flight display in the panel in front of each seat.
+        for (int side : new int[]{1, -1}) {
+            int displayX = side * Math.min(seatX, panelWidth);
+            if (stateAt(displayX, deck + 1, panelZ).is(panel.getBlock())) {
+                set(displayX, deck + 1, panelZ, AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH));
+            }
+        }
         palette.seat().ifPresent(seat -> {
             set(-seatX, deck + 1, pedestalZ, seat);
             set(seatX, deck + 1, pedestalZ, seat);

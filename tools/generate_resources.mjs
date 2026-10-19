@@ -233,6 +233,17 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
 });
 
+// The flight display: a plain dark panel, its screen drawn live by its renderer; facing the pilot.
+write(`assets/${ID}/models/block/flight_display.json`, {
+  parent: "minecraft:block/orientable",
+  textures: { front: `${ID}:block/panel_side`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
+});
+write(`assets/${ID}/models/item/flight_display.json`, { parent: `${ID}:block/instrument_panel` });
+write(`assets/${ID}/blockstates/flight_display.json`, {
+  variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/flight_display`, y }])),
+});
+cubes.flight_display = null;
+
 // The autopilot: a panel block whose screen faces the pilots, away from the nose it points with.
 write(`assets/${ID}/models/block/autopilot.json`, {
   parent: "minecraft:block/orientable",
@@ -272,7 +283,7 @@ write(`assets/${ID}/blockstates/thrust_lever.json`, {
 cubes.thrust_lever = null;
 cubes.instrument_panel = null;
 
-for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever", "instrument_panel", "autopilot"]) {
+for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever", "instrument_panel", "autopilot", "flight_display"]) {
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
     pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${name}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
@@ -324,6 +335,7 @@ shaped("autopilot", ["CRC", "RPR"], { C: "minecraft:comparator", R: "minecraft:r
 shaped("nav_light", [" G ", "GTG"], { G: "minecraft:glass_pane", T: "minecraft:redstone_torch" }, 2);
 shaped("tiller", [" S ", "RPR"], { S: "minecraft:stick", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
+shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
 
 write(`assets/${ID}/lang/en_us.json`, {
@@ -351,6 +363,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.nav_light": "Navigation Light",
   "block.aerolarge.engine_core": "Engine Core",
   "block.aerolarge.tiller": "Nose Wheel Tiller",
+  "block.aerolarge.flight_display": "Flight Display",
   "block.aerolarge.parking_brake": "Parking Brake",
   "message.aerolarge.tiller.left": "Nose wheel: steering left",
   "message.aerolarge.tiller.right": "Nose wheel: steering right",
