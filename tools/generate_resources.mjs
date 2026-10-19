@@ -952,6 +952,14 @@ function holdAndTailLang() {
   });
   cubes.rubber_duck = null;
 }
+// The giant rubber duck, its blocks drawn by the renderer of the one in the middle, from the rubber duck's model: the
+// blocks themselves show nothing but the duck's yellow as they break. Only ever raised, it has no item and leaves
+// nothing behind.
+{
+  write(`assets/${ID}/blockstates/giant_rubber_duck.json`, { variants: { "": { model: `${ID}:block/giant_rubber_duck` } } });
+  write(`assets/${ID}/models/block/giant_rubber_duck.json`, { textures: { particle: `${ID}:block/rubber_duck` } });
+  cubes.giant_rubber_duck = null;
+}
 // Duck Hunt, in the First Flight tab: one criterion for each of the ducks hidden aboard a furnished airliner
 // (HIDDEN_DUCKS in RubberDuckBlock), granted as each is first found; it is done once all five are found.
 write(`data/${ID}/advancement/first_flight/duck_hunt.json`, {
@@ -966,12 +974,13 @@ write(`data/${ID}/advancement/first_flight/duck_hunt.json`, {
 });
 // What of the ducks is fitted rather than built in: breakable, and no part of the airframe.
 function rubberDuckFittings() {
-  return ["rubber_duck"];
+  return ["rubber_duck", "giant_rubber_duck"];
 }
-// The squeak: two quick squeezes of a rubber duck (see tools/generate_sounds.mjs).
+// The squeak, two quick squeezes of a rubber duck, and the giant duck's, long and deep (see tools/generate_sounds.mjs).
 function rubberDuckSounds() {
   return {
     rubber_duck_squeak: { subtitle: `subtitles.${ID}.rubber_duck_squeak`, sounds: [{ name: `${ID}:rubber_duck_squeak` }] },
+    giant_rubber_duck_squeak: { subtitle: `subtitles.${ID}.giant_rubber_duck_squeak`, sounds: [{ name: `${ID}:giant_rubber_duck_squeak` }] },
   };
 }
 // A duck of yellow wool with a beak of orange dye.
@@ -983,6 +992,10 @@ function rubberDuckLang() {
     "block.aerolarge.rubber_duck": "Rubber Duck",
     "subtitles.aerolarge.rubber_duck_squeak": "Rubber duck squeaks",
     "message.aerolarge.rubber_duck.found": "A rubber duck! %s",
+    "message.aerolarge.rubber_duck.all_found": "All five rubber ducks found!",
+    "message.aerolarge.rubber_duck.giant": "All five rubber ducks found! Something big is coming up in the moon pool...",
+    "block.aerolarge.giant_rubber_duck": "Giant Rubber Duck",
+    "subtitles.aerolarge.giant_rubber_duck_squeak": "Giant rubber duck squeaks",
     "advancements.aerolarge.first_flight.duck_hunt.title": "Duck Hunt",
     "advancements.aerolarge.first_flight.duck_hunt.description": "Find the five rubber ducks hidden aboard an airliner",
   };

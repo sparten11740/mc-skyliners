@@ -2,8 +2,11 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlock;
+import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.SuitcaseBlock;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IntSummaryStatistics;
@@ -33,10 +36,14 @@ import net.minecraft.world.level.block.state.BlockState;
  * </ol>
  * A duck whose spot the airliner does not have at its scale is left out. It runs once the fit-out and the hold are
  * done, and only puts a duck into open space, the pool's water, the ball pit's top or a suitcase's place in a pile.
+ * It also finds where the giant duck rises once the last of them is found, afloat in the moon pool, and tells each
+ * hidden duck where that is through a fitting; the giant duck itself only goes in then.
  */
 final class DuckHunt {
     /** How many rows above the pool's water a duck afloat on it needs open, so it shows from across the pool. */
     private static final int POOL_HEADROOM = 3;
+    /** The ways the giant duck may face, the likeliest first: toward the doors' aisle behind the pool, across it, ahead. */
+    private static final List<Direction> GIANT_FACINGS = List.of(Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.NORTH);
 
     private final AirframeLayout layout;
     private final int floor;
@@ -46,20 +53,36 @@ final class DuckHunt {
         this.floor = layout.floorY();
     }
 
-    /** Where a duck goes, and the way its beak points. */
+    /** Where a duck goes, or the giant duck's origin, and the way its beak points. */
     private record Spot(BlockPos pos, Direction facing) {
     }
 
     void apply() {
-        hide(1, glareshield());
-        hide(2, washroom());
-        hide(3, ballPit());
-        hide(4, luggage());
-        hide(5, pool());
+        List<Spot> hidden = new ArrayList<>();
+        hide(1, glareshield(), hidden);
+        hide(2, washroom(), hidden);
+        hide(3, ballPit(), hidden);
+        hide(4, luggage(), hidden);
+        hide(5, pool(), hidden);
+        Spot giant = giant();
+        if (giant == null) {
+            return;
+        }
+        for (Spot duck : hidden) {
+            RubberDuckBlockEntity.GiantSpot seen = seenFrom(duck, giant);
+            layout.fittings().put(duck.pos(), (blockEntity, rotation) -> {
+                if (blockEntity instanceof RubberDuckBlockEntity hiddenDuck) {
+                    hiddenDuck.giant(seen);
+                }
+            });
+        }
     }
 
-    /** Puts hidden duck number {@code duck} at the spot, afloat if the spot is water, in place of whatever was set up there. */
-    private void hide(int duck, @Nullable Spot spot) {
+    /**
+     * Puts hidden duck number {@code duck} at the spot, afloat if the spot is water, in place of whatever was set up
+     * there, and adds it to the hidden ones.
+     */
+    private void hide(int duck, @Nullable Spot spot, List<Spot> hidden) {
         if (spot == null) {
             return;
         }
@@ -70,6 +93,83 @@ final class DuckHunt {
             .setValue(RubberDuckBlock.FACING, spot.facing())
             .setValue(RubberDuckBlock.DUCK, duck)
             .setValue(RubberDuckBlock.WATERLOGGED, afloat));
+        hidden.add(spot);
+    }
+
+    /** Where the giant duck rises seen from a hidden duck, in the duck's own frame, which turns with it. */
+    private static RubberDuckBlockEntity.GiantSpot seenFrom(Spot duck, Spot giant) {
+        BlockPos away = giant.pos().subtract(duck.pos());
+        Direction ahead = duck.facing();
+        Direction right = ahead.getClockWise();
+        int turns = 0;
+        for (Direction facing = ahead; facing != giant.facing(); facing = facing.getClockWise()) {
+            turns++;
+        }
+        return new RubberDuckBlockEntity.GiantSpot(away.getX() * right.getStepX() + away.getZ() * right.getStepZ(), away.getY(),
+            away.getX() * ahead.getStepX() + away.getZ() * ahead.getStepZ(), turns);
+    }
+
+    /**
+     * Where the giant duck rises once the last duck is found (see {@link GiantRubberDuckBlock}): afloat in the moon
+     * pool, its origin on the water's surface, as near the middle of the pool as it fits, facing the doors' aisle
+     * behind the pool where it can, else across or along it. Every block of it has to be the pool's water on the
+     * surface and open space over it, clear of the steps out, a dive from the springboard and the duck afloat there.
+     * Null in an airliner without a pool, or with one too small for it.
+     */
+    @Nullable
+    private Spot giant() {
+        int from = (int) Math.ceil(CabinFitOut.POOL[0] * layout.scale());
+        int to = (int) Math.floor(CabinFitOut.POOL[1] * layout.scale());
+        List<BlockPos> water = where(state -> state.is(Blocks.WATER)).stream()
+            .filter(pos -> pos.getY() == floor && pos.getZ() >= from && pos.getZ() <= to)
+            .toList();
+        if (water.isEmpty()) {
+            return null;
+        }
+        double middleX = water.stream().mapToInt(BlockPos::getX).average().orElseThrow();
+        double middleZ = water.stream().mapToInt(BlockPos::getZ).average().orElseThrow();
+        List<BlockPos> springboards = where(state -> state.is(AerolargeRegistry.SPRINGBOARD.get()));
+        List<Spot> fits = new ArrayList<>();
+        for (BlockPos origin : water) {
+            for (Direction facing : GIANT_FACINGS) {
+                if (giantFits(origin, facing, springboards)) {
+                    fits.add(new Spot(origin, facing));
+                }
+            }
+        }
+        return fits.stream()
+            .min(Comparator.comparingDouble((Spot spot) -> Math.pow(spot.pos().getX() - middleX, 2) + Math.pow(spot.pos().getZ() - middleZ, 2))
+                .thenComparingInt(spot -> GIANT_FACINGS.indexOf(spot.facing())))
+            .orElse(null);
+    }
+
+    /** Whether the giant duck fits with its origin there, facing that way. */
+    private boolean giantFits(BlockPos origin, Direction facing, List<BlockPos> springboards) {
+        for (int part : GiantRubberDuckBlock.solidParts()) {
+            BlockPos pos = origin.offset(GiantRubberDuckBlock.offset(part, facing));
+            boolean afloat = pos.getY() == origin.getY() ? layout.stateAt(pos.getX(), pos.getY(), pos.getZ()).is(Blocks.WATER) : open(pos);
+            if (!afloat || besideSteps(pos) || besideDuck(pos) || nearAny(pos, springboards)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a duck is at the spot or right beside it. */
+    private boolean besideDuck(BlockPos pos) {
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (layout.stateAt(pos.getX() + x, pos.getY(), pos.getZ() + z).is(AerolargeRegistry.RUBBER_DUCK.get())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether any of the positions is in the spot's column, or the one beside it. */
+    private static boolean nearAny(BlockPos pos, List<BlockPos> others) {
+        return others.stream().anyMatch(other -> Math.abs(other.getX() - pos.getX()) <= 1 && Math.abs(other.getZ() - pos.getZ()) <= 1);
     }
 
     /**
@@ -195,7 +295,7 @@ final class DuckHunt {
         int to = (int) Math.floor(CabinFitOut.POOL[1] * layout.scale());
         return where(state -> state.is(Blocks.WATER)).stream()
             .filter(pos -> pos.getY() == floor && pos.getZ() >= from && pos.getZ() <= to && headroom(pos, POOL_HEADROOM) && !besideSteps(pos)
-                && springboards.stream().noneMatch(board -> Math.abs(board.getX() - pos.getX()) <= 1 && Math.abs(board.getZ() - pos.getZ()) <= 1))
+                && !nearAny(pos, springboards))
             .min(Comparator.comparingInt((BlockPos pos) -> -pos.getZ()).thenComparingInt(pos -> fromMiddle(pos.getX())))
             .map(pos -> new Spot(pos, Direction.SOUTH))
             .orElse(null);

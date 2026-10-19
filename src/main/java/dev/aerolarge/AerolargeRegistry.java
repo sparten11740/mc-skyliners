@@ -35,6 +35,8 @@ import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GiantRubberDuckBlock;
+import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
@@ -681,6 +683,20 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("rubber_duck", () -> BlockEntityType.Builder.of(RubberDuckBlockEntity::new, RUBBER_DUCK.get()).build(null));
     public static final DeferredItem<BlockItem> RUBBER_DUCK_ITEM = ITEMS.registerSimpleBlockItem(RUBBER_DUCK);
     public static final DeferredHolder<SoundEvent, SoundEvent> RUBBER_DUCK_SQUEAK = sound("rubber_duck_squeak");
+    /**
+     * The giant rubber duck that rises out of the moon pool once all the hidden ducks are found, and its huge squeak:
+     * only ever raised, so it has no item, and it leaves nothing behind. Its blocks are as light as the rest of the
+     * fittings, so it does not tip the airliner.
+     */
+    public static final DeferredBlock<GiantRubberDuckBlock> GIANT_RUBBER_DUCK = BLOCKS.registerBlock(
+        "giant_rubber_duck", GiantRubberDuckBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.5F).sound(SoundType.WOOL).noOcclusion().noLootTable()
+            .pushReaction(PushReaction.BLOCK).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).isRedstoneConductor((state, level, pos) -> false)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GiantRubberDuckBlockEntity>> GIANT_RUBBER_DUCK_ENTITY =
+        BLOCK_ENTITIES.register("giant_rubber_duck", () -> BlockEntityType.Builder.of(GiantRubberDuckBlockEntity::new, GIANT_RUBBER_DUCK.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> GIANT_RUBBER_DUCK_SQUEAK = sound("giant_rubber_duck_squeak");
 
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
     public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));

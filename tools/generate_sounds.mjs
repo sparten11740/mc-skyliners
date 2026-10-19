@@ -396,6 +396,13 @@ function squeak(samples, start, length, pitch, swoop) {
   squeak(samples, 0.15, 0.09, 700, 0.25);
   writeSound("rubber_duck_squeak", samples);
 }
+// The giant duck's squeak: one long squeeze, deep and huge, a second reed a fifth below it for its size.
+{
+  const samples = new Float64Array(Math.round(1.0 * RATE));
+  squeak(samples, 0, 0.95, 300, 0.45);
+  squeak(samples, 0.02, 0.9, 200, 0.4);
+  writeSound("giant_rubber_duck_squeak", samples);
+}
 
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;

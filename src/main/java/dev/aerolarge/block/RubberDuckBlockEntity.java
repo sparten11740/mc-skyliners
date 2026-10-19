@@ -3,9 +3,14 @@ package dev.aerolarge.block;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A rubber duck's state. On the client: when it last started wiggling, for its renderer, which draws the duck so it
@@ -20,7 +26,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * server, a hidden duck's hint to the player who has not found it yet. On the server, a hidden duck counts toward the
  * finder's Duck Hunt advancement the first time they squeak it: a row of five dots on screen fills in yellow for the
  * ducks found so far, and the duck counts them out in squeaks, rising, a heart with each, for those who cannot read
- * the dots yet.
+ * the dots yet. For the last of them, the giant duck rises out of the airliner's moon pool, from where each hidden duck
+ * was told it is when the airliner was built (see {@link GiantRubberDuckBlock}).
  */
 public class RubberDuckBlockEntity extends BlockEntity {
     /** Set by the client: a hidden duck's hint, each tick. */
@@ -38,11 +45,35 @@ public class RubberDuckBlockEntity extends BlockEntity {
     private static final float COUNT_RISE = 0.12F;
     /** How high over the duck's block a counting squeak's heart starts. */
     private static final double COUNT_HEART_HEIGHT = 0.9;
-    /** A dot on the progress row, for each hidden duck: yellow once found, grey until then. */
-    private static final String DOT = "●";
+    /** A dot on the progress row, for each hidden duck: yellow once found, grey until then (a black circle, U+25CF). */
+    private static final String DOT = Character.toString(0x25CF);
+
+    /**
+     * Where the giant duck rises once the last of the hidden ducks is found, from this one, in its own frame: blocks to
+     * its right, up and ahead of it as it faces, and how many quarter turns clockwise from its own facing the giant
+     * faces. Kept that way it holds however the airliner was placed, or turned as it was assembled, as the duck's
+     * facing turns with it.
+     */
+    public record GiantSpot(int right, int up, int ahead, int turns) {
+        CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("Right", right);
+            tag.putInt("Up", up);
+            tag.putInt("Ahead", ahead);
+            tag.putInt("Turns", turns);
+            return tag;
+        }
+
+        static GiantSpot load(CompoundTag tag) {
+            return new GiantSpot(tag.getInt("Right"), tag.getInt("Up"), tag.getInt("Ahead"), tag.getInt("Turns"));
+        }
+    }
 
     /** When the duck last started wiggling, in game ticks; only ever set on the client. */
     private long wiggled = NEVER;
+    /** Where the giant duck rises, for a hidden duck in an airliner with room for one; null for any other. */
+    @Nullable
+    private GiantSpot giant;
     /** After a find, how many squeaks are left to count and how many have been; when the next is due, in game ticks. */
     private int toCount;
     private int counted;
@@ -82,16 +113,48 @@ public class RubberDuckBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Counts this hidden duck as found by the player, the first time: their progress on screen, counted out in squeaks. */
+    /** Sets where the giant duck rises, as the airliner is built. */
+    public void giant(GiantSpot giant) {
+        this.giant = giant;
+        setChanged();
+    }
+
+    /**
+     * Counts this hidden duck as found by the player, the first time: their progress on screen, counted out in
+     * squeaks; and for the last of them, the giant duck rises.
+     */
     void found(ServerPlayer player) {
-        if (duck() <= 0 || !FirstFlight.DUCK_HUNT.award(player, criterion(duck()))) {
+        if (duck() <= 0 || !FirstFlight.DUCK_HUNT.award(player, criterion(duck())) || !(level instanceof ServerLevel server)) {
             return;
         }
         int found = FirstFlight.DUCK_HUNT.progress(player);
         player.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.found", dots(found)), true);
         toCount = found;
         counted = 0;
-        nextCount = player.level().getGameTime() + COUNT_DELAY;
+        nextCount = server.getGameTime() + COUNT_DELAY;
+        if (found >= RubberDuckBlock.HIDDEN_DUCKS) {
+            raiseGiant(server, player);
+        }
+    }
+
+    /**
+     * The giant duck, for the player who found the last duck: up out of this airliner's moon pool, or where it has no
+     * room for one, its squeak, fanfare and confetti here.
+     */
+    private void raiseGiant(ServerLevel level, ServerPlayer finder) {
+        if (giant == null) {
+            GiantRubberDuckBlockEntity.celebrate(level, Vec3.atBottomCenterOf(getBlockPos()), finder);
+            finder.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.all_found"), false);
+            return;
+        }
+        Direction facing = getBlockState().getValue(RubberDuckBlock.FACING);
+        BlockPos origin = getBlockPos().relative(facing.getClockWise(), giant.right()).above(giant.up()).relative(facing, giant.ahead());
+        Direction giantFacing = facing;
+        for (int turn = 0; turn < giant.turns(); turn++) {
+            giantFacing = giantFacing.getClockWise();
+        }
+        GiantRubberDuckBlock.raise(level, origin, giantFacing, finder);
+        finder.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.giant"), false);
     }
 
     /** A dot for each hidden duck, the first {@code found} of them yellow and the rest grey. */
@@ -116,5 +179,19 @@ public class RubberDuckBlockEntity extends BlockEntity {
         counted++;
         toCount--;
         nextCount = server.getGameTime() + COUNT_GAP;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        if (giant != null) {
+            tag.put("Giant", giant.save());
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        giant = tag.contains("Giant", Tag.TAG_COMPOUND) ? GiantSpot.load(tag.getCompound("Giant")) : null;
     }
 }

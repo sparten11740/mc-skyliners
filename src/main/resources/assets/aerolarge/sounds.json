@@ -322,5 +322,13 @@
         "name": "aerolarge:rubber_duck_squeak"
       }
     ]
+  },
+  "giant_rubber_duck_squeak": {
+    "subtitle": "subtitles.aerolarge.giant_rubber_duck_squeak",
+    "sounds": [
+      {
+        "name": "aerolarge:giant_rubber_duck_squeak"
+      }
+    ]
   }
 }

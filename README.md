@@ -309,6 +309,14 @@ each. Every player finds the ducks for themselves, and a duck falls quiet only f
 toward Duck Hunt in the First Flight advancements; find all five to earn it. A hidden duck stays put when hit, even in
 creative mode; sneak to take one away, and it is gone until the airliner is built again.
 
+Whoever finds the fifth sets off the surprise: with a great splash a giant rubber duck, three blocks wide and tall,
+rises out of the airliner's moon pool, and once it is up it lets out a huge squeak, with a fanfare and a burst of
+confetti and fireworks; the finder hears the squeak from anywhere aboard. It floats there, bobbing gently, and it is
+solid: jump onto its back or its head and it bounces you straight back up with a deep squeak, like the springboard
+(sneak to stand on it); use it, or hit it, and it squeaks. It is part of the airliner, flies with it and stays until
+the airliner is built again: like a hidden duck it stays put when hit, and only comes apart for a player who sneaks,
+breaking any part of it taking the whole duck away. A second player finding all five makes it squeak again.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
