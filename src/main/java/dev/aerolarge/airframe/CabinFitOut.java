@@ -78,8 +78,8 @@ final class CabinFitOut {
         BlockState water = Blocks.WATER.defaultBlockState();
         BlockState tile = Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
         BlockState lantern = Blocks.SEA_LANTERN.defaultBlockState();
-        // The windscreen's glass, the same as the belly's under it, so the two join without a seam.
-        BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
+        // Clear glass, the same as the belly's under it, so the two join without a seam.
+        BlockState glass = AerolargeRegistry.HULL_GLASS.get().defaultBlockState();
         for (int z = fromZ; z <= toZ; z++) {
             for (int x = -width; x <= width; x++) {
                 boolean inBasin = Math.abs(x) <= basin && z >= fromZ + 2 && z <= toZ - 2;

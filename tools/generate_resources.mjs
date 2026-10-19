@@ -90,12 +90,14 @@ write(`assets/${ID}/models/item/airliner_door.json`, { parent: "minecraft:item/g
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
-// The skin and the windscreen cut to the hull's curve: one model each for every shape, baked by the mod's own
-// "shell" loader from the block's corners. They give back the part they are cut from. The relay hidden in the
+// The skin, the windscreen and the moon pool's clear glass cut to the hull's curve: one model each for every shape,
+// baked by the mod's own "shell" loader from the block's corners. They give back the part they are cut from (the
+// clear glass, plain glass). The relay hidden in the
 // nacelles drops nothing.
 for (const [name, skin, renderType, part] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", "airframe_panel"],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", "cockpit_window"],
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass"],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
@@ -105,7 +107,7 @@ for (const [name, skin, renderType, part] of [
   });
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
-    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${part}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: part }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
     random_sequence: `${ID}:blocks/${name}`,
   });
   cubes[name] = null;
@@ -886,6 +888,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.airstair_call_button": "Airstair Call Button",
   "block.aerolarge.airframe_shell": "Airframe Shell",
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
+  "block.aerolarge.hull_glass": "Hull Glass",
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",

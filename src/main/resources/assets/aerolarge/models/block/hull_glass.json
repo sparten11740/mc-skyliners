@@ -1,0 +1,8 @@
+{
+  "loader": "aerolarge:shell",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "skin": "aerolarge:block/hull_glass",
+    "particle": "aerolarge:block/hull_glass"
+  }
+}

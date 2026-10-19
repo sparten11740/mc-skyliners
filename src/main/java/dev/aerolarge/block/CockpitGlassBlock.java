@@ -12,7 +12,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The windscreen: tinted glass cut to the curve of the nose like the skin around it, so the flight deck looks out
- * through the hull's own facets. Light passes through it, and neighbouring panes join without a seam.
+ * through the hull's own facets. Light passes through it, and neighbouring panes join without a seam. The moon
+ * pool's clear belly glass is the same block with a clearer face.
  */
 public class CockpitGlassBlock extends ShellBlock {
     public CockpitGlassBlock(Properties properties, Supplier<? extends ItemLike> part) {

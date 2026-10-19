@@ -14,6 +14,7 @@ import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.DropReleaseBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
@@ -220,14 +221,14 @@ public final class AirframeLayout {
     }
 
     /**
-     * Swaps a block of the hull's skin, a plain panel or a cabin light set into it, for cockpit glass, which the shell
-     * then cuts to the curve with the skin around it, as it does the windscreen's; anything else stays. It has to come
-     * before the shell pass, which is what does the cutting.
+     * Swaps a block of the hull's skin, a plain panel or a cabin light set into it, for clear hull glass, which the
+     * shell then cuts to the curve with the skin around it, as it does the windscreen's; anything else stays. It has to
+     * come before the shell pass, which is what does the cutting.
      */
     void glaze(int x, int y, int z) {
         BlockState state = stateAt(x, y, z);
         if (state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())) {
-            set(x, y, z, AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState());
+            set(x, y, z, AerolargeRegistry.HULL_GLASS.get().defaultBlockState());
         }
     }
 
@@ -789,13 +790,12 @@ public final class AirframeLayout {
      */
     private void shell() {
         BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
-        BlockState glass = AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState();
         BlockState curvedPane = AerolargeRegistry.CABIN_WINDOW_SHELL.get().defaultBlockState();
         Map<BlockPos, BlockState> shaped = new HashMap<>();
         Set<BlockPos> outside = new HashSet<>();
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
             BlockPos pos = cell.getKey();
-            boolean glazed = cell.getValue().is(glass.getBlock());
+            boolean glazed = cell.getValue().getBlock() instanceof CockpitGlassBlock;
             boolean pane = CabinWindowBlock.isPane(cell.getValue());
             if (!glazed && !pane && !cell.getValue().is(palette.hull().getBlock()) || !inSkin(pos)) {
                 continue;
@@ -809,7 +809,7 @@ public final class AirframeLayout {
             if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false) || nextToDoor(pos)) {
                 continue;
             }
-            shaped.put(pos, (glazed ? glass : pane ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
+            shaped.put(pos, (glazed ? cell.getValue().getBlock().defaultBlockState() : pane ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
         }
         for (BlockPos pos : outside) {
             int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
@@ -817,7 +817,8 @@ public final class AirframeLayout {
                 continue;
             }
             BlockState in = inward(pos);
-            shaped.put(pos, (in.is(glass.getBlock()) ? glass : CabinWindowBlock.isPane(in) ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
+            BlockState outer = in.getBlock() instanceof CockpitGlassBlock ? in.getBlock().defaultBlockState() : CabinWindowBlock.isPane(in) ? curvedPane : shell;
+            shaped.put(pos, outer.setValue(ShellBlock.SHAPE, shape));
         }
         cells.putAll(shaped);
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
@@ -861,7 +862,7 @@ public final class AirframeLayout {
             BlockPos next = pos.relative(side);
             BlockState state = cells.get(next);
             if (state == null || state.isAir() || state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock())
-                || state.is(AerolargeRegistry.COCKPIT_GLASS.get()) || CabinWindowBlock.isPane(state)) {
+                || state.getBlock() instanceof CockpitGlassBlock || CabinWindowBlock.isPane(state)) {
                 continue;
             }
             if (!inFuselage(next) || setIn && inSkin(next)) {

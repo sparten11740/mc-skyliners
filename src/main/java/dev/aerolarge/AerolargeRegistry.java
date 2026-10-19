@@ -101,6 +101,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TransparentBlock;
@@ -243,6 +244,10 @@ public final class AerolargeRegistry {
     );
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
+    );
+    /** Clear glass cut to the hull's curve, for the moon pool's view down through the belly; it gives back glass. */
+    public static final DeferredBlock<CockpitGlassBlock> HULL_GLASS = BLOCKS.registerBlock(
+        "hull_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
     /** The flight deck: four thrust levers on the pedestal, the relays they drive in the nacelles, the instrument panel. */
     public static final DeferredBlock<ThrustLeverBlock> THRUST_LEVER = BLOCKS.registerBlock(

@@ -165,6 +165,9 @@ texture(blockOutput, "cockpit_glass", (x, y) => {
   return [COCKPIT_GLASS[0] + lift + sheen, COCKPIT_GLASS[1] + lift + sheen, COCKPIT_GLASS[2] + lift + sheen, COCKPIT_GLASS[3]];
 });
 
+// Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.
+texture(blockOutput, "hull_glass", (x, y) => (x + y >= 9 && x + y <= 10 ? [0xf2, 0xfa, 0xff, 0x70] : [0xc8, 0xe4, 0xf4, 0x30]), 0);
+
 // Cabin carpet: a small diamond pattern on grey-blue.
 texture(blockOutput, "cabin_floor", (x, y) => {
   const d = (Math.abs((x % 8) - 4) + Math.abs((y % 8) - 4));
