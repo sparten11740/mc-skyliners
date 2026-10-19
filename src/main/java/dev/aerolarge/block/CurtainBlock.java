@@ -71,8 +71,10 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     private static final int TICKS_PER_COLUMN = 2;
     /**
      * The outlines, in pixels, drawn for a curtain facing north: the cloth through the middle of the block, its hem a
-     * pixel off the floor; open, the strip along the top where the rail runs, a bunch of gathered cloth at each end,
-     * and a thin sheet where the cloth hangs when drawn, so the curtain can be drawn shut from anywhere across it.
+     * pixel off the floor; open, the strip along the top where the rail runs (or would, lower down, so the piece can
+     * still be used) and a bunch of gathered cloth at each end. An open curtain no wider than an archway's also has a
+     * thin sheet where the cloth hangs when drawn, so it can be drawn shut from anywhere across the archway; a wider
+     * one, like the gym hall's, has not, so whatever is beyond it, a basketball across the court, can still be reached.
      */
     private static final double CLOTH_FRONT = 6.5;
     private static final double CLOTH_BACK = 9.5;
@@ -85,14 +87,19 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     private static final double BUNCH_WIDTH = 4.5;
     private static final double BUNCH_FRONT = 5.5;
     private static final double BUNCH_BACK = 10.5;
+    /** The widest, in pieces, a curtain is that an open one can still be used anywhere across: an archway's. */
+    private static final int NARROW = 3;
 
+    /** Each state's outline, and an open one's on a curtain no wider than an archway's, with the sheet across it. */
     private final ImmutableMap<BlockState, VoxelShape> shapes;
+    private final ImmutableMap<BlockState, VoxelShape> sheets;
 
     public CurtainBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(LEFT, false)
             .setValue(RIGHT, false).setValue(UP, false).setValue(DOWN, false).setValue(COLOR, DyeColor.WHITE));
-        shapes = getShapeForEachState(CurtainBlock::outline);
+        shapes = getShapeForEachState(state -> outline(state, false));
+        sheets = getShapeForEachState(state -> outline(state, true));
     }
 
     @Override
@@ -328,7 +335,30 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return shapes.get(state);
+        return state.getValue(OPEN) && narrow(level, pos, state) ? sheets.get(state) : shapes.get(state);
+    }
+
+    /**
+     * Whether the piece's row of the curtain is no wider than an archway's, counted along the row either way no
+     * further than it takes to tell: the outline is asked for often.
+     */
+    private static boolean narrow(BlockGetter level, BlockPos pos, BlockState state) {
+        Direction left = leftOf(state.getValue(FACING));
+        int width = 1;
+        for (Direction way : new Direction[]{left, left.getOpposite()}) {
+            BlockPos at = pos;
+            BlockState piece = state;
+            while (width <= NARROW) {
+                BlockState next = level.getBlockState(at.relative(way));
+                if (!carriesOn(piece, way, next)) {
+                    break;
+                }
+                at = at.relative(way);
+                piece = next;
+                width++;
+            }
+        }
+        return width <= NARROW;
     }
 
     @Override
@@ -361,14 +391,16 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     }
 
     /** What can be clicked of a piece: see the outline constants. */
-    private static VoxelShape outline(BlockState state) {
+    private static VoxelShape outline(BlockState state, boolean sheet) {
         double bottom = state.getValue(DOWN) ? 0 : HEM;
         Direction facing = state.getValue(FACING);
         if (!state.getValue(OPEN)) {
             return box(facing, 0, bottom, CLOTH_FRONT, 16, 16, CLOTH_BACK);
         }
-        VoxelShape shape = Shapes.or(box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK),
-            box(facing, 0, bottom, DRAWN_FRONT, 16, 16, DRAWN_BACK));
+        VoxelShape shape = box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK);
+        if (sheet) {
+            shape = Shapes.or(shape, box(facing, 0, bottom, DRAWN_FRONT, 16, 16, DRAWN_BACK));
+        }
         if (!state.getValue(LEFT)) {
             shape = Shapes.or(shape, box(facing, 0, bottom, BUNCH_FRONT, BUNCH_WIDTH, 16, BUNCH_BACK));
         }
