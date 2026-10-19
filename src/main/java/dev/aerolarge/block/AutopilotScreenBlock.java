@@ -1,6 +1,8 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.EnumMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -19,19 +22,34 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The autopilot screen on the flight deck: a big touch screen, {@link #COLUMNS} blocks wide and {@link #ROWS} tall,
- * with a moving map and the autopilot's buttons (see {@link AutopilotScreenBlockEntity}). Every block of it is this
- * block; PART says which, counting along the bottom row from the viewer's left and then up, and part 0 holds the
- * screen's block entity and draws the whole of it. FACING is the way the screen faces, toward the pilots. Using any
- * part touches the screen where it was used: the map zooms, anywhere else opens the autopilot's settings.
+ * The autopilot screen on the flight deck: a big touch screen, {@link #COLUMNS} blocks wide and {@link #ROWS} tall and
+ * as slim as the tail camera display, standing against the back of its blocks, with a moving map and the autopilot's
+ * buttons (see {@link AutopilotScreenBlockEntity}). Every block of it is this block; PART says which, counting along
+ * the bottom row from the viewer's left and then up, and part 0 holds the screen's block entity and draws the whole of
+ * it. FACING is the way the screen faces, toward the pilots. Using any part touches the screen where it was used: the
+ * map zooms, anywhere else opens the autopilot's settings.
  */
 public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<AutopilotScreenBlock> CODEC = simpleCodec(AutopilotScreenBlock::new);
     public static final int COLUMNS = 3;
     public static final int ROWS = 2;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
+    /**
+     * How thick the screen is, in pixels of its block, against the back of it: as thick as the tail camera display's
+     * upright screen, so that one stood on top of it makes a single sheet of glass with it.
+     */
+    public static final int DEPTH = TailCameraDisplayBlock.DEPTH;
+    private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
+
+    static {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            SHAPES.put(facing, TailCameraDisplayBlock.againstBack(facing, 0, 16, DEPTH));
+        }
+    }
 
     public AutopilotScreenBlock(Properties properties) {
         super(properties);
@@ -46,6 +64,11 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, PART);
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.get(state.getValue(FACING));
     }
 
     /** The viewer's right, looking at the screen. */

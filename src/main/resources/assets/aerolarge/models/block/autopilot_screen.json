@@ -1,8 +1,42 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/block",
   "textures": {
-    "front": "aerolarge:block/panel_side",
-    "side": "aerolarge:block/panel_side",
-    "top": "aerolarge:block/panel_side"
-  }
+    "screen": "aerolarge:block/autopilot_screen",
+    "casing": "aerolarge:block/passenger_screen_casing",
+    "particle": "aerolarge:block/passenger_screen_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#screen"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#casing"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      }
+    }
+  ]
 }

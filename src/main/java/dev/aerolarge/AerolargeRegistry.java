@@ -352,7 +352,7 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("flight_display", () -> BlockEntityType.Builder.of(FlightDisplayBlockEntity::new, FLIGHT_DISPLAY.get()).build(null));
     /** The big touch screen in the middle of the instrument panel that works the autopilot; placed only by the blueprints. */
     public static final DeferredBlock<AutopilotScreenBlock> AUTOPILOT_SCREEN = BLOCKS.registerBlock(
-        "autopilot_screen", AutopilotScreenBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 9)
+        "autopilot_screen", AutopilotScreenBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 9)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotScreenBlockEntity>> AUTOPILOT_SCREEN_ENTITY =
         BLOCK_ENTITIES.register("autopilot_screen", () -> BlockEntityType.Builder.of(AutopilotScreenBlockEntity::new, AUTOPILOT_SCREEN.get()).build(null));

@@ -29,8 +29,11 @@ import org.joml.Matrix4f;
  * it, so the map turns as smoothly as the airliner does.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
-    /** Lifts the drawing just off the block face, each layer of it off the one below, and the text off them all. */
-    private static final float SURFACE = 0.502F;
+    /**
+     * Where the face is, from the middle of the block toward the way it faces: on the front of the slim screen, the
+     * drawing lifted just off it; each layer of the drawing lifted off the one below, and the text off them all.
+     */
+    private static final float SURFACE = -0.5F + AutopilotScreenBlock.DEPTH / 16F + 0.002F;
     private static final float LAYER = 0.002F;
     private static final float TEXT_LIFT = 0.01F;
     /** Text size: blocks per font pixel. */

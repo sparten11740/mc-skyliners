@@ -1273,12 +1273,14 @@ write(`assets/${ID}/models/block/exit_sign.json`, boxes(
 facing("exit_sign");
 write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
 
-// The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
-// one state per part. It drops nothing: only the blueprints place it.
-write(`assets/${ID}/models/block/autopilot_screen.json`, {
-  parent: "minecraft:block/orientable",
-  textures: { front: `${ID}:block/panel_side`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
-});
+// The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
+// with its back against the south side of its block, as deep as the tail camera display's upright one (see
+// AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
+// glass with it; facing the pilots, one state per part. It drops nothing: only the blueprints place it.
+write(`assets/${ID}/models/block/autopilot_screen.json`, boxes(
+  { screen: `${ID}:block/autopilot_screen`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+  [[[0, 0, 13], [16, 16, 16], { north: "#screen", all: "#casing" }]],
+));
 write(`assets/${ID}/blockstates/autopilot_screen.json`, {
   variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
     [0, 1, 2, 3, 4, 5].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/autopilot_screen`, y }]))),

@@ -84,7 +84,7 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
      * A box against the back of the block, the side away from the way the screen faces: from y0 to y1 up, and reaching
      * this deep from the back, in pixels.
      */
-    private static VoxelShape againstBack(Direction facing, double y0, double y1, double depth) {
+    static VoxelShape againstBack(Direction facing, double y0, double y1, double depth) {
         return switch (facing) {
             case NORTH -> Block.box(0, y0, 16 - depth, 16, y1, 16);
             case SOUTH -> Block.box(0, y0, 0, 16, y1, depth);

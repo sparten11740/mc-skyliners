@@ -859,6 +859,8 @@ blueprint("furnished_airliner_blueprint", true);
     if ((x === 4 || x === 11) && y === 9) return [0x9a, 0xa0, 0xa6];
     return y <= 8 ? [0x6c, 0xa8, 0xe0] : [0x4a, 0x8a, 0x3c];
   }, 0);
+  // The autopilot screen's glass, for when it is too far off to be drawn live: the same dark glass, edge to edge.
+  texture(blockOutput, "autopilot_screen", () => [0x0a, 0x0e, 0x14], 1);
 }
 
 // The control panels' pictures, in the glass cockpit's colours: every setting and button has one, so the panels work
