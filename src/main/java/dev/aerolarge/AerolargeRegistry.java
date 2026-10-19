@@ -273,9 +273,10 @@ public final class AerolargeRegistry {
     );
     /**
      * The doors in the hull's sides: one panel over each doorway, drawn by its renderer as it moves out of the frame
-     * and swings away. Placed only by the blueprints, so it has no item.
+     * and swings away. Placed only by the blueprints, so it has no item. It occludes by its panel, so a shut door keeps
+     * the daylight out of the cabin (see {@link PlugDoorBlock}).
      */
-    public static final DeferredBlock<PlugDoorBlock> PLUG_DOOR = BLOCKS.registerBlock("plug_door", PlugDoorBlock::new, metal(MapColor.SNOW).noOcclusion());
+    public static final DeferredBlock<PlugDoorBlock> PLUG_DOOR = BLOCKS.registerBlock("plug_door", PlugDoorBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PlugDoorBlockEntity>> PLUG_DOOR_ENTITY =
         BLOCK_ENTITIES.register("plug_door", () -> BlockEntityType.Builder.of(PlugDoorBlockEntity::new, PLUG_DOOR.get()).build(null));
     /** A plug door's pneumatic hiss as it starts to move, and the clunk of its latches. */

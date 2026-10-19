@@ -135,6 +135,21 @@ public class PlugDoorBlock extends BaseEntityBlock {
         return (state.getValue(OPEN) ? CLEAR : SHUT).get(state.getValue(FACING));
     }
 
+    /**
+     * Shut, the panel keeps the daylight out of the cabin as the skin round it does: no light passes the doorway's
+     * outer face, while the cabin's own light still reaches into the doorway and lights its sides. Open, the doorway
+     * lets the light through and hides nothing behind it.
+     */
+    @Override
+    protected boolean useShapeForLightOcclusion(BlockState state) {
+        return !state.getValue(OPEN);
+    }
+
+    @Override
+    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
+    }
+
     /** Open, the doorway is clear: the panel stands out of the way outside, and nothing bumps into it there. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
