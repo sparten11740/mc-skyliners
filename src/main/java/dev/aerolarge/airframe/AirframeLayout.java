@@ -981,8 +981,9 @@ public final class AirframeLayout {
 
     /**
      * A lamp set into the hull at a station on one side, with the relay that lights it just above or below it in the
-     * wall, plated like the skin: in the first of the rows where both replace plain skin, not a window. Adds the relay to the list and gives
-     * where the lamp went, or null if no row had room.
+     * wall, plated like the skin: in the first of the rows where both replace plain skin, not a window, and nothing
+     * fitted into the cabin (the gym hall's wall bars, a locker) stands over the lamp's face. Adds the relay to the
+     * list and gives where the lamp went, or null if no row had room.
      */
     @Nullable
     private BlockPos wallLamp(int side, int z, int[] rows, BlockState lamp, List<BlockPos> relays) {
@@ -991,7 +992,8 @@ public final class AirframeLayout {
             while (x != 0 && !inFuselage(x, y, z)) {
                 x -= side;
             }
-            if (!stateAt(x, y, z).is(palette.hull().getBlock())) {
+            BlockState face = stateAt(x - side, y, z);
+            if (!stateAt(x, y, z).is(palette.hull().getBlock()) || !face.isAir() && !face.is(palette.hull().getBlock())) {
                 continue;
             }
             int relayY = stateAt(x, y - 1, z).is(palette.hull().getBlock()) ? y - 1 : y + 1;
