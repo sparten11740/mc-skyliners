@@ -970,7 +970,7 @@ public final class AirframeLayout {
             if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false) || nextToDoor(pos)) {
                 continue;
             }
-            shaped.put(pos, (glazed ? cell.getValue().getBlock().defaultBlockState() : pane ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
+            shaped.put(pos, ShellBlock.withShape(glazed ? cell.getValue().getBlock().defaultBlockState() : pane ? curvedPane : shell, shape));
         }
         for (BlockPos pos : outside) {
             int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
@@ -979,7 +979,7 @@ public final class AirframeLayout {
             }
             BlockState in = inward(pos);
             BlockState outer = in.getBlock() instanceof CockpitGlassBlock ? in.getBlock().defaultBlockState() : CabinWindowBlock.isPane(in) ? curvedPane : shell;
-            shaped.put(pos, outer.setValue(ShellBlock.SHAPE, shape));
+            shaped.put(pos, ShellBlock.withShape(outer, shape));
         }
         cells.putAll(shaped);
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {

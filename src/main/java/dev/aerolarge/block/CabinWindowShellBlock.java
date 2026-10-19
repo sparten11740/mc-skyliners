@@ -12,6 +12,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -24,10 +25,22 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * blueprints place it; broken, it gives back a cabin window.
  */
 public class CabinWindowShellBlock extends ShellBlock {
+    /**
+     * Only the shapes a window in the cabin's side can take ({@link ShellGeometry#WINDOW_COUNT}). The window has
+     * eight states of its own for each shape, and the game keeps a table of every state's neighbours as large as all
+     * of its property values together, which every further shape would make that much larger again.
+     */
+    public static final IntegerProperty PANE_SHAPE = IntegerProperty.create("shape", 0, ShellGeometry.WINDOW_COUNT - 1);
+
     public CabinWindowShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
         super(properties, part);
         registerDefaultState(defaultBlockState()
             .setValue(CabinWindowBlock.SHADED, false).setValue(CabinWindowBlock.UP, false).setValue(CabinWindowBlock.DOWN, false));
+    }
+
+    @Override
+    protected IntegerProperty shapeProperty() {
+        return PANE_SHAPE;
     }
 
     @Override

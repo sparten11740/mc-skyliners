@@ -5,6 +5,7 @@ import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderType;
@@ -31,7 +32,8 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 
 /**
  * The model of a skin block cut to the hull's curve ({@link ShellBlock}): for every shape, the faces of the part of
- * the block below its cut, all baked up front, with the "skin" texture laid flat across each face from the side it mostly looks toward. Faces
+ * the block below its cut, baked the first time the shape is drawn, with the "skin" texture laid flat across each
+ * face from the side it mostly looks toward. Faces
  * covering a side of the block whole are culled against their neighbour like any block's, the faces cut across it
  * never are, and those covering a side only partly are culled only on a block that does not occlude (see
  * {@link Baked#getQuads}). Its JSON names the loader, the texture and the render type: {@code {"loader": "aerolarge:shell",
@@ -53,37 +55,54 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
     }
 
     private static final class Baked implements IDynamicBakedModel {
-        /** For each shape, the quads culled against each side (by side index) and, last, the rest. */
-        private final List<List<List<BakedQuad>>> quads = new ArrayList<>(256);
-        /** The same, with only the faces covering a side whole culled against it; the rest are drawn always. */
-        private final List<List<List<BakedQuad>>> wholeCulled = new ArrayList<>(256);
+        /**
+         * For each shape, once first drawn: the quads culled against each side (by side index) and, last, the rest;
+         * and the same with only the faces covering a side whole culled against it, the rest drawn always. Baked as
+         * they are needed, since a block only ever takes some of the shapes; chunks are meshed on several threads at
+         * once, and two of them baking the same shape bake the same quads.
+         */
+        private final AtomicReferenceArray<Shape> shapes = new AtomicReferenceArray<>(ShellGeometry.COUNT);
+        private final TextureAtlasSprite skin;
         private final TextureAtlasSprite particle;
         private final ChunkRenderTypeSet renderTypes;
         private final ItemTransforms transforms;
         private final boolean ambientOcclusion;
 
+        private record Shape(List<List<BakedQuad>> quads, List<List<BakedQuad>> wholeCulled) {
+        }
+
         Baked(TextureAtlasSprite skin, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms, boolean ambientOcclusion) {
+            this.skin = skin;
             this.particle = particle;
             this.renderTypes = ChunkRenderTypeSet.of(renderType);
             this.transforms = transforms;
             this.ambientOcclusion = ambientOcclusion;
-            int rest = Direction.values().length;
-            for (int shape = 0; shape < ShellGeometry.COUNT; shape++) {
-                List<List<BakedQuad>> bySide = new ArrayList<>();
-                List<List<BakedQuad>> byWholeSide = new ArrayList<>();
-                for (int k = 0; k <= rest; k++) {
-                    bySide.add(new ArrayList<>());
-                    byWholeSide.add(new ArrayList<>());
-                }
-                for (ShellGeometry.Face face : ShellGeometry.faces(shape)) {
-                    Direction side = face.side();
-                    List<BakedQuad> baked = bake(face, skin);
-                    bySide.get(side == null ? rest : side.get3DDataValue()).addAll(baked);
-                    byWholeSide.get(side == null || !ShellGeometry.whole(shape, side) ? rest : side.get3DDataValue()).addAll(baked);
-                }
-                quads.add(bySide.stream().map(List::copyOf).toList());
-                wholeCulled.add(byWholeSide.stream().map(List::copyOf).toList());
+        }
+
+        private Shape shape(int shape) {
+            Shape baked = shapes.get(shape);
+            if (baked == null) {
+                baked = bake(shape, skin);
+                shapes.set(shape, baked);
             }
+            return baked;
+        }
+
+        private static Shape bake(int shape, TextureAtlasSprite skin) {
+            int rest = Direction.values().length;
+            List<List<BakedQuad>> bySide = new ArrayList<>();
+            List<List<BakedQuad>> byWholeSide = new ArrayList<>();
+            for (int k = 0; k <= rest; k++) {
+                bySide.add(new ArrayList<>());
+                byWholeSide.add(new ArrayList<>());
+            }
+            for (ShellGeometry.Face face : ShellGeometry.faces(shape)) {
+                Direction side = face.side();
+                List<BakedQuad> baked = bake(face, skin);
+                bySide.get(side == null ? rest : side.get3DDataValue()).addAll(baked);
+                byWholeSide.get(side == null || !ShellGeometry.whole(shape, side) ? rest : side.get3DDataValue()).addAll(baked);
+            }
+            return new Shape(bySide.stream().map(List::copyOf).toList(), byWholeSide.stream().map(List::copyOf).toList());
         }
 
         /** A face as quads fanned out from its first corner; a triangle is a quad with its last corner doubled. */
@@ -144,8 +163,8 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          */
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
-            int shape = state != null && state.hasProperty(ShellBlock.SHAPE) ? state.getValue(ShellBlock.SHAPE) : ShellGeometry.WHOLE;
-            List<List<BakedQuad>> culled = (state != null && state.canOcclude() ? wholeCulled : quads).get(shape);
+            Shape baked = shape(state != null ? ShellBlock.shape(state) : ShellGeometry.WHOLE);
+            List<List<BakedQuad>> culled = state != null && state.canOcclude() ? baked.wholeCulled() : baked.quads();
             return culled.get(side == null ? Direction.values().length : side.get3DDataValue());
         }
 

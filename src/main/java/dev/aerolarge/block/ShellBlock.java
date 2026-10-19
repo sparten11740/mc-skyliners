@@ -24,23 +24,47 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * it gives back the part it is cut from.
  */
 public class ShellBlock extends Block {
+    /** Any of {@link ShellGeometry}'s shapes. */
     public static final IntegerProperty SHAPE = IntegerProperty.create("shape", 0, ShellGeometry.COUNT - 1);
     private final Supplier<? extends ItemLike> part;
 
     public ShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
         super(properties);
         this.part = part;
-        registerDefaultState(stateDefinition.any().setValue(SHAPE, ShellGeometry.WHOLE));
+        registerDefaultState(stateDefinition.any().setValue(shapeProperty(), ShellGeometry.WHOLE));
+    }
+
+    /**
+     * The property the block keeps its shape in: every shape, unless the block can only take some of them. It is
+     * asked for while the block is being made, so it must be a constant.
+     */
+    protected IntegerProperty shapeProperty() {
+        return SHAPE;
+    }
+
+    /** A block's shape: its own if it is cut to the curve, the whole block otherwise. */
+    public static int shape(BlockState state) {
+        return state.getBlock() instanceof ShellBlock shell ? state.getValue(shell.shapeProperty()) : ShellGeometry.WHOLE;
+    }
+
+    /** Whether the block can take the shape. */
+    public static boolean takes(BlockState state, int shape) {
+        return state.getBlock() instanceof ShellBlock shell && shell.shapeProperty().getPossibleValues().contains(shape);
+    }
+
+    /** The block cut to the shape, which it must be able to take. */
+    public static BlockState withShape(BlockState state, int shape) {
+        return state.setValue(((ShellBlock) state.getBlock()).shapeProperty(), shape);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(SHAPE);
+        builder.add(shapeProperty());
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return ShellGeometry.shape(state.getValue(SHAPE));
+        return ShellGeometry.shape(shape(state));
     }
 
     @Override
@@ -58,17 +82,17 @@ public class ShellBlock extends Block {
      */
     @Override
     protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.canOcclude() ? ShellGeometry.occlusion(state.getValue(SHAPE)) : ShellGeometry.shape(state.getValue(SHAPE));
+        return state.canOcclude() ? ShellGeometry.occlusion(shape(state)) : ShellGeometry.shape(shape(state));
     }
 
     @Override
     protected BlockState rotate(BlockState state, Rotation rotation) {
-        return state.setValue(SHAPE, ShellGeometry.rotate(state.getValue(SHAPE), rotation));
+        return withShape(state, ShellGeometry.rotate(shape(state), rotation));
     }
 
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
-        return state.setValue(SHAPE, ShellGeometry.mirror(state.getValue(SHAPE), mirror));
+        return withShape(state, ShellGeometry.mirror(shape(state), mirror));
     }
 
     @Override
