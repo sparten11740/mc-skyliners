@@ -293,6 +293,24 @@ mkdirSync(miscOutput, { recursive: true });
   writeFileSync(resolve(miscOutput, "nav_glow.png"), encodePng(pixels));
 }
 
+// A contrail puff: a soft white round blob, see-through toward its edge.
+{
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  mkdirSync(particleOutput, { recursive: true });
+  reseed("contrail");
+  const pixels = [];
+  for (let y = 0; y < 16; y++) {
+    const row = [];
+    for (let x = 0; x < 16; x++) {
+      const r = Math.hypot(x - 7.5, y - 7.5) / 8;
+      const a = Math.max(0, 1 - r * r) * (0.85 + 0.15 * random());
+      row.push([250, 250, 252, Math.round(255 * a)]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(particleOutput, "contrail.png"), encodePng(pixels));
+}
+
 // The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
 // carries a gold star for the fittings.
 function blueprint(name, star) {

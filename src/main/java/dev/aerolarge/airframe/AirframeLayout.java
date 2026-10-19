@@ -8,6 +8,7 @@ import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.CockpitWindscreenBlockEntity;
+import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
@@ -717,6 +718,11 @@ public final class AirframeLayout {
                 }
             }
         }
+        // The relay nearest the middle of the exhaust is the engine's core, where it is heard and its contrail starts.
+        engineRelays.getOrDefault(x, List.of()).stream()
+            .min(Comparator.comparingDouble(relay -> Math.hypot(relay.getX() - x * scale, relay.getY() - centreY * scale)))
+            .ifPresent(core -> set(core.getX(), core.getY(), core.getZ(),
+                AerolargeRegistry.ENGINE_CORE.get().defaultBlockState().setValue(EngineCoreBlock.FACING, Direction.NORTH)));
         int pylonFrom = (int) Math.floor((front + 1.5) * scale);
         int pylonTo = (int) Math.floor((front + NACELLE_LENGTH - 1) * scale);
         for (int z = pylonFrom; z <= pylonTo; z++) {

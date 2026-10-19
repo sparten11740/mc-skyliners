@@ -132,6 +132,17 @@ cubes.thrust_relay = null;
   cubes.airframe_fairing = null;
 }
 
+// The engine core looks like the other relays: it is hidden in the nacelle.
+write(`assets/${ID}/blockstates/engine_core.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
+cubes.engine_core = null;
+
+// The engines' sound (see tools/generate_sounds.mjs) and the contrail particle.
+{
+  const sounds = { engine: { subtitle: `subtitles.${ID}.engine`, sounds: [{ name: `${ID}:engine` }] } };
+  write(`assets/${ID}/sounds.json`, sounds);
+  write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
+}
+
 // The tiller (a handle on a pedestal, swung left or right through its five notches) and the parking brake (a lever
 // up when set, down when released); both drawn nose north and turned for the other ways.
 {
@@ -334,6 +345,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.thrust": "Engine %s thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
   "block.aerolarge.nav_light": "Navigation Light",
+  "block.aerolarge.engine_core": "Engine Core",
   "block.aerolarge.tiller": "Nose Wheel Tiller",
   "block.aerolarge.parking_brake": "Parking Brake",
   "message.aerolarge.tiller.left": "Nose wheel: steering left",
@@ -341,6 +353,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.tiller.centre": "Nose wheel: straight ahead",
   "message.aerolarge.brake.set": "Parking brake set",
   "message.aerolarge.brake.released": "Parking brake released",
+  "subtitles.aerolarge.engine": "Jet engine roars",
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the controls.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",
