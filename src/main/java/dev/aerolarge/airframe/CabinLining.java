@@ -17,7 +17,7 @@ final class CabinLining {
     /** How high above the floor the lockers hang and the light strips run, in blocks. */
     private static final int LOCKERS = 5;
     private static final int STRIP = 6;
-    /** Only where the cabin is at least this tall, so not under the raised flight deck. */
+    /** Only where the cabin is at least this tall over the main deck. */
     private static final int MIN_HEADROOM = 8;
     /** Only where the cabin is at least this wide either side of the middle at the lockers' height. */
     private static final int MIN_HALF_WIDTH = 3;
@@ -30,13 +30,27 @@ final class CabinLining {
         this.floor = layout.floorY();
     }
 
-    /** Lines the cabin, with lockers wherever the test accepts the station, in metres from the nose. */
+    /**
+     * Lines the cabin, with lockers wherever the test accepts the station, in metres from the nose. Not under the
+     * raised flight deck or in the nose ahead of it, however tall the space there: it is shut away from the cabin.
+     */
     void apply(DoublePredicate lockersAt, int fromZ, int toZ) {
-        for (int z = fromZ; z <= toZ; z++) {
+        for (int z = Math.max(fromZ, lastUnderFlightDeck(toZ) + 1); z <= toZ; z++) {
             if (layout.ceiling(0, z) >= floor + MIN_HEADROOM) {
                 line(z, lockersAt);
             }
         }
+    }
+
+    /** The last station up to this one where the main deck has the raised flight deck's floor over it; -1 if none. */
+    private int lastUnderFlightDeck(int toZ) {
+        int last = -1;
+        for (int z = 0; z <= toZ; z++) {
+            if (layout.isCabinFloor(0, layout.ceiling(0, z) + 1, z)) {
+                last = z;
+            }
+        }
+        return last;
     }
 
     /**
