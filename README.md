@@ -261,6 +261,23 @@ supplies, ready to load into the drop bay. Three golden suitcases are hidden abo
 and chime softly when someone comes near. Opening one counts toward Lost and Found in the First Flight advancements,
 with a fanfare the first time; find all three to earn it. Suitcases can be crafted; golden ones can only be found.
 
+### Vacuum toilets
+
+A Vacuum Toilet (craftable from iron and a bucket) is an airliner's toilet: a stainless steel bowl in a white shroud,
+with a seat and a lid, against a wall panel with a square blue flush button on it. Put down, it faces you. Use it to
+flush: the vacuum snatches the bowl empty with a sharp, loud hiss, swirling it, and the valve shuts with a thunk; the
+button stays lit for three seconds while the vacuum builds up again, and it flushes again only then. Sneak with an
+empty hand to lift or lower the lid.
+
+Each flush lets go of what a leaking airliner is famous for: a chunk of blue ice, the blue toilet water frozen, out of
+the belly right under the toilet. It leaves at the airliner's own speed, so in flight it tumbles away behind and far
+below, glinting as it falls; parked, or standing as blocks, the airliner just drops it on the ground underneath. It
+lands with a crack, and where it comes down on top of solid ground with nothing there it lies as a lump of
+see-through Blue Lav Ice that melts away after three or four minutes; anywhere else it shatters. It never breaks or
+replaces a block and never hurts anyone: the worst it does is bonk whoever it lands on. A toilet with no airframe
+under it, away from an airliner, only flushes. Both blueprints have one in the WC behind the flight deck, and the
+furnished airliner one in each lavatory by the gym hall (at the smallest scale there is room for neither).
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
@@ -437,8 +454,9 @@ than a block a second (Butter Landing), a basket scored in flight (Swish at 30,0
 a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
 villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free), a paper plane thrown
 out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into the moon pool off its springboard
-or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), and the three golden
-suitcases hidden in the hold (Lost and Found).
+or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), the three golden suitcases
+hidden in the hold (Lost and Found), and a vacuum toilet flushed in flight, its blue ice let go 15 metres or more
+above the ground (Blue Ice).
 
 ### Settings
 
