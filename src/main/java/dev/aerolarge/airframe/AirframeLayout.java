@@ -107,6 +107,13 @@ public final class AirframeLayout {
     private static final int SEAT_ROW = 5;
     /** How many blocks tall the pilots' seat backs stand. */
     private static final int SEAT_BACK = 2;
+    /**
+     * Where the flight deck ends at the bulkhead with the cockpit door, in metres from the nose: behind the pilots'
+     * seats with room to move about, and ahead of the WC and the crew room.
+     */
+    private static final double COCKPIT_DOOR = 7.0;
+    /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
+    private static final int STEPS_CLEARANCE = 1;
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
     private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
     /** Where along the belly the drop bay is, in metres from the nose: behind the main gear, ahead of the cargo door. */
@@ -208,6 +215,10 @@ public final class AirframeLayout {
 
     int floorY() {
         return floorY;
+    }
+
+    AirframePalette palette() {
+        return palette;
     }
 
     /** Whether the block at this position is part of the cabin or hold's open space. */
@@ -907,14 +918,25 @@ public final class AirframeLayout {
      * the nose ahead of it, and two big seats either side of the pedestal with the four thrust levers, engines 1 to 4
      * from left to right as on the A380. The seats stand where the nose first leaves room beside them for the
      * pedestal and the side consoles, rather than squeezed into its narrowest part, so there is room all round them.
+     * Behind them the bulkhead with the cockpit door closes the flight deck off, and behind that, on the same raised
+     * floor at the top of the steps, are the WC and the crew room.
      */
     private void flightDeck() {
         int deck = Math.max(floorY + 1, Windscreen.deckRow(scale));
-        int deckEnd = (int) Math.round(0.95 * NOSE_LENGTH * scale);
+        // The raised floor reaches back as far as the steps down from it, one row for each row it is raised, leave the
+        // forward doors' aisle clear.
+        int deckEnd = (int) Math.round(PASSENGER_DOORS[0] * scale) - 1 - STEPS_CLEARANCE - (deck - floorY);
         for (int z = 0; z <= deckEnd; z++) {
             int width = openHalfWidth(deck, z);
             for (int x = -width; x <= width; x++) {
                 set(x, deck, z, palette.floor());
+            }
+        }
+        // Under its back edge the raised floor is walled down to the main deck, so the space beneath it is shut away.
+        for (int y = floorY + 1; y < deck; y++) {
+            int width = openHalfWidth(y, deckEnd);
+            for (int x = -width; x <= width; x++) {
+                set(x, y, deckEnd, palette.hull());
             }
         }
         // Steps from the main deck up to the flight deck's back edge, rising toward the nose; the top one stands level
@@ -926,12 +948,19 @@ public final class AirframeLayout {
             }
         }
 
-        // The panel goes along the first station where the seat row two rows back has room for the pedestal, both big
-        // seats and the side consoles, and the autopilot screen fits on the panel; in a nose too narrow for that, the
-        // first where two pilots fit side by side at all.
-        int panelZ = panelStation(deck, deckEnd, SEAT_ROW, AutopilotScreenBlock.COLUMNS / 2);
+        // The panel goes along the first station ahead of the cockpit door where the seat row two rows back has room for
+        // the pedestal, both big seats and the side consoles, and the autopilot screen fits on the panel with the
+        // dimmer and the handset either side of it. In a nose too small for that, it goes along the first station
+        // where two pilots fit side by side at all, and the door moves back if it has to, behind the Physics
+        // Assembler's spot in the fourth row behind the panel, but no further than the raised floor's back edge.
+        int doorStation = (int) Math.round(COCKPIT_DOOR * scale);
+        int panelZ = panelStation(deck, doorStation - 1, SEAT_ROW, AutopilotScreenBlock.COLUMNS / 2 + 1);
         if (panelZ < 0) {
-            panelZ = panelStation(deck, deckEnd, 3, -1);
+            panelZ = panelStation(deck, deckEnd + 1, 3, -1);
+        }
+        int bulkhead = Math.min(deckEnd, Math.max(doorStation, panelZ + 5));
+        if (cockpitDoor(deck, bulkhead)) {
+            new CrewRooms(this, deck, bulkhead + 1, deckEnd).apply();
         }
         if (panelZ < 0) {
             return;
@@ -1025,9 +1054,9 @@ public final class AirframeLayout {
 
     /**
      * The first station along the nose where the instrument panel fits, its seat row two rows back at least
-     * {@code seatRow} open either side of the middle, and the row over the panel at least {@code screen} for the
-     * autopilot screen (-1 for none), with the seat backs and the Physics Assembler's spot behind the seats before
-     * {@code last}; -1 if there is none.
+     * {@code seatRow} open either side of the middle, and the row over the panel at least {@code screen} for what
+     * stands on it (-1 for nothing), with the seat backs and the Physics Assembler's spot behind the seats no further
+     * back than {@code last}; -1 if there is none.
      */
     private int panelStation(int deck, int last, int seatRow, int screen) {
         for (int z = 0; z + 4 <= last; z++) {
@@ -1049,6 +1078,35 @@ public final class AirframeLayout {
             furnish(x, y + up, z + 1, Blocks.BLACK_WOOL.defaultBlockState());
         }
         furnish(x - Integer.signum(x), y, z, Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
+    }
+
+    /**
+     * The bulkhead that makes the flight deck a room of its own: across the cabin at station z, from the raised floor
+     * up to the crown, of the hull's own panels, with the cockpit door in the middle (an airliner door, opened by
+     * hand from either side) and a cabin light over it shining both ways. False, and nothing built, where the door
+     * does not fit.
+     */
+    private boolean cockpitDoor(int deck, int z) {
+        if (!isOpen(0, deck + 1, z) || !isOpen(0, deck + 2, z)) {
+            return false;
+        }
+        // Only a light in the bulkhead itself, never in the skin above it.
+        boolean lit = isOpen(0, deck + 3, z);
+        for (int y = deck + 1; isOpen(0, y, z); y++) {
+            int width = openHalfWidth(y, z);
+            for (int x = -width; x <= width; x++) {
+                set(x, y, z, palette.hull());
+            }
+        }
+        BlockState door = AerolargeRegistry.AIRLINER_DOOR.get().defaultBlockState()
+            .setValue(DoorBlock.FACING, Direction.NORTH)
+            .setValue(DoorBlock.HINGE, DoorHingeSide.LEFT);
+        set(0, deck + 1, z, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+        set(0, deck + 2, z, door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+        if (lit) {
+            set(0, deck + 3, z, palette.light());
+        }
+        return true;
     }
 
     /**
