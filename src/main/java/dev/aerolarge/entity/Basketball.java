@@ -5,6 +5,7 @@ import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -27,6 +28,8 @@ import net.minecraft.world.phys.Vec3;
  * A basketball, loose: thrown from the hand, it flies, bounces off the floor and walls losing a little each time,
  * and rolls to a stop. Dropping down through a hoop scores (see {@link HoopBlock}). Walk over it or use it to pick it
  * up; hit it to knock it on its way. It moves the same on both sides, so it bounces smoothly between updates.
+ * Inside an airliner in flight the cabin's air moves along with it, so the ball is thrown, slowed and bounced relative
+ * to the cabin: a ball thrown in flight keeps up with the airliner instead of flying off to the back.
  */
 public class Basketball extends Entity implements ItemSupplier {
     /** Speed a throw leaves the hand at (a soft one, sneaking), and a knock gives it, in blocks a tick, and the lift a knock adds. */
@@ -63,7 +66,8 @@ public class Basketball extends Entity implements ItemSupplier {
         Vec3 look = player.getLookAngle();
         ball.setPos(player.getX() + look.x * 0.5, player.getEyeY() - 0.2 + look.y * 0.5, player.getZ() + look.z * 0.5);
         Vec3 carried = player.getDeltaMovement();
-        ball.setDeltaMovement(look.scale(player.isShiftKeyDown() ? SOFT_THROW : THROW).add(carried.x, player.onGround() ? 0 : carried.y, carried.z));
+        ball.setDeltaMovement(look.scale(player.isShiftKeyDown() ? SOFT_THROW : THROW).add(carried.x, player.onGround() ? 0 : carried.y, carried.z)
+            .add(ball.cabin()));
         ball.thrower = player.getUUID();
         ball.pickupDelay = PICKUP_DELAY;
         return ball;
@@ -84,23 +88,25 @@ public class Basketball extends Entity implements ItemSupplier {
         super.tick();
         pickupDelay = Math.max(0, pickupDelay - 1);
         scoredCooldown = Math.max(0, scoredCooldown - 1);
+        Vec3 cabin = cabin();
         Vec3 velocity = getDeltaMovement().add(0, -GRAVITY, 0);
         Vec3 from = position();
         move(MoverType.SELF, velocity);
         Vec3 moved = position().subtract(from);
-        // Each way the move came up short, it hit something: bounce back off it.
-        double x = Math.abs(moved.x - velocity.x) > 1e-4 ? -velocity.x * WALL_BOUNCE : velocity.x;
-        double z = Math.abs(moved.z - velocity.z) > 1e-4 ? -velocity.z * WALL_BOUNCE : velocity.z;
-        double y = velocity.y;
+        // Each way the move came up short, it hit something: bounce back off it, as it moves relative to the cabin.
+        Vec3 relative = velocity.subtract(cabin);
+        double x = Math.abs(moved.x - velocity.x) > 1e-4 ? -relative.x * WALL_BOUNCE : relative.x;
+        double z = Math.abs(moved.z - velocity.z) > 1e-4 ? -relative.z * WALL_BOUNCE : relative.z;
+        double y = relative.y;
         if (Math.abs(moved.y - velocity.y) > 1e-4) {
-            y = Math.abs(velocity.y) > MIN_BOUNCE ? -velocity.y * BOUNCE : 0;
+            y = Math.abs(relative.y) > MIN_BOUNCE ? -relative.y * BOUNCE : 0;
             if (y != 0 && !level().isClientSide) {
                 level().playSound(null, getX(), getY(), getZ(), AerolargeRegistry.BALL_BOUNCE.get(), SoundSource.NEUTRAL,
-                    (float) Math.min(1, Math.abs(velocity.y) * 2), 0.9F + random.nextFloat() * 0.2F);
+                    (float) Math.min(1, Math.abs(relative.y) * 2), 0.9F + random.nextFloat() * 0.2F);
             }
         }
         double keep = onGround() && y == 0 ? ROLLING : AIR_DRAG;
-        setDeltaMovement(x * keep, y, z * keep);
+        setDeltaMovement(cabin.add(x * keep, y, z * keep));
         if (level() instanceof ServerLevel server && scoredCooldown == 0 && position().y < from.y) {
             Vec3 middle = new Vec3(0, getBbHeight() / 2, 0);
             dropThrough(server, from.add(middle), position().add(middle));
@@ -147,11 +153,16 @@ public class Basketball extends Entity implements ItemSupplier {
         if (level().isClientSide || isRemoved() || !(source.getEntity() instanceof Player player)) {
             return false;
         }
-        setDeltaMovement(player.getLookAngle().scale(KNOCK).add(0, KNOCK_LIFT, 0));
+        setDeltaMovement(player.getLookAngle().scale(KNOCK).add(0, KNOCK_LIFT, 0).add(cabin()));
         hurtMarked = true;
         thrower = player.getUUID();
         level().playSound(null, getX(), getY(), getZ(), AerolargeRegistry.BALL_BOUNCE.get(), SoundSource.NEUTRAL, 0.8F, 1.1F);
         return true;
+    }
+
+    /** How fast the cabin around the ball moves, in blocks a tick: an airliner's in flight, still anywhere else. */
+    private Vec3 cabin() {
+        return SableFlight.cabinVelocity(level(), position()).scale(1.0 / SharedConstants.TICKS_PER_SECOND);
     }
 
     @Override

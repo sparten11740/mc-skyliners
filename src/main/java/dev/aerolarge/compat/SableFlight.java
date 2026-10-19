@@ -1,11 +1,13 @@
 package dev.aerolarge.compat;
 
+import dev.aerolarge.Aboard;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -21,7 +23,8 @@ import org.joml.Vector3d;
  * Sable's plot, away from where the airliner is seen; projecting a few points of the plot out into the world gives
  * the airliner's position and the directions its nose, right wing and roof point. This is the only class that
  * touches Sable on the server, and only once Sable is known to be installed; without it nothing is ever assembled,
- * and every answer is the one for blocks standing in the world.
+ * and every answer is the one for blocks standing in the world. {@link #cabinVelocity} also serves the client, for
+ * entities that move the same on both sides.
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -104,6 +107,15 @@ public final class SableFlight {
     }
 
     /**
+     * How fast the cabin around a point in the world moves, in blocks a second: the airliner's, where the point is
+     * inside the hull of an assembled one, and still anywhere else. Worked out from where that spot of the cabin was
+     * last tick and is now, so it is the same on the client as on the server, for what moves on both.
+     */
+    public static Vec3 cabinVelocity(Level level, Vec3 point) {
+        return SABLE ? Access.cabinVelocity(level, point) : Vec3.ZERO;
+    }
+
+    /**
      * A point in the world seen in the frame of the airliner the plot position is part of, as the airliner lies now or
      * lay a tick ago; the point itself when the position is in the world.
      */
@@ -158,6 +170,16 @@ public final class SableFlight {
 
         static Vec3 velocity(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        static Vec3 cabinVelocity(Level level, Vec3 point) {
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(point, point))) {
+                Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
+                if (Aboard.insideHull(level, BlockPos.containing(inPlot))) {
+                    return point.subtract(airliner.lastPose().transformPosition(inPlot)).scale(SharedConstants.TICKS_PER_SECOND);
+                }
+            }
+            return Vec3.ZERO;
         }
 
         static Vec3 toPlot(Level level, BlockPos plot, Vec3 point, boolean lastTick) {
