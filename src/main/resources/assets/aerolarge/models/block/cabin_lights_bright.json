@@ -1,41 +1,118 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "face": "aerolarge:block/cabin_lights_bright",
-    "side": "aerolarge:block/handset_cradle",
-    "particle": "aerolarge:block/handset_cradle"
+    "casing": "aerolarge:block/flight_console",
+    "particle": "aerolarge:block/flight_console",
+    "panel": "aerolarge:block/cabin_lights_bright",
+    "knob": "aerolarge:block/thrust_lever_knob",
+    "dark": "aerolarge:block/thrust_lever_handle"
   },
   "elements": [
     {
       "from": [
-        3,
         0,
-        4
+        0,
+        0
       ],
       "to": [
-        13,
-        4,
-        12
+        16,
+        6,
+        16
       ],
       "faces": {
         "north": {
-          "texture": "#face"
+          "texture": "#casing"
         },
         "south": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "east": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "west": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "up": {
-          "texture": "#face"
+          "texture": "#panel",
+          "rotation": 180
         },
         "down": {
-          "texture": "#side"
+          "texture": "#casing",
+          "cullface": "down"
         }
+      }
+    },
+    {
+      "from": [
+        6.75,
+        6,
+        1.75
+      ],
+      "to": [
+        9.25,
+        7.5,
+        4.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#knob"
+        },
+        "south": {
+          "texture": "#knob"
+        },
+        "east": {
+          "texture": "#knob"
+        },
+        "west": {
+          "texture": "#knob"
+        },
+        "up": {
+          "texture": "#knob"
+        },
+        "down": {
+          "texture": "#knob"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        7.5,
+        3
+      ],
+      "to": [
+        8.25,
+        8,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          7.5,
+          3
+        ],
+        "axis": "y",
+        "angle": -45
       }
     }
   ]

@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -18,16 +19,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The jump light switch in the instrument panel: each use turns every jump light by the doors from dark to red (stand
- * by), to green (go), and dark again, through the relays behind them. FACING is the way its face looks, toward the
- * pilots.
+ * The jump light switch on the flight deck's centre console: each use turns every jump light by the doors from dark
+ * to red (stand by), to green (go), and dark again, through the relays behind them. FACING is the way its face looks,
+ * toward the pilots.
  */
 public class JumpSwitchBlock extends HorizontalDirectionalBlock implements EntityBlock, LinkedControlBlockEntity.Driver {
     private static final MapCodec<JumpSwitchBlock> CODEC = simpleCodec(JumpSwitchBlock::new);
     public static final EnumProperty<JumpLightBlock.Signal> SIGNAL = JumpLightBlock.SIGNAL;
     public static final String LIGHTS = "lights";
+    /** A module of the console with the selector knob on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(2, 2);
 
     public JumpSwitchBlock(Properties properties) {
         super(properties);
@@ -42,6 +47,11 @@ public class JumpSwitchBlock extends HorizontalDirectionalBlock implements Entit
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, SIGNAL);
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

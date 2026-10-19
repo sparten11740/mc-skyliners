@@ -304,8 +304,22 @@ texture(blockOutput, "instrument_panel", (x, y) => {
   return [0x08, 0x0a, 0x0c];
 }, 2);
 texture(blockOutput, "panel_side", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 3);
-// Thrust lever: a dark pedestal with the lever slot, a black handle and a pale grip.
-texture(blockOutput, "thrust_lever_base", (x, y) => (x >= 7 && x <= 8 && y >= 3 && y <= 12 ? PANEL_EDGE : PANEL_DARK), 3);
+// The centre console's casing: dark panel, a light lip along the top of its sides (the top of a module's six pixels)
+// and a darker kick along the floor, a seam where one module meets the next. The thrust lever: the quadrant's plate,
+// dark with the lever's slot down the middle and a light tick either side of it at each of its five notches, a black
+// handle and a pale grip.
+const CONSOLE_LIP = 10;
+texture(blockOutput, "flight_console", (x, y) => {
+  if (y === CONSOLE_LIP) return [0x4a, 0x50, 0x58];
+  if (y === 15) return [0x16, 0x18, 0x1c];
+  return x === 0 ? PANEL_EDGE : PANEL_DARK;
+}, 3);
+const NOTCHES = [3, 5, 8, 10, 12];
+texture(blockOutput, "thrust_lever_base", (x, y) => {
+  if (x >= 7 && x <= 8 && y >= 2 && y <= 13) return PANEL_EDGE;
+  if (NOTCHES.includes(y) && (x === 5 || x === 10)) return [0x9a, 0xa0, 0xa8];
+  return x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK;
+}, 3);
 texture(blockOutput, "thrust_lever_handle", () => [0x14, 0x15, 0x17], 2);
 texture(blockOutput, "thrust_lever_knob", (x, y) => (y % 4 === 0 ? [0x9a, 0xa0, 0xa8] : [0xd8, 0xdc, 0xe0]), 2);
 // Autopilot panel: a dark screen with a green "AP" and a row of mode lights.
@@ -602,6 +616,8 @@ blueprint("furnished_airliner_blueprint", true);
     if (x === 3 || x === 12) return [0x5c, 0x62, 0x69];
     return [0x0c, 0x0d, 0x0f];
   }, 1);
+  // The cover over the release's button: red, striped dark across it.
+  texture(blockOutput, "drop_release_cover", (x, y) => ((x + y) % 6 < 2 ? [0x5a, 0x10, 0x0e] : [0xc0, 0x24, 0x1c]), 2);
   for (const armed of [false, true]) {
     texture(blockOutput, `drop_release_${armed ? "armed" : "safe"}`, (x, y) => {
       if (x === 0 || y === 0 || x === 15 || y === 15) return armed ? HAZARD(x, y) : STEEL_DARK;

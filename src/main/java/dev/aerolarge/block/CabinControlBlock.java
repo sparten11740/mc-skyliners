@@ -23,12 +23,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A control module on the flight deck's panel that sets something all through the cabin: each use moves it to its
- * next setting, which then sweeps from the front of the cabin to the back (see {@link CabinControlBlockEntity}).
+ * A control module on the flight deck's centre console that sets something all through the cabin: each use moves it
+ * to its next setting, which then sweeps from the front of the cabin to the back (see {@link CabinControlBlockEntity}).
  * FACING is the way its face looks, toward the pilots.
  */
 public abstract class CabinControlBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final VoxelShape SHAPE = Block.box(3, 0, 4, 13, 4, 12);
+    /** A module of the console with a knob or a switch on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(2, 3);
 
     protected CabinControlBlock(Properties properties) {
         super(properties);

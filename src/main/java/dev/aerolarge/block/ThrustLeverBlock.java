@@ -1,6 +1,8 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +26,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -38,7 +41,18 @@ public class ThrustLeverBlock extends BaseEntityBlock {
     public static final IntegerProperty THRUST = IntegerProperty.create("thrust", 0, 4);
     /** The redstone signal each notch sends the thrusters: idle, then quarters up to full. */
     private static final int[] POWER = {0, 4, 8, 12, 15};
-    private static final VoxelShape SHAPE = Block.box(3, 0, 2, 13, 10, 14);
+    /**
+     * Where the lever's grip is, as its models draw it: this many pixels out from the lever's pivot in the middle of
+     * the slab's top, swung back this many degrees at idle and forward a notch of so many degrees at a time.
+     */
+    private static final double GRIP_REACH = 7.25;
+    private static final double IDLE_ANGLE = 45;
+    private static final double NOTCH_ANGLE = 22.5;
+    /**
+     * A module of the throttle quadrant, by thrust: its slab and the lever's grip where the lever stands. The slim
+     * handle between them is left out, so that the quadrant stands in the way of nothing beyond it on the console.
+     */
+    private static final List<Map<Direction, VoxelShape>> SHAPES = THRUST.getPossibleValues().stream().map(thrust -> TurnedShapes.of(gripShape(thrust))).toList();
     /** How far along the quadrant, either way, the other levers moved with this one are looked for. */
     private static final int QUADRANT = 4;
 
@@ -62,9 +76,17 @@ public class ThrustLeverBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
+    /** The slab and the grip, drawn facing north, at this thrust. */
+    private static VoxelShape gripShape(int thrust) {
+        double angle = Math.toRadians(IDLE_ANGLE - NOTCH_ANGLE * thrust);
+        double y = ConsoleModule.HEIGHT + GRIP_REACH * Math.cos(angle);
+        double z = 8 + GRIP_REACH * Math.sin(angle);
+        return Shapes.or(ConsoleModule.SLAB, Block.box(6, y - 1.5, z - 1.5, 10, y + 1.5, z + 1.5));
+    }
+
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return SHAPES.get(state.getValue(THRUST)).get(state.getValue(FACING));
     }
 
     @Override

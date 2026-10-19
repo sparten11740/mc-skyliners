@@ -23,9 +23,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The nose wheel tiller beside the captain's seat. Use it to turn a notch to the right, sneak and use it to turn a
- * notch to the left; the nose gear's wheel mounts steer by a redstone signal at their sides, which the tiller's
- * relays give. FACING is the way the nose points.
+ * The nose wheel tiller, a handwheel on the flight deck's centre console between the pilots' seats. Use it to turn a
+ * notch to the right, sneak and use it to turn a notch to the left; the nose gear's wheel mounts steer by a redstone
+ * signal at their sides, which the tiller's relays give. FACING is the way the nose points.
  */
 public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlock, LinkedControlBlockEntity.Driver {
     private static final MapCodec<TillerBlock> CODEC = simpleCodec(TillerBlock::new);
@@ -36,7 +36,8 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
     public static final int CENTRE = 2;
     /** Signal per notch off centre. */
     private static final int SIGNAL_PER_NOTCH = 7;
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 9, 13);
+    /** A module of the console with the tiller's handwheel on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(3, 4.5);
 
     public TillerBlock(Properties properties) {
         super(properties);

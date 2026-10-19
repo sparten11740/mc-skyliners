@@ -1,53 +1,55 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "aerolarge:block/thrust_lever_base",
+    "casing": "aerolarge:block/flight_console",
+    "particle": "aerolarge:block/flight_console",
+    "plate": "aerolarge:block/thrust_lever_base",
     "handle": "aerolarge:block/thrust_lever_handle",
-    "knob": "aerolarge:block/thrust_lever_knob",
-    "particle": "aerolarge:block/thrust_lever_base"
+    "knob": "aerolarge:block/thrust_lever_knob"
   },
   "elements": [
     {
       "from": [
-        3,
         0,
-        2
+        0,
+        0
       ],
       "to": [
-        13,
-        8,
-        14
+        16,
+        6,
+        16
       ],
       "faces": {
         "north": {
-          "texture": "#base"
+          "texture": "#casing"
         },
         "south": {
-          "texture": "#base"
+          "texture": "#casing"
         },
         "east": {
-          "texture": "#base"
+          "texture": "#casing"
         },
         "west": {
-          "texture": "#base"
+          "texture": "#casing"
         },
         "up": {
-          "texture": "#base"
+          "texture": "#plate"
         },
         "down": {
-          "texture": "#base"
+          "texture": "#casing",
+          "cullface": "down"
         }
       }
     },
     {
       "from": [
         7.25,
-        8,
+        6,
         7.25
       ],
       "to": [
         8.75,
-        17,
+        13,
         8.75
       ],
       "faces": {
@@ -73,7 +75,7 @@
       "rotation": {
         "origin": [
           8,
-          8,
+          6,
           8
         ],
         "axis": "x",
@@ -83,13 +85,13 @@
     {
       "from": [
         6,
-        15,
-        6.5
+        12,
+        6.75
       ],
       "to": [
         10,
-        18,
-        9.5
+        14.5,
+        9.25
       ],
       "faces": {
         "north": {
@@ -114,7 +116,7 @@
       "rotation": {
         "origin": [
           8,
-          8,
+          6,
           8
         ],
         "axis": "x",

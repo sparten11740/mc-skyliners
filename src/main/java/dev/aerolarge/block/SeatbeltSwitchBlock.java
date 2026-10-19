@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -19,10 +20,12 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The seatbelt switch in the instrument panel: each use turns the airliner's "fasten seatbelts" signs on or off,
- * through the relays beside them, and while they are on, nobody seated aboard can get up (see
+ * The seatbelt switch on the flight deck's centre console: each use turns the airliner's "fasten seatbelts" signs on
+ * or off, through the relays beside them, and while they are on, nobody seated aboard can get up (see
  * {@link dev.aerolarge.cabin.Seatbelts}). Turned on, it opens every curtain aboard (see
  * {@link SeatbeltSwitchBlockEntity}). FACING is the way its face looks, toward the pilots.
  */
@@ -30,6 +33,8 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
     private static final MapCodec<SeatbeltSwitchBlock> CODEC = simpleCodec(SeatbeltSwitchBlock::new);
     public static final BooleanProperty ON = BlockStateProperties.POWERED;
     public static final String SIGNS = "signs";
+    /** A module of the console with the switch on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(1, 3);
 
     public SeatbeltSwitchBlock(Properties properties) {
         super(properties);
@@ -44,6 +49,11 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, ON);
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

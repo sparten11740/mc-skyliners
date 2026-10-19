@@ -309,17 +309,17 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CockpitGlassBlock> HULL_GLASS = BLOCKS.registerBlock(
         "hull_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
-    /** The flight deck: four thrust levers on the pedestal, the relays they drive in the nacelles, the instrument panel. */
+    /** The flight deck: the thrust levers on the console, relays they drive in the nacelles, the instrument panel. */
     public static final DeferredBlock<ThrustLeverBlock> THRUST_LEVER = BLOCKS.registerBlock(
         "thrust_lever", ThrustLeverBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThrustLeverBlockEntity>> THRUST_LEVER_ENTITY =
         BLOCK_ENTITIES.register("thrust_lever", () -> BlockEntityType.Builder.of(ThrustLeverBlockEntity::new, THRUST_LEVER.get()).build(null));
-    /** The nose wheel tiller and the parking brake, beside the pilots' seats, sharing one kind of linked block entity. */
+    /** The nose wheel tiller and the parking brake, on the centre console, sharing one kind of linked block entity. */
     public static final DeferredBlock<TillerBlock> TILLER = BLOCKS.registerBlock("tiller", TillerBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
-    /** The switch in the instrument panel that turns the jump lights by the doors red, then green. */
+    /** The switch on the centre console that turns the jump lights by the doors red, then green. */
     public static final DeferredBlock<JumpSwitchBlock> JUMP_SWITCH = BLOCKS.registerBlock(
-        "jump_switch", JumpSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
+        "jump_switch", JumpSwitchBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
     );
     public static final DeferredBlock<ParkingBrakeBlock> PARKING_BRAKE = BLOCKS.registerBlock(
         "parking_brake", ParkingBrakeBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
@@ -327,7 +327,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
         BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get(), JUMP_SWITCH.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
-        "autopilot", AutopilotBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
+        "autopilot", AutopilotBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotBlockEntity>> AUTOPILOT_ENTITY =
         BLOCK_ENTITIES.register("autopilot", () -> BlockEntityType.Builder.of(AutopilotBlockEntity::new, AUTOPILOT.get()).build(null));
@@ -441,7 +441,7 @@ public final class AerolargeRegistry {
 
     /** Buckling up: the seatbelt switch on the flight deck and the signs it lights in the cabin walls. */
     public static final DeferredBlock<SeatbeltSwitchBlock> SEATBELT_SWITCH = BLOCKS.registerBlock(
-        "seatbelt_switch", SeatbeltSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
+        "seatbelt_switch", SeatbeltSwitchBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SeatbeltSwitchBlockEntity>> SEATBELT_SWITCH_ENTITY =
         BLOCK_ENTITIES.register("seatbelt_switch", () -> BlockEntityType.Builder.of(SeatbeltSwitchBlockEntity::new, SEATBELT_SWITCH.get()).build(null));

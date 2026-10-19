@@ -5,7 +5,6 @@ import dev.aerolarge.radio.Broadcasts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -17,7 +16,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class HandsetBlock extends RadioBlock {
     private static final MapCodec<HandsetBlock> CODEC = simpleCodec(HandsetBlock::new);
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 5, 13);
+    /** A module of the console with the cradle and its receiver on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(5, 4);
 
     public HandsetBlock(Properties properties) {
         super(properties);

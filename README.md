@@ -64,37 +64,51 @@ starboard (a couch of seats and a galley counter with an oven, a cupboard and a 
 hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look
 straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right
 across the front from the panel up over the crown, running back into side windows past the pilots' shoulders, framed
-by posts round the sides only. The pilots' two big seats, each a Create seat with a high back and an armrest, stand
-back where the nose leaves room for side consoles beside them, with room to move about behind them.
-On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right. They move together:
-use any of them to push all four a notch forward, sneak and use it to pull them back. Each drives its engine's
-thrusters through relays hidden in the nacelle. Beside the captain's seat is the nose wheel tiller (use it to steer
-right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
-is built. A primary flight display in front of each seat shows attitude, airspeed,
-altitude, vertical speed and heading once the airliner is assembled. Against the wall behind the captain's seat is the
-Physics Assembler.
-On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch,
-the captain's handset and the cabin lights' dimmer. The dimmer steps every light in the cabin from bright to dimmed
-(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back; at
-night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light. On
-the captain's side console, just behind the tiller, is the window shades' control: it runs every cabin window's
-shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
-can open or close a window's own shade by using it.
-Overhead, just ahead of the pilots' seats, is the tail camera display, a wide screen three blocks across like an
-A380's taxiing camera screen: hung in the middle right under the white panels along the top of the windscreen (at
-other scales than the default, where the windscreen's glass reaches back over it, under that glass), its top edge
-along the ceiling, and tilted 45 degrees down toward the seats, so the pilots look up at it. Once the airliner is
+by posts round the sides only.
+
+The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
+either side, on a column between floor rails. Each is two blocks tall, and using either half sits you down in it. It
+is one of Create's seats underneath, so the seatbelts and everything else that knows about seats treat you as
+seated, but villager passengers leave it to the pilots. A Pilot Seat can be crafted and put down in your own builds
+too.
+
+Between and in front of the seats runs the centre console the pilots share, low enough to see the screens over, each
+control on it a slim module of it, and everything on it within reach from either seat but the far outer thrust lever
+(any lever moves all four) and the two controls right beside the other seat. Across its front, under the screens, is
+the autopilot's control head (use it to open the autopilot's settings, see Autopilot) between the seatbelt switch and
+the jump light switch (see Skydiving). In front of the seats is the throttle quadrant: four slim thrust levers,
+engines 1 to 4 from left to right, with the parking brake in the middle. The levers move together: use any of them to
+push all four a notch forward, sneak and use it to pull them back. Each drives its engine's thrusters through relays
+hidden in the nacelle. The parking brake is set when the airliner is built. Between the seats is the nose wheel
+tiller, a small handwheel (use it to steer right a notch, sneak and use to steer left), with the cabin lights' dimmer
+on the captain's side of it and the captain's handset on the first officer's; right beside the captain is the window
+shades' control, and beside the first officer the drop release. The dimmer steps every light in the cabin from bright
+to dimmed (as for take-off and landing) to a blue night glow and back, the change running down the cabin front to
+back; at night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light. The window
+shades' control runs every cabin window's shade down, or up again, the same way, with the whirr of their motors. A
+closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
+
+In front of each seat a primary flight display in the panel shows attitude, airspeed, altitude, vertical speed and
+heading once the airliner is assembled. In the middle, standing just in front of the panel, is one glass unit of two
+screens in the same slim dark casing: the autopilot screen below, and on top of it the tail camera display, a wide
+screen three blocks across like an A380's taxiing camera screen. Where the nose leaves it no room there, the camera
+display hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward them. Once the airliner is
 assembled it shows the live picture from the camera on top of the fin, the one the passenger screens look through
 (see below): the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond,
-with CAM TAIL and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only while a
-display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without one it
-shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while
-the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or
-with `tailCameraFeed` off in the client config, where `tailCameraFps` and `tailCameraResolution` also set how often
-and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too: against
-a wall it stands upright, and put up against the underside of a block it hangs from it tilted toward you, like the
-one in the airliner. It reaches two blocks to the right of where it is put, as you face it, and needs the room there;
-it comes down whole. On an assembled airliner with an autopilot it shows that airliner's fin camera.
+with CAM TAIL and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only
+while a display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without
+one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
+while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
+graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps` and `tailCameraResolution` also set
+how often and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too:
+against a wall it stands upright, and put up against the underside of a block it hangs from it tilted toward you. It
+reaches two blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole. On
+an assembled airliner with an autopilot it shows that airliner's fin camera. Against the wall behind the captain's
+seat is the Physics Assembler.
+
+In a nose too narrow for the centre console (at the smallest scales) the thrust levers stand between the seats with the
+autopilot's control head among them, the tiller and the parking brake outboard of the seats where there is room, and
+the switches, the dimmer and the handset on the panel either side of the screens.
 
 The flight deck's voice, a calm, very even, faintly synthetic woman's voice, unfailingly polite and not easily
 impressed, calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground from a
@@ -135,12 +149,12 @@ storm passing over a desert is as calm as clear skies. Turn it off with `turbule
 
 ### Autopilot
 
-Use the autopilot panel on the pedestal, or the big screen in the middle of the instrument panel, to open the
-autopilot's settings. At the top they show what the autopilot is doing, with a lamp (green engaged, amber off), how
-the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the settings:
-hold a heading (a straight arrow), or circle left or right round a point beside the airliner (arrows round to the
-left or right); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above the
-runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
+Use the autopilot's control head on the centre console, or the big screen in the middle of the instrument panel, to
+open the autopilot's settings. At the top they show what the autopilot is doing, with a lamp (green engaged, amber
+off), how the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the
+settings: hold a heading (a straight arrow), or circle left or right round a point beside the airliner (arrows round
+to the left or right); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above
+the runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
 radius (a circle, 150 to 1000 blocks; a circle too tight to fly at the speed set is flown wider round the same
 middle, so it never banks more than 20 degrees going round). Slide each one, step it with the arrows either side of
 its slider (15 degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting
@@ -176,7 +190,7 @@ flown or the heading being turned to, and north; touch the map to zoom it out, a
 back in.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
-either pilot's seat, or standing at the pedestal), its visor shows a head-up display round the middle of the view:
+either pilot's seat, or standing at the console), its visor shows a head-up display round the middle of the view:
 thin, see-through green lines and figures, as a real HUD's, edged with a thin dark line so they read against bright
 sky, with whatever the autopilot is set to fly in magenta, curving with the visor (its rows lift a little toward
 their ends); without the helmet there is none. Putting the helmet on there switches it on with a beep, and it fades
@@ -377,7 +391,7 @@ By the aft passenger doors and the cargo door are a red and green jump light in 
 Use a rack to put a parachute on (or take one into your inventory if your chest slot is taken), then jump while
 falling to open it; it opens by itself if you are still falling free close to the ground. Under the canopy you sink
 gently, drift the way you walk, take no fall damage, and it packs itself away when you land. The jump light switch on
-the instrument panel cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).
+the centre console cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).
 
 Open one of the hull's doors in flight (20 blocks or more above the ground, at 20 blocks a second or more; the
 cockpit door, the WC's and the crew room's are not among them) and the cabin decompresses with a bang: the air roars
@@ -405,7 +419,7 @@ cargo door from outside, the hold is reached through the hatch in the cabin floo
 just behind the gym hall: a yellow and black border marks it and its lid shows a ladder. Open it by hand and climb
 down the ladder under it, so the bay can be reloaded in flight. From the hold, use a care package on the bay to load
 it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop release on the
-first officer's side console, behind the parking brake, opens the bay doors on the first use and drops the next load
+centre console, beside the first officer's seat, opens the bay doors on the first use and drops the next load
 on each use after that; sneak and use it to close them. A load leaves at the airliner's speed.
 With Ultrasplosive installed the bay also takes its nuke (the regular Fat
 Man, not Sundial), which leaves the bay as Ultrasplosive's flying nuke and goes off where it hits. Its blast reaches

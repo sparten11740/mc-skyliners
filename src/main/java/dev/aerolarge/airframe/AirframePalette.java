@@ -30,7 +30,6 @@ record AirframePalette(
     Optional<BlockState> engine,
     Optional<BlockState> assembler,
     Optional<BlockState> wheelMount,
-    Optional<BlockState> seat,
     Optional<Item> tireItem
 ) {
     static AirframePalette fromConfig() {
@@ -48,8 +47,6 @@ record AirframePalette(
             block(AerolargeConfig.ENGINE_BLOCK.get()).map(state -> with(state, "facing", "north")),
             block(AerolargeConfig.ASSEMBLER_BLOCK.get()).map(state -> with(with(state, "face", "floor"), "facing", "north")),
             block(AerolargeConfig.WHEEL_MOUNT_BLOCK.get()),
-            // Create is required, so its seats are always there for the pilots.
-            seat(DyeColor.BLACK),
             id(AerolargeConfig.TIRE_ITEM.get()).flatMap(BuiltInRegistries.ITEM::getOptional)
         );
     }

@@ -24,14 +24,15 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The drop release on the first officer's side console, wired to the drop bay in the belly: the first use opens the
- * bay doors and arms it, each use after that drops the next load, and using it sneaking closes the doors again.
- * FACING is the way its face looks.
+ * The drop release on the flight deck's centre console, beside the first officer, wired to the drop bay in the belly:
+ * the first use opens the bay doors and arms it, each use after that drops the next load, and using it sneaking closes
+ * the doors again. FACING is the way its face looks.
  */
 public class DropReleaseBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<DropReleaseBlock> CODEC = simpleCodec(DropReleaseBlock::new);
     public static final BooleanProperty ARMED = BooleanProperty.create("armed");
-    private static final VoxelShape SHAPE = Block.box(3, 0, 4, 13, 4, 12);
+    /** A module of the console with the release's guarded switch on it. */
+    private static final VoxelShape SHAPE = ConsoleModule.with(3, 4);
 
     public DropReleaseBlock(Properties properties) {
         super(properties);

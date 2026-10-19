@@ -1,8 +1,119 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/block",
   "textures": {
-    "front": "aerolarge:block/jump_switch_off",
-    "side": "aerolarge:block/panel_side",
-    "top": "aerolarge:block/panel_side"
-  }
+    "casing": "aerolarge:block/flight_console",
+    "particle": "aerolarge:block/flight_console",
+    "panel": "aerolarge:block/jump_switch_off",
+    "knob": "aerolarge:block/thrust_lever_knob",
+    "pointer": "aerolarge:block/thrust_lever_handle"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#panel",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#casing",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        6,
+        3.5
+      ],
+      "to": [
+        9.5,
+        7.5,
+        6.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#knob"
+        },
+        "south": {
+          "texture": "#knob"
+        },
+        "east": {
+          "texture": "#knob"
+        },
+        "west": {
+          "texture": "#knob"
+        },
+        "up": {
+          "texture": "#knob"
+        },
+        "down": {
+          "texture": "#knob"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        7.5,
+        5
+      ],
+      "to": [
+        8.25,
+        8,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pointer"
+        },
+        "south": {
+          "texture": "#pointer"
+        },
+        "east": {
+          "texture": "#pointer"
+        },
+        "west": {
+          "texture": "#pointer"
+        },
+        "up": {
+          "texture": "#pointer"
+        },
+        "down": {
+          "texture": "#pointer"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          7.5,
+          5
+        ],
+        "axis": "y",
+        "angle": 0
+      }
+    }
+  ]
 }

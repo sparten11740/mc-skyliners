@@ -3,7 +3,6 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
-import java.util.EnumMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -59,8 +58,8 @@ public class PilotSeatBlock extends SeatBlock {
         Block.box(2, 0, 11, 14, 4.5, 15),
         Block.box(4, 4.5, 12, 12, 13, 15)
     );
-    private static final Map<Direction, VoxelShape> LOWER_SHAPES = turned(LOWER);
-    private static final Map<Direction, VoxelShape> UPPER_SHAPES = turned(UPPER);
+    private static final Map<Direction, VoxelShape> LOWER_SHAPES = TurnedShapes.of(LOWER);
+    private static final Map<Direction, VoxelShape> UPPER_SHAPES = TurnedShapes.of(UPPER);
 
     public PilotSeatBlock(Properties properties) {
         super(properties, DyeColor.BLACK);
@@ -75,28 +74,6 @@ public class PilotSeatBlock extends SeatBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder.add(FACING, HALF));
-    }
-
-    /** The shape drawn facing north, turned a quarter at a time to face each way, as the block's model is. */
-    private static Map<Direction, VoxelShape> turned(VoxelShape north) {
-        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
-        for (Direction facing : Direction.Plane.HORIZONTAL) {
-            // Quarter turns clockwise, seen from above, from north.
-            int turns = (facing.get2DDataValue() + 2) % 4;
-            VoxelShape[] shape = {Shapes.empty()};
-            north.forAllBoxes((x0, y0, z0, x1, y1, z1) -> {
-                double[] from = {x0, z0};
-                double[] to = {x1, z1};
-                for (int k = 0; k < turns; k++) {
-                    from = new double[]{1 - from[1], from[0]};
-                    to = new double[]{1 - to[1], to[0]};
-                }
-                shape[0] = Shapes.or(shape[0], Shapes.box(
-                    Math.min(from[0], to[0]), y0, Math.min(from[1], to[1]), Math.max(from[0], to[0]), y1, Math.max(from[1], to[1])));
-            });
-            shapes.put(facing, shape[0]);
-        }
-        return shapes;
     }
 
     /** Facing the way whoever puts it there faces, so they sit down in it facing that way; it needs the room above. */

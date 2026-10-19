@@ -14,6 +14,8 @@ if (!withVanilla) console.log("No vanilla assets given: leaving the door and cal
 const ID = "aerolarge";
 // How far a model drawn facing north is turned for each horizontal facing.
 const yRot = { north: 0, east: 90, south: 180, west: 270 };
+// How tall a module of the flight deck's centre console is, in pixels: ConsoleModule.HEIGHT.
+const CONSOLE_HEIGHT = 6;
 
 function write(path, value) {
   const file = resolve(ROOT, path);
@@ -225,34 +227,25 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   write(`assets/${ID}/particles/flare_smoke.json`, { textures: [`${ID}:contrail`] });
 }
 
-// The tiller (a handle on a pedestal, swung left or right through its five notches) and the parking brake (a lever
-// up when set, down when released); both drawn nose north and turned for the other ways.
+// The tiller and the parking brake, modules of the centre console drawn nose north. The tiller: a small handwheel on a
+// post, its grip ahead when it steers straight and turned left or right through its five notches. The parking brake:
+// a T-handle with a red grip, standing up when set and folded down toward the nose when released.
 {
-  const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
-  const textures = { base: `${ID}:block/thrust_lever_base`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`, particle: `${ID}:block/thrust_lever_base` };
+  const textures = { plate: `${ID}:block/panel_side`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`, grip: `${ID}:block/jump_light_red` };
   for (let steer = 0; steer <= 4; steer++) {
     const rotation = { origin: [8, 8, 8], axis: "y", angle: 45 - 22.5 * steer };
-    write(`assets/${ID}/models/block/tiller_${steer}.json`, {
-      parent: "minecraft:block/block",
-      textures,
-      elements: [
-        { from: [4, 0, 4], to: [12, 7, 12], faces: all("#base") },
-        { from: [7, 7, 3], to: [9, 9, 9], rotation, faces: all("#handle") },
-        { from: [6.5, 7, 2], to: [9.5, 10, 4], rotation, faces: all("#knob") },
-      ],
-    });
+    consoleModule(`tiller_${steer}`, textures, "#plate", false, [
+      solid([7.25, CONSOLE_HEIGHT, 7.25], [8.75, 7.5, 8.75], "#handle"),
+      solid([5, 7.5, 5], [11, 8.5, 11], "#handle", rotation),
+      solid([7.25, 8.5, 5.5], [8.75, 10.5, 7], "#knob", rotation),
+    ]);
   }
-  for (const [set, angle] of [[true, -22.5], [false, 45]]) {
-    const rotation = { origin: [8, 6, 8], axis: "x", angle };
-    write(`assets/${ID}/models/block/parking_brake_${set ? "set" : "released"}.json`, {
-      parent: "minecraft:block/block",
-      textures,
-      elements: [
-        { from: [5, 0, 5], to: [11, 6, 11], faces: all("#base") },
-        { from: [7, 6, 7], to: [9, 14, 9], rotation, faces: all("#handle") },
-        { from: [6, 13, 6], to: [10, 15, 10], rotation, faces: all("#knob") },
-      ],
-    });
+  for (const [set, angle] of [[true, 0], [false, -45]]) {
+    const rotation = { origin: [8, CONSOLE_HEIGHT, 8], axis: "x", angle };
+    consoleModule(`parking_brake_${set ? "set" : "released"}`, textures, "#plate", false, [
+      solid([7.5, CONSOLE_HEIGHT, 7.5], [8.5, 11, 8.5], "#handle", rotation),
+      solid([5.5, 11, 7], [10.5, 12.5, 9], "#grip", rotation),
+    ]);
   }
   write(`assets/${ID}/blockstates/tiller.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
@@ -311,8 +304,9 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
 });
 
-// Skydiving: the jump light (a lamp, dark, red or green), the jump switch in the panel (its face lit the same way,
-// facing the pilots), the rack of parachutes by the doors, the landing target (a flat bullseye) and the parachute.
+// Skydiving: the jump light (a lamp, dark, red or green), the jump switch on the centre console (its lamps lit the
+// same way, facing the pilots), the rack of parachutes by the doors, the landing target (a flat bullseye) and the
+// parachute.
 {
   const loot = (name) => write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
@@ -322,10 +316,11 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   const signals = ["off", "red", "green"];
   for (const signal of signals) {
     write(`assets/${ID}/models/block/jump_light_${signal}.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/jump_light_${signal}` } });
-    write(`assets/${ID}/models/block/jump_switch_${signal}.json`, {
-      parent: "minecraft:block/orientable",
-      textures: { front: `${ID}:block/jump_switch_${signal}`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
-    });
+    // A module of the centre console, its lamps on top and a selector knob pointing at the lamp lit, or between them.
+    consoleModule(`jump_switch_${signal}`, { panel: `${ID}:block/jump_switch_${signal}`, knob: `${ID}:block/thrust_lever_knob`, pointer: `${ID}:block/thrust_lever_handle` }, "#panel", true, [
+      solid([6.5, CONSOLE_HEIGHT, 3.5], [9.5, 7.5, 6.5], "#knob"),
+      solid([7.75, 7.5, 5], [8.25, 8, 8.5], "#pointer", { origin: [8, 7.5, 5], axis: "y", angle: { off: 0, red: 45, green: -45 }[signal] }),
+    ]);
   }
   write(`assets/${ID}/blockstates/jump_light.json`, {
     variants: Object.fromEntries(signals.map((signal) => [`signal=${signal}`, { model: `${ID}:block/jump_light_${signal}` }])),
@@ -392,19 +387,46 @@ function dropsItself(name) {
     random_sequence: `${ID}:blocks/${name}`,
   });
 }
-
-// Speaking to the cabin and the tower. The handset: a dark cradle with the receiver lying in it, its earpiece and
-// mouthpiece raised at either end, drawn facing north. The tower radio: a radio set with a speaker grille and dials.
-{
-  write(`assets/${ID}/models/block/handset.json`, boxes(
-    { cradle: `${ID}:block/handset_cradle`, receiver: `${ID}:block/handset_receiver`, particle: `${ID}:block/handset_cradle` },
-    [
-      [[3, 0, 4], [13, 2, 12], "#cradle"],
-      [[5, 2, 7], [11, 3, 9], "#receiver"],
-      [[3, 2, 6], [5, 5, 10], "#receiver"],
-      [[11, 2, 6], [13, 5, 10], "#receiver"],
+// A box of a model, every face showing the texture over the part of it the box covers; turned about an axis if a
+// rotation is given.
+function solid(from, to, texture, rotation) {
+  const element = { from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])) };
+  if (rotation) element.rotation = rotation;
+  return element;
+}
+// A module of the flight deck's centre console (see ConsoleModule): a slab CONSOLE_HEIGHT pixels tall the size of the
+// block in the console's casing, its top the control's panel, and the control's own parts on it. The panel reads the
+// right way up for someone at the model's south side, as for the controls that face the nose with the pilots behind
+// them; turned round when the pilots are at its north side, as for the controls whose face looks toward them.
+function consoleModule(name, textures, top, viewedFromNorth, parts) {
+  const side = { texture: "#casing" };
+  write(`assets/${ID}/models/block/${name}.json`, {
+    parent: "minecraft:block/block",
+    textures: { casing: `${ID}:block/flight_console`, particle: `${ID}:block/flight_console`, ...textures },
+    elements: [
+      {
+        from: [0, 0, 0], to: [16, CONSOLE_HEIGHT, 16],
+        faces: {
+          north: side, south: side, east: side, west: side,
+          up: { texture: top, ...(viewedFromNorth ? { rotation: 180 } : {}) },
+          down: { texture: "#casing", cullface: "down" },
+        },
+      },
+      ...parts,
     ],
-  ));
+  });
+}
+
+// Speaking to the cabin and the tower. The handset: a module of the centre console with a steel cradle on it and the
+// receiver lying in it, its earpiece and mouthpiece raised at either end, drawn facing north. The tower radio: a radio
+// set with a speaker grille and dials.
+{
+  consoleModule("handset", { plate: `${ID}:block/panel_side`, cradle: `${ID}:block/pilot_seat_trim`, receiver: `${ID}:block/handset_receiver` }, "#plate", true, [
+    solid([3, CONSOLE_HEIGHT, 4], [13, 7.5, 12], "#cradle"),
+    solid([5, 7.5, 7], [11, 8.5, 9], "#receiver"),
+    solid([3, 7.5, 6], [5, 9.5, 10], "#receiver"),
+    solid([11, 7.5, 6], [13, 9.5, 10], "#receiver"),
+  ]);
   facing("handset");
   write(`assets/${ID}/models/item/handset.json`, { parent: `${ID}:block/handset` });
   write(`assets/${ID}/models/block/tower_radio.json`, {
@@ -420,8 +442,8 @@ function dropsItself(name) {
 }
 
 // Buckling up. The seatbelt sign, dark or lit: lit, it glows at full brightness whatever the light around, a backlit
-// sign that shows in a dark cabin without lighting it up. The seatbelt switch in the panel, its lamp dark or lit,
-// facing the pilots.
+// sign that shows in a dark cabin without lighting it up. The seatbelt switch, a module of the centre console facing
+// the pilots: its lamp dark or lit, and a toggle in front of it, pushed away when on.
 {
   write(`assets/${ID}/models/block/seatbelt_sign.json`, {
     parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/seatbelt_sign` },
@@ -436,10 +458,11 @@ function dropsItself(name) {
     }],
   });
   for (const lit of [false, true]) {
-    write(`assets/${ID}/models/block/seatbelt_switch${lit ? "_on" : ""}.json`, {
-      parent: "minecraft:block/orientable",
-      textures: { front: `${ID}:block/seatbelt_switch${lit ? "_on" : ""}`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
-    });
+    const name = `seatbelt_switch${lit ? "_on" : ""}`;
+    consoleModule(name, { panel: `${ID}:block/${name}`, toggle: `${ID}:block/thrust_lever_knob`, base: `${ID}:block/thrust_lever_handle` }, "#panel", true, [
+      solid([7, CONSOLE_HEIGHT, 2.5], [9, 6.5, 4.5], "#base"),
+      solid([7.5, 6.5, 3], [8.5, 9, 4], "#toggle", { origin: [8, 6.5, 3.5], axis: "x", angle: lit ? 22.5 : -22.5 }),
+    ]);
   }
   write(`assets/${ID}/blockstates/seatbelt_sign.json`, {
     variants: { "lit=false": { model: `${ID}:block/seatbelt_sign` }, "lit=true": { model: `${ID}:block/seatbelt_sign_on` } },
@@ -531,7 +554,8 @@ write(`assets/${ID}/blockstates/signal_flare.json`, { variants: { "": { model: `
 write(`assets/${ID}/models/item/signal_flare.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/signal_flare` } });
 
 // The drop bay: hatch doors in yellow-and-black hazard stripes, shut, or open on a dark shaft with the loads' rails;
-// the drop release, a small module like the cabin controls, its guarded switch safe or armed.
+// the drop release, a module of the centre console: its red button under a striped cover, shut when safe and flipped
+// up when armed.
 for (const open of [false, true]) {
   write(`assets/${ID}/models/block/drop_bay${open ? "_open" : ""}.json`, {
     parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/drop_bay${open ? "_open" : ""}` },
@@ -543,10 +567,11 @@ write(`assets/${ID}/blockstates/drop_bay.json`, {
 write(`assets/${ID}/models/item/drop_bay.json`, { parent: `${ID}:block/drop_bay` });
 for (const armed of [false, true]) {
   const name = `drop_release_${armed ? "armed" : "safe"}`;
-  write(`assets/${ID}/models/block/${name}.json`, boxes(
-    { face: `${ID}:block/${name}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
-    [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
-  ));
+  const cover = armed ? { origin: [8, CONSOLE_HEIGHT, 11], axis: "x", angle: 45 } : undefined;
+  consoleModule(name, { panel: `${ID}:block/${name}`, button: `${ID}:block/jump_light_red`, cover: `${ID}:block/drop_release_cover` }, "#panel", true, [
+    solid([6.25, CONSOLE_HEIGHT, 6.25], [9.75, 6.75, 9.75], "#button"),
+    solid([5, CONSOLE_HEIGHT, 5], [11, 7.5, 11], "#cover", cover),
+  ]);
 }
 write(`assets/${ID}/blockstates/drop_release.json`, {
   variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((armed) =>
@@ -1075,15 +1100,16 @@ const DUTY_FREE_LANG = {
   "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
 };
 
-// The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The
-// cabin lights' dimmer: bright, dim or night. The window shades' control: open or closed.
+// The cabin controls: modules of the centre console, drawn facing north, their top showing the setting. The cabin
+// lights' dimmer: bright, dim or night, its knob turned to match. The window shades' control: open or closed, its
+// toggle pushed away when they are closed.
 {
-  const module = (name) => write(`assets/${ID}/models/block/${name}.json`, boxes(
-    { face: `${ID}:block/${name}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
-    [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
-  ));
+  const textures = (name) => ({ panel: `${ID}:block/${name}`, knob: `${ID}:block/thrust_lever_knob`, dark: `${ID}:block/thrust_lever_handle` });
   for (const level of ["bright", "dim", "night"]) {
-    module(`cabin_lights_${level}`);
+    consoleModule(`cabin_lights_${level}`, textures(`cabin_lights_${level}`), "#panel", true, [
+      solid([6.75, CONSOLE_HEIGHT, 1.75], [9.25, 7.5, 4.25], "#knob"),
+      solid([7.75, 7.5, 3], [8.25, 8, 4.5], "#dark", { origin: [8, 7.5, 3], axis: "y", angle: { bright: -45, dim: 0, night: 45 }[level] }),
+    ]);
   }
   write(`assets/${ID}/blockstates/cabin_lights.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["bright", "dim", "night"].map((level) =>
@@ -1091,7 +1117,10 @@ const DUTY_FREE_LANG = {
   });
   write(`assets/${ID}/models/item/cabin_lights.json`, { parent: `${ID}:block/cabin_lights_bright` });
   for (const shaded of [false, true]) {
-    module(`window_shades_${shaded ? "closed" : "open"}`);
+    consoleModule(`window_shades_${shaded ? "closed" : "open"}`, textures(`window_shades_${shaded ? "closed" : "open"}`), "#panel", true, [
+      solid([7, CONSOLE_HEIGHT, 1.5], [9, 6.5, 3.5], "#dark"),
+      solid([7.5, 6.5, 2], [8.5, 9, 3], "#knob", { origin: [8, 6.5, 2.5], axis: "x", angle: shaded ? 22.5 : -22.5 }),
+    ]);
   }
   write(`assets/${ID}/blockstates/window_shades.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((shaded) =>
@@ -1345,36 +1374,37 @@ cubes.flight_display = null;
   cubes.tail_camera_display = null;
 }
 
-// The autopilot: a panel block whose screen faces the pilots, away from the nose it points with.
-write(`assets/${ID}/models/block/autopilot.json`, {
-  parent: "minecraft:block/orientable",
-  textures: { front: `${ID}:block/autopilot`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
-});
+// The autopilot's control head: a module of the centre console with a raised head on it, its panel (the AP badge
+// and a row of mode lamps) facing the pilots, away from the nose it points with, and four knobs along its front edge.
+consoleModule("autopilot", {
+  plate: `${ID}:block/panel_side`, panel: `${ID}:block/autopilot`, side: `${ID}:block/panel_side`, knob: `${ID}:block/thrust_lever_knob`,
+}, "#plate", true, [
+  {
+    from: [2, CONSOLE_HEIGHT, 3], to: [14, 7.5, 13],
+    faces: {
+      north: { texture: "#side" }, south: { texture: "#side" }, east: { texture: "#side" }, west: { texture: "#side" },
+      up: { texture: "#panel", uv: [0, 0, 16, 16], rotation: 180 }, down: { texture: "#side" },
+    },
+  },
+  ...[3.25, 6, 8.75, 11.5].map((x) => solid([x, 7.5, 3.75], [x + 1.25, 8.5, 5], "#knob")),
+]);
 write(`assets/${ID}/models/item/autopilot.json`, { parent: `${ID}:block/autopilot` });
 write(`assets/${ID}/blockstates/autopilot.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/autopilot`, y: (y + 180) % 360 }])),
 });
 cubes.autopilot = null;
 
-// The thrust lever: a pedestal and a handle swung from fully back (idle) to fully forward (full thrust) over its
-// five notches, the nose to the north.
+// The thrust lever: a module of the throttle quadrant, side by side with the others along the centre console, the
+// lever's slot down its plate and the lever a slim black handle with a pale grip, swung from fully back (idle) to fully
+// forward (full thrust) over its five notches; the nose to the north.
 for (let thrust = 0; thrust <= 4; thrust++) {
-  const rotation = { origin: [8, 8, 8], axis: "x", angle: 45 - 22.5 * thrust };
-  const box = (from, to, texture, rotated) => {
-    const face = { texture };
-    const element = { from, to, faces: { north: face, south: face, east: face, west: face, up: face, down: face } };
-    if (rotated) element.rotation = rotation;
-    return element;
-  };
-  write(`assets/${ID}/models/block/thrust_lever_${thrust}.json`, {
-    parent: "minecraft:block/block",
-    textures: { base: `${ID}:block/thrust_lever_base`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`, particle: `${ID}:block/thrust_lever_base` },
-    elements: [
-      box([3, 0, 2], [13, 8, 14], "#base", false),
-      box([7.25, 8, 7.25], [8.75, 17, 8.75], "#handle", true),
-      box([6, 15, 6.5], [10, 18, 9.5], "#knob", true),
-    ],
-  });
+  const rotation = { origin: [8, CONSOLE_HEIGHT, 8], axis: "x", angle: 45 - 22.5 * thrust };
+  consoleModule(`thrust_lever_${thrust}`, {
+    plate: `${ID}:block/thrust_lever_base`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`,
+  }, "#plate", false, [
+    solid([7.25, CONSOLE_HEIGHT, 7.25], [8.75, 13, 8.75], "#handle", rotation),
+    solid([6, 12, 6.75], [10, 14.5, 9.25], "#knob", rotation),
+  ]);
 }
 write(`assets/${ID}/models/item/thrust_lever.json`, { parent: `${ID}:block/thrust_lever_2` });
 write(`assets/${ID}/blockstates/thrust_lever.json`, {
@@ -1404,34 +1434,31 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
     leather: `${ID}:block/pilot_seat_leather`, trim: `${ID}:block/pilot_seat_trim`, frame: `${ID}:block/pilot_seat_frame`,
     harness: `${ID}:block/pilot_seat_harness`, particle: `${ID}:block/pilot_seat_leather`,
   };
-  const part = (from, to, texture) => ({
-    from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])),
-  });
   const lower = [
-    part([3, 0, 0.5], [4.5, 1, 15.5], "#frame"),
-    part([11.5, 0, 0.5], [13, 1, 15.5], "#frame"),
-    part([3, 1, 4.5], [13, 2, 11.5], "#frame"),
-    part([5.5, 2, 5], [10.5, 4.5, 11], "#frame"),
-    part([2, 4.5, 1], [14, 8, 12], "#leather"),
-    part([2, 7.5, 0.5], [14, 8.25, 1], "#trim"),
-    part([2, 4.5, 11], [14, 16, 15], "#leather"),
-    part([4.5, 8.5, 10.6], [6, 16, 11], "#harness"),
-    part([10, 8.5, 10.6], [11.5, 16, 11], "#harness"),
-    part([0.5, 10.5, 3.5], [2, 12, 12], "#leather"),
-    part([14, 10.5, 3.5], [15.5, 12, 12], "#leather"),
-    part([1, 4.5, 9.5], [2, 10.5, 11], "#frame"),
-    part([14, 4.5, 9.5], [15, 10.5, 11], "#frame"),
+    solid([3, 0, 0.5], [4.5, 1, 15.5], "#frame"),
+    solid([11.5, 0, 0.5], [13, 1, 15.5], "#frame"),
+    solid([3, 1, 4.5], [13, 2, 11.5], "#frame"),
+    solid([5.5, 2, 5], [10.5, 4.5, 11], "#frame"),
+    solid([2, 4.5, 1], [14, 8, 12], "#leather"),
+    solid([2, 7.5, 0.5], [14, 8.25, 1], "#trim"),
+    solid([2, 4.5, 11], [14, 16, 15], "#leather"),
+    solid([4.5, 8.5, 10.6], [6, 16, 11], "#harness"),
+    solid([10, 8.5, 10.6], [11.5, 16, 11], "#harness"),
+    solid([0.5, 10.5, 3.5], [2, 12, 12], "#leather"),
+    solid([14, 10.5, 3.5], [15.5, 12, 12], "#leather"),
+    solid([1, 4.5, 9.5], [2, 10.5, 11], "#frame"),
+    solid([14, 4.5, 9.5], [15, 10.5, 11], "#frame"),
   ];
   const upper = [
-    part([2, 0, 11], [14, 3, 15], "#leather"),
-    part([3, 3, 11.5], [13, 4.5, 15], "#leather"),
-    part([4.5, 0, 10.6], [6, 3.5, 11], "#harness"),
-    part([10, 0, 10.6], [11.5, 3.5, 11], "#harness"),
-    part([4.5, 3.5, 10.6], [6, 4.75, 13], "#harness"),
-    part([10, 3.5, 10.6], [11.5, 4.75, 13], "#harness"),
-    part([4, 4.5, 12], [12, 12.5, 15], "#leather"),
-    part([5, 6, 11.5], [11, 11.5, 12], "#leather"),
-    part([4, 12.5, 12], [12, 13, 15], "#trim"),
+    solid([2, 0, 11], [14, 3, 15], "#leather"),
+    solid([3, 3, 11.5], [13, 4.5, 15], "#leather"),
+    solid([4.5, 0, 10.6], [6, 3.5, 11], "#harness"),
+    solid([10, 0, 10.6], [11.5, 3.5, 11], "#harness"),
+    solid([4.5, 3.5, 10.6], [6, 4.75, 13], "#harness"),
+    solid([10, 3.5, 10.6], [11.5, 4.75, 13], "#harness"),
+    solid([4, 4.5, 12], [12, 12.5, 15], "#leather"),
+    solid([5, 6, 11.5], [11, 11.5, 12], "#leather"),
+    solid([4, 12.5, 12], [12, 13, 15], "#trim"),
   ];
   for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
     write(`assets/${ID}/models/block/pilot_seat_${half}.json`, { parent: "minecraft:block/block", textures, elements });

@@ -1,41 +1,118 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "face": "aerolarge:block/drop_release_armed",
-    "side": "aerolarge:block/handset_cradle",
-    "particle": "aerolarge:block/handset_cradle"
+    "casing": "aerolarge:block/flight_console",
+    "particle": "aerolarge:block/flight_console",
+    "panel": "aerolarge:block/drop_release_armed",
+    "button": "aerolarge:block/jump_light_red",
+    "cover": "aerolarge:block/drop_release_cover"
   },
   "elements": [
     {
       "from": [
-        3,
         0,
-        4
+        0,
+        0
       ],
       "to": [
-        13,
-        4,
-        12
+        16,
+        6,
+        16
       ],
       "faces": {
         "north": {
-          "texture": "#face"
+          "texture": "#casing"
         },
         "south": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "east": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "west": {
-          "texture": "#side"
+          "texture": "#casing"
         },
         "up": {
-          "texture": "#face"
+          "texture": "#panel",
+          "rotation": 180
         },
         "down": {
-          "texture": "#side"
+          "texture": "#casing",
+          "cullface": "down"
         }
+      }
+    },
+    {
+      "from": [
+        6.25,
+        6,
+        6.25
+      ],
+      "to": [
+        9.75,
+        6.75,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#button"
+        },
+        "south": {
+          "texture": "#button"
+        },
+        "east": {
+          "texture": "#button"
+        },
+        "west": {
+          "texture": "#button"
+        },
+        "up": {
+          "texture": "#button"
+        },
+        "down": {
+          "texture": "#button"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        6,
+        5
+      ],
+      "to": [
+        11,
+        7.5,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cover"
+        },
+        "south": {
+          "texture": "#cover"
+        },
+        "east": {
+          "texture": "#cover"
+        },
+        "west": {
+          "texture": "#cover"
+        },
+        "up": {
+          "texture": "#cover"
+        },
+        "down": {
+          "texture": "#cover"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6,
+          11
+        ],
+        "axis": "x",
+        "angle": 45
       }
     }
   ]
