@@ -2,6 +2,9 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -40,6 +43,20 @@ public class BallPitBlock extends Block {
     /** The spray of balls as something plops in, and the share of ticks something wading kicks up a ball. */
     private static final int PLOP_BALLS = 12;
     private static final float RUSTLE_CHANCE = 0.25F;
+    /** How far over the feet of something wading a kicked-up ball starts, in blocks: about the top of the balls. */
+    private static final double RUSTLE_HEIGHT = 1;
+    /**
+     * How long something must have been out of the balls, in ticks, for its next wade to plop: longer than the server
+     * goes without hearing from a player standing still, whose client then sends where they are once a second.
+     */
+    private static final long PLOP_GAP = 40;
+    /**
+     * The game tick each entity last waded on each side, so one among several balls is worked once a tick. Kept by
+     * side, as an entity and its copy on the other side are equal; and by tick rather than by the block at the feet,
+     * as aboard an assembled airliner the entity is in the world while the pit is among the airliner's blocks.
+     */
+    private static final Map<Entity, Long> WADING_SERVER = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Entity, Long> WADING_CLIENT = Collections.synchronizedMap(new WeakHashMap<>());
 
     public BallPitBlock(Properties properties) {
         super(properties);
@@ -71,12 +88,16 @@ public class BallPitBlock extends Block {
     }
 
     /**
-     * Sinking, wading and jumping out, worked by the ball at the entity's feet alone, so a deep pit holds it no harder
-     * than a shallow one. Run on both sides: a player moves themselves, so their own client has to feel it too.
+     * Sinking, wading and jumping out, worked once a tick however many balls the entity is in, so a deep pit holds it
+     * no harder than a shallow one; the first in a while is its plop. Run on both sides: a player moves
+     * themselves, so their own client has to feel it too. The balls fly where the entity is, not off the block's top,
+     * which aboard an assembled airliner is among the airliner's blocks, far from the world.
      */
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!pos.equals(entity.blockPosition())) {
+        long now = level.getGameTime();
+        Long last = (level.isClientSide ? WADING_CLIENT : WADING_SERVER).put(entity, now);
+        if (last != null && last == now) {
             return;
         }
         Vec3 motion = entity.getDeltaMovement();
@@ -84,14 +105,14 @@ public class BallPitBlock extends Block {
         entity.setDeltaMovement(motion.x * WADE, up, motion.z * WADE);
         entity.resetFallDistance();
         RandomSource random = level.getRandom();
-        boolean entering = !level.getBlockState(BlockPos.containing(entity.xOld, entity.yOld, entity.zOld)).is(this);
+        boolean entering = last == null || now - last > PLOP_GAP;
         if (level instanceof ServerLevel server && entering) {
             server.playSound(null, entity.getX(), entity.getY(), entity.getZ(), AerolargeRegistry.BALL_PIT_PLOP.get(), SoundSource.BLOCKS,
                 1.0F, 0.8F + random.nextFloat() * 0.4F);
-            server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), entity.getX(), pos.getY() + 1, entity.getZ(),
+            server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), entity.getX(), entity.getY(), entity.getZ(),
                 PLOP_BALLS, 0.3, 0.1, 0.3, 0.15);
         } else if (level.isClientSide && (entity.xOld != entity.getX() || entity.zOld != entity.getZ()) && random.nextFloat() < RUSTLE_CHANCE) {
-            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state), entity.getX(), pos.getY() + 1, entity.getZ(),
+            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state), entity.getX(), entity.getY() + RUSTLE_HEIGHT, entity.getZ(),
                 random.nextDouble() - 0.5, 0.2, random.nextDouble() - 0.5);
         }
     }
