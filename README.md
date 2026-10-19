@@ -42,6 +42,7 @@ thrusters through relays hidden in the nacelle. Beside the captain's seat is the
 right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
 is built. A primary flight display in front of each seat shows attitude, airspeed,
 altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
+On the instrument panel beside the autopilot screen is the jump light switch (see Skydiving).
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
@@ -77,6 +78,17 @@ or the wings more than 35 either way, righting it even from upside down. Past 90
 enough to coast past the top of the world, it cuts the engines itself, and hands them back to the levers once the
 airliner has slowed to 75 and is well below the top again. Without that, full thrust would loop the airliner or
 fling it off faster than the world can be generated around it.
+
+### Skydiving
+
+By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes.
+Use a rack to put a parachute on (or take one into your inventory if your chest slot is taken), then jump while
+falling to open it; it opens by itself if you are still falling free close to the ground. Under the canopy you sink
+gently, drift the way you walk, take no fall damage, and it packs itself away when you land. The jump light switch on
+the instrument panel cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).
+
+Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
+everyone nearby with its distance from the middle, and using the target shows the best landing so far.
 
 ### Airstairs
 

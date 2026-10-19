@@ -339,4 +339,55 @@ function blueprint(name, star) {
 blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
 
+// Skydiving. The jump light: a lens dark, red or green, brighter in the middle. The jump switch: a dark panel with a
+// red and a green lamp, the one in use lit. The rack: a frame holding packed parachutes. The landing target: red and
+// white rings. The parachute icon, and the canopy's texture: red and white halves for the panels, olive below for
+// the pack and the cords.
+{
+  const lens = { off: [0x3a, 0x3d, 0x42], red: [0xe0, 0x28, 0x20], green: [0x30, 0xe0, 0x50] };
+  for (const [signal, colour] of Object.entries(lens)) {
+    texture(blockOutput, `jump_light_${signal}`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return FRAME_DARK;
+      const glow = signal === "off" ? 0 : Math.max(0, 1 - Math.hypot(x - 7.5, y - 7.5) / 8);
+      return colour.map((c) => clamp(Math.round(c + 70 * glow)));
+    });
+    texture(blockOutput, `jump_switch_${signal}`, (x, y) => {
+      const red = Math.hypot(x - 5, y - 6) < 2.5;
+      const green = Math.hypot(x - 11, y - 6) < 2.5;
+      if (red) return signal === "red" ? [0xff, 0x40, 0x30] : [0x50, 0x18, 0x14];
+      if (green) return signal === "green" ? [0x50, 0xff, 0x70] : [0x14, 0x40, 0x1c];
+      if (y >= 10 && y <= 12 && x >= 4 && x <= 11) return STEEL;
+      return [0x22, 0x25, 0x2a];
+    });
+  }
+  const OLIVE = [0x5a, 0x63, 0x3c];
+  const OLIVE_DARK = [0x44, 0x4b, 0x2d];
+  texture(blockOutput, "parachute_rack_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return STEEL_DARK;
+    const slot = Math.floor((x - 1) / 5);
+    if ((x - 1) % 5 === 4) return STEEL_DARK;
+    return (y + slot) % 4 === 0 ? OLIVE_DARK : OLIVE;
+  });
+  texture(blockOutput, "parachute_rack_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL_DARK : STEEL));
+  texture(blockOutput, "landing_target_top", (x, y) => {
+    const ring = Math.floor(Math.hypot(x - 7.5, y - 7.5) / 2);
+    return ring % 2 === 0 ? [0xd0, 0x20, 0x20] : [0xf0, 0xf0, 0xf0];
+  });
+  texture(blockOutput, "landing_target_side", (x, y) => (Math.floor(x / 4) % 2 === 0 ? [0xd0, 0x20, 0x20] : [0xf0, 0xf0, 0xf0]));
+  texture(itemOutput, "parachute", (x, y) => {
+    const dome = y <= 7 && Math.hypot(x - 7.5, (y - 7.5) * 1.6) < 7.5;
+    if (dome) return Math.floor((x + 1) / 3) % 2 === 0 ? [0xe0, 0x30, 0x28] : [0xf2, 0xf2, 0xf2];
+    const cord = y > 7 && y < 13 && (Math.abs(x - 7.5 - (x < 8 ? -(13 - y) * 0.8 : (13 - y) * 0.8)) < 0.6);
+    if (cord) return [0x30, 0x30, 0x30];
+    if (y >= 12 && x >= 6 && x <= 9) return OLIVE;
+    return CLEAR;
+  }, 0);
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  mkdirSync(entityOutput, { recursive: true });
+  texture(entityOutput, "parachute", (x, y) => {
+    if (x >= 8 && y >= 12) return y % 2 === 0 ? OLIVE_DARK : OLIVE;
+    return x < 8 ? [0xd8, 0x2c, 0x24] : [0xf0, 0xf0, 0xee];
+  }, 3);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

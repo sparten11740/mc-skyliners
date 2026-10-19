@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "aerolarge:block/jump_switch_green",
+    "side": "aerolarge:block/panel_side",
+    "top": "aerolarge:block/panel_side"
+  }
+}

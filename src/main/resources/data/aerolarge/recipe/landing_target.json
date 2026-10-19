@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "WRW",
+    "RWR",
+    "WRW"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_carpet"
+    },
+    "R": {
+      "item": "minecraft:red_carpet"
+    }
+  },
+  "result": {
+    "id": "aerolarge:landing_target",
+    "count": 1
+  }
+}

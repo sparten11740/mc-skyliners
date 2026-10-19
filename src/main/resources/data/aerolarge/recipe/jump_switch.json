@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "L",
+    "P"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "P": {
+      "item": "aerolarge:instrument_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:jump_switch",
+    "count": 1
+  }
+}

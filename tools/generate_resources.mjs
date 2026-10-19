@@ -245,6 +245,59 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
 });
 
+// Skydiving: the jump light (a lamp, dark, red or green), the jump switch in the panel (its face lit the same way,
+// facing the pilots), the rack of parachutes by the doors, the landing target (a flat bullseye) and the parachute.
+{
+  const loot = (name) => write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${name}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+  const signals = ["off", "red", "green"];
+  for (const signal of signals) {
+    write(`assets/${ID}/models/block/jump_light_${signal}.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/jump_light_${signal}` } });
+    write(`assets/${ID}/models/block/jump_switch_${signal}.json`, {
+      parent: "minecraft:block/orientable",
+      textures: { front: `${ID}:block/jump_switch_${signal}`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
+    });
+  }
+  write(`assets/${ID}/blockstates/jump_light.json`, {
+    variants: Object.fromEntries(signals.map((signal) => [`signal=${signal}`, { model: `${ID}:block/jump_light_${signal}` }])),
+  });
+  write(`assets/${ID}/blockstates/jump_switch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      signals.map((signal) => [`facing=${facing},signal=${signal}`, { model: `${ID}:block/jump_switch_${signal}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/jump_light.json`, { parent: `${ID}:block/jump_light_red` });
+  write(`assets/${ID}/models/item/jump_switch.json`, { parent: `${ID}:block/jump_switch_green` });
+  write(`assets/${ID}/models/block/parachute_rack.json`, {
+    parent: "minecraft:block/orientable",
+    textures: { front: `${ID}:block/parachute_rack_front`, side: `${ID}:block/parachute_rack_side`, top: `${ID}:block/parachute_rack_side` },
+  });
+  write(`assets/${ID}/blockstates/parachute_rack.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/parachute_rack`, y }])),
+  });
+  write(`assets/${ID}/models/item/parachute_rack.json`, { parent: `${ID}:block/parachute_rack` });
+  write(`assets/${ID}/models/block/landing_target.json`, {
+    parent: "minecraft:block/block",
+    textures: { top: `${ID}:block/landing_target_top`, side: `${ID}:block/landing_target_side`, particle: `${ID}:block/landing_target_top` },
+    elements: [{
+      from: [0, 0, 0], to: [16, 2, 16],
+      faces: {
+        up: { texture: "#top" }, down: { texture: "#side" }, north: { texture: "#side", uv: [0, 14, 16, 16] },
+        south: { texture: "#side", uv: [0, 14, 16, 16] }, east: { texture: "#side", uv: [0, 14, 16, 16] }, west: { texture: "#side", uv: [0, 14, 16, 16] },
+      },
+    }],
+  });
+  write(`assets/${ID}/blockstates/landing_target.json`, { variants: { "": { model: `${ID}:block/landing_target` } } });
+  write(`assets/${ID}/models/item/landing_target.json`, { parent: `${ID}:block/landing_target` });
+  write(`assets/${ID}/models/item/parachute.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/parachute` } });
+  for (const name of ["jump_light", "jump_switch", "parachute_rack", "landing_target"]) {
+    loot(name);
+    cubes[name] = null;
+  }
+}
+
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
 write(`assets/${ID}/models/block/autopilot_screen.json`, {
@@ -325,9 +378,10 @@ write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) =
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-write("data/sable/tags/block/super_light.json", tag(blocks));
+const airliner = blocks.filter((b) => !b.endsWith("landing_target"));
+write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
-write(`data/${ID}/tags/block/airframe.json`, tag(blocks.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
+write(`data/${ID}/tags/block/airframe.json`, tag(airliner.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 
 // Recipes, for repairing and extending an airliner in survival; the blueprints themselves are creative only.
@@ -344,6 +398,11 @@ function shaped(name, pattern, key, count) {
 shaped("airframe_panel", ["CCC", "CIC", "CCC"], { C: "minecraft:white_concrete", I: "minecraft:iron_ingot" }, 8);
 shaped("livery_panel", ["PPP", "PDP", "PPP"], { P: `${ID}:airframe_panel`, D: "minecraft:blue_dye" }, 8);
 shaped("cabin_window", [" G ", "GPG", " G "], { G: "minecraft:glass", P: `${ID}:airframe_panel` }, 4);
+shaped("parachute", ["WWW", "S S", " L "], { W: "minecraft:white_wool", S: "minecraft:string", L: "minecraft:leather" }, 1);
+shaped("jump_light", ["R", "L", "G"], { R: "minecraft:red_dye", L: "minecraft:redstone_lamp", G: "minecraft:green_dye" }, 1);
+shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_panel` }, 1);
+shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
+shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
 shaped("cabin_floor", ["CC", "PP"], { C: "minecraft:gray_carpet", P: `${ID}:airframe_panel` }, 4);
 shaped("airliner_door", ["PP", "PG", "PP"], { P: `${ID}:airframe_panel`, G: "minecraft:glass" }, 3);
@@ -412,6 +471,21 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.altitude": "Altitude %s",
   "message.aerolarge.autopilot.speed": "Speed %s b/s",
   "message.aerolarge.autopilot.radius": "Circle radius %s blocks",
+  "item.aerolarge.parachute": "Parachute",
+  "block.aerolarge.jump_light": "Jump Light",
+  "block.aerolarge.jump_switch": "Jump Light Switch",
+  "block.aerolarge.parachute_rack": "Parachute Rack",
+  "block.aerolarge.landing_target": "Landing Target",
+  "message.aerolarge.jump_switch.off": "Jump lights off",
+  "message.aerolarge.jump_switch.red": "Jump lights red: stand by",
+  "message.aerolarge.jump_switch.green": "Jump lights green: GO!",
+  "message.aerolarge.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
+  "message.aerolarge.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
+  "message.aerolarge.parachute_rack.wearing": "You are already wearing a parachute.",
+  "message.aerolarge.landing_target.landed": "%s landed %s blocks from the target",
+  "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
+  "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
+  "message.aerolarge.landing_target.none": "No landings on this target yet",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",

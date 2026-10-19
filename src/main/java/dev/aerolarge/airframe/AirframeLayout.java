@@ -13,8 +13,10 @@ import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
+import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
@@ -93,6 +95,8 @@ public final class AirframeLayout {
     private final List<BlockPos> brakeRelays = new ArrayList<>();
     /** Where the flight deck leaves room for the Physics Assembler, behind the pilots; null without a flight deck. */
     private BlockPos assemblerSpot;
+    /** The jump light switch in the instrument panel; null without a flight deck. */
+    private BlockPos jumpSwitch;
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
     private int minY = Integer.MAX_VALUE;
@@ -138,6 +142,7 @@ public final class AirframeLayout {
         if (furnished) {
             new CabinFitOut(layout).apply();
         }
+        layout.skydiving();
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -570,6 +575,59 @@ public final class AirframeLayout {
     }
 
     /**
+     * Skydiving: a jump light in the wall just ahead of the aft passenger doors and the cargo door, each with the
+     * relay that lights it beside it in the wall, and a rack of parachutes on the floor by it; the jump switch in the
+     * panel is wired to them all.
+     */
+    private void skydiving() {
+        List<BlockPos> relays = new ArrayList<>();
+        for (int side : new int[]{1, -1}) {
+            jumpDoor(side, PASSENGER_DOORS[PASSENGER_DOORS.length - 1], floorY + 1, relays);
+        }
+        if (floorY - 2 >= 1) {
+            jumpDoor(1, CARGO_DOOR, floorY - 2, relays);
+        }
+        if (jumpSwitch == null || relays.isEmpty()) {
+            return;
+        }
+        BlockPos at = jumpSwitch;
+        fittings.put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LinkedControlBlockEntity control) {
+                control.configure(Map.of(JumpSwitchBlock.LIGHTS, offsets(at, relays, rotation)));
+            }
+        });
+    }
+
+    /**
+     * The jump light by one door: in the hull just ahead of it, in the first of the door's rows (and the ones either
+     * side) where it and its relay above or below it both replace plain skin, not a window; the rack inside by it.
+     */
+    private void jumpDoor(int side, double station, int bottom, List<BlockPos> relays) {
+        int z = (int) Math.round(station * scale) - 1;
+        for (int y : new int[]{bottom + 1, bottom, bottom + 2}) {
+            int x = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+            while (x != 0 && !inFuselage(x, y, z)) {
+                x -= side;
+            }
+            if (!stateAt(x, y, z).is(palette.hull().getBlock())) {
+                continue;
+            }
+            int relayY = stateAt(x, y - 1, z).is(palette.hull().getBlock()) ? y - 1 : y + 1;
+            if (!stateAt(x, relayY, z).is(palette.hull().getBlock())) {
+                continue;
+            }
+            set(x, y, z, AerolargeRegistry.JUMP_LIGHT.get().defaultBlockState());
+            set(x, relayY, z, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
+            relays.add(new BlockPos(x, relayY, z));
+            // Facing the door's aisle, aft of it.
+            if (isOpen(x - side, bottom, z)) {
+                set(x - side, bottom, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
+            }
+            return;
+        }
+    }
+
+    /**
      * Cuts the fuselage's skin to its curve. Every skin block the fuselage's surface passes through becomes shell, cut
      * where the surface crosses it, and under the windscreen the glass is cut the same way. Outside blocks the surface
      * still passes through get shell (or glass) of their own, so the skin closes into one smooth surface.
@@ -712,6 +770,12 @@ public final class AirframeLayout {
         BlockPos autopilot = new BlockPos(0, deck + 1, pedestalZ);
         autopilot(autopilot, engines, controls);
         autopilotScreen(deck + 1, panelZ, autopilot);
+        // The jump light switch in the panel, beside the screen on the first officer's side.
+        int switchX = AutopilotScreenBlock.COLUMNS / 2 + 1;
+        if (switchX <= panelWidth && stateAt(switchX, deck + 1, panelZ).is(panel.getBlock())) {
+            jumpSwitch = new BlockPos(switchX, deck + 1, panelZ);
+            set(switchX, deck + 1, panelZ, AerolargeRegistry.JUMP_SWITCH.get().defaultBlockState().setValue(JumpSwitchBlock.FACING, Direction.SOUTH));
+        }
         assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
     }
 

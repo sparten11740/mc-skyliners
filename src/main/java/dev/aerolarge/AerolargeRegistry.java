@@ -14,22 +14,31 @@ import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.JumpLightBlock;
+import dev.aerolarge.block.JumpSwitchBlock;
+import dev.aerolarge.block.LandingTargetBlock;
+import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
+import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
+import com.mojang.serialization.Codec;
 import dev.aerolarge.item.AirlinerBlueprintItem;
+import dev.aerolarge.item.ParachuteItem;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -67,6 +76,7 @@ public final class AerolargeRegistry {
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Aerolarge.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, Aerolarge.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, Aerolarge.MOD_ID);
+    private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Aerolarge.MOD_ID);
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -155,11 +165,15 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("thrust_lever", () -> BlockEntityType.Builder.of(ThrustLeverBlockEntity::new, THRUST_LEVER.get()).build(null));
     /** The nose wheel tiller and the parking brake, beside the pilots' seats, sharing one kind of linked block entity. */
     public static final DeferredBlock<TillerBlock> TILLER = BLOCKS.registerBlock("tiller", TillerBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    /** The switch in the instrument panel that turns the jump lights by the doors red, then green. */
+    public static final DeferredBlock<JumpSwitchBlock> JUMP_SWITCH = BLOCKS.registerBlock(
+        "jump_switch", JumpSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
+    );
     public static final DeferredBlock<ParkingBrakeBlock> PARKING_BRAKE = BLOCKS.registerBlock(
         "parking_brake", ParkingBrakeBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
-        BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get()).build(null));
+        BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get(), JUMP_SWITCH.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
         "autopilot", AutopilotBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
     );
@@ -215,6 +229,28 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
+    /** Skydiving out of the airliner: the jump light by the doors, the rack of parachutes and the target to land on. */
+    public static final DeferredBlock<JumpLightBlock> JUMP_LIGHT = BLOCKS.registerBlock(
+        "jump_light", JumpLightBlock::new, glass().lightLevel(state -> state.getValue(JumpLightBlock.SIGNAL).light())
+    );
+    public static final DeferredBlock<ParachuteRackBlock> PARACHUTE_RACK = BLOCKS.registerBlock(
+        "parachute_rack", ParachuteRackBlock::new, metal(MapColor.COLOR_GREEN)
+    );
+    public static final DeferredBlock<LandingTargetBlock> LANDING_TARGET = BLOCKS.registerBlock(
+        "landing_target", LandingTargetBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.WOOL)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LandingTargetBlockEntity>> LANDING_TARGET_ENTITY =
+        BLOCK_ENTITIES.register("landing_target", () -> BlockEntityType.Builder.of(LandingTargetBlockEntity::new, LANDING_TARGET.get()).build(null));
+    public static final DeferredItem<ParachuteItem> PARACHUTE = ITEMS.register("parachute", () -> new ParachuteItem(new Item.Properties()));
+    /** Whether a worn parachute is open, kept on its stack so every client sees the canopy. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> PARACHUTE_OPEN = DATA_COMPONENTS.registerComponentType(
+        "parachute_open", builder -> builder.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL)
+    );
+    public static final DeferredItem<BlockItem> JUMP_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(JUMP_SWITCH);
+    public static final DeferredItem<BlockItem> JUMP_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(JUMP_LIGHT);
+    public static final DeferredItem<BlockItem> PARACHUTE_RACK_ITEM = ITEMS.registerSimpleBlockItem(PARACHUTE_RACK);
+    public static final DeferredItem<BlockItem> LANDING_TARGET_ITEM = ITEMS.registerSimpleBlockItem(LANDING_TARGET);
+
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
         () -> new AirlinerBlueprintItem(false, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
@@ -231,7 +267,8 @@ public final class AerolargeRegistry {
         .displayItems((parameters, output) -> List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
-            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM
+            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
+            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE
         ).forEach(item -> output.accept(item.get())))
         .build());
 
@@ -276,5 +313,6 @@ public final class AerolargeRegistry {
         TABS.register(modEventBus);
         SOUNDS.register(modEventBus);
         PARTICLES.register(modEventBus);
+        DATA_COMPONENTS.register(modEventBus);
     }
 }

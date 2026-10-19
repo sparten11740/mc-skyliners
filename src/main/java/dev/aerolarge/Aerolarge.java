@@ -1,6 +1,8 @@
 package dev.aerolarge;
 
 import dev.aerolarge.airframe.AirframeBuild;
+import dev.aerolarge.parachute.OpenParachute;
+import dev.aerolarge.parachute.Parachute;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -10,6 +12,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /**
  * An A380-style double-deck airliner, big enough to build in. A blueprint lays the whole airframe down in one go: a
@@ -25,7 +28,10 @@ public final class Aerolarge {
         AerolargeRegistry.register(modEventBus);
         container.registerConfig(ModConfig.Type.SERVER, AerolargeConfig.SPEC);
 
+        modEventBus.addListener(RegisterPayloadHandlersEvent.class,
+            event -> event.registrar("1").playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle));
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
+        NeoForge.EVENT_BUS.addListener(Parachute::tick);
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event -> AerolargeCommand.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {

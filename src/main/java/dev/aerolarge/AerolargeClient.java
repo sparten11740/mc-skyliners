@@ -7,7 +7,11 @@ import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.NavLightRenderer;
+import dev.aerolarge.client.ParachuteControls;
+import dev.aerolarge.client.ParachuteLayer;
 import dev.aerolarge.client.ShellModel;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.PlayerSkin;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -20,7 +24,8 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
- * flight displays and autopilot screen, its engines' sound and contrails, and the camera shake aboard.
+ * flight displays and autopilot screen, its engines' sound and contrails, the camera shake aboard, and parachutes:
+ * opening them by jumping, and the canopy over their wearers.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -28,6 +33,8 @@ public final class AerolargeClient {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
+        NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
+        modEventBus.addListener(AerolargeClient::onAddLayers);
         modEventBus.addListener(AerolargeClient::onRegisterGeometryLoaders);
         modEventBus.addListener(AerolargeClient::onRegisterRenderers);
         modEventBus.addListener(AerolargeClient::onRegisterParticles);
@@ -36,6 +43,14 @@ public final class AerolargeClient {
 
     private static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register(ShellModel.LOADER, ShellModel.READER);
+    }
+
+    private static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        for (PlayerSkin.Model skin : event.getSkins()) {
+            if (event.getSkin(skin) instanceof PlayerRenderer renderer) {
+                renderer.addLayer(new ParachuteLayer(renderer));
+            }
+        }
     }
 
     private static void onRegisterParticles(RegisterParticleProvidersEvent event) {
