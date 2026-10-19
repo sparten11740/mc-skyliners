@@ -1,10 +1,12 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.HoopBlock;
+import dev.aerolarge.block.ScoreboardBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
@@ -129,7 +131,8 @@ final class CabinFitOut {
 
     /**
      * The gym hall (Turnhalle): the cabin's whole height over a birch parquet court with white lines, a basketball
-     * hoop at each end, wall bars and mats along the port wall, climbing ropes and a row of seats along starboard.
+     * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and mats along the
+     * port wall, climbing ropes and a row of seats along starboard.
      */
     private void gym(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -150,9 +153,12 @@ final class CabinFitOut {
         }
 
         if (layout.ceiling(0, fromZ) >= floor + 7) {
-            hoop(fromZ, Direction.SOUTH);
-            hoop(toZ, Direction.NORTH);
+            hoop(fromZ, Direction.SOUTH, HoopBlock.Team.HOME);
+            hoop(toZ, Direction.NORTH, HoopBlock.Team.GUEST);
         }
+        BlockState rack = AerolargeRegistry.BALL_RACK.get().defaultBlockState().setValue(BallRackBlock.FACING, Direction.EAST);
+        layout.furnish(-width, floor + 1, fromZ + 1, rack);
+        layout.furnish(-width, floor + 1, toZ - 1, rack);
 
         // Wall bars (Sprossenwand): ladders up the port wall, following its curve, with mats in front.
         for (int z = middle - 4; z <= middle + 4; z++) {
@@ -188,8 +194,11 @@ final class CabinFitOut {
         }
     }
 
-    /** A basketball hoop at the end of the court: a pole, a white backboard and a hopper for the ring. */
-    private void hoop(int z, Direction toward) {
+    /**
+     * A basketball hoop at the end of the court, scoring for the given side: a pole, a white backboard with the ring
+     * on it facing the court, and the scoreboard above.
+     */
+    private void hoop(int z, Direction toward, HoopBlock.Team team) {
         for (int y = floor + 1; y <= floor + 4; y++) {
             layout.furnish(0, y, z, Blocks.IRON_BARS.defaultBlockState());
         }
@@ -197,7 +206,9 @@ final class CabinFitOut {
             layout.furnish(x, floor + 5, z, Blocks.WHITE_CONCRETE.defaultBlockState());
             layout.furnish(x, floor + 6, z, Blocks.WHITE_CONCRETE.defaultBlockState());
         }
-        layout.furnish(0, floor + 5, z + toward.getStepZ(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        layout.furnish(0, floor + 5, z + toward.getStepZ(),
+            AerolargeRegistry.HOOP.get().defaultBlockState().setValue(HoopBlock.FACING, toward.getOpposite()).setValue(HoopBlock.TEAM, team));
+        layout.furnish(0, floor + 7, z, AerolargeRegistry.SCOREBOARD.get().defaultBlockState().setValue(ScoreboardBlock.FACING, toward));
     }
 
     /**

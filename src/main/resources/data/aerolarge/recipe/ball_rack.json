@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "IBI",
+    "IBI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "B": {
+      "item": "aerolarge:basketball"
+    }
+  },
+  "result": {
+    "id": "aerolarge:ball_rack",
+    "count": 1
+  }
+}

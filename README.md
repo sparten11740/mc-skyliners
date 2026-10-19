@@ -98,6 +98,15 @@ enough to coast past the top of the world, it cuts the engines itself, and hands
 airliner has slowed to 75 and is well below the top again. Without that, full thrust would loop the airliner or
 fling it off faster than the world can be generated around it.
 
+### Basketball
+
+The gym hall's hoops are real: take a ball from the rack in the corner by either hoop and use it to throw it the way you
+look, sneaking for a softer throw. It bounces off the floor and walls and rolls to a stop; walk over it or use it to
+pick it up, hit it to knock it on. A ball that drops through a hoop scores two points, or three thrown from beyond
+the three-point line, for the side the hoop counts for: HOME at the front hoop, GUEST at the back (sneak and use a
+hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
+Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere.
+
 ### Skydiving
 
 By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes.

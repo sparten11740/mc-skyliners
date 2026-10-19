@@ -126,5 +126,29 @@
         "name": "aerolarge:seatbelt_ding"
       }
     ]
+  },
+  "ball_bounce": {
+    "subtitle": "subtitles.aerolarge.ball_bounce",
+    "sounds": [
+      {
+        "name": "aerolarge:ball_bounce"
+      }
+    ]
+  },
+  "basket_swish": {
+    "subtitle": "subtitles.aerolarge.basket_swish",
+    "sounds": [
+      {
+        "name": "aerolarge:basket_swish"
+      }
+    ]
+  },
+  "scoreboard_buzzer": {
+    "subtitle": "subtitles.aerolarge.scoreboard_buzzer",
+    "sounds": [
+      {
+        "name": "aerolarge:scoreboard_buzzer"
+      }
+    ]
   }
 }

@@ -104,6 +104,14 @@ public final class SableFlight {
     }
 
     /**
+     * A point in the world seen in the frame of the airliner the plot position is part of, as the airliner lies now or
+     * lay a tick ago; the point itself when the position is in the world.
+     */
+    public static Vec3 toPlot(Level level, BlockPos plot, Vec3 point, boolean lastTick) {
+        return SABLE ? Access.toPlot(level, plot, point, lastTick) : point;
+    }
+
+    /**
      * The block at a point in the world that the test accepts, looking into any assembled airliner there as well as
      * the world: its position in the world, or in the airliner's plot; null if neither has one.
      */
@@ -134,6 +142,14 @@ public final class SableFlight {
 
         static Vec3 velocity(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        static Vec3 toPlot(Level level, BlockPos plot, Vec3 point, boolean lastTick) {
+            SubLevel airliner = Sable.HELPER.getContaining(level, plot);
+            if (airliner == null) {
+                return point;
+            }
+            return (lastTick ? airliner.lastPose() : airliner.logicalPose()).transformPositionInverse(point);
         }
 
         @Nullable

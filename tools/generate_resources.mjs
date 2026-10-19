@@ -161,6 +161,9 @@ cubes.engine_core = null;
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
+  for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
 }
@@ -428,6 +431,51 @@ function dropsItself(name) {
   }
 }
 
+// Basketball, drawn facing north. The hoop: an orange ring on a dark bracket to the backboard, with its net hanging
+// below; the side it counts for does not show. The scoreboard: a dark face, the score drawn over it by its renderer.
+// The ball rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
+{
+  const hoop = {
+    ...boxes(
+      { rim: `${ID}:block/hoop_rim`, bracket: `${ID}:block/handset_cradle`, net: `${ID}:block/hoop_net`, particle: `${ID}:block/hoop_rim` },
+      [
+        [[2, 10, 2], [14, 11, 3.5], "#rim"],
+        [[2, 10, 12.5], [14, 11, 14], "#rim"],
+        [[2, 10, 3.5], [3.5, 11, 12.5], "#rim"],
+        [[12.5, 10, 3.5], [14, 11, 12.5], "#rim"],
+        [[7, 9, 0], [9, 11, 2], "#bracket"],
+      ],
+    ),
+    render_type: "minecraft:cutout",
+  };
+  // The net: four sides hanging from the ring, seen from inside and out.
+  for (const [from, to, faces] of [
+    [[3, 4, 3.5], [13, 10, 3.5], ["north", "south"]],
+    [[3, 4, 12.5], [13, 10, 12.5], ["north", "south"]],
+    [[3.5, 4, 3], [3.5, 10, 13], ["east", "west"]],
+    [[12.5, 4, 3], [12.5, 10, 13], ["east", "west"]],
+  ]) {
+    hoop.elements.push({ from, to, faces: Object.fromEntries(faces.map((face) => [face, { texture: "#net" }])) });
+  }
+  write(`assets/${ID}/models/block/hoop.json`, hoop);
+  write(`assets/${ID}/blockstates/hoop.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/hoop`, y }])),
+  });
+  for (const name of ["scoreboard", "ball_rack"]) {
+    write(`assets/${ID}/models/block/${name}.json`, {
+      parent: "minecraft:block/orientable",
+      textures: { front: `${ID}:block/${name}_front`, side: `${ID}:block/${name}_side`, top: `${ID}:block/${name}_side` },
+    });
+    facing(name);
+  }
+  for (const name of ["hoop", "scoreboard", "ball_rack"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+  write(`assets/${ID}/models/item/basketball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/basketball` } });
+}
+
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
 write(`assets/${ID}/models/block/autopilot_screen.json`, {
@@ -511,7 +559,7 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 const GROUND = ["landing_target", "tower_radio"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin"];
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -550,6 +598,10 @@ shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
+shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
+shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
+shaped("scoreboard", ["BBB", "LGL", "BBB"], { B: "minecraft:black_concrete", L: "minecraft:redstone_lamp", G: "minecraft:glowstone" }, 1);
+shaped("ball_rack", ["IBI", "IBI"], { I: "minecraft:iron_bars", B: `${ID}:basketball` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -644,6 +696,21 @@ write(`assets/${ID}/lang/en_us.json`, {
   "title.aerolarge.captain": "Captain %s",
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
+  "item.aerolarge.basketball": "Basketball",
+  "entity.aerolarge.basketball": "Basketball",
+  "block.aerolarge.hoop": "Basketball Hoop",
+  "block.aerolarge.scoreboard": "Scoreboard",
+  "block.aerolarge.ball_rack": "Ball Rack",
+  "team.aerolarge.home": "HOME",
+  "team.aerolarge.guest": "GUEST",
+  "message.aerolarge.hoop.team": "This hoop now counts for %s",
+  "message.aerolarge.hoop.basket": "Swish! %s points for %s",
+  "message.aerolarge.hoop.basket_score": "Swish! %s points for %s: %s",
+  "message.aerolarge.scoreboard.score": "%s %s : %s %s",
+  "message.aerolarge.scoreboard.reset": "New game: the scoreboard is back to nil all",
+  "subtitles.aerolarge.ball_bounce": "Basketball bounces",
+  "subtitles.aerolarge.basket_swish": "Basket swishes",
+  "subtitles.aerolarge.scoreboard_buzzer": "Scoreboard buzzes",
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.light_cable": "Light Cable",

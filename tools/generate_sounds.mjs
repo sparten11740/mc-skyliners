@@ -138,6 +138,41 @@ function bell(samples, start, frequency, decay) {
   writeSound("seatbelt_ding", samples);
 }
 
+// Basketball. A bounce: a deep thud, falling in pitch as it dies, with the slap of the leather on top.
+{
+  const samples = new Float64Array(Math.round(0.3 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += 2 * Math.PI * (70 + 110 * Math.exp(-t / 0.04)) / RATE;
+    samples[i] = Math.exp(-t / 0.07) * Math.sin(phase) + (t < 0.01 ? (random() * 2 - 1) * (1 - t / 0.01) * 0.5 : 0);
+  }
+  writeSound("ball_bounce", samples);
+}
+// A basket: the hiss of the net as the ball drops through it.
+{
+  const samples = new Float64Array(Math.round(0.6 * RATE));
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    const high = white - previous;
+    previous = white;
+    samples[i] = high * Math.sin(Math.PI * Math.min(1, t / 0.6)) ** 2;
+  }
+  writeSound("basket_swish", samples);
+}
+// The scoreboard's buzzer: two harsh square tones together.
+{
+  const samples = new Float64Array(Math.round(0.9 * RATE));
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const square = (frequency) => (Math.sin(2 * Math.PI * frequency * t) >= 0 ? 1 : -1);
+    samples[i] = (square(220) + 0.6 * square(331)) * Math.min(1, t * 200) * Math.min(1, (0.9 - t) * 30);
+  }
+  writeSound("scoreboard_buzzer", samples);
+}
+
 // The callouts, as the aircraft's synthetic voice would say them.
 const CALLOUTS = {
   callout_v1: "V one.",

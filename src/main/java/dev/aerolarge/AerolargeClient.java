@@ -9,7 +9,9 @@ import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.ParachuteControls;
 import dev.aerolarge.client.ParachuteLayer;
+import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.neoforged.api.distmarker.Dist;
@@ -29,6 +31,9 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
+    /** How big the basketball is drawn, as a share of an item's sprite. */
+    private static final float BALL_SIZE = 1.4F;
+
     public AerolargeClient(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
@@ -61,5 +66,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
+        event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
     }
 }

@@ -481,4 +481,33 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
 }
 
+// Basketball. The ball: orange with black seams, a curved pair either side of a straight cross, shaded toward the
+// lower right. The hoop's rim: bright orange. The net: a white diamond mesh, see-through between the cords. The
+// scoreboard: a black face in a steel frame with faint unlit lamps. The ball rack: steel bars holding orange balls.
+{
+  const ORANGE = [0xe2, 0x6a, 0x1c];
+  const ORANGE_DARK = [0xb0, 0x4c, 0x10];
+  texture(itemOutput, "basketball", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r > 7) return CLEAR;
+    const seam = Math.abs(x - 7.5) < 0.6 || Math.abs(y - 7.5) < 0.6 || Math.abs(Math.hypot(x + 3, y - 7.5) - 7.6) < 0.55
+      || Math.abs(Math.hypot(x - 18, y - 7.5) - 7.6) < 0.55;
+    if (seam) return [0x1a, 0x12, 0x0c];
+    return x + y > 18 ? ORANGE_DARK : ORANGE;
+  }, 3);
+  texture(blockOutput, "hoop_rim", () => [0xf0, 0x5a, 0x10], 4);
+  texture(blockOutput, "hoop_net", (x, y) => ((x + y) % 4 === 0 || (x - y + 16) % 4 === 0 ? [0xf2, 0xf2, 0xf2] : CLEAR), 0);
+  texture(blockOutput, "scoreboard_front", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL_DARK;
+    return (x % 3 === 1 && y % 3 === 1) ? [0x26, 0x1c, 0x10] : [0x0e, 0x0f, 0x11];
+  }, 1);
+  texture(blockOutput, "scoreboard_side", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? STEEL_DARK : [0x1c, 0x1e, 0x22]));
+  texture(blockOutput, "ball_rack_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || y === 7 || y === 8) return STEEL;
+    const ball = Math.hypot(((x - 1) % 7) - 3, ((y - 1) % 8) - 3) < 3.2 && (y < 7 || y > 8);
+    return ball ? ((x + y) % 5 === 0 ? [0x1a, 0x12, 0x0c] : ORANGE) : [0x2a, 0x2d, 0x31];
+  });
+  texture(blockOutput, "ball_rack_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL : [0x2a, 0x2d, 0x31]));
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
