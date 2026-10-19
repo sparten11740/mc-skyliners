@@ -770,7 +770,10 @@ blueprint("furnished_airliner_blueprint", true);
 // radius drawn in for the circle's radius. For the mode, a cyan arrow straight ahead to hold the heading and magenta
 // arrows round a circle to the left or right, in the colours of the settings each flies. Then the buttons: a green
 // airliner climbing off a runway to take off, or flying on level to engage in the air; an amber one settling onto
-// the runway to land; a green tick to apply; a red power symbol to switch the autopilot off.
+// the runway to land; a green tick to apply; a red power symbol to switch the autopilot off. For the pilot's HUD, the
+// phases those buttons leave out: a green airliner climbing or descending beside a white arrow up or down, and an
+// amber one braking along the runway toward a red stop bar; and the height above the ground, an airliner seen from
+// the side over the grass with a cyan arrow between them.
 {
   const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui");
   const panelOutput = resolve(guiOutput, "panel");
@@ -888,6 +891,31 @@ blueprint("furnished_airliner_blueprint", true);
     const ring = r >= 4.4 && r <= 6.4 && !(y < 8 && Math.abs(x - 7.5) < 2.6);
     const bar = Math.abs(x - 7.5) <= 0.5 && y >= 1 && y <= 8;
     return ring || bar ? (x < 8 ? RED : RED_DARK) : null;
+  });
+
+  // The pilot's HUD: the phases the autopilot has no button for, and the height above the ground. An arrow two
+  // pixels wide down a column, its head three rows deep at the top or the bottom.
+  const arrow = (x, y, cx, top, bottom, up) => {
+    const half = Math.abs(x - cx);
+    const fromHead = up ? y - top : bottom - y;
+    if (y < top || y > bottom) return false;
+    return fromHead <= 2 ? half <= fromHead + 0.5 : half <= 0.5;
+  };
+  icon(autopilotOutput, "climb", (x, y) => (airliner(x, y, 10.5, 5.5, 45, 0.75) ? GREEN : arrow(x, y, 2.5, 8, 15, true) ? INK : null));
+  icon(autopilotOutput, "descend", (x, y) => (airliner(x, y, 10.5, 9.5, 135, 0.75) ? GREEN : arrow(x, y, 2.5, 0, 7, false) ? INK : null));
+  icon(autopilotOutput, "roll_out", (x, y) => {
+    if (airliner(x, y, 7, 7, 90, 0.8)) return AMBER;
+    if (x >= 14 && y >= 3 && y <= 11) return RED;
+    return runway(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "ground_height", (x, y) => {
+    const fin = y <= 2 && x >= 1 && x <= 1 + y;
+    const fuselage = (y === 3 || y === 4) && x >= 1 && x <= 13 - (y === 3 ? 1 : 0);
+    const nose = y === 4 && x === 14;
+    if (fin || fuselage || nose) return INK;
+    if (arrow(x, y, 7.5, 6, 9, true) || arrow(x, y, 7.5, 10, 12, false)) return CYAN;
+    if (y === 13) return GREEN;
+    return y >= 14 ? [0x7a, 0x4e, 0x26] : null;
   });
 }
 

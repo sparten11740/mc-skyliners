@@ -71,6 +71,11 @@ public final class PassengerCameras {
     private PassengerCameras() {
     }
 
+    /** Whether the local player is looking through an outside camera now. */
+    static boolean looking() {
+        return viewing != null;
+    }
+
     /** What is being looked through, from which screen, and what to give back afterwards. */
     private static final class Viewing {
         final PassengerScreenBlockEntity screen;

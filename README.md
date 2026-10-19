@@ -157,6 +157,19 @@ touching them opens the settings. Its left side is a moving map, heading up: the
 flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom
 back in.
 
+On the flight deck of an assembled airliner, within reach of the autopilot (in either pilot's seat, or standing at
+the pedestal), a head-up display fills the top corners of the screen, in the flight deck's colours, with whatever the
+autopilot is set to fly in magenta. Top left is the speed on a moving tape, the speed set as a magenta mark beside it
+and a green arrow to where the speed will be in ten seconds; under it a picture of what the autopilot is doing, and
+its name: taking off, climbing, cruising, descending, landing, braking to a stop after landing, or a red power symbol
+while it is off. Top right is the height on a moving tape (the autopilot's own, as it holds it), the height set as a
+magenta mark and, once it is near, the ground rising up the tape in brown; beside it a bar that climbs green or sinks
+amber, and under it the wheels' height above the ground and the climb or sink with an arrow. At the top in the
+middle is a heading strip with the heading set as a magenta mark and the mode beside it (straight on, or circling
+left or right with the circle's radius), and under it a small attitude indicator: sky and ground, the pitch ladder,
+and the bank pointer, amber past 35 degrees. It hides with the rest of the HUD (F1), behind any screen, under the
+debug screen and while you look through an outside camera; turn it off with `pilotHud` in the client config.
+
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
@@ -347,8 +360,8 @@ or its tower while the airliner flies, 15 metres or more above the ground (Canno
 
 ### Settings
 
-The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake` and the tail
-camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
+The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`
+and the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
 while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building

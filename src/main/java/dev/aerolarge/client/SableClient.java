@@ -29,10 +29,10 @@ import org.joml.Vector3dc;
 
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
- * with, which one a player is riding or a block is part of and how that one moves, how one is moving and lying for its
- * instruments, and where its outside cameras are as it flies; and holding Sable's water occlusion off while a camera's
- * picture is drawn. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
- * once it is known to be installed.
+ * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
+ * rides, how one is moving and lying for its instruments, and where its outside cameras are as it flies; and holding
+ * Sable's water occlusion off while a camera's picture is drawn. Every call works without Sable too (nothing is
+ * assembled then); Sable's classes are only touched once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -89,6 +89,12 @@ public final class SableClient {
     @Nullable
     static Ride ride(BlockEntity blockEntity) {
         return SABLE && blockEntity.getLevel() != null ? Access.ride(blockEntity) : null;
+    }
+
+    /** The autopilot of the assembled airliner the entity rides; null when it rides none, or one without an autopilot. */
+    @Nullable
+    static AutopilotBlockEntity autopilot(Entity entity) {
+        return SABLE ? Access.autopilot(entity) : null;
     }
 
     /**
@@ -203,12 +209,25 @@ public final class SableClient {
         }
 
         @Nullable
+        static AutopilotBlockEntity autopilot(Entity entity) {
+            SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            return airliner == null ? null : autopilot(airliner.getPlot());
+        }
+
+        @Nullable
         static Frame frame(BlockEntity blockEntity) {
             ClientSubLevel airliner = Sable.HELPER.getContainingClient(blockEntity);
             if (airliner == null) {
                 return null;
             }
             LevelPlot plot = airliner.getPlot();
+            AutopilotBlockEntity autopilot = autopilot(plot);
+            return autopilot == null ? null : frame(autopilot, plot.getBoundingBox());
+        }
+
+        /** The autopilot among an airliner's blocks, or null if it has none. */
+        @Nullable
+        private static AutopilotBlockEntity autopilot(LevelPlot plot) {
             BoundingBox3ic bounds = plot.getBoundingBox();
             for (PlotChunkHolder holder : plot.getLoadedChunks()) {
                 LevelChunk chunk = holder.getChunk();
@@ -217,8 +236,8 @@ public final class SableClient {
                 }
                 for (BlockEntity found : chunk.getBlockEntities().values()) {
                     BlockPos at = found.getBlockPos();
-                    if (found instanceof AutopilotBlockEntity && bounds.contains(at.getX(), at.getY(), at.getZ())) {
-                        return frame(found, bounds);
+                    if (found instanceof AutopilotBlockEntity autopilot && bounds.contains(at.getX(), at.getY(), at.getZ())) {
+                        return autopilot;
                     }
                 }
             }
