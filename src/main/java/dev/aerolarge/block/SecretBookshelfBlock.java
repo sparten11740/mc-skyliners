@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.compat.SableFlight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -36,6 +38,8 @@ public class SecretBookshelfBlock extends DoorBlock {
     private static final int STAYS_OPEN = 200;
     /** How much longer it waits, in ticks, while someone still stands in the doorway. */
     private static final int WAIT_FOR_DOORWAY = 20;
+    /** How far round the doorway's middle anyone in it is looked for, in blocks: past its corners, however it is turned. */
+    private static final double DOORWAY_REACH = 2;
     /** How near a player has to be for the hint to sparkle, in blocks. */
     private static final double HINT_RANGE = 6;
     /** Sparks drawn into the book on each of the client's random visits (a fraction of a second apart at best). */
@@ -82,7 +86,7 @@ public class SecretBookshelfBlock extends DoorBlock {
         if (!isOpen(state) || state.getValue(POWERED) || state.getValue(HALF) != DoubleBlockHalf.LOWER) {
             return;
         }
-        if (!level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).expandTowards(0, 1, 0)).isEmpty()) {
+        if (inDoorway(level, pos)) {
             level.scheduleTick(pos, this, WAIT_FOR_DOORWAY);
             return;
         }
@@ -111,6 +115,22 @@ public class SecretBookshelfBlock extends DoorBlock {
         if (random.nextFloat() < SHIMMER_CHANCE) {
             level.playLocalSound(pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, SHIMMER_VOLUME, 1.2F + random.nextFloat() * 0.4F, false);
         }
+    }
+
+    /**
+     * Whether anyone stands in the doorway over the lower half here. Aboard an assembled airliner the door stands
+     * among its blocks while whoever is in it is in the world, so each is looked at in the door's own blocks.
+     */
+    private static boolean inDoorway(ServerLevel level, BlockPos lower) {
+        AABB doorway = new AABB(lower).expandTowards(0, 1, 0);
+        Vec3 middle = SableFlight.toWorld(level, doorway.getCenter());
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(middle, middle).inflate(DOORWAY_REACH))) {
+            Vec3 centre = SableFlight.toPlot(level, lower, entity.getBoundingBox().getCenter(), false);
+            if (doorway.intersects(AABB.ofSize(centre, entity.getBbWidth(), entity.getBbHeight(), entity.getBbWidth()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static BlockPos lowerHalf(BlockState state, BlockPos pos) {
