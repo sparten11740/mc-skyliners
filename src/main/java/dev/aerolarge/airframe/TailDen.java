@@ -30,7 +30,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * cushion where it is not, fairy lights along both walls (on the dimmer, like every light aboard) and a treasure chest
  * at the very top. Bar the bookcase it is all wool, carpet and light fittings, kept light because it sits far aft of
  * the centre of mass; the gear and the tailplane's trim go on after the fit-out, so they balance it. It only ever goes
- * into open cabin space, and is left out where the tail is too small to hold it.
+ * into open cabin space, but for taking down a lounge pendant light hanging over it, and is left out where the tail
+ * is too small to hold it.
  */
 final class TailDen {
     /** How many rows of shelves the bookcase has; above them the wall is the hull's panels, a quarter the weight. */
@@ -87,6 +88,7 @@ final class TailDen {
             return;
         }
         bookcase(wall);
+        den.forEach(station -> unhang(station.z()));
         // The pit fills the first stretch past the landing that keeps one level.
         int pitEnd = 1;
         while (pitEnd + 1 < den.size() && den.get(pitEnd + 1).y() == den.get(1).y()) {
@@ -146,6 +148,20 @@ final class TailDen {
             BlockState shelf = y <= floor + BOOKCASE_ROWS ? Blocks.BOOKSHELF.defaultBlockState() : layout.palette().hull();
             for (int x = -reach; x <= reach; x++) {
                 layout.furnish(x, y, z, shelf);
+            }
+        }
+    }
+
+    /**
+     * Takes down a pendant light hanging down the middle of a station of the den, cable and all: the lounge's row of
+     * them runs on over the tail's narrowest rows, which are the den's, and the den is lit by its fairy lights.
+     */
+    private void unhang(int z) {
+        int top = floor + (int) Math.ceil(AirframeShape.HEIGHT * layout.scale());
+        for (int y = floor + 1; y <= top; y++) {
+            BlockState state = layout.stateAt(0, y, z);
+            if (state.is(AerolargeRegistry.PENDANT_LIGHT.get()) || state.is(AerolargeRegistry.LIGHT_CABLE.get())) {
+                layout.set(0, y, z, Blocks.AIR.defaultBlockState());
             }
         }
     }
