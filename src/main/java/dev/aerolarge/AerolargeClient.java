@@ -3,10 +3,12 @@ package dev.aerolarge;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
+import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.EngineIntakeRenderer;
 import dev.aerolarge.client.EngineSounds;
@@ -92,6 +94,7 @@ public final class AerolargeClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
+        RubberDuckBlockEntity.clientTicker = DuckHints::tick;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {

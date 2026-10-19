@@ -937,9 +937,33 @@ function holdAndTailLang() {
   });
   facing("rubber_duck");
   write(`assets/${ID}/models/item/rubber_duck.json`, { parent: duck });
-  dropsItself("rubber_duck");
+  // Only a duck put down by hand gives itself back: one hidden aboard an airliner is part of the hunt.
+  write(`data/${ID}/loot_table/blocks/rubber_duck.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:rubber_duck` }],
+      conditions: [
+        { condition: "minecraft:survives_explosion" },
+        { condition: "minecraft:block_state_property", block: `${ID}:rubber_duck`, properties: { duck: "0" } },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/rubber_duck`,
+  });
   cubes.rubber_duck = null;
 }
+// Duck Hunt, in the First Flight tab: one criterion for each of the ducks hidden aboard a furnished airliner
+// (HIDDEN_DUCKS in RubberDuckBlock), granted as each is first found; it is done once all five are found.
+write(`data/${ID}/advancement/first_flight/duck_hunt.json`, {
+  parent: `${ID}:first_flight/root`,
+  display: {
+    icon: { id: `${ID}:rubber_duck` },
+    title: { translate: `advancements.${ID}.first_flight.duck_hunt.title` },
+    description: { translate: `advancements.${ID}.first_flight.duck_hunt.description` },
+    frame: "goal",
+  },
+  criteria: Object.fromEntries([1, 2, 3, 4, 5].map((index) => [`duck_${index}`, { trigger: "minecraft:impossible" }])),
+});
 // What of the ducks is fitted rather than built in: breakable, and no part of the airframe.
 function rubberDuckFittings() {
   return ["rubber_duck"];
@@ -958,6 +982,9 @@ function rubberDuckLang() {
   return {
     "block.aerolarge.rubber_duck": "Rubber Duck",
     "subtitles.aerolarge.rubber_duck_squeak": "Rubber duck squeaks",
+    "message.aerolarge.rubber_duck.found": "A rubber duck! %s",
+    "advancements.aerolarge.first_flight.duck_hunt.title": "Duck Hunt",
+    "advancements.aerolarge.first_flight.duck_hunt.description": "Find the five rubber ducks hidden aboard an airliner",
   };
 }
 

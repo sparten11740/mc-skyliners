@@ -237,6 +237,7 @@ public final class AirframeLayout {
         layout.holdHatch();
         if (furnished) {
             new HoldFitOut(layout).apply();
+            new DuckHunt(layout).apply();
         }
         layout.shell();
         layout.landingGear();

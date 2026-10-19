@@ -298,6 +298,17 @@ A Rubber Duck is a little yellow duck with an orange beak, to put down anywhere,
 it floats, bobbing and rocking gently. Use it, or hit it, and it squeaks, with a wiggle and a few hearts. Yellow wool
 under an orange dye makes two.
 
+The furnished airliner hides five of them, a secret best left for children to find, so it works without reading: one
+on the flight deck's glareshield, where pilots keep their mascots, one in the WC behind the flight deck by the basin,
+one sitting on the balls of the den's ball pit, one on the luggage in the hold, and one bobbing on the moon pool's
+water by the steps out, in plain sight, to show what to look for. (At the smallest scale the airliner has none of
+these rooms, and no ducks.) Within a few blocks of one you have not found yet, it squeaks softly every few seconds
+and wiggles, with a note over it. Use it, or hit it, to find it: it squeaks loudly, a row of five dots on screen fills
+in yellow for the ducks found so far, and the duck counts them out in squeaks, each a little higher, with a heart
+each. Every player finds the ducks for themselves, and a duck falls quiet only for whoever found it. Each counts
+toward Duck Hunt in the First Flight advancements; find all five to earn it. A hidden duck stays put when hit, even in
+creative mode; sneak to take one away, and it is gone until the airliner is built again.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
@@ -491,8 +502,8 @@ a block of a target (Perfect Jump), a care package down within 10 blocks of a bu
 villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free), a paper plane thrown
 out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into the moon pool off its springboard
 or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), the three golden suitcases
-hidden in the hold (Lost and Found), and a vacuum toilet flushed in flight, its blue ice let go 15 metres or more
-above the ground (Blue Ice).
+hidden in the hold (Lost and Found), a vacuum toilet flushed in flight, its blue ice let go 15 metres or more above
+the ground (Blue Ice), and the five rubber ducks hidden aboard (Duck Hunt).
 
 ### Settings
 

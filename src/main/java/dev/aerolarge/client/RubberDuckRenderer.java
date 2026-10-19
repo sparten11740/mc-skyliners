@@ -57,7 +57,7 @@ public class RubberDuckRenderer implements BlockEntityRenderer<RubberDuckBlockEn
         float lift = 0;
         float roll = 0;
         if (state.getValue(RubberDuckBlock.WATERLOGGED)) {
-            lift = (float) (RubberDuckBlock.FLOAT / 16) + BOB * Mth.sin(time * BOB_SPEED + beat);
+            lift = (float) RubberDuckBlock.lift(state) + BOB * Mth.sin(time * BOB_SPEED + beat);
             roll = ROCK * Mth.sin(time * ROCK_SPEED + beat);
         }
         float yaw = 0;

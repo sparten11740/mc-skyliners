@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -23,10 +24,13 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
@@ -40,9 +44,17 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * body a little under the water line. Used or hit, it squeaks, with a few hearts and a wiggle that everyone near sees
  * (a block event, see {@link RubberDuckBlockEntity}). Its renderer draws it from one model whatever its state, so it
  * can bob afloat and wiggle.
+ * <p>
+ * DUCK is which of the ducks hidden aboard a furnished airliner it is, 1 to {@link #HIDDEN_DUCKS}, or 0 for one put
+ * down by hand. Squeaking a hidden duck finds it, for the Duck Hunt advancement. A hidden duck stays put for anyone not
+ * sneaking: a hit finds it rather than breaking it, even in creative mode, so a child cannot lose one by clicking the
+ * wrong button; taken away on purpose, it leaves nothing behind.
  */
 public class RubberDuckBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
     private static final MapCodec<RubberDuckBlock> CODEC = simpleCodec(RubberDuckBlock::new);
+    /** How many ducks a furnished airliner hides: the Duck Hunt advancement has a criterion for each. */
+    public static final int HIDDEN_DUCKS = 5;
+    public static final IntegerProperty DUCK = IntegerProperty.create("duck", 0, HIDDEN_DUCKS);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     /**
      * The duck drawn facing north, as boxes from one corner to the other in pixels: its body, its head on the front of
@@ -71,7 +83,7 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     public RubberDuckBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(DUCK, 0));
     }
 
     @Override
@@ -81,7 +93,7 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, WATERLOGGED);
+        builder.add(FACING, WATERLOGGED, DUCK);
     }
 
     /**
@@ -142,26 +154,62 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        squeak(state, level, pos);
+        squeak(state, level, pos, player);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
     protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        squeak(state, level, pos);
+        squeak(state, level, pos, player);
     }
 
-    /** A squeak and a few hearts for everyone near, and a wiggle on every client in sight. */
-    private void squeak(BlockState state, Level level, BlockPos pos) {
+    /** Whether the duck stays put for the player: a hidden one, unless they sneak. */
+    private static boolean holdsOn(BlockState state, Player player) {
+        return state.getValue(DUCK) > 0 && !player.isShiftKeyDown();
+    }
+
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        return holdsOn(state, player) ? 0 : super.getDestroyProgress(state, player, level, pos);
+    }
+
+    /** No breaking crumbs or sound for a duck that stays put. */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        return holdsOn(state, player) ? state : super.playerWillDestroy(level, pos, state, player);
+    }
+
+    /** Creative mode breaks a block outright, without mining it: a hidden duck squeaks and is found instead. */
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        if (holdsOn(state, player)) {
+            squeak(state, level, pos, player);
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+    }
+
+    /**
+     * A squeak and a few hearts for everyone near, and a wiggle on every client in sight; a hidden duck is found by
+     * the player who squeaked it.
+     */
+    private void squeak(BlockState state, Level level, BlockPos pos, Player player) {
         if (!(level instanceof ServerLevel server)) {
             return;
         }
         float pitch = 1.0F + (server.random.nextFloat() * 2 - 1) * SQUEAK_PITCH_SPREAD;
         server.playSound(null, pos, AerolargeRegistry.RUBBER_DUCK_SQUEAK.get(), SoundSource.BLOCKS, SQUEAK_VOLUME, pitch);
-        double lift = state.getValue(WATERLOGGED) ? FLOAT / BLOCK : 0;
-        server.sendParticles(ParticleTypes.HEART, pos.getX() + 0.5, pos.getY() + HEART_HEIGHT + lift, pos.getZ() + 0.5,
+        server.sendParticles(ParticleTypes.HEART, pos.getX() + 0.5, pos.getY() + HEART_HEIGHT + lift(state), pos.getZ() + 0.5,
             HEARTS, HEART_SPREAD, HEART_SPREAD / 2, HEART_SPREAD, 0);
         server.blockEvent(pos, this, RubberDuckBlockEntity.WIGGLE, 0);
+        if (player instanceof ServerPlayer finder && level.getBlockEntity(pos) instanceof RubberDuckBlockEntity duck) {
+            duck.found(finder);
+        }
+    }
+
+    /** How far up its block the duck is, in blocks: afloat, it sits near the top. */
+    public static double lift(BlockState state) {
+        return state.getValue(WATERLOGGED) ? FLOAT / BLOCK : 0;
     }
 
     @Override
@@ -174,5 +222,16 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new RubberDuckBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (type != AerolargeRegistry.RUBBER_DUCK_ENTITY.get()) {
+            return null;
+        }
+        return level.isClientSide
+            ? (tickLevel, pos, tickState, duck) -> RubberDuckBlockEntity.clientTicker.accept((RubberDuckBlockEntity) duck)
+            : (tickLevel, pos, tickState, duck) -> ((RubberDuckBlockEntity) duck).serverTick();
     }
 }

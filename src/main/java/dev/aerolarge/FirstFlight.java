@@ -8,9 +8,9 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * The First Flight advancements: milestones of flying the airliner, from climbing away from the runway to a gentle
- * touchdown. Most have one criterion, "done"; Lost and Found has one for each golden suitcase in the hold. Nothing in
- * the game triggers them: the mod grants them where the moment happens. The advancements themselves are data, under
- * {@code first_flight/}.
+ * touchdown. Most have one criterion, "done"; Lost and Found has one for each golden suitcase in the hold, and Duck
+ * Hunt one for each rubber duck hidden aboard. Nothing in the game triggers them: the mod grants them where the moment
+ * happens. The advancements themselves are data, under {@code first_flight/}.
  */
 public enum FirstFlight {
     /** Tried to get up while the seatbelt signs were on. */
@@ -36,7 +36,9 @@ public enum FirstFlight {
     /** Found the golden suitcases hidden in an airliner's hold: "suitcase_1" and on, one criterion each. */
     LOST_AND_FOUND,
     /** Flushed a vacuum toilet aboard an airliner in flight, dropping its blue ice from high over the ground. */
-    BLUE_ICE;
+    BLUE_ICE,
+    /** Found the rubber ducks hidden aboard a furnished airliner: "duck_1" and on, one criterion each. */
+    DUCK_HUNT;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {
@@ -63,7 +65,11 @@ public enum FirstFlight {
 
     @Nullable
     private AdvancementHolder advancement(ServerPlayer player) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "first_flight/" + name().toLowerCase(Locale.ROOT));
-        return player.server.getAdvancements().get(id);
+        return player.server.getAdvancements().get(id());
+    }
+
+    /** The milestone's advancement, as the server and the client both know it. */
+    public ResourceLocation id() {
+        return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "first_flight/" + name().toLowerCase(Locale.ROOT));
     }
 }
