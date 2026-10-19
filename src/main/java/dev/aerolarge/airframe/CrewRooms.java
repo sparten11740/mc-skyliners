@@ -135,8 +135,8 @@ final class CrewRooms {
     /**
      * The crew room: a couch of seats along the hull, at {@code couch} out from the middle so a sitter's head is
      * clear of its curve, and the galley counter across the room's back beside it, reaching in from the hull at
-     * {@code counter}: the oven against the hull, the cupboard with the coffee machine inboard of it, both clear of
-     * the door.
+     * {@code counter}: the oven against the hull, its door facing into the room, the cupboard with the coffee machine
+     * inboard of it, both clear of the door.
      */
     private void crewRoom(int side, int inner, int couch, int counter) {
         BlockState seat = AirframePalette.seat(DyeColor.LIGHT_GRAY).orElse(Blocks.LIGHT_GRAY_WOOL.defaultBlockState());
@@ -145,7 +145,7 @@ final class CrewRooms {
         }
         if (counter > inner) {
             layout.furnish(side * counter, deck + 1, back - 1,
-                Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
+                Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.NORTH));
         }
         if (counter - 1 > inner) {
             layout.furnish(side * (counter - 1), deck + 1, back - 1, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
