@@ -843,14 +843,20 @@ public final class AirframeLayout {
         });
     }
 
-    /** The jump light by one door: in the hull just ahead of it, in one of the door's rows; the rack inside by it. */
+    /** The jump light by one door: in the hull just ahead of it, in one of the door's rows; the rack on the floor inside by it. */
     private void jumpDoor(int side, double station, int bottom, List<BlockPos> relays) {
         int z = (int) Math.round(station * scale) - 1;
         BlockPos light = wallLamp(side, z, new int[]{bottom + 1, bottom, bottom + 2}, AerolargeRegistry.JUMP_LIGHT.get().defaultBlockState(), relays);
-        // Facing the door's aisle, aft of it.
-        if (light != null && isOpen(light.getX() - side, bottom, z)) {
-            set(light.getX() - side, bottom, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
+        if (light == null || !isOpen(light.getX() - side, bottom, z)) {
+            return;
         }
+        // Facing the door's aisle, aft of it, standing on the floor: at the biggest scales the hold's floor curves on
+        // down a little below the cargo door's sill.
+        int y = bottom;
+        while (isOpen(light.getX() - side, y - 1, z)) {
+            y--;
+        }
+        set(light.getX() - side, y, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
     }
 
     /**
