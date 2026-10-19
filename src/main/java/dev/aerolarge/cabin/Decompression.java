@@ -80,8 +80,11 @@ public final class Decompression {
      * 2.4 m out, and the doors inside the cabin by the aisle, within about a metre and a half of the middle.
      */
     private static final double HULL_SIDE_PER_SCALE = 2;
-    /** How far from the middle of a doorway its pull reaches, in blocks per unit of scale: a few steps along the aisle. */
-    private static final double REACH_PER_SCALE = 3;
+    /**
+     * How far from the middle of a doorway its pull reaches, in blocks per unit of scale: a few steps along the aisle.
+     * The furnished cabin keeps its shop counters out of it.
+     */
+    public static final double REACH_PER_SCALE = 3;
     /**
      * The pull right at the doorway, in blocks a tick each tick, fading to nothing at the edge of its reach: past the
      * middle of the reach, more than anyone can walk against.

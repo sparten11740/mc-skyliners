@@ -68,6 +68,8 @@ final class CabinFitOut {
         businessClass(from(BUSINESS), to(BUSINESS));
         pool(from(POOL), to(POOL));
         gym(from(GYM), to(GYM));
+        // Before the lounge, which is furnished round it.
+        new DutyFreeKiosk(layout).apply(from(LOUNGE), to(LOUNGE));
         lounge(from(LOUNGE), to(LOUNGE));
         // Last: the screens go where the rest has left room, and on the backs of its seats.
         screens();

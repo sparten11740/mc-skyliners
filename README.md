@@ -23,7 +23,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below, a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
-  with a bar and seats in the tail, all lit by pendant lights. The seats are Create's, so they can be sat in.
+  with a bar and seats in the tail and a duty-free kiosk at its front (see below), all lit by pendant lights. The
+  seats are Create's, so they can be sat in.
   Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
   the cabin, they hang on the back of each row, facing the one behind.
 
@@ -201,7 +202,11 @@ ding of a door bell: the trading screen, each of its goods shown by its picture 
 no reading. An emerald buys four paper planes, two airline coffees, four bags of pretzels, a chicken or a pasta meal,
 or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6 and a model
 airliner 8. Each sale rings the till. It never runs out and its prices never change, and nobody works behind it, so it
-stands anywhere: at the airport, or aboard, where there is nobody to lose in flight.
+stands anywhere: at the airport, or aboard, where there is nobody to lose in flight. The furnished airliner has a
+duty-free kiosk at the front of the lounge, to port across from the bar: a row of counters facing the aisle under a
+lime and white striped awning, a shelf of flowers and candles behind them, and far enough back from the aft doors
+that a shopper is out of reach of the air rushing out of one opened in flight. (At the smallest scales the lounge is
+too narrow for it.)
 
 ### Basketball
 
