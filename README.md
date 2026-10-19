@@ -232,6 +232,12 @@ side of the middle hang gymnastic rings on chains, over the side of the court by
 off the floor. The teams' banners hang between the upper windows, orange at the HOME end, blue at the GUEST end.
 Gymnastic Rings can be crafted too.
 
+For hide and seek, press the big yellow button with the eye on it beside either hoop (or sneak and use a
+scoreboard): every scoreboard in the hall counts down from ten in huge numbers, amber, then red for the last three,
+with a beep each second, and at nought the buzzer goes and the nought turns green before the score comes back. The
+button stays down, its eye shut and glowing, until then; press it again to start over. Hide and Seek Buttons can be
+crafted.
+
 ### The high dive
 
 The springboard at the tip of the moon pool's diving board throws whoever lands or stands on it straight back up,

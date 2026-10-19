@@ -33,6 +33,7 @@ import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
+import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JetBridgeBlock;
@@ -147,6 +148,8 @@ public final class AerolargeRegistry {
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Aerolarge.MOD_ID);
     /** How brightly a starlight panel glows full on, in light levels: softly, the lounge's pendants doing the rest. */
     private static final int STARLIGHT_GLOW = 10;
+    /** How brightly the hide and seek button glows while pressed, in light levels. */
+    private static final int PRESSED_GLOW = 7;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -555,6 +558,13 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOD).noCollission().noOcclusion()
     );
     public static final DeferredItem<BlockItem> GYM_RINGS_ITEM = ITEMS.registerSimpleBlockItem(GYM_RINGS);
+    /** The button by each hoop that starts hide and seek's countdown on the scoreboards; it glows while pressed. */
+    public static final DeferredBlock<HideAndSeekButtonBlock> HIDE_AND_SEEK_BUTTON = BLOCKS.registerBlock(
+        "hide_and_seek_button", HideAndSeekButtonBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.8F).sound(SoundType.METAL).noOcclusion()
+            .lightLevel(state -> state.getValue(HideAndSeekButtonBlock.PRESSED) ? PRESSED_GLOW : 0)
+    );
+    public static final DeferredItem<BlockItem> HIDE_AND_SEEK_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(HIDE_AND_SEEK_BUTTON);
 
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
@@ -614,7 +624,9 @@ public final class AerolargeRegistry {
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
             MODEL_AIRLINER_ITEM
         )),
-        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM)),
+        new TabSection("gym", List.of(
+            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
+        )),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

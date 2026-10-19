@@ -1038,5 +1038,38 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "gym_rings_wood", (x, y) => ((x + 2 * Math.floor(y / 3)) % 5 === 0 ? [0xc8, 0xa8, 0x70] : [0xe0, 0xc4, 0x8c]), 3);
   texture(blockOutput, "gym_rings_strap", (x, y) => (y % 4 === 0 ? [0xd8, 0xc8, 0xa0] : [0x6a, 0x40, 0x22]), 3);
 }
+// The hide and seek button, its pictures where its model shows them: on the button's top (the middle eight pixels
+// square) a wide open eye on bright yellow, or, pressed, a shut eye with its lashes on glowing orange; on the stand's
+// front (the bottom half) an open hand on dark blue-grey; its sides the same blue-grey under a yellow band.
+{
+  const STAND = [0x34, 0x3c, 0x4c];
+  const BUTTON_YELLOW = [0xf6, 0xc8, 0x20];
+  const BUTTON_ORANGE = [0xff, 0x8c, 0x20];
+  const SKIN = [0xf0, 0xc0, 0x98];
+  texture(blockOutput, "hide_and_seek_button_side", (x, y) => (y === 8 || y === 9 ? BUTTON_YELLOW : STAND), 3);
+  texture(blockOutput, "hide_and_seek_button_front", (x, y) => {
+    const finger = y >= 9 && y <= 11 && [5, 7, 9, 11].includes(x);
+    const palm = y >= 12 && y <= 15 && x >= 5 && x <= 11;
+    const thumb = y >= 11 && y <= 13 && x === 3 || y === 12 && x === 4;
+    return finger || palm || thumb ? SKIN : y === 8 ? BUTTON_YELLOW : STAND;
+  }, 2);
+  texture(blockOutput, "hide_and_seek_button_cap", (x, y) => {
+    const dx = x - 7.5;
+    const dy = y - 7.5;
+    if ((dx / 3.6) ** 2 + (dy / 2.4) ** 2 > 1) return BUTTON_YELLOW;
+    const r = Math.hypot(dx, dy);
+    if (r <= 0.8) return RUBBER;
+    if (r <= 1.8) return [0x2a, 0x7c, 0xe0];
+    return INK;
+  }, 1);
+  texture(blockOutput, "hide_and_seek_button_cap_closed", (x, y) => {
+    const dx = x - 7.5;
+    // The shut lid: a curve sagging across the middle, three lashes hanging under it.
+    const curve = 8 - dx * dx / 6;
+    const lid = Math.abs(y - curve) < 0.6 && Math.abs(dx) <= 3.5;
+    const lash = [5, 8, 10].includes(x) && y > curve && y <= curve + 2;
+    return lid || lash ? RUBBER : BUTTON_ORANGE;
+  }, 1);
+}
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -970,6 +970,30 @@ const cabinDecorLang = {};
   cubes.gym_rings = null;
   cabinDecorLang["block.aerolarge.gym_rings"] = "Gymnastic Rings";
 }
+// The hide and seek button, drawn facing north: a low stand with a hand on its front, and on top a big round button
+// with an open eye; pressed, the button sits lower, its eye shut and glowing whatever the light around.
+{
+  const textures = {
+    stand: `${ID}:block/hide_and_seek_button_side`, front: `${ID}:block/hide_and_seek_button_front`,
+    cap: `${ID}:block/hide_and_seek_button_cap`, closed: `${ID}:block/hide_and_seek_button_cap_closed`,
+    particle: `${ID}:block/hide_and_seek_button_side`,
+  };
+  for (const pressed of [false, true]) {
+    const name = `hide_and_seek_button${pressed ? "_pressed" : ""}`;
+    write(`assets/${ID}/models/block/${name}.json`, boxes(textures, [
+      [[2, 0, 2], [14, 8, 14], { north: "#front", all: "#stand" }],
+      [[4, 8, 4], [12, pressed ? 9 : 10, 12], { up: pressed ? "#closed" : "#cap", all: "#stand" }, pressed],
+    ]));
+  }
+  write(`assets/${ID}/blockstates/hide_and_seek_button.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((pressed) =>
+      [`facing=${facing},pressed=${pressed}`, { model: `${ID}:block/hide_and_seek_button${pressed ? "_pressed" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/hide_and_seek_button.json`, { parent: `${ID}:block/hide_and_seek_button` });
+  dropsItself("hide_and_seek_button");
+  cubes.hide_and_seek_button = null;
+  cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
+}
 
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
@@ -985,7 +1009,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings"];
+  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1073,6 +1097,7 @@ shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: 
 shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
+shaped("hide_and_seek_button", ["B", "N", "I"], { B: "minecraft:stone_button", N: "minecraft:note_block", I: "minecraft:iron_ingot" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).

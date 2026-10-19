@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.GymRingsBlock;
+import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.LightStripBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +21,11 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
- * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings and team banners, and
- * greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the light cables and
- * chains of what it hangs from a ceiling or a truss instead of the crown), it keeps the stations where the zones are
- * divided from one another free, and anything that does not fit at the airliner's scale is left out.
+ * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings, team banners and hide and
+ * seek buttons, and greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the
+ * light cables and chains of what it hangs from a ceiling or a truss instead of the crown), it keeps the stations
+ * where the zones are divided from one another free, and anything that does not fit at the airliner's scale is left
+ * out.
  */
 final class CabinDecor {
     /** How high the diving tower's platform stands over the cabin floor, in metres: a three-metre springboard's. */
@@ -77,6 +79,8 @@ final class CabinDecor {
     private static final int RINGS_LOWEST = 3;
     /** Every this many stations along the gym hall's walls at most, a team banner. */
     private static final int BANNER_SPACING = 4;
+    /** Where across the hide and seek button stands by a hoop: to starboard of its pole, a step clear of it. */
+    private static final int SEEK_BUTTON_X = 2;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -414,7 +418,8 @@ final class CabinDecor {
      * The gym hall's roof and walls: a light metal truss across the crown over each row of its pendant lights, which
      * now hang from it (but for the row over the middle of the court, kept for the curtain that divides it);
      * gymnastic rings on chains from the trusses either side of the middle, over the port side of the court by the
-     * wall bars; and the teams' banners between the upper windows, orange at the home end, blue at the guest end.
+     * wall bars; the teams' banners between the upper windows, orange at the home end, blue at the guest end; and a
+     * hide and seek button by each hoop.
      */
     private void gymHall() {
         int fromZ = from(CabinFitOut.GYM);
@@ -429,6 +434,31 @@ final class CabinDecor {
         trusses.stream().filter(z -> z < middle).max(Integer::compare).ifPresent(this::rings);
         trusses.stream().filter(z -> z > middle).min(Integer::compare).ifPresent(this::rings);
         banners(fromZ, toZ);
+        seekButtons(fromZ, toZ);
+    }
+
+    /**
+     * The hide and seek button at each end of the hall, beside the hoop's pole behind the court's end line, facing the
+     * court; only where a scoreboard hangs over that hoop, as the button starts its countdown.
+     */
+    private void seekButtons(int fromZ, int toZ) {
+        for (int z : new int[]{fromZ, toZ}) {
+            if (keptForDivider(z) || !hasScoreboard(z)) {
+                continue;
+            }
+            layout.furnish(SEEK_BUTTON_X, floor + 1, z, AerolargeRegistry.HIDE_AND_SEEK_BUTTON.get().defaultBlockState()
+                .setValue(HideAndSeekButtonBlock.FACING, z == fromZ ? Direction.SOUTH : Direction.NORTH));
+        }
+    }
+
+    /** Whether a scoreboard hangs over the middle of this station. */
+    private boolean hasScoreboard(int z) {
+        for (int y = floor + 1; y <= cabinTop(); y++) {
+            if (layout.stateAt(0, y, z).is(AerolargeRegistry.SCOREBOARD.get())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The top of the cabin over the floor, in rows: nothing in it stands higher. */
