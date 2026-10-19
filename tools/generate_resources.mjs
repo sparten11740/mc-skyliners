@@ -923,7 +923,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.mode.heading": "heading %s",
   "message.aerolarge.autopilot.mode.orbit_left": "circling left, radius %s blocks",
   "message.aerolarge.autopilot.mode.orbit_right": "circling right, radius %s blocks",
-  "message.aerolarge.autopilot.landing": "Autopilot landing: down ahead on heading %s, slowing to %s b/s; once down it brakes to a stop and parks.",
+  "message.aerolarge.autopilot.landing": "Autopilot landing: down ahead on heading %s, slowing until the nose sits level; once down it brakes to a stop and parks.",
   "message.aerolarge.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
   "message.aerolarge.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",
   "message.aerolarge.autopilot.landed": "Landed and stopped: thrust levers at idle, parking brake set, autopilot off.",

@@ -182,14 +182,23 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** The roll is still gaining speed while it gains more than this, in blocks per second every second. */
     private static final double STILL_ACCELERATING = 0.4;
     /**
-     * Landing: the speed it slows to, as a share of the rotation speed (a little above it: in the thick air low down,
-     * any faster and it flies nose down, so it comes down on its nose wheel and the wings lift it off again); the rate
-     * it sinks at, in blocks a second; how much less it sinks per block nearer the ground; and the rate it touches down
-     * at, half what a butter landing has to stay under.
+     * Landing: the speed it starts slowing to, as a share of the rotation speed; then the nose attitude it finds the
+     * speed for, in degrees above the way it is going, how fast, in blocks a second a tick per degree off, and the
+     * slowest it goes, as a share of the rotation speed. Nose about level, as it stands on its wheels: any faster and
+     * it flies nose down, comes down on its nose wheel and the wings lift it off again. The speed that gives it changes
+     * with how heavy the airliner is loaded and how thin the air is, so it is found, not set.
      */
     private static final double APPROACH_MARGIN = 1.1;
+    private static final double APPROACH_ATTITUDE = 1;
+    private static final double APPROACH_SPEED_RATE = 0.005;
+    private static final double APPROACH_SLOWEST = 0.75;
+    /**
+     * Landing: the rate it sinks at, in blocks a second; how much less it sinks per block nearer the ground, from the
+     * height the flare starts at; and the rate it touches down at, half what a butter landing has to stay under.
+     */
     private static final double LANDING_SINK_RATE = 3;
     private static final double FLARE_GAIN = 0.2;
+    private static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
     private static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
     /** The steepest bank it flies landing, in degrees per block above the ground. */
     private static final double LANDING_BANK_PER_BLOCK = 0.5;
@@ -385,8 +394,9 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Lands the airliner ahead, engaging the autopilot if it is off. Out of any circle onto the heading it is on, it
-     * comes down gently, slowing to the approach speed, and flares over the ground to touch down softly; then it idles
-     * the engines and brakes to a stop, parks and hands back to the flight deck (see {@link #fly}). Only in the air.
+     * comes down gently, slowing to the speed it flies nose level at, and flares over the ground to touch down softly;
+     * then it idles the engines and brakes to a stop, parks and hands back to the flight deck (see {@link #fly}). Only
+     * in the air.
      */
     private Component land(Level level, SableFlight.State state) {
         if (radioAltitude(level, state) <= AIRBORNE) {
@@ -400,7 +410,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         targetHeading = state.heading();
         targetSpeed = Mth.clamp(AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get() * APPROACH_MARGIN, MIN_SPEED, MAX_SPEED);
         changed();
-        return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading), Math.round(targetSpeed));
+        return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading));
     }
 
     /** A setting from the screen, or the target it was shown from if it comes back as the screen showed it. */
@@ -605,6 +615,14 @@ public class AutopilotBlockEntity extends BlockEntity {
             boolean pinned = targetPitch <= MIN_PITCH || targetPitch >= maxPitch;
             if (!pinned && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
                 trim = Mth.clamp(trim + TRIM_RATE * Mth.clamp(climbError, -TRIM_CLIMB_LIMIT, TRIM_CLIMB_LIMIT), MIN_PITCH, MAX_PITCH);
+            }
+            if (landing && radio > FLARE_HEIGHT) {
+                // Coming in, slower while the nose is below the way it goes and faster while above; flaring, it keeps
+                // the speed it found.
+                double horizontal = Math.max(1, Math.hypot(state.velocity().x, state.velocity().z));
+                double attitude = pitch - Math.toDegrees(Math.atan2(climb, horizontal));
+                targetSpeed = Mth.clamp(targetSpeed + APPROACH_SPEED_RATE * (attitude - APPROACH_ATTITUDE),
+                    APPROACH_SLOWEST * rotateSpeed, MAX_SPEED);
             }
             thrust = holdSpeed(speed, targetSpeed);
             if (!landing) {
