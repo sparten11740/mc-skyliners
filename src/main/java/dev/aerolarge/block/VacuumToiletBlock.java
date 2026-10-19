@@ -72,10 +72,11 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
     private static final double SWIRL_INWARD = 0.3;
     /**
      * How far below the toilet the airliner's belly is looked for, in blocks per unit of scale: the fuselage is 8.4 m
-     * tall. And how far further down a chunk of ice may have to go to leave it, past what hangs under the belly there
-     * (a wing root is 1.9 m thick).
+     * tall; and how far round the toilet's column, in blocks, the belly is kept clear of. Then how far further down a
+     * chunk of ice may have to go to leave it, past what hangs under the belly there (a wing root is 1.9 m thick).
      */
     private static final double BELLY_REACH_PER_SCALE = 9;
+    private static final int BELLY_AROUND = 1;
     private static final double HUNG_BELOW_PER_SCALE = 2;
     /**
      * How high above the ground a chunk has to be let go for Blue Ice, in metres scaled like the airliner: well clear of
@@ -187,25 +188,31 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * Where a chunk of blue ice leaves the airliner under a toilet: the first block open to the air under the lowest
-     * piece of airframe beneath it, past anything hung under that (a wing root, a fairing). Null where no airframe
-     * stands beneath the toilet (one put in a house), or nothing opens under it (an airliner sitting on its belly).
-     * Assembled, the airliner's plot holds nothing but the airliner, so under its belly is open sky.
+     * Where a chunk of blue ice leaves the airliner under a toilet: the first block open to the air under the toilet,
+     * below the lowest piece of airframe beneath it and the columns round it, and past anything hung under that (a
+     * wing root, a fairing). Round the nose the belly curves down toward the tail, and a chunk falling back from under
+     * its own column would catch on it. Null where no airframe stands beneath the toilet (one put in a house), or
+     * nothing opens under it (an airliner sitting on its belly). Assembled, the airliner's plot holds nothing but the
+     * airliner, so under its belly is open sky.
      */
     @Nullable
     private static BlockPos belly(Level level, BlockPos toilet) {
         double scale = AerolargeConfig.SCALE.get();
-        BlockPos skin = null;
-        for (int down = 1; down <= BELLY_REACH_PER_SCALE * scale; down++) {
-            if (level.getBlockState(toilet.below(down)).is(Aboard.AIRFRAME)) {
-                skin = toilet.below(down);
+        int reach = (int) (BELLY_REACH_PER_SCALE * scale);
+        boolean underAirframe = false;
+        int lowest = toilet.getY();
+        BlockPos from = toilet.offset(-BELLY_AROUND, -reach, -BELLY_AROUND);
+        for (BlockPos at : BlockPos.betweenClosed(from, toilet.offset(BELLY_AROUND, -1, BELLY_AROUND))) {
+            if (level.getBlockState(at).is(Aboard.AIRFRAME)) {
+                lowest = Math.min(lowest, at.getY());
+                underAirframe |= at.getX() == toilet.getX() && at.getZ() == toilet.getZ();
             }
         }
-        if (skin == null) {
+        if (!underAirframe) {
             return null;
         }
         for (int down = 1; down <= 1 + HUNG_BELOW_PER_SCALE * scale; down++) {
-            BlockPos below = skin.below(down);
+            BlockPos below = new BlockPos(toilet.getX(), lowest - down, toilet.getZ());
             if (level.getBlockState(below).getCollisionShape(level, below).isEmpty() && level.getFluidState(below).isEmpty()) {
                 return below;
             }
