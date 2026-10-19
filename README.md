@@ -230,11 +230,12 @@ gets you out. The secret door, the ball pit and the fairy lights can be crafted.
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
 behind cargo nets of chain, with yellow and black stripes along the walkway down the middle, which stays clear from
-the pool to the drop bay and on to the hatch and the cargo door. The suitcases, in four colours, each hold a few
-things a traveller packs; among them are care packages packed with supplies, ready to load into the drop bay. Three
-golden suitcases are hidden about the hold: they glint, glow faintly and chime softly when someone comes near.
-Opening one counts toward Lost and Found in the First Flight advancements, with a fanfare the first time; find all
-three to earn it. Suitcases can be crafted; golden ones can only be found.
+the pool to the drop bay and on to the hatch and the cargo door. Along its forward half the belly under the walkway is
+a sky window of clear glass, like the pool's: lie on it and look straight down at the ground, or the clouds, below.
+The suitcases, in four colours, each hold a few things a traveller packs; among them are care packages packed with
+supplies, ready to load into the drop bay. Three golden suitcases are hidden about the hold: they glint, glow faintly
+and chime softly when someone comes near. Opening one counts toward Lost and Found in the First Flight advancements,
+with a fanfare the first time; find all three to earn it. Suitcases can be crafted; golden ones can only be found.
 
 ### Passenger screens
 
@@ -423,11 +424,12 @@ The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save
 `run/saves/<save>`; drop Create, Sable, Create Aeronautics and Create Propulsion into `run/mods` to run with them.
 
 The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`
-and fitted out by `CabinFitOut`; the skin follows the curve in `ShellGeometry`'s shapes, which `ShellModel`
-bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity` flies, reading the airliner
-from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where
-each engine's core was told they are; `TailCameraFeed` draws the fin camera's picture through Veil's perspective
-renderer (Veil comes inside Sable's jar), the one place Veil is touched. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+and fitted out by `CabinFitOut`, `TailDen` and `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
+shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
+flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
+the nacelles' faces, from where each engine's core was told they are; `TailCameraFeed` draws the fin camera's
+picture through Veil's perspective renderer (Veil comes inside Sable's jar), the one place Veil is touched. Assets
+are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

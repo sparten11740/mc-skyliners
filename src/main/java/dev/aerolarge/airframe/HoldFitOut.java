@@ -23,8 +23,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * nets of chain, suitcases in four colours with care packages packed with supplies among them, and yellow and black
  * hazard stripes along the walkway down the middle, which stays clear all the way from the pool to the bay, and on
  * from the bay to the hatch and the cargo door. Three golden suitcases are hidden about the hold: one in each pile and
- * one at the far end of the hold aft of the cargo door. It only goes into open hold space, and is left out where the
- * hold is too low to walk in.
+ * one at the far end of the hold aft of the cargo door. Under the walkway, a stretch of the belly is a sky window. It
+ * only goes into open hold space, bar the window, which glazes the belly as under the moon pool, and is left out where
+ * the hold is too low to walk in.
  */
 final class HoldFitOut {
     /** Kept clear of luggage forward of the drop bay, in metres, so it can be loaded from all round. */
@@ -39,6 +40,14 @@ final class HoldFitOut {
     private static final int NET_SPACING = 2;
     /** A player's height in blocks: the last golden suitcase is hidden as far aft as there is room to stand. */
     private static final int STANDING_ROOM = 2;
+    /**
+     * The sky window's stretch of the belly, in metres from the nose: just aft of the moon pool to a little ahead of
+     * the beacon under the belly, so well ahead of the main gear behind the centre of mass and of the drop bay and the
+     * cargo door behind that.
+     */
+    private static final double[] SKY_WINDOW = {25, AirframeShape.BEACON_STATION - 2};
+    /** How many columns in from the hazard stripes the sky window's edge is. */
+    private static final int WINDOW_INSET = 1;
     private static final DyeColor[] COLOURS = SuitcaseBlock.COLOR.getPossibleValues().toArray(DyeColor[]::new);
     private static final ResourceKey<LootTable> SUITCASE = loot("suitcase");
     private static final ResourceKey<LootTable> GOLDEN_SUITCASE = loot("golden_suitcase");
@@ -72,6 +81,8 @@ final class HoldFitOut {
         if (to - from < BAY_LENGTH) {
             return;
         }
+        // Measured while the hold is still empty, before the stripes narrow the walkway.
+        skyWindow(bottom, from, to);
         List<BlockPos> starboard = new ArrayList<>();
         List<BlockPos> port = new ArrayList<>();
         for (int z = from; z <= to; z++) {
@@ -84,6 +95,28 @@ final class HoldFitOut {
         BlockPos end = farEnd(bay, bottom);
         if (end.getZ() > bay.getZ()) {
             golden(end, Direction.NORTH, 3);
+        }
+    }
+
+    /**
+     * The sky window: a stretch of the belly under the walkway, inside its hazard stripes, glazed with clear hull
+     * glass, as under the moon pool, to lie on and look straight down through at the ground or the clouds. The hold's
+     * lights set into the belly stay, between its panes. Glazed before the shell pass, which cuts it to the curve.
+     */
+    private void skyWindow(int bottom, int from, int to) {
+        int first = Math.max(from, (int) Math.ceil(SKY_WINDOW[0] * layout.scale()));
+        int last = Math.min(to, (int) Math.floor(SKY_WINDOW[1] * layout.scale()));
+        for (int z = first; z <= last; z++) {
+            int edge = 0;
+            while (layout.isOpen(edge + 1, bottom, z)) {
+                edge++;
+            }
+            int half = edge - 1 - WINDOW_INSET;
+            for (int x = -half; x <= half; x++) {
+                if (layout.isOpen(x, bottom, z) && layout.isPlainHull(x, bottom - 1, z)) {
+                    layout.glaze(x, bottom - 1, z);
+                }
+            }
         }
     }
 
