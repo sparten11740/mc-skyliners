@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,8 +47,24 @@ public class SeatbeltSwitchBlockEntity extends LinkedControlBlockEntity {
         setChanged();
     }
 
+    /**
+     * Turns the signs on or off with a click, as using the switch does, and as they come on opens the curtains; nothing
+     * if they already are. The autopilot's cabin announcements work it too (see {@link CabinAnnouncements}).
+     */
+    void turn(boolean on) {
+        if (level == null || isOn() == on) {
+            return;
+        }
+        level.setBlock(worldPosition, getBlockState().setValue(SeatbeltSwitchBlock.ON, on), Block.UPDATE_ALL);
+        level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, on ? 1.3F : 1.0F);
+        resync();
+        if (on) {
+            openCurtains();
+        }
+    }
+
     /** Starts opening every curtain aboard, with one swish at the first still drawn shut; nothing if none is. */
-    void openCurtains() {
+    private void openCurtains() {
         if (level == null) {
             return;
         }

@@ -99,7 +99,8 @@ it comes down whole. On an assembled airliner with an autopilot it shows that ai
 The flight deck's voice, a calm, very even, faintly synthetic woman's voice, unfailingly polite and not easily
 impressed, calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground from a
 hundred down to ten, then retard), and warns of too much bank ("Bank angle. Please do not do that.") or sinking too
-fast too low ("Pull up. This is not a test."), whoever flies.
+fast too low ("Pull up. This is not a test."), whoever flies. The same voice makes the autopilot's cabin
+announcements (see below).
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
 
@@ -111,11 +112,21 @@ is a radio call instead. A Tower Radio (craftable) is for the airfield: whatever
 radio. A radio call crackles in for everyone near any radio within 4096 blocks, the handsets of airliners in flight
 included. Either way the message is left out of ordinary chat; use the handset or radio again to put it down.
 
+The autopilot makes announcements of its own, in the flight deck's voice after the same chime, and everyone aboard
+hears them wherever they are in the cabin. Set to take off (Take Off, on the ground), it welcomes everyone aboard and
+asks the cabin crew to be seated for take-off; set to land (Land), it asks everyone back to their seats and the crew to
+be seated for landing; and once it has landed and stopped, it welcomes everyone to their destination and lets them
+go. As crews do, it switches the seatbelt signs on with the take-off and landing announcements (which opens the
+curtains), and off again once stopped, so everyone can get up. Announcements never talk over each other: one asked
+for while another plays waits for it to end, and the same one is not made again within a minute, however often the
+buttons are pressed.
+
 ### Seatbelts and turbulence
 
 The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls, with a ding, and opens every curtain
 aboard, front to back, as cabin crew do for take-off and landing. While the signs are on, anyone seated aboard stays
-in their seat when they sneak to get up. In flight the airliner runs into rough air now
+in their seat when they sneak to get up. The autopilot works the switch too, with its announcements (see above).
+In flight the airliner runs into rough air now
 and then, a few seconds of it about once a minute: everyone aboard feels the shake, and whoever is not sitting down
 is thrown about the cabin. The weather makes it worse. In rain (or snow) it comes a little more often and is a little
 rougher; a thunderstorm brings heavy turbulence, about every 15 seconds, twice as long and up to nearly twice as
@@ -442,10 +453,10 @@ blockstates, models, loot tables, tags, recipes and lang file. The door and the 
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
 `node tools/generate_sounds.mjs` writes the sounds with FFmpeg: the engine loop is synthesised, and the flight deck's
-voice (the callouts) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so that part runs on Windows only.
-The script then flattens the voice's intonation and tunes it to the semitones around one note, and FFmpeg adds a
-faint vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the settings for all of it are
-together in `VOICE`, to tune it.
+voice (the callouts and the cabin announcements) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so
+that part runs on Windows only. The script then flattens the voice's intonation and tunes it to the semitones around
+one note, and FFmpeg adds a faint vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the
+settings for all of it are together in `VOICE`, to tune it.
 
 ## License
 

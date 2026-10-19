@@ -103,6 +103,30 @@
       }
     ]
   },
+  "announcement_takeoff": {
+    "subtitle": "subtitles.aerolarge.announcement_takeoff",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_takeoff"
+      }
+    ]
+  },
+  "announcement_landing": {
+    "subtitle": "subtitles.aerolarge.announcement_landing",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_landing"
+      }
+    ]
+  },
+  "announcement_arrival": {
+    "subtitle": "subtitles.aerolarge.announcement_arrival",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_arrival"
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.aerolarge.pa_chime",
     "sounds": [

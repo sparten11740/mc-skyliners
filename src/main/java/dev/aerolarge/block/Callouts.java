@@ -21,8 +21,9 @@ import net.minecraft.world.phys.Vec3;
  * do: "V one" and "rotate" down the runway and "positive rate" climbing away; on the way down the radio altitude
  * (the wheels' height above the ground below) called out from a hundred to ten and "retard" just before touchdown;
  * and "bank angle" and "pull up" when it banks too far or sinks too fast too low, politely. Each is heard by everyone
- * aboard, following them about the cabin. Climbing away and touching down gently are milestones for everyone aboard,
- * too (see {@link FirstFlight}).
+ * aboard, following them about the cabin. The same calm, evenly pitched voice makes the cabin announcements (see
+ * {@link CabinAnnouncements}). Climbing away and touching down gently are milestones for everyone aboard, too (see
+ * {@link FirstFlight}).
  */
 final class Callouts {
     /** Radio altitudes called out on the way down, in blocks, from the highest. */

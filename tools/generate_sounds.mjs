@@ -7,9 +7,9 @@ import { execFileSync } from "node:child_process";
 // Run from anywhere: node tools/generate_sounds.mjs
 // Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
-// - the flight deck's voice, its callouts, spoken by Windows' own speech synthesis (System.Speech) and then reworked
-//   (see VOICE), so this part runs on Windows only. Deterministic apart from the voice, which is whatever Windows
-//   ships.
+// - the flight deck's voice, its callouts and cabin announcements, spoken by Windows' own speech synthesis
+//   (System.Speech) and then reworked (see VOICE), so this part runs on Windows only. Deterministic apart from the
+//   voice, which is whatever Windows ships.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
 mkdirSync(output, { recursive: true });
@@ -107,13 +107,11 @@ function bell(samples, start, frequency, decay) {
   }
 }
 
-// The cabin chime before an announcement: two bell tones, high then low.
-{
-  const samples = new Float64Array(Math.round(2.2 * RATE));
-  bell(samples, 0, 659.25, 0.55);
-  bell(samples, 0.42, 523.25, 0.7);
-  writeSound("pa_chime", samples);
-}
+// The cabin chime before an announcement: two bell tones, high then low. The voice's announcements open with it too.
+const CHIME = new Float64Array(Math.round(2.2 * RATE));
+bell(CHIME, 0, 659.25, 0.55);
+bell(CHIME, 0.42, 523.25, 0.7);
+writeSound("pa_chime", CHIME);
 
 // A radio call's crackle: band-passed static that swells in and dies away, with the odd sharp click.
 {
@@ -258,16 +256,18 @@ function bell(samples, start, frequency, decay) {
   writeSound("cash_register", samples);
 }
 
-// The flight deck's voice, for the callouts: a calm, very even, faintly synthetic woman's voice, the deadpan
-// politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line; its intonation is
-// then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see tunePitch), and
-// FFmpeg colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids, a faint metallic
-// sweep, the short echo of a hard little room and a touch of digital sheen. Tune it all here.
+// The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
+// voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
+// its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
+// tunePitch), and FFmpeg colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids,
+// a faint metallic sweep, the short echo of a hard little room and a touch of digital sheen. Tune it all here.
 const VOICE = {
   // The speech synthesis voice. Windows PowerShell's System.Speech sees only the desktop voices; Zira is the woman's.
   name: "Microsoft Zira Desktop",
   // How fast it speaks, as SSML prosody: unhurried.
   rate: "-5%",
+  // The pause a "|" in a line makes, in milliseconds.
+  pause: 650,
   // The note its pitch is centred on, in hertz: B flat below middle C, a little above the voice's own.
   note: 233.08,
   // How much of the voice's own rise and fall is taken out: 0 none, 1 all of it, leaving a robot's monotone.
@@ -304,11 +304,36 @@ const CALLOUTS = {
   callout_bank_angle: "Bank angle. Please do not do that.",
   callout_pull_up: "Pull up. This is not a test.",
 };
+// The cabin announcements (see CabinAnnouncements), each opening with the cabin chime. A "|" is a pause.
+const ANNOUNCEMENTS = {
+  announcement_takeoff: "Welcome aboard. | Cabin crew, please be seated for take-off.",
+  announcement_landing: "Please return to your seats. | Cabin crew, please be seated for landing.",
+  announcement_arrival: "Welcome to your destination. Please remain seated until the aircraft has come to a complete stop. | It has. | You may now leave.",
+};
 /**
  * The longest a callout may run, in seconds: half a second less than a warning takes to repeat
  * (Callouts.WARNING_REPEAT), for a breath between.
  */
 const CALLOUT_LONGEST = 3.5;
+/**
+ * The longest an announcement may run, chime and all, in seconds: CabinAnnouncements.LONGEST gives each this long.
+ * The take-off one has to be over sooner, before "V one" down the runway: at the default rotation speed the autopilot
+ * gets to V1 some eight and a half seconds after it is set to take off.
+ */
+const ANNOUNCEMENT_LONGEST = 15;
+const TAKEOFF_LONGEST = 8;
+/**
+ * Quiet before an announcement's chime, in seconds, so the seatbelt signs switched on with it ding first; and how long
+ * after the chime starts the voice comes in, as its second tone dies away.
+ */
+const ANNOUNCEMENT_LEAD = 0.6;
+const ANNOUNCEMENT_VOICE_AT = 1.5;
+/**
+ * The chime's peak under an announcement, as a share of the voice's, and how long it fades out for, in seconds, where
+ * its last ring is cut off.
+ */
+const ANNOUNCEMENT_CHIME = 0.5;
+const ANNOUNCEMENT_CHIME_FADE = 0.3;
 /**
  * A line's level, as a share of its peak, under which its start and end count as quiet; the quiet is trimmed off but
  * for this many seconds either side, the soft start of an "f" or "th" kept.
@@ -464,6 +489,21 @@ function trim(samples) {
   return kept;
 }
 
+/** An announcement: quiet, the chime, then the voice coming in as the chime dies away. */
+function announcement(voice) {
+  let peak = 0;
+  voice.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  let chimePeak = 0;
+  CHIME.forEach((s) => (chimePeak = Math.max(chimePeak, Math.abs(s))));
+  const chimeAt = Math.round(ANNOUNCEMENT_LEAD * RATE);
+  const voiceAt = chimeAt + Math.round(ANNOUNCEMENT_VOICE_AT * RATE);
+  const samples = new Float64Array(Math.max(chimeAt + CHIME.length, voiceAt + voice.length));
+  const fade = ANNOUNCEMENT_CHIME_FADE * RATE;
+  CHIME.forEach((s, i) => (samples[chimeAt + i] += (s / chimePeak) * ANNOUNCEMENT_CHIME * peak * Math.min(1, (CHIME.length - i) / fade)));
+  voice.forEach((s, i) => (samples[voiceAt + i] += s));
+  return samples;
+}
+
 /**
  * Says every line with the speech synthesis, all in one go, into WAVs in the scratch folder; false, saying why, if
  * the voice is not installed.
@@ -471,7 +511,8 @@ function trim(samples) {
 function speak(lines) {
   const ssml = (text) => {
     const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><prosody rate='${VOICE.rate}'>${escaped}</prosody></speak>`;
+    const paused = escaped.replace(/\s*\|\s*/g, ` <break time='${VOICE.pause}ms'/> `);
+    return `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><prosody rate='${VOICE.rate}'>${paused}</prosody></speak>`;
   };
   const said = join(scratch, "lines.json");
   writeFileSync(said, JSON.stringify(Object.entries(lines).map(([name, text]) => ({ wav: join(scratch, `${name}.said.wav`), ssml: ssml(text) }))));
@@ -495,7 +536,7 @@ function speak(lines) {
     return true;
   } catch (error) {
     if (error.status === 3) {
-      console.log(`The voice "${VOICE.name}" is not installed: leaving the callouts as they are`);
+      console.log(`The voice "${VOICE.name}" is not installed: leaving the callouts and announcements as they are`);
       return false;
     }
     throw error;
@@ -503,16 +544,18 @@ function speak(lines) {
 }
 
 if (process.platform !== "win32") {
-  console.log("Not on Windows: leaving the callouts as they are");
-} else if (speak(CALLOUTS)) {
-  for (const name of Object.keys(CALLOUTS)) {
+  console.log("Not on Windows: leaving the callouts and announcements as they are");
+} else if (speak({ ...CALLOUTS, ...ANNOUNCEMENTS })) {
+  for (const name of [...Object.keys(CALLOUTS), ...Object.keys(ANNOUNCEMENTS)]) {
     const tuned = join(scratch, `${name}.tuned.wav`);
     const coloured = join(scratch, `${name}.coloured.wav`);
     writeWav(tuned, tunePitch(readWav(join(scratch, `${name}.said.wav`))));
     colour(tuned, coloured);
-    const samples = trim(readWav(coloured));
-    if (samples.length > CALLOUT_LONGEST * RATE) {
-      throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${CALLOUT_LONGEST} s: shorten it or speed the voice up`);
+    const voice = trim(readWav(coloured));
+    const samples = name in ANNOUNCEMENTS ? announcement(voice) : voice;
+    const longest = name === "announcement_takeoff" ? TAKEOFF_LONGEST : name in ANNOUNCEMENTS ? ANNOUNCEMENT_LONGEST : CALLOUT_LONGEST;
+    if (samples.length > longest * RATE) {
+      throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
     }
     writeSound(name, samples);
   }

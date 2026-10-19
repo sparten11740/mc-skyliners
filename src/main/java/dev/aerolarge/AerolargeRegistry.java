@@ -174,6 +174,10 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_RETARD = sound("callout_retard");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
+    /** The same voice over the cabin PA, after the chime: crew seated for take-off, for landing, and arrival. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_TAKEOFF = sound("announcement_takeoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_LANDING = sound("announcement_landing");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL = sound("announcement_arrival");
     /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PA_CHIME = sound("pa_chime");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");

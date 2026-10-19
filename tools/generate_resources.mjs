@@ -153,7 +153,8 @@ cubes.hull_relay = null;
 write(`assets/${ID}/blockstates/engine_core.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 cubes.engine_core = null;
 
-// The flight deck's voice (see tools/generate_sounds.mjs): each callout, subtitled with what it says.
+// The flight deck's voice (see tools/generate_sounds.mjs): each callout and cabin announcement, subtitled with what it
+// says, the announcements' gist.
 const VOICE_SUBTITLES = {
   callout_v1: "Callout: V one",
   callout_rotate: "Callout: Rotate",
@@ -167,6 +168,9 @@ const VOICE_SUBTITLES = {
   callout_retard: "Callout: Retard",
   callout_bank_angle: "Callout: Bank angle!",
   callout_pull_up: "Callout: Pull up!",
+  announcement_takeoff: "Announcement: Crew seated for take-off",
+  announcement_landing: "Announcement: Crew seated for landing",
+  announcement_arrival: "Announcement: Welcome to your destination",
 };
 const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 

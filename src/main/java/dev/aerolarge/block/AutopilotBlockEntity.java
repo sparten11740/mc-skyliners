@@ -64,6 +64,9 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * cuts the engines itself until the airliner has slowed and levelled, then hands them back to the levers. Nothing
  * else holds the airliner while it is flown on the thrust levers: at full thrust its engines would pitch it up until
  * it tumbled, or fling it off far faster than the world can be made around it.
+ *
+ * <p>Set to take off or to land, and once it has landed and stopped, it makes the cabin announcements (see
+ * {@link CabinAnnouncements}).
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -281,6 +284,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
     private boolean governing;
     private final Callouts callouts = new Callouts();
+    private final CabinAnnouncements announcements = new CabinAnnouncements();
     private final Turbulence turbulence = new Turbulence();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
@@ -392,6 +396,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         boolean engaging = phase == Phase.OFF;
         if (engaging) {
             engage(level, state);
+            if (phase == Phase.TAKEOFF) {
+                announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+            }
         } else if (phase == Phase.LAND) {
             // A go-around: it climbs away again, and the next tick finds whether to climb, descend or hold.
             phase = Phase.CLIMB;
@@ -431,6 +438,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         if (phase == Phase.OFF) {
             engage(level, state);
+        }
+        if (phase != Phase.LAND) {
+            announcements.announce(CabinAnnouncements.Announcement.LANDING, this);
         }
         phase = Phase.LAND;
         lateral = Lateral.HEADING;
@@ -510,13 +520,15 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Each tick while the airliner is assembled: the callouts watch it, rough air comes and goes, and the autopilot
-     * flies it if engaged, or keeps it from tipping over if not.
+     * Each tick: a cabin announcement waiting for the one before it has its turn; and while the airliner is assembled,
+     * the callouts watch it, rough air comes and goes, and the autopilot flies it if engaged, or keeps it from tipping
+     * over if not.
      */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        autopilot.announcements.tick(autopilot);
         SableFlight.State flight = SableFlight.read(autopilot, autopilot.nose());
         if (flight == null) {
             if (autopilot.phase != Phase.OFF) {
@@ -720,6 +732,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             park(level);
             disengage();
             tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"));
+            announcements.announce(CabinAnnouncements.Announcement.ARRIVAL, this);
             return;
         }
         if (phase != was) {

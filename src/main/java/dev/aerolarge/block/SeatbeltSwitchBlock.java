@@ -5,8 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -55,16 +53,9 @@ public class SeatbeltSwitchBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof SeatbeltSwitchBlockEntity seatbelts) {
             boolean on = !state.getValue(ON);
-            level.setBlock(pos, state.setValue(ON, on), Block.UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, on ? 1.3F : 1.0F);
-            if (level.getBlockEntity(pos) instanceof Control control) {
-                control.resync();
-            }
-            if (on && level.getBlockEntity(pos) instanceof SeatbeltSwitchBlockEntity seatbelts) {
-                seatbelts.openCurtains();
-            }
+            seatbelts.turn(on);
             player.displayClientMessage(Component.translatable(on ? "message.aerolarge.seatbelts.on" : "message.aerolarge.seatbelts.off"), true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
