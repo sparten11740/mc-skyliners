@@ -24,7 +24,7 @@ public final class AerolargeClientConfig {
             .comment("How many times a second, at most, the tail camera's picture is drawn anew.")
             .defineInRange("tailCameraFps", 15, 1, 30);
         TAIL_CAMERA_RESOLUTION = builder
-            .comment("How many pixels tall the tail camera's picture is drawn; it is about three times as wide.")
+            .comment("How many pixels tall the tail camera's picture is drawn; it is a little over twice as wide.")
             .defineInRange("tailCameraResolution", 144, 72, 360);
         SPEC = builder.build();
     }

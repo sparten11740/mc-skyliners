@@ -20,36 +20,54 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The tail camera display on the flight deck, like an A380's taxiing camera screen: a wide, slim screen,
- * {@link #COLUMNS} blocks wide and {@link #ROWS} tall, for the picture from the camera on top of the fin, looking
- * forward over the whole airliner; its renderer draws it all. Every block of it is this block; PART says
- * which, counting along the bottom row from the viewer's left and then up, and part 0 holds the block entity the whole
- * screen is drawn from. FACING is the way the screen faces, its back to whatever it is fixed to. Placed by hand it
- * needs the room for all of it and puts every part up at once; taking any part away takes the whole screen, which
- * drops one display from part 0.
+ * The tail camera display on the flight deck, like an A380's taxiing camera screen: a wide screen, {@link #COLUMNS}
+ * blocks wide and {@link #ROWS} tall, for the picture from the camera on top of the fin, looking forward over the
+ * whole airliner; its renderer draws it all. Every block of it is this block; PART says which, counting along the
+ * bottom row from the viewer's left and then up, and part 0 holds the block entity the whole screen is drawn from.
+ * FACING is the way the screen faces. Upright, it is a slim screen with its back to whatever it is fixed to. TILTED, it
+ * is set into a ceiling like an overhead monitor: the screen runs across each block's diagonal, from its bottom edge
+ * at the back to its top edge at the front, so it looks down toward FACING at 45 degrees, and behind it the block is
+ * filled out to its top and back, plated like the hull, closed to the light, so set into the airliner's skin it keeps
+ * the skin closed. Placed by hand against a wall it stands upright, put up against the underside of a block it hangs
+ * tilted, and anywhere else it stands upright facing whoever puts it there; it needs the room for all of it and puts
+ * every part up at once. Taking any part away takes the whole screen, which drops one display from part 0.
  */
 public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<TailCameraDisplayBlock> CODEC = simpleCodec(TailCameraDisplayBlock::new);
     public static final int COLUMNS = 3;
     public static final int ROWS = 1;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
-    /** How thick the screen is, in pixels of its block, standing against the back of it. */
+    public static final BooleanProperty TILTED = BooleanProperty.create("tilted");
+    /** How thick the upright screen is, in pixels of its block, standing against the back of it. */
     public static final int DEPTH = 3;
-    private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Map.of(
-        Direction.NORTH, Block.box(0, 0, 16 - DEPTH, 16, 16, 16),
-        Direction.SOUTH, Block.box(0, 0, 0, 16, 16, DEPTH),
-        Direction.WEST, Block.box(16 - DEPTH, 0, 0, 16, 16, 16),
-        Direction.EAST, Block.box(0, 0, 0, DEPTH, 16, 16)
-    ));
+    /** How many steps the tilted screen's filled half is made of for collision and selection. */
+    private static final int TILTED_STEPS = 4;
+    private static final Map<Direction, VoxelShape> UPRIGHT_SHAPES = new EnumMap<>(Direction.class);
+    private static final Map<Direction, VoxelShape> TILTED_SHAPES = new EnumMap<>(Direction.class);
+
+    static {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            UPRIGHT_SHAPES.put(facing, againstBack(facing, 0, 16, DEPTH));
+            VoxelShape tilted = Shapes.empty();
+            int step = 16 / TILTED_STEPS;
+            for (int k = 0; k < TILTED_STEPS; k++) {
+                // Each step reaches out from the back as far as the diagonal does at its top.
+                tilted = Shapes.or(tilted, againstBack(facing, k * step, (k + 1) * step, (k + 1) * step));
+            }
+            TILTED_SHAPES.put(facing, tilted);
+        }
+    }
 
     public TailCameraDisplayBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(PART, 0));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(PART, 0).setValue(TILTED, false));
     }
 
     @Override
@@ -59,7 +77,20 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, PART);
+        builder.add(FACING, PART, TILTED);
+    }
+
+    /**
+     * A box against the back of the block, the side away from the way the screen faces: from y0 to y1 up, and reaching
+     * this deep from the back, in pixels.
+     */
+    private static VoxelShape againstBack(Direction facing, double y0, double y1, double depth) {
+        return switch (facing) {
+            case NORTH -> Block.box(0, y0, 16 - depth, 16, y1, 16);
+            case SOUTH -> Block.box(0, y0, 0, 16, y1, depth);
+            case WEST -> Block.box(16 - depth, y0, 0, 16, y1, 16);
+            default -> Block.box(0, y0, 0, depth, y1, 16);
+        };
     }
 
     /** The viewer's right, looking at the screen. */
@@ -79,13 +110,15 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
     }
 
     /**
-     * Against the side of a block it faces out from it; put anywhere else it faces whoever puts it there. It reaches to
-     * the viewer's right and up from where it is put, and is not put up where anything stands in the way of that.
+     * Against the side of a block it stands upright facing out from it; against the underside of one it hangs tilted,
+     * facing whoever puts it there; put anywhere else it stands upright facing them. It reaches to the viewer's right
+     * and up from where it is put, and is not put up where anything stands in the way of that.
      */
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction clicked = context.getClickedFace();
+        boolean tilted = clicked == Direction.DOWN;
         Direction facing = clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite();
         Level level = context.getLevel();
         for (int part = 1; part < COLUMNS * ROWS; part++) {
@@ -94,7 +127,7 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
                 return null;
             }
         }
-        return defaultBlockState().setValue(FACING, facing);
+        return defaultBlockState().setValue(FACING, facing).setValue(TILTED, tilted);
     }
 
     /** The rest of the screen goes up beside the part placed. */
@@ -115,8 +148,8 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
         Direction facing = state.getValue(FACING);
         BlockPos origin = origin(state, pos);
         for (int part = 0; part < COLUMNS * ROWS; part++) {
-            if (part(origin, facing, part).equals(neighbourPos)
-                && !(neighbour.is(this) && neighbour.getValue(FACING) == facing && neighbour.getValue(PART) == part)) {
+            if (part(origin, facing, part).equals(neighbourPos) && !(neighbour.is(this) && neighbour.getValue(FACING) == facing
+                && neighbour.getValue(PART) == part && neighbour.getValue(TILTED) == state.getValue(TILTED))) {
                 return Blocks.AIR.defaultBlockState();
             }
         }
@@ -141,7 +174,18 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(FACING));
+        return (state.getValue(TILTED) ? TILTED_SHAPES : UPRIGHT_SHAPES).get(state.getValue(FACING));
+    }
+
+    /** Tilted, it fills the skin it is set into: no daylight comes through it. */
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return !state.getValue(TILTED) && super.propagatesSkylightDown(state, level, pos);
+    }
+
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return state.getValue(TILTED) ? level.getMaxLightLevel() : super.getLightBlock(state, level, pos);
     }
 
     @Nullable

@@ -810,19 +810,35 @@ write(`assets/${ID}/blockstates/flight_display.json`, {
 });
 cubes.flight_display = null;
 
-// The tail camera display: a wide, slim screen of three parts side by side, each drawn facing north with its back
-// against the south side of its block (as deep as TailCameraDisplayBlock.DEPTH), dark glass on a dark casing; its
-// renderer draws the picture over all of it from part 0. Only part 0 drops the display, so the whole screen gives
-// back one.
+// The tail camera display: a wide screen of three parts side by side, each drawn facing north; its renderer draws the
+// picture over all of it from part 0. Upright, a slim screen with its back against the south side of its block (as
+// deep as TailCameraDisplayBlock.DEPTH), dark glass on a dark casing. Tilted, as it is set into the crown: the screen
+// a plate across the block's diagonal from its top edge at the front to its bottom edge at the back (a thin slab
+// through the middle turned 45 degrees and stretched to reach both edges), its glass looking down and forward, over
+// steps that fill the half behind it out to the top and back, plated like the hull, so from outside it is skin. Only
+// part 0 drops the display, so the whole screen gives back one.
 {
   const depth = 3;
   write(`assets/${ID}/models/block/tail_camera_display.json`, boxes(
     { screen: `${ID}:block/tail_camera_display`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
     [[[0, 0, 16 - depth], [16, 16, 16], { north: "#screen", all: "#casing" }]],
   ));
+  const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
+  const steps = [1, 2, 3, 4, 5, 6, 7].map((k) => ({ from: [0, 2 * k, 16 - 2 * k], to: [16, 2 * k + 2, 16], faces: all("#skin") }));
+  write(`assets/${ID}/models/block/tail_camera_display_tilted.json`, {
+    parent: "minecraft:block/block",
+    textures: { screen: `${ID}:block/tail_camera_display`, skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` },
+    elements: [
+      {
+        from: [0, 7.75, 0], to: [16, 8.25, 16], rotation: { origin: [8, 8, 8], axis: "x", angle: 45, rescale: true },
+        faces: { ...all("#skin"), down: { texture: "#screen" } },
+      },
+      ...steps,
+    ],
+  });
   write(`assets/${ID}/blockstates/tail_camera_display.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-      [0, 1, 2].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/tail_camera_display`, y }]))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2].flatMap((part) => [false, true].map((tilted) =>
+      [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/tail_camera_display${tilted ? "_tilted" : ""}`, y }])))),
   });
   write(`assets/${ID}/models/item/tail_camera_display.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/tail_camera_display` } });
   write(`data/${ID}/loot_table/blocks/tail_camera_display.json`, {

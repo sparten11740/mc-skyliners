@@ -68,8 +68,10 @@ the captain's handset and the cabin lights' dimmer. The dimmer steps every light
 the captain's side console, just behind the tiller, is the window shades' control: it runs every cabin window's
 shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
 can open or close a window's own shade by using it.
-Over the autopilot screen, in the middle where both pilots see it beside their own view ahead, is the tail camera
-display, a wide screen three blocks across like an A380's taxiing camera screen. Once the airliner is assembled it
+Overhead, just ahead of the pilots' seats, is the tail camera display, a wide screen three blocks across like an
+A380's taxiing camera screen: set into the crown in the middle, in place of the white panels along the top of the
+windscreen (at other scales than the default, where the windscreen's glass reaches back over it, of that glass), and
+tilted 45 degrees down toward the seats, so the pilots look up at it. Once the airliner is assembled it
 shows the live picture from the camera on top of the fin, the one the passenger screens look through (see below):
 the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL
 and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only while a
@@ -77,9 +79,10 @@ display is in sight within 32 blocks; every display aboard the same airliner sho
 shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while
 the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or
 with `tailCameraFeed` off in the client config, where `tailCameraFps` and `tailCameraResolution` also set how often
-and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too: it
-reaches two blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole. On
-an assembled airliner with an autopilot it shows that airliner's fin camera.
+and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too: against
+a wall it stands upright, and put up against the underside of a block it hangs from it tilted toward you, like the
+one in the airliner. It reaches two blocks to the right of where it is put, as you face it, and needs the room there;
+it comes down whole. On an assembled airliner with an autopilot it shows that airliner's fin camera.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.

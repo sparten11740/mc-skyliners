@@ -17,25 +17,36 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
 /**
  * Draws the tail camera display over the whole of its face, from the block that holds it, inside a thin dark bezel:
- * the live picture from the camera on top of the fin (see {@link TailCameraFeed}), its name in the top corner behind a
- * blinking recording light and a little camera. With no picture it shows a test card, the way a screen with no signal
- * does: colour bars over a dark band, the airliner seen from behind in the middle, and a word under them on why: the
- * airliner is not assembled, or no picture is coming.
+ * upright, on the front of the slim screen; tilted, on the screen plate across the blocks' diagonal, which makes the
+ * face taller. On it the live picture from the camera on top of the fin (see {@link TailCameraFeed}), its name in the
+ * top corner behind a blinking recording light and a little camera. With no picture it shows a test card, the way a
+ * screen with no signal does: colour bars over a dark band, the airliner seen from behind in the middle, and a word
+ * under them on why: the airliner is not assembled, or no picture is coming.
  */
 public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCameraDisplayBlockEntity> {
-    /** The face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
-    private static final float FACE = -0.5F + TailCameraDisplayBlock.DEPTH / 16F + 0.002F;
-    /** The whole face and the bezel round the picture, in blocks. */
+    /** The upright face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
+    private static final float UPRIGHT_FACE = -0.5F + TailCameraDisplayBlock.DEPTH / 16F + 0.002F;
+    /** The tilted face, from the middle of the block, lifted just off the screen plate across its diagonal. */
+    private static final float TILTED_FACE = 0.03F;
+    /** How far the tilted face leans back from upright, in degrees, its top edge toward the viewer. */
+    private static final float TILT = 45;
+    /** The whole face, in blocks: as wide as the screen, as tall as its rows upright or its diagonal tilted. */
     static final double WIDTH = TailCameraDisplayBlock.COLUMNS;
-    private static final double HEIGHT = TailCameraDisplayBlock.ROWS;
+    private static final double UPRIGHT_HEIGHT = TailCameraDisplayBlock.ROWS;
+    private static final double TILTED_HEIGHT = Math.sqrt(2) * TailCameraDisplayBlock.ROWS;
+    /** The bezel round the picture, in blocks. */
     private static final double BEZEL = 0.05;
-    /** The picture's width over its height, the shape the fin camera's picture is drawn in. */
-    static final double ASPECT = (WIDTH - 2 * BEZEL) / (HEIGHT - 2 * BEZEL);
+    /**
+     * The picture's width over its height as the fin camera draws it: the tilted face's, as the airliner's own display
+     * hangs; an upright face, wider, shows the middle of it.
+     */
+    static final double ASPECT = pictureAspect(TILTED_HEIGHT);
     /**
      * The camera's label in the picture's top left corner, in blocks: its margin from the corner, its height, the
      * padding inside it and the gap between what is in it.
@@ -94,55 +105,74 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
 
     @Override
     public void render(TailCameraDisplayBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        Direction facing = screen.getBlockState().getValue(TailCameraDisplayBlock.FACING);
+        BlockState state = screen.getBlockState();
+        Direction facing = state.getValue(TailCameraDisplayBlock.FACING);
+        boolean tilted = state.getValue(TailCameraDisplayBlock.TILTED);
+        double height = tilted ? TILTED_HEIGHT : UPRIGHT_HEIGHT;
         ResourceLocation picture = TailCameraFeed.show(screen);
         pose.pushPose();
         // Onto the face, x to the viewer's right and y up, from the bottom left corner of the whole screen.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-        pose.translate(-0.5, -0.5, FACE);
+        if (tilted) {
+            // Across the diagonal through the block's middle, from its bottom edge at the back to its top edge at the
+            // front.
+            pose.mulPose(Axis.XP.rotationDegrees(TILT));
+            pose.translate(-0.5, -height / 2, TILTED_FACE);
+        } else {
+            pose.translate(-0.5, -0.5, UPRIGHT_FACE);
+        }
         Matrix4f matrix = pose.last().pose();
-        ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, WIDTH, HEIGHT, 0, CASING);
+        ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, WIDTH, height, 0, CASING);
         Font font = Minecraft.getInstance().font;
         if (picture != null) {
-            picture(buffers.getBuffer(RenderType.text(picture)), matrix);
+            picture(buffers.getBuffer(RenderType.text(picture)), matrix, height);
             // The picture took its own buffer; the shapes over it take theirs back, and the text its own after them.
             Component label = Component.translatable(KEY + "camera", Component.translatable(OutsideCamera.TAIL.label()));
-            double labelX = cameraLabel(ScreenDrawing.shapes(buffers), matrix, font.width(label) * TEXT, screen.getLevel());
-            ScreenDrawing.text(font, pose, buffers, label, labelX, HEIGHT - BEZEL - LABEL_MARGIN - LABEL_HEIGHT / 2, TEXT_LIFT, TEXT, WHITE,
+            double labelX = cameraLabel(ScreenDrawing.shapes(buffers), matrix, height, font.width(label) * TEXT, screen.getLevel());
+            ScreenDrawing.text(font, pose, buffers, label, labelX, height - BEZEL - LABEL_MARGIN - LABEL_HEIGHT / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.LEFT);
         } else {
-            testCard(ScreenDrawing.shapes(buffers), matrix);
+            testCard(ScreenDrawing.shapes(buffers), matrix, height);
             // Text last: it takes its own buffer, which ends the one the shapes went into.
             String status = SableClient.ride(screen) != null ? "no_signal" : "standby";
-            double band = BEZEL + (HEIGHT - 2 * BEZEL) * (1 - BARS);
+            double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
             ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + status), WIDTH / 2, (BEZEL + band) / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
     }
 
+    /** The picture's width over its height on a face this tall. */
+    private static double pictureAspect(double height) {
+        return (WIDTH - 2 * BEZEL) / (height - 2 * BEZEL);
+    }
+
     /**
-     * The picture from the fin over the glass inside the bezel, full bright as a lit screen is. The framebuffer it was
-     * drawn into starts at its bottom row, so the picture's bottom edge takes the texture's first row.
+     * The picture from the fin over the glass inside the bezel, full bright as a lit screen is: the middle of it, where
+     * the face is not the shape the picture is drawn in. The framebuffer it was drawn into starts at its bottom row, so
+     * the picture's bottom edge takes the texture's first row.
      */
-    private static void picture(VertexConsumer image, Matrix4f matrix) {
+    private static void picture(VertexConsumer image, Matrix4f matrix, double height) {
         float x0 = (float) BEZEL;
         float x1 = (float) (WIDTH - BEZEL);
         float y0 = (float) BEZEL;
-        float y1 = (float) (HEIGHT - BEZEL);
-        image.addVertex(matrix, x0, y0, LAYER).setColor(-1).setUv(0, 0).setLight(LightTexture.FULL_BRIGHT);
-        image.addVertex(matrix, x1, y0, LAYER).setColor(-1).setUv(1, 0).setLight(LightTexture.FULL_BRIGHT);
-        image.addVertex(matrix, x1, y1, LAYER).setColor(-1).setUv(1, 1).setLight(LightTexture.FULL_BRIGHT);
-        image.addVertex(matrix, x0, y1, LAYER).setColor(-1).setUv(0, 1).setLight(LightTexture.FULL_BRIGHT);
+        float y1 = (float) (height - BEZEL);
+        double aspect = pictureAspect(height);
+        float u0 = (float) Math.max(0, (1 - aspect / ASPECT) / 2);
+        float v0 = (float) Math.max(0, (1 - ASPECT / aspect) / 2);
+        image.addVertex(matrix, x0, y0, LAYER).setColor(-1).setUv(u0, v0).setLight(LightTexture.FULL_BRIGHT);
+        image.addVertex(matrix, x1, y0, LAYER).setColor(-1).setUv(1 - u0, v0).setLight(LightTexture.FULL_BRIGHT);
+        image.addVertex(matrix, x1, y1, LAYER).setColor(-1).setUv(1 - u0, 1 - v0).setLight(LightTexture.FULL_BRIGHT);
+        image.addVertex(matrix, x0, y1, LAYER).setColor(-1).setUv(u0, 1 - v0).setLight(LightTexture.FULL_BRIGHT);
     }
 
     /**
      * The camera's label in the picture's top corner, the way a security camera's picture has one: a blinking red
      * recording light and a camera on a dark backing, wide enough for the name after them. Where the name starts.
      */
-    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double nameWidth, @Nullable Level level) {
-        double top = HEIGHT - BEZEL - LABEL_MARGIN;
+    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double height, double nameWidth, @Nullable Level level) {
+        double top = height - BEZEL - LABEL_MARGIN;
         double bottom = top - LABEL_HEIGHT;
         double middle = (top + bottom) / 2;
         double left = BEZEL + LABEL_MARGIN;
@@ -164,11 +194,11 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     }
 
     /** The test card over the picture: the colour bars over the dark band, and the airliner on its badge over the bars. */
-    private static void testCard(VertexConsumer shapes, Matrix4f matrix) {
+    private static void testCard(VertexConsumer shapes, Matrix4f matrix, double height) {
         double x0 = BEZEL;
         double x1 = WIDTH - BEZEL;
         double y0 = BEZEL;
-        double y1 = HEIGHT - BEZEL;
+        double y1 = height - BEZEL;
         double band = y0 + (y1 - y0) * (1 - BARS);
         ScreenDrawing.rect(shapes, matrix, x0, y0, x1, band, LAYER, BAND);
         double bar = (x1 - x0) / COLOUR_BARS.length;
