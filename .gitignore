@@ -1,0 +1,23 @@
+# Gradle and build outputs
+.gradle/
+build/
+/bin/
+
+# Development worlds, logs, and generated launch files
+run/
+run-*/
+.minecraft/
+
+# Editor-local settings
+/.eclipse/
+.idea/
+*.iml
+.vscode/
+.zed/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code local skills and settings
+.claude/

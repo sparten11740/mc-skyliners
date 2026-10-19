@@ -1,0 +1,92 @@
+# Aerolarge
+
+A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
+wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
+a cabin floor over a cargo hold, six passenger doors and a cargo door, a flight deck behind a curved windscreen, swept
+wings with four engines, the tail, landing gear and folding airstairs.
+
+## Requirements
+
+Minecraft 1.21.1, NeoForge 21.1.251+, [Create](https://modrinth.com/mod/create) 6.0.10+ and
+[Create Propulsion](https://modrinth.com/mod/create-propulsion). To assemble and fly the airliner, also
+[Create Aeronautics](https://modrinth.com/mod/create-aeronautics) (Sable, Simulated and Offroad); without it the
+airliner is a building.
+
+## In game
+
+Both blueprints are in the Aerolarge creative tab; there is no recipe for them.
+
+- **Airliner Blueprint**: the airframe with an empty cabin.
+- **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with an indoor
+  pool sunk into the hold, a full-height gym hall (Turnhalle) with a court, hoops, wall bars and climbing ropes,
+  and a lounge with a bar in the tail.
+
+Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
+face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
+`/aerolarge build <pos> <north|east|south|west> [furnished]`.
+
+At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
+and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull edges are
+rounded off with 45-degree fairings, cabin lights in the crown, the walls and the hold keep it bright, and nothing
+spawns inside it on its own.
+
+### Flight deck
+
+Steps at the front of the main deck lead up to the flight deck, raised so the pilots look straight out through the
+curved, framed windscreen; from outside the nose is drawn as one smooth rounded skin with the windscreen set into it.
+On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right: use one to push it
+a notch forward, sneak and use it to pull it back. Each drives its engine's thrusters through relays hidden in the
+nacelle, so splitting left and right steers the airliner on the ground. Behind the seats is the Physics Assembler.
+
+### Autopilot
+
+The autopilot panel sits in the middle of the pedestal. Use it on an assembled airliner standing on the ground and
+it takes off: full thrust down the runway, holding the heading it started on by splitting the engines left against
+right, nose up at rotation speed, then a climb to the cruising height (`climbHeight`, 80 blocks above the runway by
+default), where it holds height and speed (`cruiseSpeed`). Use it again to hand the engines back to the thrust
+levers. While it flies it shows its phase, speed, height, pitch and bank to everyone on the flight deck.
+
+The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
+control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). Sable's wings lift
+by how far they meet the air at an angle, whichever side it comes from, so the autopilot steers that angle of
+attack rather than the nose itself. It needs Sable (Create Aeronautics) to read where the airliner is.
+
+### Airstairs
+
+The forward port door has folding airstairs. The Airstair Controller set into the hull beside the door folds them
+away, step by step from the bottom up once nobody is standing on them, and unfolds them again from the door down
+until they meet the ground. Work it with the button beside it inside or outside, by using the panel itself, with any
+redstone signal, or from the ground with the yellow call button on the front of the nose gear.
+
+### Flying it
+
+The finished airliner is covered by one stretch of Create's Super Glue, which is what the Physics Assembler takes as
+the structure, so everything you build inside it flies along. Fold the airstairs away and pull the thrust levers to
+idle, then assemble it. It rolls on Offroad wheel mounts fitted with large tires; the main gear stands just behind
+its centre of mass, worked out from Sable's block masses, so it rests on its nose gear. The wings and tail are built
+around a layer of Create Propulsion wing blocks, and every airframe block is in `#sable:super_light`. Which blocks
+are used is set in the server config (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and
+so is how hard the creative thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by
+default).
+
+## Building
+
+```sh
+./gradlew build
+```
+
+The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save>` loads straight into
+`run/saves/<save>`; drop Create, Sable, Create Aeronautics and Create Propulsion into `run/mods` to run with them.
+
+The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`
+and fitted out by `CabinFitOut`; `Windscreen` works out the nose skin and its glass from the same shape, which
+`CockpitWindscreenRenderer` draws; `AutopilotBlockEntity` flies, reading the airliner from Sable through
+`SableFlight`. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+(ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
+blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
+and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
+(`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
+
+## License
+
+All Rights Reserved.

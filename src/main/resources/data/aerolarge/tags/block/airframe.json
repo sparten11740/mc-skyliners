@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "aerolarge:airframe_panel",
+    "aerolarge:livery_panel",
+    "aerolarge:cabin_floor",
+    "aerolarge:engine_intake",
+    "aerolarge:cabin_window",
+    "aerolarge:cockpit_window",
+    "aerolarge:cabin_light",
+    "aerolarge:airstair_controller",
+    "aerolarge:windscreen",
+    "aerolarge:cockpit_windscreen",
+    "aerolarge:thrust_relay",
+    "aerolarge:airframe_fairing",
+    "aerolarge:autopilot",
+    "aerolarge:thrust_lever",
+    "aerolarge:instrument_panel",
+    "aerolarge:airliner_door"
+  ]
+}

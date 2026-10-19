@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/instrument_panel",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/instrument_panel",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/instrument_panel",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/instrument_panel",
+      "y": 270
+    }
+  }
+}

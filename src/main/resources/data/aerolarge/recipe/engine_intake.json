@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PFP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    },
+    "F": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "result": {
+    "id": "aerolarge:engine_intake",
+    "count": 8
+  }
+}

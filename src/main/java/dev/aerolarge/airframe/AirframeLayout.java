@@ -1,0 +1,892 @@
+package dev.aerolarge.airframe;
+
+import static dev.aerolarge.airframe.AirframeShape.*;
+
+import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AirstairControllerBlockEntity;
+import dev.aerolarge.block.AutopilotBlock;
+import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.block.CockpitWindscreenBlockEntity;
+import dev.aerolarge.block.FairingBlock;
+import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.ThrustLeverBlock;
+import dev.aerolarge.block.ThrustLeverBlockEntity;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+
+/**
+ * The airliner cut into blocks, before it is put anywhere: every block of it, and air for every block of the cabin
+ * and hold, keyed by position relative to the nose. The layout is drawn with the nose pointing north: x runs to
+ * starboard (east), y up from the ground under the wheels, z back toward the tail (south). Block states are drawn
+ * the same way, so turning the whole thing to face another way is one rotation of positions and states.
+ */
+public final class AirframeLayout {
+    /** Stations between cabin lights along the fuselage. */
+    private static final int LIGHT_SPACING = 6;
+    private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
+    private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
+    private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
+    private static final TagKey<Block> SABLE_HEAVY = sableTag("heavy");
+    private static final TagKey<Block> SABLE_SUPER_HEAVY = sableTag("super_heavy");
+
+    private final double scale;
+    private final AirframePalette palette;
+    private final Map<BlockPos, BlockState> cells = new HashMap<>();
+    /** Block entities to set up once placed, by layout position. */
+    private final Map<BlockPos, Fitting> fittings = new HashMap<>();
+    /** Each engine's thrust relays, by the engine's span station (negative to port). */
+    private final Map<Double, List<BlockPos>> engineRelays = new HashMap<>();
+    /** The control jets' relays, by what they do. */
+    private final Map<AutopilotBlockEntity.Channel, List<BlockPos>> jetRelays = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+    /** Where the flight deck leaves room for the Physics Assembler, behind the pilots; null without a flight deck. */
+    private BlockPos assemblerSpot;
+    /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
+    private final int floorY;
+    private int minY = Integer.MAX_VALUE;
+    /** The row the tires stand on, once the landing gear is down. */
+    private int ground;
+
+    private AirframeLayout(double scale, AirframePalette palette) {
+        this.scale = scale;
+        this.palette = palette;
+        this.floorY = (int) Math.floor(FLOOR * HEIGHT * scale);
+    }
+
+    /** The finished layout, its lowest blocks (the tires) at y 0 and its nose tip at z 0. */
+    public static AirframeLayout create(double scale, boolean furnished) {
+        AirframeLayout layout = new AirframeLayout(scale, AirframePalette.fromConfig());
+        layout.fuselage();
+        layout.windows();
+        layout.lights();
+        layout.windscreen();
+        layout.wings(WING_HALF_SPAN, WING_ROOT_CHORD, WING_TIP_CHORD, WING_ROOT_THICKNESS, WING_TIP_THICKNESS,
+            AirframeShape::wingLeadingEdge, AirframeShape::wingY);
+        layout.wings(STABILIZER_HALF_SPAN, STABILIZER_ROOT_CHORD, STABILIZER_TIP_CHORD, STABILIZER_ROOT_THICKNESS,
+            STABILIZER_TIP_THICKNESS, x -> STABILIZER_ROOT_LEADING_EDGE + STABILIZER_SWEEP * x,
+            x -> STABILIZER_Y + STABILIZER_DIHEDRAL * x);
+        layout.fin();
+        for (double x : ENGINE_X) {
+            layout.engine(x);
+            layout.engine(-x);
+        }
+        layout.controlJets();
+        for (double z : PASSENGER_DOORS) {
+            layout.door(1, z, layout.floorY + 1);
+            layout.door(-1, z, layout.floorY + 1);
+        }
+        // Only where the hold is tall enough to walk into; at the smallest scales it is a crawlspace.
+        if (layout.floorY - 2 >= 1) {
+            layout.door(1, CARGO_DOOR, layout.floorY - 2);
+        }
+        layout.fairings();
+        layout.flightDeck();
+        // Furnished before the gear goes on: the gear stands under the centre of mass, pool and all.
+        if (furnished) {
+            new CabinFitOut(layout).apply();
+        }
+        layout.landingGear();
+        layout.boardingStairs();
+        layout.assembler();
+        return layout.lifted();
+    }
+
+    public Map<BlockPos, BlockState> cells() {
+        return cells;
+    }
+
+    double scale() {
+        return scale;
+    }
+
+    int floorY() {
+        return floorY;
+    }
+
+    /** Whether the block at this position is part of the cabin or hold's open space. */
+    boolean isOpen(int x, int y, int z) {
+        BlockState state = cells.get(new BlockPos(x, y, z));
+        return state != null && state.isAir();
+    }
+
+    boolean isCabinFloor(int x, int y, int z) {
+        BlockState state = cells.get(new BlockPos(x, y, z));
+        return state != null && state.is(palette.floor().getBlock());
+    }
+
+    /** Puts a fitting into the cabin; only where there was open space, so the hull is never cut into. */
+    void furnish(int x, int y, int z, BlockState state) {
+        if (isOpen(x, y, z)) {
+            set(x, y, z, state);
+        }
+    }
+
+    /** Swaps a stretch of cabin floor (and only cabin floor) for another surface: tiles, parquet, water. */
+    void refloor(int x, int y, int z, BlockState state) {
+        if (isCabinFloor(x, y, z)) {
+            set(x, y, z, state);
+        }
+    }
+
+    /** How far out from the centreline the cabin is open at this height and station; -1 where it is closed. */
+    int openHalfWidth(int y, int z) {
+        int x = -1;
+        while (isOpen(x + 1, y, z)) {
+            x++;
+        }
+        return x;
+    }
+
+    /** The highest open block above the floor at this column, below the crown of the hull. */
+    int ceiling(int x, int z) {
+        int y = floorY + 1;
+        while (isOpen(x, y + 1, z)) {
+            y++;
+        }
+        return y;
+    }
+
+    /** Puts a block anywhere, over whatever was there. */
+    void set(int x, int y, int z, BlockState state) {
+        cells.put(new BlockPos(x, y, z), state);
+        minY = Math.min(minY, y);
+    }
+
+    BlockState stateAt(int x, int y, int z) {
+        return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
+    }
+
+    private boolean has(int x, int y, int z) {
+        return cells.containsKey(new BlockPos(x, y, z));
+    }
+
+    private boolean inFuselage(int x, int y, int z) {
+        return AirframeShape.inFuselage(x / scale, (y + 0.5) / scale, (z + 0.5) / scale);
+    }
+
+    /**
+     * The hull: every block of the fuselage that touches the outside is skin, the rest is cabin and hold, split by
+     * the main deck floor.
+     */
+    private void fuselage() {
+        int halfWidth = (int) Math.ceil(WIDTH / 2 * scale) + 1;
+        int height = (int) Math.ceil(HEIGHT * scale) + 1;
+        int length = (int) Math.ceil(LENGTH * scale) + 1;
+        for (int z = -1; z <= length; z++) {
+            for (int y = -1; y <= height; y++) {
+                for (int x = -halfWidth; x <= halfWidth; x++) {
+                    if (!inFuselage(x, y, z)) {
+                        continue;
+                    }
+                    boolean skin = !inFuselage(x + 1, y, z) || !inFuselage(x - 1, y, z)
+                        || !inFuselage(x, y + 1, z) || !inFuselage(x, y - 1, z)
+                        || !inFuselage(x, y, z + 1) || !inFuselage(x, y, z - 1);
+                    if (skin) {
+                        set(x, y, z, palette.hull());
+                    } else {
+                        set(x, y, z, y == floorY ? palette.floor() : Blocks.AIR.defaultBlockState());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Two rows of cabin windows down each side, one at eye level over the main deck and one where the upper deck's
+     * would be.
+     */
+    private void windows() {
+        int mainRow = floorY + 2;
+        int upperRow = floorY + (int) Math.round(3.0 * scale) + 2;
+        int first = (int) Math.ceil((NOSE_LENGTH + 1) * scale);
+        int last = (int) Math.floor((TAIL_START + 8) * scale);
+        for (int z = first; z <= last; z += 2) {
+            for (int y : new int[]{mainRow, upperRow}) {
+                for (int side : new int[]{1, -1}) {
+                    int x = side * (openHalfWidth(y, z) + 1);
+                    // Only where the hull there is a wall facing out sideways, with the cabin right behind it.
+                    if (openHalfWidth(y, z) >= 0 && has(x, y, z) && !inFuselage(x + side, y, z)) {
+                        set(x, y, z, palette.cabinWindow());
+                    }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Cabin lights set into the hull, on every few stations: one in the crown and one in each wall just above head
+     * height over the main deck, and one in the belly of the hold. Spaced so that light reaches every block of the
+     * cabin and hold, and no mob finds a dark spot to spawn in.
+     */
+    private void lights() {
+        int wallRow = floorY + 3;
+        for (int z = 0; z < LENGTH * scale; z++) {
+            if (Math.floorMod(z, LIGHT_SPACING) == 0 && isOpen(0, floorY + 1, z)) {
+                light(0, ceiling(0, z) + 1, z);
+            }
+            if (Math.floorMod(z, LIGHT_SPACING) == LIGHT_SPACING / 2 && openHalfWidth(wallRow, z) >= 0) {
+                int x = openHalfWidth(wallRow, z) + 1;
+                light(x, wallRow, z);
+                light(-x, wallRow, z);
+            }
+            if (Math.floorMod(z, LIGHT_SPACING) == 0 && isOpen(0, floorY - 1, z)) {
+                int y = floorY - 1;
+                while (isOpen(0, y - 1, z)) {
+                    y--;
+                }
+                light(0, y - 1, z);
+            }
+        }
+    }
+
+    /** Swaps a plain hull panel for a light; windows, doors and anything else stay. */
+    private void light(int x, int y, int z) {
+        if (stateAt(x, y, z).is(palette.hull().getBlock())) {
+            set(x, y, z, palette.light());
+        }
+    }
+
+    /**
+     * A pair of swept, tapered lifting surfaces, mirrored to both sides: the wings, or the tailplane. Its middle
+     * layer is the lifting block, laid flat; the rest of its thickness is skin. Inside the fuselage nothing is
+     * placed, so the hull stays whole and the hold stays open.
+     */
+    private void wings(double halfSpan, double rootChord, double tipChord, double rootThickness, double tipThickness,
+                       DoubleUnaryOperator leadingEdge, DoubleUnaryOperator centreY) {
+        int span = (int) Math.ceil(halfSpan * scale);
+        for (int xb = 0; xb <= span; xb++) {
+            double x = xb / scale;
+            double out = x / halfSpan;
+            double front = leadingEdge.applyAsDouble(x);
+            double chord = lerp(rootChord, tipChord, out);
+            double thickness = lerp(rootThickness, tipThickness, out);
+            double centre = centreY.applyAsDouble(x);
+            int core = (int) Math.floor(centre * scale);
+            for (int z = (int) Math.floor(front * scale); z <= Math.ceil((front + chord) * scale); z++) {
+                double chordwise = ((z + 0.5) / scale - front) / chord;
+                if (chordwise < 0 || chordwise > 1) {
+                    continue;
+                }
+                double half = thickness * airfoil(chordwise) / 2;
+                for (int y = (int) Math.floor((centre - half) * scale) - 1; y <= Math.ceil((centre + half) * scale); y++) {
+                    if (y != core && Math.abs((y + 0.5) / scale - centre) > half) {
+                        continue;
+                    }
+                    BlockState state = y == core ? palette.lift(Direction.UP, palette.hull()) : palette.hull();
+                    for (int side : new int[]{1, -1}) {
+                        if (!inFuselage(side * xb, y, z) && !has(side * xb, y, z)) {
+                            set(side * xb, y, z, state);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** The fin: swept back over the tail cone, livery on both faces around an upright lifting layer. */
+    private void fin() {
+        int bottom = (int) Math.floor((HEIGHT - 2) * scale);
+        int top = (int) Math.ceil((HEIGHT + FIN_HEIGHT) * scale);
+        for (int y = bottom; y <= top; y++) {
+            double up = Math.max(0, (y + 0.5) / scale - HEIGHT);
+            if (up > FIN_HEIGHT) {
+                continue;
+            }
+            double front = FIN_ROOT_LEADING_EDGE + FIN_SWEEP * up;
+            double chord = lerp(FIN_ROOT_CHORD, FIN_TIP_CHORD, up / FIN_HEIGHT);
+            double thickness = lerp(FIN_ROOT_THICKNESS, FIN_TIP_THICKNESS, up / FIN_HEIGHT);
+            for (int z = (int) Math.floor(front * scale); z <= Math.ceil((front + chord) * scale); z++) {
+                double chordwise = ((z + 0.5) / scale - front) / chord;
+                if (chordwise < 0 || chordwise > 1) {
+                    continue;
+                }
+                double half = thickness * airfoil(chordwise) / 2;
+                int reach = (int) Math.ceil(half * scale);
+                for (int x = -reach; x <= reach; x++) {
+                    if (x != 0 && Math.abs(x / scale) > half || inFuselage(x, y, z) || has(x, y, z)) {
+                        continue;
+                    }
+                    set(x, y, z, x == 0 ? palette.lift(Direction.EAST, palette.livery()) : palette.livery());
+                }
+            }
+        }
+    }
+
+    /**
+     * Rounds off the airframe: every plain skin block that is the outer step of a curve, open to the outside on one
+     * side and above or below it, gets its outer edge cut at 45 degrees. Only where the step runs on along the
+     * block, so the cuts line up into smooth facets along the fuselage, the nacelles and the wings' edges.
+     */
+    private void fairings() {
+        BlockState fairing = AerolargeRegistry.AIRFRAME_FAIRING.get().defaultBlockState();
+        Map<BlockPos, BlockState> cut = new HashMap<>();
+        // Not on the nose: it curves every way at once there, and the cuts would only roughen it.
+        double noseEnd = NOSE_LENGTH * scale;
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            if (!cell.getValue().is(palette.hull().getBlock()) || cell.getKey().getZ() < noseEnd) {
+                continue;
+            }
+            BlockPos pos = cell.getKey();
+            BlockState chosen = null;
+            int found = 0;
+            for (Direction out : Direction.Plane.HORIZONTAL) {
+                for (Direction vertical : new Direction[]{Direction.UP, Direction.DOWN}) {
+                    Direction along = out.getClockWise();
+                    boolean step = !cells.containsKey(pos.relative(out)) && !cells.containsKey(pos.relative(vertical))
+                        && !cells.containsKey(pos.relative(out).relative(vertical))
+                        && cells.containsKey(pos.relative(out.getOpposite())) && cells.containsKey(pos.relative(vertical.getOpposite()))
+                        && isSkin(pos.relative(along)) && isSkin(pos.relative(along.getOpposite()));
+                    if (step) {
+                        found++;
+                        chosen = fairing.setValue(FairingBlock.FACING, out)
+                            .setValue(FairingBlock.HALF, vertical == Direction.UP ? Half.TOP : Half.BOTTOM);
+                    }
+                }
+            }
+            if (found == 1) {
+                cut.put(pos, chosen);
+            }
+        }
+        cells.putAll(cut);
+    }
+
+    private boolean isSkin(BlockPos pos) {
+        BlockState state = cells.get(pos);
+        return state != null && (state.is(palette.hull().getBlock()) || state.is(AerolargeRegistry.AIRFRAME_FAIRING.get()));
+    }
+
+    /**
+     * The windscreen: every hull block under the glass becomes invisible backing, and the one nearest the middle of
+     * the glass carries the renderer that draws the glass itself, curved, framed and wrapped around the nose.
+     */
+    private void windscreen() {
+        List<BlockPos> covered = new ArrayList<>();
+        int last = (int) Math.ceil(NOSE_LENGTH * scale);
+        int halfWidth = (int) Math.ceil(WIDTH / 2 * scale) + 1;
+        for (int z = 0; z <= last; z++) {
+            for (int y = 0; y <= HEIGHT * scale; y++) {
+                for (int x = -halfWidth; x <= halfWidth; x++) {
+                    BlockState state = cells.get(new BlockPos(x, y, z));
+                    boolean skin = state != null && (state.is(palette.hull().getBlock()) || state.is(palette.light().getBlock()));
+                    if (skin && Windscreen.covers((y + 0.5) / scale, (z + 0.5) / scale)) {
+                        covered.add(new BlockPos(x, y, z));
+                    }
+                }
+            }
+        }
+        if (covered.isEmpty()) {
+            return;
+        }
+        double middleY = (Windscreen.LOW + Windscreen.HIGH) / 2 * scale;
+        double middleZ = (Windscreen.front(Windscreen.HIGH) + Windscreen.REAR) / 2 * scale;
+        BlockPos anchor = covered.stream()
+            .min(Comparator.comparingDouble(pos -> Math.abs(pos.getX()) + Math.abs(pos.getY() - middleY) + Math.abs(pos.getZ() - middleZ)))
+            .orElseThrow();
+        BlockState backing = AerolargeRegistry.WINDSCREEN.get().defaultBlockState();
+        covered.forEach(pos -> set(pos.getX(), pos.getY(), pos.getZ(), backing));
+        set(anchor.getX(), anchor.getY(), anchor.getZ(), AerolargeRegistry.COCKPIT_WINDSCREEN.get().defaultBlockState());
+        // The anchor's position is taken here, before the layout is lifted onto its wheels: the glass is worked out
+        // in the same unlifted frame.
+        double airlinerScale = scale;
+        fittings.put(anchor, (blockEntity, rotation) -> {
+            if (blockEntity instanceof CockpitWindscreenBlockEntity windscreen) {
+                windscreen.configure(airlinerScale, anchor);
+            }
+        });
+    }
+
+    /**
+     * The flight deck: a raised floor in the nose at the height where the pilots look straight out through the
+     * windscreen, steps up to it from the main deck, the instrument panel along the front, and two seats either side
+     * of the pedestal with the four thrust levers, engines 1 to 4 from left to right as on the A380.
+     */
+    private void flightDeck() {
+        int deck = Math.max(floorY + 1, Windscreen.deckRow(scale));
+        int deckEnd = (int) Math.round(0.95 * NOSE_LENGTH * scale);
+        for (int z = 0; z <= deckEnd; z++) {
+            int width = openHalfWidth(deck, z);
+            for (int x = -width; x <= width; x++) {
+                set(x, deck, z, palette.floor());
+            }
+        }
+        // Steps from the main deck up to the flight deck's back edge, rising toward the nose.
+        BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+        for (int k = 1; deck - k > floorY; k++) {
+            for (int x = -1; x <= 1; x++) {
+                furnish(x, deck - k, deckEnd + k, step);
+            }
+        }
+
+        // The panel goes along the first station where two pilots fit side by side, the pedestal two rows back.
+        int panelZ = -1;
+        for (int z = 0; z <= deckEnd - 3; z++) {
+            if (openHalfWidth(deck + 1, z) >= 3 && openHalfWidth(deck + 1, z + 2) >= 3) {
+                panelZ = z;
+                break;
+            }
+        }
+        if (panelZ < 0) {
+            return;
+        }
+        BlockState panel = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.SOUTH);
+        int panelWidth = openHalfWidth(deck + 1, panelZ);
+        for (int x = -panelWidth; x <= panelWidth; x++) {
+            set(x, deck + 1, panelZ, panel);
+        }
+        int pedestalZ = panelZ + 2;
+        double[] engines = {-ENGINE_X[1], -ENGINE_X[0], ENGINE_X[0], ENGINE_X[1]};
+        int[] leverX = {-2, -1, 1, 2};
+        List<BlockPos> levers = new ArrayList<>();
+        for (int i = 0; i < engines.length; i++) {
+            BlockPos lever = new BlockPos(leverX[i], deck + 1, pedestalZ);
+            levers.add(lever);
+            set(lever.getX(), lever.getY(), lever.getZ(),
+                AerolargeRegistry.THRUST_LEVER.get().defaultBlockState().setValue(ThrustLeverBlock.FACING, Direction.NORTH));
+            int engine = i + 1;
+            List<BlockPos> relays = engineRelays.getOrDefault(engines[i], List.of()).stream().map(relay -> relay.subtract(lever)).toList();
+            fittings.put(lever, (blockEntity, rotation) -> {
+                if (blockEntity instanceof ThrustLeverBlockEntity thrustLever) {
+                    thrustLever.configure(engine, relays.stream().map(offset -> offset.rotate(rotation)).toList());
+                }
+            });
+        }
+        autopilot(new BlockPos(0, deck + 1, pedestalZ), engines, levers);
+        palette.seat().ifPresent(seat -> {
+            int seatX = openHalfWidth(deck + 1, pedestalZ) >= 4 ? 4 : 3;
+            set(-seatX, deck + 1, pedestalZ, seat);
+            set(seatX, deck + 1, pedestalZ, seat);
+        });
+        assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
+    }
+
+    /**
+     * The autopilot panel in the middle of the pedestal, wired to every relay it flies with: the four engines' and
+     * the control jets', and to the thrust levers it hands the engines back to.
+     */
+    private void autopilot(BlockPos at, double[] engines, List<BlockPos> levers) {
+        set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
+        Map<AutopilotBlockEntity.Channel, List<BlockPos>> channels = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+        AutopilotBlockEntity.Channel[] engineChannels = {
+            AutopilotBlockEntity.Channel.ENGINE_1, AutopilotBlockEntity.Channel.ENGINE_2,
+            AutopilotBlockEntity.Channel.ENGINE_3, AutopilotBlockEntity.Channel.ENGINE_4
+        };
+        for (int i = 0; i < engines.length; i++) {
+            channels.put(engineChannels[i], engineRelays.getOrDefault(engines[i], List.of()));
+        }
+        channels.putAll(jetRelays);
+        Map<AutopilotBlockEntity.Channel, List<BlockPos>> relative = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+        channels.forEach((channel, relays) -> relative.put(channel, relays.stream().map(relay -> relay.subtract(at)).toList()));
+        List<BlockPos> leverOffsets = levers.stream().map(lever -> lever.subtract(at)).toList();
+        fittings.put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AutopilotBlockEntity autopilot) {
+                Map<AutopilotBlockEntity.Channel, List<BlockPos>> turned = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+                relative.forEach((channel, offsets) -> turned.put(channel, offsets.stream().map(offset -> offset.rotate(rotation)).toList()));
+                autopilot.configure(turned, leverOffsets.stream().map(offset -> offset.rotate(rotation)).toList());
+            }
+        });
+    }
+
+    /**
+     * Control jets for the autopilot, standing in for the control surfaces the airliner does not have: one on top of
+     * and one under each tailplane tip to pitch it (pushing the tail down lifts the nose), and one on top of and one
+     * under each wingtip to roll it. Each is a thruster pointing up or down with its own relay right behind it.
+     */
+    private void controlJets() {
+        if (palette.engine().isEmpty()) {
+            return;
+        }
+        BlockState down = AirframePalette.with(palette.engine().get(), "facing", "down");
+        BlockState up = AirframePalette.with(palette.engine().get(), "facing", "up");
+        for (int side : new int[]{1, -1}) {
+            double tailTip = 0.8 * STABILIZER_HALF_SPAN;
+            double tailChord = lerp(STABILIZER_ROOT_CHORD, STABILIZER_TIP_CHORD, 0.8);
+            int tailX = side * (int) Math.round(tailTip * scale);
+            int tailZ = (int) Math.round((STABILIZER_ROOT_LEADING_EDGE + STABILIZER_SWEEP * tailTip + tailChord / 2) * scale);
+            jetPair(tailX, tailZ, down, up, AutopilotBlockEntity.Channel.PITCH_UP, AutopilotBlockEntity.Channel.PITCH_DOWN);
+
+            double wingTip = 0.85 * WING_HALF_SPAN;
+            double wingChord = lerp(WING_ROOT_CHORD, WING_TIP_CHORD, 0.85);
+            int wingX = side * (int) Math.round(wingTip * scale);
+            int wingZ = (int) Math.round((wingLeadingEdge(wingTip) + wingChord / 2) * scale);
+            // Pushing the right tip down rolls right; pushing the left tip down rolls left; pushing up the opposite.
+            jetPair(wingX, wingZ, down, up,
+                side > 0 ? AutopilotBlockEntity.Channel.ROLL_RIGHT : AutopilotBlockEntity.Channel.ROLL_LEFT,
+                side > 0 ? AutopilotBlockEntity.Channel.ROLL_LEFT : AutopilotBlockEntity.Channel.ROLL_RIGHT);
+        }
+    }
+
+    /** A jet on top of the surface at (x, z) pushing down, and one under it pushing up, each with its relay. */
+    private void jetPair(int x, int z, BlockState down, BlockState up, AutopilotBlockEntity.Channel downChannel, AutopilotBlockEntity.Channel upChannel) {
+        int top = Integer.MIN_VALUE;
+        int bottom = Integer.MAX_VALUE;
+        for (int y = -64; y < 64 * scale; y++) {
+            if (has(x, y, z)) {
+                top = Math.max(top, y);
+                bottom = Math.min(bottom, y);
+            }
+        }
+        if (top == Integer.MIN_VALUE) {
+            return;
+        }
+        jet(x, top + 1, z, down, downChannel);
+        jet(x, bottom - 1, z, up, upChannel);
+    }
+
+    private void jet(int x, int y, int z, BlockState thruster, AutopilotBlockEntity.Channel channel) {
+        if (has(x, y, z) || has(x, y, z + 1)) {
+            return;
+        }
+        set(x, y, z, thruster);
+        fullThrust(new BlockPos(x, y, z));
+        set(x, y, z + 1, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
+        jetRelays.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(new BlockPos(x, y, z + 1));
+    }
+
+    /**
+     * One engine: a round nacelle under the wing at span station x (negative to port), the intake face up front,
+     * the thrusters filling the middle of the exhaust face, and a pylon up to the wing.
+     */
+    private void engine(double x) {
+        double front = nacelleFront(Math.abs(x));
+        double centreY = nacelleY(Math.abs(x));
+        int reach = (int) Math.ceil(NACELLE_RADIUS * scale) + 1;
+        int centreX = (int) Math.round(x * scale);
+        int centreYb = (int) Math.floor(centreY * scale);
+        int firstZ = (int) Math.floor(front * scale);
+        int lastZ = (int) Math.ceil((front + NACELLE_LENGTH) * scale);
+        for (int z = firstZ; z <= lastZ; z++) {
+            for (int y = centreYb - reach; y <= centreYb + reach; y++) {
+                for (int xb = centreX - reach; xb <= centreX + reach; xb++) {
+                    if (!inNacelle(x, centreY, front, xb, y, z)) {
+                        continue;
+                    }
+                    BlockState state = palette.hull();
+                    if (!inNacelle(x, centreY, front, xb, y, z - 1)) {
+                        state = palette.intake();
+                    } else if (!inNacelle(x, centreY, front, xb, y, z + 1)) {
+                        double radius = nacelleRadius((z + 0.5) / scale - front);
+                        double off = Math.hypot(xb / scale - x, (y + 0.5) / scale - centreY);
+                        if (off <= Math.max(0.85 * radius, 0.5 / scale)) {
+                            state = palette.engine().orElse(palette.intake());
+                            if (palette.engine().isPresent()) {
+                                fullThrust(new BlockPos(xb, y, z));
+                                // The relay just ahead of the thruster, inside the nacelle, carries its thrust lever's signal.
+                                set(xb, y, z - 1, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
+                                engineRelays.computeIfAbsent(x, ignored -> new ArrayList<>()).add(new BlockPos(xb, y, z - 1));
+                            }
+                        }
+                    }
+                    set(xb, y, z, state);
+                }
+            }
+        }
+        int pylonFrom = (int) Math.floor((front + 1.5) * scale);
+        int pylonTo = (int) Math.floor((front + NACELLE_LENGTH - 1) * scale);
+        for (int z = pylonFrom; z <= pylonTo; z++) {
+            int y = centreYb;
+            while (has(centreX, y, z)) {
+                y++;
+            }
+            for (int limit = y + (int) Math.ceil(3 * scale); y < limit && !has(centreX, y, z); y++) {
+                set(centreX, y, z, palette.hull());
+            }
+        }
+    }
+
+    /**
+     * Turns a creative thruster up to the configured setting, the way its value box would: Create keeps a block
+     * entity's scroll value under "ScrollValue". Other thrusters have no such setting and keep the value unread.
+     */
+    private void fullThrust(BlockPos thruster) {
+        int setting = AerolargeConfig.THRUST_SETTING.get();
+        fittings.put(thruster, (blockEntity, rotation) -> {
+            if (blockEntity.getLevel() == null) {
+                return;
+            }
+            HolderLookup.Provider registries = blockEntity.getLevel().registryAccess();
+            CompoundTag data = blockEntity.saveWithoutMetadata(registries);
+            data.putInt("ScrollValue", setting);
+            blockEntity.loadWithComponents(data, registries);
+        });
+    }
+
+    private boolean inNacelle(double x, double centreY, double front, int xb, int y, int z) {
+        double radius = nacelleRadius((z + 0.5) / scale - front);
+        double dx = xb / scale - x;
+        double dy = (y + 0.5) / scale - centreY;
+        return radius > 0 && dx * dx + dy * dy <= radius * radius;
+    }
+
+    /**
+     * A two-leaf door, two blocks wide, cut through the hull on one side at station z, its bottom on row y. Where
+     * the curve of the hull makes the wall more than a block thick, the rest is cut away so the door opens into the
+     * cabin.
+     */
+    private void door(int side, double station, int bottom) {
+        int fore = (int) Math.round(station * scale);
+        Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
+        for (int leaf = 0; leaf < 2; leaf++) {
+            int z = fore + leaf;
+            // The aft leaf's partner is ahead of it (north), the fore leaf's behind it (south); a leaf hinges on the
+            // side away from its partner, the way two doors placed side by side by hand pair up.
+            Direction partner = leaf == 0 ? Direction.SOUTH : Direction.NORTH;
+            DoorHingeSide hinge = partner == facing.getCounterClockWise() ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
+            for (int part = 0; part < 2; part++) {
+                int y = bottom + part;
+                int outer = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+                while (outer != 0 && !inFuselage(outer, y, z)) {
+                    outer -= side;
+                }
+                for (int x = outer - side; x != 0 && has(x, y, z) && !isOpen(x, y, z); x -= side) {
+                    set(x, y, z, Blocks.AIR.defaultBlockState());
+                }
+                // Below the door the hull already curves inward: close the gap with a sill out to the door.
+                for (int x = outer; part == 0 && x != 0 && !has(x, y - 1, z); x -= side) {
+                    set(x, y - 1, z, palette.hull());
+                }
+                set(outer, y, z, AerolargeRegistry.AIRLINER_DOOR.get().defaultBlockState()
+                    .setValue(DoorBlock.FACING, facing)
+                    .setValue(DoorBlock.HINGE, hinge)
+                    .setValue(DoorBlock.HALF, part == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER));
+            }
+        }
+    }
+
+    /**
+     * Struts and tires under the nose, the wings and the belly, long enough to hold the inboard engines (the lowest
+     * part of the airframe) clear of the ground.
+     */
+    private void landingGear() {
+        ground = minY - Math.max(2, (int) Math.round(GROUND_CLEARANCE * scale));
+        double balance = centreOfMassZ();
+        strut(0, (int) Math.round(NOSE_GEAR_Z * scale), ground);
+        for (double[] gear : MAIN_GEAR) {
+            int x = (int) Math.round(gear[0] * scale);
+            int z = (int) Math.round(balance + gear[1] * scale);
+            strut(x, z, ground);
+            strut(-x, z, ground);
+        }
+        // The tires reach below the wheel mounts to the ground row, so that is what stands on the ground.
+        minY = Math.min(minY, ground);
+    }
+
+    /**
+     * Folding airstairs up to the forward port door, the way passengers board: a landing in front of the door and a
+     * two-wide flight running down toward the nose to the ground, built standing. The airstair controller set into
+     * the hull just ahead of the door folds them into nothing and back out, so they are out of the way for flight;
+     * a button beside it inside, one outside, and a call button on the nose gear for the ground crew work it.
+     */
+    private void boardingStairs() {
+        int fore = (int) Math.round(PASSENGER_DOORS[0] * scale);
+        int door = -((int) Math.ceil(WIDTH / 2 * scale) + 1);
+        while (door < 0 && !inFuselage(door, floorY + 1, fore)) {
+            door++;
+        }
+        BlockState landing = Blocks.POLISHED_ANDESITE.defaultBlockState();
+        // Climbing them walks south, toward the door; a stair rises toward the way it faces.
+        BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+        List<List<AirstairControllerBlockEntity.Step>> stages = new ArrayList<>();
+        stages.add(stage(List.of(
+            new BlockPos(door - 1, floorY, fore), new BlockPos(door - 2, floorY, fore),
+            new BlockPos(door - 1, floorY, fore + 1), new BlockPos(door - 2, floorY, fore + 1)
+        ), landing));
+        for (int k = 1; floorY - k >= ground; k++) {
+            stages.add(stage(List.of(new BlockPos(door - 1, floorY - k, fore - k), new BlockPos(door - 2, floorY - k, fore - k)), step));
+        }
+        stages.removeIf(List::isEmpty);
+
+        // The controller is the hull block just ahead of the door, at the height of the door's upper half.
+        int row = floorY + 2;
+        int panelZ = fore - 1;
+        int panelX = -(openHalfWidth(row, panelZ) + 1);
+        if (stages.isEmpty() || panelX >= 0 || !has(panelX, row, panelZ)) {
+            return;
+        }
+        set(panelX, row, panelZ, AerolargeRegistry.AIRSTAIR_CONTROLLER.get().defaultBlockState());
+        BlockState button = Blocks.POLISHED_BLACKSTONE_BUTTON.defaultBlockState().setValue(ButtonBlock.FACE, AttachFace.WALL);
+        set(panelX + 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.EAST));
+        if (!has(panelX - 1, row, panelZ)) {
+            set(panelX - 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.WEST));
+        }
+        BlockPos controller = new BlockPos(panelX, row, panelZ);
+        List<List<AirstairControllerBlockEntity.Step>> relative = stages.stream()
+            .map(stage -> stage.stream().map(at -> new AirstairControllerBlockEntity.Step(at.offset().subtract(controller), at.state())).toList())
+            .toList();
+        fittings.put(controller, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AirstairControllerBlockEntity airstairs) {
+                airstairs.configure(relative.stream().map(stage -> stage.stream().map(at -> {
+                    BlockPos offset = at.offset().rotate(rotation);
+                    BlockState turned = at.state().rotate(blockEntity.getLevel(), blockEntity.getBlockPos().offset(offset), rotation);
+                    return new AirstairControllerBlockEntity.Step(offset, turned);
+                }).toList()).toList());
+            }
+        });
+
+        // The ground crew's call button, on the front of the nose gear's strut above the axle, clear of the wheels.
+        int noseZ = (int) Math.round(NOSE_GEAR_Z * scale);
+        int callY = ground + 2;
+        if (stateAt(0, callY, noseZ).is(palette.gear().getBlock()) && !has(0, callY, noseZ - 1)) {
+            set(0, callY, noseZ - 1, AerolargeRegistry.AIRSTAIR_CALL_BUTTON.get().defaultBlockState()
+                .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.NORTH));
+        }
+    }
+
+    /** One stage of the stairs: those of its blocks that fit, placed standing. */
+    private List<AirstairControllerBlockEntity.Step> stage(List<BlockPos> positions, BlockState state) {
+        List<AirstairControllerBlockEntity.Step> stage = new ArrayList<>();
+        for (BlockPos pos : positions) {
+            if (!has(pos.getX(), pos.getY(), pos.getZ())) {
+                set(pos.getX(), pos.getY(), pos.getZ(), state);
+                stage.add(new AirstairControllerBlockEntity.Step(pos, state));
+            }
+        }
+        return stage;
+    }
+
+    public Map<BlockPos, Fitting> fittings() {
+        return fittings;
+    }
+
+    /**
+     * Where along the fuselage the airframe balances, in blocks from the nose, weighing each block the way Sable will
+     * once it is assembled: by its mass tag.
+     */
+    private double centreOfMassZ() {
+        double mass = 0;
+        double moment = 0;
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            double weight = sableMass(cell.getValue());
+            mass += weight;
+            moment += weight * (cell.getKey().getZ() + 0.5);
+        }
+        return mass > 0 ? moment / mass : LENGTH * scale / 2;
+    }
+
+    /** The block's mass in Sable, from the tags Sable weighs blocks by; air and fluids weigh nothing here. */
+    private static double sableMass(BlockState state) {
+        if (state.isAir() || state.getBlock() instanceof LiquidBlock) {
+            return 0;
+        }
+        if (state.is(SABLE_WEIGHTLESS)) {
+            return 0;
+        }
+        if (state.is(SABLE_SUPER_LIGHT)) {
+            return 0.25;
+        }
+        if (state.is(SABLE_SUPER_HEAVY)) {
+            return 4;
+        }
+        if (state.is(SABLE_HEAVY)) {
+            return 2;
+        }
+        return state.is(SABLE_LIGHT) ? 0.5 : 1;
+    }
+
+    private static TagKey<Block> sableTag(String name) {
+        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("sable", name));
+    }
+
+    /**
+     * One landing gear leg at (x, z): a strut down from the airframe to an axle a block above the ground, with a
+     * wheel mount on either side facing out, each fitted with a tire so the assembled airliner rolls fore and aft.
+     * Without wheel mounts the leg ends in fixed tire blocks instead.
+     */
+    private void strut(int x, int z, int ground) {
+        int axle = ground + 1;
+        if (palette.wheelMount().isPresent() && palette.tireItem().isPresent()) {
+            for (int side : new int[]{1, -1}) {
+                BlockState mount = AirframePalette.with(palette.wheelMount().get(), "facing", side > 0 ? "east" : "west");
+                set(x + side, axle, z, mount);
+                Item tire = palette.tireItem().get();
+                fittings.put(new BlockPos(x + side, axle, z), (blockEntity, rotation) -> fitTire(blockEntity, tire));
+            }
+            for (int y = axle; y < axle + 64 && (y == axle || !has(x, y, z)); y++) {
+                set(x, y, z, palette.gear());
+            }
+            return;
+        }
+        int tireHalfWidth = (int) Math.round(0.45 * scale);
+        int tireHalfLength = (int) Math.round(0.5 * scale);
+        int tireHeight = Math.max(1, (int) Math.round(1.1 * scale));
+        for (int y = ground; y < ground + tireHeight; y++) {
+            for (int dx = -tireHalfWidth; dx <= tireHalfWidth; dx++) {
+                for (int dz = -tireHalfLength; dz <= tireHalfLength; dz++) {
+                    set(x + dx, y, z + dz, palette.tire());
+                }
+            }
+        }
+        for (int y = ground + tireHeight; y < ground + tireHeight + 64 && !has(x, y, z); y++) {
+            set(x, y, z, palette.gear());
+        }
+    }
+
+    /**
+     * Puts a tire on a wheel mount the way Offroad keeps it: as the mount's held stack, saved under "CurrentStack".
+     * The mount's own data is read back with the tire added, so everything else it holds stays as it was.
+     */
+    private static void fitTire(BlockEntity mount, Item tire) {
+        if (mount.getLevel() == null) {
+            return;
+        }
+        HolderLookup.Provider registries = mount.getLevel().registryAccess();
+        CompoundTag data = mount.saveWithoutMetadata(registries);
+        data.put("CurrentStack", new ItemStack(tire).save(registries));
+        mount.loadWithComponents(data, registries);
+    }
+
+    /** The Physics Assembler, on the flight deck behind the pilots, or failing that the first spot on the cabin floor. */
+    private void assembler() {
+        palette.assembler().ifPresent(state -> {
+            if (assemblerSpot != null && isOpen(assemblerSpot.getX(), assemblerSpot.getY(), assemblerSpot.getZ())) {
+                set(assemblerSpot.getX(), assemblerSpot.getY(), assemblerSpot.getZ(), state);
+                return;
+            }
+            for (int z = (int) Math.round(0.7 * NOSE_LENGTH * scale); z < LENGTH * scale; z++) {
+                if (isOpen(0, floorY + 1, z) && isCabinFloor(0, floorY, z)) {
+                    set(0, floorY + 1, z, state);
+                    return;
+                }
+            }
+        });
+    }
+
+    /** Moves everything up so the tires stand on y 0. */
+    private AirframeLayout lifted() {
+        Map<BlockPos, BlockState> moved = new HashMap<>(cells.size() * 2);
+        cells.forEach((pos, state) -> moved.put(pos.below(minY), state));
+        cells.clear();
+        cells.putAll(moved);
+        Map<BlockPos, Fitting> movedFittings = new HashMap<>();
+        fittings.forEach((pos, fitting) -> movedFittings.put(pos.below(minY), fitting));
+        fittings.clear();
+        fittings.putAll(movedFittings);
+        return this;
+    }
+}

@@ -1,0 +1,282 @@
+import { fileURLToPath } from "node:url";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { deflateSync } from "node:zlib";
+
+// Run from anywhere: node tools/generate_textures.mjs
+// Writes the 16x16 airframe textures and the item icons. The look is an airliner's: white skin with faint panel
+// seams and rivet rows, an Airbus-blue livery, smoked cabin glass in white frames, grey cabin carpet.
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
+const blockOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/block");
+const itemOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/item");
+mkdirSync(blockOutput, { recursive: true });
+mkdirSync(itemOutput, { recursive: true });
+
+const SIZE = 16;
+const WHITE = [0xe8, 0xec, 0xf0];
+const SEAM = [0xc4, 0xcb, 0xd3];
+const RIVET = [0xb0, 0xb8, 0xc1];
+const BLUE = [0x1c, 0x3d, 0x8c];
+const BLUE_SEAM = [0x15, 0x2e, 0x6b];
+const BLUE_RIVET = [0x2b, 0x52, 0xa8];
+const GLASS = [0x2a, 0x3c, 0x55, 0xb0];
+const GLASS_SHINE = [0x8f, 0xb4, 0xd6, 0xc8];
+const COCKPIT_GLASS = [0x1b, 0x24, 0x33, 0xc8];
+const FRAME_DARK = [0x3a, 0x40, 0x48];
+const CARPET = [0x5a, 0x63, 0x73];
+const CARPET_DARK = [0x4b, 0x53, 0x62];
+const CARPET_LIGHT = [0x6b, 0x75, 0x87];
+const INTAKE = [0x24, 0x27, 0x2c];
+const BLADE = [0x55, 0x5b, 0x63];
+const SPINNER = [0xc9, 0xcf, 0xd6];
+const STEEL = [0x8a, 0x90, 0x97];
+const STEEL_DARK = [0x5c, 0x62, 0x69];
+const CHROME = [0xd3, 0xd8, 0xdd];
+const RUBBER = [0x1d, 0x1e, 0x20];
+const RUBBER_LIGHT = [0x33, 0x35, 0x38];
+const HUB = [0x9a, 0xa0, 0xa6];
+const PAPER = [0x1f, 0x5f, 0xb5];
+const PAPER_LINE = [0x3f, 0x7d, 0xcc];
+const INK = [0xf2, 0xf6, 0xfb];
+const GOLD = [0xf0, 0xc4, 0x3a];
+const CLEAR = [0, 0, 0, 0];
+
+// Deterministic noise, reseeded per texture so adding one never changes the others.
+let seed = 0;
+function reseed(name) {
+  seed = 0x41657230;
+  for (const char of name) seed = Math.imul(seed ^ char.charCodeAt(0), 0x01000193) | 0;
+}
+function random() {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let value = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+  return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+}
+
+const crcTable = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+function chunk(type, data) {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const typeAndData = Buffer.concat([Buffer.from(type, "ascii"), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(typeAndData));
+  return Buffer.concat([length, typeAndData, crc]);
+}
+function encodePng(pixels) {
+  const height = pixels.length;
+  const width = pixels[0].length;
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 6; // RGBA
+  const raw = Buffer.alloc((width * 4 + 1) * height);
+  for (let y = 0; y < height; y++) {
+    raw[y * (width * 4 + 1)] = 0; // filter: none
+    for (let x = 0; x < width; x++) {
+      const [r, g, b, a = 255] = pixels[y][x];
+      raw.set([r, g, b, a], y * (width * 4 + 1) + 1 + x * 4);
+    }
+  }
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(raw)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+/** A texture painted pixel by pixel: paint(x, y) returns the colour, with a little noise mixed into opaque ones. */
+function texture(folder, name, paint, noise = 4) {
+  reseed(name);
+  const pixels = [];
+  for (let y = 0; y < SIZE; y++) {
+    const row = [];
+    for (let x = 0; x < SIZE; x++) {
+      const [r, g, b, a = 255] = paint(x, y);
+      const n = a === 255 ? Math.round((random() - 0.5) * 2 * noise) : 0;
+      row.push([clamp(r + n), clamp(g + n), clamp(b + n), a]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(folder, `${name}.png`), encodePng(pixels));
+}
+const clamp = (value) => Math.max(0, Math.min(255, value));
+
+/** Skin plating: a seam along the top and left edges, a rivet row just inside them. */
+function plating(base, seam, rivet) {
+  return (x, y) => {
+    if (x === 0 || y === 0) return seam;
+    if ((y === 2 && x % 3 === 1) || (x === 2 && y % 3 === 1)) return rivet;
+    return base;
+  };
+}
+
+texture(blockOutput, "airframe_panel", plating(WHITE, SEAM, RIVET), 3);
+texture(blockOutput, "livery_panel", plating(BLUE, BLUE_SEAM, BLUE_RIVET), 3);
+
+// A rounded cabin window in its white frame, with a highlight across the upper corner.
+texture(blockOutput, "cabin_window", (x, y) => {
+  const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
+  const dy = Math.max(Math.abs(y - 7.5) - 3.5, 0);
+  const corner = Math.hypot(dx, dy);
+  if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
+  if (corner > 1.9) return FRAME_DARK;
+  if (x - y > -2 && x - y < 1 && y < 8) return GLASS_SHINE;
+  return GLASS;
+});
+
+// The windscreen: dark glass edge to edge, thin frame bars along the top and one side.
+texture(blockOutput, "cockpit_window", (x, y) => {
+  if (y === 0 || x === 0) return FRAME_DARK;
+  if (x + y >= 18 && x + y <= 19) return GLASS_SHINE;
+  return COCKPIT_GLASS;
+});
+
+// Cabin carpet: a small diamond pattern on grey-blue.
+texture(blockOutput, "cabin_floor", (x, y) => {
+  const d = (Math.abs((x % 8) - 4) + Math.abs((y % 8) - 4));
+  if (d === 4) return CARPET_LIGHT;
+  if ((x + y) % 2 === 0 && d < 2) return CARPET_DARK;
+  return CARPET;
+}, 6);
+
+// The engine intake: the fan's blades swept around a polished spinner.
+texture(blockOutput, "engine_intake", (x, y) => {
+  const dx = x - 7.5;
+  const dy = y - 7.5;
+  const r = Math.hypot(dx, dy);
+  if (r < 2.2) return SPINNER;
+  const angle = Math.atan2(dy, dx) + r * 0.18;
+  const blade = (angle / (Math.PI * 2) * 12 + 12) % 1;
+  return blade < 0.35 ? BLADE : INTAKE;
+}, 3);
+
+// Landing gear strut: a chromed oleo piston between two steel collars.
+texture(blockOutput, "landing_gear", (x, y) => {
+  if (y % 8 === 0 || y % 8 === 1) return STEEL_DARK;
+  if (x >= 5 && x <= 10) return x === 6 ? INK : CHROME;
+  return STEEL;
+}, 4);
+
+// Tire tread: rubber with chevron grooves, as seen from the side and from above alike.
+texture(blockOutput, "landing_gear_tire", (x, y) => {
+  if ((x + Math.abs(y % 6 - 3)) % 6 === 0) return RUBBER_LIGHT;
+  if (x >= 6 && x <= 9 && y >= 6 && y <= 9) return HUB;
+  return RUBBER;
+}, 5);
+
+// The door: a white leaf in a dark frame, a round porthole up top and a recessed handle below.
+texture(blockOutput, "airliner_door_top", (x, y) => {
+  if (x === 0 || x === 15 || y === 0) return FRAME_DARK;
+  const r = Math.hypot(x - 7.5, y - 7.5);
+  if (r < 2.7) return r < 1.6 && x < 8 && y < 8 ? GLASS_SHINE : GLASS;
+  if (r < 3.5) return SEAM;
+  return WHITE;
+}, 2);
+texture(blockOutput, "airliner_door_bottom", (x, y) => {
+  if (x === 0 || x === 15 || y === 15) return FRAME_DARK;
+  if (y >= 3 && y <= 5 && x >= 10 && x <= 13) return y === 4 ? FRAME_DARK : STEEL;
+  if (y === 12) return BLUE;
+  return WHITE;
+}, 2);
+texture(itemOutput, "airliner_door", (x, y) => {
+  if (x < 4 || x > 11) return CLEAR;
+  if (x === 4 || x === 11 || y === 0 || y === 15) return FRAME_DARK;
+  if (Math.hypot(x - 7.5, y - 4) < 1.8) return GLASS;
+  if (x === 10 && y >= 9 && y <= 10) return STEEL_DARK;
+  if (y === 13) return BLUE;
+  return WHITE;
+}, 0);
+
+// The airstair controller: a grey service panel in a yellow-and-black hazard border, a white staircase glyph on it.
+const HAZARD = [0xe8, 0xb5, 0x1e];
+const PANEL_GREY = [0x6a, 0x71, 0x79];
+texture(blockOutput, "airstair_controller", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15 || x === 1 || y === 1 || x === 14 || y === 14) {
+    return (x + y) % 4 < 2 ? HAZARD : RUBBER;
+  }
+  // Five steps rising to the right, each two pixels.
+  const step = Math.floor((x - 3) / 2);
+  if (x >= 3 && x <= 12 && y <= 12 && y >= 11 - step * 2) return INK;
+  return PANEL_GREY;
+}, 3);
+// Cabin light: a warm white diffuser in a thin skin-coloured frame, brightest in the middle.
+texture(blockOutput, "cabin_light", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return SEAM;
+  if (x === 1 || y === 1 || x === 14 || y === 14) return WHITE;
+  const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
+  return [clamp(240 + glow * 15), clamp(236 + glow * 19), clamp(214 + glow * 30)];
+}, 2);
+// The call button's cap: bright yellow so the ground crew find it.
+texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
+
+// The windscreen renderer tints this plain white sprite into glass and frame.
+texture(blockOutput, "windscreen", () => [255, 255, 255], 0);
+
+// The flight deck. Instrument panel: two glass-cockpit screens on a dark panel, an attitude display (blue sky
+// over brown ground) and a navigation display (green arc on black), with a row of amber annunciators below.
+const PANEL_DARK = [0x26, 0x29, 0x2e];
+const PANEL_EDGE = [0x1a, 0x1c, 0x20];
+texture(blockOutput, "instrument_panel", (x, y) => {
+  if (y >= 12) return y === 13 && x % 3 === 1 ? [0xf0, 0xa8, 0x30] : PANEL_DARK;
+  const screen = x >= 1 && x <= 6 ? 0 : x >= 9 && x <= 14 ? 1 : -1;
+  if (screen < 0 || y < 2 || y > 10) return y === 1 || y === 11 ? PANEL_EDGE : PANEL_DARK;
+  if (screen === 0) {
+    if (y === 6 && x >= 2 && x <= 5) return [0xf2, 0xd0, 0x30];
+    return y <= 6 ? [0x3a, 0x7c, 0xd0] : [0x8a, 0x5a, 0x2c];
+  }
+  const r = Math.hypot(x - 11.5, y - 10);
+  if (Math.abs(r - 5) < 0.6) return [0x40, 0xe0, 0x60];
+  if (x === 11 && y >= 8) return [0xf0, 0xf0, 0xf0];
+  return [0x08, 0x0a, 0x0c];
+}, 2);
+texture(blockOutput, "panel_side", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 3);
+// Thrust lever: a dark pedestal with the lever slot, a black handle and a pale grip.
+texture(blockOutput, "thrust_lever_base", (x, y) => (x >= 7 && x <= 8 && y >= 3 && y <= 12 ? PANEL_EDGE : PANEL_DARK), 3);
+texture(blockOutput, "thrust_lever_handle", () => [0x14, 0x15, 0x17], 2);
+texture(blockOutput, "thrust_lever_knob", (x, y) => (y % 4 === 0 ? [0x9a, 0xa0, 0xa8] : [0xd8, 0xdc, 0xe0]), 2);
+// Autopilot panel: a dark screen with a green "AP" and a row of mode lights.
+const GLYPHS = [".#..###", "#.#.#.#", "###.###", "#.#.#..", "#.#.#.."];
+texture(blockOutput, "autopilot", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return PANEL_EDGE;
+  const gx = x - 4;
+  const gy = y - 4;
+  if (gx >= 0 && gx < 7 && gy >= 0 && gy < 5 && GLYPHS[gy][gx] === "#") return [0x40, 0xe0, 0x60];
+  if (y === 12 && x % 3 === 2) return x < 8 ? [0x40, 0xe0, 0x60] : [0xf0, 0xa8, 0x30];
+  return [0x08, 0x0a, 0x0c];
+}, 0);
+// Thrust relay, hidden in the nacelle: a dark box with a red signal line.
+texture(blockOutput, "thrust_relay", (x, y) => (y === 7 || y === 8 ? [0xb0, 0x20, 0x20] : PANEL_DARK), 3);
+
+// The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
+// carries a gold star for the fittings.
+function blueprint(name, star) {
+  texture(itemOutput, name, (x, y) => {
+    if (x < 1 || x > 14 || y < 2 || y > 13) return CLEAR;
+    if (star && Math.abs(x - 12.5) + Math.abs(y - 4.5) <= 1.5) return GOLD;
+    // Seen from above, nose up: swept wings and tailplane drift back as they reach out.
+    const out = Math.abs(x - 7.5);
+    const fuselage = out <= 0.5 && y >= 3 && y <= 12;
+    const wings = out <= 6.5 && y >= 5.5 + out * 0.35 && y <= 7 + out * 0.35;
+    const tail = out <= 2.5 && y >= 10.5 + out * 0.35 && y <= 11.5 + out * 0.35;
+    if (fuselage || wings || tail) return INK;
+    if (x === 1 || x === 14 || y === 2 || y === 13) return PAPER_LINE;
+    if (x % 4 === 0 || y % 4 === 0) return PAPER_LINE;
+    return PAPER;
+  }, 2);
+}
+blueprint("airliner_blueprint", false);
+blueprint("furnished_airliner_blueprint", true);
+
+console.log("Textures written to", blockOutput, "and", itemOutput);

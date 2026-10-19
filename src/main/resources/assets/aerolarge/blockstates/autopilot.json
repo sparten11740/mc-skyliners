@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/autopilot",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "aerolarge:block/autopilot",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "aerolarge:block/autopilot",
+      "y": 0
+    },
+    "facing=west": {
+      "model": "aerolarge:block/autopilot",
+      "y": 90
+    }
+  }
+}

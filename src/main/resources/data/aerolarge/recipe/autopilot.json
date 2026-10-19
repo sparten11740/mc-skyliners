@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "CRC",
+    "RPR"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "aerolarge:instrument_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:autopilot",
+    "count": 1
+  }
+}

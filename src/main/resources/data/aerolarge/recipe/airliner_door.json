@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PP",
+    "PG",
+    "PP"
+  ],
+  "key": {
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "result": {
+    "id": "aerolarge:airliner_door",
+    "count": 3
+  }
+}

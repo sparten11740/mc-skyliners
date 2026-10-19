@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "aerolarge:block/instrument_panel",
+    "side": "aerolarge:block/panel_side",
+    "top": "aerolarge:block/panel_side"
+  }
+}

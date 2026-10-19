@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aerolarge:block/landing_gear_tire"
+    }
+  }
+}

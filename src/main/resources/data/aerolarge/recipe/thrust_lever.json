@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "K",
+    "S",
+    "P"
+  ],
+  "key": {
+    "K": {
+      "item": "minecraft:quartz"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:thrust_lever",
+    "count": 1
+  }
+}

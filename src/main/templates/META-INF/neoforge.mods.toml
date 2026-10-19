@@ -1,0 +1,50 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+description='''
+A double-deck airliner the size of a building: one long hollow hull with a few doors, to build anything in, with
+lifting wings, four engines worked from the cockpit, wheels to roll on and everything glued ready to assemble and fly.
+'''
+
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="[${neo_version},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+
+# Create glues the airframe together for assembly; Create Propulsion gives it wings that lift and thrusters.
+[[dependencies.${mod_id}]]
+modId="create"
+type="required"
+versionRange="[6.0.10,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="createpropulsion"
+type="required"
+versionRange="*"
+ordering="NONE"
+side="BOTH"
+
+# Optional but expected: Create Aeronautics' Physics Assembler (Simulated) turns the airliner into a flying
+# contraption, and its Offroad wheel mounts carry it on real tires.
+[[dependencies.${mod_id}]]
+modId="simulated"
+type="optional"
+versionRange="*"
+ordering="NONE"
+side="BOTH"
