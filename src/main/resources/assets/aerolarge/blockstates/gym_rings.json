@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/gym_rings",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/gym_rings",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/gym_rings",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/gym_rings",
+      "y": 270
+    }
+  }
+}

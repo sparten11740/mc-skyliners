@@ -2,7 +2,9 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.LightStripBlock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -12,14 +14,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
- * at the moon pool and a starlit ceiling over the lounge. Like the fit-out it only goes into open cabin space (and
- * the pool's water, and the light cables and chains hung from the lounge's crown, which it shortens), and anything
- * that does not fit at the airliner's scale is left out.
+ * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings and team banners, and
+ * greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the light cables and
+ * chains of what it hangs from a ceiling or a truss instead of the crown), it keeps the stations where the zones are
+ * divided from one another free, and anything that does not fit at the airliner's scale is left out.
  */
 final class CabinDecor {
     /** How high the diving tower's platform stands over the cabin floor, in metres: a three-metre springboard's. */
@@ -57,6 +61,22 @@ final class CabinDecor {
     private static final int BLOSSOM_CLEARANCE = 4;
     /** How many stations either side of a passenger door the potted bamboo stands: just outside the door's aisle. */
     private static final int BAMBOO_FROM_DOOR = 3;
+    /**
+     * A truss spans the gym hall's crown along the highest row still within this many blocks either side of as wide
+     * as the hall is over the floor, and at least the least half width wide.
+     */
+    private static final int TRUSS_INSET = 2;
+    private static final int TRUSS_LEAST_HALF_WIDTH = 3;
+    /** Rows the truss leaves over the floor at least: over the hoops' scoreboards and the pendant lights. */
+    private static final int TRUSS_CLEARANCE = 8;
+    /** How far in from the wall the rings hang, in blocks: a block inside the court's side line. */
+    private static final int RINGS_FROM_WALL = 2;
+    /** How high the rings hang over the floor, in metres: reached with a jump. */
+    private static final double RINGS_METRES = 1.5;
+    /** The rings never hang lower than this many rows over the floor, clear of heads. */
+    private static final int RINGS_LOWEST = 3;
+    /** Every this many stations along the gym hall's walls at most, a team banner. */
+    private static final int BANNER_SPACING = 4;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -69,6 +89,7 @@ final class CabinDecor {
     void apply() {
         highDive();
         starlightCeiling();
+        gymHall();
         // After the ceiling: spore blossoms hang from it.
         greenery();
     }
@@ -387,5 +408,159 @@ final class CabinDecor {
                 }
             }
         }
+    }
+
+    /**
+     * The gym hall's roof and walls: a light metal truss across the crown over each row of its pendant lights, which
+     * now hang from it (but for the row over the middle of the court, kept for the curtain that divides it);
+     * gymnastic rings on chains from the trusses either side of the middle, over the port side of the court by the
+     * wall bars; and the teams' banners between the upper windows, orange at the home end, blue at the guest end.
+     */
+    private void gymHall() {
+        int fromZ = from(CabinFitOut.GYM);
+        int toZ = to(CabinFitOut.GYM);
+        List<Integer> trusses = new ArrayList<>();
+        for (int z = fromZ; z <= toZ; z++) {
+            if (!keptForDivider(z) && hasPendant(z) && truss(z)) {
+                trusses.add(z);
+            }
+        }
+        int middle = courtMiddle();
+        trusses.stream().filter(z -> z < middle).max(Integer::compare).ifPresent(this::rings);
+        trusses.stream().filter(z -> z > middle).min(Integer::compare).ifPresent(this::rings);
+        banners(fromZ, toZ);
+    }
+
+    /** The top of the cabin over the floor, in rows: nothing in it stands higher. */
+    private int cabinTop() {
+        return floor + (int) Math.ceil(AirframeShape.HEIGHT * layout.scale());
+    }
+
+    /** Whether a pendant light hangs anywhere across this station. */
+    private boolean hasPendant(int z) {
+        for (int x = layout.besideWall(-1, floor + 1, z); x <= layout.besideWall(1, floor + 1, z); x++) {
+            for (int y = floor + 1; y <= cabinTop(); y++) {
+                if (layout.stateAt(x, y, z).is(AerolargeRegistry.PENDANT_LIGHT.get())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A truss across the crown at this station, wall to wall along the highest row still wide enough for it, with a
+     * king post up from its middle to the crown; light cables crossing its row stop at it, and what was above is taken
+     * down. Whether it went in: not where the crown is too low over the court.
+     */
+    private boolean truss(int z) {
+        int y = trussRow(z);
+        if (y - floor < TRUSS_CLEARANCE) {
+            return false;
+        }
+        BlockState beam = AirframePalette.girder()
+            .map(girder -> AirframePalette.with(AirframePalette.with(girder, "x", "true"), "axis", "x"))
+            .orElse(Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.EAST, true).setValue(IronBarsBlock.WEST, true));
+        for (int x = layout.besideWall(-1, y, z); x <= layout.besideWall(1, y, z); x++) {
+            if (isCable(x, y, z)) {
+                for (int above = y + 1; isCable(x, above, z); above++) {
+                    layout.set(x, above, z, Blocks.AIR.defaultBlockState());
+                }
+                layout.set(x, y, z, AirframePalette.with(beam, "bottom", "true"));
+            } else {
+                layout.furnish(x, y, z, beam);
+            }
+        }
+        BlockState post = AirframePalette.girder().map(girder -> AirframePalette.with(girder, "axis", "y")).orElse(Blocks.IRON_BARS.defaultBlockState());
+        if (layout.isOpen(0, y + 1, z) && layout.stateAt(0, y, z).is(beam.getBlock())) {
+            layout.set(0, y, z, AirframePalette.with(layout.stateAt(0, y, z), "top", "true"));
+            for (int above = y + 1; layout.isOpen(0, above, z); above++) {
+                layout.set(0, above, z, post);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The row at this station the truss spans: the highest where the cabin is still nearly as wide as over the floor,
+     * just under where the walls curve in to the crown, so it reaches out over the sides of the court.
+     */
+    private int trussRow(int z) {
+        int span = Math.max(TRUSS_LEAST_HALF_WIDTH, halfWidth(floor + 1, z) - TRUSS_INSET);
+        int y = floor;
+        while (halfWidth(y + 1, z) >= span) {
+            y++;
+        }
+        return y;
+    }
+
+    /** How far the cabin reaches either side of the middle at this height and station, to the nearer wall. */
+    private int halfWidth(int y, int z) {
+        return Math.min(-layout.besideWall(-1, y, z), layout.besideWall(1, y, z));
+    }
+
+    /**
+     * Gymnastic rings on chains from the truss at this station, over the port side of the court just inside its side
+     * line; none over a court line, or where it is not the truss overhead.
+     */
+    private void rings(int z) {
+        int x = layout.besideWall(-1, floor + 1, z) + RINGS_FROM_WALL;
+        int y = floor + Math.max(RINGS_LOWEST, (int) Math.round(RINGS_METRES * layout.scale()));
+        if (layout.stateAt(x, floor, z).is(Blocks.WHITE_CONCRETE) || !layout.isOpen(x, y, z)) {
+            return;
+        }
+        int top = y;
+        while (layout.isOpen(x, top + 1, z)) {
+            top++;
+        }
+        BlockState beam = layout.stateAt(x, top + 1, z);
+        if (!beam.is(Blocks.IRON_BARS) && AirframePalette.girder().filter(girder -> beam.is(girder.getBlock())).isEmpty()) {
+            return;
+        }
+        layout.set(x, top + 1, z, AirframePalette.with(beam, "bottom", "true"));
+        for (int link = y + 1; link <= top; link++) {
+            layout.set(x, link, z, Blocks.CHAIN.defaultBlockState());
+        }
+        layout.set(x, y, z, AerolargeRegistry.GYM_RINGS.get().defaultBlockState().setValue(GymRingsBlock.FACING, Direction.NORTH));
+    }
+
+    /**
+     * The teams' banners on both walls of the gym hall, every few stations between two upper windows: orange along
+     * the third of the hall at the home end (the front), blue along the third at the guest end. Each hangs flat on the
+     * wall from the bottom row of the windows beside it, its cloth reaching down to just above the light strip.
+     */
+    private void banners(int fromZ, int toZ) {
+        int third = (toZ - fromZ) / 3;
+        for (int side : new int[]{1, -1}) {
+            int last = fromZ - BANNER_SPACING;
+            for (int z = fromZ; z <= toZ; z++) {
+                boolean home = z <= fromZ + third;
+                if (!home && z < toZ - third || keptForDivider(z) || z - last < BANNER_SPACING) {
+                    continue;
+                }
+                int y = upperWindowRow(side, z - 1);
+                if (y < 0 || upperWindowRow(side, z + 1) != y || upperWindowRow(side, z) >= 0) {
+                    continue;
+                }
+                int x = layout.besideWall(side, y, z);
+                if (x == 0 || !layout.isOpen(x, y, z) || !layout.isPlainHull(x + side, y, z)) {
+                    continue;
+                }
+                Block banner = home ? Blocks.ORANGE_WALL_BANNER : Blocks.BLUE_WALL_BANNER;
+                layout.set(x, y, z, banner.defaultBlockState().setValue(WallBannerBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
+                last = z;
+            }
+        }
+    }
+
+    /** The bottom row of the upper deck's window in the wall on this side at this station; -1 where there is none. */
+    private int upperWindowRow(int side, int z) {
+        for (int y = floor + MAIN_WINDOWS_TOP + 1; y <= cabinTop(); y++) {
+            int x = layout.besideWall(side, y, z);
+            if (x != 0 && CabinWindowBlock.isPane(layout.stateAt(x + side, y, z))) {
+                return y;
+            }
+        }
+        return -1;
     }
 }

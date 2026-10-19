@@ -1032,5 +1032,11 @@ blueprint("furnished_airliner_blueprint", true);
   writeFileSync(resolve(blockOutput, "starlight_panel_stars.png.mcmeta"),
     JSON.stringify({ animation: { frametime: 5, interpolate: true } }, null, 2) + "\n");
 }
+// The gymnastic rings: pale polished wood with a faint grain, and a brown leather strap with a pale stitch across it
+// every few pixels.
+{
+  texture(blockOutput, "gym_rings_wood", (x, y) => ((x + 2 * Math.floor(y / 3)) % 5 === 0 ? [0xc8, 0xa8, 0x70] : [0xe0, 0xc4, 0x8c]), 3);
+  texture(blockOutput, "gym_rings_strap", (x, y) => (y % 4 === 0 ? [0xd8, 0xc8, 0xa0] : [0x6a, 0x40, 0x22]), 3);
+}
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

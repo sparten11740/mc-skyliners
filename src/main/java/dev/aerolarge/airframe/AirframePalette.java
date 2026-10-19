@@ -64,6 +64,11 @@ record AirframePalette(
         return block("create:" + colour.getSerializedName() + "_seat");
     }
 
+    /** Create's metal girder, for the gym hall's roof trusses. */
+    static Optional<BlockState> girder() {
+        return block("create:metal_girder");
+    }
+
     /** Whether the state is the lifting surface, turned any way. */
     boolean isLift(BlockState state) {
         return lift.isPresent() && state.is(lift.get().getBlock());

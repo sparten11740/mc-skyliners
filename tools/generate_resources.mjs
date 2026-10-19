@@ -948,6 +948,28 @@ const cabinDecorLang = {};
   cubes.starlight_panel = null;
   cabinDecorLang["block.aerolarge.starlight_panel"] = "Starlight Panel";
 }
+// The gymnastic rings, drawn facing north: two wooden rings side by side, each a square loop on a leather strap up to
+// the top of the block, where the chain they hang from carries on.
+{
+  const parts = [];
+  for (const cx of [4.5, 11.5]) {
+    parts.push(
+      [[cx - 2, 1, 7.5], [cx + 2, 1.75, 8.5], "#wood"],
+      [[cx - 2, 4.25, 7.5], [cx + 2, 5, 8.5], "#wood"],
+      [[cx - 2, 1.75, 7.5], [cx - 1.25, 4.25, 8.5], "#wood"],
+      [[cx + 1.25, 1.75, 7.5], [cx + 2, 4.25, 8.5], "#wood"],
+      [[cx - 0.5, 5, 7.75], [cx + 0.5, 16, 8.25], "#strap"],
+    );
+  }
+  write(`assets/${ID}/models/block/gym_rings.json`, boxes(
+    { wood: `${ID}:block/gym_rings_wood`, strap: `${ID}:block/gym_rings_strap`, particle: `${ID}:block/gym_rings_wood` }, parts,
+  ));
+  facing("gym_rings");
+  write(`assets/${ID}/models/item/gym_rings.json`, { parent: `${ID}:block/gym_rings` });
+  dropsItself("gym_rings");
+  cubes.gym_rings = null;
+  cabinDecorLang["block.aerolarge.gym_rings"] = "Gymnastic Rings";
+}
 
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
@@ -963,7 +985,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter", "springboard", "starlight_panel"];
+  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1050,6 +1072,7 @@ shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:g
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
 shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
+shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).

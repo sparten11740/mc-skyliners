@@ -24,7 +24,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
   with a diving tower on its front rim (a ladder up to a platform three metres up, glass rails either side, and a
   board out over the middle of the pool with a springboard at its tip), a
-  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
+  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, a row of seats, roof trusses
+  with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights. Plants line
   the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
@@ -225,6 +226,11 @@ pick it up, hit it to knock it on. A ball that drops through a hoop scores two p
 the three-point line, for the side the hoop counts for: HOME at the front hoop, GUEST at the back (sneak and use a
 hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
 Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere.
+
+Over the court the gym hall's pendant lights hang from metal roof trusses (Create's girders). From the trusses either
+side of the middle hang gymnastic rings on chains, over the side of the court by the wall bars: use them to swing up
+off the floor. The teams' banners hang between the upper windows, orange at the HOME end, blue at the GUEST end.
+Gymnastic Rings can be crafted too.
 
 ### The high dive
 

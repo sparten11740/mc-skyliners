@@ -31,6 +31,7 @@ import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
@@ -548,6 +549,12 @@ public final class AerolargeRegistry {
         "springboard", SpringboardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL)
     );
     public static final DeferredItem<BlockItem> SPRINGBOARD_ITEM = ITEMS.registerSimpleBlockItem(SPRINGBOARD);
+    /** Gymnastic rings, hung on chains from the gym hall's roof truss. */
+    public static final DeferredBlock<GymRingsBlock> GYM_RINGS = BLOCKS.registerBlock(
+        "gym_rings", GymRingsBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOD).noCollission().noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> GYM_RINGS_ITEM = ITEMS.registerSimpleBlockItem(GYM_RINGS);
 
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
@@ -607,7 +614,7 @@ public final class AerolargeRegistry {
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
             MODEL_AIRLINER_ITEM
         )),
-        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SPRINGBOARD_ITEM)),
+        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
