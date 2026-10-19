@@ -76,6 +76,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 public final class AirframeLayout {
     /** Stations between cabin lights along the fuselage. */
     private static final int LIGHT_SPACING = 6;
+    /** How many blocks tall a cabin window is. */
+    private static final int WINDOW_HEIGHT = 2;
     /**
      * Each wheel mount's suspension strength, Offroad's own 5 to 180 setting (its value box), set to the stiffest: at
      * the default of 10 a handful of wheels cannot carry an airliner, and their springs bottom out with the tires sunk
@@ -327,27 +329,62 @@ public final class AirframeLayout {
     }
 
     /**
-     * Two rows of cabin windows down each side, one at eye level over the main deck and one where the upper deck's
-     * would be.
+     * Two rows of cabin windows down each side, each window two blocks tall, taller than wide like an airliner's: one
+     * row from eye level over the main deck up past the eyes of someone seated, the other where the upper deck's
+     * would be. They stand on every other station, never one a wall light or a door takes.
      */
     private void windows() {
         int mainRow = floorY + 2;
         int upperRow = floorY + (int) Math.round(3.0 * scale) + 2;
         int first = (int) Math.ceil((NOSE_LENGTH + 1) * scale);
         int last = (int) Math.floor((TAIL_START + 8) * scale);
+        // The wall lights all stand on stations of one parity (see lights()): the windows take the other.
+        if (Math.floorMod(first - LIGHT_SPACING / 2, 2) == 0) {
+            first++;
+        }
         for (int z = first; z <= last; z += 2) {
-            for (int y : new int[]{mainRow, upperRow}) {
+            if (doorAt(z)) {
+                continue;
+            }
+            for (int bottom : new int[]{mainRow, upperRow}) {
                 for (int side : new int[]{1, -1}) {
-                    int x = side * (openHalfWidth(y, z) + 1);
-                    // Only where the hull there is a wall facing out sideways, with the cabin right behind it, and
-                    // whole: not cut to the curve, which a window would stick out of.
-                    if (openHalfWidth(y, z) >= 0 && has(x, y, z) && !inFuselage(x + side, y, z) && shapeAt(x, y, z) == ShellGeometry.WHOLE) {
-                        set(x, y, z, palette.cabinWindow());
-                    }
+                    window(side, bottom, z);
                 }
             }
         }
+    }
 
+    /**
+     * One window on one side, up from row bottom at station z: a pane in each of its rows where the hull is a wall
+     * facing out sideways, with the cabin right behind it, and whole: not cut to the curve, which a window would stick
+     * out of. Panes right above one another are joined into one tall window.
+     */
+    private void window(int side, int bottom, int z) {
+        int[] xs = new int[WINDOW_HEIGHT];
+        boolean[] fits = new boolean[WINDOW_HEIGHT];
+        for (int i = 0; i < WINDOW_HEIGHT; i++) {
+            int y = bottom + i;
+            xs[i] = side * (openHalfWidth(y, z) + 1);
+            fits[i] = openHalfWidth(y, z) >= 0 && has(xs[i], y, z) && !inFuselage(xs[i] + side, y, z) && shapeAt(xs[i], y, z) == ShellGeometry.WHOLE;
+        }
+        for (int i = 0; i < WINDOW_HEIGHT; i++) {
+            if (fits[i]) {
+                boolean below = i > 0 && fits[i - 1] && xs[i - 1] == xs[i];
+                boolean above = i + 1 < WINDOW_HEIGHT && fits[i + 1] && xs[i + 1] == xs[i];
+                set(xs[i], bottom + i, z, palette.cabinWindow().setValue(CabinWindowBlock.DOWN, below).setValue(CabinWindowBlock.UP, above));
+            }
+        }
+    }
+
+    /** Whether one of the passenger doors, cut through the hull later, takes the station. */
+    private boolean doorAt(int z) {
+        for (double station : PASSENGER_DOORS) {
+            int fore = (int) Math.round(station * scale);
+            if (z == fore || z == fore + 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

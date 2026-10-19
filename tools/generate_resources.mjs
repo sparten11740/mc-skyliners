@@ -618,13 +618,23 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   }
 }
 
-// The cabin window with its shade down; its plain blockstate, from the cubes above, gives way to one for both.
-write(`assets/${ID}/models/block/cabin_window_shaded.json`, {
-  parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/cabin_window_shaded` }, render_type: "minecraft:translucent",
-});
-write(`assets/${ID}/blockstates/cabin_window.json`, {
-  variants: { "shaded=false": { model: `${ID}:block/cabin_window` }, "shaded=true": { model: `${ID}:block/cabin_window_shaded` } },
-});
+// The cabin window with its shade up or down, on its own or joined to the windows above and below it into one tall
+// window; its plain blockstate, from the cubes above, gives way to one for them all.
+{
+  const variants = {};
+  for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], ["_top", false, true], ["_middle", true, true]]) {
+    for (const shaded of [false, true]) {
+      const name = `cabin_window${joins}${shaded ? "_shaded" : ""}`;
+      if (name !== "cabin_window") {
+        write(`assets/${ID}/models/block/${name}.json`, {
+          parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/${name}` }, render_type: "minecraft:translucent",
+        });
+      }
+      variants[`down=${down},shaded=${shaded},up=${up}`] = { model: `${ID}:block/${name}` };
+    }
+  }
+  write(`assets/${ID}/blockstates/cabin_window.json`, { variants });
+}
 
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.

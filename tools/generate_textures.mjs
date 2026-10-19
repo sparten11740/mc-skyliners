@@ -125,27 +125,30 @@ function plating(base, seam, rivet) {
 texture(blockOutput, "airframe_panel", plating(WHITE, SEAM, RIVET), 3);
 texture(blockOutput, "livery_panel", plating(BLUE, BLUE_SEAM, BLUE_RIVET), 3);
 
-// A rounded cabin window in its white frame, with a highlight across the upper corner.
-texture(blockOutput, "cabin_window", (x, y) => {
-  const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
-  const dy = Math.max(Math.abs(y - 7.5) - 3.5, 0);
-  const corner = Math.hypot(dx, dy);
-  if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
-  if (corner > 1.9) return FRAME_DARK;
-  if (x - y > -2 && x - y < 1 && y < 8) return GLASS_SHINE;
-  return GLASS;
-});
-
-// The same window with its shade pulled down: the glass filled with the shade's pale plastic, a pull tab at its foot.
-texture(blockOutput, "cabin_window_shaded", (x, y) => {
-  const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
-  const dy = Math.max(Math.abs(y - 7.5) - 3.5, 0);
-  const corner = Math.hypot(dx, dy);
-  if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
-  if (corner > 1.9) return FRAME_DARK;
-  if (y >= 11 && x >= 6 && x <= 9) return [0x9c, 0xa0, 0xa6];
-  return y % 3 === 0 ? [0xd6, 0xd2, 0xc8] : [0xe2, 0xde, 0xd4];
-});
+// A rounded cabin window in its white frame, with a highlight across the upper corner; with its shade pulled down,
+// the glass filled with the shade's pale plastic and a pull tab at its foot. A pane joined to one above or below runs
+// on through that edge, so stacked panes make one tall window: the highlight in its top pane, the tab in its bottom.
+for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], ["_top", false, true], ["_middle", true, true]]) {
+  const frame = (x, y) => {
+    const dx = Math.max(Math.abs(x - 7.5) - 2.5, 0);
+    const dy = Math.max(up ? 0 : 4 - y, down ? 0 : y - 11, 0);
+    return Math.hypot(dx, dy);
+  };
+  texture(blockOutput, `cabin_window${joins}`, (x, y) => {
+    const corner = frame(x, y);
+    if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
+    if (corner > 1.9) return FRAME_DARK;
+    if (!up && x - y > -2 && x - y < 1 && y < 8) return GLASS_SHINE;
+    return GLASS;
+  });
+  texture(blockOutput, `cabin_window${joins}_shaded`, (x, y) => {
+    const corner = frame(x, y);
+    if (corner > 2.6) return x === 0 || y === 0 ? SEAM : WHITE;
+    if (corner > 1.9) return FRAME_DARK;
+    if (!down && y >= 11 && x >= 6 && x <= 9) return [0x9c, 0xa0, 0xa6];
+    return y % 3 === 0 ? [0xd6, 0xd2, 0xc8] : [0xe2, 0xde, 0xd4];
+  });
+}
 
 // The windscreen: dark glass edge to edge, thin frame bars along the top and one side.
 texture(blockOutput, "cockpit_window", (x, y) => {
