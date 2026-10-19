@@ -108,8 +108,9 @@ Switched off, the settings start from what engaging would fly, and engaging (the
 flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off, full
 thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then a
-climb to the altitude set, turning onto the heading or circle set once off the ground, and there it holds height
-and speed. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway by default) and the
+climb straight ahead, wings level, until it is 30 blocks above the ground. Only then does it turn onto the heading or
+circle set, banking no steeper than its height allows (it never banks hard near the ground), and it climbs on to the
+altitude set and holds height and speed there. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway by default) and the
 speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it finds. While it is
 engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust levers, the
 tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading to

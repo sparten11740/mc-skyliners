@@ -201,8 +201,16 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double FLARE_GAIN = 0.2;
     private static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
     private static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
-    /** The steepest bank it flies landing, in degrees per block above the ground. */
-    private static final double LANDING_BANK_PER_BLOCK = 0.5;
+    /**
+     * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
+     * take-off or landing, its long wings must stay clear of the ground.
+     */
+    private static final double BANK_PER_BLOCK = 0.5;
+    /**
+     * Climbing out after take-off, it flies straight on along the runway, wings level, until this high above the
+     * ground; only then does it turn onto the heading or circle set.
+     */
+    private static final double TURN_HEIGHT = 30;
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
@@ -248,6 +256,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double lastClimb;
     private double lastHeading;
     private int slowTicks;
+    /** Whether it is still climbing out after take-off, below {@link #TURN_HEIGHT}, holding the runway's heading. */
+    private boolean climbingOut;
     /** Whether last tick's readings are real; false after loading, so the first tick does not see a jump. */
     private boolean primed;
     /** How far its block stands above the bottom of the wheels, for the radio altitude. */
@@ -433,6 +443,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
         }
         thrustTrim = CRUISE_THRUST;
+        climbingOut = phase == Phase.TAKEOFF;
         lastPitch = state.pitch();
         lastRoll = state.roll();
         lastSpeed = state.airspeed();
@@ -585,8 +596,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         boolean takingOff = phase == Phase.TAKEOFF;
         boolean rollingOut = phase == Phase.ROLLOUT;
         boolean onGround = takingOff || rollingOut;
-        // Down the runway it holds the heading it started on; the heading set is flown once it is off the ground.
-        double wanted = takingOff ? runwayHeading : targetHeading;
+        if (climbingOut && !takingOff && radio >= TURN_HEIGHT) {
+            climbingOut = false;
+        }
+        // Down the runway and climbing out it holds the heading it started on; the heading set is flown once it is
+        // high enough to turn.
+        double wanted = takingOff || climbingOut ? runwayHeading : targetHeading;
         double bank = 0;
         if (takingOff) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
@@ -635,7 +650,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             // The turn it should be making, in degrees a second: round the circle at this speed in an orbit, none on a
             // heading.
             double wantedTurn = 0;
-            if (lateral != Lateral.HEADING) {
+            if (lateral != Lateral.HEADING && !climbingOut) {
                 wanted = orbitHeading(state);
                 // Banked into the circle from the start: the bank that turns at this speed round this radius.
                 double side = lateral == Lateral.ORBIT_RIGHT ? 1 : -1;
@@ -644,8 +659,8 @@ public class AutopilotBlockEntity extends BlockEntity {
                 wantedTurn = side * Math.toDegrees(horizontal / orbitRadius);
             }
             double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
-            // Landing, it banks less the lower it gets, to keep its long wings clear of the ground.
-            double maxBank = landing ? Mth.clamp(LANDING_BANK_PER_BLOCK * radio, 0, MAX_BANK) : MAX_BANK;
+            // It banks less the lower it gets, to keep its long wings clear of the ground.
+            double maxBank = Mth.clamp(BANK_PER_BLOCK * radio, 0, MAX_BANK);
             bank = Mth.clamp(bank + BANK_GAIN * Mth.wrapDegrees(wanted - state.heading()) - TURN_DAMPING * (turn - wantedTurn), -maxBank, maxBank);
         }
 
@@ -831,6 +846,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
         tag.putBoolean("Governing", governing);
+        tag.putBoolean("ClimbingOut", climbingOut);
     }
 
     /** What the screen shows: the phase, the modes and the targets. */
@@ -865,6 +881,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");
             governing = tag.getBoolean("Governing");
+            climbingOut = tag.getBoolean("ClimbingOut");
         }
         phase = parse(Phase.class, tag.getString("Phase"), Phase.OFF);
         lateral = parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING);
