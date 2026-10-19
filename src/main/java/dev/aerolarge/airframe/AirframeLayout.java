@@ -57,6 +57,12 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 public final class AirframeLayout {
     /** Stations between cabin lights along the fuselage. */
     private static final int LIGHT_SPACING = 6;
+    /**
+     * Each wheel mount's suspension strength, Offroad's own 5 to 180 setting (its value box), set to the stiffest: at
+     * the default of 10 a handful of wheels cannot carry an airliner, and their springs bottom out with the tires sunk
+     * into the ground.
+     */
+    private static final int SUSPENSION_STRENGTH = 180;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -953,7 +959,7 @@ public final class AirframeLayout {
                 BlockPos at = new BlockPos(x + out.getStepX(), axle, z);
                 set(at.getX(), at.getY(), at.getZ(), AirframePalette.with(palette.wheelMount().get(), "facing", out.getSerializedName()));
                 Item tire = palette.tireItem().get();
-                fittings.put(at, (blockEntity, rotation) -> fitTire(blockEntity, tire));
+                fittings.put(at, (blockEntity, rotation) -> fitWheel(blockEntity, tire));
                 if (steers) {
                     relay(at.relative(out.getClockWise()), steerRelays.computeIfAbsent(TillerBlock.LEFT, ignored -> new ArrayList<>()));
                     relay(at.relative(out.getCounterClockWise()), steerRelays.computeIfAbsent(TillerBlock.RIGHT, ignored -> new ArrayList<>()));
@@ -990,16 +996,18 @@ public final class AirframeLayout {
     }
 
     /**
-     * Puts a tire on a wheel mount the way Offroad keeps it: as the mount's held stack, saved under "CurrentStack".
-     * The mount's own data is read back with the tire added, so everything else it holds stays as it was.
+     * Puts a tire on a wheel mount and stiffens its suspension, the way Offroad keeps them: the tire as the mount's
+     * held stack, under "CurrentStack", and the suspension strength as its scroll value, under "ScrollValue". The
+     * mount's own data is read back with both changed, so everything else it holds stays as it was.
      */
-    private static void fitTire(BlockEntity mount, Item tire) {
+    private static void fitWheel(BlockEntity mount, Item tire) {
         if (mount.getLevel() == null) {
             return;
         }
         HolderLookup.Provider registries = mount.getLevel().registryAccess();
         CompoundTag data = mount.saveWithoutMetadata(registries);
         data.put("CurrentStack", new ItemStack(tire).save(registries));
+        data.putInt("ScrollValue", SUSPENSION_STRENGTH);
         mount.loadWithComponents(data, registries);
     }
 
