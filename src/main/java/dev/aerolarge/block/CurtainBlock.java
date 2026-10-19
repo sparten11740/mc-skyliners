@@ -61,7 +61,7 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
      * The most pieces one use draws or dyes: more than a curtain right across the cabin of the largest airliner, while
      * a player's sprawling build of them is worked a part at a time.
      */
-    private static final int MOST_PIECES = 256;
+    private static final int MOST_PIECES = 1024;
     /** How many ticks apart neighbouring columns follow one another as the curtain is drawn. */
     private static final int TICKS_PER_COLUMN = 2;
     /**
