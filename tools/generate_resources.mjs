@@ -113,6 +113,9 @@ for (const [name, skin, renderType, part] of [
 write(`assets/${ID}/blockstates/thrust_relay.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 write(`assets/${ID}/models/block/thrust_relay.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/thrust_relay` } });
 cubes.thrust_relay = null;
+// The relay behind a lamp in the cabin wall shows the cabin plain skin.
+write(`assets/${ID}/blockstates/hull_relay.json`, { variants: { "": { model: `${ID}:block/airframe_panel` } } });
+cubes.hull_relay = null;
 
 // The fairing, drawn cut at its top east edge: a skin plate along the diagonal from the top west corner to the
 // bottom east one (a thin slab through the middle turned 45 degrees and stretched to reach both corners), over eight
@@ -533,6 +536,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
+  "block.aerolarge.hull_relay": "Hull Relay",
   "block.aerolarge.instrument_panel": "Instrument Panel",
   "message.aerolarge.thrust": "Thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",

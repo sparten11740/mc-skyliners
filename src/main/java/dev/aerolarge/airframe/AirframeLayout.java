@@ -642,7 +642,7 @@ public final class AirframeLayout {
 
     /**
      * A lamp set into the hull at a station on one side, with the relay that lights it just above or below it in the
-     * wall: in the first of the rows where both replace plain skin, not a window. Adds the relay to the list and gives
+     * wall, plated like the skin: in the first of the rows where both replace plain skin, not a window. Adds the relay to the list and gives
      * where the lamp went, or null if no row had room.
      */
     @Nullable
@@ -660,7 +660,7 @@ public final class AirframeLayout {
                 continue;
             }
             set(x, y, z, lamp);
-            set(x, relayY, z, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
+            set(x, relayY, z, AerolargeRegistry.HULL_RELAY.get().defaultBlockState());
             relays.add(new BlockPos(x, relayY, z));
             return new BlockPos(x, y, z);
         }

@@ -197,6 +197,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NavLightBlockEntity>> NAV_LIGHT_ENTITY =
         BLOCK_ENTITIES.register("nav_light", () -> BlockEntityType.Builder.of(NavLightBlockEntity::new, NAV_LIGHT.get()).build(null));
     public static final DeferredBlock<ThrustRelayBlock> THRUST_RELAY = BLOCKS.registerBlock("thrust_relay", ThrustRelayBlock::new, metal(MapColor.SNOW));
+    /** The same relay set into the cabin wall beside a lamp it lights, plated like the hull around it. */
+    public static final DeferredBlock<ThrustRelayBlock> HULL_RELAY = BLOCKS.registerBlock("hull_relay", ThrustRelayBlock::new, metal(MapColor.SNOW));
     /** The primary flight displays in the panel, one in front of each pilot. */
     public static final DeferredBlock<FlightDisplayBlock> FLIGHT_DISPLAY = BLOCKS.registerBlock(
         "flight_display", FlightDisplayBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)

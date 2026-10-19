@@ -17,6 +17,7 @@
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
+  "block.aerolarge.hull_relay": "Hull Relay",
   "block.aerolarge.instrument_panel": "Instrument Panel",
   "message.aerolarge.thrust": "Thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
