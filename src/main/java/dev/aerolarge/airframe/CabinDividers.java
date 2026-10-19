@@ -394,7 +394,9 @@ final class CabinDividers {
             if (outer <= door || !clear(side, inner, front + 1, gym, ceiling)) {
                 continue;
             }
-            for (int z = front + 1; z <= gym; z++) {
+            // The corner where the cubicle's side meets its back is left out: it is closed without it, and the gym
+            // hall's first station keeps the room beside the hoop free (the hide and seek button stands there).
+            for (int z = front + 1; z < gym; z++) {
                 for (int y = floor + 1; y <= ceiling; y++) {
                     layout.set(side * inner, y, z, partition);
                 }
@@ -424,11 +426,14 @@ final class CabinDividers {
         }
     }
 
-    /** Whether the cabin is open all through a cubicle's walls and inside: from x out to the hull, z to z, up to y. */
+    /**
+     * Whether the cabin is open all through a cubicle's walls and inside: from x out to the hull, z to z (its back,
+     * at the last, from a block further out), up to y.
+     */
     private boolean clear(int side, int inner, int fromZ, int toZ, int top) {
         for (int z = fromZ; z <= toZ; z++) {
             for (int y = floor + 1; y <= top; y++) {
-                for (int x = inner; x <= Math.abs(layout.besideWall(side, y, z)); x++) {
+                for (int x = z == toZ ? inner + 1 : inner; x <= Math.abs(layout.besideWall(side, y, z)); x++) {
                     if (!layout.isOpen(side * x, y, z)) {
                         return false;
                     }
