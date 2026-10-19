@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotBlockEntity.Lateral;
+import dev.aerolarge.block.AutopilotBlockEntity.Phase;
 import dev.aerolarge.block.AutopilotBlockEntity.Settings;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.SetAutopilot;
@@ -32,9 +33,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * the autopilot is doing, how the airliner flies now and what the autopilot is set to fly. Below, the settings: hold a
  * heading or circle left or right, then the heading, altitude, speed and circle radius, each typed in or stepped with
  * the buttons either side of it and kept to what the autopilot flies. Switched off, engaging flies them (taking off
- * first on the ground); engaged, they can be applied, or the autopilot switched off. The server checks it all again
- * (see {@link SetAutopilot}). The game goes on behind it, and it closes once the player is out of the autopilot's
- * reach.
+ * first on the ground); engaged, they can be applied, or the autopilot switched off. In the air it can also be told
+ * to land. The server checks it all again (see {@link SetAutopilot}). The game goes on behind it, and it closes once
+ * the player is out of the autopilot's reach.
  */
 public class AutopilotSettingsScreen extends Screen {
     /** The panel's size and the space inside its edge. */
@@ -80,6 +81,7 @@ public class AutopilotSettingsScreen extends Screen {
     private Button engage;
     private Button apply;
     private Button disengage;
+    private Button land;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -125,8 +127,9 @@ public class AutopilotSettingsScreen extends Screen {
             rows.get(i).place(x, rowY(i + 1));
         }
 
-        // Along the bottom: engage across two places, or apply and disengage in them once engaged; then cancel.
-        int buttonWidth = (WIDTH - 2 * PADDING - 2 * GAP) / 3;
+        // Along the bottom in four places: engage across the first two, or apply and disengage in them once engaged;
+        // then land, and cancel.
+        int buttonWidth = (WIDTH - 2 * PADDING - 3 * GAP) / 4;
         int buttonX = left + PADDING;
         int buttonY = top + HEIGHT - PADDING - CONTROL_HEIGHT;
         String engageKey = takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage";
@@ -136,8 +139,10 @@ public class AutopilotSettingsScreen extends Screen {
             .bounds(buttonX, buttonY, buttonWidth, CONTROL_HEIGHT).build());
         disengage = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.disengage"), button -> send(SetAutopilot.Action.OFF))
             .bounds(buttonX + buttonWidth + GAP, buttonY, buttonWidth, CONTROL_HEIGHT).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose())
+        land = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.land"), button -> send(SetAutopilot.Action.LAND))
             .bounds(buttonX + 2 * (buttonWidth + GAP), buttonY, buttonWidth, CONTROL_HEIGHT).build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose())
+            .bounds(buttonX + 3 * (buttonWidth + GAP), buttonY, buttonWidth, CONTROL_HEIGHT).build());
         refresh();
     }
 
@@ -155,11 +160,17 @@ public class AutopilotSettingsScreen extends Screen {
     /** Shows the buttons for the autopilot as it is now, and the settings the chosen mode flies. */
     private void refresh() {
         AutopilotBlockEntity autopilot = autopilot();
-        boolean on = AutopilotScreenRenderer.engaged(autopilot);
+        boolean assembled = autopilot != null && SableClient.attitude(autopilot, nose(autopilot), 1) != null;
+        Phase phase = autopilot != null ? autopilot.phase() : Phase.OFF;
+        boolean on = phase != Phase.OFF;
         engage.visible = !on;
-        engage.active = autopilot != null && SableClient.attitude(autopilot, nose(autopilot), 1) != null;
+        engage.active = assembled;
         apply.visible = on;
+        // Once down after landing it only brakes to a stop.
+        apply.active = phase != Phase.ROLLOUT;
         disengage.visible = on;
+        // Only in the air, and not while it lands already.
+        land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
         heading.setActive(lateral == Lateral.HEADING);
         radius.setActive(lateral != Lateral.HEADING);
     }
@@ -175,7 +186,7 @@ public class AutopilotSettingsScreen extends Screen {
         refresh();
     }
 
-    /** Sends the settings as they stand, to fly them or with the autopilot switched off, and closes. */
+    /** Sends the settings as they stand, to fly them, to land or with the autopilot switched off, and closes. */
     private void send(SetAutopilot.Action action) {
         Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value());
         PacketDistributor.sendToServer(new SetAutopilot(pos, action, settings));
@@ -189,7 +200,8 @@ public class AutopilotSettingsScreen extends Screen {
         }
         // Enter, while no button has the keyboard, flies the settings, as the button there would.
         boolean enter = keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER;
-        if (enter && (apply.visible || engage.active)) {
+        Button fly = apply.visible ? apply : engage;
+        if (enter && fly.active) {
             send(SetAutopilot.Action.FLY);
             return true;
         }

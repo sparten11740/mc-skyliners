@@ -33,8 +33,8 @@ final class Callouts {
     );
     /** "Retard" (throttles to idle) is called at this radio altitude on the way down. */
     private static final double RETARD = 4;
-    /** Below this radio altitude the wheels are on the ground. */
-    private static final double ON_GROUND = 1.5;
+    /** Below this radio altitude the wheels are on the ground; the autopilot lands by it too. */
+    static final double ON_GROUND = 1.5;
     /** "V one" at this share of the rotation speed. */
     private static final double V1 = 0.85;
     /** Climbing faster than this, in blocks a second, and higher than this, after rotation: "positive rate". */
@@ -49,8 +49,8 @@ final class Callouts {
     private static final double PULL_UP_HEIGHT = 40;
     /** Higher than this, in blocks, it has flown: touching down after it is a landing. */
     private static final double FLOWN = 10;
-    /** Touching down sinking slower than this, in blocks a second, is a butter landing. */
-    private static final double BUTTER_SINK = 1.0;
+    /** Touching down sinking slower than this, in blocks a second, is a butter landing; the autopilot aims under it. */
+    static final double BUTTER_SINK = 1.0;
     /** Ticks between repeats of a warning. */
     private static final int WARNING_REPEAT = 60;
     /** Everyone this close to the flight deck hears the callouts: everyone aboard. */

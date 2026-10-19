@@ -15,14 +15,14 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Sent by the autopilot's settings screen: fly these settings, engaging the autopilot at that position if it is off,
- * or switch it off. Nothing in it is taken on trust: the server only acts for a player who can reach an autopilot
- * standing there already loaded, and the autopilot holds every setting to its own limits (see
- * {@link AutopilotBlockEntity#set}).
+ * land, or switch it off. Nothing in it is taken on trust: the server only acts for a player who can reach an
+ * autopilot standing there already loaded, and the autopilot holds every setting to its own limits and lands only
+ * from the air (see {@link AutopilotBlockEntity#set}).
  */
 public record SetAutopilot(BlockPos pos, Action action, AutopilotBlockEntity.Settings settings) implements CustomPacketPayload {
-    /** What the screen asks: fly the settings, or switch off. */
+    /** What the screen asks: fly the settings, land, or switch off. */
     public enum Action {
-        FLY, OFF
+        FLY, LAND, OFF
     }
 
     public static final Type<SetAutopilot> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "set_autopilot"));

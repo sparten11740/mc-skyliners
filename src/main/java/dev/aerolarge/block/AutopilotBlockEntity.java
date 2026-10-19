@@ -53,7 +53,8 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * wings' lift sideways, and in an orbit it banks into the circle from the start and steers onto it. Engaged in the air
  * it holds the height, speed and heading it found. Its settings screen, opened from the autopilot or the flight deck's
  * autopilot screen, engages it and sets the targets (see {@link #set}); switching it off hands the airliner back to
- * its controls: the thrust levers, the tiller and the parking brake.
+ * its controls: the thrust levers, the tiller and the parking brake. Asked to land, it comes down ahead, touches down
+ * gently and brakes to a stop, then parks and hands back to those controls by itself.
  *
  * <p>Whether it is engaged or not, it gives the flight deck its callouts (see {@link Callouts}), and off it still
  * keeps the airliner safe: in the air its jets steady any quick pitching or rolling and push the nose and the wings
@@ -69,9 +70,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         ENGINE_1, ENGINE_2, ENGINE_3, ENGINE_4, PITCH_UP, PITCH_DOWN, ROLL_LEFT, ROLL_RIGHT, STEER_LEFT, STEER_RIGHT, BRAKES
     }
 
-    /** What it is doing about height: off, taking off, climbing or descending to the height, or holding it. */
+    /**
+     * What it is doing about height: off, taking off, climbing or descending to the height, holding it, coming down to
+     * land, or braking to a stop once down.
+     */
     public enum Phase {
-        OFF, TAKEOFF, CLIMB, DESCENT, CRUISE
+        OFF, TAKEOFF, CLIMB, DESCENT, CRUISE, LAND, ROLLOUT
     }
 
     /** What it is doing about direction: holding a heading, or circling a point to the left or right. */
@@ -166,6 +170,21 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double LEVEL_OFF = 8;
     /** The roll is still gaining speed while it gains more than this, in blocks per second every second. */
     private static final double STILL_ACCELERATING = 0.4;
+    /**
+     * Landing: the speed it slows to, as a share of the rotation speed (a quarter above it, the least the cruise speed
+     * should be, so the wings still lift); the rate it sinks at, in blocks a second; how much less it sinks per block
+     * nearer the ground; and the rate it touches down at, half what a butter landing has to stay under.
+     */
+    private static final double APPROACH_MARGIN = 1.25;
+    private static final double LANDING_SINK_RATE = 3;
+    private static final double FLARE_GAIN = 0.2;
+    private static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
+    /** The steepest bank it flies landing, in degrees per block above the ground. */
+    private static final double LANDING_BANK_PER_BLOCK = 0.5;
+    /** Slower than this, in blocks a second, it has stopped. */
+    private static final double STOPPED = 0.5;
+    /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
+    private static final double FLIGHT_DECK = 24;
     /**
      * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
      * radius per press.
@@ -299,9 +318,10 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Sets the autopilot from its settings screen: flies the settings, engaging it first if it is off (to take off, or
-     * to fly on from where it is in the air), or switches it off. Each setting is held to what the autopilot flies, and
-     * only one that differs from what it flies now is taken, so settings sent back as they were neither round a target
-     * off nor start an orbit's circle afresh. Says what it does, or why it cannot.
+     * to fly on from where it is in the air), lands, or switches it off. Each setting is held to what the autopilot
+     * flies, and only one that differs from what it flies now is taken, so settings sent back as they were neither
+     * round a target off nor start an orbit's circle afresh. Flying the settings while landing goes around; once down
+     * it only stops. Says what it does, or why it cannot.
      */
     public Component set(SetAutopilot.Action action, Settings settings) {
         if (action == SetAutopilot.Action.OFF) {
@@ -314,9 +334,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (state == null || level == null) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
         }
+        if (action == SetAutopilot.Action.LAND) {
+            return land(level, state);
+        }
+        if (phase == Phase.ROLLOUT) {
+            return Component.translatable("message.aerolarge.autopilot.rolling_out");
+        }
         boolean engaging = phase == Phase.OFF;
         if (engaging) {
             engage(level, state);
+        } else if (phase == Phase.LAND) {
+            // A go-around: it climbs away again, and the next tick finds whether to climb, descend or hold.
+            phase = Phase.CLIMB;
         }
         targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
         double floor = floor(runwayAltitude);
@@ -339,6 +368,26 @@ public class AutopilotBlockEntity extends BlockEntity {
             : Component.translatable("message.aerolarge.autopilot.mode." + lateral.name().toLowerCase(Locale.ROOT), Math.round(orbitRadius));
         String said = !engaging ? "set" : phase == Phase.TAKEOFF ? "engaged" : "holding";
         return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), mode);
+    }
+
+    /**
+     * Lands the airliner ahead, engaging the autopilot if it is off. Out of any circle onto the heading it is on, it
+     * comes down gently, slowing to the approach speed, and flares over the ground to touch down softly; then it idles
+     * the engines and brakes to a stop, parks and hands back to the flight deck (see {@link #fly}). Only in the air.
+     */
+    private Component land(Level level, SableFlight.State state) {
+        if (radioAltitude(level, state) <= AIRBORNE) {
+            return Component.translatable("message.aerolarge.autopilot.on_ground");
+        }
+        if (phase == Phase.OFF) {
+            engage(level, state);
+        }
+        phase = Phase.LAND;
+        lateral = Lateral.HEADING;
+        targetHeading = state.heading();
+        targetSpeed = Mth.clamp(AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get() * APPROACH_MARGIN, MIN_SPEED, MAX_SPEED);
+        changed();
+        return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading), Math.round(targetSpeed));
     }
 
     /** A setting from the screen, or the target it was shown from if it comes back as the screen showed it. */
@@ -504,34 +553,50 @@ public class AutopilotBlockEntity extends BlockEntity {
         double rotateSpeed = AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get();
         Phase was = phase;
 
+        double radio = radioAltitude(level, state);
         double targetPitch;
         int thrust;
-        boolean onGround = phase == Phase.TAKEOFF;
+        boolean takingOff = phase == Phase.TAKEOFF;
+        boolean rollingOut = phase == Phase.ROLLOUT;
+        boolean onGround = takingOff || rollingOut;
         // Down the runway it holds the heading it started on; the heading set is flown once it is off the ground.
-        double wanted = onGround ? runwayHeading : targetHeading;
+        double wanted = takingOff ? runwayHeading : targetHeading;
         double bank = 0;
-        if (onGround) {
+        if (takingOff) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
             slowTicks = accelerating || speed < 2 ? 0 : slowTicks + 1;
             boolean rotate = speed >= rotateSpeed || slowTicks > 40;
             targetPitch = rotate ? ROTATION_PITCH : 0;
             // Full thrust down the runway; from rotation on, the speed it will climb at.
             thrust = rotate ? holdSpeed(speed, targetSpeed) : 15;
-            if (radioAltitude(level, state) > AIRBORNE) {
+            if (radio > AIRBORNE) {
                 phase = Phase.CLIMB;
                 // The pitch it lifts off at is where the trim starts learning from.
                 trim = Mth.clamp(pitch, MIN_PITCH, MAX_PITCH);
             }
+        } else if (rollingOut) {
+            // Down after landing: the nose lowered onto its wheel so the wings stop lifting, the engines at idle.
+            targetPitch = 0;
+            thrust = 0;
         } else {
+            boolean landing = phase == Phase.LAND;
             double heightToGo = targetAltitude - state.position().y;
-            double wantedClimb = Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
+            // Landing, it sinks gently, and ever more gently the nearer the ground below: the flare.
+            double wantedClimb = landing ? -Mth.clamp(FLARE_GAIN * radio, TOUCHDOWN_SINK, LANDING_SINK_RATE)
+                : Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
             double climbError = wantedClimb - climb;
-            targetPitch = Mth.clamp(trim + CLIMB_GAIN * climbError - CLIMB_DAMPING * climbRate, MIN_PITCH, MAX_PITCH);
+            // Landing, the nose comes up no further than at rotation, so the tail stays clear of the ground.
+            double maxPitch = landing ? ROTATION_PITCH : MAX_PITCH;
+            targetPitch = Mth.clamp(trim + CLIMB_GAIN * climbError - CLIMB_DAMPING * climbRate, MIN_PITCH, maxPitch);
             if (Math.abs(climbError) < TRIM_CLIMB_WINDOW && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
                 trim = Mth.clamp(trim + TRIM_RATE * climbError, MIN_PITCH, MAX_PITCH);
             }
             thrust = holdSpeed(speed, targetSpeed);
-            phase = Math.abs(heightToGo) < LEVEL_OFF ? Phase.CRUISE : heightToGo > 0 ? Phase.CLIMB : Phase.DESCENT;
+            if (!landing) {
+                phase = Math.abs(heightToGo) < LEVEL_OFF ? Phase.CRUISE : heightToGo > 0 ? Phase.CLIMB : Phase.DESCENT;
+            } else if (radio < Callouts.ON_GROUND) {
+                phase = Phase.ROLLOUT;
+            }
             // The turn it should be making, in degrees a second: round the circle at this speed in an orbit, none on a
             // heading.
             double wantedTurn = 0;
@@ -544,19 +609,22 @@ public class AutopilotBlockEntity extends BlockEntity {
                 wantedTurn = side * Math.toDegrees(horizontal / orbitRadius);
             }
             double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
-            bank = Mth.clamp(bank + BANK_GAIN * Mth.wrapDegrees(wanted - state.heading()) - TURN_DAMPING * (turn - wantedTurn), -MAX_BANK, MAX_BANK);
+            // Landing, it banks less the lower it gets, to keep its long wings clear of the ground.
+            double maxBank = landing ? Mth.clamp(LANDING_BANK_PER_BLOCK * radio, 0, MAX_BANK) : MAX_BANK;
+            bank = Mth.clamp(bank + BANK_GAIN * Mth.wrapDegrees(wanted - state.heading()) - TURN_DAMPING * (turn - wantedTurn), -maxBank, maxBank);
         }
 
         int pitchCommand = (int) Math.round(PITCH_GAIN * (targetPitch - pitch) - PITCH_DAMPING * pitchRate);
         int rollCommand = (int) Math.round(ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate);
-        boolean rolls = !onGround || radioAltitude(level, state) > 0.5;
+        boolean rolls = !onGround || radio > 0.5;
         drive(level, Channel.PITCH_UP, Mth.clamp(pitchCommand, 0, 15));
         drive(level, Channel.PITCH_DOWN, Mth.clamp(-pitchCommand, 0, 15));
         drive(level, Channel.ROLL_RIGHT, rolls ? Mth.clamp(rollCommand, 0, 15) : 0);
         drive(level, Channel.ROLL_LEFT, rolls ? Mth.clamp(-rollCommand, 0, 15) : 0);
 
-        // The brakes are off while it flies; on the ground it also steers the nose wheel to hold the heading.
-        drive(level, Channel.BRAKES, 0);
+        // The brakes are off while it flies and on once it has landed; on the ground it also steers the nose wheel to
+        // hold the heading.
+        drive(level, Channel.BRAKES, rollingOut ? 15 : 0);
         double headingError = Mth.wrapDegrees(wanted - state.heading());
         int steer = onGround ? Mth.clamp((int) Math.round(STEER_GAIN * headingError), -15, 15) : 0;
         drive(level, Channel.STEER_RIGHT, Math.max(0, steer));
@@ -574,6 +642,13 @@ public class AutopilotBlockEntity extends BlockEntity {
         lastSpeed = speed;
         lastClimb = climb;
         lastHeading = state.heading();
+        if (rollingOut && state.velocity().length() < STOPPED) {
+            // Stopped after landing: parked, and handed back to the flight deck.
+            park(level);
+            disengage();
+            tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"), false);
+            return;
+        }
         if (level.getGameTime() % 10 == 0) {
             report(level, state);
         }
@@ -632,9 +707,36 @@ public class AutopilotBlockEntity extends BlockEntity {
             Component.translatable("message.aerolarge.autopilot.phase." + phase.name().toLowerCase(Locale.ROOT)),
             Math.round(state.airspeed()), String.format(Locale.ROOT, "%+d", Math.round(state.position().y - runwayAltitude)),
             Math.round(state.pitch()), Math.round(state.roll()), compass(state.heading()));
+        tell(level, state.position(), status, true);
+    }
+
+    /** Shows a message to everyone near the flight deck, in the action bar or in chat. */
+    private static void tell(ServerLevel level, Vec3 flightDeck, Component message, boolean actionBar) {
         level.players().stream()
-            .filter(player -> player.position().distanceToSqr(state.position()) < 24 * 24)
-            .forEach(player -> player.displayClientMessage(status, true));
+            .filter(player -> player.position().distanceToSqr(flightDeck) < FLIGHT_DECK * FLIGHT_DECK)
+            .forEach(player -> player.displayClientMessage(message, actionBar));
+    }
+
+    /**
+     * Sets the flight deck's controls as for a parked airliner, so that it stays where it stopped once they have it
+     * back: the thrust levers at idle, the tiller straight and the parking brake set.
+     */
+    private void park(ServerLevel level) {
+        for (BlockPos offset : controls) {
+            BlockPos at = worldPosition.offset(offset);
+            BlockState control = level.getBlockState(at);
+            BlockState parked = control;
+            if (control.getBlock() instanceof ThrustLeverBlock) {
+                parked = control.setValue(ThrustLeverBlock.THRUST, 0);
+            } else if (control.getBlock() instanceof TillerBlock) {
+                parked = control.setValue(TillerBlock.STEER, TillerBlock.CENTRE);
+            } else if (control.getBlock() instanceof ParkingBrakeBlock) {
+                parked = control.setValue(ParkingBrakeBlock.SET, true);
+            }
+            if (parked != control) {
+                level.setBlock(at, parked, Block.UPDATE_ALL);
+            }
+        }
     }
 
     /** Switches off: the jets go quiet, and the engines, the nose wheel and the brakes follow their controls again. */

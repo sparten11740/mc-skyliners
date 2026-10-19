@@ -33,7 +33,7 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
     public static final IntegerProperty STEER = IntegerProperty.create("steer", 0, 4);
     public static final String LEFT = "left";
     public static final String RIGHT = "right";
-    private static final int CENTRE = 2;
+    public static final int CENTRE = 2;
     /** Signal per notch off centre. */
     private static final int SIGNAL_PER_NOTCH = 7;
     private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 9, 13);

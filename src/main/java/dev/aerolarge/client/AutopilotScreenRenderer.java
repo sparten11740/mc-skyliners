@@ -187,12 +187,16 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         return Component.translatable("screen.aerolarge.autopilot.mode", phase, mode);
     }
 
-    /** The height and speed the autopilot flies to; nothing while it is off. */
+    /** The height and speed the autopilot flies to, the touchdown while landing, its brakes once down; nothing off. */
     static Component targets(@Nullable AutopilotBlockEntity autopilot) {
         if (!engaged(autopilot)) {
             return Component.empty();
         }
-        return Component.translatable("screen.aerolarge.autopilot.targets", Math.round(autopilot.targetAltitude()), Math.round(autopilot.targetSpeed()));
+        return switch (autopilot.phase()) {
+            case LAND -> Component.translatable("screen.aerolarge.autopilot.targets.land", Math.round(autopilot.targetSpeed()));
+            case ROLLOUT -> Component.translatable("screen.aerolarge.autopilot.targets.rollout");
+            default -> Component.translatable("screen.aerolarge.autopilot.targets", Math.round(autopilot.targetAltitude()), Math.round(autopilot.targetSpeed()));
+        };
     }
 
     /** How the airliner is flying now: its speed, its height (where the block drawing it is) and its heading. */
