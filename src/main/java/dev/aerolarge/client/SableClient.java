@@ -21,9 +21,9 @@ import org.joml.Vector3dc;
 
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
- * with, which one a player is riding and how that one moves, and how one is moving and lying for its instruments.
- * Every call works without Sable too (nothing is assembled then); Sable's classes are only touched once it is known to
- * be installed.
+ * with, which one a player is riding or a block is part of and how that one moves, and how one is moving and lying for
+ * its instruments. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
+ * once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -63,14 +63,23 @@ public final class SableClient {
         return SABLE ? Access.attitude(blockEntity, nose, partialTick) : null;
     }
 
-    /** The airliner a player is riding: how it moves (blocks a second) and how high its middle is above the ground. */
-    public record Ride(Vector3d velocity, double heightAboveGround) {
+    /**
+     * An assembled airliner as one riding it or one of its blocks finds it: where its middle is in the world, how it
+     * moves (blocks a second) and how high its middle is above the ground.
+     */
+    public record Ride(Vector3d position, Vector3d velocity, double heightAboveGround) {
     }
 
     /** What the entity is riding, or null when it is not on an assembled airliner. */
     @Nullable
     static Ride ride(Entity entity) {
         return SABLE ? Access.ride(entity) : null;
+    }
+
+    /** The airliner the block entity is part of, or null when it is not part of an assembled one. */
+    @Nullable
+    static Ride ride(BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() != null ? Access.ride(blockEntity) : null;
     }
 
     private static final class Access {
@@ -109,12 +118,19 @@ public final class SableClient {
         @Nullable
         static Ride ride(Entity entity) {
             SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
-            if (airliner == null) {
-                return null;
-            }
+            return airliner == null ? null : ride(airliner, entity.level());
+        }
+
+        @Nullable
+        static Ride ride(BlockEntity blockEntity) {
+            SubLevel airliner = Sable.HELPER.getContainingClient(blockEntity);
+            return airliner == null ? null : ride(airliner, blockEntity.getLevel());
+        }
+
+        private static Ride ride(SubLevel airliner, Level level) {
             Vector3dc middle = airliner.logicalPose().position();
-            int ground = entity.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(middle.x()), Mth.floor(middle.z()));
-            return new Ride(velocity(airliner), middle.y() - ground);
+            int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(middle.x()), Mth.floor(middle.z()));
+            return new Ride(new Vector3d(middle), velocity(airliner), middle.y() - ground);
         }
 
         /** Blocks a second, from where the airliner was last tick and is now. */

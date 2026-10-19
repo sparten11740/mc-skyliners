@@ -728,4 +728,21 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
+// The passenger screen: a slim display in a thin grey bezel, on the part of the texture its panel shows (x 1 to 14,
+// y 3 to 12). Its glass shows the flight information page in miniature, for when it is too far off to be drawn live
+// and in the hand: a header band with its bright stripe over two rows of three tiles on dark blue, a footer band
+// under them. Its casing is plain dark grey.
+{
+  const BEZEL = [0x3a, 0x3f, 0x47];
+  const BAND = [0x10, 0x25, 0x4a];
+  texture(blockOutput, "passenger_screen", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 3 || y >= 12) return BEZEL;
+    if (y === 4 || y === 11) return BAND;
+    if (y === 5) return [0x46, 0xc8, 0xf0];
+    const tile = (y === 6 || y === 7 || y === 9 || y === 10) && x % 4 !== 2;
+    return tile ? [0x13, 0x2d, 0x59] : [0x08, 0x12, 0x26];
+  }, 1);
+  texture(blockOutput, "passenger_screen_casing", () => [0x2c, 0x30, 0x36]);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

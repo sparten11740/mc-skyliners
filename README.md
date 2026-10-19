@@ -138,6 +138,15 @@ by it. Push a trolley down the aisle by walking into it (it squeaks); use it to 
 chicken meal, airline coffee (a minute of Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it
 to fold it up and carry it. Galley, trolley and food can all be crafted.
 
+### Passenger screens
+
+A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
+faces out from it; put anywhere else it faces you. Once the airliner is assembled it shows the flight: whether it is
+on the ground, climbing, cruising or descending; its altitude above sea level and its height above the ground; its
+speed over the ground and how fast it climbs or sinks; the way it is heading; and how far it has flown and for how
+long since it took off, kept up after landing until the next take-off. A block counts as a metre. While the airliner
+stands as blocks the screen shows a welcome page.
+
 ### Villager passengers
 
 Off by default: turn on Villager Passengers (`villagerPassengers`) in the server settings (see Settings). A Check-in

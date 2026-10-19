@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/passenger_screen",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/passenger_screen",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/passenger_screen",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/passenger_screen",
+      "y": 270
+    }
+  }
+}

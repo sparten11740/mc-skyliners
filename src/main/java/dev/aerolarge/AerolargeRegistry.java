@@ -48,6 +48,8 @@ import dev.aerolarge.block.OverheadBinBlock;
 import dev.aerolarge.block.OverheadBinBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.PassengerScreenBlock;
+import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.PendantLightBlock;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.ScoreboardBlock;
@@ -405,6 +407,14 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
+    /** The passengers' screens in the seat backs and bulkheads, showing how the airliner flies. */
+    public static final DeferredBlock<PassengerScreenBlock> PASSENGER_SCREEN = BLOCKS.registerBlock(
+        "passenger_screen", PassengerScreenBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.METAL).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PassengerScreenBlockEntity>> PASSENGER_SCREEN_ENTITY =
+        BLOCK_ENTITIES.register("passenger_screen", () -> BlockEntityType.Builder.of(PassengerScreenBlockEntity::new, PASSENGER_SCREEN.get()).build(null));
+    public static final DeferredItem<BlockItem> PASSENGER_SCREEN_ITEM = ITEMS.registerSimpleBlockItem(PASSENGER_SCREEN);
     /** The cabin lights' dimmer on the flight deck, and the block entity any cabin control keeps what it works in. */
     public static final DeferredBlock<CabinLightsBlock> CABIN_LIGHTS = BLOCKS.registerBlock(
         "cabin_lights", CabinLightsBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
@@ -519,7 +529,7 @@ public final class AerolargeRegistry {
             SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM, DROP_RELEASE_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
             CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE
         )),
         new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),

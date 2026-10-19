@@ -30,10 +30,10 @@ public final class CameraShake {
      */
     private static final float TURBULENCE = 1.6F;
     private static final float TURBULENCE_FADE_TICKS = 20;
-    /** The airliner is on its wheels while it sits within this many blocks of the height it rests at on the ground. */
-    private static final double ON_GROUND = 1.0;
 
     private static final RandomSource RANDOM = RandomSource.create();
+    /** Whether the airliner the player rides is on its wheels. */
+    private static final GroundContact GROUND = new GroundContact();
     private static float thump;
     private static float rumble;
     private static float sway;
@@ -43,8 +43,6 @@ public final class CameraShake {
     private static float time;
     private static boolean wasOnGround = true;
     private static double lastSink;
-    /** How far above the ground the airliner's middle sits when it stands on its wheels; learned while it stands still. */
-    private static double restHeight = Double.NaN;
 
     private CameraShake() {
     }
@@ -66,15 +64,12 @@ public final class CameraShake {
         Player player = minecraft.player;
         SableClient.Ride ride = player != null ? SableClient.ride(player) : null;
         if (ride == null) {
-            restHeight = Double.NaN;
+            GROUND.forget();
             wasOnGround = true;
             return;
         }
-        double speed = Math.sqrt(ride.velocity().x * ride.velocity().x + ride.velocity().z * ride.velocity().z);
-        if (speed < 0.5 && Math.abs(ride.velocity().y) < 0.3) {
-            restHeight = ride.heightAboveGround();
-        }
-        boolean onGround = !Double.isNaN(restHeight) && ride.heightAboveGround() < restHeight + ON_GROUND;
+        double speed = Math.hypot(ride.velocity().x, ride.velocity().z);
+        boolean onGround = GROUND.onGround(ride);
         if (onGround && !wasOnGround) {
             thump = Math.min(MAX_THUMP, (float) lastSink * THUMP_PER_SINK);
         }

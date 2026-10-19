@@ -446,6 +446,17 @@ function dropsItself(name) {
   }
 }
 
+// The passenger screen: a slim seat-back display, drawn facing north with its back against the south side of its
+// block, dark glass in a thin grey bezel; its renderer draws the flight information over the glass.
+write(`assets/${ID}/models/block/passenger_screen.json`, boxes(
+  { screen: `${ID}:block/passenger_screen`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+  [[[1, 3, 14], [15, 13, 16], { north: "#screen", all: "#casing" }]],
+));
+facing("passenger_screen");
+write(`assets/${ID}/models/item/passenger_screen.json`, { parent: `${ID}:block/passenger_screen` });
+dropsItself("passenger_screen");
+cubes.passenger_screen = null;
+
 // The signal flare: a red paper tube stuck in the ground, its tip burning bright whatever the light around. Burnt or
 // broken, it leaves nothing.
 write(`assets/${ID}/models/block/signal_flare.json`, boxes(
@@ -760,7 +771,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack", "galley"];
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -799,6 +810,7 @@ shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
+shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
 shaped("signal_flare", ["P", "G", "S"], { P: "minecraft:paper", G: "minecraft:gunpowder", S: "minecraft:stick" }, 4);
 shaped("drop_bay", ["PTP", "P P", "PTP"], { P: `${ID}:airframe_panel`, T: "minecraft:iron_trapdoor" }, 1);
 shaped("drop_release", ["R", "P"], { R: "minecraft:redstone_torch", P: `${ID}:instrument_panel` }, 1);
@@ -1029,6 +1041,26 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.overhead_bin": "Overhead Locker",
   "container.aerolarge.overhead_bin": "Overhead Locker",
+  "block.aerolarge.passenger_screen": "Passenger Screen",
+  "screen.aerolarge.passenger_screen.welcome": "WELCOME ABOARD",
+  "screen.aerolarge.passenger_screen.standby": "ASSEMBLE TO FLY",
+  "screen.aerolarge.passenger_screen.title": "FLIGHT INFO",
+  "screen.aerolarge.passenger_screen.status.ground": "ON THE GROUND",
+  "screen.aerolarge.passenger_screen.status.climbing": "CLIMBING",
+  "screen.aerolarge.passenger_screen.status.cruising": "CRUISING",
+  "screen.aerolarge.passenger_screen.status.descending": "DESCENDING",
+  "screen.aerolarge.passenger_screen.altitude": "ALTITUDE",
+  "screen.aerolarge.passenger_screen.ground_speed": "GROUND SPEED",
+  "screen.aerolarge.passenger_screen.vertical_speed": "VERTICAL SPEED",
+  "screen.aerolarge.passenger_screen.heading": "HEADING",
+  "screen.aerolarge.passenger_screen.height": "ABOVE GROUND",
+  "screen.aerolarge.passenger_screen.distance": "DISTANCE FLOWN",
+  "screen.aerolarge.passenger_screen.flight_time": "FLIGHT TIME %s",
+  "screen.aerolarge.passenger_screen.unit.metres": "m",
+  "screen.aerolarge.passenger_screen.unit.kilometres": "km",
+  "screen.aerolarge.passenger_screen.unit.kilometres_per_hour": "km/h",
+  "screen.aerolarge.passenger_screen.unit.metres_per_second": "m/s",
+  ...Object.fromEntries(["N", "NE", "E", "SE", "S", "SW", "W", "NW"].map((point, i) => [`screen.aerolarge.passenger_screen.compass.${i}`, point])),
   "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
   "block.aerolarge.seatbelt_switch": "Seatbelt Switch",
   "message.aerolarge.seatbelts.on": "Seatbelt signs on",
