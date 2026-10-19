@@ -16,6 +16,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
+    public static final ModConfigSpec.BooleanValue TURBULENCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -81,6 +82,12 @@ public final class AerolargeConfig {
                 "Never less than a quarter above the speed it rotated at, so the wings keep lifting."
             )
             .defineInRange("cruiseSpeed", 50.0, 5.0, 300.0);
+        builder.pop();
+
+        builder.push("cabin");
+        TURBULENCE = builder
+            .comment("Whether airliners in flight now and then run into rough air, shaking everyone aboard and throwing about whoever is not seated.")
+            .define("turbulence", true);
         builder.pop();
 
         SPEC = builder.build();

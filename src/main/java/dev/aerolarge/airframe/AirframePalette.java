@@ -6,6 +6,7 @@ import java.util.Optional;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,7 +49,7 @@ record AirframePalette(
             block(AerolargeConfig.ASSEMBLER_BLOCK.get()).map(state -> with(with(state, "face", "floor"), "facing", "north")),
             block(AerolargeConfig.WHEEL_MOUNT_BLOCK.get()),
             // Create is required, so its seats are always there for the pilots.
-            block("create:black_seat"),
+            seat(DyeColor.BLACK),
             id(AerolargeConfig.TIRE_ITEM.get()).flatMap(BuiltInRegistries.ITEM::getOptional)
         );
     }
@@ -56,6 +57,11 @@ record AirframePalette(
     /** The lifting surface turned so its face is square to the given direction, or the fallback without one. */
     BlockState lift(Direction normal, BlockState fallback) {
         return lift.map(state -> with(state, "facing", normal.getSerializedName())).orElse(fallback);
+    }
+
+    /** One of Create's seats, in the colour. */
+    static Optional<BlockState> seat(DyeColor colour) {
+        return block("create:" + colour.getSerializedName() + "_seat");
     }
 
     /** Whether the state is the lifting surface, turned any way. */

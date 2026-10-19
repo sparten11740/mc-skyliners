@@ -1,6 +1,9 @@
 package dev.aerolarge;
 
 import dev.aerolarge.airframe.AirframeBuild;
+import dev.aerolarge.cabin.Seatbelts;
+import dev.aerolarge.cabin.TurbulencePayload;
+import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
 import dev.aerolarge.radio.Broadcasts;
@@ -29,12 +32,12 @@ public final class Aerolarge {
         AerolargeRegistry.register(modEventBus);
         container.registerConfig(ModConfig.Type.SERVER, AerolargeConfig.SPEC);
 
-        modEventBus.addListener(RegisterPayloadHandlersEvent.class,
-            event -> event.registrar("1").playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle));
+        modEventBus.addListener(Aerolarge::onRegisterPayloads);
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
+        NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
@@ -49,5 +52,13 @@ public final class Aerolarge {
                 AirframeBuild.drop(level);
             }
         });
+    }
+
+    private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar("2")
+            .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
+            // Only ever handled on a client: the lambda keeps the client class from loading anywhere else.
+            .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
+                (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()));
     }
 }

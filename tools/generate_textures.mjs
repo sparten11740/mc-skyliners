@@ -412,4 +412,39 @@ blueprint("furnished_airliner_blueprint", true);
   });
 }
 
+// Buckling up. The seatbelt sign: a dark panel with a seated figure and its belt beside a crossed-out cigarette,
+// glowing amber on white when lit. The seatbelt switch: a dark panel with the same figure on a lamp, amber when on.
+{
+  const seated = (x, y) =>
+    Math.hypot(x - 4.5, y - 4.5) < 1.3 // head
+    || (x >= 3 && x <= 5 && y >= 6 && y <= 9) // body
+    || (y === 9 && x >= 5 && x <= 7) // thigh
+    || (x === 7 && y >= 10 && y <= 12) // shin
+    || (x === 2 && y >= 6 && y <= 11); // seat back
+  const belt = (x, y) => y === 8 && x >= 2 && x <= 6;
+  const cigarette = (x, y) => y === 8 && x >= 9 && x <= 13;
+  const crossed = (x, y) => Math.abs(Math.hypot(x - 11, y - 8) - 3.2) < 0.6 || Math.abs((x - 11) - (8 - y)) < 0.6 && Math.hypot(x - 11, y - 8) < 3.2;
+  for (const lit of [false, true]) {
+    const back = lit ? [0xf4, 0xf0, 0xe0] : [0x2c, 0x30, 0x36];
+    const ink = lit ? [0x20, 0x20, 0x24] : [0x48, 0x4d, 0x55];
+    const amber = lit ? [0xf0, 0xa0, 0x20] : [0x5a, 0x48, 0x2a];
+    const red = lit ? [0xd8, 0x30, 0x28] : [0x50, 0x2c, 0x2a];
+    texture(blockOutput, `seatbelt_sign${lit ? "_on" : ""}`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return FRAME_DARK;
+      if (belt(x, y)) return amber;
+      if (seated(x, y)) return ink;
+      if (crossed(x, y)) return red;
+      if (cigarette(x, y)) return ink;
+      return back;
+    }, lit ? 1 : 3);
+    texture(blockOutput, `seatbelt_switch${lit ? "_on" : ""}`, (x, y) => {
+      const lamp = Math.hypot(x - 7.5, y - 6.5) < 4.5;
+      if (lamp && (seated(x - 3, y - 2) || belt(x - 3, y - 2))) return lit ? [0x30, 0x24, 0x10] : [0x14, 0x15, 0x17];
+      if (lamp) return lit ? [0xff, 0xb0, 0x30] : [0x4a, 0x3c, 0x24];
+      if (y >= 12 && y <= 13 && x >= 5 && x <= 10) return STEEL;
+      return [0x22, 0x25, 0x2a];
+    });
+  }
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

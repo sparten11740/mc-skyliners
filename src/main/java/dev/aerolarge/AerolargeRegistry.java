@@ -26,6 +26,9 @@ import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.RadioBlockEntity;
+import dev.aerolarge.block.SeatbeltSignBlock;
+import dev.aerolarge.block.SeatbeltSwitchBlock;
+import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
@@ -99,6 +102,8 @@ public final class AerolargeRegistry {
     /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PA_CHIME = sound("pa_chime");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");
+    /** The ding of the seatbelt signs coming on. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SEATBELT_DING = sound("seatbelt_ding");
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
 
@@ -264,6 +269,18 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> HANDSET_ITEM = ITEMS.registerSimpleBlockItem(HANDSET);
     public static final DeferredItem<BlockItem> TOWER_RADIO_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADIO);
 
+    /** Buckling up: the seatbelt switch on the flight deck and the signs it lights in the cabin walls. */
+    public static final DeferredBlock<SeatbeltSwitchBlock> SEATBELT_SWITCH = BLOCKS.registerBlock(
+        "seatbelt_switch", SeatbeltSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SeatbeltSwitchBlockEntity>> SEATBELT_SWITCH_ENTITY =
+        BLOCK_ENTITIES.register("seatbelt_switch", () -> BlockEntityType.Builder.of(SeatbeltSwitchBlockEntity::new, SEATBELT_SWITCH.get()).build(null));
+    public static final DeferredBlock<SeatbeltSignBlock> SEATBELT_SIGN = BLOCKS.registerBlock(
+        "seatbelt_sign", SeatbeltSignBlock::new, glass().lightLevel(state -> state.getValue(SeatbeltSignBlock.LIT) ? 10 : 0)
+    );
+    public static final DeferredItem<BlockItem> SEATBELT_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SWITCH);
+    public static final DeferredItem<BlockItem> SEATBELT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SIGN);
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -282,7 +299,8 @@ public final class AerolargeRegistry {
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
-            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM
+            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
+            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

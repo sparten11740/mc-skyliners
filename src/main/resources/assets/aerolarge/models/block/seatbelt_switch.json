@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "aerolarge:block/seatbelt_switch",
+    "side": "aerolarge:block/panel_side",
+    "top": "aerolarge:block/panel_side"
+  }
+}

@@ -118,5 +118,13 @@
         "name": "aerolarge:radio_crackle"
       }
     ]
+  },
+  "seatbelt_ding": {
+    "subtitle": "subtitles.aerolarge.seatbelt_ding",
+    "sounds": [
+      {
+        "name": "aerolarge:seatbelt_ding"
+      }
+    ]
   }
 }

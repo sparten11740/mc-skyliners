@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.LadderBlock;
@@ -13,8 +14,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 /**
  * Fits out the main deck of the furnished airliner, front to back between the door aisles: an indoor pool sunk into
  * the hold so its water lies flush with the floor, a full-height gym hall (Turnhalle) over the wing box, and a lounge
- * with a bar in the tail. Everything is vanilla blocks, and only ever goes into open cabin space or replaces cabin
- * floor, so the hull, the doors and the space in front of them stay as they were.
+ * with a bar in the tail. Everything is vanilla blocks but the seats, which are Create's so they can be sat in, and
+ * only ever goes into open cabin space or replaces cabin floor, so the hull, the doors and the space in front of them
+ * stay as they were.
  */
 final class CabinFitOut {
     private static final double[] POOL = {13.5, 23.0};
@@ -122,7 +124,7 @@ final class CabinFitOut {
 
     /**
      * The gym hall (Turnhalle): the cabin's whole height over a birch parquet court with white lines, a basketball
-     * hoop at each end, wall bars and mats along the port wall, climbing ropes and benches along starboard.
+     * hoop at each end, wall bars and mats along the port wall, climbing ropes and a row of seats along starboard.
      */
     private void gym(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -168,7 +170,7 @@ final class CabinFitOut {
             }
         }
 
-        BlockState bench = Blocks.SPRUCE_SLAB.defaultBlockState();
+        BlockState bench = AirframePalette.seat(DyeColor.BLUE).orElse(Blocks.SPRUCE_SLAB.defaultBlockState());
         for (int z = fromZ + 3; z <= toZ - 3; z++) {
             if (Math.abs(z - middle) > 4) {
                 layout.furnish(width, floor + 1, z, bench);
@@ -195,13 +197,14 @@ final class CabinFitOut {
 
     /**
      * The lounge: carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in front,
-     * sofas and low tables along the port wall, and plants in the corners.
+     * a row of red seats and low tables along the port wall, and plants in the corners.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
             return;
         }
         int frontWidth = layout.openHalfWidth(floor + 1, fromZ);
+        BlockState sofa = AirframePalette.seat(DyeColor.RED).orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
         // The tail cone narrows through the lounge, so it is fitted station by station, following the walls in.
         for (int z = fromZ; z <= toZ; z++) {
             int width = layout.openHalfWidth(floor + 1, z);
@@ -215,7 +218,7 @@ final class CabinFitOut {
                 if ((z - fromZ) % 2 == 1) {
                     layout.furnish(width - 2, floor + 1, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
                 }
-                layout.furnish(-width, floor + 1, z, Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
+                layout.furnish(-width, floor + 1, z, sofa);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {
                     layout.furnish(-width + 2, floor + 1, z, Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
                 }

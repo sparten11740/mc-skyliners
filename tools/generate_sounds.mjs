@@ -131,6 +131,13 @@ function bell(samples, start, frequency, decay) {
   writeSound("radio_crackle", samples);
 }
 
+// The seatbelt signs coming on: a single soft bell tone.
+{
+  const samples = new Float64Array(Math.round(1.6 * RATE));
+  bell(samples, 0, 987.77, 0.5);
+  writeSound("seatbelt_ding", samples);
+}
+
 // The callouts, as the aircraft's synthetic voice would say them.
 const CALLOUTS = {
   callout_v1: "V one.",

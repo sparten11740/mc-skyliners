@@ -18,8 +18,8 @@ Both blueprints are in the Aerolarge creative tab; there is no recipe for them.
 
 - **Airliner Blueprint**: the airframe with an empty cabin.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with an indoor
-  pool sunk into the hold, a full-height gym hall (Turnhalle) with a court, hoops, wall bars and climbing ropes,
-  and a lounge with a bar in the tail.
+  pool sunk into the hold, a full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a
+  row of seats, and a lounge with a bar and seats in the tail. The seats are Create's, so they can be sat in.
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
@@ -42,8 +42,8 @@ thrusters through relays hidden in the nacelle. Beside the captain's seat is the
 right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
 is built. A primary flight display in front of each seat shows attitude, airspeed,
 altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
-On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving) and the captain's
-handset.
+On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch
+and the captain's handset.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
@@ -57,6 +57,13 @@ chime and sees it on screen under "Captain" and your name, and it is kept in cha
 is a radio call instead. A Tower Radio (craftable) is for the airfield: whatever is said into it goes out over the
 radio. A radio call crackles in for everyone near any radio within 4096 blocks, the handsets of airliners in flight
 included. Either way the message is left out of ordinary chat; use the handset or radio again to put it down.
+
+### Seatbelts and turbulence
+
+The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls, with a ding. While they are on,
+anyone seated aboard stays in their seat when they sneak to get up. In flight the airliner runs into rough air now
+and then, a few seconds of it about once a minute: everyone aboard feels the shake, and whoever is not sitting down
+is thrown about the cabin. Turn it off with `turbulence` in the server config.
 
 ### Autopilot
 

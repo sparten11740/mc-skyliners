@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "aerolarge:block/seatbelt_sign"
+    },
+    "lit=true": {
+      "model": "aerolarge:block/seatbelt_sign_on"
+    }
+  }
+}

@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.SableFlight;
 import java.util.EnumMap;
 import java.util.List;
@@ -183,6 +184,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
     private boolean governing;
     private final Callouts callouts = new Callouts();
+    private final Turbulence turbulence = new Turbulence();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -345,8 +347,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Each tick while the airliner is assembled: the callouts watch it, and the autopilot flies it if engaged, or
-     * keeps it from tipping over if not.
+     * Each tick while the airliner is assembled: the callouts watch it, rough air comes and goes, and the autopilot
+     * flies it if engaged, or keeps it from tipping over if not.
      */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -361,6 +363,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow);
+        autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), autopilot.radioAltitude(serverLevel, flight), flight.airspeed());
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {

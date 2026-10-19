@@ -9,6 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -25,7 +26,12 @@ public class LinkedControlBlockEntity extends BlockEntity implements Control {
     private Map<String, List<BlockPos>> groups = Map.of();
 
     public LinkedControlBlockEntity(BlockPos pos, BlockState state) {
-        super(AerolargeRegistry.LINKED_CONTROL_ENTITY.get(), pos, state);
+        this(AerolargeRegistry.LINKED_CONTROL_ENTITY.get(), pos, state);
+    }
+
+    /** For a control that needs to be told apart from the others, with a type of its own. */
+    protected LinkedControlBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public void configure(Map<String, List<BlockPos>> groups) {

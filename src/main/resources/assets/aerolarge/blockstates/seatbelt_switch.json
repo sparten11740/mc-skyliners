@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,powered=false": {
+      "model": "aerolarge:block/seatbelt_switch",
+      "y": 0
+    },
+    "facing=north,powered=true": {
+      "model": "aerolarge:block/seatbelt_switch_on",
+      "y": 0
+    },
+    "facing=east,powered=false": {
+      "model": "aerolarge:block/seatbelt_switch",
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "aerolarge:block/seatbelt_switch_on",
+      "y": 90
+    },
+    "facing=south,powered=false": {
+      "model": "aerolarge:block/seatbelt_switch",
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "aerolarge:block/seatbelt_switch_on",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "aerolarge:block/seatbelt_switch",
+      "y": 270
+    },
+    "facing=west,powered=true": {
+      "model": "aerolarge:block/seatbelt_switch_on",
+      "y": 270
+    }
+  }
+}

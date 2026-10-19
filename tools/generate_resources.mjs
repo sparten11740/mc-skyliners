@@ -157,6 +157,7 @@ cubes.engine_core = null;
   }
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
+  sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
 }
@@ -351,6 +352,33 @@ function dropsItself(name) {
   }
 }
 
+// Buckling up. The seatbelt sign, dark or lit; the seatbelt switch in the panel, its lamp dark or lit, facing the
+// pilots.
+{
+  for (const lit of [false, true]) {
+    write(`assets/${ID}/models/block/seatbelt_sign${lit ? "_on" : ""}.json`, {
+      parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` },
+    });
+    write(`assets/${ID}/models/block/seatbelt_switch${lit ? "_on" : ""}.json`, {
+      parent: "minecraft:block/orientable",
+      textures: { front: `${ID}:block/seatbelt_switch${lit ? "_on" : ""}`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
+    });
+  }
+  write(`assets/${ID}/blockstates/seatbelt_sign.json`, {
+    variants: { "lit=false": { model: `${ID}:block/seatbelt_sign` }, "lit=true": { model: `${ID}:block/seatbelt_sign_on` } },
+  });
+  write(`assets/${ID}/blockstates/seatbelt_switch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((on) =>
+      [`facing=${facing},powered=${on}`, { model: `${ID}:block/seatbelt_switch${on ? "_on" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/seatbelt_sign.json`, { parent: `${ID}:block/seatbelt_sign_on` });
+  write(`assets/${ID}/models/item/seatbelt_switch.json`, { parent: `${ID}:block/seatbelt_switch_on` });
+  for (const name of ["seatbelt_sign", "seatbelt_switch"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
 write(`assets/${ID}/models/block/autopilot_screen.json`, {
@@ -464,6 +492,8 @@ shaped("jump_light", ["R", "L", "G"], { R: "minecraft:red_dye", L: "minecraft:re
 shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_panel` }, 1);
 shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
+shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
+shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -557,6 +587,12 @@ write(`assets/${ID}/lang/en_us.json`, {
   "title.aerolarge.captain": "Captain %s",
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
+  "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
+  "block.aerolarge.seatbelt_switch": "Seatbelt Switch",
+  "message.aerolarge.seatbelts.on": "Seatbelt signs on",
+  "message.aerolarge.seatbelts.off": "Seatbelt signs off",
+  "message.aerolarge.seatbelts.fastened": "Your seatbelt is fastened: stay seated while the signs are on.",
+  "subtitles.aerolarge.seatbelt_ding": "Seatbelt sign dings",
   "subtitles.aerolarge.pa_chime": "Cabin chime",
   "subtitles.aerolarge.radio_crackle": "Radio crackles",
   "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak holding a wrench to take them apart.",

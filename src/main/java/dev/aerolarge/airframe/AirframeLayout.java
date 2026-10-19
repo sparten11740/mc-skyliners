@@ -19,6 +19,7 @@ import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.ThrustLeverBlock;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -76,6 +78,8 @@ public final class AirframeLayout {
     /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
+    /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
+    private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -98,6 +102,8 @@ public final class AirframeLayout {
     private BlockPos assemblerSpot;
     /** The jump light switch in the instrument panel; null without a flight deck. */
     private BlockPos jumpSwitch;
+    /** The seatbelt switch in the instrument panel; null without a flight deck. */
+    private BlockPos seatbeltSwitch;
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
     private int minY = Integer.MAX_VALUE;
@@ -144,6 +150,7 @@ public final class AirframeLayout {
             new CabinFitOut(layout).apply();
         }
         layout.skydiving();
+        layout.seatbeltSigns();
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -599,13 +606,48 @@ public final class AirframeLayout {
         });
     }
 
-    /**
-     * The jump light by one door: in the hull just ahead of it, in the first of the door's rows (and the ones either
-     * side) where it and its relay above or below it both replace plain skin, not a window; the rack inside by it.
-     */
+    /** The jump light by one door: in the hull just ahead of it, in one of the door's rows; the rack inside by it. */
     private void jumpDoor(int side, double station, int bottom, List<BlockPos> relays) {
         int z = (int) Math.round(station * scale) - 1;
-        for (int y : new int[]{bottom + 1, bottom, bottom + 2}) {
+        BlockPos light = wallLamp(side, z, new int[]{bottom + 1, bottom, bottom + 2}, AerolargeRegistry.JUMP_LIGHT.get().defaultBlockState(), relays);
+        // Facing the door's aisle, aft of it.
+        if (light != null && isOpen(light.getX() - side, bottom, z)) {
+            set(light.getX() - side, bottom, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
+        }
+    }
+
+    /**
+     * "Fasten seatbelts" signs in both cabin walls along the cabin, above head height, each lit through a relay beside
+     * it; the seatbelt switch in the panel is wired to them all.
+     */
+    private void seatbeltSigns() {
+        List<BlockPos> relays = new ArrayList<>();
+        int head = floorY + 5;
+        for (double station : SEATBELT_SIGN_STATIONS) {
+            int z = (int) Math.round(station * scale);
+            for (int side : new int[]{1, -1}) {
+                wallLamp(side, z, new int[]{head, head + 1, head - 1}, AerolargeRegistry.SEATBELT_SIGN.get().defaultBlockState(), relays);
+            }
+        }
+        if (seatbeltSwitch == null || relays.isEmpty()) {
+            return;
+        }
+        BlockPos at = seatbeltSwitch;
+        fittings.put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LinkedControlBlockEntity control) {
+                control.configure(Map.of(SeatbeltSwitchBlock.SIGNS, offsets(at, relays, rotation)));
+            }
+        });
+    }
+
+    /**
+     * A lamp set into the hull at a station on one side, with the relay that lights it just above or below it in the
+     * wall: in the first of the rows where both replace plain skin, not a window. Adds the relay to the list and gives
+     * where the lamp went, or null if no row had room.
+     */
+    @Nullable
+    private BlockPos wallLamp(int side, int z, int[] rows, BlockState lamp, List<BlockPos> relays) {
+        for (int y : rows) {
             int x = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
             while (x != 0 && !inFuselage(x, y, z)) {
                 x -= side;
@@ -617,15 +659,12 @@ public final class AirframeLayout {
             if (!stateAt(x, relayY, z).is(palette.hull().getBlock())) {
                 continue;
             }
-            set(x, y, z, AerolargeRegistry.JUMP_LIGHT.get().defaultBlockState());
+            set(x, y, z, lamp);
             set(x, relayY, z, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
             relays.add(new BlockPos(x, relayY, z));
-            // Facing the door's aisle, aft of it.
-            if (isOpen(x - side, bottom, z)) {
-                set(x - side, bottom, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
-            }
-            return;
+            return new BlockPos(x, y, z);
         }
+        return null;
     }
 
     /**
@@ -777,10 +816,14 @@ public final class AirframeLayout {
             jumpSwitch = new BlockPos(switchX, deck + 1, panelZ);
             set(switchX, deck + 1, panelZ, AerolargeRegistry.JUMP_SWITCH.get().defaultBlockState().setValue(JumpSwitchBlock.FACING, Direction.SOUTH));
         }
-        // The captain's handset, on the panel beside the screen.
-        int handsetX = -switchX;
-        if (handsetX >= -panelWidth && stateAt(handsetX, deck + 1, panelZ).is(panel.getBlock()) && isOpen(handsetX, deck + 2, panelZ)) {
-            set(handsetX, deck + 2, panelZ, AerolargeRegistry.HANDSET.get().defaultBlockState().setValue(HandsetBlock.FACING, Direction.SOUTH));
+        // On the captain's side of the screen: the seatbelt switch in the panel, and the handset on it.
+        int captainX = -switchX;
+        if (captainX >= -panelWidth && stateAt(captainX, deck + 1, panelZ).is(panel.getBlock())) {
+            seatbeltSwitch = new BlockPos(captainX, deck + 1, panelZ);
+            set(captainX, deck + 1, panelZ, AerolargeRegistry.SEATBELT_SWITCH.get().defaultBlockState().setValue(SeatbeltSwitchBlock.FACING, Direction.SOUTH));
+            if (isOpen(captainX, deck + 2, panelZ)) {
+                set(captainX, deck + 2, panelZ, AerolargeRegistry.HANDSET.get().defaultBlockState().setValue(HandsetBlock.FACING, Direction.SOUTH));
+            }
         }
         assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
     }
