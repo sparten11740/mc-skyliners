@@ -3,8 +3,10 @@ package dev.aerolarge;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -13,18 +15,20 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 
 /**
  * Keeps the airliner's frame and controls whole: the blocks in {@code #aerolarge:unbreakable} cannot be mined, broken
- * in creative mode or blown up, so a stray click or a creeper never takes a wing off. A creative player who sneaks can
- * still take them apart, to clear an airliner away on purpose. The cabin floor and everything built inside are not in
- * the tag.
+ * in creative mode or blown up, so a stray click or a creeper never takes a wing off. A player who sneaks holding a
+ * wrench (Create's, or any in {@code #c:tools/wrench}), or sneaks in creative mode, can still take them apart: to clear
+ * an airliner away on purpose, or to take back a panel placed in the wrong spot. The cabin floor and everything built
+ * inside are not in the tag.
  */
 public final class FrameProtection {
     public static final TagKey<Block> UNBREAKABLE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "unbreakable"));
+    private static final TagKey<Item> WRENCHES = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "tools/wrench"));
 
     private FrameProtection() {
     }
 
     private static boolean protects(BlockState state, Player player) {
-        return state.is(UNBREAKABLE) && !(player.isCreative() && player.isShiftKeyDown());
+        return state.is(UNBREAKABLE) && !(player.isShiftKeyDown() && (player.isCreative() || player.getMainHandItem().is(WRENCHES)));
     }
 
     /** Mining makes no progress on it. */

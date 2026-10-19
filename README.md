@@ -94,7 +94,8 @@ everyone nearby with its distance from the middle, and using the target shows th
 
 The airliner's frame and controls (hull, wings, engines, gear, windscreen, flight deck and the Create and Propulsion
 blocks it is built with) cannot be mined, broken in creative mode or blown up; the cabin floor and everything built
-on it can. A creative player who sneaks can still break them, to take an airliner apart on purpose.
+on it can. Sneaking with a wrench (Create's will do), or sneaking in creative mode, still breaks them: to take an
+airliner apart on purpose, or to take back a panel put in the wrong spot.
 
 ### Airstairs
 

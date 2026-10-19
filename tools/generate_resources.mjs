@@ -382,8 +382,8 @@ const airliner = blocks.filter((b) => !b.endsWith("landing_target"));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
 write(`data/${ID}/tags/block/airframe.json`, tag(airliner.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
-// What cannot be broken, except by a creative player sneaking: the airliner's frame and controls, its own blocks and
-// the other mods' it is built with, but not the cabin floor, where the building goes.
+// What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
+// controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
   ...airliner.filter((b) => !b.endsWith("cabin_floor")),
   ...["createpropulsion:wing", "createpropulsion:creative_thruster", "createpropulsion:thruster", "offroad:wheel_mount",
@@ -493,7 +493,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
   "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
   "message.aerolarge.landing_target.none": "No landings on this target yet",
-  "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak in creative mode to take them apart.",
+  "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",
