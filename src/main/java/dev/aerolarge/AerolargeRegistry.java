@@ -236,9 +236,14 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairControllerBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairControllerBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
 
-    /** The skin and the windscreen cut to the curve of the hull; placed only by the blueprints, so they have no items. */
+    /**
+     * The skin cut to the curve of the hull, and below it the glass cut alike; placed only by the blueprints, so they
+     * have no items. The skin occludes, by the sides its cut leaves whole (see {@link ShellBlock}), to keep the
+     * daylight out of the cabin; the glass (the curved cabin windows with their shades up, the windscreen, the moon
+     * pool's belly) lets it through.
+     */
     public static final DeferredBlock<ShellBlock> AIRFRAME_SHELL = BLOCKS.registerBlock(
-        "airframe_shell", properties -> new ShellBlock(properties, AerolargeRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW).noOcclusion()
+        "airframe_shell", properties -> new ShellBlock(properties, AerolargeRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW)
     );
     /** A cabin window cut to the hull's curve, where the fuselage's side curves; placed only by the blueprints too. */
     public static final DeferredBlock<CabinWindowShellBlock> CABIN_WINDOW_SHELL = BLOCKS.registerBlock(

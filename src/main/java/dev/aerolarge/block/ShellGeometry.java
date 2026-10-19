@@ -29,14 +29,20 @@ public final class ShellGeometry {
     public static final int COUNT = 1 + DIRECTIONS.size() * (LEVELS - 1);
     /** Sub-cells per block edge the collision shape is stepped in. */
     private static final int STEPS = 4;
+    /** How thick, in pixels, the plate is that stands for a whole side in the occlusion shape; any thickness does. */
+    private static final double PLATE = 1;
+    /** How far from a plane a point may lie and still count as on it, so a corner on the cut is kept. */
+    private static final double ON_PLANE = 1e-9;
     private static final List<List<Face>> FACES = new ArrayList<>(COUNT);
     private static final VoxelShape[] SHAPES = new VoxelShape[COUNT];
+    private static final VoxelShape[] OCCLUSIONS = new VoxelShape[COUNT];
 
     static {
         for (int shape = 0; shape < COUNT; shape++) {
             List<Face> faces = faces(plane(shape));
             FACES.add(faces);
             SHAPES[shape] = shape == WHOLE ? Shapes.block() : stepped(plane(shape));
+            OCCLUSIONS[shape] = shape == WHOLE ? Shapes.block() : plates(shape);
         }
     }
 
@@ -59,9 +65,26 @@ public final class ShellGeometry {
         return FACES.get(shape);
     }
 
-    /** A shape in steps of a quarter block, for collision, selection and light. */
+    /** A shape in steps of a quarter block, for collision and selection. */
     public static VoxelShape shape(int shape) {
         return SHAPES[shape];
+    }
+
+    /**
+     * What a shape shuts off from its neighbours, light and the faces drawn against it: a thin plate on each side the
+     * cut leaves whole, nothing on the sides it cuts into. Daylight still gets into the block through those, so its cut
+     * face is lit like the skin around it, but no further in than a whole side, which keeps it out of the cabin
+     * behind. A neighbour's face is only hidden where the block's own covers all of it: the stepped shape would also
+     * hide faces where the cut leaves a sliver of the side open.
+     */
+    public static VoxelShape occlusion(int shape) {
+        return OCCLUSIONS[shape];
+    }
+
+    /** Whether the shape's cut leaves this side of the block whole: every corner of it kept. */
+    public static boolean whole(int shape, Direction side) {
+        double[] plane = plane(shape);
+        return plane == null || side(side).stream().allMatch(corner -> above(plane, corner) <= ON_PLANE);
     }
 
     /**
@@ -204,10 +227,10 @@ public final class ShellGeometry {
             double[] b = polygon.get((i + 1) % polygon.size());
             double da = above(plane, a);
             double db = above(plane, b);
-            if (da <= 1e-9) {
+            if (da <= ON_PLANE) {
                 kept.add(a);
             }
-            if (da > 1e-9 && db < -1e-9 || da < -1e-9 && db > 1e-9) {
+            if (da > ON_PLANE && db < -ON_PLANE || da < -ON_PLANE && db > ON_PLANE) {
                 double t = da / (da - db);
                 kept.add(new double[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t});
             }
@@ -280,6 +303,24 @@ public final class ShellGeometry {
         }
         // A thin sliver keeps at least its bottom-most quarter cell, so it can still be hit and broken.
         return shape.isEmpty() ? Block.box(0, 0, 0, cell, cell, cell) : shape.optimize();
+    }
+
+    /** A plate against each side of the block the shape's cut leaves whole. */
+    private static VoxelShape plates(int shape) {
+        VoxelShape plates = Shapes.empty();
+        for (Direction side : Direction.values()) {
+            if (whole(shape, side)) {
+                plates = Shapes.or(plates, switch (side) {
+                    case DOWN -> Block.box(0, 0, 0, 16, PLATE, 16);
+                    case UP -> Block.box(0, 16 - PLATE, 0, 16, 16, 16);
+                    case NORTH -> Block.box(0, 0, 0, 16, 16, PLATE);
+                    case SOUTH -> Block.box(0, 0, 16 - PLATE, 16, 16, 16);
+                    case WEST -> Block.box(0, 0, 0, PLATE, 16, 16);
+                    case EAST -> Block.box(16 - PLATE, 0, 0, 16, 16, 16);
+                });
+            }
+        }
+        return plates.optimize();
     }
 
     private static int gcd(int a, int b) {
