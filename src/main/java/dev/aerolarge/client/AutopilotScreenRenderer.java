@@ -40,18 +40,18 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     /** Segments a circle is drawn with. */
     private static final int CIRCLE_SEGMENTS = 64;
 
-    /** The screen's colours, which its settings screen ({@link AutopilotSettingsScreen}) shares. */
+    /** The screen's colours, which the panels of its settings screen ({@link AutopilotSettingsScreen}, {@link PanelArt}) share. */
     static final int CASING = 0xFF15171B;
-    private static final int GLASS = 0xFF05080D;
+    static final int GLASS = 0xFF05080D;
     private static final int RING = 0xFF2A3A55;
-    private static final int TRACK = 0xFF46C8F0;
+    static final int TRACK = 0xFF46C8F0;
     static final int TARGET = 0xFFE040E0;
     static final int WHITE = 0xFFF2F2F2;
     static final int GREEN = 0xFF46E070;
     static final int AMBER = 0xFFF2B830;
     static final int GREY = 0xFF9AA4B0;
-    private static final int BUTTON = 0xFF262B33;
-    private static final int BUTTON_LIT = 0xFF1F5A34;
+    static final int BUTTON = 0xFF262B33;
+    static final int BUTTON_LIT = 0xFF1F5A34;
     static final int BUTTON_EDGE = 0xFF4A525E;
 
     @Override

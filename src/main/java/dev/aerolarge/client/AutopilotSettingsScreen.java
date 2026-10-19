@@ -8,56 +8,90 @@ import dev.aerolarge.block.AutopilotBlockEntity.Phase;
 import dev.aerolarge.block.AutopilotBlockEntity.Settings;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.client.PanelArt.ArrowButton;
+import dev.aerolarge.client.PanelArt.CloseButton;
+import dev.aerolarge.client.PanelArt.Icon;
+import dev.aerolarge.client.PanelArt.IconButton;
+import dev.aerolarge.client.PanelArt.Look;
+import dev.aerolarge.client.PanelArt.ValueBox;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The autopilot's settings, opened by using the autopilot or its screen on the flight deck. At the top, live: what
- * the autopilot is doing, how the airliner flies now and what the autopilot is set to fly. Below, the settings: hold a
- * heading or circle left or right, then the heading, altitude, speed and circle radius, each typed in or stepped with
- * the buttons either side of it and kept to what the autopilot flies. Switched off, engaging flies them (taking off
- * first on the ground); engaged, they can be applied, or the autopilot switched off. In the air it can also be told
- * to land. The server checks it all again (see {@link SetAutopilot}). The game goes on behind it, and it closes once
- * the player is out of the autopilot's reach.
+ * The autopilot's settings, opened by using the autopilot or its screen on the flight deck: a panel in the flight
+ * deck's glass-cockpit colours (see {@link PanelArt}) on which every setting and button has a picture and a colour of
+ * its own, so that a player who cannot read yet can fly too. In the title bar, what the autopilot is doing, with a
+ * lamp: green while engaged, amber while off, dark until the airliner is assembled. Under it, on glass, how the
+ * airliner flies now and what the autopilot is set to fly. Then the settings: hold a heading or circle left or right,
+ * then the heading, altitude, speed and circle radius, each slid, stepped with the arrows either side of its slider or
+ * typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
+ * engaging flies the settings (taking off first on the ground); engaged, they can be applied, or the autopilot
+ * switched off. In the air it can also be told to land. The server checks it all again (see {@link SetAutopilot}).
+ * The game goes on behind it, and it closes once the player is out of the autopilot's reach.
  */
 public class AutopilotSettingsScreen extends Screen {
-    /** The panel's size and the space inside its edge. */
-    private static final int WIDTH = 300;
-    private static final int HEIGHT = 222;
-    private static final int PADDING = 10;
-    /** From the panel's top: the lines of how it flies, the rule under them, and the first row of settings. */
-    private static final int NOW_Y = 28;
-    private static final int SET_Y = 42;
-    private static final int RULE_Y = 60;
-    private static final int ROWS_Y = 68;
-    /** How far along a line of how it flies its values start, after its name. */
+    /** The panel's size, the space inside its bezel, and the width of what is on its face. */
+    private static final int WIDTH = 328;
+    private static final int HEIGHT = 232;
+    private static final int PADDING = 8;
+    private static final int CONTENT = WIDTH - 2 * (PanelArt.BORDER + PADDING);
+    /** From the panel's top: the glass, its lines of how it flies, the first row of settings and the big buttons. */
+    private static final int GLASS_Y = 34;
+    private static final int GLASS_HEIGHT = 24;
+    private static final int NOW_Y = GLASS_Y + 4;
+    private static final int SET_Y = GLASS_Y + 14;
+    private static final int ROWS_Y = 64;
+    private static final int ACTIONS_Y = 182;
+    /** Inside the glass: the space before a line of how it flies, and how far along it its values start. */
+    private static final int GLASS_INSET = 4;
     private static final int VALUE_X = 50;
-    /** A row of settings: its height, the column of names, a step button, an edit box, and the space between them. */
-    private static final int ROW = 24;
-    private static final int NAME_WIDTH = 84;
-    private static final int STEP_WIDTH = 28;
-    private static final int BOX_WIDTH = 50;
-    private static final int GAP = 4;
+    /** A row of settings: how far apart, a control's height, and across it the picture, arrows, slider and box. */
+    private static final int ROW = 23;
     private static final int CONTROL_HEIGHT = 20;
-    /** The width of a setting's controls together: its step buttons and the box between them. */
-    private static final int CONTROLS_WIDTH = 2 * STEP_WIDTH + BOX_WIDTH + 2 * GAP;
+    private static final int ICON_GAP = 4;
+    private static final int STEP_WIDTH = 14;
+    private static final int STEP_GAP = 2;
+    private static final int BOX_GAP = 6;
+    private static final int BOX_WIDTH = 40;
+    private static final int SLIDER_WIDTH = CONTENT - Icon.SIZE - ICON_GAP - 2 * STEP_WIDTH - 2 * STEP_GAP - BOX_GAP - BOX_WIDTH;
+    /** The modes' pictures: their width, the space between them, and before the name of the one chosen. */
+    private static final int SEGMENT = 32;
+    private static final int SEGMENT_GAP = 2;
+    private static final int MODE_NAME_GAP = 8;
+    /** The big buttons along the bottom: their height and the space between them. */
+    private static final int ACTION_HEIGHT = 36;
+    private static final int ACTION_GAP = 6;
+    /** The close button's distance in from the corner of the title bar, the state's from it and the lamp's from that. */
+    private static final int CLOSE_INSET = 3;
+    private static final int STATE_GAP = 6;
+    private static final int LAMP_GAP = 7;
+    /** The lamp: out until the airliner is assembled; engaged, pulsing between this brightness and full, this slowly (ms). */
+    private static final float LAMP_OUT = 0.35F;
+    private static final float LAMP_LOW = 0.7F;
+    private static final float LAMP_PERIOD = 2000;
+    /** The steps a slider clicks into; typed in, any whole number goes. */
+    private static final int HEADING_DETENT = 5;
+    private static final int ALTITUDE_DETENT = 5;
+    private static final int SPEED_DETENT = 1;
+    private static final int RADIUS_DETENT = 10;
     /** What can be typed into a setting: a whole number of up to four digits, perhaps below zero. */
     private static final Pattern NUMBER = Pattern.compile("-?\\d{0,4}");
     private static final int MAX_LENGTH = 5;
@@ -66,6 +100,18 @@ public class AutopilotSettingsScreen extends Screen {
     private static final int UNREADABLE = 0xFFFF5555;
     /** The highest compass bearing; bearings go round past it. */
     private static final int LAST_BEARING = 359;
+
+    private static final Icon AIRLINER = Icon.of("autopilot/airliner");
+    private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
+    private static final Icon ENGAGE = Icon.of("autopilot/engage");
+    private static final Icon APPLY = Icon.of("autopilot/apply");
+    private static final Icon DISENGAGE = Icon.of("autopilot/disengage");
+    private static final Icon LAND = Icon.of("autopilot/land");
+    private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
+    private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
+    private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
+    private static final Lateral[] MODES = Lateral.values();
+    private static final Component MODE = Component.translatable("screen.aerolarge.autopilot_settings.mode");
 
     private final BlockPos pos;
     /** Whether engaging takes off, so the button says so. */
@@ -78,10 +124,11 @@ public class AutopilotSettingsScreen extends Screen {
     /** The panel's top left corner on the screen. */
     private int left;
     private int top;
-    private Button engage;
-    private Button apply;
-    private Button disengage;
-    private Button land;
+    private ModeSelector mode;
+    private IconButton engage;
+    private IconButton apply;
+    private IconButton disengage;
+    private IconButton land;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -89,10 +136,10 @@ public class AutopilotSettingsScreen extends Screen {
         pos = opened.pos();
         takeoff = opened.takeoff();
         lateral = settings.lateral();
-        heading = new Setting("heading", settings.heading(), 0, LAST_BEARING, AutopilotBlockEntity.HEADING_STEP, true);
-        altitude = new Setting("altitude", settings.altitude(), opened.minAltitude(), opened.maxAltitude(), AutopilotBlockEntity.ALTITUDE_STEP, false);
-        speed = new Setting("speed", settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, AutopilotBlockEntity.SPEED_STEP, false);
-        radius = new Setting("radius", settings.radius(), AutopilotBlockEntity.MIN_RADIUS, AutopilotBlockEntity.MAX_RADIUS, AutopilotBlockEntity.RADIUS_STEP, false);
+        heading = new Setting("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, AutopilotBlockEntity.HEADING_STEP, HEADING_DETENT, true);
+        altitude = new Setting("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), AutopilotBlockEntity.ALTITUDE_STEP, ALTITUDE_DETENT, false);
+        speed = new Setting("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, AutopilotBlockEntity.SPEED_STEP, SPEED_DETENT, false);
+        radius = new Setting("radius", PanelArt.MAGENTA, settings.radius(), AutopilotBlockEntity.MIN_RADIUS, AutopilotBlockEntity.MAX_RADIUS, AutopilotBlockEntity.RADIUS_STEP, RADIUS_DETENT, false);
     }
 
     /** Opens the settings as the server sent them, over whatever else is open. */
@@ -109,40 +156,49 @@ public class AutopilotSettingsScreen extends Screen {
         return top + ROWS_Y + row * ROW;
     }
 
+    private static Component modeName(Lateral mode) {
+        return Component.translatable("screen.aerolarge.autopilot_settings.mode." + mode.name().toLowerCase(Locale.ROOT));
+    }
+
+    /** A mode's picture and colour: straight ahead in the heading's cyan, round a circle in the radius's magenta. */
+    private static Icon modeIcon(Lateral mode) {
+        return switch (mode) {
+            case HEADING -> STRAIGHT;
+            case ORBIT_LEFT -> CIRCLE_LEFT;
+            case ORBIT_RIGHT -> CIRCLE_RIGHT;
+        };
+    }
+
+    private static int modeColour(Lateral mode) {
+        return mode == Lateral.HEADING ? PanelArt.CYAN : PanelArt.MAGENTA;
+    }
+
     @Override
     protected void init() {
         left = (width - WIDTH) / 2;
         top = (height - HEIGHT) / 2;
-        int x = left + PADDING + NAME_WIDTH;
-        addRenderableWidget(CycleButton.<Lateral>builder(mode -> Component.translatable("screen.aerolarge.autopilot_settings.mode." + mode.name().toLowerCase(Locale.ROOT)))
-            .withValues(Lateral.values())
-            .withInitialValue(lateral)
-            .displayOnlyValue()
-            .create(x, rowY(0), CONTROLS_WIDTH, CONTROL_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.mode"), (button, mode) -> {
-                lateral = mode;
-                refresh();
-            }));
+        int x = left + PanelArt.BORDER + PADDING;
+        mode = addRenderableWidget(new ModeSelector(x, rowY(0)));
         List<Setting> rows = rows();
         for (int i = 0; i < rows.size(); i++) {
             rows.get(i).place(x, rowY(i + 1));
         }
 
-        // Along the bottom in four places: engage across the first two, or apply and disengage in them once engaged;
-        // then land, and cancel.
-        int buttonWidth = (WIDTH - 2 * PADDING - 3 * GAP) / 4;
-        int buttonX = left + PADDING;
-        int buttonY = top + HEIGHT - PADDING - CONTROL_HEIGHT;
-        String engageKey = takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage";
-        engage = addRenderableWidget(Button.builder(Component.translatable(engageKey), button -> send(SetAutopilot.Action.FLY))
-            .bounds(buttonX, buttonY, 2 * buttonWidth + GAP, CONTROL_HEIGHT).build());
-        apply = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.apply"), button -> send(SetAutopilot.Action.FLY))
-            .bounds(buttonX, buttonY, buttonWidth, CONTROL_HEIGHT).build());
-        disengage = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.disengage"), button -> send(SetAutopilot.Action.OFF))
-            .bounds(buttonX + buttonWidth + GAP, buttonY, buttonWidth, CONTROL_HEIGHT).build());
-        land = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.land"), button -> send(SetAutopilot.Action.LAND))
-            .bounds(buttonX + 2 * (buttonWidth + GAP), buttonY, buttonWidth, CONTROL_HEIGHT).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose())
-            .bounds(buttonX + 3 * (buttonWidth + GAP), buttonY, buttonWidth, CONTROL_HEIGHT).build());
+        // Along the bottom in three places: engage across the first two, or apply and disengage in them once engaged;
+        // then land. Cancel is the close button in the title bar.
+        int buttonWidth = (CONTENT - 2 * ACTION_GAP) / 3;
+        int buttonY = top + ACTIONS_Y;
+        Component engageLabel = Component.translatable(takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage");
+        engage = addRenderableWidget(new IconButton(x, buttonY, 2 * buttonWidth + ACTION_GAP, ACTION_HEIGHT, engageLabel,
+            takeoff ? TAKE_OFF : ENGAGE, PanelArt.GREEN, true, () -> send(SetAutopilot.Action.FLY)));
+        apply = addRenderableWidget(new IconButton(x, buttonY, buttonWidth, ACTION_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.apply"),
+            APPLY, PanelArt.GREEN, false, () -> send(SetAutopilot.Action.FLY)));
+        disengage = addRenderableWidget(new IconButton(x + buttonWidth + ACTION_GAP, buttonY, buttonWidth, ACTION_HEIGHT,
+            Component.translatable("screen.aerolarge.autopilot_settings.disengage"), DISENGAGE, PanelArt.RED, false, () -> send(SetAutopilot.Action.OFF)));
+        land = addRenderableWidget(new IconButton(x + 2 * (buttonWidth + ACTION_GAP), buttonY, buttonWidth, ACTION_HEIGHT,
+            Component.translatable("screen.aerolarge.autopilot_settings.land"), LAND, PanelArt.AMBER, false, () -> send(SetAutopilot.Action.LAND)));
+        int closeX = left + WIDTH - PanelArt.BORDER - CLOSE_INSET - CloseButton.SIZE;
+        addRenderableWidget(new CloseButton(closeX, top + PanelArt.BORDER + CLOSE_INSET, this::onClose));
         refresh();
     }
 
@@ -200,7 +256,7 @@ public class AutopilotSettingsScreen extends Screen {
         }
         // Enter, while no button has the keyboard, flies the settings, as the button there would.
         boolean enter = keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER;
-        Button fly = apply.visible ? apply : engage;
+        IconButton fly = apply.visible ? apply : engage;
         if (enter && fly.active) {
             send(SetAutopilot.Action.FLY);
             return true;
@@ -217,71 +273,175 @@ public class AutopilotSettingsScreen extends Screen {
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // The world dimmed behind it, as behind a container, rather than blurred: the flight goes on.
         renderTransparentBackground(graphics);
-        graphics.fill(left - 1, top - 1, left + WIDTH + 1, top + HEIGHT + 1, AutopilotScreenRenderer.BUTTON_EDGE);
-        graphics.fill(left, top, left + WIDTH, top + HEIGHT, AutopilotScreenRenderer.CASING);
-        graphics.fill(left + PADDING, top + RULE_Y, left + WIDTH - PADDING, top + RULE_Y + 1, AutopilotScreenRenderer.BUTTON_EDGE);
+        PanelArt.drawFrame(graphics, left, top, left + WIDTH, top + HEIGHT);
+        PanelArt.drawTitleBar(graphics, font, AIRLINER, title, left, top, left + WIDTH);
+        int x = left + PanelArt.BORDER + PADDING;
+        PanelArt.drawGlass(graphics, x, top + GLASS_Y, x + CONTENT, top + GLASS_Y + GLASS_HEIGHT);
+        for (Setting row : rows()) {
+            row.drawIcon(graphics);
+        }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        int x = left + PADDING;
-        graphics.drawString(font, title, x, top + PADDING, AutopilotScreenRenderer.WHITE, false);
 
-        // What it is doing, as its screen on the flight deck says it, and how the airliner flies.
+        // What it is doing, as its screen on the flight deck says it, by a lamp, at the end of the title bar.
         AutopilotBlockEntity autopilot = autopilot();
         Level level = autopilot != null ? autopilot.getLevel() : null;
         SableClient.Attitude attitude = autopilot != null ? SableClient.attitude(autopilot, nose(autopilot), partialTick) : null;
         boolean on = AutopilotScreenRenderer.engaged(autopilot);
         Component state = AutopilotScreenRenderer.state(autopilot, attitude);
-        int stateColour = attitude == null ? AutopilotScreenRenderer.GREY : on ? AutopilotScreenRenderer.GREEN : AutopilotScreenRenderer.AMBER;
-        graphics.drawString(font, state, left + WIDTH - PADDING - font.width(state), top + PADDING, stateColour, false);
+        int stateColour = attitude == null ? PanelArt.GREY : on ? PanelArt.GREEN : PanelArt.AMBER;
+        int stateX = left + WIDTH - PanelArt.BORDER - CLOSE_INSET - CloseButton.SIZE - STATE_GAP - font.width(state);
+        int titleMiddle = top + PanelArt.BORDER + PanelArt.TITLE_HEIGHT / 2;
+        graphics.drawString(font, state, stateX, titleMiddle - PanelArt.GLYPH_HEIGHT / 2, stateColour, false);
+        float brightness = attitude == null ? LAMP_OUT : on ? Mth.lerp(PanelArt.pulse(LAMP_PERIOD), LAMP_LOW, 1F) : 1F;
+        PanelArt.drawLamp(graphics, stateX - LAMP_GAP, titleMiddle, stateColour, brightness);
+
+        // On the glass, how the airliner flies, and what it is set to fly or what engaging does.
         if (attitude != null && level != null) {
             Vec3 here = SableClient.toWorld(level, Vec3.atCenterOf(pos));
-            line(graphics, "now", AutopilotScreenRenderer.now(attitude, here), NOW_Y, AutopilotScreenRenderer.WHITE);
+            line(graphics, "now", AutopilotScreenRenderer.now(attitude, here), NOW_Y, PanelArt.WHITE);
             if (on) {
-                line(graphics, "set", AutopilotScreenRenderer.targets(autopilot), SET_Y, AutopilotScreenRenderer.TARGET);
+                line(graphics, "set", AutopilotScreenRenderer.targets(autopilot), SET_Y, PanelArt.MAGENTA);
             } else {
                 String hint = takeoff ? "screen.aerolarge.autopilot_settings.take_off_hint" : "screen.aerolarge.autopilot_settings.engage_hint";
-                graphics.drawString(font, Component.translatable(hint), x, top + SET_Y, AutopilotScreenRenderer.GREY, false);
+                graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, PanelArt.GREY, false);
             }
         }
 
-        int drop = (CONTROL_HEIGHT - font.lineHeight) / 2 + 1;
-        graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings.mode"), x, rowY(0) + drop, AutopilotScreenRenderer.WHITE, false);
-        List<Setting> rows = rows();
-        for (int i = 0; i < rows.size(); i++) {
-            rows.get(i).label(graphics, x, rowY(i + 1) + drop);
+        // The mode chosen, by name, after its pictures.
+        int modeY = rowY(0) + (CONTROL_HEIGHT - PanelArt.GLYPH_HEIGHT) / 2;
+        graphics.drawString(font, modeName(lateral), mode.getRight() + MODE_NAME_GAP, modeY, modeColour(lateral), false);
+        for (Setting row : rows()) {
+            if (row.iconHovered(mouseX, mouseY)) {
+                setTooltipForNextRenderPass(row.tooltip());
+            }
         }
+    }
+
+    /** Where a line on the glass starts. */
+    private int glassTextX() {
+        return left + PanelArt.BORDER + PADDING + GLASS_INSET;
     }
 
     /** A line of how it flies: its name, then its values. */
     private void line(GuiGraphics graphics, String key, Component values, int y, int colour) {
-        graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings." + key), left + PADDING, top + y, AutopilotScreenRenderer.GREY, false);
-        graphics.drawString(font, values, left + PADDING + VALUE_X, top + y, colour, false);
+        int x = glassTextX();
+        graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings." + key), x, top + y, PanelArt.GREY, false);
+        graphics.drawString(font, values, x + VALUE_X, top + y, colour, false);
     }
 
-    /** One setting: an edit box between buttons that step it down and up, kept to its range; a bearing goes round. */
+    /**
+     * The mode: a picture for each, the one chosen lit, its name as the label. A click picks the picture clicked;
+     * pressed from the keyboard or from code, or scrolled, it steps to the next (back with shift), as the cycle button
+     * it took the place of did.
+     */
+    private final class ModeSelector extends PanelArt.PanelButton {
+        ModeSelector(int x, int y) {
+            super(x, y, MODES.length * (SEGMENT + SEGMENT_GAP) - SEGMENT_GAP, CONTROL_HEIGHT, modeName(lateral));
+        }
+
+        @Override
+        public void onPress() {
+            step(hasShiftDown() ? -1 : 1);
+        }
+
+        @Override
+        public void onClick(double mouseX, double mouseY, int button) {
+            choose(MODES[segment(mouseX)]);
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+            if (scrollY != 0) {
+                step(scrollY > 0 ? -1 : 1);
+            }
+            return true;
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            sounds.play(SimpleSoundInstance.forUI(SoundEvents.LEVER_CLICK, 1.4F, 0.5F));
+        }
+
+        private void step(int by) {
+            choose(MODES[Math.floorMod(lateral.ordinal() + by, MODES.length)]);
+        }
+
+        private void choose(Lateral chosen) {
+            lateral = chosen;
+            setMessage(modeName(chosen));
+            refresh();
+        }
+
+        /** The picture at a place across the selector (the one before, in the gap after it). */
+        private int segment(double mouseX) {
+            return Mth.clamp((int) ((mouseX - getX()) / (SEGMENT + SEGMENT_GAP)), 0, MODES.length - 1);
+        }
+
+        @Override
+        protected MutableComponent createNarrationMessage() {
+            return wrapDefaultNarrationMessage(CommonComponents.optionNameValue(MODE, getMessage()));
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            int pointedAt = isHovered() ? segment(mouseX) : -1;
+            for (int i = 0; i < MODES.length; i++) {
+                Lateral each = MODES[i];
+                int x0 = getX() + i * (SEGMENT + SEGMENT_GAP);
+                Look look = look(i == pointedAt);
+                if (look == Look.IDLE && isFocused() && each == lateral) {
+                    look = Look.HOT;
+                }
+                PanelArt.drawTile(graphics, x0, getY(), x0 + SEGMENT, getBottom(), modeColour(each), look, each == lateral);
+                int sink = look == Look.PRESSED ? 1 : 0;
+                modeIcon(each).draw(graphics, x0 + (SEGMENT - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+            }
+            if (pointedAt >= 0) {
+                AutopilotSettingsScreen.this.setTooltipForNextRenderPass(modeName(MODES[pointedAt]));
+            }
+        }
+    }
+
+    /**
+     * One setting: its picture, a slider between arrows that step it down and up, and a box it can be typed into, all
+     * kept to its range and to each other; a bearing goes round.
+     */
     private final class Setting {
         private final String key;
+        private final Icon icon;
+        private final int colour;
         private final int min;
         private final int max;
         private final int step;
+        private final int detent;
         private final boolean bearing;
         /** What it was last set to, for when what is typed cannot be read. */
         private int value;
+        private boolean active = true;
+        /** Where its picture is. */
+        private int iconX;
+        private int iconY;
         @Nullable
-        private EditBox box;
+        private Knob slider;
         @Nullable
-        private Button down;
+        private ValueBox box;
         @Nullable
-        private Button up;
+        private ArrowButton down;
+        @Nullable
+        private ArrowButton up;
 
-        Setting(String key, int value, int min, int max, int step, boolean bearing) {
+        Setting(String key, int colour, int value, int min, int max, int step, int detent, boolean bearing) {
             this.key = key;
+            this.icon = Icon.of("autopilot/" + key);
+            this.colour = colour;
             this.min = min;
             this.max = max;
             this.step = step;
+            this.detent = detent;
             this.bearing = bearing;
             this.value = fit(value);
         }
@@ -289,16 +449,27 @@ public class AutopilotSettingsScreen extends Screen {
         /** Lays its controls out along a row from x, keeping what was typed into them before. */
         void place(int x, int y) {
             value = value();
-            down = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.down", step), button -> show(value() - step))
-                .bounds(x, y, STEP_WIDTH, CONTROL_HEIGHT).build());
-            EditBox typed = addRenderableWidget(new EditBox(font, x + STEP_WIDTH + GAP, y, BOX_WIDTH, CONTROL_HEIGHT, name()));
+            iconX = x;
+            iconY = y + (CONTROL_HEIGHT - Icon.SIZE) / 2;
+            int downX = x + Icon.SIZE + ICON_GAP;
+            int sliderX = downX + STEP_WIDTH + STEP_GAP;
+            int upX = sliderX + SLIDER_WIDTH + STEP_GAP;
+            down = addRenderableWidget(new ArrowButton(downX, y, STEP_WIDTH, CONTROL_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.down", step),
+                false, colour, () -> show(value() - step)));
+            slider = addRenderableWidget(new Knob(this, sliderX, y, position(value)));
+            up = addRenderableWidget(new ArrowButton(upX, y, STEP_WIDTH, CONTROL_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.up", step),
+                true, colour, () -> show(value() + step)));
+            ValueBox typed = addRenderableWidget(new ValueBox(font, upX + STEP_WIDTH + BOX_GAP, y, BOX_WIDTH, CONTROL_HEIGHT, name(), colour));
             typed.setMaxLength(MAX_LENGTH);
             typed.setFilter(text -> NUMBER.matcher(text).matches());
             typed.setValue(format(value));
-            typed.setResponder(text -> typed.setTextColor(readable(text) ? TYPED : UNREADABLE));
+            typed.setResponder(text -> {
+                typed.setTextColor(readable(text) ? TYPED : UNREADABLE);
+                if (slider != null) {
+                    slider.moveTo(position(value()));
+                }
+            });
             box = typed;
-            up = addRenderableWidget(Button.builder(Component.translatable("screen.aerolarge.autopilot_settings.up", step), button -> show(value() + step))
-                .bounds(x + STEP_WIDTH + BOX_WIDTH + 2 * GAP, y, STEP_WIDTH, CONTROL_HEIGHT).build());
         }
 
         /** What it is set to: what is typed, brought into range, or what it was last set to if that cannot be read. */
@@ -320,6 +491,19 @@ public class AutopilotSettingsScreen extends Screen {
             }
         }
 
+        /** Sets it from where its slider is, in the slider's detents. */
+        private void slid(double position) {
+            int set = Mth.clamp((int) Math.round((min + position * (max - min)) / detent) * detent, min, max);
+            if (set != value()) {
+                show(set);
+            }
+        }
+
+        /** Where a value sits along the slider. */
+        private double position(int set) {
+            return max > min ? (double) (set - min) / (max - min) : 0;
+        }
+
         private boolean readable(String text) {
             try {
                 int typed = Integer.parseInt(text);
@@ -339,9 +523,11 @@ public class AutopilotSettingsScreen extends Screen {
 
         /** Greys the setting out while the mode chosen does not fly it. */
         void setActive(boolean active) {
-            if (box != null && down != null && up != null) {
+            this.active = active;
+            if (box != null && slider != null && down != null && up != null) {
                 box.setEditable(active);
                 box.active = active;
+                slider.active = active;
                 down.active = active;
                 up.active = active;
             }
@@ -351,12 +537,60 @@ public class AutopilotSettingsScreen extends Screen {
             return Component.translatable("screen.aerolarge.autopilot_settings." + key);
         }
 
-        /** Its name before its controls and its range after them. */
-        void label(GuiGraphics graphics, int x, int y) {
-            boolean active = box == null || box.active;
-            graphics.drawString(font, name(), x, y, active ? AutopilotScreenRenderer.WHITE : AutopilotScreenRenderer.GREY, false);
-            Component range = Component.translatable("screen.aerolarge.autopilot_settings.range." + key, format(min), format(max));
-            graphics.drawString(font, range, x + NAME_WIDTH + CONTROLS_WIDTH + 2 * GAP, y, AutopilotScreenRenderer.GREY, false);
+        /** Its name and its value, for its slider to be narrated by. */
+        private Component describe() {
+            return CommonComponents.optionNameValue(name(), Component.literal(format(value())));
+        }
+
+        void drawIcon(GuiGraphics graphics) {
+            icon.draw(graphics, iconX, iconY, 1, active);
+        }
+
+        boolean iconHovered(int mouseX, int mouseY) {
+            return mouseX >= iconX && mouseX < iconX + Icon.SIZE && mouseY >= iconY && mouseY < iconY + Icon.SIZE;
+        }
+
+        /** Its name and its range, shown over its picture. */
+        Component tooltip() {
+            return CommonComponents.optionNameValue(name(), Component.translatable("screen.aerolarge.autopilot_settings.range." + key, format(min), format(max)));
+        }
+    }
+
+    /**
+     * A setting's slider. Slid, it sets the setting in the steps it clicks into; the arrow keys move it a step at a
+     * time, where the slider's own would move it a pixel, too little to reach the next step.
+     */
+    private static final class Knob extends PanelArt.Slider {
+        private final Setting setting;
+
+        Knob(Setting setting, int x, int y, double position) {
+            super(x, y, SLIDER_WIDTH, CONTROL_HEIGHT, setting.name(), setting.colour, position);
+            this.setting = setting;
+            updateMessage();
+        }
+
+        @Override
+        protected void updateMessage() {
+            setMessage(setting.describe());
+        }
+
+        @Override
+        protected void applyValue() {
+            setting.slid(position());
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            // A slider greyed out while it has the keyboard would still take the keys.
+            if (!active) {
+                return false;
+            }
+            int before = setting.value();
+            boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
+            if (handled && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
+                setting.show(before + (keyCode == InputConstants.KEY_LEFT ? -setting.detent : setting.detent));
+            }
+            return handled;
         }
     }
 }

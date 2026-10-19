@@ -4,8 +4,9 @@ import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 
 // Run from anywhere: node tools/generate_textures.mjs
-// Writes the 16x16 airframe textures and the item icons. The look is an airliner's: white skin with faint panel
-// seams and rivet rows, an Airbus-blue livery, smoked cabin glass in white frames, grey cabin carpet.
+// Writes the 16x16 airframe textures, the item icons and the control panels' pictures. The look is an airliner's:
+// white skin with faint panel seams and rivet rows, an Airbus-blue livery, smoked cabin glass in white frames, grey
+// cabin carpet.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const blockOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/block");
 const itemOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/item");
@@ -743,6 +744,135 @@ blueprint("furnished_airliner_blueprint", true);
     return tile ? [0x13, 0x2d, 0x59] : [0x08, 0x12, 0x26];
   }, 1);
   texture(blockOutput, "passenger_screen_casing", () => [0x2c, 0x30, 0x36]);
+}
+
+// The control panels' pictures, in the glass cockpit's colours: every setting and button has one, so the panels work
+// for players who cannot read yet. The panel's bezel: brushed dark metal, each row of it a little lighter or darker.
+// Its close button: an X, white so it can be drawn in any colour. The autopilot's: the airliner from above for its
+// title; a compass for the heading (cyan, its needle red to the north); a green hill with an up-and-down arrow for
+// the altitude; a speedometer for the speed (green, amber and red, the needle well round); a magenta circle with its
+// radius drawn in for the circle's radius. For the mode, a cyan arrow straight ahead to hold the heading and magenta
+// arrows round a circle to the left or right, in the colours of the settings each flies. Then the buttons: a green
+// airliner climbing off a runway to take off, or flying on level to engage in the air; an amber one settling onto
+// the runway to land; a green tick to apply; a red power symbol to switch the autopilot off.
+{
+  const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui");
+  const panelOutput = resolve(guiOutput, "panel");
+  const autopilotOutput = resolve(guiOutput, "autopilot");
+  mkdirSync(panelOutput, { recursive: true });
+  mkdirSync(autopilotOutput, { recursive: true });
+  const CYAN = [0x46, 0xc8, 0xf0];
+  const CYAN_DARK = [0x2a, 0x8c, 0xb0];
+  const MAGENTA = [0xe0, 0x40, 0xe0];
+  const GREEN = [0x46, 0xe0, 0x70];
+  const GREEN_DARK = [0x2a, 0x9a, 0x48];
+  const AMBER = [0xf2, 0xb8, 0x30];
+  const RED = [0xe8, 0x38, 0x2c];
+  const RED_DARK = [0xa8, 0x22, 0x1a];
+  const PALE = [0xc8, 0xce, 0xd6];
+  const RUNWAY = [0x6a, 0x71, 0x7b];
+
+  // Whether a pixel's middle lies within half a width of the segment from a to b.
+  const onSegment = (x, y, [ax, ay], [bx, by], width) => {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(x - ax - t * dx, y - ay - t * dy) <= width / 2;
+  };
+  const inTriangle = (x, y, [ax, ay], [bx, by], [cx, cy]) => {
+    const side = (px, py, qx, qy) => (x - qx) * (py - qy) - (px - qx) * (y - qy);
+    const d1 = side(ax, ay, bx, by);
+    const d2 = side(bx, by, cx, cy);
+    const d3 = side(cx, cy, ax, ay);
+    return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+  };
+  // The airliner from above, its nose on a bearing (degrees clockwise from up), its middle at (cx, cy): a fuselage
+  // with swept wings and tailplane, thick enough to stay whole when turned.
+  const airliner = (x, y, cx, cy, bearing, size = 1) => {
+    const turn = (bearing * Math.PI) / 180;
+    const dx = (x - cx) / size;
+    const dy = (y - cy) / size;
+    const along = dx * Math.sin(turn) - dy * Math.cos(turn);
+    const out = Math.abs(dx * Math.cos(turn) + dy * Math.sin(turn));
+    const fuselage = out <= 1.1 && along >= -6.8 && along <= 6.8 - out;
+    const wings = out <= 6.8 && along <= 1.8 - out * 0.6 && along >= -1.2 - out * 0.6;
+    const tail = out <= 3 && along <= -4.4 - out * 0.5 && along >= -6.4 - out * 0.5;
+    return fuselage || wings || tail;
+  };
+  const icon = (folder, name, paint) => texture(folder, name, (x, y) => paint(x, y) ?? CLEAR, 0);
+
+  texture(panelOutput, "bezel", (x, y) => {
+    const streak = ((y * 5 + 3) % 7) - 3;
+    return [0x2e + streak, 0x33 + streak, 0x3b + streak];
+  }, 3);
+  icon(panelOutput, "close", (x, y) => (onSegment(x, y, [3, 3], [12, 12], 2.6) || onSegment(x, y, [12, 3], [3, 12], 2.6) ? INK : null));
+
+  icon(autopilotOutput, "airliner", (x, y) => (airliner(x, y, 7.5, 7.5, 0) ? INK : null));
+  icon(autopilotOutput, "heading", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r >= 6 && r <= 7.4) return CYAN;
+    const half = Math.abs(x - 7.5);
+    if (y >= 2 && y <= 7 && half <= (y - 1) * 0.5) return x < 8 ? RED : RED_DARK;
+    if (y >= 8 && y <= 13 && half <= (14 - y) * 0.5) return x < 8 ? INK : PALE;
+    return null;
+  });
+  icon(autopilotOutput, "altitude", (x, y) => {
+    const half = Math.abs(x - 3.5);
+    const head = (y >= 1 && y <= 3 && half <= y - 0.5) || (y >= 10 && y <= 12 && half <= 12.5 - y);
+    if (head || (y >= 4 && y <= 9 && half <= 0.5)) return INK;
+    if (y === 14) return GREEN_DARK;
+    if (x >= 6 && y <= 13 && y >= 4 + Math.abs(x - 10.5) * 1.2) return y <= 6 ? INK : x > 10 ? GREEN_DARK : GREEN;
+    return null;
+  });
+  icon(autopilotOutput, "speed", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 10.5);
+    const angle = Math.atan2(10.5 - y, x - 7.5);
+    if (r <= 1.2) return INK;
+    if (onSegment(x, y, [7.5, 10.5], [7.5 + 5.2 * Math.cos(0.8), 10.5 - 5.2 * Math.sin(0.8)], 1.1)) return INK;
+    if (r >= 5.6 && r <= 7.3 && angle >= -0.25 && angle <= Math.PI + 0.25) {
+      return angle > (2 * Math.PI) / 3 ? GREEN : angle > Math.PI / 3 ? AMBER : RED;
+    }
+    if (y === 13 && x >= 2 && x <= 13) return RUNWAY;
+    return null;
+  });
+  icon(autopilotOutput, "radius", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r >= 5.9 && r <= 7.3) return MAGENTA;
+    if (r <= 1.6 || onSegment(x, y, [7.5, 7.5], [11.2, 3.8], 1.8)) return INK;
+    return null;
+  });
+  icon(autopilotOutput, "hold_heading", (x, y) => {
+    const half = Math.abs(x - 7.5);
+    const head = y >= 1 && y <= 7 && half <= y - 0.5;
+    const shaft = y >= 8 && y <= 14 && half <= 1.5;
+    return head || shaft ? (x < 8 ? CYAN : CYAN_DARK) : null;
+  });
+  // Round to the left: an arc most of the way round, its arrowhead at the top pointing left; to the right, mirrored.
+  for (const [name, mirror] of [["orbit_left", false], ["orbit_right", true]]) {
+    icon(autopilotOutput, name, (px, y) => {
+      const x = mirror ? 15 - px : px;
+      const r = Math.hypot(x - 7.5, y - 8.5);
+      const angle = (Math.atan2(8.5 - y, x - 7.5) * 180) / Math.PI;
+      if (inTriangle(x, y, [2.2, 3.3], [8, -0.6], [8, 7.2])) return MAGENTA;
+      if (r >= 4.2 && r <= 6.3 && !(angle > 92 && angle < 160)) return MAGENTA;
+      return null;
+    });
+  }
+  // A runway along the bottom, with its centre line.
+  const runway = (x, y, from, to) => (y === 14 && x >= from && x <= to ? (x % 3 === 0 ? INK : RUNWAY) : null);
+  icon(autopilotOutput, "take_off", (x, y) => (airliner(x, y, 8.5, 6.5, 45, 0.85) ? GREEN : runway(x, y, 0, 8)));
+  icon(autopilotOutput, "land", (x, y) => (airliner(x, y, 6.5, 6.5, 135, 0.85) ? AMBER : runway(x, y, 7, 15)));
+  icon(autopilotOutput, "engage", (x, y) => {
+    if (airliner(x, y, 9.5, 7.5, 90, 0.82)) return GREEN;
+    return x <= 2 && (y === 4 || y === 7 || y === 8 || y === 11) ? INK : null;
+  });
+  icon(autopilotOutput, "apply", (x, y) => (onSegment(x, y, [2.5, 8.5], [6, 12], 3) || onSegment(x, y, [6, 12], [13, 3.5], 3) ? GREEN : null));
+  icon(autopilotOutput, "disengage", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 8.5);
+    const ring = r >= 4.4 && r <= 6.4 && !(y < 8 && Math.abs(x - 7.5) < 2.6);
+    const bar = Math.abs(x - 7.5) <= 0.5 && y >= 1 && y <= 8;
+    return ring || bar ? (x < 8 ? RED : RED_DARK) : null;
+  });
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

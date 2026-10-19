@@ -92,14 +92,18 @@ storm passing over a desert is as calm as clear skies. Turn it off with `turbule
 ### Autopilot
 
 Use the autopilot panel on the pedestal, or the big screen in the middle of the instrument panel, to open the
-autopilot's settings. At the top they show what the autopilot is doing, how the airliner flies now (speed, height
-and heading) and, once engaged, what it is set to fly. Below are the settings: hold a heading, or circle left or
-right round a point beside the airliner; the heading (a compass bearing); the altitude to hold (from 40 blocks above
-the runway to 30 below the top of the world); the speed (30 to 120 blocks a second); and the circle's radius (150
-to 1000 blocks). Type each one in, or step it with the buttons either side of it: 15 degrees, 20 blocks, 5 blocks a
-second, 50 blocks. The game goes on behind the settings, and they close once you step away from the flight deck.
+autopilot's settings. At the top they show what the autopilot is doing, with a lamp (green engaged, amber off), how
+the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the settings:
+hold a heading (a straight arrow), or circle left or right round a point beside the airliner (arrows round to the
+left or right); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above the
+runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
+radius (a circle, 150 to 1000 blocks). Slide each one, step it with the arrows either side of its slider (15
+degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting and button has a
+picture and a colour of its own, so that players who cannot read yet can fly too; point at one to see its name. The
+game goes on behind the settings, and they close once you step away from the flight deck.
 
-Switched off, the settings start from what engaging would fly, and engaging (the wide button, or Enter) flies them.
+Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
+flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off, full
 thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then a
 climb to the altitude set, turning onto the heading or circle set once off the ground, and there it holds height
