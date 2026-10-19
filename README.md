@@ -19,7 +19,8 @@ Both blueprints are in the Aerolarge creative tab; there is no recipe for them.
 - **Airliner Blueprint**: the airframe with an empty cabin.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with an indoor
   pool sunk into the hold, a full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a
-  row of seats, and a lounge with a bar and seats in the tail. The seats are Create's, so they can be sat in.
+  row of seats, and a lounge with a bar and seats in the tail, all lit by pendant lights. The seats are Create's, so
+  they can be sat in.
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
@@ -27,8 +28,8 @@ face. It refuses while anything is in the way and says where; sneak to build thr
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
-blocks cut to the fuselage's curve, cabin lights in the crown, the walls and the hold keep it bright, and nothing
-spawns inside it on its own. Outside it carries red and green navigation lights on the wingtips with white strobes,
+blocks cut to the fuselage's curve; cabin lights in the crown, the walls and the hold and LED strips along the tops
+of the cabin walls keep it bright, and nothing spawns inside it on its own. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. Each engine is heard spooling up and down with its
 thrust, quieter from inside the cabin, and high up it leaves a contrail.
 

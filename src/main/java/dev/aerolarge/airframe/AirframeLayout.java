@@ -149,6 +149,7 @@ public final class AirframeLayout {
         if (furnished) {
             new CabinFitOut(layout).apply();
         }
+        new CabinLining(layout).apply(0, (int) Math.ceil(LENGTH * layout.scale));
         layout.skydiving();
         layout.seatbeltSigns();
         layout.shell();

@@ -304,14 +304,18 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   }
 }
 
-// A model made of boxes, each face of each box showing the given texture over the part of it the box covers.
+// A model made of boxes, each face of each box showing the given texture over the part of it the box covers; a
+// texture given per face as an object, and a box marked lit glowing at full brightness whatever the light around.
 function boxes(textures, parts) {
   return {
     parent: "minecraft:block/block",
     textures,
-    elements: parts.map(([from, to, texture]) => ({
-      from, to,
-      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])),
+    elements: parts.map(([from, to, texture, lit]) => ({
+      from, to, ...(lit ? { shade: false } : {}),
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, {
+        texture: typeof texture === "string" ? texture : texture[face] ?? texture.all,
+        ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}),
+      }])),
     })),
   };
 }
@@ -377,6 +381,36 @@ function dropsItself(name) {
   write(`assets/${ID}/models/item/seatbelt_sign.json`, { parent: `${ID}:block/seatbelt_sign_on` });
   write(`assets/${ID}/models/item/seatbelt_switch.json`, { parent: `${ID}:block/seatbelt_switch_on` });
   for (const name of ["seatbelt_sign", "seatbelt_switch"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
+// The cabin's lights, drawn facing north. The light strip: a glowing bar along the top of the wall it is fixed to.
+// The pendant light: a slim black cable down to a flat grey shade, glowing underneath; the cable alone for the blocks
+// above it.
+{
+  write(`assets/${ID}/models/block/light_strip.json`, boxes(
+    { strip: `${ID}:block/light_strip`, particle: `${ID}:block/light_strip` },
+    [[[0, 12, 0], [16, 15, 3], "#strip", true]],
+  ));
+  facing("light_strip");
+  write(`assets/${ID}/models/block/pendant_light.json`, boxes(
+    { cable: `${ID}:block/light_cable`, shade: `${ID}:block/pendant_shade`, glow: `${ID}:block/light_strip`, particle: `${ID}:block/pendant_shade` },
+    [
+      [[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"],
+      [[3, 4.5, 3], [13, 8, 13], "#shade"],
+      [[4, 4, 4], [12, 4.5, 12], "#glow", true],
+    ],
+  ));
+  write(`assets/${ID}/blockstates/pendant_light.json`, { variants: { "": { model: `${ID}:block/pendant_light` } } });
+  write(`assets/${ID}/models/block/light_cable.json`, boxes(
+    { cable: `${ID}:block/light_cable`, particle: `${ID}:block/light_cable` },
+    [[[7.5, 0, 7.5], [8.5, 16, 8.5], "#cable"]],
+  ));
+  write(`assets/${ID}/blockstates/light_cable.json`, { variants: { "": { model: `${ID}:block/light_cable` } } });
+  for (const name of ["light_strip", "pendant_light", "light_cable"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
     dropsItself(name);
     cubes[name] = null;
   }
@@ -464,13 +498,16 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
 const GROUND = ["landing_target", "tower_radio"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
+// What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
+const FITTINGS = ["light_strip", "pendant_light", "light_cable"];
+const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
-write(`data/${ID}/tags/block/airframe.json`, tag(airliner.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
+write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
 // controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
-  ...airliner.filter((b) => !b.endsWith("cabin_floor")),
+  ...structure.filter((b) => !b.endsWith("cabin_floor")),
   ...["createpropulsion:wing", "createpropulsion:creative_thruster", "createpropulsion:thruster", "offroad:wheel_mount",
     "simulated:physics_assembler", "create:black_seat"].map((id) => ({ id, required: false })),
 ]));
@@ -497,6 +534,9 @@ shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
+shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
+shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
+shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -591,6 +631,9 @@ write(`assets/${ID}/lang/en_us.json`, {
   "title.aerolarge.captain": "Captain %s",
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
+  "block.aerolarge.light_strip": "LED Light Strip",
+  "block.aerolarge.pendant_light": "Pendant Light",
+  "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
   "block.aerolarge.seatbelt_switch": "Seatbelt Switch",
   "message.aerolarge.seatbelts.on": "Seatbelt signs on",

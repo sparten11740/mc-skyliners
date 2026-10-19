@@ -20,11 +20,14 @@ import dev.aerolarge.block.JumpLightBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
+import dev.aerolarge.block.LightCableBlock;
+import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.PendantLightBlock;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
@@ -283,6 +286,23 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SEATBELT_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SWITCH);
     public static final DeferredItem<BlockItem> SEATBELT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(SEATBELT_SIGN);
 
+    /** Modern cabin lighting: LED strips along the tops of the walls, and pendant lights hung on slim cables. */
+    public static final DeferredBlock<LightStripBlock> LIGHT_STRIP = BLOCKS.registerBlock(
+        "light_strip", LightStripBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion().lightLevel(state -> 13)
+    );
+    public static final DeferredBlock<PendantLightBlock> PENDANT_LIGHT = BLOCKS.registerBlock(
+        "pendant_light", PendantLightBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> 15)
+    );
+    public static final DeferredBlock<LightCableBlock> LIGHT_CABLE = BLOCKS.registerBlock(
+        "light_cable", LightCableBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noCollission().noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
+    public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
+    public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -302,7 +322,7 @@ public final class AerolargeRegistry {
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
-            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM
+            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

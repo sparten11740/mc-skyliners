@@ -1,11 +1,11 @@
 package dev.aerolarge.airframe;
 
+import dev.aerolarge.AerolargeRegistry;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.LadderBlock;
-import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,9 +14,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 /**
  * Fits out the main deck of the furnished airliner, front to back between the door aisles: an indoor pool sunk into
  * the hold so its water lies flush with the floor, a full-height gym hall (Turnhalle) over the wing box, and a lounge
- * with a bar in the tail. Everything is vanilla blocks but the seats, which are Create's so they can be sat in, and
- * only ever goes into open cabin space or replaces cabin floor, so the hull, the doors and the space in front of them
- * stay as they were.
+ * with a bar in the tail, lit by pendant lights. Everything is vanilla blocks but the lights and the seats, which are
+ * Create's so they can be sat in, and only ever goes into open cabin space or replaces cabin floor, so the hull, the
+ * doors and the space in front of them stay as they were.
  */
 final class CabinFitOut {
     private static final double[] POOL = {13.5, 23.0};
@@ -236,7 +236,7 @@ final class CabinFitOut {
         }
     }
 
-    /** A lantern hung on a chain from the crown, its bottom the given height above the floor (or as low as fits). */
+    /** A pendant light hung on its cable from the crown, its bottom the given height above the floor (or as low as fits). */
     private void hangLight(int x, int z, int height) {
         int top = layout.ceiling(x, z);
         int bottom = Math.max(floor + 3, Math.min(floor + height, top));
@@ -244,8 +244,8 @@ final class CabinFitOut {
             return;
         }
         for (int y = top; y > bottom; y--) {
-            layout.furnish(x, y, z, Blocks.CHAIN.defaultBlockState());
+            layout.furnish(x, y, z, AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState());
         }
-        layout.furnish(x, bottom, z, Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
+        layout.furnish(x, bottom, z, AerolargeRegistry.PENDANT_LIGHT.get().defaultBlockState());
     }
 }

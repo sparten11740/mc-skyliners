@@ -447,4 +447,15 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// The cabin's lights. The LED strip: cool white, brightest along its middle. The light cable: black. The pendant's
+// shade: brushed dark grey.
+{
+  texture(blockOutput, "light_strip", (x, y) => {
+    const glow = 1 - Math.abs(y - 7.5) / 8;
+    return [clamp(Math.round(215 + 40 * glow)), clamp(Math.round(228 + 27 * glow)), 255];
+  }, 0);
+  texture(blockOutput, "light_cable", () => [0x18, 0x19, 0x1b], 2);
+  texture(blockOutput, "pendant_shade", (x, y) => (y % 4 === 0 ? [0x3c, 0x40, 0x46] : [0x4a, 0x4f, 0x56]), 3);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
