@@ -111,22 +111,24 @@ the airliner flies now (speed, height and heading) and, once engaged, what it is
 hold a heading (a straight arrow), or circle left or right round a point beside the airliner (arrows round to the
 left or right); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above the
 runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
-radius (a circle, 150 to 1000 blocks). Slide each one, step it with the arrows either side of its slider (15
-degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting and button has a
-picture and a colour of its own, so that players who cannot read yet can fly too; point at one to see its name. The
-game goes on behind the settings, and they close once you step away from the flight deck.
+radius (a circle, 150 to 1000 blocks; a circle too tight to fly at the speed set is flown wider round the same
+middle, so it never banks more than 20 degrees going round). Slide each one, step it with the arrows either side of
+its slider (15 degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting
+and button has a picture and a colour of its own, so that players who cannot read yet can fly too; point at one to
+see its name. The game goes on behind the settings, and they close once you step away from the flight deck.
 
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
-Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off, full
-thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then a
-climb straight ahead, wings level, until it is 30 blocks above the ground. Only then does it turn onto the heading or
-circle set, banking no steeper than its height allows (it never banks hard near the ground), and it climbs on to the
-altitude set and holds height and speed there. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway by default) and the
-speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it finds. While it is
-engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust levers, the
-tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading to
-everyone on the flight deck.
+Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off,
+full thrust down the runway, holding the heading it started on
+with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
+above the ground. Only then does it turn onto the heading or circle set, banking no steeper than its height allows
+(it never banks hard near the ground, and never more than 25 degrees), and it climbs on to the altitude set and
+holds height and speed there. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway
+by default) and the speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it
+finds. While it is engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust
+levers, the tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading
+to everyone on the flight deck.
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
 the heading it is on, slows until it flies with its nose level and sinks 3 blocks a second, banking less the lower it

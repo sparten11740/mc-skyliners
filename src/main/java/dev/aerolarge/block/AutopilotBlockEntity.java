@@ -169,7 +169,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final double BANK_GAIN = 0.8;
     private static final double TURN_DAMPING = 1.0;
-    private static final double MAX_BANK = 30;
+    private static final double MAX_BANK = 25;
+    /**
+     * The bank a circle is flown at, at most, in degrees: a circle set too tight to fly at this bank at the speed it
+     * goes is flown wider, round the same middle, so there is bank to spare for steering back onto it and nobody aboard
+     * is thrown about.
+     */
+    private static final double ORBIT_BANK = 20;
     /** Engine signal split per degree off the heading, and the most it splits by. */
     private static final double YAW_GAIN = 0.4;
     private static final int YAW_SPLIT = 4;
@@ -651,12 +657,15 @@ public class AutopilotBlockEntity extends BlockEntity {
             // heading.
             double wantedTurn = 0;
             if (lateral != Lateral.HEADING && !climbingOut) {
-                wanted = orbitHeading(state);
+                double horizontal = Math.hypot(state.velocity().x, state.velocity().z);
+                double gravity = Math.max(1, state.gravity());
+                double tightest = horizontal * horizontal / (gravity * Math.tan(Math.toRadians(ORBIT_BANK)));
+                double radius = Math.max(orbitRadius, tightest);
+                wanted = orbitHeading(state, radius);
                 // Banked into the circle from the start: the bank that turns at this speed round this radius.
                 double side = lateral == Lateral.ORBIT_RIGHT ? 1 : -1;
-                double horizontal = Math.hypot(state.velocity().x, state.velocity().z);
-                bank = side * Math.toDegrees(Math.atan(horizontal * horizontal / (Math.max(1, state.gravity()) * orbitRadius)));
-                wantedTurn = side * Math.toDegrees(horizontal / orbitRadius);
+                bank = side * Math.toDegrees(Math.atan(horizontal * horizontal / (gravity * radius)));
+                wantedTurn = side * Math.toDegrees(horizontal / radius);
             }
             double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
             // It banks less the lower it gets, to keep its long wings clear of the ground.
@@ -710,10 +719,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The heading that keeps an orbit on its circle: along the circle the way it turns, steered in while outside it
-     * and out while inside, more the further off it is.
+     * The heading that keeps an orbit on a circle of this radius round its middle: along the circle the way it turns,
+     * steered in while outside it and out while inside, more the further off it is.
      */
-    private double orbitHeading(SableFlight.State state) {
+    private double orbitHeading(SableFlight.State state, double radius) {
         double dx = state.position().x - orbitX;
         double dz = state.position().z - orbitZ;
         double distance = Math.max(1, Math.hypot(dx, dz));
@@ -723,7 +732,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double outZ = dz / distance;
         double alongX = -outZ * side;
         double alongZ = outX * side;
-        double inward = Mth.clamp(ORBIT_CAPTURE * (distance - orbitRadius) / orbitRadius, -1, 1);
+        double inward = Mth.clamp(ORBIT_CAPTURE * (distance - radius) / radius, -1, 1);
         double x = alongX - outX * inward;
         double z = alongZ - outZ * inward;
         return Math.toDegrees(Math.atan2(-x, z));
