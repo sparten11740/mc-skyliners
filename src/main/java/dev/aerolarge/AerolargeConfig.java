@@ -41,7 +41,7 @@ public final class AerolargeConfig {
                 "meet with small steps; SNAPPED cuts through block corners and edge middles only, in 45 degree and one-in-two slopes that run",
                 "into each other without a step, and also rounds off the inside of the nose's skin. Read when a blueprint is used."
             )
-            .defineEnum("shellStyle", ShellStyle.FITTED);
+            .defineEnum("shellStyle", ShellStyle.SNAPPED);
         builder.pop();
 
         builder.push("flight");
