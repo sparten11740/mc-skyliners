@@ -787,11 +787,13 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   cubes.cabin_window_shell = null;
 }
 
-// Room dividers: fitted into the cabin, so breakable, and no part of the hull (see FITTINGS).
-const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition"];
+// Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
+// part of the hull (see FITTINGS).
+const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "exit_sign"];
 const ROOM_DIVIDER_LANG = {
   "block.aerolarge.cabin_curtain": "Cabin Curtain",
   "block.aerolarge.cabin_partition": "Cabin Partition",
+  "block.aerolarge.exit_sign": "Exit Sign",
 };
 // The cabin curtain, drawn facing north (see CurtainBlock), one model for each way it can be drawn and joined; the
 // colour is not in it, the client tints the cloth. Shut, four pleats of cloth a pixel and a half thick, standing
@@ -885,6 +887,13 @@ const ROOM_DIVIDER_LANG = {
     cubes[name] = null;
   }
 }
+// The exit sign: a thin plate with its back to the wall, drawn facing north, glowing whatever the light around.
+write(`assets/${ID}/models/block/exit_sign.json`, boxes(
+  { face: `${ID}:block/exit_sign`, casing: `${ID}:block/cabin_partition`, particle: `${ID}:block/exit_sign` },
+  [[[1, 4, 14.5], [15, 12, 16], { north: "#face", all: "#casing" }, true]],
+));
+facing("exit_sign");
+write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
 
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
@@ -1197,9 +1206,10 @@ shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
 shaped("hide_and_seek_button", ["B", "N", "I"], { B: "minecraft:stone_button", N: "minecraft:note_block", I: "minecraft:iron_ingot" }, 1);
-// Room dividers: cloth hung from a rail on rings, and a cream panel of pale wood.
+// Room dividers: cloth hung from a rail on rings, a cream panel of pale wood, and the exit sign's glowing green glass.
 shaped("cabin_curtain", ["NSN", "WWW", "WWW"], { N: "minecraft:iron_nugget", S: "minecraft:stick", W: "minecraft:white_wool" }, 6);
 shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", D: "minecraft:white_dye" }, 8);
+shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).

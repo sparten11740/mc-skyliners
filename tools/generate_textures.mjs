@@ -717,6 +717,23 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "cabin_partition", (x, y) => (x === 0 || y === 0 ? [0xdb, 0xd3, 0xc0] : [0xee, 0xe7, 0xd6]), 2);
 }
 
+// The exit sign over the doors: on green, a white man running into a white doorway, dark inside, as every airliner's
+// exits are marked. The sign shows the middle eight rows, between the first and last columns.
+{
+  const SIGN = [
+    "......WW..WWWW",
+    "......WW..WDDW",
+    "..WWWWW...WDDW",
+    ".W..WW.WW.WDDW",
+    "....WW....WDDW",
+    "...W..WW..WDDW",
+    ".WW....W..WDDW",
+    ".......WW.WDDW",
+  ];
+  const colours = { W: [0xf4, 0xfa, 0xf4], D: [0x0c, 0x5c, 0x2c] };
+  texture(blockOutput, "exit_sign", (x, y) => colours[SIGN[y - 4]?.[x - 1]] ?? [0x16, 0x9c, 0x4a], 2);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {

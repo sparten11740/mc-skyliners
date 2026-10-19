@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CurtainBlock;
+import dev.aerolarge.block.ExitSignBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,9 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * pool, its archway over the middle aisle hung with a curtain in the room's colour (navy for business class, cyan for
  * the pool, lime for the gym hall, red for the lounge), drawn open. Over each archway, on the side facing the doors, a
  * picture in coloured wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who
- * cannot read yet. A curtain on its own across the aisle at the front of business class, and lavatories either side
- * of the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors.
+ * cannot read yet. A curtain on its own across the aisle at the front of business class, lavatories either side of
+ * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, and a
+ * green running man over every passenger door.
  *
  * <p>Each one stands at the station nearest where it is meant to that leaves the hull beside and over it plain skin,
  * so no window, light or seatbelt sign is walled in or curtained over, and never in a door's aisle; one that finds
@@ -47,6 +49,8 @@ final class CabinDividers {
     private static final int SNAP = 2;
     /** How many blocks of headroom the lavatories have under their ceilings, as the WC behind the flight deck has. */
     private static final int HEADROOM = 3;
+    /** How high over the floor the exit signs hang: just over the doors, two blocks tall. */
+    private static final int EXIT_SIGN = 3;
     /**
      * The pictures, each row from the top as seen from the doors' side of its wall, '.' the wall itself and each letter
      * a colour of wool (see WOOL): a business class seat seen from the side, a drop of water, a basketball, a cup with
@@ -121,6 +125,21 @@ final class CabinDividers {
             divide(CabinFitOut.LOUNGE[0] - 0.5, DyeColor.RED, CUP, true);
         }
         joinCurtains();
+        exitSigns();
+    }
+
+    /** A green running man on the wall over every passenger door's forward leaf, facing into the cabin. */
+    private void exitSigns() {
+        for (double station : AirframeShape.PASSENGER_DOORS) {
+            int z = (int) Math.round(station * layout.scale());
+            for (int side : new int[]{1, -1}) {
+                int x = layout.besideWall(side, floor + EXIT_SIGN, z);
+                if (x != 0) {
+                    layout.furnish(x, floor + EXIT_SIGN, z, AerolargeRegistry.EXIT_SIGN.get().defaultBlockState()
+                        .setValue(ExitSignBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
+                }
+            }
+        }
     }
 
     /** Whether the fit-out has furnished the room between these metres: anything down its middle, or another floor. */

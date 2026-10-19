@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/exit_sign",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/exit_sign",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/exit_sign",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/exit_sign",
+      "y": 270
+    }
+  }
+}
