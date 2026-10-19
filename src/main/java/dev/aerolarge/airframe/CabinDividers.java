@@ -29,13 +29,15 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * the pool, lime for the gym hall, red for the lounge), drawn open. Over each archway, on the side facing the doors, a
  * picture in coloured wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who
  * cannot read yet. A curtain on its own across the aisle at the front of business class, lavatories either side of
- * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, and a
- * green running man over every passenger door.
+ * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, the gym
+ * hall's own dividing curtain (Trennvorhang) right across the middle of the court, and a green running man over every
+ * passenger door.
  *
- * <p>Each one stands at the station nearest where it is meant to that leaves the hull beside and over it plain skin,
- * so no window, light or seatbelt sign is walled in or curtained over, and never in a door's aisle; one that finds
- * no such station is left out. Only open cabin and carpet are built over: a seat back in the way becomes part of a
- * wall, and anything else in the way (a seat, a rope, a light hanging there) rules the station out.
+ * <p>Each wall stands at the station nearest where it is meant to that leaves the hull beside and over it plain skin,
+ * so no window, light or seatbelt sign is walled in, and never in a door's aisle; a curtain on its own only keeps
+ * clear of the lights and signs. One that finds no such station is left out. Only open cabin and carpet are built
+ * over: a seat back in the way becomes part of a wall, and anything else in the way (a seat, a rope, a light hanging
+ * there) rules the station out.
  */
 final class CabinDividers {
     /** How far either side of the middle an archway reaches: over the aisle, three blocks wide. */
@@ -113,13 +115,17 @@ final class CabinDividers {
             divide(CabinFitOut.POOL[1] + 0.5, DyeColor.CYAN, DROP, false);
         }
         if (furnished(CabinFitOut.GYM)) {
-            // A metre out from either end of the court, so the walls stop the balls missing the hoops; the room in front
-            // of the court is the lavatories'.
+            // A metre out from either end of the court, so the walls stop the balls missing the hoops; the room in
+            // front of the court is the lavatories'.
             Section entrance = divide(CabinFitOut.GYM[0] - 1, DyeColor.LIME, BALL, true);
             if (entrance != null) {
                 lavatories(entrance, (int) Math.ceil(CabinFitOut.GYM[0] * layout.scale()));
             }
             divide(CabinFitOut.GYM[1] + 1, DyeColor.LIME, BALL, false);
+            Section middle = near((CabinFitOut.GYM[0] + CabinFitOut.GYM[1]) / 2, this::acrossFits);
+            if (middle != null) {
+                across(middle, DyeColor.LIME);
+            }
         }
         if (furnished(CabinFitOut.LOUNGE)) {
             divide(CabinFitOut.LOUNGE[0] - 0.5, DyeColor.RED, CUP, true);
@@ -185,6 +191,44 @@ final class CabinDividers {
                 }
             }
         }
+    }
+
+    /**
+     * The gym hall's dividing curtain (Trennvorhang): right across the cabin from the floor to the crown, so the hall
+     * can be split into two courts, hung over the mats and round whatever is fixed to the walls.
+     */
+    private void across(Section section, DyeColor color) {
+        for (int y = section.bottom(); y <= section.top(); y++) {
+            for (int x = section.reach().get(y - section.bottom())[0]; x <= section.reach().get(y - section.bottom())[1]; x++) {
+                if (fillable(x, y, section.z())) {
+                    hang(x, y, section.z(), color);
+                }
+            }
+        }
+    }
+
+    /**
+     * Whether a curtain fits right across the section: clear of the doors' aisles, the seatbelt signs and the lights in
+     * the walls, and nothing in its way but carpet and what stands against the walls (wall bars, a bench), so no rope
+     * or light hangs in it. Its ends may stand against windows, which it meets edge on.
+     */
+    private boolean acrossFits(Section section) {
+        int z = section.z();
+        if (!clearOfDoorsAndSigns(z) || section.top() < floor + arch) {
+            return false;
+        }
+        for (int y = section.bottom(); y <= section.top(); y++) {
+            int[] reach = section.reach().get(y - section.bottom());
+            if (isLight(reach[0] - 1, y, z) || isLight(reach[1] + 1, y, z)) {
+                return false;
+            }
+            for (int x = reach[0] + 1; x < reach[1]; x++) {
+                if (!fillable(x, y, z)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** The section of the station nearest so many metres from the nose, within SNAP, that passes the test; or null. */
@@ -271,6 +315,10 @@ final class CabinDividers {
             }
         }
         return true;
+    }
+
+    private boolean isLight(int x, int y, int z) {
+        return layout.stateAt(x, y, z).is(layout.palette().light().getBlock());
     }
 
     private boolean inArch(int x, int y) {
