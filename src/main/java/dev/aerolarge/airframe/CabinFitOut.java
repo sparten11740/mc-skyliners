@@ -28,8 +28,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * Fits out the main deck of the furnished airliner, front to back between the door aisles: a business class just
  * behind the forward doors, big seats left and right of the aisle; an indoor moon pool sunk into the hold so its water
  * lies flush with the floor; a full-height gym hall (Turnhalle) over the wing box; and a lounge with a bar in the
- * tail, all lit by pendant lights; and passenger screens on the seat backs and the walls. Everything is vanilla blocks
- * but the lights, the pool's glass, the screens and the seats, which are Create's so they can be sat in. It only ever
+ * tail, all lit by pendant lights, with the kids' den behind it (see {@link TailDen}); and passenger screens on the
+ * seat backs and the walls. Everything is vanilla blocks but the lights, the pool's glass, the screens, the den's
+ * secret door and ball pit, and the seats, which are Create's so they can be sat in. It only ever
  * goes into open cabin space or replaces cabin floor, so the doors and the space in front of them stay as they were,
  * and so does the hull, but for the belly under the pool, which is glazed.
  */
@@ -73,6 +74,8 @@ final class CabinFitOut {
         new DutyFreeKiosk(layout).apply(from(LOUNGE), to(LOUNGE));
         lounge(from(LOUNGE), to(LOUNGE));
         new CabinDividers(layout).apply();
+        // Before the decor, so the den's wall closes the lounge and the starlit ceiling stops at it.
+        new TailDen(layout).apply(from(LOUNGE), to(LOUNGE));
         // After the dividers, which it keeps clear of.
         new CabinDecor(layout).apply();
         // Last: the screens go where the rest has left room, and on the backs of its seats.

@@ -172,6 +172,7 @@ cubes.engine_core = null;
   for (const name of ["paper_plane_whoosh", "shop_bell", "cash_register"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  Object.assign(sounds, holdAndTailSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -601,16 +602,151 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   dropsItself(hatch);
   cubes[hatch] = null;
 }
-// What of the hold's and the den's is fitted rather than built in: breakable, and no part of the airframe.
+// The secret bookshelf door, a door underneath: shut, its lower half is vanilla's bookshelf with the glowing book
+// drawn over both faces along the way it faces, at full brightness, and its upper half is vanilla's bookshelf; open,
+// vanilla's door leaf shapes with the bookshelf on them, turned as vanilla turns its doors'. Only the lower half drops
+// the door, as with doors.
+{
+  const door = "secret_bookshelf";
+  const book = { texture: "#book", neoforge_data: { block_light: 15, sky_light: 15 } };
+  write(`assets/${ID}/models/block/${door}_bottom.json`, {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:cutout",
+    textures: { side: "minecraft:block/bookshelf", end: "minecraft:block/oak_planks", book: `${ID}:block/secret_bookshelf_book`, particle: "minecraft:block/bookshelf" },
+    elements: [
+      {
+        from: [0, 0, 0], to: [16, 16, 16],
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+          [face, { texture: face === "up" || face === "down" ? "#end" : "#side", cullface: face }])),
+      },
+      { from: [0, 0, -0.1], to: [16, 16, 16.1], shade: false, faces: { north: book, south: book } },
+    ],
+  });
+  for (const half of ["bottom", "top"]) {
+    for (const hinge of ["left", "right"]) {
+      write(`assets/${ID}/models/block/${door}_${half}_${hinge}_open.json`, {
+        parent: `minecraft:block/door_${half}_${hinge}_open`,
+        textures: { bottom: "minecraft:block/bookshelf", top: "minecraft:block/bookshelf" },
+      });
+    }
+  }
+  write(`assets/${ID}/blockstates/${door}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [["lower", "bottom"], ["upper", "top"]].flatMap(([half, model]) => [
+      [`facing=${facing},half=${half},hinge=left,open=false`, { model: half === "lower" ? `${ID}:block/${door}_bottom` : "minecraft:block/bookshelf", y }],
+      [`facing=${facing},half=${half},hinge=right,open=false`, { model: half === "lower" ? `${ID}:block/${door}_bottom` : "minecraft:block/bookshelf", y }],
+      [`facing=${facing},half=${half},hinge=left,open=true`, { model: `${ID}:block/${door}_${model}_left_open`, y }],
+      [`facing=${facing},half=${half},hinge=right,open=true`, { model: `${ID}:block/${door}_${model}_right_open`, y: (y + 180) % 360 }],
+    ]))),
+  });
+  write(`assets/${ID}/models/item/${door}.json`, { parent: `${ID}:block/${door}_bottom` });
+  write(`data/${ID}/loot_table/blocks/${door}.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: `${ID}:${door}`,
+        conditions: [{ condition: "minecraft:block_state_property", block: `${ID}:${door}`, properties: { half: "lower" } }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/${door}`,
+  });
+  cubes[door] = null;
+}
+// The ball pit: a plain cube of balls, its faces shown inside it too, so someone sunk in it sees balls all round. It
+// sounds its own steps from inside, as powder snow does.
+{
+  write(`assets/${ID}/blockstates/ball_pit.json`, { variants: { "": { model: `${ID}:block/ball_pit` } } });
+  write(`assets/${ID}/models/block/ball_pit.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/ball_pit` } });
+  write(`assets/${ID}/models/item/ball_pit.json`, { parent: `${ID}:block/ball_pit` });
+  write("data/minecraft/tags/block/inside_step_sound_blocks.json", { replace: false, values: [`${ID}:ball_pit`] });
+  dropsItself("ball_pit");
+  cubes.ball_pit = null;
+}
+// Fairy lights, drawn fixed to the north wall like the light strip they are: a black wire along the top of the wall,
+// four bulbs hanging from it. Bright, the bulbs glow at full brightness; dimmed, they are lit only by their own lower
+// light; at night they glow dim.
+{
+  for (const [suffix, bulbs, lit] of [["", "fairy_lights", true], ["_dim", "fairy_lights", false], ["_night", "fairy_lights_night", true]]) {
+    write(`assets/${ID}/models/block/fairy_lights${suffix}.json`, boxes(
+      { wire: `${ID}:block/light_cable`, bulbs: `${ID}:block/${bulbs}`, particle: `${ID}:block/${bulbs}` },
+      [
+        [[0, 14, 0.5], [16, 14.5, 1.5], "#wire"],
+        ...[1, 5, 9, 13].map((x) => [[x, 12, 1], [x + 2, 14, 3], "#bulbs", lit]),
+      ],
+    ));
+  }
+  const levels = { bright: "", dim: "_dim", night: "_night" };
+  write(`assets/${ID}/blockstates/fairy_lights.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.entries(levels).map(([level, suffix]) =>
+      [`brightness=${level},facing=${facing}`, { model: `${ID}:block/fairy_lights${suffix}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/fairy_lights.json`, { parent: `${ID}:block/fairy_lights` });
+  dropsItself("fairy_lights");
+  cubes.fairy_lights = null;
+}
+// The den's treasure chest: cookies, a golden apple, a signal flare, a basketball and three twinkling star rockets.
+write(`data/${ID}/loot_table/chests/den_treasure.json`, {
+  type: "minecraft:chest",
+  pools: [
+    ["minecraft:cookie", { type: "minecraft:uniform", min: 4, max: 8 }],
+    ["minecraft:golden_apple", 1],
+    [`${ID}:signal_flare`, 1],
+    [`${ID}:basketball`, 1],
+  ].map(([name, count]) => ({
+    rolls: 1.0, bonus_rolls: 0.0,
+    entries: [{ type: "minecraft:item", name, functions: [{ function: "minecraft:set_count", count }] }],
+  })).concat([{
+    rolls: 1.0, bonus_rolls: 0.0,
+    entries: [{
+      type: "minecraft:item", name: "minecraft:firework_rocket",
+      functions: [
+        { function: "minecraft:set_count", count: 3 },
+        {
+          function: "minecraft:set_components",
+          components: { "minecraft:fireworks": { flight_duration: 1, explosions: [{ shape: "star", colors: [0xff5050, 0xffe050, 0x60a8ff], has_twinkle: true }] } },
+        },
+      ],
+    }],
+  }]),
+  random_sequence: `${ID}:chests/den_treasure`,
+});
+// What of the hold's and the tail's is fitted rather than built in: breakable, and no part of the airframe.
 function holdAndTailFittings() {
-  return ["floor_hatch"];
+  return ["floor_hatch", "secret_bookshelf", "ball_pit", "fairy_lights"];
+}
+// The secret door's creak is a wooden door's, deep and slow; the ball pit's plop a chicken's egg or a pop.
+function holdAndTailSounds() {
+  return {
+    secret_bookshelf_open: {
+      subtitle: `subtitles.${ID}.secret_bookshelf_open`,
+      sounds: ["open1", "open2"].map((file) => ({ name: `minecraft:block/wooden_door/${file}`, pitch: 0.55 })),
+    },
+    secret_bookshelf_close: {
+      subtitle: `subtitles.${ID}.secret_bookshelf_close`,
+      sounds: ["close1", "close2", "close3"].map((file) => ({ name: `minecraft:block/wooden_door/${file}`, pitch: 0.6 })),
+    },
+    ball_pit_plop: {
+      subtitle: `subtitles.${ID}.ball_pit_plop`,
+      sounds: [{ name: "minecraft:mob/chicken/plop", pitch: 0.8 }, { name: "minecraft:random/pop", volume: 0.6, pitch: 0.7 }],
+    },
+  };
 }
 function holdAndTailRecipes() {
   shaped("floor_hatch", ["YTY"], { Y: "minecraft:yellow_dye", T: "minecraft:iron_trapdoor" }, 1);
+  shaped("secret_bookshelf", ["BG", "BL"], { B: "minecraft:bookshelf", G: "minecraft:glowstone_dust", L: "minecraft:lever" }, 1);
+  shaped("ball_pit", ["RYB", "WWW"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", W: "minecraft:white_wool" }, 3);
+  shaped("fairy_lights", ["RYB", "SGS"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", S: "minecraft:string", G: "minecraft:glowstone_dust" }, 6);
 }
 function holdAndTailLang() {
   return {
     "block.aerolarge.floor_hatch": "Floor Hatch",
+    "block.aerolarge.secret_bookshelf": "Secret Bookshelf Door",
+    "block.aerolarge.ball_pit": "Ball Pit",
+    "block.aerolarge.fairy_lights": "Fairy Lights",
+    "subtitles.aerolarge.secret_bookshelf_open": "Bookshelf creaks open",
+    "subtitles.aerolarge.secret_bookshelf_close": "Bookshelf creaks shut",
+    "subtitles.aerolarge.ball_pit_plop": "Ball pit plops",
   };
 }
 

@@ -9,6 +9,7 @@ import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
+import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlockEntity;
@@ -64,6 +65,7 @@ import dev.aerolarge.block.ScoreboardBlockEntity;
 import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
+import dev.aerolarge.block.SecretBookshelfBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
@@ -124,6 +126,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.Vec3;
@@ -539,6 +542,64 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> FLOOR_HATCH_ITEM = ITEMS.registerSimpleBlockItem(FLOOR_HATCH);
 
+    /**
+     * The secret bookshelf door's creak, opening and shutting: a wooden door's, played deep and slow (see the sounds
+     * file). Made here, not by the registry, because the door's block set takes them before the registry has run.
+     */
+    private static final SoundEvent SECRET_BOOKSHELF_OPEN_SOUND = SoundEvent.createVariableRangeEvent(
+        ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "secret_bookshelf_open"));
+    private static final SoundEvent SECRET_BOOKSHELF_CLOSE_SOUND = SoundEvent.createVariableRangeEvent(
+        ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "secret_bookshelf_close"));
+    public static final DeferredHolder<SoundEvent, SoundEvent> SECRET_BOOKSHELF_OPEN = SOUNDS.register("secret_bookshelf_open", () -> SECRET_BOOKSHELF_OPEN_SOUND);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SECRET_BOOKSHELF_CLOSE = SOUNDS.register("secret_bookshelf_close", () -> SECRET_BOOKSHELF_CLOSE_SOUND);
+    /** The secret bookshelf door: opened by hand like a wooden door, with its own creak. */
+    public static final BlockSetType SECRET_BOOKSHELF_SET = BlockSetType.register(new BlockSetType(
+        "aerolarge_secret_bookshelf",
+        true,
+        true,
+        false,
+        BlockSetType.PressurePlateSensitivity.EVERYTHING,
+        SoundType.WOOD,
+        SECRET_BOOKSHELF_CLOSE_SOUND,
+        SECRET_BOOKSHELF_OPEN_SOUND,
+        SoundEvents.WOODEN_TRAPDOOR_CLOSE,
+        SoundEvents.WOODEN_TRAPDOOR_OPEN,
+        SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_OFF,
+        SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_ON,
+        SoundEvents.WOODEN_BUTTON_CLICK_OFF,
+        SoundEvents.WOODEN_BUTTON_CLICK_ON
+    ));
+    /** The soft plop of sinking into the ball pit. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BALL_PIT_PLOP = sound("ball_pit_plop");
+    /** The light the secret door's glowing book gives, and the fairy lights full on, in light levels. */
+    private static final int HINT_GLOW = 3;
+    private static final int FAIRY_GLOW = 12;
+    /**
+     * The kids' den in the tail: the secret bookshelf door into it, its glowing book faintly lighting the shelf, the
+     * ball pit, and fairy lights, a string of coloured bulbs as bright as the dimmer has them.
+     */
+    public static final DeferredBlock<SecretBookshelfBlock> SECRET_BOOKSHELF = BLOCKS.registerBlock(
+        "secret_bookshelf", SecretBookshelfBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F).noOcclusion().pushReaction(PushReaction.DESTROY)
+            .isValidSpawn(AerolargeRegistry::never).lightLevel(state -> state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER ? HINT_GLOW : 0)
+    );
+    public static final DeferredBlock<BallPitBlock> BALL_PIT = BLOCKS.registerBlock(
+        "ball_pit", BallPitBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.5F).sound(SoundType.WOOL).dynamicShape().noOcclusion()
+            .isValidSpawn(AerolargeRegistry::never).isRedstoneConductor((state, level, pos) -> false)
+            .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+    );
+    public static final DeferredBlock<LightStripBlock> FAIRY_LIGHTS = BLOCKS.registerBlock(
+        "fairy_lights", LightStripBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
+            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(FAIRY_GLOW))
+    );
+    public static final DeferredItem<DoubleHighBlockItem> SECRET_BOOKSHELF_ITEM = ITEMS.register(
+        "secret_bookshelf", () -> new DoubleHighBlockItem(SECRET_BOOKSHELF.get(), new Item.Properties())
+    );
+    public static final DeferredItem<BlockItem> BALL_PIT_ITEM = ITEMS.registerSimpleBlockItem(BALL_PIT);
+    public static final DeferredItem<BlockItem> FAIRY_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(FAIRY_LIGHTS);
+
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
     public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
     public static final DeferredItem<BlockItem> GALLEY_ITEM = ITEMS.registerSimpleBlockItem(GALLEY);
@@ -655,7 +716,8 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
-            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM
+            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM,
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM
         )),
         new TabSection("gym", List.of(
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM

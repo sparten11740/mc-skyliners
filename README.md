@@ -27,7 +27,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, a row of seats, roof trusses
   with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
-  Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights. Plants line
+  Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
+  the bar a secret door into a den in the tail (see below). Plants line
   the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
   ceiling over the bar and from planters of moss hung over the pool's rim, potted azaleas in moss along the pool's
   sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
@@ -211,6 +212,19 @@ either side of its archway, each with a toilet, a basin and its tap, and a woode
 a lime dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two
 courts. Over every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights
 set for the night.
+
+### The den
+
+Behind the lounge's bar a wall of bookshelves closes off the tail. One of its books glows: that bookshelf is a secret
+door, and while someone is near, sparks drift into the book with a faint shimmer. Use it and it swings open with a
+deep creak; it swings shut by itself after ten seconds, once nobody stands in the doorway, or when used again. Behind
+it the tail is a den for children: a landing with two cushions, a ball pit, then the tail cone's steps climbing to
+the top of the tail, each carpeted in the next colour of the rainbow, with bunks (wool mattresses, each with a blanket
+and a pillow) along the walls where a step is wide enough and cushions where it is not, fairy lights along both walls
+that dim with the cabin lights, and at the very top a treasure chest with cookies, a golden apple, a signal flare, a
+basketball and star rockets. The ball pit swallows whatever walks or falls in with a plop and a spray of balls: you
+wade through it a little slower, a fall into it never hurts, nobody under the balls is smothered, and a jump always
+gets you out. The secret door, the ball pit and the fairy lights can be crafted.
 
 ### Passenger screens
 

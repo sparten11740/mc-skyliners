@@ -1154,6 +1154,47 @@ blueprint("furnished_airliner_blueprint", true);
     if (x === 5 || x === 10 || (x > 5 && x < 10 && y % 3 === 0)) return INK;
     return (x + y * 3) % 5 === 0 ? STEEL_DARK : STEEL;
   });
+
+  // The secret bookshelf door's hint, drawn glowing over vanilla's bookshelf on both faces of its lower half: one
+  // gold spine on the lower shelf, its title band darker; the rest of the overlay is clear.
+  texture(blockOutput, "secret_bookshelf_book", (x, y) => {
+    if ((x === 7 || x === 8) && y >= 9 && y <= 14) return y === 11 ? [0xb0, 0x6a, 0x10] : x === 7 ? [0xff, 0xf4, 0xb0] : [0xff, 0xc8, 0x40];
+    return CLEAR;
+  }, 0);
+
+  // The ball pit: shiny plastic balls in six colours packed tight, each lit from the upper left, deeper balls showing
+  // darker between them; it tiles, the balls running on across a block's edges.
+  const BALLS = [[0xe8, 0x30, 0x30], [0xf8, 0xd0, 0x20], [0x30, 0x90, 0xf0], [0x40, 0xc8, 0x50], [0xf0, 0x80, 0x20], [0xb0, 0x50, 0xe0]];
+  const CENTRES = [[2.5, 2.5], [8, 2], [13.5, 3], [2, 8], [7.5, 8], [13, 8.5], [3, 13.5], [8.5, 13], [13.5, 13.5]];
+  const wrap = (d) => d - 16 * Math.round(d / 16);
+  texture(blockOutput, "ball_pit", (x, y) => {
+    let nearest = 0;
+    let best = Infinity;
+    CENTRES.forEach(([cx, cy], i) => {
+      const d = Math.hypot(wrap(x - cx), wrap(y - cy));
+      if (d < best) {
+        best = d;
+        nearest = i;
+      }
+    });
+    // Each row of balls shifted two colours on from the one above, so no two neighbours match, tiled or not.
+    const [r, g, b] = BALLS[(nearest * 2 + Math.floor(nearest / 3)) % BALLS.length];
+    const dx = wrap(x - CENTRES[nearest][0]);
+    const dy = wrap(y - CENTRES[nearest][1]);
+    if (best > 2.9) return [r * 0.35, g * 0.35, b * 0.35];
+    if (Math.hypot(dx + 1, dy + 1) < 0.9) return [0xff, 0xff, 0xff];
+    return dx + dy > 1.5 ? [r * 0.75, g * 0.75, b * 0.75] : [r, g, b];
+  }, 3);
+
+  // Fairy lights: bulbs in four colours along a dark wire, by column, so each bulb of the model shows one colour
+  // whichever face it is seen from; at night the same bulbs glow dim.
+  const BULBS = [[0xff, 0x50, 0x50], [0xff, 0xe0, 0x50], [0x60, 0xf0, 0x70], [0x60, 0xa8, 0xff]];
+  for (const [name, glow] of [["fairy_lights", 1], ["fairy_lights_night", 0.4]]) {
+    texture(blockOutput, name, (x) => {
+      const [r, g, b] = BULBS[Math.floor(x / 4)];
+      return x % 4 === 1 || x % 4 === 2 ? [r * glow, g * glow, Math.min(255, b * glow + 40 * (1 - glow))] : [0x18, 0x19, 0x1b];
+    }, 0);
+  }
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

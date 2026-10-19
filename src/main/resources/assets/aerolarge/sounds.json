@@ -198,5 +198,49 @@
         "name": "aerolarge:cash_register"
       }
     ]
+  },
+  "secret_bookshelf_open": {
+    "subtitle": "subtitles.aerolarge.secret_bookshelf_open",
+    "sounds": [
+      {
+        "name": "minecraft:block/wooden_door/open1",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:block/wooden_door/open2",
+        "pitch": 0.55
+      }
+    ]
+  },
+  "secret_bookshelf_close": {
+    "subtitle": "subtitles.aerolarge.secret_bookshelf_close",
+    "sounds": [
+      {
+        "name": "minecraft:block/wooden_door/close1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/wooden_door/close2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/wooden_door/close3",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "ball_pit_plop": {
+    "subtitle": "subtitles.aerolarge.ball_pit_plop",
+    "sounds": [
+      {
+        "name": "minecraft:mob/chicken/plop",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:random/pop",
+        "volume": 0.6,
+        "pitch": 0.7
+      }
+    ]
   }
 }
