@@ -3,6 +3,7 @@ package dev.aerolarge;
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
+import dev.aerolarge.radio.Broadcasts;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -32,6 +33,8 @@ public final class Aerolarge {
             event -> event.registrar("1").playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle));
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
+        NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
+        NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);

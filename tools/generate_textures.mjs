@@ -390,4 +390,26 @@ blueprint("furnished_airliner_blueprint", true);
   }, 3);
 }
 
+// Speaking to the cabin and the tower. The handset: a dark cradle, the receiver black with a grey grip line. The
+// tower radio: grey metal, a speaker grille on the left of its face, a lit green frequency display and two dials on
+// the right; its sides have vents.
+{
+  texture(blockOutput, "handset_cradle", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? [0x1a, 0x1c, 0x20] : [0x2c, 0x30, 0x36]));
+  texture(blockOutput, "handset_receiver", (x, y) => (y === 7 || y === 8 ? [0x4a, 0x4f, 0x56] : [0x14, 0x15, 0x17]));
+  const PANEL_GREY = [0x6b, 0x71, 0x78];
+  texture(blockOutput, "tower_radio_front", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL_DARK;
+    if (x >= 2 && x <= 7 && y >= 3 && y <= 12) return (x + y) % 2 === 0 ? [0x24, 0x26, 0x29] : [0x3a, 0x3d, 0x41];
+    if (x >= 9 && x <= 13 && y >= 3 && y <= 5) return y === 4 && x % 2 === 0 ? [0xb0, 0xff, 0xa0] : [0x30, 0xc0, 0x40];
+    if (Math.hypot(x - 10, y - 9.5) < 1.6 || Math.hypot(x - 13, y - 9.5) < 1.6) return [0x1d, 0x1e, 0x20];
+    if (x >= 9 && x <= 13 && y === 12) return GOLD;
+    return PANEL_GREY;
+  });
+  texture(blockOutput, "tower_radio_side", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL_DARK;
+    if (y % 3 === 1 && x >= 3 && x <= 12) return [0x3a, 0x3d, 0x41];
+    return PANEL_GREY;
+  });
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

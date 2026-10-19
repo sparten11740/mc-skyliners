@@ -1,0 +1,138 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cradle": "aerolarge:block/handset_cradle",
+    "receiver": "aerolarge:block/handset_receiver",
+    "particle": "aerolarge:block/handset_cradle"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cradle"
+        },
+        "south": {
+          "texture": "#cradle"
+        },
+        "east": {
+          "texture": "#cradle"
+        },
+        "west": {
+          "texture": "#cradle"
+        },
+        "up": {
+          "texture": "#cradle"
+        },
+        "down": {
+          "texture": "#cradle"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        7
+      ],
+      "to": [
+        11,
+        3,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#receiver"
+        },
+        "south": {
+          "texture": "#receiver"
+        },
+        "east": {
+          "texture": "#receiver"
+        },
+        "west": {
+          "texture": "#receiver"
+        },
+        "up": {
+          "texture": "#receiver"
+        },
+        "down": {
+          "texture": "#receiver"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        2,
+        6
+      ],
+      "to": [
+        5,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#receiver"
+        },
+        "south": {
+          "texture": "#receiver"
+        },
+        "east": {
+          "texture": "#receiver"
+        },
+        "west": {
+          "texture": "#receiver"
+        },
+        "up": {
+          "texture": "#receiver"
+        },
+        "down": {
+          "texture": "#receiver"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        2,
+        6
+      ],
+      "to": [
+        13,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#receiver"
+        },
+        "south": {
+          "texture": "#receiver"
+        },
+        "east": {
+          "texture": "#receiver"
+        },
+        "west": {
+          "texture": "#receiver"
+        },
+        "up": {
+          "texture": "#receiver"
+        },
+        "down": {
+          "texture": "#receiver"
+        }
+      }
+    }
+  ]
+}

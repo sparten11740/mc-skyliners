@@ -155,6 +155,8 @@ cubes.engine_core = null;
   for (const callout of callouts) {
     sounds[`callout_${callout}`] = { subtitle: `subtitles.${ID}.callout`, sounds: [{ name: `${ID}:callout_${callout}` }] };
   }
+  sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
+  sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
 }
@@ -298,6 +300,57 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   }
 }
 
+// A model made of boxes, each face of each box showing the given texture over the part of it the box covers.
+function boxes(textures, parts) {
+  return {
+    parent: "minecraft:block/block",
+    textures,
+    elements: parts.map(([from, to, texture]) => ({
+      from, to,
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture }])),
+    })),
+  };
+}
+// A block that faces the way it was placed: one model, turned for each facing.
+function facing(name, model = name) {
+  write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${model}`, y }])),
+  });
+}
+function dropsItself(name) {
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${name}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+}
+
+// Speaking to the cabin and the tower. The handset: a dark cradle with the receiver lying in it, its earpiece and
+// mouthpiece raised at either end, drawn facing north. The tower radio: a radio set with a speaker grille and dials.
+{
+  write(`assets/${ID}/models/block/handset.json`, boxes(
+    { cradle: `${ID}:block/handset_cradle`, receiver: `${ID}:block/handset_receiver`, particle: `${ID}:block/handset_cradle` },
+    [
+      [[3, 0, 4], [13, 2, 12], "#cradle"],
+      [[5, 2, 7], [11, 3, 9], "#receiver"],
+      [[3, 2, 6], [5, 5, 10], "#receiver"],
+      [[11, 2, 6], [13, 5, 10], "#receiver"],
+    ],
+  ));
+  facing("handset");
+  write(`assets/${ID}/models/item/handset.json`, { parent: `${ID}:block/handset` });
+  write(`assets/${ID}/models/block/tower_radio.json`, {
+    parent: "minecraft:block/orientable",
+    textures: { front: `${ID}:block/tower_radio_front`, side: `${ID}:block/tower_radio_side`, top: `${ID}:block/tower_radio_side` },
+  });
+  facing("tower_radio");
+  write(`assets/${ID}/models/item/tower_radio.json`, { parent: `${ID}:block/tower_radio` });
+  for (const name of ["handset", "tower_radio"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
 write(`assets/${ID}/models/block/autopilot_screen.json`, {
@@ -378,7 +431,8 @@ write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) =
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const airliner = blocks.filter((b) => !b.endsWith("landing_target"));
+const GROUND = ["landing_target", "tower_radio"];
+const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
 write(`data/${ID}/tags/block/airframe.json`, tag(airliner.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
@@ -410,6 +464,8 @@ shaped("jump_light", ["R", "L", "G"], { R: "minecraft:red_dye", L: "minecraft:re
 shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_panel` }, 1);
 shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
+shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
+shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
 shaped("cabin_floor", ["CC", "PP"], { C: "minecraft:gray_carpet", P: `${ID}:airframe_panel` }, 4);
 shaped("airliner_door", ["PP", "PG", "PP"], { P: `${ID}:airframe_panel`, G: "minecraft:glass" }, 3);
@@ -493,6 +549,16 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
   "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
   "message.aerolarge.landing_target.none": "No landings on this target yet",
+  "block.aerolarge.handset": "Captain's Handset",
+  "block.aerolarge.tower_radio": "Tower Radio",
+  "message.aerolarge.radio.keyed_announcement": "Speak now: your next message is announced to the cabin.",
+  "message.aerolarge.radio.keyed_radio": "Speak now: your next message goes out over the radio.",
+  "message.aerolarge.radio.released": "Handset back in its cradle.",
+  "title.aerolarge.captain": "Captain %s",
+  "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
+  "chat.aerolarge.radio": "[Radio] %s: %s",
+  "subtitles.aerolarge.pa_chime": "Cabin chime",
+  "subtitles.aerolarge.radio_crackle": "Radio crackles",
   "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",

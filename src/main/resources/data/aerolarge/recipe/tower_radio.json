@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "IRI",
+    "INI",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:lightning_rod"
+    },
+    "N": {
+      "item": "minecraft:note_block"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    }
+  },
+  "result": {
+    "id": "aerolarge:tower_radio",
+    "count": 1
+  }
+}

@@ -42,12 +42,21 @@ thrusters through relays hidden in the nacelle. Beside the captain's seat is the
 right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
 is built. A primary flight display in front of each seat shows attitude, airspeed,
 altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
-On the instrument panel beside the autopilot screen is the jump light switch (see Skydiving).
+On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving) and the captain's
+handset.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
+
+### Announcements and the radio
+
+Use the captain's handset and your next chat message is a cabin announcement: everyone aboard hears the two-tone
+chime and sees it on screen under "Captain" and your name, and it is kept in chat. Sneak and use it, and the message
+is a radio call instead. A Tower Radio (craftable) is for the airfield: whatever is said into it goes out over the
+radio. A radio call crackles in for everyone near any radio within 4096 blocks, the handsets of airliners in flight
+included. Either way the message is left out of ordinary chat; use the handset or radio again to put it down.
 
 ### Autopilot
 

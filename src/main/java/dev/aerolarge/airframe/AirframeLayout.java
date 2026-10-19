@@ -12,6 +12,7 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
+import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
@@ -775,6 +776,11 @@ public final class AirframeLayout {
         if (switchX <= panelWidth && stateAt(switchX, deck + 1, panelZ).is(panel.getBlock())) {
             jumpSwitch = new BlockPos(switchX, deck + 1, panelZ);
             set(switchX, deck + 1, panelZ, AerolargeRegistry.JUMP_SWITCH.get().defaultBlockState().setValue(JumpSwitchBlock.FACING, Direction.SOUTH));
+        }
+        // The captain's handset, on the panel beside the screen.
+        int handsetX = -switchX;
+        if (handsetX >= -panelWidth && stateAt(handsetX, deck + 1, panelZ).is(panel.getBlock()) && isOpen(handsetX, deck + 2, panelZ)) {
+            set(handsetX, deck + 2, panelZ, AerolargeRegistry.HANDSET.get().defaultBlockState().setValue(HandsetBlock.FACING, Direction.SOUTH));
         }
         assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
     }

@@ -14,6 +14,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JumpLightBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
@@ -24,11 +25,13 @@ import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
+import dev.aerolarge.block.TowerRadioBlock;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.ParachuteItem;
 import java.util.List;
@@ -93,6 +96,9 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_RETARD = sound("callout_retard");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
+    /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> PA_CHIME = sound("pa_chime");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
 
@@ -250,6 +256,14 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> PARACHUTE_RACK_ITEM = ITEMS.registerSimpleBlockItem(PARACHUTE_RACK);
     public static final DeferredItem<BlockItem> LANDING_TARGET_ITEM = ITEMS.registerSimpleBlockItem(LANDING_TARGET);
 
+    /** Speaking to the cabin and the tower: the captain's handset on the flight deck and a radio for the airfield. */
+    public static final DeferredBlock<HandsetBlock> HANDSET = BLOCKS.registerBlock("handset", HandsetBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    public static final DeferredBlock<TowerRadioBlock> TOWER_RADIO = BLOCKS.registerBlock("tower_radio", TowerRadioBlock::new, metal(MapColor.COLOR_GRAY));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadioBlockEntity>> RADIO_ENTITY =
+        BLOCK_ENTITIES.register("radio", () -> BlockEntityType.Builder.of(RadioBlockEntity::new, HANDSET.get(), TOWER_RADIO.get()).build(null));
+    public static final DeferredItem<BlockItem> HANDSET_ITEM = ITEMS.registerSimpleBlockItem(HANDSET);
+    public static final DeferredItem<BlockItem> TOWER_RADIO_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADIO);
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -268,7 +282,7 @@ public final class AerolargeRegistry {
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
-            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE
+            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

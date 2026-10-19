@@ -102,5 +102,21 @@
         "name": "aerolarge:callout_pull_up"
       }
     ]
+  },
+  "pa_chime": {
+    "subtitle": "subtitles.aerolarge.pa_chime",
+    "sounds": [
+      {
+        "name": "aerolarge:pa_chime"
+      }
+    ]
+  },
+  "radio_crackle": {
+    "subtitle": "subtitles.aerolarge.radio_crackle",
+    "sounds": [
+      {
+        "name": "aerolarge:radio_crackle"
+      }
+    ]
   }
 }

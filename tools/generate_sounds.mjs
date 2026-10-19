@@ -85,6 +85,52 @@ function toOgg(wav, name) {
   toOgg(wav, "engine");
 }
 
+/** Peak-normalises samples to a little under full scale and writes them as the named sound. */
+function writeSound(name, samples) {
+  let peak = 0;
+  samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  const wav = join(scratch, `${name}.wav`);
+  writeWav(wav, Array.from(samples, (s) => (s / peak) * 0.85));
+  toOgg(wav, name);
+}
+
+/** A struck bell: a few decaying partials of the note, starting at the given time in seconds. */
+function bell(samples, start, frequency, decay) {
+  const partials = [[1, 1], [2.01, 0.35], [3.02, 0.12]];
+  for (let i = Math.round(start * RATE); i < samples.length; i++) {
+    const t = i / RATE - start;
+    const envelope = Math.min(1, t * 400) * Math.exp(-t / decay);
+    for (const [ratio, gain] of partials) {
+      samples[i] += gain * envelope * Math.sin(2 * Math.PI * frequency * ratio * t);
+    }
+  }
+}
+
+// The cabin chime before an announcement: two bell tones, high then low.
+{
+  const samples = new Float64Array(Math.round(2.2 * RATE));
+  bell(samples, 0, 659.25, 0.55);
+  bell(samples, 0.42, 523.25, 0.7);
+  writeSound("pa_chime", samples);
+}
+
+// A radio call's crackle: band-passed static that swells in and dies away, with the odd sharp click.
+{
+  const samples = new Float64Array(Math.round(0.7 * RATE));
+  let low = 0;
+  let bandLow = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    low += 0.08 * (white - low);
+    bandLow += 0.45 * (white - bandLow);
+    const envelope = Math.min(1, t * 30) * Math.max(0, 1 - t / 0.7);
+    const click = random() < 0.0015 ? (random() * 2 - 1) * 3 : 0;
+    samples[i] = envelope * (bandLow - low) + click * envelope;
+  }
+  writeSound("radio_crackle", samples);
+}
+
 // The callouts, as the aircraft's synthetic voice would say them.
 const CALLOUTS = {
   callout_v1: "V one.",

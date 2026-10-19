@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "aerolarge:block/tower_radio_front",
+    "side": "aerolarge:block/tower_radio_side",
+    "top": "aerolarge:block/tower_radio_side"
+  }
+}

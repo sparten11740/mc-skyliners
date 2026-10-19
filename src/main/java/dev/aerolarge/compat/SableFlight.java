@@ -1,11 +1,17 @@
 package dev.aerolarge.compat;
 
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
+import dev.ryanhcode.sable.sublevel.SubLevel;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import org.joml.Vector3d;
@@ -14,7 +20,8 @@ import org.joml.Vector3d;
  * Where an assembled airliner is and how it is moving, read from Sable. A block of an assembled airliner lives in
  * Sable's plot, away from where the airliner is seen; projecting a few points of the plot out into the world gives
  * the airliner's position and the directions its nose, right wing and roof point. This is the only class that
- * touches Sable, and only once Sable is known to be installed.
+ * touches Sable on the server, and only once Sable is known to be installed; without it nothing is ever assembled,
+ * and every answer is the one for blocks standing in the world.
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -72,8 +79,74 @@ public final class SableFlight {
         return Access.read(blockEntity, nose);
     }
 
+    /**
+     * Whether the entity rides (stands on, or sits in) the assembled airliner the block entity is part of; null when
+     * the block entity is not part of an assembled airliner.
+     */
+    @Nullable
+    public static Boolean rides(Entity entity, BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() != null ? Access.rides(entity, blockEntity) : null;
+    }
+
+    /** Whether the entity rides any assembled airliner. */
+    public static boolean ridesAny(Entity entity) {
+        return SABLE && Access.ridesAny(entity);
+    }
+
+    /** Where a point among an assembled airliner's blocks is in the world; the point itself anywhere else. */
+    public static Vec3 toWorld(Level level, Vec3 point) {
+        return SABLE ? Access.toWorld(level, point) : point;
+    }
+
+    /** How fast a point among an assembled airliner's blocks moves, in blocks a second; still anywhere else. */
+    public static Vec3 velocity(Level level, Vec3 point) {
+        return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
+    }
+
+    /**
+     * The block at a point in the world that the test accepts, looking into any assembled airliner there as well as
+     * the world: its position in the world, or in the airliner's plot; null if neither has one.
+     */
+    @Nullable
+    public static BlockPos find(Level level, Vec3 point, Predicate<BlockState> test) {
+        BlockPos inWorld = BlockPos.containing(point);
+        if (test.test(level.getBlockState(inWorld))) {
+            return inWorld;
+        }
+        return SABLE ? Access.findAboard(level, point, test) : null;
+    }
+
     /** Kept apart so its Sable references are only loaded when Sable is there. */
     private static final class Access {
+        @Nullable
+        static Boolean rides(Entity entity, BlockEntity blockEntity) {
+            SubLevel airliner = Sable.HELPER.getContaining(blockEntity);
+            return airliner == null ? null : airliner == Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+        }
+
+        static boolean ridesAny(Entity entity) {
+            return Sable.HELPER.getTrackingOrVehicleSubLevel(entity) != null;
+        }
+
+        static Vec3 toWorld(Level level, Vec3 point) {
+            return Sable.HELPER.projectOutOfSubLevel(level, point);
+        }
+
+        static Vec3 velocity(Level level, Vec3 point) {
+            return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        @Nullable
+        static BlockPos findAboard(Level level, Vec3 point, Predicate<BlockState> test) {
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(point, point))) {
+                BlockPos inPlot = BlockPos.containing(airliner.logicalPose().transformPositionInverse(point));
+                if (test.test(level.getBlockState(inPlot))) {
+                    return inPlot;
+                }
+            }
+            return null;
+        }
+
         @Nullable
         static State read(BlockEntity blockEntity, Direction nose) {
             Level level = blockEntity.getLevel();
