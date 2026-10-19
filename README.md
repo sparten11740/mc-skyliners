@@ -18,11 +18,12 @@ Both blueprints are in the Aerolarge creative tab; there is no recipe for them. 
 banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops, and the airport.
 
 - **Airliner Blueprint**: the airframe with an empty cabin.
-- **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with an indoor
-  moon pool sunk into the hold, its bottom and the belly under it glass, so swimmers look straight down through the
-  airliner at the ground or the clouds below, a full-height gym hall (Turnhalle) with a court, hoops, wall bars,
-  climbing ropes and a row of seats, and a lounge with a bar and seats in the tail, all lit by pendant lights. The
-  seats are Create's, so they can be sat in.
+- **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
+  class just behind the forward doors (rows of big seats, two side by side left and right of the aisle, each with a
+  high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
+  the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below, a
+  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
+  with a bar and seats in the tail, all lit by pendant lights. The seats are Create's, so they can be sat in.
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run

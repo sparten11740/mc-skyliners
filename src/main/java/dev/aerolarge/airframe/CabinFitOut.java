@@ -15,17 +15,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
- * Fits out the main deck of the furnished airliner, front to back between the door aisles: an indoor pool sunk into
- * the hold so its water lies flush with the floor, a full-height gym hall (Turnhalle) over the wing box, and a lounge
- * with a bar in the tail, lit by pendant lights. Everything is vanilla blocks but the lights, the pool's glass and the
- * seats, which are Create's so they can be sat in. It only ever goes into open cabin space or replaces cabin floor, so
- * the doors and the space in front of them stay as they were, and so does the hull, but for the belly under the pool,
- * which is glazed.
+ * Fits out the main deck of the furnished airliner, front to back between the door aisles: a business class just
+ * behind the forward doors, big seats left and right of the aisle; an indoor moon pool sunk into the hold so its water
+ * lies flush with the floor; a full-height gym hall (Turnhalle) over the wing box; and a lounge with a bar in the
+ * tail, all lit by pendant lights. Everything is vanilla blocks but the lights, the pool's glass and the seats, which
+ * are Create's so they can be sat in. It only ever goes into open cabin space or replaces cabin floor, so the doors
+ * and the space in front of them stay as they were, and so does the hull, but for the belly under the pool, which is
+ * glazed.
  */
 final class CabinFitOut {
-    private static final double[] POOL = {13.5, 23.0};
+    private static final double[] BUSINESS = {13.5, 17.5};
+    private static final double[] POOL = {18.0, 23.0};
     private static final double[] GYM = {27.5, 47.5};
     private static final double[] LOUNGE = {52.0, 58.5};
+    /** How far apart the business class rows are, seat to seat, in metres: a seat, its back and legroom in front. */
+    private static final double BUSINESS_PITCH = 1.5;
+    /** How many business class seats stand side by side either side of the aisle. */
+    private static final int BUSINESS_SEATS = 2;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -36,6 +42,7 @@ final class CabinFitOut {
     }
 
     void apply() {
+        businessClass(from(BUSINESS), to(BUSINESS));
         pool(from(POOL), to(POOL));
         gym(from(GYM), to(GYM));
         lounge(from(LOUNGE), to(LOUNGE));
@@ -61,6 +68,43 @@ final class CabinFitOut {
             width = Math.min(width, layout.openHalfWidth(floor + 1, z));
         }
         return width;
+    }
+
+    /**
+     * The business class: rows of big seats facing forward, as many as fit side by side either side of the aisle up
+     * to two, each a Create seat with an upholstered back behind it and a wooden console at armrest height either
+     * side, shared between neighbours; a blue carpet throughout, and pendant lights over the aisle hung high enough
+     * to clear the overhead lockers and the light strips along the walls.
+     */
+    private void businessClass(int fromZ, int toZ) {
+        int width = narrowest(fromZ, toZ);
+        int pitch = Math.max(3, (int) Math.round(BUSINESS_PITCH * layout.scale()));
+        if (width < 3 || toZ - fromZ + 1 < pitch) {
+            return;
+        }
+        BlockState seat = AirframePalette.seat(DyeColor.GRAY).orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
+        BlockState back = Blocks.GRAY_WOOL.defaultBlockState();
+        BlockState console = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
+        // Each row is legroom, then the seats, then their backs; the first row's legroom is toward the door aisle.
+        for (int z = fromZ + pitch - 2; z + 1 <= toZ; z += pitch) {
+            for (int side : new int[]{1, -1}) {
+                // From the wall in: a console, a seat, a console and so on, leaving the aisle down the middle clear.
+                for (int k = 0, x = width - 1; k < BUSINESS_SEATS && x - 1 >= 1; k++, x -= 2) {
+                    layout.furnish(side * x, floor + 1, z, seat);
+                    layout.furnish(side * x, floor + 1, z + 1, back);
+                    layout.furnish(side * (x + 1), floor + 1, z, console);
+                    layout.furnish(side * (x - 1), floor + 1, z, console);
+                }
+            }
+        }
+        for (int z = fromZ; z <= toZ; z++) {
+            for (int x = -width; x <= width; x++) {
+                layout.furnish(x, floor + 1, z, Blocks.BLUE_CARPET.defaultBlockState());
+            }
+        }
+        for (int z = fromZ + 1; z <= toZ; z += 4) {
+            hangLight(0, z, 7);
+        }
     }
 
     /**
