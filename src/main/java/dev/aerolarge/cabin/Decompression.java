@@ -3,6 +3,7 @@ package dev.aerolarge.cabin;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.PaperPlane;
@@ -109,8 +110,15 @@ public final class Decompression {
     private static final int PUFFS = 4;
     private static final double PUFF_INSIDE = 2;
     private static final double PUFF_SPEED = 0.4;
+    /** How far in from the doorway's sill and top the fog starts, in blocks. */
+    private static final double PUFF_MARGIN = 0.1;
+    /** How many blocks tall each leaf of an older airliner's doors is. */
+    private static final int LEAF_ROWS = 2;
 
-    /** The lower halves of the airliner's doors found so far, in the plot, and how many slices back have been searched. */
+    /**
+     * The feet of the airliner's doors found so far, in the plot: each plug door's bottom left part, or each leaf's
+     * lower half in an airliner built before them; and how many slices back have been searched.
+     */
     private final List<BlockPos> doors = new ArrayList<>();
     private int searched;
     /** Whether the air is rushing out; and, by the foot of each open door, the tick its wind runs out. */
@@ -183,7 +191,8 @@ public final class Decompression {
             for (int down = 0; down <= below; down++) {
                 BlockPos at = column.below(down);
                 BlockState state = level.getBlockState(at);
-                if (state.is(AerolargeRegistry.AIRLINER_DOOR.get()) && state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER) {
+                boolean leaf = state.is(AerolargeRegistry.AIRLINER_DOOR.get()) && state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
+                if (PlugDoorBlock.isController(state) || leaf) {
                     doors.add(at);
                 }
             }
@@ -195,9 +204,13 @@ public final class Decompression {
         List<Doorway> open = new ArrayList<>();
         for (BlockPos foot : doors) {
             BlockState door = level.getBlockState(foot);
-            if (door.is(AerolargeRegistry.AIRLINER_DOOR.get()) && door.getValue(DoorBlock.OPEN)) {
-                // The airliner's doors are hung from outside, facing in.
-                open.add(Doorway.of(level, foot, door.getValue(DoorBlock.FACING).getOpposite()));
+            if (PlugDoorBlock.isController(door) && door.getValue(PlugDoorBlock.OPEN)) {
+                open.add(Doorway.of(level, foot, door.getValue(PlugDoorBlock.FACING), PlugDoorBlock.right(door), PlugDoorBlock.COLUMNS,
+                    PlugDoorBlock.rows(level, foot)));
+            } else if (door.is(AerolargeRegistry.AIRLINER_DOOR.get()) && door.getValue(DoorBlock.OPEN)) {
+                // An older airliner's doors, a pair of leaves hung from outside, facing in: each leaf is a doorway.
+                Direction out = door.getValue(DoorBlock.FACING).getOpposite();
+                open.add(Doorway.of(level, foot, out, out.getCounterClockWise(), 1, LEAF_ROWS));
             }
         }
         return open;
@@ -217,12 +230,14 @@ public final class Decompression {
         }
         RandomSource random = level.getRandom();
         Vec3 out = Vec3.atLowerCornerOf(doorway.out().getNormal());
-        Vec3 across = Vec3.atLowerCornerOf(doorway.out().getClockWise().getNormal());
+        Vec3 across = Vec3.atLowerCornerOf(doorway.across().getNormal());
+        // The sill, a block under the middle.
+        Vec3 sill = middle.subtract(0, 1, 0);
         for (int i = 0; i < PUFFS; i++) {
-            // Anywhere across the doorway and up and down its two blocks, from a little inside it.
-            Vec3 at = middle.add(out.scale(-random.nextDouble() * PUFF_INSIDE))
-                .add(across.scale(random.nextDouble() - 0.5))
-                .add(0, random.nextDouble() * 1.8 - 0.9, 0);
+            // Anywhere across the doorway and up and down it, from a little inside it.
+            Vec3 at = sill.add(out.scale(-random.nextDouble() * PUFF_INSIDE))
+                .add(across.scale((random.nextDouble() - 0.5) * doorway.width()))
+                .add(0, PUFF_MARGIN + random.nextDouble() * (doorway.rows() - 2 * PUFF_MARGIN), 0);
             level.sendParticles(ParticleTypes.CLOUD, at.x, at.y, at.z, 0, out.x, out.y, out.z, PUFF_SPEED);
         }
     }
@@ -313,21 +328,24 @@ public final class Decompression {
         Vec3 inside = doorway.middle().subtract(Vec3.atLowerCornerOf(doorway.out().getNormal()).scale(0.5));
         Vec3 start = SableFlight.toPlot(level, doorway.foot(), from, false);
         BlockHitResult hit = level.clip(new ClipContext(start, inside, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
-        return hit.getType() == HitResult.Type.MISS || level.getBlockState(hit.getBlockPos()).is(AerolargeRegistry.AIRLINER_DOOR.get());
+        BlockState hitState = level.getBlockState(hit.getBlockPos());
+        return hit.getType() == HitResult.Type.MISS || PlugDoorBlock.isDoor(hitState) || hitState.is(AerolargeRegistry.AIRLINER_DOOR.get());
     }
 
     /**
-     * An open doorway: the foot of its door and the way out through it, in the plot; the middle of the doorway (the top
-     * of the door's lower half) in the plot and in the world; the way out in the world, and how fast the doorway moves
+     * An open doorway: the foot of its door (its bottom left part, seen from outside), the way out through it and the
+     * way across it from there, how many blocks wide and tall it is, in the plot; the middle of the doorway across, a
+     * block over its sill, in the plot and in the world; the way out in the world, and how fast the doorway moves
      * there, in blocks a tick.
      */
-    private record Doorway(BlockPos foot, Direction out, Vec3 middle, Vec3 world, Vec3 outward, Vec3 velocity) {
-        static Doorway of(ServerLevel level, BlockPos foot, Direction out) {
-            Vec3 middle = Vec3.atCenterOf(foot).add(0, 0.5, 0);
+    private record Doorway(BlockPos foot, Direction out, Direction across, int width, int rows, Vec3 middle, Vec3 world, Vec3 outward,
+                           Vec3 velocity) {
+        static Doorway of(ServerLevel level, BlockPos foot, Direction out, Direction across, int width, int rows) {
+            Vec3 middle = Vec3.atCenterOf(foot).add(0, 0.5, 0).add(Vec3.atLowerCornerOf(across.getNormal()).scale((width - 1) / 2.0));
             Vec3 world = SableFlight.toWorld(level, middle);
             Vec3 outward = SableFlight.toWorld(level, middle.add(Vec3.atLowerCornerOf(out.getNormal()))).subtract(world);
             Vec3 velocity = SableFlight.velocity(level, middle).scale(1.0 / SharedConstants.TICKS_PER_SECOND);
-            return new Doorway(foot, out, middle, world, outward, velocity);
+            return new Doorway(foot, out, across, width, rows, middle, world, outward, velocity);
         }
     }
 }
