@@ -136,9 +136,13 @@ cubes.thrust_relay = null;
 write(`assets/${ID}/blockstates/engine_core.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 cubes.engine_core = null;
 
-// The engines' sound (see tools/generate_sounds.mjs) and the contrail particle.
+// The engines' sound and the callouts (see tools/generate_sounds.mjs), and the contrail particle.
 {
+  const callouts = ["v1", "rotate", "positive_rate", "100", "50", "40", "30", "20", "10", "retard", "bank_angle", "pull_up"];
   const sounds = { engine: { subtitle: `subtitles.${ID}.engine`, sounds: [{ name: `${ID}:engine` }] } };
+  for (const callout of callouts) {
+    sounds[`callout_${callout}`] = { subtitle: `subtitles.${ID}.callout`, sounds: [{ name: `${ID}:callout_${callout}` }] };
+  }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
 }
@@ -354,6 +358,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.brake.set": "Parking brake set",
   "message.aerolarge.brake.released": "Parking brake released",
   "subtitles.aerolarge.engine": "Jet engine roars",
+  "subtitles.aerolarge.callout": "Cockpit callout",
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the controls.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",

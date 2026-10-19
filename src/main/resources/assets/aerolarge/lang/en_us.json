@@ -30,6 +30,7 @@
   "message.aerolarge.brake.set": "Parking brake set",
   "message.aerolarge.brake.released": "Parking brake released",
   "subtitles.aerolarge.engine": "Jet engine roars",
+  "subtitles.aerolarge.callout": "Cockpit callout",
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the controls.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",

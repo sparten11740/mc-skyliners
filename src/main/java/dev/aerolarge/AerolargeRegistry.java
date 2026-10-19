@@ -67,6 +67,19 @@ public final class AerolargeRegistry {
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
+    /** The flight deck's synthetic voice: take-off and landing callouts and warnings. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_V1 = sound("callout_v1");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_ROTATE = sound("callout_rotate");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_POSITIVE_RATE = sound("callout_positive_rate");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_100 = sound("callout_100");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_50 = sound("callout_50");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_40 = sound("callout_40");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_30 = sound("callout_30");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_20 = sound("callout_20");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_10 = sound("callout_10");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_RETARD = sound("callout_retard");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
 

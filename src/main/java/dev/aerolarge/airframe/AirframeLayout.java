@@ -592,7 +592,7 @@ public final class AirframeLayout {
                 channels.put(AutopilotBlockEntity.Channel.BRAKES, brakeRelays);
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turned = new EnumMap<>(AutopilotBlockEntity.Channel.class);
                 channels.forEach((channel, relays) -> turned.put(channel, offsets(at, relays, rotation)));
-                autopilot.configure(turned, offsets(at, controls, rotation));
+                autopilot.configure(turned, offsets(at, controls, rotation), at.getY() - ground);
             }
         });
     }

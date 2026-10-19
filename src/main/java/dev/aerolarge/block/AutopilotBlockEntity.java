@@ -34,7 +34,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * comes from, so the nose is held that angle (the angle of attack) above the way the airliner is really going, more
  * while it flies below its path and toward none while above it. The engines hold a speed that also follows the
  * height, so a high airliner sheds energy rather than being pushed further up. Switching it off hands the airliner
- * back to its controls: the thrust levers, the tiller and the parking brake.
+ * back to its controls: the thrust levers, the tiller and the parking brake. Whether it is engaged or not, it also
+ * gives the flight deck its callouts (see {@link Callouts}).
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -97,13 +98,17 @@ public class AutopilotBlockEntity extends BlockEntity {
     private int slowTicks;
     /** Whether last tick's readings are real; false after loading, so the first tick does not see a jump. */
     private boolean primed;
+    /** How far its block stands above the bottom of the wheels, for the callouts' radio altitude. */
+    private int wheelsBelow;
+    private final Callouts callouts = new Callouts();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
     }
 
     /** Hands the autopilot the relays it drives and the controls it gives the airliner back to. */
-    public void configure(Map<Channel, List<BlockPos>> relays, List<BlockPos> controls) {
+    public void configure(Map<Channel, List<BlockPos>> relays, List<BlockPos> controls, int wheelsBelow) {
+        this.wheelsBelow = wheelsBelow;
         this.relays = new EnumMap<>(Channel.class);
         this.relays.putAll(relays);
         this.controls = List.copyOf(controls);
@@ -136,19 +141,26 @@ public class AutopilotBlockEntity extends BlockEntity {
         return getBlockState().getValue(AutopilotBlock.FACING);
     }
 
+    /** Each tick while the airliner is assembled: the callouts watch it, and the autopilot flies it if engaged. */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
-        if (autopilot.phase != Phase.OFF && level instanceof ServerLevel serverLevel) {
-            autopilot.fly(serverLevel);
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        SableFlight.State flight = SableFlight.read(autopilot, autopilot.nose());
+        if (flight == null) {
+            if (autopilot.phase != Phase.OFF) {
+                // Disassembled under it: nothing left to fly.
+                autopilot.disengage();
+            }
+            return;
+        }
+        autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow);
+        if (autopilot.phase != Phase.OFF) {
+            autopilot.fly(serverLevel, flight);
         }
     }
 
-    private void fly(ServerLevel level) {
-        SableFlight.State state = SableFlight.read(this, nose());
-        if (state == null) {
-            // Disassembled under it: nothing left to fly.
-            disengage();
-            return;
-        }
+    private void fly(ServerLevel level, SableFlight.State state) {
         double pitch = state.pitch();
         double roll = state.roll();
         double speed = state.airspeed();
@@ -279,6 +291,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putDouble("StartAltitude", startAltitude);
         tag.putDouble("CruiseSpeed", cruiseSpeed);
         tag.putDouble("Trim", trim);
+        tag.putInt("WheelsBelow", wheelsBelow);
     }
 
     @Override
@@ -300,6 +313,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         startAltitude = tag.getDouble("StartAltitude");
         cruiseSpeed = tag.getDouble("CruiseSpeed");
         trim = tag.getDouble("Trim");
+        wheelsBelow = tag.getInt("WheelsBelow");
     }
 
 }

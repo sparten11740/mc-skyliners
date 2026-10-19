@@ -6,7 +6,9 @@ import { execFileSync } from "node:child_process";
 
 // Run from anywhere: node tools/generate_sounds.mjs
 // Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH:
-// - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust.
+// - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
+// - the cockpit callouts, spoken by Windows' own speech synthesis (System.Speech, the "Microsoft David" voice), so
+//   this part runs on Windows only. Deterministic apart from the voice, which is whatever Windows ships.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
 mkdirSync(output, { recursive: true });
@@ -83,6 +85,39 @@ function toOgg(wav, name) {
   toOgg(wav, "engine");
 }
 
+// The callouts, as the aircraft's synthetic voice would say them.
+const CALLOUTS = {
+  callout_v1: "V one.",
+  callout_rotate: "Rotate.",
+  callout_positive_rate: "Positive rate.",
+  callout_100: "One hundred.",
+  callout_50: "Fifty.",
+  callout_40: "Forty.",
+  callout_30: "Thirty.",
+  callout_20: "Twenty.",
+  callout_10: "Ten.",
+  callout_retard: "Retard. Retard.",
+  callout_bank_angle: "Bank angle. Bank angle.",
+  callout_pull_up: "Pull up. Pull up.",
+};
+if (process.platform === "win32") {
+  for (const [name, text] of Object.entries(CALLOUTS)) {
+    const wav = join(scratch, `${name}.wav`);
+    const script = [
+      "Add-Type -AssemblyName System.Speech",
+      "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer",
+      "try { $s.SelectVoice('Microsoft David Desktop') } catch {}",
+      "$s.Rate = 1",
+      `$s.SetOutputToWaveFile('${wav.replace(/'/g, "''")}')`,
+      `$s.Speak('${text.replace(/'/g, "''")}')`,
+      "$s.Dispose()",
+    ].join("; ");
+    execFileSync("powershell", ["-NoProfile", "-Command", script]);
+    toOgg(wav, name);
+  }
+} else {
+  console.log("Not on Windows: leaving the callouts as they are");
+}
 
 rmSync(scratch, { recursive: true, force: true });
 console.log("Sounds written to", output);
