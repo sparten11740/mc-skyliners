@@ -1,0 +1,20 @@
+{
+  "parent": "aerolarge:first_flight/cleared_for_takeoff",
+  "display": {
+    "icon": {
+      "id": "aerolarge:paper_plane"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.air_mail.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.air_mail.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

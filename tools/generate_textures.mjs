@@ -891,4 +891,38 @@ blueprint("furnished_airliner_blueprint", true);
   });
 }
 
+// Duty free and the paper plane. The paper plane's icon: a white plane flying up to the right, its far wing and keel
+// in shade below the fold, outlined dark so it shows on any background. In flight it is folded from ruled notebook
+// paper: the wings from the top half of its texture, the keel, greyer, from the bottom half.
+{
+  const inTriangle = (x, y, [ax, ay], [bx, by], [cx, cy]) => {
+    const side = (px, py, qx, qy) => (x - qx) * (py - qy) - (px - qx) * (y - qy);
+    const d1 = side(ax, ay, bx, by);
+    const d2 = side(bx, by, cx, cy);
+    const d3 = side(cx, cy, ax, ay);
+    return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+  };
+  // Shapes drawn by their outline: what the paint gives inside, a dark line round the outside, clear beyond.
+  const outlined = (paint) => (x, y) => {
+    const inside = paint(x, y);
+    if (inside) return inside;
+    const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => paint(x + dx, y + dy));
+    return edge ? [0x3a, 0x40, 0x48] : CLEAR;
+  };
+  const nose = [14.5, 1.5];
+  const fold = [6.5, 9.5];
+  texture(itemOutput, "paper_plane", outlined((x, y) => {
+    if (inTriangle(x, y, nose, [1.5, 7.5], fold)) return [0xf8, 0xf8, 0xf4];
+    if (inTriangle(x, y, fold, [5, 12.5], [8.5, 14])) return [0x9a, 0xa8, 0xb8];
+    if (inTriangle(x, y, nose, fold, [8.5, 14])) return [0xc8, 0xd4, 0xe0];
+    return null;
+  }), 0);
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  texture(entityOutput, "paper_plane", (x, y) => {
+    const ruled = y % 3 === 1;
+    if (y < 8) return ruled ? [0xc8, 0xd8, 0xf0] : [0xf6, 0xf6, 0xf0];
+    return ruled ? [0xb4, 0xc2, 0xd8] : [0xdc, 0xdc, 0xd6];
+  }, 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

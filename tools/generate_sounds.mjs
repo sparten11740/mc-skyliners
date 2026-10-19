@@ -199,6 +199,23 @@ function bell(samples, start, frequency, decay) {
   writeSound("scoreboard_buzzer", samples);
 }
 
+// Duty free and the paper plane. A paper plane leaving the hand: a short airy whoosh, a band of noise swelling and
+// dying away as it rises a little.
+{
+  const length = 0.5;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  let bandLow = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    low += (0.02 + 0.06 * (t / length)) * (white - low);
+    bandLow += 0.3 * (white - bandLow);
+    samples[i] = (bandLow - low) * Math.sin((Math.PI * t) / length) ** 2;
+  }
+  writeSound("paper_plane_whoosh", samples);
+}
+
 // The callouts, as the aircraft's synthetic voice would say them.
 const CALLOUTS = {
   callout_v1: "V one.",

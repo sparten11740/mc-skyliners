@@ -11,6 +11,7 @@ import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.NavLightRenderer;
+import dev.aerolarge.client.PaperPlaneRenderer;
 import dev.aerolarge.client.ParachuteControls;
 import dev.aerolarge.client.ParachuteLayer;
 import dev.aerolarge.client.PassengerCameras;
@@ -112,5 +113,6 @@ public final class AerolargeClient {
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
+        event.registerEntityRenderer(AerolargeRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);
     }
 }

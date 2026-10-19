@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.Basketball;
+import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.Trolley;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,9 +42,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Explosive decompression: a door of an airliner opened in flight lets the cabin's air rush out through it. Whoever
  * stands near the door, and anything loose (mobs, villagers out of their seats, dropped items, a basketball, a
- * trolley), is pulled toward it, the harder the closer, and flung out through it into the open sky; anyone seated is
- * belted in and stays put. With a parachute on, being sucked out is only the start of a skydive. While it blows, the
- * wind roars at the door and streams out of it as fog, and everyone aboard is warned as it starts.
+ * trolley, a paper plane), is pulled toward it, the harder the closer, and flung out through it into the open sky;
+ * anyone seated is belted in and stays put. With a parachute on, being sucked out is only the start of a skydive.
+ * While it blows, the wind roars at the door and streams out of it as fog, and everyone aboard is warned as it starts.
  *
  * <p>One per assembled airliner, worked by its autopilot, which reads the airliner each tick anyway. The airliner's
  * doors are found once, a slice of the fuselage a tick from the flight deck back, so after that only those few blocks
@@ -238,10 +239,11 @@ public final class Decompression {
 
     /**
      * Whether the rushing air takes the entity: anything alive that is not seated (belted in), flying or spectating,
-     * and loose things: dropped items, basketballs and trolleys.
+     * and loose things: dropped items, basketballs, trolleys and paper planes.
      */
     private static boolean loose(Entity entity) {
-        boolean takes = entity instanceof LivingEntity || entity instanceof ItemEntity || entity instanceof Basketball || entity instanceof Trolley;
+        boolean takes = entity instanceof LivingEntity || entity instanceof ItemEntity || entity instanceof Basketball || entity instanceof Trolley
+            || entity instanceof PaperPlane;
         return takes && !entity.isPassenger() && !entity.isSpectator() && !(entity instanceof Player player && player.getAbilities().flying);
     }
 

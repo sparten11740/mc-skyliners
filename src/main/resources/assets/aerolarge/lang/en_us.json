@@ -294,6 +294,9 @@
   "aerolarge.configuration.turbulence": "Turbulence",
   "aerolarge.configuration.decompression": "Decompression",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
+  "item.aerolarge.paper_plane": "Paper Plane",
+  "entity.aerolarge.paper_plane": "Paper Plane",
+  "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",
@@ -309,5 +312,7 @@
   "advancements.aerolarge.first_flight.special_delivery.title": "Special Delivery",
   "advancements.aerolarge.first_flight.special_delivery.description": "Drop a care package within 10 blocks of a burning signal flare",
   "advancements.aerolarge.first_flight.frequent_flyer.title": "Frequent Flyer",
-  "advancements.aerolarge.first_flight.frequent_flyer.description": "Collect a villager passenger's fare"
+  "advancements.aerolarge.first_flight.frequent_flyer.description": "Collect a villager passenger's fare",
+  "advancements.aerolarge.first_flight.air_mail.title": "Air Mail",
+  "advancements.aerolarge.first_flight.air_mail.description": "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"
 }

@@ -168,6 +168,10 @@ cubes.engine_core = null;
   for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  // Duty free and the paper plane.
+  for (const name of ["paper_plane_whoosh"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -624,6 +628,14 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   write(`assets/${ID}/models/item/basketball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/basketball` } });
 }
 
+// Duty free and the paper plane. The paper plane: a flat icon, folded into shape by its renderer in flight.
+write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/paper_plane` } });
+const DUTY_FREE_LANG = {
+  "item.aerolarge.paper_plane": "Paper Plane",
+  "entity.aerolarge.paper_plane": "Paper Plane",
+  "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
+};
+
 // The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The
 // cabin lights' dimmer: bright, dim or night. The window shades' control: open or closed.
 {
@@ -890,6 +902,8 @@ shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:r
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("tail_camera_display", ["GGG", "PSP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, S: "minecraft:spyglass" }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
+// Duty free and the paper plane: a sheet of paper folds into a plane.
+shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -903,6 +917,7 @@ const FIRST_FLIGHT = [
   ["perfect_jump", "cleared_for_takeoff", "parachute", "goal", "Perfect Jump", "Land your parachute within a block of a landing target"],
   ["special_delivery", "cleared_for_takeoff", "cargo_crate", "goal", "Special Delivery", "Drop a care package within 10 blocks of a burning signal flare"],
   ["frequent_flyer", "cleared_for_takeoff", "boarding_pass", "task", "Frequent Flyer", "Collect a villager passenger's fare"],
+  ["air_mail", "cleared_for_takeoff", "paper_plane", "goal", "Air Mail", "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"],
 ];
 for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
   write(`data/${ID}/advancement/first_flight/${name}.json`, {
@@ -1207,6 +1222,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.turbulence": "Turbulence",
   "aerolarge.configuration.decompression": "Decompression",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
+  ...DUTY_FREE_LANG,
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

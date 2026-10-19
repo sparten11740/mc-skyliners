@@ -71,11 +71,13 @@ import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.FallingCrate;
+import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
+import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.TrolleyItem;
 import java.util.List;
@@ -524,6 +526,14 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SCOREBOARD_ITEM = ITEMS.registerSimpleBlockItem(SCOREBOARD);
     public static final DeferredItem<BlockItem> BALL_RACK_ITEM = ITEMS.registerSimpleBlockItem(BALL_RACK);
 
+    /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
+    public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
+        "paper_plane", () -> EntityType.Builder.<PaperPlane>of(PaperPlane::new, MobCategory.MISC).sized(0.4F, 0.15F)
+            .clientTrackingRange(8).updateInterval(2).build("paper_plane")
+    );
+    public static final DeferredItem<PaperPlaneItem> PAPER_PLANE_ITEM = ITEMS.register("paper_plane", () -> new PaperPlaneItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -554,7 +564,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
-            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE
+            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, PAPER_PLANE_ITEM
         )),
         new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),
         new TabSection("drops", List.of(

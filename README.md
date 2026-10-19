@@ -202,6 +202,16 @@ the three-point line, for the side the hoop counts for: HOME at the front hoop, 
 hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
 Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere.
 
+### Paper planes
+
+A sheet of paper folds into a Paper Plane. Use it to throw it the way you look, sneaking for a gentler throw, and it
+glides with a whoosh: a hard throw lifts it a little before it settles into a long gentle glide, nose down as it
+sinks, wavering from side to side and drifting a little one way or the other, as no two fold alike. From head height
+it comes down twenty blocks or so away and lies there to be picked up; fly it into a friend and they catch it, use it
+in flight to catch it yourself, hit it to knock it down. Aboard an airliner in flight it glides down the cabin as it
+would on the ground. Out through an open door (the rushing air of decompression takes one near it out too) it meets
+the still air outside at the airliner's speed, slows and glides down from the height it left at, hundreds of blocks.
+
 ### Skydiving
 
 By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes.
@@ -279,8 +289,9 @@ thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rati
 The First Flight tab of the advancements marks the milestones: aboard as the airliner climbs away from the runway
 (Cleared for Takeoff), trying to get up with the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower
 than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
-a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery) and a
-villager passenger's fare (Frequent Flyer).
+a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
+villager passenger's fare (Frequent Flyer) and a paper plane thrown out of an airliner in flight coming down 100 blocks
+away (Air Mail).
 
 ### Settings
 

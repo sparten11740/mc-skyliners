@@ -24,7 +24,9 @@ public enum FirstFlight {
     /** A care package dropped landed near a burning signal flare. */
     SPECIAL_DELIVERY,
     /** Collected a villager passenger's fare. */
-    FREQUENT_FLYER;
+    FREQUENT_FLYER,
+    /** A paper plane thrown aboard an airliner in flight came down outside it, far from where it was thrown. */
+    AIR_MAIL;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

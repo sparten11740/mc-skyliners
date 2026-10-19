@@ -166,5 +166,13 @@
         "name": "aerolarge:scoreboard_buzzer"
       }
     ]
+  },
+  "paper_plane_whoosh": {
+    "subtitle": "subtitles.aerolarge.paper_plane_whoosh",
+    "sounds": [
+      {
+        "name": "aerolarge:paper_plane_whoosh"
+      }
+    ]
   }
 }
