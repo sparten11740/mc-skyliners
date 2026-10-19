@@ -15,6 +15,8 @@ import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.CargoCrateBlock;
+import dev.aerolarge.block.CargoCrateBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
@@ -54,6 +56,7 @@ import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.entity.Basketball;
+import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.ParachuteItem;
@@ -375,6 +378,17 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SignalFlareBlockEntity>> SIGNAL_FLARE_ENTITY =
         BLOCK_ENTITIES.register("signal_flare", () -> BlockEntityType.Builder.of(SignalFlareBlockEntity::new, SIGNAL_FLARE.get()).build(null));
     public static final DeferredItem<BlockItem> SIGNAL_FLARE_ITEM = ITEMS.registerSimpleBlockItem(SIGNAL_FLARE);
+    /** Care packages: the crate to pack and drop, and the crate on its way down under its parachute. */
+    public static final DeferredBlock<CargoCrateBlock> CARGO_CRATE = BLOCKS.registerBlock(
+        "cargo_crate", CargoCrateBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CargoCrateBlockEntity>> CARGO_CRATE_ENTITY =
+        BLOCK_ENTITIES.register("cargo_crate", () -> BlockEntityType.Builder.of(CargoCrateBlockEntity::new, CARGO_CRATE.get()).build(null));
+    public static final DeferredItem<BlockItem> CARGO_CRATE_ITEM = ITEMS.registerSimpleBlockItem(CARGO_CRATE, new Item.Properties().stacksTo(1));
+    public static final DeferredHolder<EntityType<?>, EntityType<FallingCrate>> FALLING_CRATE = ENTITY_TYPES.register(
+        "falling_crate", () -> EntityType.Builder.<FallingCrate>of(FallingCrate::new, MobCategory.MISC).sized(0.9F, 0.9F)
+            .clientTrackingRange(16).updateInterval(2).build("falling_crate")
+    );
 
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
@@ -415,7 +429,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
             SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
-            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM
+            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

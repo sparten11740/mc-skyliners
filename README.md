@@ -125,6 +125,12 @@ everyone nearby with its distance from the middle, and using the target shows th
 A Signal Flare stuck in the ground marks a drop zone from the air: for three minutes it sends up a column of smoke a
 hundred blocks tall, red, or the colour of any dye used on it, then burns out.
 
+Pack a Care Package (a crate of two rows) with supplies and drop it: sneak and use it with an empty hand to shove it
+the way you face, out of the cargo door, or give it a redstone pulse to send it off the way it faces. It falls free a
+moment, then floats down under a parachute and lands as the same crate, contents and all, and everyone nearby (and
+whoever dropped it) hears how far from the nearest burning flare it came down. A crate keeps its contents when broken,
+like a shulker box.
+
 ### A sturdy frame
 
 The airliner's frame and controls (hull, wings, engines, gear, windscreen, flight deck and the Create and Propulsion

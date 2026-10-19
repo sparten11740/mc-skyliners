@@ -455,6 +455,29 @@ write(`assets/${ID}/models/block/signal_flare.json`, boxes(
 write(`assets/${ID}/blockstates/signal_flare.json`, { variants: { "": { model: `${ID}:block/signal_flare` } } });
 write(`assets/${ID}/models/item/signal_flare.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/signal_flare` } });
 
+// The care package's crate: wooden, an orange parachute stencilled on its sides and a red cross on top, its front
+// (the way it is sent off) with a slatted door. Broken, it keeps what is packed in it, as a shulker box does.
+write(`assets/${ID}/models/block/cargo_crate.json`, {
+  parent: "minecraft:block/orientable",
+  textures: { front: `${ID}:block/cargo_crate_front`, side: `${ID}:block/cargo_crate_side`, top: `${ID}:block/cargo_crate_top` },
+});
+write(`assets/${ID}/blockstates/cargo_crate.json`, {
+  variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/cargo_crate`, y }])),
+});
+write(`assets/${ID}/models/item/cargo_crate.json`, { parent: `${ID}:block/cargo_crate` });
+write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
+  type: "minecraft:block",
+  pools: [{
+    rolls: 1.0, bonus_rolls: 0.0,
+    entries: [{
+      type: "minecraft:item", name: `${ID}:cargo_crate`,
+      functions: [{ function: "minecraft:copy_components", source: "block_entity", include: ["minecraft:custom_name", "minecraft:container"] }],
+    }],
+    conditions: [{ condition: "minecraft:survives_explosion" }],
+  }],
+  random_sequence: `${ID}:blocks/cargo_crate`,
+});
+
 // Basketball, drawn facing north. The hoop: an orange ring on a dark bracket to the backboard, with its net hanging
 // below; the side it counts for does not show. The scoreboard: a dark face, the score drawn over it by its renderer.
 // The ball rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
@@ -614,6 +637,8 @@ for (const name of ["airliner_blueprint", "furnished_airliner_blueprint"]) {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target"))));
+// The care package is a wooden crate.
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
@@ -660,6 +685,7 @@ shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("signal_flare", ["P", "G", "S"], { P: "minecraft:paper", G: "minecraft:gunpowder", S: "minecraft:stick" }, 4);
+shaped("cargo_crate", ["PSP", "PCP", "PPP"], { P: "minecraft:oak_planks", S: `${ID}:parachute`, C: "minecraft:chest" }, 1);
 shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
 shaped("scoreboard", ["BBB", "LGL", "BBB"], { B: "minecraft:black_concrete", L: "minecraft:redstone_lamp", G: "minecraft:glowstone" }, 1);
@@ -761,6 +787,11 @@ write(`assets/${ID}/lang/en_us.json`, {
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
   "block.aerolarge.signal_flare": "Signal Flare",
+  "block.aerolarge.cargo_crate": "Care Package",
+  "container.aerolarge.cargo_crate": "Care Package",
+  "entity.aerolarge.falling_crate": "Care Package",
+  "message.aerolarge.cargo_crate.landed": "A care package has landed",
+  "message.aerolarge.cargo_crate.landed_near": "A care package has landed %s blocks from the flare",
   "item.aerolarge.basketball": "Basketball",
   "entity.aerolarge.basketball": "Basketball",
   "block.aerolarge.hoop": "Basketball Hoop",

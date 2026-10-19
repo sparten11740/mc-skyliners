@@ -510,6 +510,28 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
+// The care package's crate: oak boards in a darker frame; on the sides an orange parachute stencil, on top a red
+// cross on white, on the front a door of slats.
+{
+  const OAK = [0xa8, 0x82, 0x4e];
+  const OAK_DARK = [0x7a, 0x5a, 0x32];
+  const boards = (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? OAK_DARK : y % 5 === 0 ? [0x96, 0x72, 0x42] : OAK);
+  texture(blockOutput, "cargo_crate_side", (x, y) => {
+    const canopy = y >= 3 && y <= 6 && Math.hypot(x - 7.5, (y - 6.5) * 1.6) < 5.5;
+    const cords = y > 6 && y < 10 && (Math.abs(x - 7.5 - (x < 8 ? -(10 - y) : 10 - y)) < 0.6);
+    const box = x >= 6 && x <= 9 && y >= 10 && y <= 12;
+    return canopy || box ? [0xe0, 0x70, 0x20] : cords ? [0x50, 0x3a, 0x22] : boards(x, y);
+  });
+  texture(blockOutput, "cargo_crate_top", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return OAK_DARK;
+    if (x >= 3 && x <= 12 && y >= 3 && y <= 12) {
+      return (x >= 6 && x <= 9) || (y >= 6 && y <= 9) ? [0xd0, 0x20, 0x20] : [0xf0, 0xf0, 0xea];
+    }
+    return OAK;
+  });
+  texture(blockOutput, "cargo_crate_front", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 || x === 1 || x === 14 ? OAK_DARK : x % 3 === 2 ? [0x8a, 0x66, 0x3a] : OAK));
+}
+
 // Basketball. The ball: orange with black seams, a curved pair either side of a straight cross, shaded toward the
 // lower right. The hoop's rim: bright orange. The net: a white diamond mesh, see-through between the cords. The
 // scoreboard: a black face in a steel frame with faint unlit lamps. The ball rack: steel bars holding orange balls.

@@ -4,6 +4,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
@@ -70,5 +71,6 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
+        event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
     }
 }
