@@ -2,8 +2,10 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +21,8 @@ import net.minecraft.world.phys.Vec3;
  * do: "V one" and "rotate" down the runway and "positive rate" climbing away; on the way down the radio altitude
  * (the wheels' height above the ground below) called out from a hundred to ten and "retard" just before touchdown;
  * and "bank angle" and "pull up" when it banks too far or sinks too fast too low. Each is heard by everyone aboard,
- * following them about the cabin.
+ * following them about the cabin. Climbing away and touching down gently are milestones for everyone aboard, too
+ * (see {@link FirstFlight}).
  */
 final class Callouts {
     /** Radio altitudes called out on the way down, in blocks, from the highest. */
@@ -44,6 +47,10 @@ final class Callouts {
     /** Sinking faster than this, in blocks a second, lower than this: "pull up". */
     private static final double SINK_LIMIT = 12;
     private static final double PULL_UP_HEIGHT = 40;
+    /** Higher than this, in blocks, it has flown: touching down after it is a landing. */
+    private static final double FLOWN = 10;
+    /** Touching down sinking slower than this, in blocks a second, is a butter landing. */
+    private static final double BUTTER_SINK = 1.0;
     /** Ticks between repeats of a warning. */
     private static final int WARNING_REPEAT = 60;
     /** Everyone this close to the flight deck hears the callouts: everyone aboard. */
@@ -54,11 +61,13 @@ final class Callouts {
     private boolean calledPositiveRate;
     private boolean armed;
     private boolean calledRetard;
+    private boolean flown;
     private double lastRadio = Double.NaN;
+    private double lastClimb;
     private int warningCooldown;
 
-    /** One tick of watching: says whatever the airliner has just come to. */
-    void watch(ServerLevel level, SableFlight.State state, double wheelsBelow) {
+    /** One tick of watching: says whatever the airliner has just come to, to everyone aboard. */
+    void watch(ServerLevel level, SableFlight.State state, double wheelsBelow, Supplier<List<ServerPlayer>> aboard) {
         Vec3 position = state.position();
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(position.x), Mth.floor(position.z));
         double radio = position.y - 0.5 - wheelsBelow - ground;
@@ -68,7 +77,19 @@ final class Callouts {
         boolean onGround = radio < ON_GROUND;
         double last = Double.isNaN(lastRadio) ? radio : lastRadio;
         lastRadio = radio;
+        // How fast it sank the tick before: on the tick the wheels touch, the ground has already stopped it.
+        double sink = -lastClimb;
+        lastClimb = climb;
         warningCooldown = Math.max(0, warningCooldown - 1);
+
+        if (radio > FLOWN) {
+            flown = true;
+        } else if (onGround && last >= ON_GROUND && flown) {
+            flown = false;
+            if (sink < BUTTER_SINK) {
+                aboard.get().forEach(FirstFlight.BUTTER_LANDING::award);
+            }
+        }
 
         if (onGround && speed < 3) {
             calledV1 = false;
@@ -87,6 +108,7 @@ final class Callouts {
         } else if (!onGround && !calledPositiveRate && climb > POSITIVE_RATE && radio > POSITIVE_RATE_HEIGHT) {
             calledPositiveRate = true;
             say(level, position, AerolargeRegistry.CALLOUT_POSITIVE_RATE);
+            aboard.get().forEach(FirstFlight.CLEARED_FOR_TAKEOFF::award);
         }
 
         if (radio > ARM_HEIGHT) {

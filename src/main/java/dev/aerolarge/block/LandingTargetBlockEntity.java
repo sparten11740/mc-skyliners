@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -24,6 +25,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class LandingTargetBlockEntity extends BlockEntity {
     /** How far from a target, across the ground, a landing still counts for it. */
     private static final double REACH = 64;
+    /** A landing this close to a target, or closer, is a perfect jump. */
+    private static final double PERFECT = 1.0;
     /** Everyone this close to a landing hears how it went. */
     private static final double AUDIENCE = 128;
     private static final Loaded<LandingTargetBlockEntity> LOADED = new Loaded<>(LandingTargetBlockEntity.class);
@@ -72,6 +75,9 @@ public class LandingTargetBlockEntity extends BlockEntity {
 
     private void score(ServerPlayer player, double distance) {
         boolean record = distance < best;
+        if (distance <= PERFECT) {
+            FirstFlight.PERFECT_JUMP.award(player);
+        }
         String blocks = String.format(Locale.ROOT, "%.1f", distance);
         Component message = Component.translatable(record ? "message.aerolarge.landing_target.record" : "message.aerolarge.landing_target.landed",
             player.getDisplayName(), blocks);

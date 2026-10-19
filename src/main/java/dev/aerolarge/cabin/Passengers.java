@@ -7,6 +7,7 @@ import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -171,6 +173,9 @@ public final class Passengers {
         } else {
             agent.getInventory().placeItemBackInInventory(fare);
             agent.displayClientMessage(Component.translatable("message.aerolarge.passengers.fare", villager.getDisplayName(), emeralds, (int) flown), false);
+            if (agent instanceof ServerPlayer collector) {
+                FirstFlight.FREQUENT_FLYER.award(collector);
+            }
         }
         cheer(level, here, SoundEvents.VILLAGER_CELEBRATE);
         return null;

@@ -1,6 +1,7 @@
 package dev.aerolarge.entity;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
 import java.util.Locale;
@@ -49,6 +50,8 @@ public class FallingCrate extends Entity {
     /** A flare this near, across the ground, counts; players this near the landing hear of it. */
     private static final double FLARE_REACH = 128;
     private static final double AUDIENCE = 128;
+    /** Landing this close to a flare, or closer, it is a special delivery for whoever dropped it. */
+    private static final double ON_TARGET = 10;
     /** How far up from where it stops it looks for room to stand as a crate. */
     private static final int ROOM_ABOVE = 4;
 
@@ -150,6 +153,9 @@ public class FallingCrate extends Entity {
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(this) < AUDIENCE * AUDIENCE || player.getUUID().equals(dropper)) {
                 player.sendSystemMessage(message);
+            }
+            if (nearest <= ON_TARGET && player.getUUID().equals(dropper)) {
+                FirstFlight.SPECIAL_DELIVERY.award(player);
             }
         }
     }

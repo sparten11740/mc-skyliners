@@ -191,6 +191,14 @@ wing blocks, and every airframe block is in `#sable:super_light`. Which blocks a
 (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
 thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default).
 
+### First Flight advancements
+
+The First Flight tab of the advancements marks the milestones: aboard as the airliner climbs away from the runway
+(Cleared for Takeoff), trying to get up with the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower
+than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
+a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery) and a
+villager passenger's fare (Frequent Flyer).
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`) are there

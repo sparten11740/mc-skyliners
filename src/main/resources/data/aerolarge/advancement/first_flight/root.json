@@ -1,0 +1,20 @@
+{
+  "display": {
+    "icon": {
+      "id": "aerolarge:airliner_blueprint"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.root.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.root.description"
+    },
+    "frame": "task",
+    "background": "aerolarge:textures/block/airframe_panel.png"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

@@ -812,6 +812,33 @@ shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:r
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
 
+// The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
+// "done", that only the mod grants, when it happens (see FirstFlight).
+const FIRST_FLIGHT = [
+  // name, parent, icon, frame, title, description
+  ["root", null, "airliner_blueprint", "task", "First Flight", "Airliners, from the runway to the jet stream"],
+  ["cleared_for_takeoff", "root", "thrust_lever", "task", "Cleared for Takeoff", "Be aboard an airliner as it climbs away from the runway"],
+  ["buckle_up", "root", "seatbelt_sign", "task", "Buckle Up", "Try to get up from your seat while the seatbelt signs are on"],
+  ["butter_landing", "cleared_for_takeoff", "landing_gear_tire", "challenge", "Butter Landing", "Be aboard an airliner touching down so gently you hardly feel it"],
+  ["swish", "cleared_for_takeoff", "basketball", "challenge", "Swish at 30,000 Feet", "Score a basket aboard an airliner in flight"],
+  ["perfect_jump", "cleared_for_takeoff", "parachute", "goal", "Perfect Jump", "Land your parachute within a block of a landing target"],
+  ["special_delivery", "cleared_for_takeoff", "cargo_crate", "goal", "Special Delivery", "Drop a care package within 10 blocks of a burning signal flare"],
+  ["frequent_flyer", "cleared_for_takeoff", "boarding_pass", "task", "Frequent Flyer", "Collect a villager passenger's fare"],
+];
+for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
+  write(`data/${ID}/advancement/first_flight/${name}.json`, {
+    ...(parent ? { parent: `${ID}:first_flight/${parent}` } : {}),
+    display: {
+      icon: { id: `${ID}:${icon}` },
+      title: { translate: `advancements.${ID}.first_flight.${name}.title` },
+      description: { translate: `advancements.${ID}.first_flight.${name}.description` },
+      frame,
+      ...(parent ? {} : { background: `${ID}:textures/block/airframe_panel.png` }),
+    },
+    criteria: { done: { trigger: parent ? "minecraft:impossible" : "minecraft:tick" } },
+  });
+}
+
 write(`assets/${ID}/lang/en_us.json`, {
   "itemGroup.aerolarge": "Aerolarge",
   "block.aerolarge.airframe_panel": "Airframe Panel",
@@ -1026,5 +1053,9 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.cabin": "Cabin",
   "aerolarge.configuration.turbulence": "Turbulence",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
+  ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
+    [`advancements.${ID}.first_flight.${name}.title`, title],
+    [`advancements.${ID}.first_flight.${name}.description`, description],
+  ])),
 });
 console.log("ok");

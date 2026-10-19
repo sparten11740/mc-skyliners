@@ -1,0 +1,20 @@
+{
+  "parent": "aerolarge:first_flight/cleared_for_takeoff",
+  "display": {
+    "icon": {
+      "id": "aerolarge:basketball"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.swish.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.swish.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

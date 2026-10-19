@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import java.util.EnumMap;
 import java.util.List;
@@ -50,6 +51,8 @@ public class HoopBlock extends HorizontalDirectionalBlock {
     private static final double THREE_POINT_METRES = 6.75;
     /** Scoreboards this close to the hoop count its baskets, and players this close hear of them. */
     private static final double REACH = 48;
+    /** Moving faster than this, in blocks a second, a hoop is aboard an airliner in flight. */
+    private static final double IN_FLIGHT = 10;
     private static final VoxelShape RING = Shapes.or(
         Block.box(2, 10, 2, 14, 11, 3.5), Block.box(2, 10, 12.5, 14, 11, 14),
         Block.box(2, 10, 3.5, 3.5, 11, 12.5), Block.box(12.5, 10, 3.5, 14, 11, 12.5)
@@ -148,6 +151,9 @@ public class HoopBlock extends HorizontalDirectionalBlock {
             .toList();
         boards.forEach(board -> board.add(team, points));
         level.playSound(null, at.x, at.y, at.z, AerolargeRegistry.BASKET_SWISH.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        if (thrower instanceof ServerPlayer scorer && SableFlight.velocity(level, Vec3.atCenterOf(hoop)).length() > IN_FLIGHT) {
+            FirstFlight.SWISH.award(scorer);
+        }
         level.sendParticles(ParticleTypes.FIREWORK, at.x, at.y, at.z, 20, 0.3, 0.2, 0.3, 0.08);
         Component message = boards.isEmpty()
             ? Component.translatable("message.aerolarge.hoop.basket", points, team.label())

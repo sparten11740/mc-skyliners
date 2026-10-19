@@ -1,8 +1,10 @@
 package dev.aerolarge.cabin;
 
 import dev.aerolarge.Aboard;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.EntityMountEvent;
@@ -30,6 +32,9 @@ public final class Seatbelts {
             && player.isAlive() && player.isShiftKeyDown() && areOn(player)) {
             event.setCanceled(true);
             player.displayClientMessage(Component.translatable("message.aerolarge.seatbelts.fastened"), true);
+            if (player instanceof ServerPlayer buckled) {
+                FirstFlight.BUCKLE_UP.award(buckled);
+            }
         }
     }
 }
