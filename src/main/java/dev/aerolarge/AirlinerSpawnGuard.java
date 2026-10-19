@@ -40,7 +40,7 @@ final class AirlinerSpawnGuard {
      * from the heightmap; then the first solid block above has to be airframe (the crown, a light, a window), and
      * airframe has to lie somewhere below, through any pool or hold.
      */
-    static boolean insideAirliner(LevelReader level, BlockPos pos) {
+    private static boolean insideAirliner(LevelReader level, BlockPos pos) {
         if (pos.getY() >= level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ())) {
             return false;
         }

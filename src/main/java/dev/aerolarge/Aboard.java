@@ -2,21 +2,33 @@ package dev.aerolarge;
 
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * Who is aboard an airliner, seen from one of its blocks (the flight deck's handset, the autopilot, a seatbelt
  * switch). Once assembled, everyone riding it: standing on it or seated in it, wherever it flies. Standing as blocks
- * in the world, everyone inside its hull (airframe overhead and underfoot) within its length of that block.
+ * in the world, everyone inside its hull within its length of that block: airframe somewhere overhead and somewhere
+ * underfoot, whatever hangs from the ceiling or stands on the floor between.
  */
 public final class Aboard {
     /** How far an airliner's cabin reaches from any of its blocks, in blocks per unit of scale: nose to tail and more. */
     private static final double REACH_PER_SCALE = 80;
+    /** How far up and down from the eyes the hull is looked for: past the crown and the hold's belly. */
+    private static final int HULL_UP = 48;
+    private static final int HULL_DOWN = 32;
+    /** The hull, floor, windows and panels. */
+    private static final TagKey<Block> AIRFRAME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "airframe"));
 
     private Aboard() {
     }
@@ -33,7 +45,21 @@ public final class Aboard {
         }
         double reach = REACH_PER_SCALE * AerolargeConfig.SCALE.get();
         return entity.distanceToSqr(Vec3.atCenterOf(anchor.getBlockPos())) < reach * reach
-            && AirlinerSpawnGuard.insideAirliner(level, entity.blockPosition());
+            && insideHull(level, BlockPos.containing(entity.getEyePosition()));
+    }
+
+    private static boolean insideHull(Level level, BlockPos eyes) {
+        return hullWithin(level, eyes, Direction.UP, HULL_UP) && hullWithin(level, eyes, Direction.DOWN, HULL_DOWN);
+    }
+
+    private static boolean hullWithin(Level level, BlockPos from, Direction way, int reach) {
+        BlockPos.MutableBlockPos at = from.mutable();
+        for (int i = 0; i < reach; i++) {
+            if (level.getBlockState(at.move(way)).is(AIRFRAME)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Everyone aboard the airliner the block entity is part of. */
