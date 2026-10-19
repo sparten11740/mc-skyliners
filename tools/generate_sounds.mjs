@@ -277,6 +277,38 @@ writeSound("pa_chime", CHIME);
   writeSound("hud_on", samples);
 }
 
+// The vacuum toilets. A flush: the vacuum snatching the bowl empty, a sharp, loud hiss of rushing air that starts
+// all at once, falling in pitch and fading as the pipe empties, over a short roar down the pipe; then the thunk of the
+// valve shutting, a low knock with the click of the valve seating.
+{
+  const length = 0.85;
+  const valve = 0.68;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  let band = 0;
+  let roar = 0;
+  let knock = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    // The hiss: white noise through a resonant band sweeping down from a shriek to a whoosh.
+    const centre = 1100 + 5200 * Math.exp(-t / 0.22);
+    const f = 2 * Math.sin((Math.PI * centre) / RATE);
+    const high = white - low - 0.3 * band;
+    band += f * high;
+    low += f * band;
+    roar += 0.03 * (white - roar);
+    const rush = Math.min(1, t / 0.003) * (t < valve ? Math.exp(-Math.max(0, t - 0.25) / 0.15) : 0);
+    samples[i] = rush * (band + 0.2 * high + 2.5 * roar);
+    if (t >= valve) {
+      const k = t - valve;
+      knock += (2 * Math.PI * (55 + 45 * Math.exp(-k / 0.02))) / RATE;
+      samples[i] += 0.9 * Math.exp(-k / 0.05) * Math.sin(knock) + (k < 0.006 ? 0.6 * white * (1 - k / 0.006) : 0);
+    }
+  }
+  writeSound("toilet_flush", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

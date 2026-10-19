@@ -1262,4 +1262,32 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// The vacuum toilet. Its shroud: white plastic, a touch greyer toward the foot. The rim and the bowl's sides: brushed
+// stainless, streaked along. The bowl's floor, where its model shows it (the middle six pixels square, a pixel below
+// the middle): stainless round a pool of the blue rinse water, the drain dark in the middle of it. The seat: a little
+// greyer than the shroud, so it shows against it; the lid white with a shine across it. The wall panel: warm grey
+// laminate with faint seams along two edges and a stainless kick strip along its foot. The flush button: a blue
+// square, lit pale and bright while the vacuum builds up again.
+{
+  const STAINLESS = [0xb8, 0xbe, 0xc4];
+  const WHITE_PLASTIC = [0xf2, 0xf2, 0xee];
+  const RINSE = [0x2e, 0x8a, 0xe0];
+  texture(blockOutput, "vacuum_toilet_shroud", (x, y) => (y >= 12 ? [0xe2, 0xe3, 0xe0] : WHITE_PLASTIC), 2);
+  texture(blockOutput, "vacuum_toilet_steel", (x, y) => (y % 3 === 0 ? [0xcc, 0xd2, 0xd8] : (x + 5 * y) % 7 === 0 ? [0xa4, 0xaa, 0xb2] : STAINLESS), 4);
+  texture(blockOutput, "vacuum_toilet_bowl", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 8.5);
+    if (r < 1) return [0x18, 0x22, 0x30];
+    if (r < 2.6) return r < 1.8 ? [0x1e, 0x6a, 0xc0] : RINSE;
+    return y % 3 === 0 ? [0xcc, 0xd2, 0xd8] : STAINLESS;
+  }, 3);
+  texture(blockOutput, "vacuum_toilet_seat", () => [0xe4, 0xe5, 0xe2], 3);
+  texture(blockOutput, "vacuum_toilet_lid", (x, y) => (x + y >= 13 && x + y <= 15 ? [0xfe, 0xfe, 0xfe] : WHITE_PLASTIC), 2);
+  texture(blockOutput, "vacuum_toilet_panel", (x, y) => {
+    if (y >= 13) return y === 13 ? [0x8e, 0x94, 0x9a] : STAINLESS;
+    return x === 0 || y === 0 ? [0xc4, 0xc0, 0xb8] : [0xdc, 0xd8, 0xd0];
+  }, 2);
+  texture(blockOutput, "vacuum_toilet_button", (x, y) => ((x + y) % 4 === 0 ? [0x3c, 0x7e, 0xe8] : [0x24, 0x62, 0xd0]), 2);
+  texture(blockOutput, "vacuum_toilet_button_lit", (x, y) => ((x + y) % 4 === 0 ? [0xe8, 0xfa, 0xff] : [0xa0, 0xe4, 0xff]), 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

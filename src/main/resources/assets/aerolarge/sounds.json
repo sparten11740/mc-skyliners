@@ -274,5 +274,13 @@
         "name": "aerolarge:hud_on"
       }
     ]
+  },
+  "toilet_flush": {
+    "subtitle": "subtitles.aerolarge.toilet_flush",
+    "sounds": [
+      {
+        "name": "aerolarge:toilet_flush"
+      }
+    ]
   }
 }

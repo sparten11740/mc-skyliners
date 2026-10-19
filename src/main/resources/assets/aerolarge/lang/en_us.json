@@ -345,6 +345,8 @@
   "message.aerolarge.golden_suitcase.found": "A golden suitcase! %s of %s found",
   "advancements.aerolarge.first_flight.lost_and_found.title": "Lost and Found",
   "advancements.aerolarge.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
+  "block.aerolarge.vacuum_toilet": "Vacuum Toilet",
+  "subtitles.aerolarge.toilet_flush": "Vacuum toilet flushes",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

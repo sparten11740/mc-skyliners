@@ -195,6 +195,8 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   Object.assign(sounds, holdAndTailSounds());
   // The pilot's head-up display coming on as the pilot helmet goes on.
   sounds.hud_on = { subtitle: `subtitles.${ID}.hud_on`, sounds: [{ name: `${ID}:hud_on` }] };
+  // The vacuum toilets' flush.
+  sounds.toilet_flush = { subtitle: `subtitles.${ID}.toilet_flush`, sounds: [{ name: `${ID}:toilet_flush` }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -1466,6 +1468,49 @@ const cabinDecorLang = {};
   cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
 }
 
+// Vacuum toilets (see VacuumToiletBlock), and what they add to the lang file.
+const VACUUM_TOILET_LANG = {
+  "block.aerolarge.vacuum_toilet": "Vacuum Toilet",
+  "subtitles.aerolarge.toilet_flush": "Vacuum toilet flushes",
+};
+// The vacuum toilet, drawn facing north against a wall panel along the south side of its block: a white shroud on a
+// narrower foot, the stainless bowl let into its top, a white seat on the rim, and the lid down over it or up against
+// the panel; on the panel beside the lid, clear of it, the square flush button, lit while the vacuum builds up again
+// after a flush.
+{
+  const textures = {
+    panel: `${ID}:block/vacuum_toilet_panel`, shroud: `${ID}:block/vacuum_toilet_shroud`, steel: `${ID}:block/vacuum_toilet_steel`,
+    bowl: `${ID}:block/vacuum_toilet_bowl`, seat: `${ID}:block/vacuum_toilet_seat`, lid: `${ID}:block/vacuum_toilet_lid`,
+    button: `${ID}:block/vacuum_toilet_button`, lit: `${ID}:block/vacuum_toilet_button_lit`, particle: `${ID}:block/vacuum_toilet_steel`,
+  };
+  for (const open of [false, true]) {
+    for (const flushing of [false, true]) {
+      write(`assets/${ID}/models/block/vacuum_toilet_${open ? "open" : "closed"}${flushing ? "_flushing" : ""}.json`, boxes(textures, [
+        [[0, 0, 14], [16, 16, 16], "#panel"],
+        [[4, 0, 6], [12, 5, 14], { up: "#bowl", all: "#shroud" }],
+        // The shroud round the bowl, its rim and the bowl's sides stainless.
+        [[3, 5, 4], [13, 7, 6], { up: "#steel", south: "#steel", all: "#shroud" }],
+        [[3, 5, 12], [13, 7, 14], { up: "#steel", north: "#steel", all: "#shroud" }],
+        [[3, 5, 6], [5, 7, 12], { up: "#steel", east: "#steel", all: "#shroud" }],
+        [[11, 5, 6], [13, 7, 12], { up: "#steel", west: "#steel", all: "#shroud" }],
+        [[4, 7, 4.5], [12, 7.75, 6], "#seat"],
+        [[4, 7, 11.5], [12, 7.75, 13], "#seat"],
+        [[4, 7, 6], [5.5, 7.75, 11.5], "#seat"],
+        [[10.5, 7, 6], [12, 7.75, 11.5], "#seat"],
+        open ? [[4, 7, 13], [12, 15, 14], "#lid"] : [[4, 7.75, 4.5], [12, 8.5, 13], "#lid"],
+        [[12.5, 11, 13.25], [15.5, 14, 14], flushing ? "#lit" : "#button", flushing],
+      ]));
+    }
+  }
+  write(`assets/${ID}/blockstates/vacuum_toilet.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((flushing) => [false, true].map((open) =>
+      [`facing=${facing},flushing=${flushing},open=${open}`, { model: `${ID}:block/vacuum_toilet_${open ? "open" : "closed"}${flushing ? "_flushing" : ""}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/vacuum_toilet.json`, { parent: `${ID}:block/vacuum_toilet_closed` });
+  dropsItself("vacuum_toilet");
+  cubes.vacuum_toilet = null;
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -1480,7 +1525,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS];
+  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
@@ -1577,6 +1622,8 @@ shaped("cabin_curtain", ["NSN", "WWW", "WWW"], { N: "minecraft:iron_nugget", S: 
 shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", D: "minecraft:white_dye" }, 8);
 shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
 holdAndTailRecipes();
+// The vacuum toilet: a bucket for its bowl in iron.
+shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -1904,6 +1951,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...DUTY_FREE_LANG,
   ...cabinDecorLang,
   ...holdAndTailLang(),
+  ...VACUUM_TOILET_LANG,
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

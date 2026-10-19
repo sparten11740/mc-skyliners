@@ -79,6 +79,7 @@ import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
+import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
@@ -512,6 +513,12 @@ public final class AerolargeRegistry {
             .isValidSpawn(AerolargeRegistry::never).lightLevel(state -> 4)
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
+    /** The lavatories' vacuum toilets and their flush. */
+    public static final DeferredBlock<VacuumToiletBlock> VACUUM_TOILET = BLOCKS.registerBlock(
+        "vacuum_toilet", VacuumToiletBlock::new, metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> VACUUM_TOILET_ITEM = ITEMS.registerSimpleBlockItem(VACUUM_TOILET);
+    public static final DeferredHolder<SoundEvent, SoundEvent> TOILET_FLUSH = sound("toilet_flush");
 
     /** A signal flare to mark a drop zone with a column of coloured smoke. */
     public static final DeferredBlock<SignalFlareBlock> SIGNAL_FLARE = BLOCKS.registerBlock(
@@ -744,7 +751,7 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
-            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM,
+            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM
         )),
         new TabSection("gym", List.of(
