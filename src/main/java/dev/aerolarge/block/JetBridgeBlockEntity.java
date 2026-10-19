@@ -27,7 +27,8 @@ import net.minecraft.world.phys.Vec3;
  * The jet bridge's reach, run by the airstairs' engine. Used while folded, it looks out ahead for an airliner door,
  * standing in the world or aboard an assembled airliner, and if one lines up with it plans a tunnel out to the hull,
  * a slice at a time, with a canopy at the end that stretches on to close against the hull where it curves away; then
- * it unfolds that. Docked, it keeps watch on the door and pulls back of its own accord when the airliner moves off.
+ * it unfolds that. Docked, it opens the door (a plug door; older airliners' doors are opened by hand), keeps watch on
+ * it and pulls back of its own accord when the airliner moves off, shutting the door it opened as it goes.
  */
 public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
     /** How far ahead it reaches for a door, in blocks. */
@@ -60,6 +61,14 @@ public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
     /** Where in the world the foot of the door it docked at was; null before it first docks. */
     @Nullable
     private BlockPos dock;
+    /** Whether the tunnel has reached the door since it last set out, and opened it if it is a plug door. */
+    private boolean arrived;
+    /**
+     * The plug door it opened once docked, where it stands (in the world, or in its airliner's plot), to shut it again
+     * as it pulls back; null while it holds none open.
+     */
+    @Nullable
+    private BlockPos opened;
 
     public JetBridgeBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.JET_BRIDGE_ENTITY.get(), pos, state);
@@ -117,6 +126,42 @@ public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
             // The airliner is pushing back, or gone: get out of its way.
             toggle();
         }
+        if (dock != null && !arrived && extended()) {
+            arrived = true;
+            BlockPos foot = SableFlight.find(level, Vec3.atCenterOf(dock), PlugDoorBlock::isSill);
+            PlugDoorBlockEntity door = foot == null ? null : PlugDoorBlockEntity.of(level, foot);
+            if (door != null) {
+                door.set(true);
+                opened = door.getBlockPos();
+            }
+            setChanged();
+        }
+    }
+
+    /** Folding back, it shuts the door it opened, wherever its airliner has got to by then. */
+    @Override
+    public void toggle() {
+        super.toggle();
+        arrived = false;
+        if (!unfolding()) {
+            shutDoor();
+        }
+    }
+
+    /** Taken away at once, as when the bridge is broken, it shuts the door it opened too. */
+    @Override
+    protected void foldAway() {
+        super.foldAway();
+        shutDoor();
+    }
+
+    private void shutDoor() {
+        PlugDoorBlockEntity door = opened == null || level == null ? null : PlugDoorBlockEntity.of(level, opened);
+        if (door != null) {
+            door.set(false);
+        }
+        opened = null;
+        setChanged();
     }
 
     /** Whether there is an airliner door at the spot in the world, standing still. */
@@ -268,11 +313,17 @@ public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
         if (dock != null) {
             tag.put("Dock", NbtUtils.writeBlockPos(dock));
         }
+        tag.putBoolean("Arrived", arrived);
+        if (opened != null) {
+            tag.put("Opened", NbtUtils.writeBlockPos(opened));
+        }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         dock = NbtUtils.readBlockPos(tag, "Dock").orElse(null);
+        arrived = tag.getBoolean("Arrived");
+        opened = NbtUtils.readBlockPos(tag, "Opened").orElse(null);
     }
 }

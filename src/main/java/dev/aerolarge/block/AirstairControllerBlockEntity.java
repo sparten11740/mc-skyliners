@@ -83,6 +83,11 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         return extending;
     }
 
+    /** Whether the stairs are all out, down to the ground or as far as they go. */
+    protected boolean extended() {
+        return extending && (grounded || out == stages.size());
+    }
+
     /** Whether the stairs are all folded away and staying that way. */
     protected boolean folded() {
         return !extending && out == 0;
