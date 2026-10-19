@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PTP",
+    "P P",
+    "PTP"
+  ],
+  "key": {
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    },
+    "T": {
+      "item": "minecraft:iron_trapdoor"
+    }
+  },
+  "result": {
+    "id": "aerolarge:drop_bay",
+    "count": 1
+  }
+}

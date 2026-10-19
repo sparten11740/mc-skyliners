@@ -131,6 +131,11 @@ moment, then floats down under a parachute and lands as the same crate, contents
 whoever dropped it) hears how far from the nearest burning flare it came down. A crate keeps its contents when broken,
 like a shulker box.
 
+Or drop it through the drop bay: hatch doors in the belly, behind the main gear. From the hold, use a care package on
+the bay to load it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop
+release on the first officer's side console, behind the parking brake, opens the bay doors on the first use and
+drops the next load on each use after that; sneak and use it to close them. A load leaves at the airliner's speed.
+
 ### A sturdy frame
 
 The airliner's frame and controls (hull, wings, engines, gear, windscreen, flight deck and the Create and Propulsion

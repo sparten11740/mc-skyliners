@@ -510,6 +510,32 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
+// The drop bay: two hatch doors meeting down the middle in a yellow-and-black hazard border, or open on a dark
+// shaft with rails down its sides. The drop release: a red guarded switch, dark when safe, lit with ARMED stripes.
+{
+  const HAZARD = (x, y) => ((x + y) % 4 < 2 ? [0xf0, 0xc0, 0x20] : [0x1a, 0x1a, 0x1a]);
+  texture(blockOutput, "drop_bay", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 1 || y >= 14) return HAZARD(x, y);
+    if (x === 7 || x === 8) return [0x40, 0x44, 0x4a];
+    return (y % 4 === 0) ? [0x7a, 0x80, 0x88] : [0x8e, 0x94, 0x9b];
+  });
+  texture(blockOutput, "drop_bay_open", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 1 || y >= 14) return HAZARD(x, y);
+    if (x === 3 || x === 12) return [0x5c, 0x62, 0x69];
+    return [0x0c, 0x0d, 0x0f];
+  }, 1);
+  for (const armed of [false, true]) {
+    texture(blockOutput, `drop_release_${armed ? "armed" : "safe"}`, (x, y) => {
+      if (x === 0 || y === 0 || x === 15 || y === 15) return armed ? HAZARD(x, y) : STEEL_DARK;
+      const guard = x >= 4 && x <= 11 && y >= 4 && y <= 11 && (x === 4 || x === 11 || y === 4);
+      const button = Math.hypot(x - 7.5, y - 8) < 2.6;
+      if (button) return armed ? [0xff, 0x40, 0x30] : [0x6a, 0x1a, 0x16];
+      if (guard) return [0x9a, 0xa0, 0xa6];
+      return [0x16, 0x18, 0x1c];
+    }, 1);
+  }
+}
+
 // The care package's crate: oak boards in a darker frame; on the sides an orange parachute stencil, on top a red
 // cross on white, on the front a door of slats.
 {

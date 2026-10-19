@@ -455,6 +455,34 @@ write(`assets/${ID}/models/block/signal_flare.json`, boxes(
 write(`assets/${ID}/blockstates/signal_flare.json`, { variants: { "": { model: `${ID}:block/signal_flare` } } });
 write(`assets/${ID}/models/item/signal_flare.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/signal_flare` } });
 
+// The drop bay: hatch doors in yellow-and-black hazard stripes, shut, or open on a dark shaft with the loads' rails;
+// the drop release, a small module like the cabin controls, its guarded switch safe or armed.
+for (const open of [false, true]) {
+  write(`assets/${ID}/models/block/drop_bay${open ? "_open" : ""}.json`, {
+    parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/drop_bay${open ? "_open" : ""}` },
+  });
+}
+write(`assets/${ID}/blockstates/drop_bay.json`, {
+  variants: { "open=false": { model: `${ID}:block/drop_bay` }, "open=true": { model: `${ID}:block/drop_bay_open` } },
+});
+write(`assets/${ID}/models/item/drop_bay.json`, { parent: `${ID}:block/drop_bay` });
+for (const armed of [false, true]) {
+  const name = `drop_release_${armed ? "armed" : "safe"}`;
+  write(`assets/${ID}/models/block/${name}.json`, boxes(
+    { face: `${ID}:block/${name}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
+    [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
+  ));
+}
+write(`assets/${ID}/blockstates/drop_release.json`, {
+  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((armed) =>
+    [`armed=${armed},facing=${facing}`, { model: `${ID}:block/drop_release_${armed ? "armed" : "safe"}`, y }]))),
+});
+write(`assets/${ID}/models/item/drop_release.json`, { parent: `${ID}:block/drop_release_safe` });
+for (const name of ["drop_bay", "drop_release"]) {
+  dropsItself(name);
+  cubes[name] = null;
+}
+
 // The care package's crate: wooden, an orange parachute stencilled on its sides and a red cross on top, its front
 // (the way it is sent off) with a slatted door. Broken, it keeps what is packed in it, as a shulker box does.
 write(`assets/${ID}/models/block/cargo_crate.json`, {
@@ -685,6 +713,8 @@ shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("signal_flare", ["P", "G", "S"], { P: "minecraft:paper", G: "minecraft:gunpowder", S: "minecraft:stick" }, 4);
+shaped("drop_bay", ["PTP", "P P", "PTP"], { P: `${ID}:airframe_panel`, T: "minecraft:iron_trapdoor" }, 1);
+shaped("drop_release", ["R", "P"], { R: "minecraft:redstone_torch", P: `${ID}:instrument_panel` }, 1);
 shaped("cargo_crate", ["PSP", "PCP", "PPP"], { P: "minecraft:oak_planks", S: `${ID}:parachute`, C: "minecraft:chest" }, 1);
 shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
@@ -787,6 +817,15 @@ write(`assets/${ID}/lang/en_us.json`, {
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
   "block.aerolarge.signal_flare": "Signal Flare",
+  "block.aerolarge.drop_bay": "Drop Bay",
+  "block.aerolarge.drop_release": "Drop Release",
+  "message.aerolarge.drop_bay.loaded": "Drop bay: %s of %s loaded",
+  "message.aerolarge.drop_bay.full": "The drop bay is full",
+  "message.aerolarge.drop_bay.empty": "The drop bay is empty",
+  "message.aerolarge.drop_bay.package_away": "Package away! %s left in the bay",
+  "message.aerolarge.drop_release.armed": "Bay doors open: use again to drop, sneak to close",
+  "message.aerolarge.drop_release.safe": "Bay doors closed",
+  "message.aerolarge.drop_release.no_bay": "This release is not wired to a drop bay",
   "block.aerolarge.cargo_crate": "Care Package",
   "container.aerolarge.cargo_crate": "Care Package",
   "entity.aerolarge.falling_crate": "Care Package",

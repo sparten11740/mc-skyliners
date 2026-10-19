@@ -8,12 +8,14 @@ import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
+import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
-import dev.aerolarge.block.AutopilotScreenBlockEntity;
+import dev.aerolarge.block.DropReleaseBlock;
+import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
@@ -28,9 +30,9 @@ import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.ThrustLeverBlock;
-import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.TillerBlock;
+import dev.aerolarge.block.WindowShadesBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -87,6 +89,8 @@ public final class AirframeLayout {
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
     private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
+    /** Where along the belly the drop bay is, in metres from the nose: behind the main gear, ahead of the cargo door. */
+    private static final double DROP_BAY_STATION = 44;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -111,6 +115,8 @@ public final class AirframeLayout {
     private BlockPos jumpSwitch;
     /** The seatbelt switch in the instrument panel; null without a flight deck. */
     private BlockPos seatbeltSwitch;
+    /** The drop release on the first officer's side console; null without a flight deck. */
+    private BlockPos dropRelease;
     /** The cabin lights' dimmer on the panel and the window shades' control by the captain; null without a flight deck. */
     private BlockPos cabinLights;
     private BlockPos windowShades;
@@ -162,6 +168,7 @@ public final class AirframeLayout {
         new CabinLining(layout).apply(furnished ? CabinFitOut::lockersFit : metres -> true, 0, (int) Math.ceil(LENGTH * layout.scale));
         layout.skydiving();
         layout.seatbeltSigns();
+        layout.dropBay();
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -629,6 +636,32 @@ public final class AirframeLayout {
     }
 
     /**
+     * The drop bay: set into the belly on the centreline behind the main gear, the lowest block of the hull with the
+     * hold above it, so it can be loaded from the hold; wired to the drop release on the flight deck.
+     */
+    private void dropBay() {
+        int station = (int) Math.round(DROP_BAY_STATION * scale);
+        for (int dz : new int[]{0, 1, -1, 2, -2}) {
+            int z = station + dz;
+            for (int y = 0; y < floorY; y++) {
+                if (stateAt(0, y, z).is(palette.hull().getBlock()) && isOpen(0, y + 1, z)) {
+                    BlockPos bay = new BlockPos(0, y, z);
+                    set(0, y, z, AerolargeRegistry.DROP_BAY.get().defaultBlockState());
+                    if (dropRelease != null) {
+                        BlockPos at = dropRelease;
+                        fittings.put(at, (blockEntity, rotation) -> {
+                            if (blockEntity instanceof DropReleaseBlockEntity control) {
+                                control.configure(bay.subtract(at).rotate(rotation));
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
      * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, each lit
      * through a relay beside it; the seatbelt switch in the panel is wired to them all.
      */
@@ -847,6 +880,12 @@ public final class AirframeLayout {
         if (isOpen(shades.getX(), shades.getY(), shades.getZ())) {
             windowShades = shades;
             set(shades.getX(), shades.getY(), shades.getZ(), AerolargeRegistry.WINDOW_SHADES.get().defaultBlockState().setValue(WindowShadesBlock.FACING, Direction.EAST));
+        }
+        // The drop release on the first officer's side console, just behind the parking brake.
+        BlockPos release = new BlockPos(seatX + 1, deck + 1, pedestalZ + 1);
+        if (isOpen(release.getX(), release.getY(), release.getZ())) {
+            dropRelease = release;
+            set(release.getX(), release.getY(), release.getZ(), AerolargeRegistry.DROP_RELEASE.get().defaultBlockState().setValue(DropReleaseBlock.FACING, Direction.WEST));
         }
         // The Physics Assembler out of the way, against the wall behind the captain's seat.
         int assemblerZ = pedestalZ + 2;

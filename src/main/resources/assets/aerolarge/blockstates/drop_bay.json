@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "aerolarge:block/drop_bay"
+    },
+    "open=true": {
+      "model": "aerolarge:block/drop_bay_open"
+    }
+  }
+}
