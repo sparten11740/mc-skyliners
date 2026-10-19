@@ -169,7 +169,7 @@ cubes.engine_core = null;
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   // Duty free and the paper plane.
-  for (const name of ["paper_plane_whoosh"]) {
+  for (const name of ["paper_plane_whoosh", "shop_bell", "cash_register"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   write(`assets/${ID}/sounds.json`, sounds);
@@ -685,7 +685,31 @@ write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/gen
   dropsItself("model_airliner");
   cubes.model_airliner = null;
 }
+// The duty-free counter, drawn facing north: a cabinet ten pixels tall, and on it a glass showcase with the goods on
+// show inside, lying on the cabinet's top; the glass is see-through, so the whole counter is drawn translucent.
+{
+  const counter = boxes(
+    { front: `${ID}:block/duty_free_counter_front`, side: `${ID}:block/duty_free_counter_side`, top: `${ID}:block/duty_free_counter_top`,
+      glass: `${ID}:block/duty_free_glass`, particle: `${ID}:block/duty_free_counter_side` },
+    [
+      [[0, 0, 0], [16, 10, 16], { north: "#front", up: "#top", all: "#side" }],
+      [[0.5, 10, 0.5], [15.5, 15, 15.5], "#glass"],
+    ],
+  );
+  // The showcase stands on the cabinet: it has no floor of its own.
+  delete counter.elements[1].faces.down;
+  counter.render_type = "minecraft:translucent";
+  write(`assets/${ID}/models/block/duty_free_counter.json`, counter);
+  facing("duty_free_counter");
+  write(`assets/${ID}/models/item/duty_free_counter.json`, { parent: `${ID}:block/duty_free_counter` });
+  dropsItself("duty_free_counter");
+  cubes.duty_free_counter = null;
+}
 const DUTY_FREE_LANG = {
+  "block.aerolarge.duty_free_counter": "Duty-Free Counter",
+  "container.aerolarge.duty_free": "Duty Free",
+  "subtitles.aerolarge.shop_bell": "Shop bell dings",
+  "subtitles.aerolarge.cash_register": "Till rings",
   "item.aerolarge.paper_plane": "Paper Plane",
   "entity.aerolarge.paper_plane": "Paper Plane",
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
@@ -882,7 +906,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner"];
+  "model_airliner", "duty_free_counter"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -960,8 +984,10 @@ shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:r
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("tail_camera_display", ["GGG", "PSP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, S: "minecraft:spyglass" }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
-// Duty free and the paper plane: a sheet of paper folds into a plane; a cap in the shape of a helmet, with a gold
-// badge; a model airliner, its fuselage and wings of airframe panel on a stick.
+// Duty free and the paper plane: a counter of glass, emeralds and a chest on white concrete; a sheet of paper folds
+// into a plane; a cap in the shape of a helmet, with a gold badge; a model airliner, its fuselage and wings of airframe
+// panel on a stick.
+shaped("duty_free_counter", ["GGG", "ECE", "WWW"], { G: "minecraft:glass", E: "minecraft:emerald", C: "minecraft:chest", W: "minecraft:white_concrete" }, 1);
 shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
 shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
@@ -979,6 +1005,7 @@ const FIRST_FLIGHT = [
   ["special_delivery", "cleared_for_takeoff", "cargo_crate", "goal", "Special Delivery", "Drop a care package within 10 blocks of a burning signal flare"],
   ["frequent_flyer", "cleared_for_takeoff", "boarding_pass", "task", "Frequent Flyer", "Collect a villager passenger's fare"],
   ["air_mail", "cleared_for_takeoff", "paper_plane", "goal", "Air Mail", "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"],
+  ["duty_free", "frequent_flyer", "duty_free_counter", "task", "Duty Free", "Spend emeralds at a duty-free counter"],
 ];
 for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
   write(`data/${ID}/advancement/first_flight/${name}.json`, {

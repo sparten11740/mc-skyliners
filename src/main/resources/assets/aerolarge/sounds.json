@@ -174,5 +174,21 @@
         "name": "aerolarge:paper_plane_whoosh"
       }
     ]
+  },
+  "shop_bell": {
+    "subtitle": "subtitles.aerolarge.shop_bell",
+    "sounds": [
+      {
+        "name": "aerolarge:shop_bell"
+      }
+    ]
+  },
+  "cash_register": {
+    "subtitle": "subtitles.aerolarge.cash_register",
+    "sounds": [
+      {
+        "name": "aerolarge:cash_register"
+      }
+    ]
   }
 }

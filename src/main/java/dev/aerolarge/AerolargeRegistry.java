@@ -24,6 +24,7 @@ import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
 import dev.aerolarge.block.DropReleaseBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
+import dev.aerolarge.block.DutyFreeCounterBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
@@ -542,6 +543,16 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_AIRLINER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_AIRLINER);
+    /**
+     * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
+     * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.
+     */
+    public static final DeferredBlock<DutyFreeCounterBlock> DUTY_FREE_COUNTER = BLOCKS.registerBlock(
+        "duty_free_counter", DutyFreeCounterBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredItem<BlockItem> DUTY_FREE_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(DUTY_FREE_COUNTER);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHOP_BELL = sound("shop_bell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CASH_REGISTER = sound("cash_register");
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -573,7 +584,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
-            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM
+            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM
         )),
         new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),
         new TabSection("drops", List.of(

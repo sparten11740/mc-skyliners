@@ -215,6 +215,33 @@ function bell(samples, start, frequency, decay) {
   }
   writeSound("paper_plane_whoosh", samples);
 }
+// The duty-free counter. Its shop's door bell as it opens: two quick bright dings, the second higher.
+{
+  const samples = new Float64Array(Math.round(1.2 * RATE));
+  bell(samples, 0, 1318.51, 0.3);
+  bell(samples, 0.11, 1567.98, 0.4);
+  writeSound("shop_bell", samples);
+}
+// Its till ringing up a sale: the clack of the keys and the drawer sliding out, then the bright "ching" of its bell
+// and a few coins jingling.
+{
+  const samples = new Float64Array(Math.round(1.1 * RATE));
+  let low = 0;
+  for (let i = 0; i < Math.round(0.2 * RATE); i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    low += 0.15 * (white - low);
+    const clack = t < 0.03 ? (1 - t / 0.03) * white : 0;
+    const drawer = t > 0.05 ? 0.6 * Math.sin((Math.PI * (t - 0.05)) / 0.15) * low : 0;
+    samples[i] += clack + drawer;
+  }
+  bell(samples, 0.18, 2093.0, 0.45);
+  bell(samples, 0.18, 2637.02, 0.35);
+  for (let coin = 0; coin < 5; coin++) {
+    bell(samples, 0.28 + random() * 0.3, 3500 + random() * 1500, 0.04);
+  }
+  writeSound("cash_register", samples);
+}
 
 // The callouts, as the aircraft's synthetic voice would say them.
 const CALLOUTS = {

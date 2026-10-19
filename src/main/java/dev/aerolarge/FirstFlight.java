@@ -26,7 +26,9 @@ public enum FirstFlight {
     /** Collected a villager passenger's fare. */
     FREQUENT_FLYER,
     /** A paper plane thrown aboard an airliner in flight came down outside it, far from where it was thrown. */
-    AIR_MAIL;
+    AIR_MAIL,
+    /** Bought something at a duty-free counter. */
+    DUTY_FREE;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

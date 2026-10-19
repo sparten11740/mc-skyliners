@@ -929,6 +929,41 @@ blueprint("furnished_airliner_blueprint", true);
   texture(itemOutput, "pilot_cap_crown", (x, y) => ((x + y) % 4 === 0 ? [0x1a, 0x22, 0x44] : [0x22, 0x2c, 0x56]), 3);
   texture(itemOutput, "pilot_cap_band", (x, y) => (y === 2 ? [0x40, 0x44, 0x4c] : [0x12, 0x13, 0x16]), 1);
   texture(itemOutput, "pilot_cap_gold", (x, y) => ((x + y) % 5 === 0 ? [0xff, 0xe8, 0x90] : GOLD), 2);
+
+  // The duty-free counter. Its cabinet shows the bottom ten rows of its textures: navy under a gold trim, its front
+  // a white shopping bag with a green emerald on it, a picture of what the counter is for. On its top, seen through
+  // the glass case, the goods laid out on a white cloth: a gift box, a pilot's cap, a perfume bottle and a paper plane.
+  // The glass: faintly blue, a white frame round its edges and a glint across it.
+  const EMERALD = [0x2e, 0xc4, 0x5a];
+  const EMERALD_LIGHT = [0x9c, 0xf0, 0xb0];
+  const cabinet = (paint) => (x, y) => {
+    if (y <= 6) return y === 6 ? GOLD : BLUE;
+    if (x === 0 || x === 15 || y === 15) return BLUE_SEAM;
+    return paint(x, y) ?? BLUE;
+  };
+  texture(blockOutput, "duty_free_counter_front", cabinet((x, y) => {
+    const handle = y >= 7 && y <= 8 && Math.abs(Math.hypot(x - 7.5, y - 9) - 2) < 0.7;
+    if (handle) return [0x30, 0x34, 0x3a];
+    if (x < 4 || x > 11 || y < 9 || y > 14) return null;
+    // An emerald, cut as Minecraft's are: two pixels wide at its tips, four across its middle.
+    const gem = Math.abs(x - 7.5) <= (Math.abs(y - 12) >= 2 ? 1 : 2);
+    if (gem && y >= 10) return x < 8 && y < 12 ? EMERALD_LIGHT : EMERALD;
+    return y === 9 ? [0xb0, 0x88, 0x4c] : [0xd8, 0xb0, 0x70];
+  }));
+  texture(blockOutput, "duty_free_counter_side", cabinet(() => null));
+  texture(blockOutput, "duty_free_counter_top", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0xc8, 0xc4, 0xbc];
+    if (x >= 2 && x <= 6 && y >= 2 && y <= 6) return x === 4 || y === 4 ? GOLD : [0xd0, 0x28, 0x28];
+    if (x >= 9 && x <= 13 && y >= 2 && y <= 5) return y === 5 ? [0x14, 0x15, 0x18] : x === 11 && y === 3 ? GOLD : [0x22, 0x2c, 0x56];
+    if (x >= 3 && x <= 5 && y >= 9 && y <= 13) return y === 9 ? [0xc8, 0xcc, 0xd2] : [0xe8, 0x80, 0xc0];
+    if (inTriangle(x, y, [13.5, 9], [8.5, 11], [11, 13.5])) return x + y > 22 ? [0xc8, 0xd4, 0xe0] : [0xfc, 0xfc, 0xfc];
+    return [0xf0, 0xee, 0xe8];
+  }, 2);
+  texture(blockOutput, "duty_free_glass", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 1 || y >= 14) return [0xe4, 0xea, 0xf0];
+    if (Math.abs(x + y - 12) <= 1) return [0xff, 0xff, 0xff, 0x90];
+    return [0xc8, 0xe4, 0xf8, 0x40];
+  }, 0);
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

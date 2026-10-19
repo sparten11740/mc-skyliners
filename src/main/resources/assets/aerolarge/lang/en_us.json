@@ -294,6 +294,10 @@
   "aerolarge.configuration.turbulence": "Turbulence",
   "aerolarge.configuration.decompression": "Decompression",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
+  "block.aerolarge.duty_free_counter": "Duty-Free Counter",
+  "container.aerolarge.duty_free": "Duty Free",
+  "subtitles.aerolarge.shop_bell": "Shop bell dings",
+  "subtitles.aerolarge.cash_register": "Till rings",
   "item.aerolarge.paper_plane": "Paper Plane",
   "entity.aerolarge.paper_plane": "Paper Plane",
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
@@ -316,5 +320,7 @@
   "advancements.aerolarge.first_flight.frequent_flyer.title": "Frequent Flyer",
   "advancements.aerolarge.first_flight.frequent_flyer.description": "Collect a villager passenger's fare",
   "advancements.aerolarge.first_flight.air_mail.title": "Air Mail",
-  "advancements.aerolarge.first_flight.air_mail.description": "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"
+  "advancements.aerolarge.first_flight.air_mail.description": "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away",
+  "advancements.aerolarge.first_flight.duty_free.title": "Duty Free",
+  "advancements.aerolarge.first_flight.duty_free.description": "Spend emeralds at a duty-free counter"
 }

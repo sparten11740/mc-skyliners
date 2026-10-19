@@ -191,7 +191,17 @@ the nearest free Create seat inside an airliner within about 24 blocks, up the a
 and the doors, and sits down; unseated aboard, as it is when the airliner is assembled around it, it sits straight
 back down. Fly it at least 200 blocks: once the airliner stands still with the seatbelt signs off it gets up and pays
 its fare, an emerald for every 200 blocks flown, up to 32, to whoever handed it the pass (or, with them gone from
-that world, dropped by its seat). A villager that finds no seat within three minutes gives the pass back.
+that world, dropped by its seat). A villager that finds no seat within three minutes gives the pass back. The fares
+are spent at a duty-free counter.
+
+### Duty free
+
+A Duty-Free Counter (craftable) is a shop counter with a glass showcase on top. Use it and its shop opens with the
+ding of a door bell: the trading screen, each of its goods shown by its picture and its price in emeralds, so it needs
+no reading. An emerald buys four paper planes, two airline coffees, four bags of pretzels, a chicken or a pasta meal,
+or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6 and a model
+airliner 8. Each sale rings the till. It never runs out and its prices never change, and nobody works behind it, so it
+stands anywhere: at the airport, or aboard, where there is nobody to lose in flight.
 
 ### Basketball
 
@@ -204,19 +214,20 @@ Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere
 
 ### Paper planes
 
-A sheet of paper folds into a Paper Plane. Use it to throw it the way you look, sneaking for a gentler throw, and it
-glides with a whoosh: a hard throw lifts it a little before it settles into a long gentle glide, nose down as it
-sinks, wavering from side to side and drifting a little one way or the other, as no two fold alike. From head height
-it comes down twenty blocks or so away and lies there to be picked up; fly it into a friend and they catch it, use it
-in flight to catch it yourself, hit it to knock it down. Aboard an airliner in flight it glides down the cabin as it
-would on the ground. Out through an open door (the rushing air of decompression takes one near it out too) it meets
-the still air outside at the airliner's speed, slows and glides down from the height it left at, hundreds of blocks.
+A sheet of paper folds into a Paper Plane, and a duty-free counter sells four for an emerald. Use it to throw it the
+way you look, sneaking for a gentler throw, and it glides with a whoosh: a hard throw lifts it a little before it
+settles into a long gentle glide, nose down as it sinks, wavering from side to side and drifting a little one way or
+the other, as no two fold alike. From head height it comes down twenty blocks or so away and lies there to be picked
+up; fly it into a friend and they catch it, use it in flight to catch it yourself, hit it to knock it down. Aboard an
+airliner in flight it glides down the cabin as it would on the ground. Out through an open door (the rushing air of
+decompression takes one near it out too) it meets the still air outside at the airliner's speed, slows and glides down
+from the height it left at, hundreds of blocks.
 
 ### Souvenirs
 
 A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
-or a shelf, its nose toward you. Both can be crafted.
+or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter.
 
 ### Skydiving
 
@@ -296,8 +307,8 @@ The First Flight tab of the advancements marks the milestones: aboard as the air
 (Cleared for Takeoff), trying to get up with the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower
 than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
 a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
-villager passenger's fare (Frequent Flyer) and a paper plane thrown out of an airliner in flight coming down 100 blocks
-away (Air Mail).
+villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free) and a paper plane thrown
+out of an airliner in flight coming down 100 blocks away (Air Mail).
 
 ### Settings
 
