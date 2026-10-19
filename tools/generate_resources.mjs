@@ -925,6 +925,29 @@ const cabinDecorLang = {};
     "subtitles.aerolarge.springboard_boing": "Springboard boings",
   });
 }
+// The starlight panel: a navy cube, its twinkling stars (an animated texture with see-through gaps) laid over it
+// glowing at full brightness whatever the light around, so they still show when the dimmer has the panel itself
+// dark. One model for every brightness: the dimmer only sets how much light the panel gives.
+{
+  const faces = (texture, lit) => Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+    [face, { texture, cullface: face, ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) }]));
+  write(`assets/${ID}/models/block/starlight_panel.json`, {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:cutout",
+    textures: { panel: `${ID}:block/starlight_panel`, stars: `${ID}:block/starlight_panel_stars`, particle: `${ID}:block/starlight_panel` },
+    elements: [
+      { from: [0, 0, 0], to: [16, 16, 16], faces: faces("#panel", false) },
+      { from: [0, 0, 0], to: [16, 16, 16], shade: false, faces: faces("#stars", true) },
+    ],
+  });
+  write(`assets/${ID}/blockstates/starlight_panel.json`, {
+    variants: Object.fromEntries(["bright", "dim", "night"].map((level) => [`brightness=${level}`, { model: `${ID}:block/starlight_panel` }])),
+  });
+  write(`assets/${ID}/models/item/starlight_panel.json`, { parent: `${ID}:block/starlight_panel` });
+  dropsItself("starlight_panel");
+  cubes.starlight_panel = null;
+  cabinDecorLang["block.aerolarge.starlight_panel"] = "Starlight Panel";
+}
 
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
@@ -940,7 +963,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter", "springboard"];
+  "model_airliner", "duty_free_counter", "springboard", "starlight_panel"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1026,6 +1049,7 @@ shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
 shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
 shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
+shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).

@@ -992,5 +992,45 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
   texture(blockOutput, "springboard_bottom", (x, y) => (x === 0 || y === 0 ? POOL_BLUE_DARK : POOL_BLUE), 2);
 }
+// The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
+// layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most
+// are white, a few warm yellow or pale blue, and two are bigger, with a cross of light round them. The stars keep
+// inside the edge, so panels side by side run on as one sky.
+{
+  const NIGHT_SKY = [0x0c, 0x14, 0x34];
+  const HAZE = [0x16, 0x20, 0x4a];
+  texture(blockOutput, "starlight_panel", (x, y) => (Math.sin(x * 0.9 + y * 0.5) + Math.sin(y * 1.3 - x * 0.4) > 1.2 ? HAZE : NIGHT_SKY), 3);
+  const FRAMES = 8;
+  const STAR_COLOURS = [[0xff, 0xff, 0xff], [0xff, 0xf0, 0xb0], [0xc0, 0xdc, 0xff]];
+  // Where each star is, its colour, the beat it twinkles on (as a share of the cycle) and whether it is a big one.
+  const STARS = [
+    [2, 3, 0, 0.0, false], [6, 1, 0, 0.35, false], [11, 2, 2, 0.7, false], [13, 6, 0, 0.15, false],
+    [4, 7, 1, 0.55, true], [9, 9, 0, 0.9, false], [1, 11, 2, 0.25, false], [12, 12, 0, 0.6, true],
+    [6, 13, 0, 0.8, false], [8, 5, 1, 0.45, false], [14, 14, 0, 0.05, false],
+  ];
+  const pixels = [];
+  for (let frame = 0; frame < FRAMES; frame++) {
+    for (let y = 0; y < SIZE; y++) {
+      const row = [];
+      for (let x = 0; x < SIZE; x++) {
+        let pixel = CLEAR;
+        for (const [sx, sy, colour, beat, big] of STARS) {
+          const glow = 0.45 + 0.55 * (0.5 + 0.5 * Math.cos(2 * Math.PI * (frame / FRAMES + beat)));
+          const core = x === sx && y === sy;
+          const ray = big && Math.abs(x - sx) + Math.abs(y - sy) === 1;
+          if (core || ray) {
+            const strength = core ? glow : glow * 0.55;
+            pixel = STAR_COLOURS[colour].map((c) => clamp(Math.round(NIGHT_SKY[0] + (c - NIGHT_SKY[0]) * strength)));
+          }
+        }
+        row.push(pixel);
+      }
+      pixels.push(row);
+    }
+  }
+  writeFileSync(resolve(blockOutput, "starlight_panel_stars.png"), encodePng(pixels));
+  writeFileSync(resolve(blockOutput, "starlight_panel_stars.png.mcmeta"),
+    JSON.stringify({ animation: { frametime: 5, interpolate: true } }, null, 2) + "\n");
+}
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

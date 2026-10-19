@@ -1,6 +1,8 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.LightStripBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
@@ -11,8 +13,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
- * at the moon pool. Like the fit-out it only goes into open cabin space (and the pool's water), and anything that
- * does not fit at the airliner's scale is left out.
+ * at the moon pool and a starlit ceiling over the lounge. Like the fit-out it only goes into open cabin space (and
+ * the pool's water, and the light cables and chains hung from the lounge's crown, which it shortens), and anything
+ * that does not fit at the airliner's scale is left out.
  */
 final class CabinDecor {
     /** How high the diving tower's platform stands over the cabin floor, in metres: a three-metre springboard's. */
@@ -26,6 +29,12 @@ final class CabinDecor {
     private static final int BOUNCE_ROOM = 5;
     /** Water at least this deep under the springboard. */
     private static final int MIN_DEPTH = 3;
+    /** How high the lounge's starlit ceiling hangs over the floor, in metres, unless an upper window wants it lower. */
+    private static final double STARLIGHT_METRES = 3.5;
+    /** Rows between the floor and the starlit ceiling it needs at least: headroom and a pendant light under it. */
+    private static final int STARLIGHT_HEADROOM = 6;
+    /** Over the floor up to this row the windows are the main deck's; any higher, the upper deck's. */
+    private static final int MAIN_WINDOWS_TOP = 3;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -37,6 +46,7 @@ final class CabinDecor {
 
     void apply() {
         highDive();
+        starlightCeiling();
     }
 
     /** The first station of a zone, in metres from the nose, as the fit-out rounds it. */
@@ -135,5 +145,74 @@ final class CabinDecor {
             }
         }
         return true;
+    }
+
+    /**
+     * The lounge's starlit ceiling: a dropped ceiling of starlight panels across the lounge, a block under the upper
+     * deck's windows so it never cuts across one, with LED strips along its edges where it meets the walls. What hung
+     * from the crown now hangs from it, the pendant lights and the duty-free kiosk's awning: their cables and chains
+     * stop at the panels, and what was above is taken down. The first and last rows are left to the lounge's ends.
+     * Left out where it would leave too little headroom.
+     */
+    private void starlightCeiling() {
+        int fromZ = from(CabinFitOut.LOUNGE) + 1;
+        int toZ = to(CabinFitOut.LOUNGE) - 1;
+        int height = starlightHeight(fromZ, toZ);
+        if (height - floor < STARLIGHT_HEADROOM) {
+            return;
+        }
+        BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState();
+        for (int z = fromZ; z <= toZ; z++) {
+            int port = layout.besideWall(-1, height, z);
+            int starboard = layout.besideWall(1, height, z);
+            if (port == 0 || starboard == 0) {
+                continue;
+            }
+            for (int x = port; x <= starboard; x++) {
+                if (isHanger(x, height, z)) {
+                    for (int y = height + 1; isHanger(x, y, z); y++) {
+                        layout.set(x, y, z, Blocks.AIR.defaultBlockState());
+                    }
+                    layout.set(x, height, z, panel);
+                } else {
+                    layout.furnish(x, height, z, panel);
+                }
+            }
+            for (int side : new int[]{1, -1}) {
+                int x = layout.besideWall(side, height - 1, z);
+                if (x != 0) {
+                    layout.furnish(x, height - 1, z, AerolargeRegistry.LIGHT_STRIP.get().defaultBlockState()
+                        .setValue(LightStripBlock.FACING, side > 0 ? Direction.EAST : Direction.WEST));
+                }
+            }
+        }
+    }
+
+    /**
+     * Where the starlit ceiling goes: its metres over the floor, or lower, a block under the lowest of the upper
+     * deck's windows along the stretch.
+     */
+    private int starlightHeight(int fromZ, int toZ) {
+        int height = floor + (int) Math.round(STARLIGHT_METRES * layout.scale());
+        for (int z = fromZ; z <= toZ; z++) {
+            for (int side : new int[]{1, -1}) {
+                for (int y = floor + MAIN_WINDOWS_TOP + 1; y <= height; y++) {
+                    int x = layout.besideWall(side, y, z);
+                    if (x != 0 && CabinWindowBlock.isPane(layout.stateAt(x + side, y, z))) {
+                        height = y - 1;
+                    }
+                }
+            }
+        }
+        return height;
+    }
+
+    private boolean isCable(int x, int y, int z) {
+        return layout.stateAt(x, y, z).is(AerolargeRegistry.LIGHT_CABLE.get());
+    }
+
+    /** Whether what is here hangs something from the crown: a pendant light's cable, or a chain. */
+    private boolean isHanger(int x, int y, int z) {
+        return isCable(x, y, z) || layout.stateAt(x, y, z).is(Blocks.CHAIN);
     }
 }

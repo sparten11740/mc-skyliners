@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "brightness=bright": {
+      "model": "aerolarge:block/starlight_panel"
+    },
+    "brightness=dim": {
+      "model": "aerolarge:block/starlight_panel"
+    },
+    "brightness=night": {
+      "model": "aerolarge:block/starlight_panel"
+    }
+  }
+}

@@ -144,6 +144,8 @@ public final class AerolargeRegistry {
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Aerolarge.MOD_ID);
+    /** How brightly a starlight panel glows full on, in light levels: softly, the lounge's pendants doing the rest. */
+    private static final int STARLIGHT_GLOW = 10;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -434,7 +436,17 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OverheadBinBlockEntity>> OVERHEAD_BIN_ENTITY =
         BLOCK_ENTITIES.register("overhead_bin", () -> BlockEntityType.Builder.of(OverheadBinBlockEntity::new, OVERHEAD_BIN.get()).build(null));
+    /**
+     * The lounge's starlit ceiling: navy panels scattered with twinkling stars that glow whatever the light around, so
+     * with the cabin lights set for the night only the stars show. Full on, the panels glow softly themselves.
+     */
+    public static final DeferredBlock<CabinLightBlock> STARLIGHT_PANEL = BLOCKS.registerBlock(
+        "starlight_panel", CabinLightBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.5F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(STARLIGHT_GLOW))
+    );
     public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
+    public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
@@ -591,8 +603,9 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
-            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
+            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
+            MODEL_AIRLINER_ITEM
         )),
         new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SPRINGBOARD_ITEM)),
         new TabSection("drops", List.of(

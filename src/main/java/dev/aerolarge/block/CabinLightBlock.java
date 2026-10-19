@@ -5,7 +5,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
-/** A cabin light set into the crown, the walls or the hold, as bright as the flight deck's dimmer has it. */
+/**
+ * A cabin light set into the crown, the walls or the hold, or a starlight panel in the lounge's ceiling: as bright
+ * as the flight deck's dimmer has it.
+ */
 public class CabinLightBlock extends Block {
     private static final MapCodec<CabinLightBlock> CODEC = simpleCodec(CabinLightBlock::new);
 

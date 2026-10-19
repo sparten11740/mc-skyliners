@@ -25,8 +25,9 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   with a diving tower on its front rim (a ladder up to a platform three metres up, glass rails either side, and a
   board out over the middle of the pool with a springboard at its tip), a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
-  with a bar and seats in the tail and a duty-free kiosk at its front (see below), all lit by pendant lights. The
-  seats are Create's, so they can be sat in.
+  with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
+  Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights. The seats are
+  Create's, so they can be sat in.
   Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
   the cabin, they hang on the back of each row, facing the one behind.
 
@@ -66,7 +67,8 @@ altitude, vertical speed and heading once the airliner is assembled. Against the
 Physics Assembler.
 On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch,
 the captain's handset and the cabin lights' dimmer. The dimmer steps every light in the cabin from bright to dimmed
-(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back. On
+(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back; at
+night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light. On
 the captain's side console, just behind the tiller, is the window shades' control: it runs every cabin window's
 shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
 can open or close a window's own shade by using it.
