@@ -147,6 +147,13 @@ speed over the ground and how fast it climbs or sinks; the way it is heading; an
 long since it took off, kept up after landing until the next take-off. A block counts as a metre. While the airliner
 stands as blocks the screen shows a welcome page.
 
+Use an assembled airliner's screen to look through its outside cameras, the way a security camera is watched: on
+top of the fin looking forward over the whole airliner, over the right wing out at its engines, and under the nose
+past the nose gear down the runway. Use again for the next camera, and after the last you are back in the cabin;
+sneak to go straight back. The view follows the airliner as it flies, while you stay where you are (seated, you
+stay in your seat) and nothing you click reaches the world. The cameras are placed from the airliner's autopilot, so
+an airliner without one has none.
+
 ### Villager passengers
 
 Off by default: turn on Villager Passengers (`villagerPassengers`) in the server settings (see Settings). A Check-in

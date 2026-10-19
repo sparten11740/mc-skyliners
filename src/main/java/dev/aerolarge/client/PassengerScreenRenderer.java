@@ -23,9 +23,10 @@ import org.joml.Vector3d;
  * Draws a passenger screen's flight information over its face, in the dark blue of a seat-back screen: a header
  * saying how the airliner is flying (on the ground, climbing, cruising or descending), six tiles under it with its
  * altitude above sea level, its speed over the ground, how fast it climbs or sinks, the way it is heading, how high it
- * is above the ground and how far it has flown since it took off, and the time in the air along the bottom. The
- * figures are read from the airliner each tick as the client has it; each screen keeps its own log of the flight
- * (see {@link Trip}). On an airliner that is not assembled it shows a standby page.
+ * is above the ground and how far it has flown since it took off, and along the bottom the time in the air and that
+ * using the screen shows the outside cameras (see {@link PassengerCameras}). The figures are read from the airliner
+ * each tick as the client has it; each screen keeps its own log of the flight (see {@link Trip}). On an airliner that
+ * is not assembled it shows a standby page.
  */
 public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScreenBlockEntity> {
     /** The screen's face, from the middle of its block toward the way it faces, lifted just off the panel. */
@@ -146,8 +147,11 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         for (int i = 0; i < TILES.length; i++) {
             reading(font, pose, buffers, TILES[i], readings[i]);
         }
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "flight_time", time(flightTicks)), -HALF_WIDTH + MARGIN,
-            -HALF_HEIGHT + FOOTER / 2, TEXT_LIFT, SMALL, LABEL, ScreenDrawing.Align.LEFT);
+        double footer = -HALF_HEIGHT + FOOTER / 2;
+        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "flight_time", time(flightTicks)), -HALF_WIDTH + MARGIN, footer, TEXT_LIFT, SMALL,
+            LABEL, ScreenDrawing.Align.LEFT);
+        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "cameras"), HALF_WIDTH - MARGIN, footer, TEXT_LIFT, SMALL, ACCENT,
+            ScreenDrawing.Align.RIGHT);
     }
 
     /**

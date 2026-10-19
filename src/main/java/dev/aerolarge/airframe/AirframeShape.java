@@ -169,6 +169,14 @@ final class AirframeShape {
         return wingY(x) - NACELLE_DROP;
     }
 
+    /**
+     * How high the bottom of the fuselage stands above the ground, the airliner on its wheels: the inboard engines,
+     * the lowest part of it, hang below the fuselage and are held GROUND_CLEARANCE off the ground.
+     */
+    static double bellyHeight() {
+        return GROUND_CLEARANCE + NACELLE_RADIUS - nacelleY(ENGINE_X[0]);
+    }
+
     /** The nacelle's radius at a distance along it: a straight barrel, then a cone narrowing to the exhaust. */
     static double nacelleRadius(double along) {
         if (along < 0 || along > NACELLE_LENGTH) {

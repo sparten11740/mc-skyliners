@@ -5,22 +5,28 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A passenger screen: the in-flight entertainment display in a seat back or on a bulkhead, a thin screen fixed to
  * the back of its block. Once the airliner is assembled it shows those aboard how high, how fast and which way it
- * flies, and how far it has come since it took off; its renderer draws all of it live. FACING is the way the screen
- * faces, its back to whatever it is fixed to.
+ * flies, and how far it has come since it took off; its renderer draws all of it live. Using the screen looks through
+ * the airliner's outside cameras, one after the other, on the client of whoever used it (see
+ * {@link PassengerScreenBlockEntity#clientUse}). FACING is the way the screen faces, its back to whatever it is fixed
+ * to.
  */
 public class PassengerScreenBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<PassengerScreenBlock> CODEC = simpleCodec(PassengerScreenBlock::new);
@@ -62,6 +68,18 @@ public class PassengerScreenBlock extends HorizontalDirectionalBlock implements 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
+    }
+
+    /** Touching the screen itself; nothing changes in the world, so the server only has the click to answer. */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (hit.getDirection() != state.getValue(FACING)) {
+            return InteractionResult.PASS;
+        }
+        if (level.isClientSide && level.getBlockEntity(pos) instanceof PassengerScreenBlockEntity screen) {
+            PassengerScreenBlockEntity.clientUse.accept(screen);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Nullable

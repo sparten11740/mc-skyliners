@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import dev.aerolarge.block.EngineCoreBlockEntity;
+import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
@@ -12,6 +13,7 @@ import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.ParachuteControls;
 import dev.aerolarge.client.ParachuteLayer;
+import dev.aerolarge.client.PassengerCameras;
 import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
@@ -20,6 +22,7 @@ import dev.aerolarge.client.TrolleyRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -27,6 +30,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -35,8 +39,8 @@ import net.neoforged.neoforge.common.NeoForge;
 /**
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
  * flight displays, autopilot screen, passenger screens and engine intakes, its engines' sound and contrails, the
- * camera shake aboard, parachutes: opening them by jumping, and the canopy over their wearers; the creative tab's
- * section banners; and the settings screen in the Mods menu.
+ * camera shake aboard, the passenger screens' outside cameras, parachutes: opening them by jumping, and the canopy over
+ * their wearers; the creative tab's section banners; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -51,11 +55,27 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
         NeoForge.EVENT_BUS.addListener(TabBanners::draw);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::tick);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::frame);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::angles);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::fov);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::input);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::movement);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::hand);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::highlight);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::guiLayer);
+        NeoForge.EVENT_BUS.addListener(PassengerCameras::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);
         modEventBus.addListener(AerolargeClient::onRegisterGeometryLoaders);
         modEventBus.addListener(AerolargeClient::onRegisterRenderers);
         modEventBus.addListener(AerolargeClient::onRegisterParticles);
+        modEventBus.addListener(AerolargeClient::onRegisterGuiLayers);
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
+        PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
+    }
+
+    private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "outside_camera"), PassengerCameras::overlay);
     }
 
     private static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
