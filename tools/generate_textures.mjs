@@ -1039,31 +1039,13 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
-// The furnished cabin's finishing touches (see CabinDecor). The springboard: a white non-slip top with a grip
-// pattern, in a pool-blue border; its sides pool blue with a white coil spring under the board, so it reads as
-// bouncy at a glance; plain blue underneath.
+// The furnished cabin's finishing touches (see CabinDecor). The springboard: a pool-blue non-slip grip with a
+// pattern of raised dots for the board's top, white fibreglass for the rest of the board, and steel for the coil
+// spring under its back end, each turn of it a darker band.
 {
-  const POOL_BLUE = [0x2a, 0x8c, 0xd8];
-  const POOL_BLUE_DARK = [0x1c, 0x66, 0xa8];
-  const BOARD_WHITE = [0xf2, 0xf4, 0xf6];
-  const GRIP = [0xd6, 0xdc, 0xe2];
-  texture(blockOutput, "springboard_top", (x, y) => {
-    if (x <= 1 || y <= 1 || x >= 14 || y >= 14) return x === 0 || y === 0 || x === 15 || y === 15 ? POOL_BLUE_DARK : POOL_BLUE;
-    return (x + y) % 3 === 0 && (x - y + 16) % 3 === 0 ? GRIP : BOARD_WHITE;
-  }, 2);
-  // The coil: a zigzag from under the board down to the foot.
-  const COIL = [[4, 5], [11, 7], [4, 9], [11, 11], [4, 13]];
-  const nearCoil = (x, y) => COIL.slice(1).some(([bx, by], i) => {
-    const [ax, ay] = COIL[i];
-    const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)));
-    return Math.hypot(x - ax - t * (bx - ax), y - ay - t * (by - ay)) <= 0.75;
-  });
-  texture(blockOutput, "springboard_side", (x, y) => {
-    if (y <= 3) return y === 0 ? POOL_BLUE_DARK : BOARD_WHITE;
-    if (y === 15) return POOL_BLUE_DARK;
-    return nearCoil(x, y) ? INK : POOL_BLUE;
-  }, 2);
-  texture(blockOutput, "springboard_bottom", (x, y) => (x === 0 || y === 0 ? POOL_BLUE_DARK : POOL_BLUE), 2);
+  texture(blockOutput, "springboard_grip", (x, y) => ((x + y) % 3 === 0 && (x - y + 16) % 3 === 0 ? [0x5a, 0xb0, 0xf0] : [0x2a, 0x8c, 0xd8]), 2);
+  texture(blockOutput, "springboard_board", () => [0xf2, 0xf4, 0xf6], 2);
+  texture(blockOutput, "springboard_spring", (x, y) => (y % 2 === 0 ? STEEL_DARK : CHROME), 2);
 }
 // The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
 // layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most

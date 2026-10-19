@@ -659,9 +659,10 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> HOOP_ITEM = ITEMS.registerSimpleBlockItem(HOOP);
     public static final DeferredItem<BlockItem> SCOREBOARD_ITEM = ITEMS.registerSimpleBlockItem(SCOREBOARD);
     public static final DeferredItem<BlockItem> BALL_RACK_ITEM = ITEMS.registerSimpleBlockItem(BALL_RACK);
-    /** The moon pool's high dive: the springboard at the tip of its board, and a trampoline wherever else it is put. */
+    /** The moon pool's high dive: the springboard off its tower's platform, and a trampoline wherever else it is put. */
     public static final DeferredBlock<SpringboardBlock> SPRINGBOARD = BLOCKS.registerBlock(
-        "springboard", SpringboardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL)
+        "springboard", SpringboardBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
     );
     public static final DeferredItem<BlockItem> SPRINGBOARD_ITEM = ITEMS.registerSimpleBlockItem(SPRINGBOARD);
     /** Gymnastic rings, hung on chains from the gym hall's roof truss. */

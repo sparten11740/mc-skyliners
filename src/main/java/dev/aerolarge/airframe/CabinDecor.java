@@ -5,6 +5,7 @@ import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.LightStripBlock;
+import dev.aerolarge.block.SpringboardBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -14,18 +15,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LadderBlock;
-import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.SlabType;
 
 /**
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
  * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings, team banners and hide and
  * seek buttons, and greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the
- * light cables and chains of what it hangs from a ceiling or a truss instead of the crown), it keeps clear of the
- * dividers between the zones, which stand already, and anything that does not fit at the airliner's scale is left
- * out.
+ * light cables and chains of what it hangs from a ceiling or a truss instead of the crown, or moves out of the diving
+ * tower's way), it keeps clear of the dividers between the zones, which stand already, and anything that does not fit
+ * at the airliner's scale is left out.
  */
 final class CabinDecor {
     /** How high the diving tower's platform stands over the cabin floor, in metres: a three-metre springboard's. */
@@ -35,6 +34,10 @@ final class CabinDecor {
      * under the highest part of the crown.
      */
     private static final int TOWER_X = -1;
+    /** How many stations the tower's platform reaches out over the basin, ahead of its springboard: two deep. */
+    private static final int PLATFORM_DEPTH = 2;
+    /** Open space over the platform where one stands, in blocks: a player's height. */
+    private static final int PLATFORM_HEADROOM = 2;
     /** Open space over the springboard, in blocks: someone standing on it and the height it throws them. */
     private static final int BOUNCE_ROOM = 5;
     /** Water at least this deep under the springboard. */
@@ -111,9 +114,6 @@ final class CabinDecor {
      * floor down the centreline, and how far across from the middle the water reaches halfway along.
      */
     private record Basin(int first, int last, int halfWidth) {
-        int middle() {
-            return (first + last) / 2;
-        }
     }
 
     /** The moon pool's basin; null where the airliner has none. */
@@ -157,74 +157,183 @@ final class CabinDecor {
 
     /**
      * The diving tower (Sprungturm) on the pool's front rim: a white column standing on the pool's bottom at the head
-     * of the basin, a ladder up its front from the rim, and from its top a board out over the middle of the pool with
-     * a springboard at its tip. Glass rails either side of the top keep anyone from stepping off it onto the rim; off
-     * the board, the deck or the springboard there is only water below. Left out where the pool is too shallow or too
-     * narrow, or the crown too low to bounce under.
+     * of the basin, a ladder up its front from the rim, and on top a platform reaching back over the rim, with room
+     * for two side by side and two deep, railed with glass along its sides and its back but for the ladder's top. From
+     * the platform's front edge a springboard sticks out over the water, and off it or off the front of the platform
+     * there is only water below. A pendant light hanging where the platform goes moves a block further out. The
+     * platform closes off the middle of the cabin under the crown, which the cabin's lining takes for a station too
+     * low to line, so the walls beside it are lined here. Left out where the pool is too shallow or too narrow, or
+     * the crown too low to bounce under.
      */
     private void highDive() {
         Basin basin = basin();
         if (basin == null) {
             return;
         }
-        int x = TOWER_X;
-        int first = basin.first();
-        int middle = basin.middle();
-        int rim = first - 1;
-        int top = floor + (int) Math.round(PLATFORM_METRES * layout.scale());
-        if (basin.halfWidth() < Math.abs(x) + 1 || middle - first < 2 || !towerFits(x, rim, first, middle, top)) {
+        Tower tower = new Tower(TOWER_X, basin.first(), floor + (int) Math.round(PLATFORM_METRES * layout.scale()));
+        if (basin.halfWidth() < Math.abs(tower.x()) + 1 || tower.board() > basin.last() || !towerFits(tower)) {
             return;
         }
-        BlockState column = Blocks.SMOOTH_QUARTZ.defaultBlockState();
+        for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
+            for (int z = tower.rim(); z <= tower.board(); z++) {
+                moveLightOut(x, z);
+            }
+        }
+        BlockState white = Blocks.SMOOTH_QUARTZ.defaultBlockState();
         int bottom = floor;
-        while (isWater(x, bottom - 1, first)) {
+        while (isWater(tower.x(), bottom - 1, tower.first())) {
             bottom--;
         }
-        for (int y = bottom; y < top; y++) {
-            layout.set(x, y, first, column);
+        for (int y = bottom; y < tower.top(); y++) {
+            layout.set(tower.x(), y, tower.first(), white);
         }
-        for (int y = floor + 1; y < top; y++) {
-            layout.furnish(x, y, rim, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
+        for (int y = floor + 1; y < tower.top(); y++) {
+            layout.furnish(tower.x(), y, tower.rim(), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
         }
-        for (int z = first + 1; z < middle; z++) {
-            layout.furnish(x, top - 1, z, Blocks.BIRCH_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
+        for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
+            for (int z = tower.rim(); z <= tower.first() + 1; z++) {
+                if (tower.isDeck(x, z)) {
+                    layout.furnish(x, tower.top() - 1, z, white);
+                    if (!tower.isStanding(x, z)) {
+                        layout.furnish(x, tower.top(), z, Blocks.GLASS_PANE.defaultBlockState());
+                    }
+                }
+            }
         }
-        layout.furnish(x, top - 1, middle, AerolargeRegistry.SPRINGBOARD.get().defaultBlockState());
-        for (int side : new int[]{1, -1}) {
-            BlockState rail = Blocks.GLASS_PANE.defaultBlockState();
-            boolean both = layout.isOpen(x + side, top, rim) && layout.isOpen(x + side, top, first);
-            layout.furnish(x + side, top, rim, rail.setValue(IronBarsBlock.SOUTH, both));
-            layout.furnish(x + side, top, first, rail.setValue(IronBarsBlock.NORTH, both));
+        joinRails(tower);
+        layout.furnish(tower.x(), tower.top() - 1, tower.board(),
+            AerolargeRegistry.SPRINGBOARD.get().defaultBlockState().setValue(SpringboardBlock.FACING, Direction.SOUTH));
+        CabinLining lining = new CabinLining(layout);
+        for (int z = tower.rim(); z < tower.board(); z++) {
+            lining.line(z, CabinFitOut::lockersFit);
         }
     }
 
     /**
-     * Whether the tower fits in this column: the rim open over the floor up to the platform for the ladder, the
-     * column at the head of the basin open above the water and water below, the board open out to the middle, room to
-     * bounce over the springboard and deep water under it.
+     * Where the diving tower stands: its column across (the ladder's, the column's and the springboard's), the first
+     * station of the basin, where the column stands, and the row its platform is stood on. The platform reaches from
+     * the rim, a station ahead, over the first two of the basin, from a block to port of the column to two to
+     * starboard; its middle two by two is where one stands, with rails on the rest but for the ladder's top.
      */
-    private boolean towerFits(int x, int rim, int first, int middle, int top) {
-        for (int y = floor + 1; y < top; y++) {
-            if (!layout.isOpen(x, y, rim) || !layout.isOpen(x, y, first)) {
+    private record Tower(int x, int first, int top) {
+        int rim() {
+            return first - 1;
+        }
+
+        int board() {
+            return first + PLATFORM_DEPTH;
+        }
+
+        boolean isDeck(int atX, int atZ) {
+            return atX >= x - 1 && atX <= x + 2 && atZ >= rim() && atZ < board() && !(atX == x && atZ == rim());
+        }
+
+        boolean isStanding(int atX, int atZ) {
+            return atX >= x && atX <= x + 1 && atZ >= first && atZ < board();
+        }
+    }
+
+    /**
+     * Whether the tower fits: the rim open over the floor up to the platform for the ladder, the column at the head
+     * of the basin open above the water and deep water under it, the platform, its rails and headroom, and the
+     * springboard clear (a pendant light there is moved out of the way), room to bounce over the springboard and deep
+     * water under it.
+     */
+    private boolean towerFits(Tower tower) {
+        int x = tower.x();
+        for (int y = floor + 1; y < tower.top(); y++) {
+            if (!layout.isOpen(x, y, tower.rim()) || !layout.isOpen(x, y, tower.first())) {
                 return false;
             }
         }
-        for (int z = first + 1; z <= middle; z++) {
-            if (!layout.isOpen(x, top - 1, z)) {
-                return false;
+        for (int atX = x - 1; atX <= x + 2; atX++) {
+            for (int z = tower.rim(); z < tower.board(); z++) {
+                // The deck, and over it a rail or, where one stands, headroom.
+                int above = tower.isStanding(atX, z) ? PLATFORM_HEADROOM : 1;
+                for (int y = tower.top() - 1; tower.isDeck(atX, z) && y < tower.top() + above; y++) {
+                    if (!isClear(atX, y, z)) {
+                        return false;
+                    }
+                }
             }
         }
-        for (int y = top; y < top + BOUNCE_ROOM; y++) {
-            if (!layout.isOpen(x, y, middle)) {
+        for (int y = tower.top() - 1; y < tower.top() + BOUNCE_ROOM; y++) {
+            if (!isClear(x, y, tower.board())) {
                 return false;
             }
         }
         for (int y = floor; y > floor - MIN_DEPTH; y--) {
-            if (!isWater(x, y, first) || !isWater(x, y, middle)) {
+            if (!isWater(x, y, tower.first()) || !isWater(x, y, tower.board())) {
                 return false;
             }
         }
         return true;
+    }
+
+    /** Whether a spot is open, or would be once the pendant light hanging there is moved out of the way. */
+    private boolean isClear(int x, int y, int z) {
+        boolean light = isCable(x, y, z) || layout.stateAt(x, y, z).is(AerolargeRegistry.PENDANT_LIGHT.get());
+        return layout.isOpen(x, y, z) || light && canMoveLightOut(x, z);
+    }
+
+    /** The row of the pendant light's shade hanging in this column; -1 where none hangs. */
+    private int pendantShade(int x, int z) {
+        for (int y = floor + 1; y <= cabinTop(); y++) {
+            if (layout.stateAt(x, y, z).is(AerolargeRegistry.PENDANT_LIGHT.get())) {
+                return y;
+            }
+        }
+        return -1;
+    }
+
+    /** Whether a pendant light hangs in this column and has room to hang a block further out from the middle. */
+    private boolean canMoveLightOut(int x, int z) {
+        int shade = pendantShade(x, z);
+        return shade >= 0 && x != 0 && layout.isOpen(x + Integer.signum(x), shade, z);
+    }
+
+    /**
+     * Moves a pendant light hanging in this column, its cable and all, a block further out from the middle: hung from
+     * the crown there at the same height, where there is room for it.
+     */
+    private void moveLightOut(int x, int z) {
+        if (!canMoveLightOut(x, z)) {
+            return;
+        }
+        int shade = pendantShade(x, z);
+        int out = x + Integer.signum(x);
+        BlockState light = layout.stateAt(x, shade, z);
+        for (int y = shade; y == shade || isCable(x, y, z); y++) {
+            layout.set(x, y, z, Blocks.AIR.defaultBlockState());
+        }
+        int top = shade;
+        while (layout.isOpen(out, top + 1, z)) {
+            top++;
+        }
+        for (int y = shade + 1; y <= top; y++) {
+            layout.set(out, y, z, AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState());
+        }
+        layout.set(out, shade, z, light);
+    }
+
+    /** Joins each of the tower's rails to the rails beside it, so they run on as one balustrade. */
+    private void joinRails(Tower tower) {
+        for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
+            for (int z = tower.rim(); z < tower.board(); z++) {
+                BlockState rail = layout.stateAt(x, tower.top(), z);
+                if (rail.is(Blocks.GLASS_PANE)) {
+                    layout.set(x, tower.top(), z, rail
+                        .setValue(IronBarsBlock.NORTH, isRail(x, tower.top(), z - 1))
+                        .setValue(IronBarsBlock.SOUTH, isRail(x, tower.top(), z + 1))
+                        .setValue(IronBarsBlock.EAST, isRail(x + 1, tower.top(), z))
+                        .setValue(IronBarsBlock.WEST, isRail(x - 1, tower.top(), z)));
+                }
+            }
+        }
+    }
+
+    private boolean isRail(int x, int y, int z) {
+        return layout.stateAt(x, y, z).is(Blocks.GLASS_PANE);
     }
 
     /**
@@ -299,8 +408,8 @@ final class CabinDecor {
     /**
      * Greenery along the walls and overhead, never underfoot in an aisle: potted flowers along the lounge bar's back
      * shelf and spore blossoms hanging from the starlit ceiling over the bar, drifting their spores down; potted
-     * azaleas in patches of moss along the pool's sides, and over its rim planters of moss hung under the crown, a
-     * spore blossom under each; and potted bamboo either side of each passenger door, just clear of its aisle.
+     * azaleas in patches of moss along the pool's sides, and spore blossoms under the diving tower's platform over the
+     * rim; and potted bamboo either side of each passenger door, just clear of its aisle.
      */
     private void greenery() {
         barGreenery();
@@ -328,14 +437,16 @@ final class CabinDecor {
 
     /**
      * The pool's: a potted azalea every few stations along each side against the wall, with moss either side of it,
-     * and two planters over each side of the rim, a quarter of the way in from either end of the basin.
+     * and a spore blossom under each back corner of the diving tower's platform, where it reaches out over the rim.
      */
     private void poolGreenery() {
         Basin basin = basin();
         if (basin == null) {
             return;
         }
-        int quarter = (basin.last() - basin.first()) / 4;
+        for (int x : new int[]{TOWER_X - 1, TOWER_X + 2}) {
+            hangBlossom(x, basin.first() - 1, state -> state.is(Blocks.SMOOTH_QUARTZ));
+        }
         for (int side : new int[]{1, -1}) {
             for (int z = basin.first() + 1; z <= basin.last(); z += PLANTER_SPACING) {
                 int x = layout.besideWall(side, floor + 1, z);
@@ -349,27 +460,6 @@ final class CabinDecor {
                     }
                 }
             }
-            int rim = side * (basin.halfWidth() + 1);
-            hangingPlanter(rim, basin.first() + quarter);
-            hangingPlanter(rim, basin.last() - quarter);
-        }
-    }
-
-    /**
-     * A planter of moss hung under the crown over this spot, a spore blossom under it: at this station, or failing that
-     * the one behind or ahead, where it would hide no upper window and keeps clear of the dividers.
-     */
-    private void hangingPlanter(int x, int z) {
-        int side = Integer.signum(x);
-        for (int at : new int[]{z, z + 1, z - 1}) {
-            int top = layout.ceiling(x, at);
-            if (keptForDivider(at) || !layout.isOpen(x, top, at) || top - 1 < floor + BLOSSOM_CLEARANCE
-                || CabinWindowBlock.isPane(layout.stateAt(x + side, top, at))) {
-                continue;
-            }
-            layout.set(x, top, at, Blocks.MOSS_BLOCK.defaultBlockState());
-            hangBlossom(x, at, state -> state.is(Blocks.MOSS_BLOCK));
-            return;
         }
     }
 

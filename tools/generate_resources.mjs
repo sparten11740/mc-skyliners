@@ -1291,13 +1291,22 @@ for (const name of ["airliner_blueprint", "furnished_airliner_blueprint"]) {
 
 // The furnished cabin's finishing touches (see CabinDecor), and what they add to the lang file.
 const cabinDecorLang = {};
-// The springboard: a padded board, white on top in a blue border, its blue sides showing the spring under it.
+// The springboard, drawn with its tip to the north (as SpringboardBlock's shape is): a slim board 4 px thick the
+// length of the block, its top flush with the block's and gripped in blue, white below; under its back end a steel
+// coil spring, three turns round a post.
 {
-  write(`assets/${ID}/models/block/springboard.json`, {
-    parent: "minecraft:block/cube_bottom_top",
-    textures: { top: `${ID}:block/springboard_top`, side: `${ID}:block/springboard_side`, bottom: `${ID}:block/springboard_bottom` },
-  });
-  write(`assets/${ID}/blockstates/springboard.json`, { variants: { "": { model: `${ID}:block/springboard` } } });
+  write(`assets/${ID}/models/block/springboard.json`, boxes(
+    { grip: `${ID}:block/springboard_grip`, board: `${ID}:block/springboard_board`, spring: `${ID}:block/springboard_spring`,
+      particle: `${ID}:block/springboard_board` },
+    [
+      [[2, 12, 0], [14, 16, 16], { up: "#grip", all: "#board" }],
+      [[5, 10.5, 12], [11, 11.5, 16], "#spring"],
+      [[5, 8.5, 12], [11, 9.5, 16], "#spring"],
+      [[5, 6.5, 12], [11, 7.5, 16], "#spring"],
+      [[7, 6, 13], [9, 12, 15], "#spring"],
+    ],
+  ));
+  facing("springboard");
   write(`assets/${ID}/models/item/springboard.json`, { parent: `${ID}:block/springboard` });
   dropsItself("springboard");
   cubes.springboard = null;

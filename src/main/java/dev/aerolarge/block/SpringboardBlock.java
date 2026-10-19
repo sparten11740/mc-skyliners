@@ -3,30 +3,46 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.cabin.HighDive;
+import java.util.EnumMap;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A springboard: the padded tip of a diving board, or a little trampoline on its own. Whatever lands or stands on it
- * is thrown straight back up with a "boing" and a puff of cloud, the same height every time, so a bounce never goes
- * high enough to hurt coming down, and landing on it never hurts at all; sneaking, you stand on it without bouncing.
- * A bounce that ends in the moon pool of an airliner in flight is a Cannonball (see {@link HighDive}).
+ * A springboard: a slim diving board, its top flush with the top of its block so it carries on from a platform's edge,
+ * its back end resting on a coiled spring. Whatever lands or stands on it is thrown straight back up with a "boing"
+ * and a puff of cloud, the same height every time, so a bounce never goes high enough to hurt coming down, and
+ * landing on it never hurts at all; sneaking, you stand on it without bouncing. A bounce that ends in the moon pool of
+ * an airliner in flight is a Cannonball (see {@link HighDive}). FACING is the way the board sticks out, to its tip.
  * <p>
  * A player's own client moves them, so it bounces them and plays their boing at once, the first time too; the server
  * only hears of each landing after it (as a fall), and lets everyone else hear and see it then.
  */
-public class SpringboardBlock extends Block {
+public class SpringboardBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<SpringboardBlock> CODEC = simpleCodec(SpringboardBlock::new);
+    /**
+     * The board and the spring under its back end, as its model draws them with the tip to the north: a board 4 px
+     * thick the length of the block, and the coil's room.
+     */
+    private static final double[][] BOXES = {{2, 12, 0, 14, 16, 16}, {5, 6, 12, 11, 12, 16}};
+    private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
     /**
      * How fast it throws you up, in blocks a tick: about two and a half blocks high, under the three a fall needs to
      * hurt, and no more however hard you land.
@@ -39,13 +55,61 @@ public class SpringboardBlock extends Block {
     private static final double PUFF_SPREAD = 0.3;
     private static final double PUFF_SPEED = 0.02;
 
+    static {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            VoxelShape shape = Shapes.empty();
+            for (double[] box : BOXES) {
+                shape = Shapes.or(shape, turned(box, facing));
+            }
+            SHAPES.put(facing, shape);
+        }
+    }
+
     public SpringboardBlock(Properties properties) {
         super(properties);
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    protected MapCodec<? extends Block> codec() {
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    /** Placed sticking out the way its placer looks: out over the water from a pool's edge. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.get(state.getValue(FACING));
+    }
+
+    /**
+     * A box drawn with the tip to the north, turned clockwise round the block's middle to face the given way, as its
+     * model is turned: each quarter turn takes (x, z) to (16 - z, x).
+     */
+    private static VoxelShape turned(double[] box, Direction facing) {
+        double x0 = box[0];
+        double z0 = box[2];
+        double x1 = box[3];
+        double z1 = box[5];
+        int quarterTurns = Math.floorMod(facing.get2DDataValue() - Direction.NORTH.get2DDataValue(), 4);
+        for (int turn = 0; turn < quarterTurns; turn++) {
+            double turnedX0 = 16 - z1;
+            double turnedX1 = 16 - z0;
+            z0 = x0;
+            z1 = x1;
+            x0 = turnedX0;
+            x1 = turnedX1;
+        }
+        return Block.box(x0, box[1], z0, x1, box[4], z1);
     }
 
     @Override

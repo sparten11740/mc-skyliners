@@ -22,16 +22,16 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   class just behind the forward doors (rows of big seats, two side by side left and right of the aisle, each with a
   high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
-  with a diving tower on its front rim (a ladder up to a platform three metres up, glass rails either side, and a
-  board out over the middle of the pool with a springboard at its tip), a
+  with a diving tower on its front rim (a ladder up to a small platform three metres up, glass rails round it, and
+  a springboard sticking out from it over the water), a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, a row of seats, roof trusses
   with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
   the bar a secret door into a den in the tail; the hold under the cabin is stowed with luggage (both below). Plants
   line the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
-  ceiling over the bar and from planters of moss hung over the pool's rim, potted azaleas in moss along the pool's
-  sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
+  ceiling over the bar and from under the diving tower's platform over the pool's rim, potted azaleas in moss along
+  the pool's sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
   Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
   the rooms off from the doors' aisles, each with a curtained archway and a picture over it of what lies through it,
@@ -299,11 +299,13 @@ crafted.
 
 ### The high dive
 
-The springboard at the tip of the moon pool's diving board throws whoever lands or stands on it straight back up,
-with a boing and a puff of cloud, about two and a half blocks every time, never high enough to hurt coming down, and
-landing on it never hurts; sneak to stand on it without bouncing. Off its tip, its sides or the platform there is
+The springboard sticking out from the moon pool's diving tower, a slim blue-gripped board on a coiled spring, throws
+whoever lands or stands on it straight back up, with a boing and a puff of cloud, about two and a half blocks every
+time, never high enough to hurt coming down, and landing on it never hurts; sneak to stand on it without bouncing.
+The tower's platform is railed along its sides and back; off the springboard or the front of the platform there is
 only water below, and the pool's water takes the fall. A dive (off the springboard, or any fall of three blocks or
-more into water) goes in with a big splash. A Springboard can be crafted, and is a trampoline wherever it is put.
+more into water) goes in with a big splash. A Springboard can be crafted; placed, it sticks out the way you look, and
+it is a little trampoline wherever it is put.
 
 ### Paper planes
 
