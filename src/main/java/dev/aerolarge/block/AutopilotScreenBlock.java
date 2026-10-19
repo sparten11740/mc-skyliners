@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -24,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * with a moving map and the autopilot's buttons (see {@link AutopilotScreenBlockEntity}). Every block of it is this
  * block; PART says which, counting along the bottom row from the viewer's left and then up, and part 0 holds the
  * screen's block entity and draws the whole of it. FACING is the way the screen faces, toward the pilots. Using any
- * part presses whatever is drawn where the screen was touched.
+ * part touches the screen where it was used: the map zooms, anywhere else opens the autopilot's settings.
  */
 public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<AutopilotScreenBlock> CODEC = simpleCodec(AutopilotScreenBlock::new);
@@ -63,7 +64,7 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
         if (hit.getDirection() != state.getValue(FACING)) {
             return InteractionResult.PASS;
         }
-        if (!level.isClientSide) {
+        if (player instanceof ServerPlayer serverPlayer) {
             BlockPos origin = origin(state, pos);
             if (level.getBlockEntity(origin) instanceof AutopilotScreenBlockEntity screen) {
                 // Where on the screen it was touched, in blocks from its bottom left corner as the viewer sees it.
@@ -72,7 +73,7 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
                 Vec3 touch = hit.getLocation().subtract(from);
                 double across = touch.x * right.x + touch.z * right.z + 0.5;
                 double up = touch.y + 0.5;
-                screen.touch(across, up, player);
+                screen.touch(across, up, serverPlayer);
                 level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4F, 1.6F);
             }
         }

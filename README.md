@@ -80,19 +80,28 @@ storm passing over a desert is as calm as clear skies. Turn it off with `turbule
 
 ### Autopilot
 
-The autopilot is worked from the big screen in the middle of the instrument panel, or switched on and off with the
-autopilot panel on the pedestal. Engaged on an assembled airliner standing on the ground, it takes off: brakes off,
-full thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then
-a climb to the cruising height (`climbHeight`, 80 blocks above the runway by default), where it holds height and
-speed (`cruiseSpeed`). Engaged in the air, it holds the height, speed and heading it finds. Switching it off hands
-the airliner back to the thrust levers, the tiller and the parking brake. While it flies it shows its phase, speed,
-height, pitch, bank and heading to everyone on the flight deck.
+Use the autopilot panel on the pedestal, or the big screen in the middle of the instrument panel, to open the
+autopilot's settings. At the top they show what the autopilot is doing, how the airliner flies now (speed, height
+and heading) and, once engaged, what it is set to fly. Below are the settings: hold a heading, or circle left or
+right round a point beside the airliner; the heading (a compass bearing); the altitude to hold (from 40 blocks above
+the runway to 30 below the top of the world); the speed (30 to 120 blocks a second); and the circle's radius (150
+to 1000 blocks). Type each one in, or step it with the buttons either side of it: 15 degrees, 20 blocks, 5 blocks a
+second, 50 blocks. The game goes on behind the settings, and they close once you step away from the flight deck.
 
-The screen's right side is its buttons: AP on and off; turn left or right 15 degrees; circle left or right, round a
-point beside the airliner (press the same one again to fly straight on); height up or down 20 blocks; speed up or
-down 5 blocks a second; and the circle's radius, 150 to 1000 blocks. Its left side is a moving map,
-heading up: the track flown, the circle being flown or the heading being turned to, and north; touch the map to
-zoom it out, and again past the widest to zoom back in.
+Switched off, the settings start from what engaging would fly, and engaging (the wide button, or Enter) flies them.
+Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off, full
+thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then a
+climb to the altitude set, turning onto the heading or circle set once off the ground, and there it holds height
+and speed. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway by default) and the
+speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it finds. While it is
+engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust levers, the
+tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading to
+everyone on the flight deck.
+
+The big screen shows the autopilot at work. Its right side is the autopilot's buttons, lit for what it is doing;
+touching them opens the settings. Its left side is a moving map, heading up: the track flown, the circle being
+flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom
+back in.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by

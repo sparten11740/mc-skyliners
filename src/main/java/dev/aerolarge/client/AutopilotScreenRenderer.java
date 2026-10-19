@@ -41,18 +41,19 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     /** Segments a circle is drawn with. */
     private static final int CIRCLE_SEGMENTS = 64;
 
-    private static final int CASING = 0xFF15171B;
+    /** The screen's colours, which its settings screen ({@link AutopilotSettingsScreen}) shares. */
+    static final int CASING = 0xFF15171B;
     private static final int GLASS = 0xFF05080D;
     private static final int RING = 0xFF2A3A55;
     private static final int TRACK = 0xFF46C8F0;
-    private static final int TARGET = 0xFFE040E0;
-    private static final int WHITE = 0xFFF2F2F2;
-    private static final int GREEN = 0xFF46E070;
-    private static final int AMBER = 0xFFF2B830;
-    private static final int GREY = 0xFF9AA4B0;
+    static final int TARGET = 0xFFE040E0;
+    static final int WHITE = 0xFFF2F2F2;
+    static final int GREEN = 0xFF46E070;
+    static final int AMBER = 0xFFF2B830;
+    static final int GREY = 0xFF9AA4B0;
     private static final int BUTTON = 0xFF262B33;
     private static final int BUTTON_LIT = 0xFF1F5A34;
-    private static final int BUTTON_EDGE = 0xFF4A525E;
+    static final int BUTTON_EDGE = 0xFF4A525E;
 
     @Override
     public void render(AutopilotScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -95,7 +96,7 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         pose.popPose();
     }
 
-    private static boolean engaged(@Nullable AutopilotBlockEntity autopilot) {
+    static boolean engaged(@Nullable AutopilotBlockEntity autopilot) {
         return autopilot != null && autopilot.phase() != AutopilotBlockEntity.Phase.OFF;
     }
 
@@ -165,24 +166,39 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     private static void header(Font font, PoseStack pose, MultiBufferSource buffers, @Nullable AutopilotBlockEntity autopilot, @Nullable SableClient.Attitude attitude) {
         Box header = AutopilotScreenBlockEntity.HEADER;
         double y = (header.y0() + header.y1()) / 2;
-        Component left;
-        Component right = Component.empty();
+        text(font, pose, buffers, state(autopilot, attitude), header.x0() + 0.04, y, GREEN, false);
+        textRight(font, pose, buffers, targets(autopilot), header.x1() - 0.04, y, TARGET);
+    }
+
+    /** What the autopilot is doing: waiting for the airliner to be assembled, switched off, or its phase and mode. */
+    static Component state(@Nullable AutopilotBlockEntity autopilot, @Nullable SableClient.Attitude attitude) {
         if (attitude == null) {
-            left = Component.translatable("screen.aerolarge.autopilot.standby");
-        } else if (!engaged(autopilot)) {
-            left = Component.translatable("screen.aerolarge.autopilot.disengaged");
-        } else {
-            Component phase = Component.translatable("message.aerolarge.autopilot.phase." + autopilot.phase().name().toLowerCase(Locale.ROOT));
-            Component mode = switch (autopilot.lateral()) {
-                case HEADING -> Component.translatable("screen.aerolarge.autopilot.mode.heading", AutopilotBlockEntity.compass(autopilot.targetHeading()));
-                case ORBIT_LEFT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_left", Math.round(autopilot.orbitRadius()));
-                case ORBIT_RIGHT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_right", Math.round(autopilot.orbitRadius()));
-            };
-            left = Component.translatable("screen.aerolarge.autopilot.mode", phase, mode);
-            right = Component.translatable("screen.aerolarge.autopilot.targets", Math.round(autopilot.targetAltitude()), Math.round(autopilot.targetSpeed()));
+            return Component.translatable("screen.aerolarge.autopilot.standby");
         }
-        text(font, pose, buffers, left, header.x0() + 0.04, y, GREEN, false);
-        textRight(font, pose, buffers, right, header.x1() - 0.04, y, TARGET);
+        if (!engaged(autopilot)) {
+            return Component.translatable("screen.aerolarge.autopilot.disengaged");
+        }
+        Component phase = Component.translatable("message.aerolarge.autopilot.phase." + autopilot.phase().name().toLowerCase(Locale.ROOT));
+        Component mode = switch (autopilot.lateral()) {
+            case HEADING -> Component.translatable("screen.aerolarge.autopilot.mode.heading", AutopilotBlockEntity.compass(autopilot.targetHeading()));
+            case ORBIT_LEFT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_left", Math.round(autopilot.orbitRadius()));
+            case ORBIT_RIGHT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_right", Math.round(autopilot.orbitRadius()));
+        };
+        return Component.translatable("screen.aerolarge.autopilot.mode", phase, mode);
+    }
+
+    /** The height and speed the autopilot flies to; nothing while it is off. */
+    static Component targets(@Nullable AutopilotBlockEntity autopilot) {
+        if (!engaged(autopilot)) {
+            return Component.empty();
+        }
+        return Component.translatable("screen.aerolarge.autopilot.targets", Math.round(autopilot.targetAltitude()), Math.round(autopilot.targetSpeed()));
+    }
+
+    /** How the airliner is flying now: its speed, its height (where the block drawing it is) and its heading. */
+    static Component now(SableClient.Attitude attitude, Vec3 here) {
+        return Component.translatable("screen.aerolarge.autopilot.now", Math.round(attitude.airspeed()), Math.round(here.y),
+            String.format(Locale.ROOT, "%03d", Math.round(attitude.heading()) % 360));
     }
 
     /** How the airliner is flying now, along the bottom of the map. */
@@ -190,9 +206,7 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         Box map = AutopilotScreenBlockEntity.MAP;
         double y = map.y0() + 0.05;
         if (attitude != null) {
-            Component now = Component.translatable("screen.aerolarge.autopilot.now", Math.round(attitude.airspeed()), Math.round(here.y),
-                String.format(Locale.ROOT, "%03d", Math.round(attitude.heading()) % 360));
-            text(font, pose, buffers, now, map.x0() + 0.04, y, WHITE, false);
+            text(font, pose, buffers, now(attitude, here), map.x0() + 0.04, y, WHITE, false);
         }
         textRight(font, pose, buffers, Component.translatable("screen.aerolarge.autopilot.range", range), map.x1() - 0.04, y, GREY);
     }

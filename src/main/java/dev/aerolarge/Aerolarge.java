@@ -1,9 +1,12 @@
 package dev.aerolarge;
 
 import dev.aerolarge.airframe.AirframeBuild;
+import dev.aerolarge.block.OpenAutopilotScreen;
+import dev.aerolarge.block.SetAutopilot;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
 import dev.aerolarge.cabin.TurbulencePayload;
+import dev.aerolarge.client.AutopilotSettingsScreen;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
@@ -58,10 +61,13 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("2")
+        event.registrar("3")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
-            // Only ever handled on a client: the lambda keeps the client class from loading anywhere else.
+            .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
+            // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
-                (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()));
+                (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
+            .playToClient(OpenAutopilotScreen.TYPE, OpenAutopilotScreen.STREAM_CODEC,
+                (payload, context) -> AutopilotSettingsScreen.open(payload));
     }
 }

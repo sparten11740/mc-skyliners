@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeRegistry;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -25,9 +26,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * The autopilot panel on the flight deck's pedestal, between the thrust levers: use it to take off and climb to
- * cruising height, use it again to hand back to the levers. FACING is the way the nose points; the screen faces the
- * pilots.
+ * The autopilot panel on the flight deck's pedestal, between the thrust levers: use it to open the autopilot's
+ * settings, to take off and climb to cruising height, change what it flies, or hand back to the levers. FACING is the
+ * way the nose points; the screen faces the pilots.
  */
 public class AutopilotBlock extends BaseEntityBlock {
     private static final MapCodec<AutopilotBlock> CODEC = simpleCodec(AutopilotBlock::new);
@@ -65,8 +66,8 @@ public class AutopilotBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot) {
-            player.displayClientMessage(autopilot.toggle(), false);
+        if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot) {
+            autopilot.openScreen(serverPlayer);
             level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

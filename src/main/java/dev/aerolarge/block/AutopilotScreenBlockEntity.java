@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,9 +22,10 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The autopilot screen's workings: where everything is drawn on it, what a touch there does, which autopilot it
  * works (as an offset, so the link holds wherever the airliner is), and how far its map reaches. The left of the
- * screen is a moving map; touching it zooms out a step, round to the closest again. The right is a column of buttons
- * that send the autopilot its commands. Sizes are in blocks, from the screen's bottom left corner as the viewer sees
- * it. The client also keeps the track the airliner has flown here, for the map.
+ * screen is a moving map; touching it zooms out a step, round to the closest again. The right is a column of the
+ * autopilot's buttons, lit for what it is doing; touching anywhere off the map opens the autopilot's settings screen,
+ * where they are worked. Sizes are in blocks, from the screen's bottom left corner as the viewer sees it. The client
+ * also keeps the track the airliner has flown here, for the map.
  */
 public class AutopilotScreenBlockEntity extends BlockEntity {
     /** The screen's size, and the margin around and between what is drawn on it. */
@@ -50,27 +51,25 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
 
     /** The buttons, top to bottom in two columns; the first spans both. */
     public enum Button {
-        ENGAGE(AutopilotBlockEntity.Command.ENGAGE, 0, -1),
-        HEADING_LEFT(AutopilotBlockEntity.Command.HEADING_LEFT, 1, 0),
-        HEADING_RIGHT(AutopilotBlockEntity.Command.HEADING_RIGHT, 1, 1),
-        ORBIT_LEFT(AutopilotBlockEntity.Command.ORBIT_LEFT, 2, 0),
-        ORBIT_RIGHT(AutopilotBlockEntity.Command.ORBIT_RIGHT, 2, 1),
-        ALTITUDE_DOWN(AutopilotBlockEntity.Command.ALTITUDE_DOWN, 3, 0),
-        ALTITUDE_UP(AutopilotBlockEntity.Command.ALTITUDE_UP, 3, 1),
-        SPEED_DOWN(AutopilotBlockEntity.Command.SPEED_DOWN, 4, 0),
-        SPEED_UP(AutopilotBlockEntity.Command.SPEED_UP, 4, 1),
-        RADIUS_DOWN(AutopilotBlockEntity.Command.RADIUS_DOWN, 5, 0),
-        RADIUS_UP(AutopilotBlockEntity.Command.RADIUS_UP, 5, 1);
+        ENGAGE(0, -1),
+        HEADING_LEFT(1, 0),
+        HEADING_RIGHT(1, 1),
+        ORBIT_LEFT(2, 0),
+        ORBIT_RIGHT(2, 1),
+        ALTITUDE_DOWN(3, 0),
+        ALTITUDE_UP(3, 1),
+        SPEED_DOWN(4, 0),
+        SPEED_UP(4, 1),
+        RADIUS_DOWN(5, 0),
+        RADIUS_UP(5, 1);
 
         private static final double LEFT = 1.96;
         private static final double GAP = 0.04;
         private static final int ROWS = 6;
 
-        public final AutopilotBlockEntity.Command command;
         public final Box box;
 
-        Button(AutopilotBlockEntity.Command command, int row, int column) {
-            this.command = command;
+        Button(int row, int column) {
             double right = WIDTH - MARGIN;
             double columnWidth = (right - LEFT - GAP) / 2;
             double rowHeight = (HEIGHT - 2 * MARGIN - (ROWS - 1) * GAP) / ROWS;
@@ -118,8 +117,8 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
         return RANGES[range];
     }
 
-    /** A touch at this point of the screen, on the server: presses the button there, or zooms the map. */
-    void touch(double across, double up, Player player) {
+    /** A touch at this point of the screen, on the server: zooms the map, or anywhere else opens the settings. */
+    void touch(double across, double up, ServerPlayer player) {
         if (MAP.contains(across, up)) {
             range = (range + 1) % RANGES.length;
             setChanged();
@@ -128,14 +127,11 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
             }
             return;
         }
-        for (Button button : Button.values()) {
-            if (button.box.contains(across, up)) {
-                AutopilotBlockEntity target = autopilot();
-                Component message = target != null ? target.command(button.command)
-                    : Component.translatable("message.aerolarge.autopilot_screen.unlinked");
-                player.displayClientMessage(message, true);
-                return;
-            }
+        AutopilotBlockEntity target = autopilot();
+        if (target != null) {
+            target.openScreen(player);
+        } else {
+            player.displayClientMessage(Component.translatable("message.aerolarge.autopilot_screen.unlinked"), true);
         }
     }
 

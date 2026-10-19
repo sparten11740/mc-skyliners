@@ -15,20 +15,28 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 /**
  * The autopilot: flies the assembled airliner by setting its thrusters. The four engines push it along and, split
@@ -43,8 +51,9 @@ import net.minecraft.world.phys.Vec3;
  * them from below, and the engines push hard along the nose, so no one angle can be worked out beforehand. Following
  * the flight path instead would steepen a climb as it grew steeper. Heading: it banks toward it, turning the
  * wings' lift sideways, and in an orbit it banks into the circle from the start and steers onto it. Engaged in the air
- * it holds the height, speed and heading it found. The flight deck's autopilot screen sets the targets; switching it
- * off hands the airliner back to its controls: the thrust levers, the tiller and the parking brake.
+ * it holds the height, speed and heading it found. Its settings screen, opened from the autopilot or the flight deck's
+ * autopilot screen, engages it and sets the targets (see {@link #set}); switching it off hands the airliner back to
+ * its controls: the thrust levers, the tiller and the parking brake.
  *
  * <p>Whether it is engaged or not, it gives the flight deck its callouts (see {@link Callouts}), and off it still
  * keeps the airliner safe: in the air its jets steady any quick pitching or rolling and push the nose and the wings
@@ -70,10 +79,24 @@ public class AutopilotBlockEntity extends BlockEntity {
         HEADING, ORBIT_LEFT, ORBIT_RIGHT
     }
 
-    /** What the autopilot screen can ask of it. */
-    public enum Command {
-        ENGAGE, HEADING_LEFT, HEADING_RIGHT, ORBIT_LEFT, ORBIT_RIGHT, ALTITUDE_DOWN, ALTITUDE_UP, SPEED_DOWN, SPEED_UP,
-        RADIUS_DOWN, RADIUS_UP
+    /**
+     * What the settings screen sets: the speed in blocks a second, the height to hold in world blocks, the heading as
+     * a compass bearing (0 north, 90 east), whether to hold that heading or circle, and the circle's radius in blocks;
+     * whole numbers, as the screen shows them.
+     */
+    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius) {
+        public static final StreamCodec<FriendlyByteBuf, Settings> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, Settings::speed,
+            ByteBufCodecs.VAR_INT, Settings::altitude,
+            ByteBufCodecs.VAR_INT, Settings::heading,
+            NeoForgeStreamCodecs.enumCodec(Lateral.class), Settings::lateral,
+            ByteBufCodecs.VAR_INT, Settings::radius,
+            Settings::new
+        );
+    }
+
+    /** What engaging flies: the phase it starts in, the runway's height, and the height, speed and heading to hold. */
+    private record Plan(Phase phase, double runway, double altitude, double speed, double heading) {
     }
 
     /**
@@ -143,16 +166,19 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double LEVEL_OFF = 8;
     /** The roll is still gaining speed while it gains more than this, in blocks per second every second. */
     private static final double STILL_ACCELERATING = 0.4;
-    /** How the screen moves the targets: degrees, blocks of height, blocks a second, and blocks of radius per press. */
-    private static final double HEADING_STEP = 15;
-    private static final double ALTITUDE_STEP = 20;
-    private static final double SPEED_STEP = 5;
-    private static final double RADIUS_STEP = 50;
-    /** The range the screen can set: speed and orbit radius. */
-    private static final double MIN_SPEED = 30;
-    private static final double MAX_SPEED = 120;
-    private static final double MIN_RADIUS = 150;
-    private static final double MAX_RADIUS = 1000;
+    /**
+     * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
+     * radius per press.
+     */
+    public static final int HEADING_STEP = 15;
+    public static final int ALTITUDE_STEP = 20;
+    public static final int SPEED_STEP = 5;
+    public static final int RADIUS_STEP = 50;
+    /** The speeds and orbit radii it flies; the height it holds is kept between {@link #floor} and {@link #ceiling}. */
+    public static final int MIN_SPEED = 30;
+    public static final int MAX_SPEED = 120;
+    public static final int MIN_RADIUS = 150;
+    public static final int MAX_RADIUS = 1000;
     private static final double DEFAULT_RADIUS = 600;
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
@@ -166,6 +192,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double targetSpeed;
     /** Where it took off from, so the status can say how high it is above the runway. */
     private double runwayAltitude;
+    /** The heading it took off on, held down the runway whatever heading is set for after the take-off. */
+    private double runwayHeading;
     /** The point an orbit circles, in world blocks, and its radius. */
     private double orbitX;
     private double orbitZ;
@@ -236,18 +264,101 @@ public class AutopilotBlockEntity extends BlockEntity {
         return orbitRadius;
     }
 
-    /** Engages the autopilot, or switches it off; says what it does, or why it cannot engage. */
-    Component toggle() {
+    /**
+     * Whether a player can work the autopilot from where they are: within reach of it, give or take the few blocks a
+     * container's screen stays open past reach, which takes in the flight deck's autopilot screen. With Sable, reach is
+     * measured among an assembled airliner's blocks, so it holds however the airliner flies.
+     */
+    public boolean canBeWorkedBy(Player player) {
+        return !player.isSpectator() && Container.stillValidBlockEntity(this, player);
+    }
+
+    /**
+     * Opens the settings screen for a player, filled in with what the autopilot flies now or, switched off, what
+     * engaging it now would fly, and the lowest and highest heights it can be set to hold.
+     */
+    public void openScreen(ServerPlayer player) {
+        if (level == null) {
+            return;
+        }
+        SableFlight.State state = SableFlight.read(this, nose());
+        Plan plan;
         if (phase != Phase.OFF) {
-            disengage();
+            // Circling, the heading offered is the way it is going, to fly straight on from.
+            double heading = lateral == Lateral.HEADING || state == null ? targetHeading : state.heading();
+            plan = new Plan(phase, runwayAltitude, targetAltitude, targetSpeed, heading);
+        } else {
+            plan = plan(level, state);
+        }
+        Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
+            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius));
+        double floor = floor(plan.runway());
+        PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF,
+            Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level)))));
+    }
+
+    /**
+     * Sets the autopilot from its settings screen: flies the settings, engaging it first if it is off (to take off, or
+     * to fly on from where it is in the air), or switches it off. Each setting is held to what the autopilot flies, and
+     * only one that differs from what it flies now is taken, so settings sent back as they were neither round a target
+     * off nor start an orbit's circle afresh. Says what it does, or why it cannot.
+     */
+    public Component set(SetAutopilot.Action action, Settings settings) {
+        if (action == SetAutopilot.Action.OFF) {
+            if (phase != Phase.OFF) {
+                disengage();
+            }
             return Component.translatable("message.aerolarge.autopilot.off");
         }
         SableFlight.State state = SableFlight.read(this, nose());
         if (state == null || level == null) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
         }
+        boolean engaging = phase == Phase.OFF;
+        if (engaging) {
+            engage(level, state);
+        }
+        targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
+        double floor = floor(runwayAltitude);
+        targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, ceiling(level)));
+        double radius = Mth.clamp(unlessSame(orbitRadius, settings.radius()), MIN_RADIUS, MAX_RADIUS);
+        boolean resized = radius != orbitRadius;
+        orbitRadius = radius;
+        int bearing = Math.floorMod(settings.heading(), 360);
+        if (settings.lateral() == Lateral.HEADING) {
+            if (lateral != Lateral.HEADING || bearing != bearing(targetHeading)) {
+                targetHeading = Mth.wrapDegrees(bearing + 180.0);
+            }
+            lateral = Lateral.HEADING;
+        } else if (settings.lateral() != lateral || resized) {
+            startOrbit(state, settings.lateral());
+        }
+        changed();
+        Component mode = lateral == Lateral.HEADING
+            ? Component.translatable("message.aerolarge.autopilot.mode.heading", compass(targetHeading))
+            : Component.translatable("message.aerolarge.autopilot.mode." + lateral.name().toLowerCase(Locale.ROOT), Math.round(orbitRadius));
+        String said = !engaging ? "set" : phase == Phase.TAKEOFF ? "engaged" : "holding";
+        return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), mode);
+    }
+
+    /** A setting from the screen, or the target it was shown from if it comes back as the screen showed it. */
+    private static double unlessSame(double target, int setting) {
+        return Math.round(target) == setting ? target : setting;
+    }
+
+    /** Takes the airliner over, flying what engaging finds (see {@link #plan}) from its readings as they are now. */
+    private void engage(Level level, SableFlight.State state) {
+        Plan plan = plan(level, state);
+        phase = plan.phase();
+        runwayAltitude = plan.runway();
+        targetAltitude = plan.altitude();
+        targetSpeed = plan.speed();
+        targetHeading = plan.heading();
+        runwayHeading = plan.heading();
         lateral = Lateral.HEADING;
-        targetHeading = state.heading();
+        if (phase == Phase.CRUISE) {
+            trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
+        }
         lastPitch = state.pitch();
         lastRoll = state.roll();
         lastSpeed = state.airspeed();
@@ -255,81 +366,30 @@ public class AutopilotBlockEntity extends BlockEntity {
         lastHeading = state.heading();
         slowTicks = 0;
         primed = true;
-        Component message;
-        double radio = radioAltitude(level, state);
-        if (radio > AIRBORNE) {
-            // Already flying: hold what it finds.
-            phase = Phase.CRUISE;
-            targetAltitude = Math.round(state.position().y);
-            targetSpeed = Math.round(Mth.clamp(state.airspeed(), MIN_SPEED, MAX_SPEED));
-            runwayAltitude = state.position().y - radio;
-            trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
-            message = Component.translatable("message.aerolarge.autopilot.holding", Math.round(targetAltitude), compass(targetHeading));
-        } else {
-            phase = Phase.TAKEOFF;
-            runwayAltitude = state.position().y;
-            targetAltitude = Math.min(runwayAltitude + AerolargeConfig.AUTOPILOT_CLIMB.get(), ceiling(level));
-            targetSpeed = AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get();
-            message = Component.translatable("message.aerolarge.autopilot.engaged", AerolargeConfig.AUTOPILOT_CLIMB.get());
-        }
-        changed();
-        return message;
     }
 
     /**
-     * Carries out a command from the autopilot screen. Engage works like using the panel; the rest only change the
-     * targets while it flies, except the orbit radius, which can be set beforehand.
+     * What engaging now would fly. In the air, the height, speed and heading it finds. On the ground, a take-off on
+     * the heading it stands on and a climb to the cruising height above the runway at the cruise speed, both from the
+     * server settings; not assembled, as if on the ground where it stands.
      */
-    public Component command(Command command) {
-        if (command == Command.ENGAGE) {
-            return toggle();
+    private Plan plan(Level level, @Nullable SableFlight.State state) {
+        if (state != null) {
+            double radio = radioAltitude(level, state);
+            if (radio > AIRBORNE) {
+                return new Plan(Phase.CRUISE, state.position().y - radio, Math.round(state.position().y),
+                    Math.round(Mth.clamp(state.airspeed(), MIN_SPEED, MAX_SPEED)), state.heading());
+            }
         }
-        SableFlight.State state = SableFlight.read(this, nose());
-        if (command == Command.RADIUS_DOWN || command == Command.RADIUS_UP) {
-            orbitRadius = Mth.clamp(orbitRadius + (command == Command.RADIUS_UP ? RADIUS_STEP : -RADIUS_STEP), MIN_RADIUS, MAX_RADIUS);
-            if (state != null && lateral != Lateral.HEADING) {
-                startOrbit(state, lateral);
-            }
-            changed();
-            return Component.translatable("message.aerolarge.autopilot.radius", Math.round(orbitRadius));
-        }
-        if (phase == Phase.OFF || state == null) {
-            return Component.translatable("message.aerolarge.autopilot.engage_first");
-        }
-        Component message = switch (command) {
-            case HEADING_LEFT, HEADING_RIGHT -> {
-                // Leaving an orbit, the heading starts from the way it is going.
-                double from = lateral == Lateral.HEADING ? targetHeading : state.heading();
-                lateral = Lateral.HEADING;
-                targetHeading = Mth.wrapDegrees(from + (command == Command.HEADING_RIGHT ? HEADING_STEP : -HEADING_STEP));
-                yield Component.translatable("message.aerolarge.autopilot.heading", compass(targetHeading));
-            }
-            case ORBIT_LEFT, ORBIT_RIGHT -> {
-                Lateral orbit = command == Command.ORBIT_LEFT ? Lateral.ORBIT_LEFT : Lateral.ORBIT_RIGHT;
-                if (lateral == orbit) {
-                    // Pressed again: straight on from here.
-                    lateral = Lateral.HEADING;
-                    targetHeading = state.heading();
-                    yield Component.translatable("message.aerolarge.autopilot.heading", compass(targetHeading));
-                }
-                startOrbit(state, orbit);
-                yield Component.translatable(orbit == Lateral.ORBIT_LEFT ? "message.aerolarge.autopilot.orbit_left"
-                    : "message.aerolarge.autopilot.orbit_right", Math.round(orbitRadius));
-            }
-            case ALTITUDE_DOWN, ALTITUDE_UP -> {
-                double floor = runwayAltitude + 2 * ALTITUDE_STEP;
-                double up = targetAltitude + (command == Command.ALTITUDE_UP ? ALTITUDE_STEP : -ALTITUDE_STEP);
-                targetAltitude = Mth.clamp(up, floor, Math.max(floor, ceiling(level)));
-                yield Component.translatable("message.aerolarge.autopilot.altitude", Math.round(targetAltitude));
-            }
-            case SPEED_DOWN, SPEED_UP -> {
-                targetSpeed = Mth.clamp(targetSpeed + (command == Command.SPEED_UP ? SPEED_STEP : -SPEED_STEP), MIN_SPEED, MAX_SPEED);
-                yield Component.translatable("message.aerolarge.autopilot.speed", Math.round(targetSpeed));
-            }
-            default -> Component.empty();
-        };
-        changed();
-        return message;
+        double runway = state != null ? state.position().y : Vec3.atCenterOf(worldPosition).y;
+        double heading = state != null ? state.heading() : nose().toYRot();
+        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + AerolargeConfig.AUTOPILOT_CLIMB.get(), ceiling(level)),
+            Mth.clamp(AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get(), MIN_SPEED, MAX_SPEED), heading);
+    }
+
+    /** The lowest height it can be set to hold: two of the screen's steps above the runway. */
+    private static double floor(double runway) {
+        return runway + 2 * ALTITUDE_STEP;
     }
 
     /** Circles a point beside the airliner, on the side it turns to, so it banks straight into the circle. */
@@ -446,9 +506,10 @@ public class AutopilotBlockEntity extends BlockEntity {
 
         double targetPitch;
         int thrust;
-        double wanted = targetHeading;
-        double bank = 0;
         boolean onGround = phase == Phase.TAKEOFF;
+        // Down the runway it holds the heading it started on; the heading set is flown once it is off the ground.
+        double wanted = onGround ? runwayHeading : targetHeading;
+        double bank = 0;
         if (onGround) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
             slowTicks = accelerating || speed < 2 ? 0 : slowTicks + 1;
@@ -557,7 +618,12 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /** A heading as a compass bearing, 0 north and 90 east, three digits. */
     public static String compass(double heading) {
-        return String.format(Locale.ROOT, "%03d", Math.floorMod(Math.round(heading) + 180, 360));
+        return String.format(Locale.ROOT, "%03d", bearing(heading));
+    }
+
+    /** A heading (Minecraft's yaw) as a compass bearing in whole degrees, 0 north and 90 east. */
+    private static int bearing(double heading) {
+        return Math.floorMod(Math.round(heading) + 180, 360);
     }
 
     /** Shows the phase, speed, height and attitude to everyone near the flight deck. */
@@ -615,6 +681,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.put("Controls", Relays.write(controls));
         saveTargets(tag);
         tag.putDouble("Trim", trim);
+        tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
         tag.putBoolean("Governing", governing);
     }
@@ -645,6 +712,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Saved as "Levers" before the tiller and the parking brake joined them.
             controls = Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY));
             trim = tag.getDouble("Trim");
+            // Saved before a take-off held the runway's heading apart from the one set.
+            runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");
             governing = tag.getBoolean("Governing");
         }
