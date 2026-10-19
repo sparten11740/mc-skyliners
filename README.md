@@ -69,12 +69,12 @@ the captain's side console, just behind the tiller, is the window shades' contro
 shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
 can open or close a window's own shade by using it.
 Overhead, just ahead of the pilots' seats, is the tail camera display, a wide screen three blocks across like an
-A380's taxiing camera screen: set into the crown in the middle, in place of the white panels along the top of the
-windscreen (at other scales than the default, where the windscreen's glass reaches back over it, of that glass), and
-tilted 45 degrees down toward the seats, so the pilots look up at it. Once the airliner is assembled it
-shows the live picture from the camera on top of the fin, the one the passenger screens look through (see below):
-the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL
-and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only while a
+A380's taxiing camera screen: hung in the middle right under the white panels along the top of the windscreen (at
+other scales than the default, where the windscreen's glass reaches back over it, under that glass), its top edge
+along the ceiling, and tilted 45 degrees down toward the seats, so the pilots look up at it. Once the airliner is
+assembled it shows the live picture from the camera on top of the fin, the one the passenger screens look through
+(see below): the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond,
+with CAM TAIL and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only while a
 display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without one it
 shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while
 the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or

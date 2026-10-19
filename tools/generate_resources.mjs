@@ -812,11 +812,11 @@ cubes.flight_display = null;
 
 // The tail camera display: a wide screen of three parts side by side, each drawn facing north; its renderer draws the
 // picture over all of it from part 0. Upright, a slim screen with its back against the south side of its block (as
-// deep as TailCameraDisplayBlock.DEPTH), dark glass on a dark casing. Tilted, as it is set into the crown: the screen
-// a plate across the block's diagonal from its top edge at the front to its bottom edge at the back (a thin slab
-// through the middle turned 45 degrees and stretched to reach both edges), its glass looking down and forward, over
-// steps that fill the half behind it out to the top and back, plated like the hull, so from outside it is skin. Only
-// part 0 drops the display, so the whole screen gives back one.
+// deep as TailCameraDisplayBlock.DEPTH), dark glass on a dark casing. Tilted, as it hangs from the crown: the screen a
+// plate across the block's diagonal, its top edge along the top of the side it faces (north, as drawn) and its bottom
+// edge along the bottom of its back (a thin slab through the middle turned 45 degrees and stretched to reach both
+// edges), its glass looking down and out the way it faces, over steps of the dark casing that fill the half behind it
+// out to the top and back. Only part 0 drops the display, so the whole screen gives back one.
 {
   const depth = 3;
   write(`assets/${ID}/models/block/tail_camera_display.json`, boxes(
@@ -824,14 +824,14 @@ cubes.flight_display = null;
     [[[0, 0, 16 - depth], [16, 16, 16], { north: "#screen", all: "#casing" }]],
   ));
   const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
-  const steps = [1, 2, 3, 4, 5, 6, 7].map((k) => ({ from: [0, 2 * k, 16 - 2 * k], to: [16, 2 * k + 2, 16], faces: all("#skin") }));
+  const steps = [1, 2, 3, 4, 5, 6, 7].map((k) => ({ from: [0, 2 * k, 16 - 2 * k], to: [16, 2 * k + 2, 16], faces: all("#casing") }));
   write(`assets/${ID}/models/block/tail_camera_display_tilted.json`, {
     parent: "minecraft:block/block",
-    textures: { screen: `${ID}:block/tail_camera_display`, skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` },
+    textures: { screen: `${ID}:block/tail_camera_display`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
     elements: [
       {
         from: [0, 7.75, 0], to: [16, 8.25, 16], rotation: { origin: [8, 8, 8], axis: "x", angle: 45, rescale: true },
-        faces: { ...all("#skin"), down: { texture: "#screen" } },
+        faces: { ...all("#casing"), down: { texture: "#screen" } },
       },
       ...steps,
     ],

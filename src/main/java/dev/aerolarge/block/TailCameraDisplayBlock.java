@@ -32,12 +32,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * whole airliner; its renderer draws it all. Every block of it is this block; PART says which, counting along the
  * bottom row from the viewer's left and then up, and part 0 holds the block entity the whole screen is drawn from.
  * FACING is the way the screen faces. Upright, it is a slim screen with its back to whatever it is fixed to. TILTED, it
- * is set into a ceiling like an overhead monitor: the screen runs across each block's diagonal, from its bottom edge
- * at the back to its top edge at the front, so it looks down toward FACING at 45 degrees, and behind it the block is
- * filled out to its top and back, plated like the hull, closed to the light, so set into the airliner's skin it keeps
- * the skin closed. Placed by hand against a wall it stands upright, put up against the underside of a block it hangs
- * tilted, and anywhere else it stands upright facing whoever puts it there; it needs the room for all of it and puts
- * every part up at once. Taking any part away takes the whole screen, which drops one display from part 0.
+ * hangs from a ceiling like an overhead monitor: the screen runs across each block's diagonal, from the bottom edge of
+ * its back up to the top edge of the side it faces, along the ceiling, so it looks down toward FACING at 45 degrees and
+ * whoever is out that way and below looks straight up at it; behind it the casing fills the block out to its top and
+ * back. Placed by hand against a wall it stands upright, put up against the underside of a block it
+ * hangs tilted, and anywhere else it stands upright facing whoever puts it there; it needs the room for all of it and
+ * puts every part up at once. Taking any part away takes the whole screen, which drops one display from part 0.
  */
 public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<TailCameraDisplayBlock> CODEC = simpleCodec(TailCameraDisplayBlock::new);
@@ -175,17 +175,6 @@ public class TailCameraDisplayBlock extends HorizontalDirectionalBlock implement
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return (state.getValue(TILTED) ? TILTED_SHAPES : UPRIGHT_SHAPES).get(state.getValue(FACING));
-    }
-
-    /** Tilted, it fills the skin it is set into: no daylight comes through it. */
-    @Override
-    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
-        return !state.getValue(TILTED) && super.propagatesSkylightDown(state, level, pos);
-    }
-
-    @Override
-    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.getValue(TILTED) ? level.getMaxLightLevel() : super.getLightBlock(state, level, pos);
     }
 
     @Nullable

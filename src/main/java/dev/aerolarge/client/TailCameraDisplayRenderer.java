@@ -34,7 +34,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final float UPRIGHT_FACE = -0.5F + TailCameraDisplayBlock.DEPTH / 16F + 0.002F;
     /** The tilted face, from the middle of the block, lifted just off the screen plate across its diagonal. */
     private static final float TILTED_FACE = 0.03F;
-    /** How far the tilted face leans back from upright, in degrees, its top edge toward the viewer. */
+    /** How far the tilted face is turned from upright, in degrees, its top edge out toward the viewer so it looks down. */
     private static final float TILT = 45;
     /** The whole face, in blocks: as wide as the screen, as tall as its rows upright or its diagonal tilted. */
     static final double WIDTH = TailCameraDisplayBlock.COLUMNS;
@@ -115,8 +115,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
         if (tilted) {
-            // Across the diagonal through the block's middle, from its bottom edge at the back to its top edge at the
-            // front.
+            // Across the diagonal through the block's middle, from the bottom edge of its back to the top edge of the
+            // side it faces: the face looks down and out that way.
             pose.mulPose(Axis.XP.rotationDegrees(TILT));
             pose.translate(-0.5, -height / 2, TILTED_FACE);
         } else {

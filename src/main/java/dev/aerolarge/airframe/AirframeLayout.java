@@ -113,6 +113,8 @@ public final class AirframeLayout {
      * seats with room to move about, and ahead of the WC and the crew room.
      */
     private static final double COCKPIT_DOOR = 7.0;
+    /** How many blocks of standing room the flight deck keeps under the tail camera display. */
+    private static final int TAIL_CAMERA_DISPLAY_HEADROOM = 2;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
@@ -1142,13 +1144,14 @@ public final class AirframeLayout {
     }
 
     /**
-     * The tail camera display, set into the crown in the middle, a station ahead of the pilots' seats, where they look
-     * up at it like an overhead monitor: the three middle blocks of the skin across the top of the cabin there give way
-     * to it, tilted down toward the seats. At the default scale (2) they are the band of white panels along the top of
-     * the windscreen; at other scales the windscreen's glass reaches over that station, and they are the glass of the
-     * crown. It goes in before the shell pass, which leaves it whole as it does anything set into the skin; behind
-     * its screen it is filled out to the skin's top and front, plated like the hull and closed to the light, so the
-     * crown stays closed. Nothing where the crown there is not three blocks of skin over open cabin.
+     * The tail camera display, hung from the crown in the middle, a station ahead of the pilots' seats, where they look
+     * up at it like an overhead monitor: right under the three middle blocks of the skin across the top of the cabin
+     * there, tilted down toward the seats, its top edge along the ceiling and its bottom edge back against the top of
+     * the windscreen. At the default scale (2) the skin over it is the band of white panels along the top of the
+     * windscreen; at other scales the windscreen's glass reaches over that station, and it hangs from the glass of the
+     * crown. The skin itself stays as it is, cut to the curve with the rest by the shell pass, so outside the crown
+     * keeps its shape. Nothing where the crown there is not three blocks of skin over open cabin, or where it would hang
+     * in the way of anyone standing under it.
      */
     private void tailCameraDisplay(int deck, int z) {
         int under = deck + 1;
@@ -1157,7 +1160,7 @@ public final class AirframeLayout {
         }
         int crown = under + 1;
         int left = -(TailCameraDisplayBlock.COLUMNS / 2);
-        if (!fits(left, under, z, TailCameraDisplayBlock.COLUMNS, 1)) {
+        if (under - (deck + 1) < TAIL_CAMERA_DISPLAY_HEADROOM || !fits(left, under, z, TailCameraDisplayBlock.COLUMNS, 1)) {
             return;
         }
         for (int column = 0; column < TailCameraDisplayBlock.COLUMNS; column++) {
@@ -1171,7 +1174,7 @@ public final class AirframeLayout {
             .setValue(TailCameraDisplayBlock.TILTED, true);
         for (int column = 0; column < TailCameraDisplayBlock.COLUMNS; column++) {
             // Facing south, the viewer's right is east.
-            set(left + column, crown, z, display.setValue(TailCameraDisplayBlock.PART, column));
+            set(left + column, under, z, display.setValue(TailCameraDisplayBlock.PART, column));
         }
     }
 
