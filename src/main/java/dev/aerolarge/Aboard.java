@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -49,11 +50,11 @@ public final class Aboard {
     }
 
     /** Whether a spot is inside a standing airliner's hull: airframe somewhere above it and somewhere below. */
-    public static boolean insideHull(Level level, BlockPos at) {
+    public static boolean insideHull(BlockGetter level, BlockPos at) {
         return hullWithin(level, at, Direction.UP, HULL_UP) && hullWithin(level, at, Direction.DOWN, HULL_DOWN);
     }
 
-    private static boolean hullWithin(Level level, BlockPos from, Direction way, int reach) {
+    private static boolean hullWithin(BlockGetter level, BlockPos from, Direction way, int reach) {
         BlockPos.MutableBlockPos at = from.mutable();
         for (int i = 0; i < reach; i++) {
             if (level.getBlockState(at.move(way)).is(AIRFRAME)) {
