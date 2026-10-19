@@ -30,8 +30,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * picture in coloured wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who
  * cannot read yet. A curtain on its own across the aisle at the front of business class, lavatories either side of
  * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, the gym
- * hall's own dividing curtain (Trennvorhang) right across the middle of the court, and a green running man over every
- * passenger door.
+ * hall's hoops mounted on its end walls, its own dividing curtain (Trennvorhang) right across the middle of the court,
+ * and a green running man over every passenger door.
  *
  * <p>Each wall stands at the station nearest where it is meant to that leaves the hull beside and over it plain skin,
  * so no window, light or seatbelt sign is walled in, and never in a door's aisle; a curtain on its own only keeps
@@ -125,11 +125,17 @@ final class CabinDividers {
         if (furnished(CabinFitOut.GYM)) {
             // A metre out from either end of the court, so the walls stop the balls missing the hoops; the room in
             // front of the court is the lavatories'.
+            int first = (int) Math.ceil(CabinFitOut.GYM[0] * layout.scale());
+            int last = (int) Math.floor(CabinFitOut.GYM[1] * layout.scale());
             Section entrance = divide(CabinFitOut.GYM[0] - 1, DyeColor.LIME, BALL, true);
             if (entrance != null) {
-                lavatories(entrance, (int) Math.ceil(CabinFitOut.GYM[0] * layout.scale()));
+                lavatories(entrance, first);
+                mountHoop(entrance.z(), first);
             }
-            divide(CabinFitOut.GYM[1] + 1, DyeColor.LIME, BALL, false);
+            Section exit = divide(CabinFitOut.GYM[1] + 1, DyeColor.LIME, BALL, false);
+            if (exit != null) {
+                mountHoop(exit.z(), last);
+            }
             Section middle = near((CabinFitOut.GYM[0] + CabinFitOut.GYM[1]) / 2, this::acrossFits);
             if (middle != null) {
                 across(middle, DyeColor.LIME);
@@ -153,6 +159,46 @@ final class CabinDividers {
                         .setValue(ExitSignBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
                 }
             }
+        }
+    }
+
+    /**
+     * The hoop at this end of the court mounted on the wall behind it, as a school gym's are, rather than standing on
+     * its pole in the way of everyone coming through the archway: the pole taken away, and the backboard and the
+     * scoreboard over it held off the wall on a bracket of the wall's own panels. Left standing where there is no pole
+     * or something is in the bracket's way.
+     */
+    private void mountHoop(int wall, int hoop) {
+        if (!layout.stateAt(0, floor + 1, hoop).is(Blocks.IRON_BARS)) {
+            return;
+        }
+        int board = floor + 1;
+        while (layout.stateAt(0, board, hoop).is(Blocks.IRON_BARS)) {
+            board++;
+        }
+        if (layout.isOpen(0, board, hoop)) {
+            return;
+        }
+        int crown = section(hoop).top();
+        int top = board;
+        while (top < crown && !layout.isOpen(0, top + 1, hoop)) {
+            top++;
+        }
+        List<BlockPos> bracket = new ArrayList<>();
+        int step = Integer.signum(wall - hoop);
+        for (int z = hoop + step; z != wall; z += step) {
+            for (int y = board; y <= top; y++) {
+                for (int x = -AISLE; x <= AISLE; x++) {
+                    if (!layout.isOpen(x, y, z)) {
+                        return;
+                    }
+                    bracket.add(new BlockPos(x, y, z));
+                }
+            }
+        }
+        bracket.forEach(at -> layout.set(at.getX(), at.getY(), at.getZ(), partition));
+        for (int y = floor + 1; y < board; y++) {
+            layout.set(0, y, hoop, Blocks.AIR.defaultBlockState());
         }
     }
 

@@ -210,10 +210,11 @@ business class and the pool, with an archway over the aisle hung with a curtain 
 business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Over each archway, on the
 side facing the doors, a picture in coloured wool shows what lies through it: a seat, a drop of water, a basketball,
 a cup. A curtain on its own crosses the aisle in front of business class. The gym hall's front wall has a lavatory
-either side of its archway, each with a toilet, a basin and its tap, and a wooden door under a picture of a person;
-a lime dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two
-courts. Over every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights
-set for the night.
+either side of its archway, each with a toilet, a basin and its tap, and a wooden door under a picture of a person.
+The hoops are mounted on the gym hall's end walls, out of the way of anyone coming through the archways, and a lime
+dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two courts. Over
+every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights set for the
+night.
 
 ### The den
 

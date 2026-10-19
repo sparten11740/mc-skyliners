@@ -76,7 +76,10 @@ final class CabinDecor {
     private static final int RINGS_LOWEST = 3;
     /** Every this many stations along the gym hall's walls at most, a team banner. */
     private static final int BANNER_SPACING = 4;
-    /** Where across the hide and seek button stands by a hoop: to starboard of its pole, a step clear of it. */
+    /**
+     * Where across the hide and seek button stands by a hoop: to starboard of the middle, a step clear of the hoop's
+     * pole where it stands on one (see {@link CabinDividers}, which mounts it on the wall behind instead).
+     */
     private static final int SEEK_BUTTON_X = 2;
 
     private final AirframeLayout layout;
@@ -522,8 +525,8 @@ final class CabinDecor {
     }
 
     /**
-     * The hide and seek button at each end of the hall, beside the hoop's pole behind the court's end line, facing the
-     * court; only where a scoreboard hangs over that hoop, as the button starts its countdown.
+     * The hide and seek button at each end of the hall, under the hoop behind the court's end line, facing the court;
+     * only where a scoreboard hangs over that hoop, as the button starts its countdown.
      */
     private void seekButtons(int fromZ, int toZ) {
         for (int z : new int[]{fromZ, toZ}) {
