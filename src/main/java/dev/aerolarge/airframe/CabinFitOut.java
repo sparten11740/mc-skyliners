@@ -73,6 +73,7 @@ final class CabinFitOut {
         new DutyFreeKiosk(layout).apply(from(LOUNGE), to(LOUNGE));
         lounge(from(LOUNGE), to(LOUNGE));
         new CabinDividers(layout).apply();
+        // After the dividers, which it keeps clear of.
         new CabinDecor(layout).apply();
         // Last: the screens go where the rest has left room, and on the backs of its seats.
         screens();

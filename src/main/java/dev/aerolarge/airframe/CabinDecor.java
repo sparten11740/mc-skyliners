@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
  * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings, team banners and hide and
  * seek buttons, and greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the
- * light cables and chains of what it hangs from a ceiling or a truss instead of the crown), it keeps the stations
- * where the zones are divided from one another free, and anything that does not fit at the airliner's scale is left
+ * light cables and chains of what it hangs from a ceiling or a truss instead of the crown), it keeps clear of the
+ * dividers between the zones, which stand already, and anything that does not fit at the airliner's scale is left
  * out.
  */
 final class CabinDecor {
@@ -45,12 +45,6 @@ final class CabinDecor {
     private static final int STARLIGHT_HEADROOM = 6;
     /** Over the floor up to this row the windows are the main deck's; any higher, the upper deck's. */
     private static final int MAIN_WINDOWS_TOP = 3;
-    /**
-     * Where the zones are divided from one another, in metres from the nose: the business class from the forward doors
-     * and from the pool, the pool from the mid doors and those from the gym hall, the aft doors from the gym hall and
-     * from the lounge. These stations and the one either side are left free for the dividers.
-     */
-    private static final double[] DIVIDERS = {13.5, 17.5, 23.5, 26.5, 48.5, 51.5};
     /** The potted plants along the lounge bar's back shelf, in turn. */
     private static final List<Block> SHELF_PLANTS = List.of(Blocks.POTTED_FLOWERING_AZALEA, Blocks.POTTED_BLUE_ORCHID, Blocks.POTTED_ORANGE_TULIP);
     /** Every this many stations along the bar's back shelf, a potted plant. */
@@ -144,12 +138,12 @@ final class CabinDecor {
     }
 
     /**
-     * Whether a station is kept free for a divider between two zones: within a station of where one stands, or of the
-     * middle of the gym hall's court.
+     * Whether a station is kept clear of the dividers between the zones: within a station of where one stands (see
+     * {@link CabinDividers}, which are up already), or of the middle of the gym hall's court, where its curtain hangs.
      */
     private boolean keptForDivider(int z) {
-        for (double station : DIVIDERS) {
-            if (Math.abs(z - (int) Math.round(station * layout.scale())) <= 1) {
+        for (int at = z - 1; at <= z + 1; at++) {
+            if (CabinDividers.standsAt(layout, at)) {
                 return true;
             }
         }

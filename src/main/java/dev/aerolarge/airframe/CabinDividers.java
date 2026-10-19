@@ -87,6 +87,14 @@ final class CabinDividers {
     }
 
     /**
+     * Whether a divider stands at the station, once they are up: each has a piece of curtain over the middle of the
+     * aisle, its archway's or its own. For what is fitted into the cabin round them.
+     */
+    static boolean standsAt(AirframeLayout layout, int z) {
+        return CurtainBlock.isCurtain(layout.stateAt(0, layout.floorY() + 1, z));
+    }
+
+    /**
      * The cabin's cross-section at a station: for each row from the floor up, how far it reaches to port and to
      * starboard, measured in from the hull so nothing standing in the cabin is taken for its wall.
      */
