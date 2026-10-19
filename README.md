@@ -187,13 +187,14 @@ falling to open it; it opens by itself if you are still falling free close to th
 gently, drift the way you walk, take no fall damage, and it packs itself away when you land. The jump light switch on
 the instrument panel cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).
 
-Open a door in flight (20 blocks or more above the ground, at 20 blocks a second or more) and the cabin decompresses
-with a bang: the air roars out through the doorway in a stream of fog, everyone aboard is warned in chat, and whoever
-stands within a few blocks of the door (3 per unit of `scale`), and anything loose (mobs, villagers out of their
-seats, dropped items, a basketball, a trolley), is dragged to it, the harder the closer, and flung out into the sky,
-wherever the air has a clear way to the door (not up through the floor from the hold, or round a wall). Anyone seated
-is belted in and stays put. With a parachute on, being sucked out is just the start of a skydive; close the door from
-a few steps back to stop it. Turn it off with `decompression` in the server config.
+Open one of the hull's doors in flight (20 blocks or more above the ground, at 20 blocks a second or more; the
+cockpit door, the WC's and the crew room's are not among them) and the cabin decompresses with a bang: the air roars
+out through the doorway in a stream of fog, everyone aboard is warned in chat, and whoever stands within a few blocks
+of the door (3 per unit of `scale`), and anything loose (mobs, villagers out of their seats, dropped items, a
+basketball, a trolley), is dragged to it, the harder the closer, and flung out into the sky, wherever the air has a
+clear way to the door (not up through the floor from the hold, or round a wall). Anyone seated is belted in and stays
+put. With a parachute on, being sucked out is just the start of a skydive; close the door from a few steps back to
+stop it. Turn it off with `decompression` in the server config.
 
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
 everyone nearby with its distance from the middle, and using the target shows the best landing so far.

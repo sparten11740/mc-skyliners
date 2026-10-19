@@ -47,10 +47,12 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>One per assembled airliner, worked by its autopilot, which reads the airliner each tick anyway. The airliner's
  * doors are found once, a slice of the fuselage a tick from the flight deck back, so after that only those few blocks
- * are looked at. A door stands in the airliner's plot, so its wind and fog are set there, where Sable carries them
- * along with the airliner; the doorway is projected out into the world for the pull, since whatever is aboard a flying
- * airliner is in the world. Sable carries that along with the cabin too, so it is pushed relative to the cabin; only
- * a loose thing clear of the airliner is carried by nothing, and is sent off at the airliner's speed.
+ * are looked at; only the doors in the hull's sides count, not the cockpit door or the WC's and the crew room's behind
+ * it, which open from one room of the cabin into another. A door stands in the airliner's plot, so its wind and fog
+ * are set there, where Sable carries them along with the airliner; the doorway is projected out into the world for the
+ * pull, since whatever is aboard a flying airliner is in the world. Sable carries that along with the cabin too, so it
+ * is pushed relative to the cabin; only a loose thing clear of the airliner is carried by nothing, and is sent off at
+ * the airliner's speed.
  */
 public final class Decompression {
     /** Each assembled airliner's, by its autopilot: forgotten with it, so its doors are found afresh once reassembled. */
@@ -71,6 +73,12 @@ public final class Decompression {
     private static final double SEARCH_BACK_PER_SCALE = 52;
     private static final double SEARCH_ACROSS_PER_SCALE = 4;
     private static final double SEARCH_BELOW_PER_SCALE = 9;
+    /**
+     * How far out to either side of the middle a door has to stand to be in the hull's side, in blocks per unit of
+     * scale: the passenger doors stand at the fuselage's sides (it is 7.1 m wide), the cargo door in the hold over
+     * 2.4 m out, and the doors inside the cabin by the aisle, within about a metre and a half of the middle.
+     */
+    private static final double HULL_SIDE_PER_SCALE = 2;
     /** How far from the middle of a doorway its pull reaches, in blocks per unit of scale: a few steps along the aisle. */
     private static final double REACH_PER_SCALE = 3;
     /**
@@ -146,7 +154,11 @@ public final class Decompression {
         }
     }
 
-    /** Looks through the next slice of the fuselage back from the autopilot for doors, until it has been all the way. */
+    /**
+     * Looks through the next slice of the fuselage back from the autopilot for doors in the hull's sides, until it has
+     * been all the way. The autopilot stands on the centreline, so a column's way across from it is its way out from
+     * the middle.
+     */
     private void search(ServerLevel level, BlockPos autopilot, Direction nose) {
         double scale = AerolargeConfig.SCALE.get();
         if (searched > SEARCH_BACK_PER_SCALE * scale) {
@@ -156,6 +168,9 @@ public final class Decompression {
         int across = (int) Math.ceil(SEARCH_ACROSS_PER_SCALE * scale);
         int below = (int) Math.ceil(SEARCH_BELOW_PER_SCALE * scale);
         for (int side = -across; side <= across; side++) {
+            if (Math.abs(side) < HULL_SIDE_PER_SCALE * scale) {
+                continue;
+            }
             BlockPos column = slice.relative(nose.getClockWise(), side);
             // All of an airliner's plot is loaded; never load a chunk just to look into it.
             if (!level.isLoaded(column)) {
