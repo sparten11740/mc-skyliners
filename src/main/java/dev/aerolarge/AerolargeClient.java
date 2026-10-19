@@ -83,6 +83,7 @@ public final class AerolargeClient {
         modEventBus.addListener(AerolargeClient::onRegisterParticles);
         modEventBus.addListener(AerolargeClient::onRegisterGuiLayers);
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, AerolargeRegistry.CABIN_CURTAIN.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
     }

@@ -882,8 +882,28 @@ const ROOM_DIVIDER_LANG = {
   write(`assets/${ID}/blockstates/cabin_partition.json`, { variants: { "": { model: `${ID}:block/cabin_partition` } } });
   write(`assets/${ID}/models/block/cabin_partition.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/cabin_partition` } });
   write(`assets/${ID}/models/item/cabin_partition.json`, { parent: `${ID}:block/cabin_partition` });
+  // A curtain comes down in its colour, kept as the block state to hang it in (as picking one does, see
+  // CurtainBlock); white, the cloth's own, is left off, so white curtains stack with new ones.
+  const curtain = `${ID}:cabin_curtain`;
+  write(`data/${ID}/loot_table/blocks/cabin_curtain.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: curtain,
+        functions: [{
+          function: "minecraft:copy_state", block: curtain, properties: ["color"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: curtain, properties: { color: "white" } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/cabin_curtain`,
+  });
   for (const name of ROOM_DIVIDERS) {
-    dropsItself(name);
+    if (name !== "cabin_curtain") {
+      dropsItself(name);
+    }
     cubes[name] = null;
   }
 }

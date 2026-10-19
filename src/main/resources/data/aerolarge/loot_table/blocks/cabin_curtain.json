@@ -7,7 +7,28 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "aerolarge:cabin_curtain"
+          "name": "aerolarge:cabin_curtain",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "aerolarge:cabin_curtain",
+              "properties": [
+                "color"
+              ],
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "condition": "minecraft:block_state_property",
+                    "block": "aerolarge:cabin_curtain",
+                    "properties": {
+                      "color": "white"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         }
       ],
       "conditions": [

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,11 +18,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -108,6 +111,26 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
         return state.getValue(COLOR).getTextureDiffuseColor();
     }
 
+    /** The colour the client tints a curtain in hand or in an inventory with: the colour it was taken down in. */
+    public static int itemTint(ItemStack stack, int tintIndex) {
+        DyeColor color = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY).get(COLOR);
+        return (color != null ? color : DyeColor.WHITE).getTextureDiffuseColor();
+    }
+
+    /**
+     * A curtain in the piece's colour, the way one broken down comes back (the loot table copies the colour the same
+     * way): the colour rides along as the block state to hang it in, and white, the cloth's own, is left off, so white
+     * curtains stack with new ones.
+     */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        if (state.getValue(COLOR) != DyeColor.WHITE) {
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(COLOR, state.getValue(COLOR)));
+        }
+        return stack;
+    }
+
     /** The way to a curtain's left, in its plane, seen looking the way it faces. */
     public static Direction leftOf(Direction facing) {
         return facing.getCounterClockWise();
@@ -129,7 +152,8 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
 
     /**
      * Hung beside, under or over a curtain in its plane (the block clicked first), it carries that curtain on, the
-     * same way round, colour and drawn the same; anywhere else it hangs across the way its hanger looks, shut.
+     * same way round, colour and drawn the same; anywhere else it hangs across the way its hanger looks, shut. A
+     * curtain that came down in a colour goes back up in it, whatever it carries on (see {@link #getCloneItemStack}).
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
