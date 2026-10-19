@@ -118,13 +118,30 @@ public class PlugDoorBlockEntity extends BlockEntity {
         }
         boolean signal = false;
         for (BlockPos part : PlugDoorBlock.parts(level, worldPosition)) {
-            signal |= level.hasNeighborSignal(part);
+            signal |= signalAt(level, part);
         }
         if (signal != powered) {
             powered = signal;
             setChanged();
             set(signal);
         }
+    }
+
+    /**
+     * Whether a redstone signal reaches a part from beside it, but for the airliner's own workings in the jamb: the
+     * relay lighting the jump light there, which would open the aft doors as the light turned red, and the airstair
+     * controller, which works its door itself and would have it open on a button's press and shut as the button popped
+     * back out.
+     */
+    private static boolean signalAt(Level level, BlockPos part) {
+        for (Direction side : Direction.values()) {
+            BlockPos next = part.relative(side);
+            Block block = level.getBlockState(next).getBlock();
+            if (!(block instanceof ThrustRelayBlock) && !(block instanceof AirstairControllerBlock) && level.getSignal(next, side) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void move(boolean open) {
