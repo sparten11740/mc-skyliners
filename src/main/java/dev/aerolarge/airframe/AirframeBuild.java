@@ -4,9 +4,11 @@ import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import dev.aerolarge.AerolargeConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -29,6 +31,13 @@ import net.minecraft.world.phys.AABB;
 public final class AirframeBuild {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final Map<ServerLevel, List<AirframeBuild>> ACTIVE = new IdentityHashMap<>();
+    /**
+     * The size of each stretch of glue across and up, in blocks. Create and the Physics Assembler look for glue only
+     * around the blocks they are joining, which finds a glue entity only when its position (the middle of its base) is
+     * within about 16 blocks; so the airliner is glued in overlapping stretches no bigger than that reach.
+     */
+    private static final int GLUE_ACROSS = 24;
+    private static final int GLUE_UP = 16;
 
     private final List<BlockPos> positions;
     private final List<BlockState> states;
@@ -118,9 +127,10 @@ public final class AirframeBuild {
     }
 
     /**
-     * Glues the finished airliner together with one stretch of Create's Super Glue over all of it, which is what the
-     * Physics Assembler takes as the structure to assemble. Anything built inside the hull later is under the same
-     * glue and flies along.
+     * Glues the finished airliner together with Create's Super Glue, which is what the Physics Assembler takes as the
+     * structure to assemble. The glue goes on as a grid of stretches over the airliner's bounds, each overlapping the
+     * next by a block so every pair of neighbouring blocks shares one, and only where the airliner has blocks. Anything
+     * built inside the hull later is under the same glue and flies along.
      */
     private void glue(ServerLevel level) {
         BlockPos min = null;
@@ -132,9 +142,36 @@ public final class AirframeBuild {
                 max = max == null ? pos : BlockPos.max(max, pos);
             }
         }
-        if (min != null) {
-            level.addFreshEntity(new SuperGlueEntity(level, AABB.encapsulatingFullBlocks(min, max)));
+        if (min == null) {
+            return;
         }
+        Set<BlockPos> stretches = new HashSet<>();
+        for (int i = 0; i < positions.size(); i++) {
+            if (!states.get(i).isAir()) {
+                BlockPos pos = positions.get(i).subtract(min);
+                for (int x : stretchesOver(pos.getX(), GLUE_ACROSS)) {
+                    for (int y : stretchesOver(pos.getY(), GLUE_UP)) {
+                        for (int z : stretchesOver(pos.getZ(), GLUE_ACROSS)) {
+                            stretches.add(new BlockPos(x, y, z));
+                        }
+                    }
+                }
+            }
+        }
+        for (BlockPos stretch : stretches) {
+            BlockPos from = min.offset(stretch.getX() * (GLUE_ACROSS - 1), stretch.getY() * (GLUE_UP - 1), stretch.getZ() * (GLUE_ACROSS - 1));
+            BlockPos to = BlockPos.min(max, from.offset(GLUE_ACROSS - 1, GLUE_UP - 1, GLUE_ACROSS - 1));
+            level.addFreshEntity(new SuperGlueEntity(level, AABB.encapsulatingFullBlocks(from, to)));
+        }
+    }
+
+    /**
+     * The stretches of glue along one axis that cover a block this far from the start, each {@code size} long and
+     * starting {@code size - 1} after the one before: one, or two where neighbouring stretches overlap.
+     */
+    private static int[] stretchesOver(int offset, int size) {
+        int stretch = offset / (size - 1);
+        return stretch > 0 && offset % (size - 1) == 0 ? new int[]{stretch - 1, stretch} : new int[]{stretch};
     }
 
     /** Places the next batch; true once the whole airliner stands. */
