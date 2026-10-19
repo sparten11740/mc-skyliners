@@ -37,9 +37,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Villagers find their way through it as through a wooden door: while the airliner stands still (or is not
  * assembled at all), it opens for a villager that walks up to it from either side, and shuts again behind it once no
- * villager has been at it for a moment. So passengers board and leave by whatever door they come to; in flight no
- * villager opens it, and a door a villager opened shuts by itself. A door opened by hand, by redstone, by the airstairs
- * or by a jet bridge stays as it was put.
+ * villager has been at it for a moment, or as soon as the airliner moves off. So passengers board and leave by whatever
+ * door they come to; in flight no villager opens it, and a door a villager opened shuts by itself. A door opened by
+ * hand, by redstone, by the airstairs or by a jet bridge stays as it was put.
  */
 public class PlugDoorBlockEntity extends BlockEntity {
     /** How long the door takes to open or shut, in ticks: a second and a quarter. */
@@ -50,7 +50,10 @@ public class PlugDoorBlockEntity extends BlockEntity {
     private static final int VILLAGER_LINGER = 40;
     /** How far out from the doorway, either side, a villager is at the door, in blocks. */
     private static final double APPROACH = 1.25;
-    /** Faster than this, in blocks a second, the airliner is moving, and no villager opens the door. */
+    /**
+     * Faster than this, in blocks a second, the airliner is moving: no villager opens the door, and one opened for them
+     * shuts.
+     */
     private static final double MOVING = 0.5;
     /**
      * How far out of the frame the panel moves before it swings away, in blocks: clear of the hull by a little more
@@ -234,15 +237,17 @@ public class PlugDoorBlockEntity extends BlockEntity {
 
     /**
      * Opens the door for a villager at it, shut and standing still, and shuts a door it opened for villagers once none
-     * has been at it for a while.
+     * has been at it for a while, or at once as the airliner moves off: a villager lingering in the doorway would
+     * otherwise hold it open into the sky.
      */
     private void villagers(ServerLevel level) {
         boolean near = villagerAt(level);
         villagersGone = near ? 0 : Math.min(villagersGone + LOOK_TICKS, VILLAGER_LINGER);
-        if (near && !open && ticks == 0 && SableFlight.velocity(level, middle()).length() <= MOVING) {
+        boolean still = SableFlight.velocity(level, middle()).length() <= MOVING;
+        if (near && still && !open && ticks == 0) {
             forVillagers = true;
             move(true);
-        } else if (open && forVillagers && villagersGone >= VILLAGER_LINGER) {
+        } else if (open && forVillagers && (villagersGone >= VILLAGER_LINGER || !still)) {
             forVillagers = false;
             move(false);
         }
