@@ -67,6 +67,11 @@ the captain's handset and the cabin lights' dimmer. The dimmer steps every light
 the captain's side console, just behind the tiller, is the window shades' control: it runs every cabin window's
 shade down, or up again, the same way, with the whirr of their motors. A closed shade shuts out the daylight; anyone
 can open or close a window's own shade by using it.
+Over the autopilot screen, in the middle where both pilots see it beside their own view ahead, is the tail camera
+display, a wide screen three blocks across like an A380's taxiing camera screen. Until it has a picture it shows a
+test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY while the
+airliner stands as blocks. A Tail Camera Display can be crafted and put up in your own builds too: it reaches two
+blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.

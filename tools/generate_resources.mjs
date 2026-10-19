@@ -717,6 +717,37 @@ write(`assets/${ID}/blockstates/flight_display.json`, {
 });
 cubes.flight_display = null;
 
+// The tail camera display: a wide, slim screen of three parts side by side, each drawn facing north with its back
+// against the south side of its block (as deep as TailCameraDisplayBlock.DEPTH), dark glass on a dark casing; its
+// renderer draws the picture over all of it from part 0. Only part 0 drops the display, so the whole screen gives
+// back one.
+{
+  const depth = 3;
+  write(`assets/${ID}/models/block/tail_camera_display.json`, boxes(
+    { screen: `${ID}:block/tail_camera_display`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+    [[[0, 0, 16 - depth], [16, 16, 16], { north: "#screen", all: "#casing" }]],
+  ));
+  write(`assets/${ID}/blockstates/tail_camera_display.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [0, 1, 2].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/tail_camera_display`, y }]))),
+  });
+  write(`assets/${ID}/models/item/tail_camera_display.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/tail_camera_display` } });
+  write(`data/${ID}/loot_table/blocks/tail_camera_display.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:tail_camera_display` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:tail_camera_display`, properties: { part: "0" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/tail_camera_display`,
+  });
+  cubes.tail_camera_display = null;
+}
+
 // The autopilot: a panel block whose screen faces the pilots, away from the nose it points with.
 write(`assets/${ID}/models/block/autopilot.json`, {
   parent: "minecraft:block/orientable",
@@ -857,6 +888,7 @@ shaped("nav_light", [" G ", "GTG"], { G: "minecraft:glass_pane", T: "minecraft:r
 shaped("tiller", [" S ", "RPR"], { S: "minecraft:stick", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
+shaped("tail_camera_display", ["GGG", "PSP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, S: "minecraft:spyglass" }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
@@ -1088,6 +1120,9 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.pa_chime": "Cabin chime",
   "subtitles.aerolarge.radio_crackle": "Radio crackles",
   "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
+  "block.aerolarge.tail_camera_display": "Tail Camera Display",
+  "screen.aerolarge.tail_camera_display.no_signal": "NO SIGNAL",
+  "screen.aerolarge.tail_camera_display.standby": "ASSEMBLE TO FLY",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",

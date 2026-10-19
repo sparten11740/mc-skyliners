@@ -744,6 +744,22 @@ blueprint("furnished_airliner_blueprint", true);
     return tile ? [0x13, 0x2d, 0x59] : [0x08, 0x12, 0x26];
   }, 1);
   texture(blockOutput, "passenger_screen_casing", () => [0x2c, 0x30, 0x36]);
+
+  // The tail camera display's glass, for when it is too far off to be drawn live: dark, with the bezel along its top
+  // and bottom only, so three side by side make one wide screen. In the hand: that screen showing the airliner from
+  // behind against the sky and the ground, a red recording light in its corner.
+  texture(blockOutput, "tail_camera_display", (x, y) => (y === 0 || y === 15 ? BEZEL : [0x0a, 0x0e, 0x14]), 1);
+  texture(itemOutput, "tail_camera_display", (x, y) => {
+    if (y < 3 || y > 12) return CLEAR;
+    if (x === 0 || x === 15 || y === 3 || y === 12) return BEZEL;
+    if (x === 2 && y === 5) return [0xe0, 0x30, 0x30];
+    const fin = (x === 7 || x === 8) && y >= 4 && y <= 6;
+    const fuselage = x >= 6 && x <= 9 && y >= 7 && y <= 9;
+    const wings = x >= 2 && x <= 13 && y === 8;
+    if (fin || fuselage || wings) return INK;
+    if ((x === 4 || x === 11) && y === 9) return [0x9a, 0xa0, 0xa6];
+    return y <= 8 ? [0x6c, 0xa8, 0xe0] : [0x4a, 0x8a, 0x3c];
+  }, 0);
 }
 
 // The control panels' pictures, in the glass cockpit's colours: every setting and button has one, so the panels work

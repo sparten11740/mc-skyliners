@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,part=0": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 0
+    },
+    "facing=north,part=1": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 0
+    },
+    "facing=north,part=2": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 0
+    },
+    "facing=east,part=0": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 90
+    },
+    "facing=east,part=1": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 90
+    },
+    "facing=east,part=2": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 90
+    },
+    "facing=south,part=0": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 180
+    },
+    "facing=south,part=1": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 180
+    },
+    "facing=south,part=2": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 180
+    },
+    "facing=west,part=0": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 270
+    },
+    "facing=west,part=1": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 270
+    },
+    "facing=west,part=2": {
+      "model": "aerolarge:block/tail_camera_display",
+      "y": 270
+    }
+  }
+}

@@ -31,6 +31,7 @@ import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
+import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.TillerBlock;
@@ -112,6 +113,11 @@ public final class AirframeLayout {
      * seats with room to move about, and ahead of the WC and the crew room.
      */
     private static final double COCKPIT_DOOR = 7.0;
+    /**
+     * How many stations back from the instrument panel the tail camera display may hang, where the windscreen comes
+     * down over the panel's own station: no further than the pilots' legroom, ahead of the pedestal.
+     */
+    private static final int TAIL_CAMERA_DISPLAY_SETBACK = 1;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
@@ -1020,6 +1026,7 @@ public final class AirframeLayout {
         BlockPos autopilot = new BlockPos(0, deck + 1, pedestalZ);
         autopilot(autopilot, engines, controls);
         autopilotScreen(deck + 1, panelZ, autopilot);
+        tailCameraDisplay(deck + 1 + AutopilotScreenBlock.ROWS, panelZ);
         // The jump light switch in the panel, beside the screen on the first officer's side.
         int switchX = AutopilotScreenBlock.COLUMNS / 2 + 1;
         if (switchX <= panelWidth && stateAt(switchX, deck + 1, panelZ).is(panel.getBlock())) {
@@ -1120,12 +1127,9 @@ public final class AirframeLayout {
      */
     private void autopilotScreen(int bottom, int z, BlockPos autopilot) {
         int left = -(AutopilotScreenBlock.COLUMNS / 2);
-        for (int row = 1; row < AutopilotScreenBlock.ROWS; row++) {
-            for (int column = 0; column < AutopilotScreenBlock.COLUMNS; column++) {
-                if (!isOpen(left + column, bottom + row, z)) {
-                    return;
-                }
-            }
+        // Its bottom row is set into the panel; the rows over it need open space.
+        if (!fits(left, bottom + 1, z, AutopilotScreenBlock.COLUMNS, AutopilotScreenBlock.ROWS - 1)) {
+            return;
         }
         BlockState screen = AerolargeRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, Direction.SOUTH);
         for (int row = 0; row < AutopilotScreenBlock.ROWS; row++) {
@@ -1140,6 +1144,39 @@ public final class AirframeLayout {
                 linked.configure(autopilot.subtract(origin).rotate(rotation));
             }
         });
+    }
+
+    /**
+     * The tail camera display, in the middle just over the autopilot screen, where both pilots see it beside their own
+     * view ahead through the windscreen: in the panel's station where the windscreen leaves room under it, or else a
+     * station further back, hung under the glass of the crown; facing the pilots. Nothing where neither has room.
+     */
+    private void tailCameraDisplay(int bottom, int panelZ) {
+        int left = -(TailCameraDisplayBlock.COLUMNS / 2);
+        for (int z = panelZ; z <= panelZ + TAIL_CAMERA_DISPLAY_SETBACK; z++) {
+            if (fits(left, bottom, z, TailCameraDisplayBlock.COLUMNS, TailCameraDisplayBlock.ROWS)) {
+                BlockState display = AerolargeRegistry.TAIL_CAMERA_DISPLAY.get().defaultBlockState().setValue(TailCameraDisplayBlock.FACING, Direction.SOUTH);
+                for (int row = 0; row < TailCameraDisplayBlock.ROWS; row++) {
+                    for (int column = 0; column < TailCameraDisplayBlock.COLUMNS; column++) {
+                        // Facing south, the viewer's right is east.
+                        set(left + column, bottom + row, z, display.setValue(TailCameraDisplayBlock.PART, row * TailCameraDisplayBlock.COLUMNS + column));
+                    }
+                }
+                return;
+            }
+        }
+    }
+
+    /** Whether the cabin is open over the whole of a rectangle across station z, from its bottom left corner. */
+    private boolean fits(int left, int bottom, int z, int columns, int rows) {
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                if (!isOpen(left + column, bottom + row, z)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
