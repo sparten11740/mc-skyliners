@@ -938,6 +938,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
   "message.aerolarge.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
   "message.aerolarge.parachute_rack.wearing": "You are already wearing a parachute.",
+  "message.aerolarge.decompression": "Door open! Explosive decompression: keep clear of the door, or stay in your seat.",
   "message.aerolarge.landing_target.landed": "%s landed %s blocks from the target",
   "message.aerolarge.landing_target.record": "%s landed %s blocks from the target: a new best!",
   "message.aerolarge.landing_target.best": "Best landing: %s, %s blocks from the middle",
@@ -1115,6 +1116,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.tireItem": "Tire Item",
   "aerolarge.configuration.cabin": "Cabin",
   "aerolarge.configuration.turbulence": "Turbulence",
+  "aerolarge.configuration.decompression": "Decompression",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],

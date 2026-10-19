@@ -17,6 +17,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
+    public static final ModConfigSpec.BooleanValue DECOMPRESSION;
     public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
 
     static {
@@ -92,6 +93,12 @@ public final class AerolargeConfig {
                 "It comes a little more often and harder in rain, and much more often, longer and harder in a thunderstorm."
             )
             .define("turbulence", true);
+        DECOMPRESSION = builder
+            .comment(
+                "Whether a door opened in flight lets the air rush out of the airliner: whoever stands near it, and anything loose, is dragged to the door and flung out.",
+                "Anyone seated stays put; with a parachute on, being sucked out is just the start of a skydive."
+            )
+            .define("decompression", true);
         VILLAGER_PASSENGERS = builder
             .comment(
                 "Whether villagers fly as passengers: handed a boarding pass from a check-in desk, a villager walks aboard and takes a seat,",

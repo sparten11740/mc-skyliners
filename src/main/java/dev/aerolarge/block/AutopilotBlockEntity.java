@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.cabin.Decompression;
 import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.SableFlight;
 import java.util.EnumMap;
@@ -498,6 +499,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), autopilot.radioAltitude(serverLevel, flight), flight.airspeed());
+        Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, autopilot.radioAltitude(serverLevel, flight));
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {
