@@ -34,8 +34,9 @@ blocks cut to the fuselage's curve, and two rows of tall cabin windows run its l
 with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the cabin walls keep it
 bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
-a white tail light and red beacons above and below the fuselage. Each engine is heard spooling up and down with its
-thrust, quieter from inside the cabin, and high up it leaves a contrail.
+a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
+and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. Each
+engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a contrail.
 
 ### Flight deck
 
@@ -242,7 +243,8 @@ The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save
 The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`
 and fitted out by `CabinFitOut`; the skin follows the curve in `ShellGeometry`'s shapes, which `ShellModel`
 bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity` flies, reading the airliner
-from Sable through `SableFlight`. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where
+each engine's core was told they are. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

@@ -39,6 +39,11 @@ final class AirframeShape {
     static final double NACELLE_LENGTH = 7.0;
     static final double NACELLE_DROP = 2.1;
     static final double NACELLE_AHEAD = 3.6;
+    /** Where along the nacelle the barrel gives way to the exhaust cone, and how much narrower the cone ends. */
+    private static final double CONE_START = 0.7 * NACELLE_LENGTH;
+    private static final double CONE_NARROWING = 0.35;
+    /** The intake's mouth, inside the lip of the cowl, as a share of the nacelle's radius. */
+    static final double INTAKE_MOUTH = 0.8;
 
     static final double FIN_ROOT_LEADING_EDGE = 56.0;
     static final double FIN_SWEEP = 0.9;
@@ -169,11 +174,18 @@ final class AirframeShape {
         if (along < 0 || along > NACELLE_LENGTH) {
             return 0;
         }
-        double coneStart = 0.7 * NACELLE_LENGTH;
-        if (along < coneStart) {
+        if (along < CONE_START) {
             return NACELLE_RADIUS;
         }
-        return NACELLE_RADIUS * (1 - 0.35 * (along - coneStart) / (NACELLE_LENGTH - coneStart));
+        return NACELLE_RADIUS * (1 - CONE_NARROWING * (along - CONE_START) / (NACELLE_LENGTH - CONE_START));
+    }
+
+    /**
+     * How fast the nacelle narrows going aft at a distance along it, in metres of radius a metre: not at all along the
+     * barrel.
+     */
+    static double nacelleTaper(double along) {
+        return along < CONE_START ? 0 : NACELLE_RADIUS * CONE_NARROWING / (NACELLE_LENGTH - CONE_START);
     }
 
     static double lerp(double from, double to, double t) {

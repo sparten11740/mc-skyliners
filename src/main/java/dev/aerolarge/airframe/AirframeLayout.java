@@ -18,6 +18,7 @@ import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.DropReleaseBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
+import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.HandsetBlock;
@@ -1133,8 +1134,10 @@ public final class AirframeLayout {
     }
 
     /**
-     * One engine: a round nacelle under the wing at span station x (negative to port), the intake face up front,
-     * the thrusters filling the middle of the exhaust face, and a pylon up to the wing.
+     * One engine: a round nacelle under the wing at span station x (negative to port), cut to its curve, the intake
+     * up front, the thrusters filling the middle of the exhaust face, and a pylon up to the wing. The intake's face is
+     * the cowl's skin round a mouth of intake blocks; the engine's core is told where it is, so the client can draw
+     * the cowl's lip, the fan and its spinner over it, round at any scale.
      */
     private void engine(double x) {
         double front = nacelleFront(Math.abs(x));
@@ -1152,7 +1155,9 @@ public final class AirframeLayout {
                     }
                     BlockState state = palette.hull();
                     if (!inNacelle(x, centreY, front, xb, y, z - 1)) {
-                        state = palette.intake();
+                        if (inMouth(x, centreY, front, xb, y, z)) {
+                            state = palette.intake();
+                        }
                     } else if (!inNacelle(x, centreY, front, xb, y, z + 1)) {
                         double radius = nacelleRadius((z + 0.5) / scale - front);
                         double off = Math.hypot(xb / scale - x, (y + 0.5) / scale - centreY);
@@ -1173,8 +1178,11 @@ public final class AirframeLayout {
         // The relay nearest the middle of the exhaust is the engine's core, where it is heard and its contrail starts.
         engineRelays.getOrDefault(x, List.of()).stream()
             .min(Comparator.comparingDouble(relay -> Math.hypot(relay.getX() - x * scale, relay.getY() - centreY * scale)))
-            .ifPresent(core -> set(core.getX(), core.getY(), core.getZ(),
-                AerolargeRegistry.ENGINE_CORE.get().defaultBlockState().setValue(EngineCoreBlock.FACING, Direction.NORTH)));
+            .ifPresent(core -> {
+                set(core.getX(), core.getY(), core.getZ(),
+                    AerolargeRegistry.ENGINE_CORE.get().defaultBlockState().setValue(EngineCoreBlock.FACING, Direction.NORTH));
+                fitIntake(core, x, centreY, front);
+            });
         int pylonFrom = (int) Math.floor((front + 1.5) * scale);
         int pylonTo = (int) Math.floor((front + NACELLE_LENGTH - 1) * scale);
         for (int z = pylonFrom; z <= pylonTo; z++) {
@@ -1186,6 +1194,105 @@ public final class AirframeLayout {
                 set(centreX, y, z, palette.hull());
             }
         }
+        roundNacelle(x, centreY, front);
+    }
+
+    /**
+     * Tells the engine's core where its intake is (see {@link EngineCoreBlockEntity.Intake}): from the core's middle
+     * along the nose to the intake's face, the first row of the nacelle, and across to the nacelle's axis there, with
+     * the radii of the nacelle and of the mouth, in blocks. A block's middle stands for the point x / scale across,
+     * (y + 0.5) / scale up and (z + 0.5) / scale back.
+     */
+    private void fitIntake(BlockPos core, double x, double centreY, double front) {
+        int face = (int) Math.ceil(front * scale - 0.5);
+        EngineCoreBlockEntity.Intake intake = new EngineCoreBlockEntity.Intake(
+            (float) (core.getZ() + 0.5 - face),
+            (float) (x * scale - core.getX()),
+            (float) (centreY * scale - core.getY() - 0.5),
+            (float) (NACELLE_RADIUS * scale),
+            (float) (INTAKE_MOUTH * NACELLE_RADIUS * scale)
+        );
+        fittings.put(core, (blockEntity, rotation) -> {
+            if (blockEntity instanceof EngineCoreBlockEntity engine) {
+                engine.configure(intake);
+            }
+        });
+    }
+
+    /**
+     * Cuts the nacelle's skin to its curve, as the fuselage's is: every plain skin block on its surface becomes shell,
+     * cut where the barrel or the exhaust cone passes through it (the intake's lip included) or whole where the
+     * surface lies beyond it, and the empty blocks beside it that the surface still clips get a sliver of shell, so
+     * the nacelle reads round from every side. Being shell, none of it is cut again by the fairings. Skin the pylon or
+     * the wing stands against stays as it is, so nothing opens up where they meet it, and nothing is added above or
+     * below the nacelle's own rows, so it hangs no lower.
+     */
+    private void roundNacelle(double x, double centreY, double front) {
+        BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
+        int reach = (int) Math.ceil(NACELLE_RADIUS * scale) + 2;
+        int centreX = (int) Math.round(x * scale);
+        int centreYb = (int) Math.floor(centreY * scale);
+        Map<BlockPos, BlockState> shaped = new HashMap<>();
+        for (int z = (int) Math.floor(front * scale); z <= Math.ceil((front + NACELLE_LENGTH) * scale); z++) {
+            double along = (z + 0.5) / scale - front;
+            if (along < 0 || along > NACELLE_LENGTH) {
+                continue;
+            }
+            for (int y = centreYb - reach; y <= centreYb + reach; y++) {
+                for (int xb = centreX - reach; xb <= centreX + reach; xb++) {
+                    BlockPos pos = new BlockPos(xb, y, z);
+                    int shape = nacelleShape(x, centreY, front, xb, y, z);
+                    boolean surface = inNacelle(x, centreY, front, xb, y, z)
+                        ? stateAt(xb, y, z).is(palette.hull().getBlock()) && openSurface(x, centreY, front, pos)
+                        : shape > ShellGeometry.WHOLE && !has(xb, y, z)
+                            && (inNacelle(x, centreY, front, xb - 1, y, z) || inNacelle(x, centreY, front, xb + 1, y, z));
+                    if (surface) {
+                        shaped.put(pos, shell.setValue(ShellBlock.SHAPE, Math.max(shape, ShellGeometry.WHOLE)));
+                    }
+                }
+            }
+        }
+        shaped.forEach((pos, state) -> set(pos.getX(), pos.getY(), pos.getZ(), state));
+    }
+
+    /**
+     * Whether a block of the nacelle is on its surface in the open: next to a block outside the nacelle, and with
+     * nothing else (the pylon, the wing) standing against it there.
+     */
+    private boolean openSurface(double x, double centreY, double front, BlockPos pos) {
+        boolean open = false;
+        for (Direction side : Direction.values()) {
+            BlockPos next = pos.relative(side);
+            if (!inNacelle(x, centreY, front, next.getX(), next.getY(), next.getZ())) {
+                if (has(next.getX(), next.getY(), next.getZ())) {
+                    return false;
+                }
+                open = true;
+            }
+        }
+        return open;
+    }
+
+    /**
+     * How the nacelle's skin cuts through a block, as a {@link ShellGeometry} shape: the surface's way out is straight
+     * out from the axis along the barrel and tipped aft down the exhaust cone, and the surface lies along that line
+     * from the block's middle as far as the nacelle's radius there is from it.
+     */
+    private int nacelleShape(double x, double centreY, double front, int xb, int y, int z) {
+        double along = (z + 0.5) / scale - front;
+        double dx = xb / scale - x;
+        double dy = (y + 0.5) / scale - centreY;
+        double off = Math.hypot(dx, dy);
+        if (off < 1e-9) {
+            return ShellGeometry.WHOLE;
+        }
+        double taper = nacelleTaper(along);
+        double length = Math.sqrt(1 + taper * taper);
+        double nx = dx / off / length;
+        double ny = dy / off / length;
+        double nz = taper / length;
+        double skin = (nacelleRadius(along) - off) / length * scale;
+        return ShellGeometry.cut(nx, ny, nz, 0.5 + nx * skin, 0.5 + ny * skin, 0.5 + nz * skin);
     }
 
     /**
@@ -1203,6 +1310,16 @@ public final class AirframeLayout {
             data.putInt("ScrollValue", setting);
             blockEntity.loadWithComponents(data, registries);
         });
+    }
+
+    /**
+     * Whether a block of the intake's face is in its mouth: within the cowl's lip, and with the nacelle all round it,
+     * so the nacelle's sides are skin right to the front, however coarse the scale.
+     */
+    private boolean inMouth(double x, double centreY, double front, int xb, int y, int z) {
+        return Math.hypot(xb / scale - x, (y + 0.5) / scale - centreY) <= INTAKE_MOUTH * NACELLE_RADIUS
+            && inNacelle(x, centreY, front, xb - 1, y, z) && inNacelle(x, centreY, front, xb + 1, y, z)
+            && inNacelle(x, centreY, front, xb, y - 1, z) && inNacelle(x, centreY, front, xb, y + 1, z);
     }
 
     private boolean inNacelle(double x, double centreY, double front, int xb, int y, int z) {

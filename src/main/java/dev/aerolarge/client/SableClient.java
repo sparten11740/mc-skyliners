@@ -5,6 +5,8 @@ import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import javax.annotation.Nullable;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -18,9 +20,10 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 /**
- * The client's view of assembled airliners, from Sable: where a block of one is in the world, which one a player is
- * riding and how that one moves, and how one is moving and lying for its instruments. Every call works without Sable
- * too (nothing is assembled then); Sable's classes are only touched once it is known to be installed.
+ * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
+ * with, which one a player is riding and how that one moves, and how one is moving and lying for its instruments.
+ * Every call works without Sable too (nothing is assembled then); Sable's classes are only touched once it is known to
+ * be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -35,6 +38,15 @@ public final class SableClient {
     /** Where a position in an airliner's blocks is in the world; the position itself when it is not in one. */
     static Vec3 toWorld(Level level, Vec3 position) {
         return SABLE ? Access.toWorld(level, position) : position;
+    }
+
+    /**
+     * The light to draw something at a position among an airliner's blocks with: the light there, its sky light
+     * dimmed the way Sable dims it for an assembled airliner under cover, as it does for the block entities it draws.
+     */
+    static int light(Level level, BlockPos pos) {
+        int light = LevelRenderer.getLightColor(level, pos);
+        return SABLE ? Access.light(pos, light) : light;
     }
 
     /** Whether the player is riding the assembled airliner the block entity is part of. */
@@ -64,6 +76,11 @@ public final class SableClient {
     private static final class Access {
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
+        }
+
+        static int light(BlockPos pos, int light) {
+            ClientSubLevel airliner = Sable.HELPER.getContainingClient(pos);
+            return airliner != null ? airliner.scaleLightColor(light) : light;
         }
 
         static boolean isAboard(Entity player, BlockEntity blockEntity) {
