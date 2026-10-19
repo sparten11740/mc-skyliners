@@ -1,11 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -22,14 +18,15 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A landing target's scores: how close the best parachute landing came to its middle, and whose it was. Every
  * landing within {@link #REACH} blocks of the nearest target is called out to everyone around, with the distance.
- * The targets loaded on the server are kept track of, so a landing finds its target without searching the world.
+ * The targets loaded on the server are kept track of (see {@link Loaded}), so a landing finds its target without
+ * searching the world.
  */
 public class LandingTargetBlockEntity extends BlockEntity {
     /** How far from a target, across the ground, a landing still counts for it. */
     private static final double REACH = 64;
     /** Everyone this close to a landing hears how it went. */
     private static final double AUDIENCE = 128;
-    private static final Map<Level, Set<BlockPos>> LOADED = new WeakHashMap<>();
+    private static final Loaded<LandingTargetBlockEntity> LOADED = new Loaded<>(LandingTargetBlockEntity.class);
 
     private double best = Double.MAX_VALUE;
     private String bestName = "";
@@ -41,37 +38,29 @@ public class LandingTargetBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel) {
-            LOADED.computeIfAbsent(level, ignored -> new HashSet<>()).add(worldPosition);
-        }
+        LOADED.add(this);
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        forget();
+        LOADED.remove(this);
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        forget();
-    }
-
-    private void forget() {
-        Set<BlockPos> targets = level == null ? null : LOADED.get(level);
-        if (targets != null) {
-            targets.remove(worldPosition);
-        }
+        LOADED.remove(this);
     }
 
     /** A parachutist has just landed: scores the landing against the nearest target in reach, if there is one. */
     public static void scoreLanding(ServerPlayer player) {
         LandingTargetBlockEntity nearest = null;
         double nearestDistance = REACH;
-        for (BlockPos pos : LOADED.getOrDefault(player.level(), Set.of())) {
+        for (LandingTargetBlockEntity target : LOADED.in(player.level())) {
+            BlockPos pos = target.getBlockPos();
             double distance = Math.hypot(player.getX() - (pos.getX() + 0.5), player.getZ() - (pos.getZ() + 0.5));
-            if (distance < nearestDistance && player.level().getBlockEntity(pos) instanceof LandingTargetBlockEntity target) {
+            if (distance < nearestDistance) {
                 nearest = target;
                 nearestDistance = distance;
             }
