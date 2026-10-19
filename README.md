@@ -122,6 +122,9 @@ the instrument panel cycles every jump light in the airliner through off, red (s
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
 everyone nearby with its distance from the middle, and using the target shows the best landing so far.
 
+A Signal Flare stuck in the ground marks a drop zone from the air: for three minutes it sends up a column of smoke a
+hundred blocks tall, red, or the colour of any dye used on it, then burns out.
+
 ### A sturdy frame
 
 The airliner's frame and controls (hull, wings, engines, gear, windscreen, flight deck and the Create and Propulsion

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "P",
+    "G",
+    "S"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "id": "aerolarge:signal_flare",
+    "count": 4
+  }
+}

@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
@@ -44,6 +45,8 @@ import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
+import dev.aerolarge.block.SignalFlareBlock;
+import dev.aerolarge.block.SignalFlareBlockEntity;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
@@ -57,11 +60,14 @@ import dev.aerolarge.item.ParachuteItem;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -129,6 +135,20 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_BOUNCE = sound("ball_bounce");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASKET_SWISH = sound("basket_swish");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCOREBOARD_BUZZER = sound("scoreboard_buzzer");
+    /** A puff of a signal flare's smoke, in the flare's colour, rising high enough to be seen from the air. */
+    public static final DeferredHolder<ParticleType<?>, ParticleType<ColorParticleOption>> FLARE_SMOKE = PARTICLES.register(
+        "flare_smoke", () -> new ParticleType<ColorParticleOption>(true) {
+            @Override
+            public MapCodec<ColorParticleOption> codec() {
+                return ColorParticleOption.codec(this);
+            }
+
+            @Override
+            public StreamCodec<? super RegistryFriendlyByteBuf, ColorParticleOption> streamCodec() {
+                return ColorParticleOption.streamCodec(this);
+            }
+        }
+    );
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
 
@@ -347,6 +367,15 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> CABIN_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LIGHTS);
     public static final DeferredItem<BlockItem> WINDOW_SHADES_ITEM = ITEMS.registerSimpleBlockItem(WINDOW_SHADES);
 
+    /** A signal flare to mark a drop zone with a column of coloured smoke. */
+    public static final DeferredBlock<SignalFlareBlock> SIGNAL_FLARE = BLOCKS.registerBlock(
+        "signal_flare", SignalFlareBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).noCollission().instabreak().sound(SoundType.WOOD).lightLevel(state -> 12)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SignalFlareBlockEntity>> SIGNAL_FLARE_ENTITY =
+        BLOCK_ENTITIES.register("signal_flare", () -> BlockEntityType.Builder.of(SignalFlareBlockEntity::new, SIGNAL_FLARE.get()).build(null));
+    public static final DeferredItem<BlockItem> SIGNAL_FLARE_ITEM = ITEMS.registerSimpleBlockItem(SIGNAL_FLARE);
+
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
         "basketball", () -> EntityType.Builder.<Basketball>of(Basketball::new, MobCategory.MISC).sized(0.4F, 0.4F)
@@ -386,7 +415,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
             SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
-            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM
+            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 

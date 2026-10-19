@@ -5,6 +5,7 @@ import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.EngineSounds;
+import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.ParachuteControls;
@@ -60,6 +61,7 @@ public final class AerolargeClient {
 
     private static void onRegisterParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(AerolargeRegistry.CONTRAIL.get(), ContrailParticle.Provider::new);
+        event.registerSpriteSet(AerolargeRegistry.FLARE_SMOKE.get(), FlareSmokeParticle.Provider::new);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

@@ -496,6 +496,20 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
 }
 
+// The signal flare: a red paper tube with a white band, its tip burning yellow-white; and its icon, the tube with a
+// wisp of smoke above.
+{
+  const RED_PAPER = [0xc8, 0x20, 0x1c];
+  texture(blockOutput, "signal_flare", (x, y) => (y >= 6 && y <= 7 ? [0xf0, 0xf0, 0xf0] : RED_PAPER), 4);
+  texture(blockOutput, "signal_flare_tip", (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 4 ? [0xff, 0xf4, 0xb0] : [0xff, 0xa0, 0x30]), 2);
+  texture(itemOutput, "signal_flare", (x, y) => {
+    if (x >= 7 && x <= 8 && y >= 7 && y <= 15) return y === 10 ? [0xf0, 0xf0, 0xf0] : RED_PAPER;
+    if (x >= 7 && x <= 8 && y === 6) return [0xff, 0xd8, 0x60];
+    if (Math.hypot(x - 7.5 - Math.sin(y) * 1.2, y - 3) < 2.2 && y < 6) return [0xe8, 0x50, 0x40, 0xb0];
+    return CLEAR;
+  }, 0);
+}
+
 // Basketball. The ball: orange with black seams, a curved pair either side of a straight cross, shaded toward the
 // lower right. The hoop's rim: bright orange. The net: a white diamond mesh, see-through between the cords. The
 // scoreboard: a black face in a steel frame with faint unlit lamps. The ball rack: steel bars holding orange balls.

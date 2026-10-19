@@ -72,6 +72,7 @@
   "title.aerolarge.captain": "Captain %s",
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
+  "block.aerolarge.signal_flare": "Signal Flare",
   "item.aerolarge.basketball": "Basketball",
   "entity.aerolarge.basketball": "Basketball",
   "block.aerolarge.hoop": "Basketball Hoop",

@@ -167,6 +167,8 @@ cubes.engine_core = null;
   }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
+  // A flare's smoke is the same soft puff, tinted.
+  write(`assets/${ID}/particles/flare_smoke.json`, { textures: [`${ID}:contrail`] });
 }
 
 // The tiller (a handle on a pedestal, swung left or right through its five notches) and the parking brake (a lever
@@ -441,6 +443,18 @@ function dropsItself(name) {
   }
 }
 
+// The signal flare: a red paper tube stuck in the ground, its tip burning bright whatever the light around. Burnt or
+// broken, it leaves nothing.
+write(`assets/${ID}/models/block/signal_flare.json`, boxes(
+  { tube: `${ID}:block/signal_flare`, tip: `${ID}:block/signal_flare_tip`, particle: `${ID}:block/signal_flare` },
+  [
+    [[7, 0, 7], [9, 6, 9], "#tube"],
+    [[6.75, 6, 6.75], [9.25, 7, 9.25], "#tip", true],
+  ],
+));
+write(`assets/${ID}/blockstates/signal_flare.json`, { variants: { "": { model: `${ID}:block/signal_flare` } } });
+write(`assets/${ID}/models/item/signal_flare.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/signal_flare` } });
+
 // Basketball, drawn facing north. The hoop: an orange ring on a dark bracket to the backboard, with its net hanging
 // below; the side it counts for does not show. The scoreboard: a dark face, the score drawn over it by its renderer.
 // The ball rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
@@ -645,6 +659,7 @@ shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
+shaped("signal_flare", ["P", "G", "S"], { P: "minecraft:paper", G: "minecraft:gunpowder", S: "minecraft:stick" }, 4);
 shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
 shaped("scoreboard", ["BBB", "LGL", "BBB"], { B: "minecraft:black_concrete", L: "minecraft:redstone_lamp", G: "minecraft:glowstone" }, 1);
@@ -745,6 +760,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "title.aerolarge.captain": "Captain %s",
   "chat.aerolarge.announcement": "[Cabin] Captain %s: %s",
   "chat.aerolarge.radio": "[Radio] %s: %s",
+  "block.aerolarge.signal_flare": "Signal Flare",
   "item.aerolarge.basketball": "Basketball",
   "entity.aerolarge.basketball": "Basketball",
   "block.aerolarge.hoop": "Basketball Hoop",
