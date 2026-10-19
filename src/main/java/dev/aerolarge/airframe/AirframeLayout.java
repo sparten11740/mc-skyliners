@@ -98,7 +98,7 @@ public final class AirframeLayout {
     /** The nose gear's steering relays, by the way they turn it, and the main gear's brake relays. */
     private final Map<String, List<BlockPos>> steerRelays = new HashMap<>();
     private final List<BlockPos> brakeRelays = new ArrayList<>();
-    /** Where the flight deck leaves room for the Physics Assembler, behind the pilots; null without a flight deck. */
+    /** Where the flight deck leaves room for the Physics Assembler, by the wall behind the captain; null without a flight deck. */
     private BlockPos assemblerSpot;
     /** The jump light switch in the instrument panel; null without a flight deck. */
     private BlockPos jumpSwitch;
@@ -826,7 +826,9 @@ public final class AirframeLayout {
                 set(captainX, deck + 2, panelZ, AerolargeRegistry.HANDSET.get().defaultBlockState().setValue(HandsetBlock.FACING, Direction.SOUTH));
             }
         }
-        assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
+        // The Physics Assembler out of the way, against the wall behind the captain's seat.
+        int assemblerZ = pedestalZ + 2;
+        assemblerSpot = new BlockPos(-openHalfWidth(deck + 1, assemblerZ), deck + 1, assemblerZ);
     }
 
     /**

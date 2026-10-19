@@ -43,7 +43,8 @@ use any of them to push all four a notch forward, sneak and use it to pull them 
 thrusters through relays hidden in the nacelle. Beside the captain's seat is the nose wheel tiller (use it to steer
 right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
 is built. A primary flight display in front of each seat shows attitude, airspeed,
-altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
+altitude, vertical speed and heading once the airliner is assembled. Against the wall behind the captain's seat is the
+Physics Assembler.
 On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch
 and the captain's handset.
 
