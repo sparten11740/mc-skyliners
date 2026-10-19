@@ -35,9 +35,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  */
 final class CabinFitOut {
     private static final double[] BUSINESS = {13.5, 17.5};
-    private static final double[] POOL = {18.0, 23.0};
-    private static final double[] GYM = {27.5, 47.5};
-    private static final double[] LOUNGE = {52.0, 58.5};
+    static final double[] POOL = {18.0, 23.0};
+    static final double[] GYM = {27.5, 47.5};
+    static final double[] LOUNGE = {52.0, 58.5};
     /** How far apart the business class rows are, seat to seat, in metres: a seat, its back and legroom in front. */
     private static final double BUSINESS_PITCH = 1.5;
     /** How many business class seats stand side by side either side of the aisle. */
@@ -71,6 +71,7 @@ final class CabinFitOut {
         // Before the lounge, which is furnished round it.
         new DutyFreeKiosk(layout).apply(from(LOUNGE), to(LOUNGE));
         lounge(from(LOUNGE), to(LOUNGE));
+        new CabinDecor(layout).apply();
         // Last: the screens go where the rest has left room, and on the backs of its seats.
         screens();
     }

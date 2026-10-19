@@ -966,4 +966,31 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
+// The furnished cabin's finishing touches (see CabinDecor). The springboard: a white non-slip top with a grip
+// pattern, in a pool-blue border; its sides pool blue with a white coil spring under the board, so it reads as
+// bouncy at a glance; plain blue underneath.
+{
+  const POOL_BLUE = [0x2a, 0x8c, 0xd8];
+  const POOL_BLUE_DARK = [0x1c, 0x66, 0xa8];
+  const BOARD_WHITE = [0xf2, 0xf4, 0xf6];
+  const GRIP = [0xd6, 0xdc, 0xe2];
+  texture(blockOutput, "springboard_top", (x, y) => {
+    if (x <= 1 || y <= 1 || x >= 14 || y >= 14) return x === 0 || y === 0 || x === 15 || y === 15 ? POOL_BLUE_DARK : POOL_BLUE;
+    return (x + y) % 3 === 0 && (x - y + 16) % 3 === 0 ? GRIP : BOARD_WHITE;
+  }, 2);
+  // The coil: a zigzag from under the board down to the foot.
+  const COIL = [[4, 5], [11, 7], [4, 9], [11, 11], [4, 13]];
+  const nearCoil = (x, y) => COIL.slice(1).some(([bx, by], i) => {
+    const [ax, ay] = COIL[i];
+    const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)));
+    return Math.hypot(x - ax - t * (bx - ax), y - ay - t * (by - ay)) <= 0.75;
+  });
+  texture(blockOutput, "springboard_side", (x, y) => {
+    if (y <= 3) return y === 0 ? POOL_BLUE_DARK : BOARD_WHITE;
+    if (y === 15) return POOL_BLUE_DARK;
+    return nearCoil(x, y) ? INK : POOL_BLUE;
+  }, 2);
+  texture(blockOutput, "springboard_bottom", (x, y) => (x === 0 || y === 0 ? POOL_BLUE_DARK : POOL_BLUE), 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

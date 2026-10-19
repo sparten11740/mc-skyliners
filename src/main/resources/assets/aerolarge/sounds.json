@@ -167,6 +167,14 @@
       }
     ]
   },
+  "springboard_boing": {
+    "subtitle": "subtitles.aerolarge.springboard_boing",
+    "sounds": [
+      {
+        "name": "aerolarge:springboard_boing"
+      }
+    ]
+  },
   "paper_plane_whoosh": {
     "subtitle": "subtitles.aerolarge.paper_plane_whoosh",
     "sounds": [

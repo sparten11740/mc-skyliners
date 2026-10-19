@@ -62,6 +62,7 @@ import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
+import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
 import dev.aerolarge.block.ThrustLeverBlock;
@@ -172,6 +173,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_BOUNCE = sound("ball_bounce");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASKET_SWISH = sound("basket_swish");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCOREBOARD_BUZZER = sound("scoreboard_buzzer");
+    /** A springboard throwing someone up in the air. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPRINGBOARD_BOING = sound("springboard_boing");
     /** A puff of a signal flare's smoke, in the flare's colour, rising high enough to be seen from the air. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<ColorParticleOption>> FLARE_SMOKE = PARTICLES.register(
         "flare_smoke", () -> new ParticleType<ColorParticleOption>(true) {
@@ -528,6 +531,11 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> HOOP_ITEM = ITEMS.registerSimpleBlockItem(HOOP);
     public static final DeferredItem<BlockItem> SCOREBOARD_ITEM = ITEMS.registerSimpleBlockItem(SCOREBOARD);
     public static final DeferredItem<BlockItem> BALL_RACK_ITEM = ITEMS.registerSimpleBlockItem(BALL_RACK);
+    /** The moon pool's high dive: the springboard at the tip of its board, and a trampoline wherever else it is put. */
+    public static final DeferredBlock<SpringboardBlock> SPRINGBOARD = BLOCKS.registerBlock(
+        "springboard", SpringboardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL)
+    );
+    public static final DeferredItem<BlockItem> SPRINGBOARD_ITEM = ITEMS.registerSimpleBlockItem(SPRINGBOARD);
 
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
@@ -586,7 +594,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
             CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM
         )),
-        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),
+        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SPRINGBOARD_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

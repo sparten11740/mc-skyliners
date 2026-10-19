@@ -165,7 +165,7 @@ cubes.engine_core = null;
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
   sounds.shade_motor = { subtitle: `subtitles.${ID}.shade_motor`, sounds: [{ name: `${ID}:shade_motor` }] };
   sounds.trolley_squeak = { subtitle: `subtitles.${ID}.trolley_squeak`, sounds: [{ name: `${ID}:trolley_squeak` }] };
-  for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer"]) {
+  for (const name of ["ball_bounce", "basket_swish", "scoreboard_buzzer", "springboard_boing"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   // Duty free and the paper plane.
@@ -908,6 +908,24 @@ for (const name of ["airliner_blueprint", "furnished_airliner_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
 
+// The furnished cabin's finishing touches (see CabinDecor), and what they add to the lang file.
+const cabinDecorLang = {};
+// The springboard: a padded board, white on top in a blue border, its blue sides showing the spring under it.
+{
+  write(`assets/${ID}/models/block/springboard.json`, {
+    parent: "minecraft:block/cube_bottom_top",
+    textures: { top: `${ID}:block/springboard_top`, side: `${ID}:block/springboard_side`, bottom: `${ID}:block/springboard_bottom` },
+  });
+  write(`assets/${ID}/blockstates/springboard.json`, { variants: { "": { model: `${ID}:block/springboard` } } });
+  write(`assets/${ID}/models/item/springboard.json`, { parent: `${ID}:block/springboard` });
+  dropsItself("springboard");
+  cubes.springboard = null;
+  Object.assign(cabinDecorLang, {
+    "block.aerolarge.springboard": "Springboard",
+    "subtitles.aerolarge.springboard_boing": "Springboard boings",
+  });
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target"))));
@@ -922,7 +940,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter"];
+  "model_airliner", "duty_free_counter", "springboard"];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1007,6 +1025,7 @@ shaped("duty_free_counter", ["GGG", "ECE", "WWW"], { G: "minecraft:glass", E: "m
 shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
 shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
+shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -1022,6 +1041,7 @@ const FIRST_FLIGHT = [
   ["frequent_flyer", "cleared_for_takeoff", "boarding_pass", "task", "Frequent Flyer", "Collect a villager passenger's fare"],
   ["air_mail", "cleared_for_takeoff", "paper_plane", "goal", "Air Mail", "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away"],
   ["duty_free", "frequent_flyer", "duty_free_counter", "task", "Duty Free", "Spend emeralds at a duty-free counter"],
+  ["cannonball", "cleared_for_takeoff", "springboard", "goal", "Cannonball", "Dive into the moon pool off its springboard or its tower while the airliner flies"],
 ];
 for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
   write(`data/${ID}/advancement/first_flight/${name}.json`, {
@@ -1327,6 +1347,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.decompression": "Decompression",
   "aerolarge.configuration.villagerPassengers": "Villager Passengers",
   ...DUTY_FREE_LANG,
+  ...cabinDecorLang,
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

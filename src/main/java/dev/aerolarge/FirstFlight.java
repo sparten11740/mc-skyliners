@@ -28,7 +28,9 @@ public enum FirstFlight {
     /** A paper plane thrown aboard an airliner in flight came down outside it, far from where it was thrown. */
     AIR_MAIL,
     /** Bought something at a duty-free counter. */
-    DUTY_FREE;
+    DUTY_FREE,
+    /** Dived into the moon pool off its springboard or its tower in flight. */
+    CANNONBALL;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

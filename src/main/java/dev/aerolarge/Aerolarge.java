@@ -3,6 +3,7 @@ package dev.aerolarge;
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.cabin.HighDive;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
 import dev.aerolarge.cabin.TurbulencePayload;
@@ -39,6 +40,7 @@ public final class Aerolarge {
         modEventBus.addListener(Aerolarge::onRegisterPayloads);
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
+        NeoForge.EVENT_BUS.addListener(HighDive::onTick);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);

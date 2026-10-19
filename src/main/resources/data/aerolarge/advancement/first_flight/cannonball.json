@@ -1,0 +1,20 @@
+{
+  "parent": "aerolarge:first_flight/cleared_for_takeoff",
+  "display": {
+    "icon": {
+      "id": "aerolarge:springboard"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.cannonball.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.cannonball.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

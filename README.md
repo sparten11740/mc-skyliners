@@ -21,7 +21,9 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
   class just behind the forward doors (rows of big seats, two side by side left and right of the aisle, each with a
   high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
-  the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below, a
+  the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
+  with a diving tower on its front rim (a ladder up to a platform three metres up, glass rails either side, and a
+  board out over the middle of the pool with a springboard at its tip), a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes and a row of seats, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), all lit by pendant lights. The
   seats are Create's, so they can be sat in.
@@ -220,6 +222,14 @@ the three-point line, for the side the hoop counts for: HOME at the front hoop, 
 hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
 Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere.
 
+### The high dive
+
+The springboard at the tip of the moon pool's diving board throws whoever lands or stands on it straight back up,
+with a boing and a puff of cloud, about two and a half blocks every time, never high enough to hurt coming down, and
+landing on it never hurts; sneak to stand on it without bouncing. Off its tip, its sides or the platform there is
+only water below, and the pool's water takes the fall. A dive (off the springboard, or any fall of three blocks or
+more into water) goes in with a big splash. A Springboard can be crafted, and is a trampoline wherever it is put.
+
 ### Paper planes
 
 A sheet of paper folds into a Paper Plane, and a duty-free counter sells four for an emerald. Use it to throw it the
@@ -315,8 +325,9 @@ The First Flight tab of the advancements marks the milestones: aboard as the air
 (Cleared for Takeoff), trying to get up with the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower
 than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
 a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
-villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free) and a paper plane thrown
-out of an airliner in flight coming down 100 blocks away (Air Mail).
+villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free), a paper plane thrown
+out of an airliner in flight coming down 100 blocks away (Air Mail) and a dive into the moon pool off its springboard
+or its tower while the airliner flies, 15 metres or more above the ground (Cannonball).
 
 ### Settings
 

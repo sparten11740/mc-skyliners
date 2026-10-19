@@ -303,6 +303,8 @@
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
   "item.aerolarge.pilot_cap": "Pilot Cap",
   "block.aerolarge.model_airliner": "Model Airliner",
+  "block.aerolarge.springboard": "Springboard",
+  "subtitles.aerolarge.springboard_boing": "Springboard boings",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",
@@ -322,5 +324,7 @@
   "advancements.aerolarge.first_flight.air_mail.title": "Air Mail",
   "advancements.aerolarge.first_flight.air_mail.description": "Throw a paper plane out of an airliner in flight and see it come down 100 blocks away",
   "advancements.aerolarge.first_flight.duty_free.title": "Duty Free",
-  "advancements.aerolarge.first_flight.duty_free.description": "Spend emeralds at a duty-free counter"
+  "advancements.aerolarge.first_flight.duty_free.description": "Spend emeralds at a duty-free counter",
+  "advancements.aerolarge.first_flight.cannonball.title": "Cannonball",
+  "advancements.aerolarge.first_flight.cannonball.description": "Dive into the moon pool off its springboard or its tower while the airliner flies"
 }

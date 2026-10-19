@@ -198,6 +198,20 @@ function bell(samples, start, frequency, decay) {
   }
   writeSound("scoreboard_buzzer", samples);
 }
+// A springboard's boing: a twanging tone, rich in overtones, its pitch wobbling wide at first and settling as it
+// sags and dies away, like a door stop's spring.
+{
+  const samples = new Float64Array(Math.round(0.7 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const wobble = 0.35 * Math.exp(-t / 0.25) * Math.sin(2 * Math.PI * 11 * t);
+    phase += 2 * Math.PI * 240 * (1 + wobble) * (1 - 0.15 * t) / RATE;
+    const envelope = Math.min(1, t * 300) * Math.exp(-t / 0.22);
+    samples[i] = envelope * (Math.sin(phase) + 0.4 * Math.sin(2 * phase) + 0.15 * Math.sin(3 * phase));
+  }
+  writeSound("springboard_boing", samples);
+}
 
 // Duty free and the paper plane. A paper plane leaving the hand: a short airy whoosh, a band of noise swelling and
 // dying away as it rises a little.

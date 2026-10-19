@@ -50,6 +50,7 @@
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",
+    "aerolarge:springboard",
     "aerolarge:airliner_door"
   ]
 }
