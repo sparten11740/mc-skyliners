@@ -109,6 +109,16 @@ by it. Push a trolley down the aisle by walking into it (it squeaks); use it to 
 chicken meal, airline coffee (a minute of Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it
 to fold it up and carry it. Galley, trolley and food can all be crafted.
 
+### Villager passengers
+
+Off by default: turn on Villager Passengers (`villagerPassengers`) in the server settings (see Settings). A Check-in
+Desk at the terminal then prints a Boarding Pass for whoever uses it. Hand the pass to a villager and it makes for
+the nearest free Create seat inside an airliner within about 24 blocks, up the airstairs or through the jet bridge
+and the doors, and sits down; unseated aboard, as it is when the airliner is assembled around it, it sits straight
+back down. Fly it at least 200 blocks: once the airliner stands still with the seatbelt signs off it gets up and pays
+its fare, an emerald for every 200 blocks flown, up to 32, to whoever handed it the pass (or, with them gone from
+that world, dropped by its seat). A villager that finds no seat within three minutes gives the pass back.
+
 ### Basketball
 
 The gym hall's hoops are real: take a ball from the rack in the corner by either hoop and use it to throw it the way you

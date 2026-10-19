@@ -495,6 +495,18 @@ write(`assets/${ID}/models/item/jet_bridge.json`, { parent: `${ID}:block/jet_bri
 dropsItself("jet_bridge");
 cubes.jet_bridge = null;
 
+// Villager passengers. The check-in desk: a blue counter with a boarding pass on its front, a screen and the pass
+// printer's slot on top. The boarding pass: a flat icon.
+write(`assets/${ID}/models/block/check_in_desk.json`, {
+  parent: "minecraft:block/orientable",
+  textures: { front: `${ID}:block/check_in_desk_front`, side: `${ID}:block/check_in_desk_side`, top: `${ID}:block/check_in_desk_top` },
+});
+facing("check_in_desk");
+write(`assets/${ID}/models/item/check_in_desk.json`, { parent: `${ID}:block/check_in_desk` });
+dropsItself("check_in_desk");
+cubes.check_in_desk = null;
+write(`assets/${ID}/models/item/boarding_pass.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/boarding_pass` } });
+
 // Cabin service. The galley: stainless cupboards with an oven and a coffee machine. The trolley, drawn as its item's
 // model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark wheels.
 // The meals, pretzels and coffee: flat icons.
@@ -717,8 +729,10 @@ write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) =
 write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
+// Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
+write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "jet_bridge"];
+const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack", "galley"];
@@ -779,6 +793,7 @@ shaped("cabin_lights", ["G", "P"], { G: "minecraft:glowstone_dust", P: `${ID}:in
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("jet_bridge", ["GGG", "IPI", "IRI"], { G: "minecraft:glass", I: "minecraft:iron_ingot", P: "minecraft:piston", R: "minecraft:redstone" }, 1);
+shaped("check_in_desk", ["PGP", "IRI", "III"], { P: "minecraft:paper", G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
 shaped("cabin_floor", ["CC", "PP"], { C: "minecraft:gray_carpet", P: `${ID}:airframe_panel` }, 4);
 shaped("airliner_door", ["PP", "PG", "PP"], { P: `${ID}:airframe_panel`, G: "minecraft:glass" }, 3);
@@ -908,6 +923,14 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.jet_bridge.down": "%s down",
   "message.aerolarge.jet_bridge.moving": "Wait for the airliner to stop",
   "message.aerolarge.jet_bridge.blocked": "Something stands in the way %s blocks out, short of the airliner door %s blocks out",
+  "block.aerolarge.check_in_desk": "Check-in Desk",
+  "item.aerolarge.boarding_pass": "Boarding Pass",
+  "item.aerolarge.boarding_pass.tooltip": "Hand it to a villager to fly it as a passenger",
+  "message.aerolarge.check_in.printed": "Boarding pass printed: hand it to a villager",
+  "message.aerolarge.passengers.off": "Villager passengers are turned off: turn on Villager Passengers in the mod settings",
+  "message.aerolarge.boarding_pass.boarding": "%s takes the boarding pass and looks for a seat",
+  "message.aerolarge.boarding_pass.already": "%s already has a boarding pass",
+  "message.aerolarge.passengers.fare": "%s paid %s emeralds for a flight of %s blocks",
   "block.aerolarge.cargo_crate": "Care Package",
   "container.aerolarge.cargo_crate": "Care Package",
   "entity.aerolarge.falling_crate": "Care Package",
@@ -1002,5 +1025,6 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.tireItem": "Tire Item",
   "aerolarge.configuration.cabin": "Cabin",
   "aerolarge.configuration.turbulence": "Turbulence",
+  "aerolarge.configuration.villagerPassengers": "Villager Passengers",
 });
 console.log("ok");

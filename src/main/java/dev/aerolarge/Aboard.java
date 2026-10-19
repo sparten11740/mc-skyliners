@@ -48,8 +48,9 @@ public final class Aboard {
             && insideHull(level, BlockPos.containing(entity.getEyePosition()));
     }
 
-    private static boolean insideHull(Level level, BlockPos eyes) {
-        return hullWithin(level, eyes, Direction.UP, HULL_UP) && hullWithin(level, eyes, Direction.DOWN, HULL_DOWN);
+    /** Whether a spot is inside a standing airliner's hull: airframe somewhere above it and somewhere below. */
+    public static boolean insideHull(Level level, BlockPos at) {
+        return hullWithin(level, at, Direction.UP, HULL_UP) && hullWithin(level, at, Direction.DOWN, HULL_DOWN);
     }
 
     private static boolean hullWithin(Level level, BlockPos from, Direction way, int reach) {

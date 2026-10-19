@@ -109,6 +109,14 @@
   "message.aerolarge.jet_bridge.down": "%s down",
   "message.aerolarge.jet_bridge.moving": "Wait for the airliner to stop",
   "message.aerolarge.jet_bridge.blocked": "Something stands in the way %s blocks out, short of the airliner door %s blocks out",
+  "block.aerolarge.check_in_desk": "Check-in Desk",
+  "item.aerolarge.boarding_pass": "Boarding Pass",
+  "item.aerolarge.boarding_pass.tooltip": "Hand it to a villager to fly it as a passenger",
+  "message.aerolarge.check_in.printed": "Boarding pass printed: hand it to a villager",
+  "message.aerolarge.passengers.off": "Villager passengers are turned off: turn on Villager Passengers in the mod settings",
+  "message.aerolarge.boarding_pass.boarding": "%s takes the boarding pass and looks for a seat",
+  "message.aerolarge.boarding_pass.already": "%s already has a boarding pass",
+  "message.aerolarge.passengers.fare": "%s paid %s emeralds for a flight of %s blocks",
   "block.aerolarge.cargo_crate": "Care Package",
   "container.aerolarge.cargo_crate": "Care Package",
   "entity.aerolarge.falling_crate": "Care Package",
@@ -202,5 +210,6 @@
   "aerolarge.configuration.wheelMountBlock": "Wheel Mount Block",
   "aerolarge.configuration.tireItem": "Tire Item",
   "aerolarge.configuration.cabin": "Cabin",
-  "aerolarge.configuration.turbulence": "Turbulence"
+  "aerolarge.configuration.turbulence": "Turbulence",
+  "aerolarge.configuration.villagerPassengers": "Villager Passengers"
 }

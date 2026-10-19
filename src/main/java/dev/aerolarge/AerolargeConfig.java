@@ -17,6 +17,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
+    public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -88,6 +89,12 @@ public final class AerolargeConfig {
         TURBULENCE = builder
             .comment("Whether airliners in flight now and then run into rough air, shaking everyone aboard and throwing about whoever is not seated.")
             .define("turbulence", true);
+        VILLAGER_PASSENGERS = builder
+            .comment(
+                "Whether villagers fly as passengers: handed a boarding pass from a check-in desk, a villager walks aboard and takes a seat,",
+                "and pays its fare in emeralds when the airliner has flown it somewhere and stands still with the seatbelt signs off."
+            )
+            .define("villagerPassengers", false);
         builder.pop();
 
         SPEC = builder.build();

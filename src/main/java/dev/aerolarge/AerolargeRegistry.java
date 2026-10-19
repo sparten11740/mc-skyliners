@@ -17,6 +17,7 @@ import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
+import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
@@ -62,11 +63,13 @@ import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
 import dev.aerolarge.block.WindowShadesBlock;
+import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
+import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.TrolleyItem;
@@ -105,11 +108,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * The airframe's blocks and the two blueprints. Every block is also in {@code #sable:super_light} (see the data
@@ -124,6 +130,7 @@ public final class AerolargeRegistry {
     private static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Aerolarge.MOD_ID);
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Aerolarge.MOD_ID);
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -340,6 +347,15 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("jet_bridge", () -> BlockEntityType.Builder.of(JetBridgeBlockEntity::new, JET_BRIDGE.get()).build(null));
     public static final DeferredItem<BlockItem> JET_BRIDGE_ITEM = ITEMS.registerSimpleBlockItem(JET_BRIDGE);
 
+    /** Villager passengers: the check-in desk at the terminal, the boarding passes it prints and a passenger's trip. */
+    public static final DeferredBlock<CheckInDeskBlock> CHECK_IN_DESK = BLOCKS.registerBlock("check_in_desk", CheckInDeskBlock::new, metal(MapColor.COLOR_BLUE));
+    public static final DeferredItem<BlockItem> CHECK_IN_DESK_ITEM = ITEMS.registerSimpleBlockItem(CHECK_IN_DESK);
+    public static final DeferredItem<BoardingPassItem> BOARDING_PASS = ITEMS.register("boarding_pass", () -> new BoardingPassItem(new Item.Properties()));
+    // The default trip is never read: a villager without one has no data at all.
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Passengers.Trip>> TRIP = ATTACHMENT_TYPES.register(
+        "trip", () -> AttachmentType.builder(() -> Passengers.Trip.boarding(Vec3.ZERO, null)).serialize(Passengers.Trip.CODEC).build()
+    );
+
     /** Buckling up: the seatbelt switch on the flight deck and the signs it lights in the cabin walls. */
     public static final DeferredBlock<SeatbeltSwitchBlock> SEATBELT_SWITCH = BLOCKS.registerBlock(
         "seatbelt_switch", SeatbeltSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
@@ -481,7 +497,7 @@ public final class AerolargeRegistry {
         .displayItems((parameters, output) -> List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
-            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, JET_BRIDGE_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
+            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
             SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, DROP_RELEASE_ITEM,
@@ -532,5 +548,6 @@ public final class AerolargeRegistry {
         PARTICLES.register(modEventBus);
         DATA_COMPONENTS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
+        ATTACHMENT_TYPES.register(modEventBus);
     }
 }

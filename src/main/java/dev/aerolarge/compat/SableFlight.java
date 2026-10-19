@@ -124,6 +124,22 @@ public final class SableFlight {
         return SABLE ? Access.findAboard(level, point, test) : null;
     }
 
+    /**
+     * The nearest block to a point in the world that the test accepts, within the ranges across and up and down,
+     * looking into any assembled airliner there as well as the world: its position in the world, or in the airliner's
+     * plot; null if neither has one.
+     */
+    @Nullable
+    public static BlockPos nearest(Level level, Vec3 point, int across, int upDown, Predicate<BlockPos> test) {
+        BlockPos inWorld = BlockPos.findClosestMatch(BlockPos.containing(point), across, upDown, test).orElse(null);
+        BlockPos aboard = SABLE ? Access.nearestAboard(level, point, across, upDown, test) : null;
+        if (inWorld == null || aboard == null) {
+            return inWorld == null ? aboard : inWorld;
+        }
+        // Distances in a plot are the same as in the world: an airliner only moves and turns.
+        return inWorld.distToCenterSqr(point) <= aboard.distToCenterSqr(toPlot(level, aboard, point, false)) ? inWorld : aboard;
+    }
+
     /** Kept apart so its Sable references are only loaded when Sable is there. */
     private static final class Access {
         @Nullable
@@ -161,6 +177,22 @@ public final class SableFlight {
                 }
             }
             return null;
+        }
+
+        @Nullable
+        static BlockPos nearestAboard(Level level, Vec3 point, int across, int upDown, Predicate<BlockPos> test) {
+            BoundingBox3d around = new BoundingBox3d(point.x - across, point.y - upDown, point.z - across, point.x + across, point.y + upDown, point.z + across);
+            BlockPos nearest = null;
+            double distance = Double.MAX_VALUE;
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, around)) {
+                Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
+                BlockPos found = BlockPos.findClosestMatch(BlockPos.containing(inPlot), across, upDown, test).orElse(null);
+                if (found != null && found.distToCenterSqr(inPlot) < distance) {
+                    nearest = found;
+                    distance = found.distToCenterSqr(inPlot);
+                }
+            }
+            return nearest;
         }
 
         @Nullable

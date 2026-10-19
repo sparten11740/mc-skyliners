@@ -682,4 +682,30 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "jet_bridge_side", (x, y) => (y <= 1 ? stripe(x, y) : x === 0 || x === 15 || y === 15 ? STEEL_DARK : STEEL));
 }
 
+// Villager passengers. The check-in desk: a blue counter under a steel worktop, a white boarding pass on its front;
+// on top a dark screen and the pass printer's slot. The boarding pass: white, a blue band across the top and a barcode.
+{
+  const ticket = (x, y) => x >= 3 && x <= 12 && y >= 7 && y <= 12 && !(x === 9 && y % 2 === 0);
+  texture(blockOutput, "check_in_desk_front", (x, y) => {
+    if (y <= 1) return STEEL;
+    if (x === 0 || x === 15 || y === 15) return BLUE_SEAM;
+    if (y === 4) return WHITE;
+    if (ticket(x, y)) return x > 9 && y >= 9 && y <= 11 && x % 2 === 0 ? RUBBER : WHITE;
+    return BLUE;
+  });
+  texture(blockOutput, "check_in_desk_side", (x, y) => (y <= 1 ? STEEL : x === 0 || x === 15 || y === 15 ? BLUE_SEAM : BLUE));
+  texture(blockOutput, "check_in_desk_top", (x, y) => {
+    if (x >= 3 && x <= 12 && y >= 2 && y <= 6) return x === 3 || x === 12 || y === 2 || y === 6 ? RUBBER : [0x2a, 0x4a, 0x6a];
+    if (x >= 5 && x <= 10 && y === 11) return RUBBER;
+    return x === 0 || x === 15 || y === 0 || y === 15 ? STEEL_DARK : STEEL;
+  });
+  texture(itemOutput, "boarding_pass", (x, y) => {
+    if (y < 4 || y > 12 || x < 1 || x > 14) return CLEAR;
+    if (y <= 5) return BLUE;
+    if (x >= 10 && x <= 13 && y >= 7 && y <= 11) return x % 2 === 0 || x === 13 ? RUBBER : WHITE;
+    if (x >= 2 && x <= 7 && (y === 8 || y === 10)) return SEAM;
+    return WHITE;
+  }, 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

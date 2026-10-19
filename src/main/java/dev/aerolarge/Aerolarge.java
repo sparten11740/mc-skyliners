@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import dev.aerolarge.airframe.AirframeBuild;
+import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
 import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.CameraShake;
@@ -38,6 +39,8 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);
+        NeoForge.EVENT_BUS.addListener(Passengers::onInteract);
+        NeoForge.EVENT_BUS.addListener(Passengers::onTick);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
