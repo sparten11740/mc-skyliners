@@ -274,10 +274,12 @@ final class SnappedShell {
     }
 
     /**
-     * What a sliver of skin or cabin air filled out to the surface is made of: a window or the moon pool's glass where
+     * What a sliver of skin or cabin air filled out to the surface is made of: a window or the belly's glass where
      * the skin it closes over is that, otherwise the windscreen's glass wherever the windscreen is, and hull
      * everywhere else. Asking the windscreen rather than the nearest skin ends the glass along the same rows and
-     * stations inside and out, however the curve runs past the edge of it.
+     * stations inside and out, however the curve runs past the edge of it. Cabin air under the windscreen is filled
+     * with glass even behind a post, so from the flight deck the posts stand as slim as their own skin and the view
+     * out to the side stays open.
      */
     private BlockState material(BlockPos pos) {
         BlockState skin = nearestSkin(pos);
@@ -285,7 +287,10 @@ final class SnappedShell {
         if (!windscreen) {
             return skin;
         }
-        return layout.windscreenAt(pos) ? AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState() : layout.palette().hull();
+        boolean glass = layout.inFuselage(pos.getX(), pos.getY(), pos.getZ())
+            ? Windscreen.covers((pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale)
+            : layout.windscreenAt(pos);
+        return glass ? AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState() : layout.palette().hull();
     }
 
     /**
