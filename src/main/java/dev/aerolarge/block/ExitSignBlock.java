@@ -16,8 +16,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * An emergency exit sign over a door: a green running man heading out through a doorway, the sign every airliner has
  * over its exits and the one passengers who cannot read yet know. It glows whatever the light around, the way a
- * backlit sign does, so it shows with the cabin dark. FACING is the way the sign faces, its back to whatever it is
- * fixed to.
+ * backlit sign does, so it shows with the cabin dark, and casts a little light of its own round the door. FACING is
+ * the way the sign faces, its back to whatever it is fixed to.
  */
 public class ExitSignBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<ExitSignBlock> CODEC = simpleCodec(ExitSignBlock::new);

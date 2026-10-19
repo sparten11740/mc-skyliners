@@ -209,7 +209,8 @@ side facing the doors, a picture in coloured wool shows what lies through it: a 
 a cup. A curtain on its own crosses the aisle in front of business class. The gym hall's front wall has a lavatory
 either side of its archway, each with a toilet, a basin and its tap, and a wooden door under a picture of a person;
 a lime dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two
-courts. Over every passenger door glows an exit sign.
+courts. Over every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights
+set for the night.
 
 ### Passenger screens
 

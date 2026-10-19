@@ -491,11 +491,14 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> CABIN_CURTAIN_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CURTAIN);
     public static final DeferredItem<BlockItem> CABIN_PARTITION_ITEM = ITEMS.registerSimpleBlockItem(CABIN_PARTITION);
-    /** The green running man over the doors. */
+    /**
+     * The green running man over the doors, lit as an exit sign is: enough to find a door by with the cabin lights set
+     * for the night, and no more than the passenger screens give, so the cabin stays dark.
+     */
     public static final DeferredBlock<ExitSignBlock> EXIT_SIGN = BLOCKS.registerBlock(
         "exit_sign", ExitSignBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion()
-            .isValidSpawn(AerolargeRegistry::never)
+            .isValidSpawn(AerolargeRegistry::never).lightLevel(state -> 4)
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
 
