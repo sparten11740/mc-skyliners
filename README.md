@@ -139,8 +139,7 @@ above the ground. Only then does it turn onto the heading or circle set, banking
 holds height and speed there. The altitude starts at the cruising height (`climbHeight`, 80 blocks above the runway
 by default) and the speed at `cruiseSpeed`. Engaged in the air, they start from the height, speed and heading it
 finds. While it is engaged, Apply flies the settings as changed, and Disengage hands the airliner back to the thrust
-levers, the tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading
-to everyone on the flight deck.
+levers, the tiller and the parking brake. How it is flying shows on the pilots' head-up display (see below).
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
 the heading it is on, slows until it flies with its nose level and sinks 3 blocks a second, banking less the lower it

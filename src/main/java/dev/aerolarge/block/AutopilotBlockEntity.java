@@ -250,7 +250,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double targetHeading;
     private double targetAltitude;
     private double targetSpeed;
-    /** Where it took off from, so the status can say how high it is above the runway. */
+    /** Where it took off from: the lowest height it can be set to hold is measured from it. */
     private double runwayAltitude;
     /** The heading it took off on, held down the runway whatever heading is set for after the take-off. */
     private double runwayHeading;
@@ -719,11 +719,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Stopped after landing: parked, and handed back to the flight deck.
             park(level);
             disengage();
-            tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"), false);
+            tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"));
             return;
-        }
-        if (level.getGameTime() % 10 == 0) {
-            report(level, state);
         }
         if (phase != was) {
             changed();
@@ -783,20 +780,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Math.floorMod(Math.round(heading) + 180, 360);
     }
 
-    /** Shows the phase, speed, height and attitude to everyone near the flight deck. */
-    private void report(ServerLevel level, SableFlight.State state) {
-        Component status = Component.translatable("message.aerolarge.autopilot.status",
-            Component.translatable("message.aerolarge.autopilot.phase." + phase.name().toLowerCase(Locale.ROOT)),
-            Math.round(state.airspeed()), String.format(Locale.ROOT, "%+d", Math.round(state.position().y - runwayAltitude)),
-            Math.round(state.pitch()), Math.round(state.roll()), compass(state.heading()));
-        tell(level, state.position(), status, true);
-    }
-
-    /** Shows a message to everyone near the flight deck, in the action bar or in chat. */
-    private static void tell(ServerLevel level, Vec3 flightDeck, Component message, boolean actionBar) {
+    /**
+     * Tells everyone near the flight deck something in chat. How it flies from moment to moment is the pilots' HUD's to
+     * show, on their own screens (see {@code PilotHud}).
+     */
+    private static void tell(ServerLevel level, Vec3 flightDeck, Component message) {
         level.players().stream()
             .filter(player -> player.position().distanceToSqr(flightDeck) < FLIGHT_DECK * FLIGHT_DECK)
-            .forEach(player -> player.displayClientMessage(message, actionBar));
+            .forEach(player -> player.displayClientMessage(message, false));
     }
 
     /**
