@@ -5,6 +5,8 @@ import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.block.AutopilotScreenBlock;
+import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
@@ -176,6 +178,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlightDisplayBlockEntity>> FLIGHT_DISPLAY_ENTITY =
         BLOCK_ENTITIES.register("flight_display", () -> BlockEntityType.Builder.of(FlightDisplayBlockEntity::new, FLIGHT_DISPLAY.get()).build(null));
+    /** The big touch screen in the middle of the instrument panel that works the autopilot; placed only by the blueprints. */
+    public static final DeferredBlock<AutopilotScreenBlock> AUTOPILOT_SCREEN = BLOCKS.registerBlock(
+        "autopilot_screen", AutopilotScreenBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 9)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotScreenBlockEntity>> AUTOPILOT_SCREEN_ENTITY =
+        BLOCK_ENTITIES.register("autopilot_screen", () -> BlockEntityType.Builder.of(AutopilotScreenBlockEntity::new, AUTOPILOT_SCREEN.get()).build(null));
     public static final DeferredBlock<EngineCoreBlock> ENGINE_CORE = BLOCKS.registerBlock("engine_core", EngineCoreBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EngineCoreBlockEntity>> ENGINE_CORE_ENTITY =
         BLOCK_ENTITIES.register("engine_core", () -> BlockEntityType.Builder.of(EngineCoreBlockEntity::new, ENGINE_CORE.get()).build(null));

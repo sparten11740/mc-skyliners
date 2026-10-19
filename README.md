@@ -50,17 +50,26 @@ off with `cameraShake` in the client config.
 
 ### Autopilot
 
-The autopilot panel sits in the middle of the pedestal. Use it on an assembled airliner standing on the ground and
-it takes off: brakes off, full thrust down the runway, holding the heading it started on with the nose wheel, nose
-up at rotation speed, then a climb to the cruising height (`climbHeight`, 80 blocks above the runway by default),
-where it holds height and speed (`cruiseSpeed`). Use it again to hand the airliner back to the thrust levers, the
-tiller and the parking brake. While it flies it shows its phase, speed, height, pitch, bank and heading to everyone
-on the flight deck.
+The autopilot is worked from the big screen in the middle of the instrument panel, or switched on and off with the
+autopilot panel on the pedestal. Engaged on an assembled airliner standing on the ground, it takes off: brakes off,
+full thrust down the runway, holding the heading it started on with the nose wheel, nose up at rotation speed, then
+a climb to the cruising height (`climbHeight`, 80 blocks above the runway by default), where it holds height and
+speed (`cruiseSpeed`). Engaged in the air, it holds the height, speed and heading it finds. Switching it off hands
+the airliner back to the thrust levers, the tiller and the parking brake. While it flies it shows its phase, speed,
+height, pitch, bank and heading to everyone on the flight deck.
+
+The screen's right side is its buttons: AP on and off; turn left or right 15 degrees; circle left or right, round a
+point beside the airliner (press the same one again to fly straight on); height up or down 20 blocks; speed up or
+down 5 blocks a second; and the circle's radius, 150 to 1000 blocks. Its left side is a moving map,
+heading up: the track flown, the circle being flown or the heading being turned to, and north; touch the map to
+zoom it out, and again past the widest to zoom back in.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
-control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). Part of the
-tailplane pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed.
-It needs Sable (Create Aeronautics) to read where the airliner is.
+control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). It turns by
+banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
+hard along the nose, so it learns the pitch that holds the height at its speed as it flies. Part of the tailplane
+pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It needs
+Sable (Create Aeronautics) to read where the airliner is.
 
 ### Airstairs
 

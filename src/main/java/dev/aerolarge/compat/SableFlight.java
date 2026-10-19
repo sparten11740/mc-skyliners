@@ -1,12 +1,14 @@
 package dev.aerolarge.compat;
 
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import org.joml.Vector3d;
 
 /**
  * Where an assembled airliner is and how it is moving, read from Sable. A block of an assembled airliner lives in
@@ -20,8 +22,11 @@ public final class SableFlight {
     private SableFlight() {
     }
 
-    /** The airliner's state seen from one of its blocks: positions in blocks, velocity in blocks per second. */
-    public record State(Vec3 position, Vec3 nose, Vec3 right, Vec3 up, Vec3 velocity) {
+    /**
+     * The airliner's state seen from one of its blocks: positions in blocks, velocity in blocks per second, and the
+     * strength of gravity where it is, in blocks per second each second.
+     */
+    public record State(Vec3 position, Vec3 nose, Vec3 right, Vec3 up, Vec3 velocity, double gravity) {
         /** Degrees above the horizon the nose points. */
         public double pitch() {
             return Math.toDegrees(Math.asin(Math.clamp(nose.y, -1, 1)));
@@ -75,7 +80,8 @@ public final class SableFlight {
             Vec3 right = direction(level, centre, position, nose.getClockWise());
             Vec3 up = direction(level, centre, position, Direction.UP);
             Vec3 velocity = Sable.HELPER.getVelocity(level, centre);
-            return new State(position, forward, right, up, velocity);
+            double gravity = DimensionPhysicsData.getGravity(level, new Vector3d(position.x, position.y, position.z)).length();
+            return new State(position, forward, right, up, velocity, gravity);
         }
 
         private static Vec3 direction(Level level, Vec3 centre, Vec3 position, Direction direction) {

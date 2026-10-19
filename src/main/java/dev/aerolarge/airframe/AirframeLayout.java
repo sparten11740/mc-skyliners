@@ -7,6 +7,8 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.block.AutopilotScreenBlock;
+import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
@@ -704,8 +706,38 @@ public final class AirframeLayout {
             controls.add(tiller);
             controls.add(brake);
         }
-        autopilot(new BlockPos(0, deck + 1, pedestalZ), engines, controls);
+        BlockPos autopilot = new BlockPos(0, deck + 1, pedestalZ);
+        autopilot(autopilot, engines, controls);
+        autopilotScreen(deck + 1, panelZ, autopilot);
         assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
+    }
+
+    /**
+     * The autopilot screen, set into the middle of the instrument panel and standing a block above it, facing the
+     * pilots, if the nose leaves it the room; linked to the autopilot when the airliner is built.
+     */
+    private void autopilotScreen(int bottom, int z, BlockPos autopilot) {
+        int left = -(AutopilotScreenBlock.COLUMNS / 2);
+        for (int row = 1; row < AutopilotScreenBlock.ROWS; row++) {
+            for (int column = 0; column < AutopilotScreenBlock.COLUMNS; column++) {
+                if (!isOpen(left + column, bottom + row, z)) {
+                    return;
+                }
+            }
+        }
+        BlockState screen = AerolargeRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, Direction.SOUTH);
+        for (int row = 0; row < AutopilotScreenBlock.ROWS; row++) {
+            for (int column = 0; column < AutopilotScreenBlock.COLUMNS; column++) {
+                // Facing south, the viewer's right is east.
+                set(left + column, bottom + row, z, screen.setValue(AutopilotScreenBlock.PART, row * AutopilotScreenBlock.COLUMNS + column));
+            }
+        }
+        BlockPos origin = new BlockPos(left, bottom, z);
+        fittings.put(origin, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AutopilotScreenBlockEntity linked) {
+                linked.configure(autopilot.subtract(origin).rotate(rotation));
+            }
+        });
     }
 
     /**

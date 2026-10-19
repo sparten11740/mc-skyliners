@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import dev.aerolarge.block.EngineCoreBlockEntity;
+import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.EngineSounds;
@@ -18,8 +19,8 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
- * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights
- * and flight displays, its engines' sound and contrails, and the camera shake aboard.
+ * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
+ * flight displays and autopilot screen, its engines' sound and contrails, and the camera shake aboard.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -44,5 +45,6 @@ public final class AerolargeClient {
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AerolargeRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
     }
 }

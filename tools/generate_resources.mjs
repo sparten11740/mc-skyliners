@@ -245,6 +245,18 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
 });
 
+// The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
+// one state per part. It drops nothing: only the blueprints place it.
+write(`assets/${ID}/models/block/autopilot_screen.json`, {
+  parent: "minecraft:block/orientable",
+  textures: { front: `${ID}:block/panel_side`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
+});
+write(`assets/${ID}/blockstates/autopilot_screen.json`, {
+  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+    [0, 1, 2, 3, 4, 5].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/autopilot_screen`, y }]))),
+});
+cubes.autopilot_screen = null;
+
 // The flight display: a plain dark panel, its screen drawn live by its renderer; facing the pilot.
 write(`assets/${ID}/models/block/flight_display.json`, {
   parent: "minecraft:block/orientable",
@@ -391,6 +403,39 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.phase.takeoff": "TAKE-OFF",
   "message.aerolarge.autopilot.phase.climb": "CLIMB",
   "message.aerolarge.autopilot.phase.cruise": "CRUISE",
+  "message.aerolarge.autopilot.phase.descent": "DESCENT",
+  "message.aerolarge.autopilot.holding": "Autopilot engaged: holding %s blocks, heading %s.",
+  "message.aerolarge.autopilot.engage_first": "Engage the autopilot first.",
+  "message.aerolarge.autopilot.heading": "Heading %s",
+  "message.aerolarge.autopilot.orbit_left": "Circling left, radius %s blocks",
+  "message.aerolarge.autopilot.orbit_right": "Circling right, radius %s blocks",
+  "message.aerolarge.autopilot.altitude": "Altitude %s",
+  "message.aerolarge.autopilot.speed": "Speed %s b/s",
+  "message.aerolarge.autopilot.radius": "Circle radius %s blocks",
+  "block.aerolarge.autopilot_screen": "Autopilot Screen",
+  "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
+  "screen.aerolarge.autopilot.engage": "AP %s",
+  "screen.aerolarge.autopilot.on": "ON",
+  "screen.aerolarge.autopilot.off": "OFF",
+  "screen.aerolarge.autopilot.heading_left": "◄ HDG",
+  "screen.aerolarge.autopilot.heading_right": "HDG ►",
+  "screen.aerolarge.autopilot.orbit_left": "◄ CIRCLE",
+  "screen.aerolarge.autopilot.orbit_right": "CIRCLE ►",
+  "screen.aerolarge.autopilot.altitude_down": "ALT ▼",
+  "screen.aerolarge.autopilot.altitude_up": "ALT ▲",
+  "screen.aerolarge.autopilot.speed_down": "SPD ▼",
+  "screen.aerolarge.autopilot.speed_up": "SPD ▲",
+  "screen.aerolarge.autopilot.radius_down": "SIZE ▼",
+  "screen.aerolarge.autopilot.radius_up": "SIZE ▲",
+  "screen.aerolarge.autopilot.standby": "ASSEMBLE TO FLY",
+  "screen.aerolarge.autopilot.disengaged": "AUTOPILOT OFF",
+  "screen.aerolarge.autopilot.mode": "%s  %s",
+  "screen.aerolarge.autopilot.mode.heading": "HDG %s",
+  "screen.aerolarge.autopilot.mode.orbit_left": "CIRCLE L %s",
+  "screen.aerolarge.autopilot.mode.orbit_right": "CIRCLE R %s",
+  "screen.aerolarge.autopilot.targets": "ALT %s  SPD %s",
+  "screen.aerolarge.autopilot.now": "SPD %s  ALT %s  HDG %s",
+  "screen.aerolarge.autopilot.range": "%s blocks",
   "aerolarge.configuration.autopilot": "Autopilot",
   "aerolarge.configuration.climbHeight": "Climb Height",
   "aerolarge.configuration.rotateSpeed": "Rotate Speed",
