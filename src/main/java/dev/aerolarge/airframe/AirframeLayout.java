@@ -772,8 +772,8 @@ public final class AirframeLayout {
      * where the surface crosses it, and the windscreen's glass and the cabin windows are cut the same way. Outside
      * blocks the surface still passes through get shell (or glass, or window) of their own, so the skin closes into one
      * smooth surface. Cut or not, window panes right above one another are then joined into tall windows.
-     * Skin next to anything built onto the hull from outside, the wings, gear or exterior lights, stays as it is so
-     * nothing opens up around it, and no shell is added over the doors set into the skin.
+     * Skin next to anything built onto the hull from outside (the wings, gear or exterior lights) or round a door stays
+     * as it is so nothing opens up around it, and no shell is added over the doors set into the skin.
      */
     private void shell() {
         BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
@@ -794,7 +794,7 @@ public final class AirframeLayout {
                 }
             }
             int shape = shapeAt(pos.getX(), pos.getY(), pos.getZ());
-            if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false)) {
+            if (shape <= ShellGeometry.WHOLE || nextToFitting(pos, false) || nextToDoor(pos)) {
                 continue;
             }
             shaped.put(pos, (glazed ? glass : pane ? curvedPane : shell).setValue(ShellBlock.SHAPE, shape));
@@ -816,6 +816,20 @@ public final class AirframeLayout {
                     .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() - 1, pos.getZ()))));
             }
         }
+    }
+
+    /**
+     * Whether a door is set into the skin right beside this block. The skin round a door stays whole: a door is flat,
+     * and skin cut to the curve beside it would leave a wedge of open air along its edges.
+     */
+    private boolean nextToDoor(BlockPos pos) {
+        for (Direction side : Direction.values()) {
+            BlockPos next = pos.relative(side);
+            if (stateAt(next.getX(), next.getY(), next.getZ()).is(AerolargeRegistry.AIRLINER_DOOR.get())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The skin block straight in from this one, against the way the fuselage faces there. */
@@ -1186,13 +1200,28 @@ public final class AirframeLayout {
     }
 
     /**
-     * A two-leaf door, two blocks wide, cut through the hull on one side at station z, its bottom on row y. Where
-     * the curve of the hull makes the wall more than a block thick, the rest is cut away so the door opens into the
-     * cabin.
+     * A two-leaf door, two blocks wide, cut through the hull on one side at station z, its bottom on row y, standing
+     * flat in one column at the hull's outermost reach there and framed by hull. Where the curve of the hull makes the
+     * wall more than a block thick, the rest is cut away so the door opens into the cabin.
      */
     private void door(int side, double station, int bottom) {
         int fore = (int) Math.round(station * scale);
         Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
+        // The whole door stands in one column, the outermost the hull reaches at any of its blocks: a door's halves
+        // must stand one on the other, and below the floor the hull curves in so fast that the lower row's skin can
+        // lie a block further in than the upper's.
+        int outer = 0;
+        for (int leaf = 0; leaf < 2; leaf++) {
+            for (int part = 0; part < 2; part++) {
+                int row = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+                while (row != 0 && !inFuselage(row, bottom + part, fore + leaf)) {
+                    row -= side;
+                }
+                if (Math.abs(row) > Math.abs(outer)) {
+                    outer = row;
+                }
+            }
+        }
         for (int leaf = 0; leaf < 2; leaf++) {
             int z = fore + leaf;
             // The aft leaf's partner is ahead of it (north), the fore leaf's behind it (south); a leaf hinges on the
@@ -1201,10 +1230,6 @@ public final class AirframeLayout {
             DoorHingeSide hinge = partner == facing.getCounterClockWise() ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
             for (int part = 0; part < 2; part++) {
                 int y = bottom + part;
-                int outer = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
-                while (outer != 0 && !inFuselage(outer, y, z)) {
-                    outer -= side;
-                }
                 for (int x = outer - side; x != 0 && has(x, y, z) && !isOpen(x, y, z); x -= side) {
                     set(x, y, z, Blocks.AIR.defaultBlockState());
                 }
@@ -1216,6 +1241,15 @@ public final class AirframeLayout {
                     .setValue(DoorBlock.FACING, facing)
                     .setValue(DoorBlock.HINGE, hinge)
                     .setValue(DoorBlock.HALF, part == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER));
+            }
+        }
+        // A frame of hull round the doorway, flush with the door, wherever the curve leaves the hull short of it: the
+        // jambs either side and the lintel above. The skin pass leaves it whole (see nextToDoor), so nothing gapes.
+        for (int y = bottom; y <= bottom + 2; y++) {
+            for (int z = fore - 1; z <= fore + 2; z++) {
+                if ((y == bottom + 2 || z == fore - 1 || z == fore + 2) && !has(outer, y, z)) {
+                    set(outer, y, z, palette.hull());
+                }
             }
         }
     }
