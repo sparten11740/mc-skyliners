@@ -71,11 +71,13 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     private static final int TICKS_PER_COLUMN = 2;
     /**
      * The outlines, in pixels, drawn for a curtain facing north: the cloth through the middle of the block, its hem a
-     * pixel off the floor; open, the strip along the top where the rail runs (or would, lower down, so the piece can
-     * still be used) and a bunch of gathered cloth at each end.
+     * pixel off the floor; open, the strip along the top where the rail runs, a bunch of gathered cloth at each end,
+     * and a thin sheet where the cloth hangs when drawn, so the curtain can be drawn shut from anywhere across it.
      */
     private static final double CLOTH_FRONT = 6.5;
     private static final double CLOTH_BACK = 9.5;
+    private static final double DRAWN_FRONT = 7.5;
+    private static final double DRAWN_BACK = 8.5;
     private static final double HEM = 1;
     private static final double RAIL_BOTTOM = 14.5;
     private static final double RAIL_FRONT = 7;
@@ -365,7 +367,8 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
         if (!state.getValue(OPEN)) {
             return box(facing, 0, bottom, CLOTH_FRONT, 16, 16, CLOTH_BACK);
         }
-        VoxelShape shape = box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK);
+        VoxelShape shape = Shapes.or(box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK),
+            box(facing, 0, bottom, DRAWN_FRONT, 16, 16, DRAWN_BACK));
         if (!state.getValue(LEFT)) {
             shape = Shapes.or(shape, box(facing, 0, bottom, BUNCH_FRONT, BUNCH_WIDTH, 16, BUNCH_BACK));
         }
