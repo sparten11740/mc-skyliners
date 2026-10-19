@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,5 +54,11 @@ public class SeatbeltSignBlock extends Block {
                 level.playSound(null, pos, AerolargeRegistry.SEATBELT_DING.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
         }
+    }
+
+    /** Set into the hull, it keeps the daylight out of the cabin like the skin around it; it is glass only to look at. */
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return level.getMaxLightLevel();
     }
 }
