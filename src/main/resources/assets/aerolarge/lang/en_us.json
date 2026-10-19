@@ -157,6 +157,8 @@
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
   "message.aerolarge.cabin_lights.night": "Cabin lights set for the night",
+  "block.aerolarge.cabin_curtain": "Cabin Curtain",
+  "block.aerolarge.cabin_partition": "Cabin Partition",
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.light_cable": "Light Cable",

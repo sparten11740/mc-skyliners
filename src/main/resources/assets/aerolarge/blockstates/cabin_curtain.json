@@ -1,0 +1,484 @@
+{
+  "variants": {
+    "down=false,facing=north,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0000"
+    },
+    "down=false,facing=east,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0000",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0000",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0000",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0001"
+    },
+    "down=true,facing=east,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0001",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0001",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0001",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0010"
+    },
+    "down=false,facing=east,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0010",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0010",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0010",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0011"
+    },
+    "down=true,facing=east,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0011",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0011",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0011",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0100"
+    },
+    "down=false,facing=east,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0100",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0100",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0100",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0101"
+    },
+    "down=true,facing=east,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0101",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0101",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_0101",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0110"
+    },
+    "down=false,facing=east,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0110",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0110",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0110",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0111"
+    },
+    "down=true,facing=east,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0111",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0111",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_0111",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1000"
+    },
+    "down=false,facing=east,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1000",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1000",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1000",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1001"
+    },
+    "down=true,facing=east,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1001",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1001",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=false,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1001",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1010"
+    },
+    "down=false,facing=east,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1010",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1010",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1010",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1011"
+    },
+    "down=true,facing=east,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1011",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1011",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=false,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1011",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1100"
+    },
+    "down=false,facing=east,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1100",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1100",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1100",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1101"
+    },
+    "down=true,facing=east,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1101",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1101",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=false,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_closed_1101",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1110"
+    },
+    "down=false,facing=east,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1110",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1110",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1110",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1111"
+    },
+    "down=true,facing=east,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1111",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1111",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=false,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_closed_1111",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0000"
+    },
+    "down=false,facing=east,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0000",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0000",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0000",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0001"
+    },
+    "down=true,facing=east,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0001",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0001",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0001",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0010"
+    },
+    "down=false,facing=east,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0010",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0010",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0010",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0011"
+    },
+    "down=true,facing=east,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0011",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0011",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0011",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0100"
+    },
+    "down=false,facing=east,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0100",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0100",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0100",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0101"
+    },
+    "down=true,facing=east,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0101",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0101",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_0101",
+      "y": 270
+    },
+    "down=false,facing=north,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0110"
+    },
+    "down=false,facing=east,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0110",
+      "y": 90
+    },
+    "down=false,facing=south,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0110",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0110",
+      "y": 270
+    },
+    "down=true,facing=north,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0111"
+    },
+    "down=true,facing=east,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0111",
+      "y": 90
+    },
+    "down=true,facing=south,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0111",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_0111",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1000"
+    },
+    "down=false,facing=east,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1000",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1000",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1000",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1001"
+    },
+    "down=true,facing=east,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1001",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1001",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=true,right=false,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1001",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1010"
+    },
+    "down=false,facing=east,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1010",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1010",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1010",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1011"
+    },
+    "down=true,facing=east,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1011",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1011",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=true,right=false,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1011",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1100"
+    },
+    "down=false,facing=east,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1100",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1100",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1100",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1101"
+    },
+    "down=true,facing=east,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1101",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1101",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=true,right=true,up=false": {
+      "model": "aerolarge:block/cabin_curtain_open_1101",
+      "y": 270
+    },
+    "down=false,facing=north,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1110"
+    },
+    "down=false,facing=east,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1110",
+      "y": 90
+    },
+    "down=false,facing=south,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1110",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1110",
+      "y": 270
+    },
+    "down=true,facing=north,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1111"
+    },
+    "down=true,facing=east,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1111",
+      "y": 90
+    },
+    "down=true,facing=south,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1111",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,open=true,right=true,up=true": {
+      "model": "aerolarge:block/cabin_curtain_open_1111",
+      "y": 270
+    }
+  }
+}

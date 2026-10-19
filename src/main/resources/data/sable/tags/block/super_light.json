@@ -44,6 +44,8 @@
     "aerolarge:cabin_lights",
     "aerolarge:window_shades",
     "aerolarge:cabin_window_shell",
+    "aerolarge:cabin_curtain",
+    "aerolarge:cabin_partition",
     "aerolarge:autopilot_screen",
     "aerolarge:flight_display",
     "aerolarge:tail_camera_display",

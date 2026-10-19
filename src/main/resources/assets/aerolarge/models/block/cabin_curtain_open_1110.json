@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cloth": "aerolarge:block/cabin_curtain_hem",
+    "rail": "aerolarge:block/cabin_curtain_rail",
+    "tie": "aerolarge:block/cabin_curtain_tie",
+    "particle": "aerolarge:block/cabin_curtain"
+  },
+  "elements": []
+}

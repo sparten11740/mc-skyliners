@@ -30,6 +30,8 @@ public class CabinWindowBlock extends TransparentBlock {
     public static final BooleanProperty SHADED = BooleanProperty.create("shaded");
     public static final BooleanProperty UP = BlockStateProperties.UP;
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
+    /** The most panes one shade is pulled over at once: a whole wall of windows stacked up by hand. */
+    private static final int MOST_PANES = 64;
 
     public CabinWindowBlock(Properties properties) {
         super(properties);
@@ -92,17 +94,14 @@ public class CabinWindowBlock extends TransparentBlock {
     /** Pulls the shade of the whole window the pane is part of, every pane it is joined into, up or down. */
     static void pullShade(Level level, BlockPos pos, BlockState state) {
         boolean shaded = !state.getValue(SHADED);
-        BlockPos at = pos;
-        while (isPane(level.getBlockState(at)) && level.getBlockState(at).getValue(DOWN)) {
-            at = at.below();
-        }
-        for (BlockState pane = level.getBlockState(at); isPane(pane); pane = level.getBlockState(at)) {
-            level.setBlock(at, pane.setValue(SHADED, shaded), Block.UPDATE_ALL);
-            if (!pane.getValue(UP)) {
-                break;
-            }
-            at = at.above();
+        for (BlockPos at : JoinedBlocks.from(level, pos, MOST_PANES, CabinWindowBlock::carriesOn)) {
+            level.setBlock(at, level.getBlockState(at).setValue(SHADED, shaded), Block.UPDATE_ALL);
         }
         level.playSound(null, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.6F, shaded ? 0.9F : 1.2F);
+    }
+
+    /** Whether a pane carries on into its neighbour: another pane above or below it, the way it is joined. */
+    private static boolean carriesOn(BlockState pane, Direction way, BlockState neighbor) {
+        return isPane(neighbor) && (way == Direction.UP && pane.getValue(UP) || way == Direction.DOWN && pane.getValue(DOWN));
     }
 }

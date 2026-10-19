@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.client.AutopilotScreenRenderer;
@@ -34,6 +35,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -46,7 +48,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * flight displays, autopilot screen, tail camera display, passenger screens and engine intakes, its engines' sound and
  * contrails, the camera shake aboard, the passenger screens' outside cameras and the tail camera display's live
  * picture, parachutes: opening them by jumping, and the canopy over their wearers; the pilots' head-up display; the
- * creative tab's section banners; and the settings screen in the Mods menu.
+ * creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -80,6 +82,7 @@ public final class AerolargeClient {
         modEventBus.addListener(AerolargeClient::onRegisterRenderers);
         modEventBus.addListener(AerolargeClient::onRegisterParticles);
         modEventBus.addListener(AerolargeClient::onRegisterGuiLayers);
+        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, AerolargeRegistry.CABIN_CURTAIN.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
     }

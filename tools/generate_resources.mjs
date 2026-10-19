@@ -787,6 +787,105 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   cubes.cabin_window_shell = null;
 }
 
+// Room dividers: fitted into the cabin, so breakable, and no part of the hull (see FITTINGS).
+const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition"];
+const ROOM_DIVIDER_LANG = {
+  "block.aerolarge.cabin_curtain": "Cabin Curtain",
+  "block.aerolarge.cabin_partition": "Cabin Partition",
+};
+// The cabin curtain, drawn facing north (see CurtainBlock), one model for each way it can be drawn and joined; the
+// colour is not in it, the client tints the cloth. Shut, four pleats of cloth a pixel and a half thick, standing
+// alternately forward and back of the middle so the folds are deep; no faces between pieces one above another, and
+// the lowest piece's cloth stops a pixel off the floor on its darker hem. Open, the cloth is gathered at whichever end
+// the curtain stops (left is west), a bunch of folds a quarter of the block wide, its lowest piece tied back with a
+// brass band; pieces in the middle show nothing. The topmost pieces carry the steel rail with a ring at each pleat.
+{
+  const all = ["north", "south", "east", "west", "up", "down"];
+  // A box whose faces show the parts of their texture over them, as a full block's would; cloth takes the dye's tint.
+  const box = (from, to, texture, tinted, skip = []) => {
+    const [x0, y0, z0] = from;
+    const [x1, y1, z1] = to;
+    const uv = {
+      north: [16 - x1, 16 - y1, 16 - x0, 16 - y0], south: [x0, 16 - y1, x1, 16 - y0],
+      east: [16 - z1, 16 - y1, 16 - z0, 16 - y0], west: [z0, 16 - y1, z1, 16 - y0],
+      up: [x0, z0, x1, z1], down: [x0, 16 - z1, x1, 16 - z0],
+    };
+    const faces = all.filter((face) => !skip.includes(face))
+      .map((face) => [face, { texture, uv: uv[face], ...(tinted ? { tintindex: 0 } : {}) }]);
+    return { from, to, faces: Object.fromEntries(faces) };
+  };
+  // Pleats a pixel and a half thick, forward and back of the middle; the cloth's columns lit on the crests and shaded
+  // in the folds, so a pleat standing forward shows a crest to the front and a fold to the back, and one set back the
+  // other way round.
+  const pleat = (k, bottom, top, skip) => {
+    const forward = k % 2 === 0;
+    const z = forward ? 6.75 : 7.75;
+    const base = (k >> 1) * 8;
+    const crest = [base, 16 - top, base + 4, 16 - bottom];
+    const fold = [base + 4, 16 - top, base + 8, 16 - bottom];
+    const element = box([4 * k, bottom, z], [4 * k + 4, top, z + 1.5], "#cloth", true, skip);
+    if (element.faces.north) element.faces.north.uv = forward ? crest : fold;
+    if (element.faces.south) element.faces.south.uv = forward ? fold : crest;
+    return element;
+  };
+  // An open curtain's bunch of folds at its west end; the east end's is the same mirrored.
+  const FOLDS = [[0, 1.5, 6, 8.5], [1, 2.75, 7.5, 10], [2.25, 4, 6.25, 9], [3.5, 4.5, 7.25, 8.75]];
+  const mirror = (x0, x1, east) => (east ? [16 - x1, 16 - x0] : [x0, x1]);
+  const bunch = (east, bottom, top, skip) => FOLDS.map(([x0, x1, z0, z1]) => {
+    const [from, to] = mirror(x0, x1, east);
+    return box([from, bottom, z0], [to, top, z1], "#cloth", true, skip);
+  });
+  const tieBack = (east) => {
+    const [from, to] = mirror(0, 4.75, east);
+    return box([from, 4, 5.75], [to, 5.5, 10.25], "#tie", false);
+  };
+  const rail = [
+    box([0, 15, 7.25], [16, 16, 8.75], "#rail", false),
+    ...[1.5, 5.5, 9.5, 13.5].map((x) => box([x, 14, 7], [x + 1, 15, 9], "#rail", false)),
+  ];
+  const bits = (value) => (value ? 1 : 0);
+  const name = (open, left, right, up, down) => `cabin_curtain_${open ? "open" : "closed"}_${[left, right, up, down].map(bits).join("")}`;
+  const variants = {};
+  for (const open of [false, true]) {
+    for (const left of [false, true]) {
+      for (const right of [false, true]) {
+        for (const up of [false, true]) {
+          for (const down of [false, true]) {
+            const bottom = down ? 0 : 1;
+            const top = up ? 16 : 14;
+            const skip = [...(up ? ["up"] : []), ...(down ? ["down"] : [])];
+            const elements = open
+              ? [...(left ? [] : bunch(false, bottom, top, skip)), ...(right ? [] : bunch(true, bottom, top, skip)),
+                ...(down || left ? [] : [tieBack(false)]), ...(down || right ? [] : [tieBack(true)])]
+              : [0, 1, 2, 3].map((k) => pleat(k, bottom, top, skip));
+            const cloth = `${ID}:block/cabin_curtain${down ? "" : "_hem"}`;
+            write(`assets/${ID}/models/block/${name(open, left, right, up, down)}.json`, {
+              parent: "minecraft:block/block",
+              render_type: "minecraft:cutout",
+              textures: { cloth, rail: `${ID}:block/cabin_curtain_rail`, tie: `${ID}:block/cabin_curtain_tie`, particle: `${ID}:block/cabin_curtain` },
+              elements: [...elements, ...(up ? [] : rail)],
+            });
+            for (const [facing, y] of Object.entries(yRot)) {
+              variants[`down=${down},facing=${facing},left=${left},open=${open},right=${right},up=${up}`] = {
+                model: `${ID}:block/${name(open, left, right, up, down)}`, ...(y ? { y } : {}),
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/cabin_curtain.json`, { variants });
+  write(`assets/${ID}/models/item/cabin_curtain.json`, { parent: `${ID}:block/${name(false, false, false, false, false)}` });
+  write(`assets/${ID}/blockstates/cabin_partition.json`, { variants: { "": { model: `${ID}:block/cabin_partition` } } });
+  write(`assets/${ID}/models/block/cabin_partition.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/cabin_partition` } });
+  write(`assets/${ID}/models/item/cabin_partition.json`, { parent: `${ID}:block/cabin_partition` });
+  for (const name of ROOM_DIVIDERS) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
 // one state per part. It drops nothing: only the blueprints place it.
 write(`assets/${ID}/models/block/autopilot_screen.json`, {
@@ -997,7 +1096,7 @@ const cabinDecorLang = {};
 
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
-write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target"))));
+write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
 // The care package is a wooden crate.
 write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
@@ -1009,7 +1108,7 @@ const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button"];
+  "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS];
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1098,6 +1197,9 @@ shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
 shaped("hide_and_seek_button", ["B", "N", "I"], { B: "minecraft:stone_button", N: "minecraft:note_block", I: "minecraft:iron_ingot" }, 1);
+// Room dividers: cloth hung from a rail on rings, and a cream panel of pale wood.
+shaped("cabin_curtain", ["NSN", "WWW", "WWW"], { N: "minecraft:iron_nugget", S: "minecraft:stick", W: "minecraft:white_wool" }, 6);
+shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", D: "minecraft:white_dye" }, 8);
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -1288,6 +1390,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
   "message.aerolarge.cabin_lights.night": "Cabin lights set for the night",
+  ...ROOM_DIVIDER_LANG,
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.light_cable": "Light Cable",

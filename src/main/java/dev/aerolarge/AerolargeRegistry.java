@@ -20,6 +20,7 @@ import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
 import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
 import dev.aerolarge.block.DropReleaseBlock;
@@ -475,6 +476,21 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> CABIN_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LIGHTS);
     public static final DeferredItem<BlockItem> WINDOW_SHADES_ITEM = ITEMS.registerSimpleBlockItem(WINDOW_SHADES);
 
+    /**
+     * Dividing the cabin into rooms: curtains to draw across it, cloth that nothing bumps into, and the bulkheads they
+     * hang in, a smooth cream wall that is the cabin's own and no part of the hull.
+     */
+    public static final DeferredBlock<CurtainBlock> CABIN_CURTAIN = BLOCKS.registerBlock(
+        "cabin_curtain", CurtainBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).strength(0.8F).sound(SoundType.WOOL).noCollission().noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredBlock<Block> CABIN_PARTITION = BLOCKS.registerSimpleBlock(
+        "cabin_partition", BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(1.5F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> CABIN_CURTAIN_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CURTAIN);
+    public static final DeferredItem<BlockItem> CABIN_PARTITION_ITEM = ITEMS.registerSimpleBlockItem(CABIN_PARTITION);
+
     /** A signal flare to mark a drop zone with a column of coloured smoke. */
     public static final DeferredBlock<SignalFlareBlock> SIGNAL_FLARE = BLOCKS.registerBlock(
         "signal_flare", SignalFlareBlock::new,
@@ -622,7 +638,7 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
-            MODEL_AIRLINER_ITEM
+            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM
         )),
         new TabSection("gym", List.of(
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM

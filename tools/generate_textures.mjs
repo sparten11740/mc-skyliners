@@ -689,6 +689,34 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// Room dividers. The curtain's cloth: a fine weave in grey, which the client tints the dye's colour, so one texture
+// serves all sixteen. Four pleats run down it, a column of four pixels each: the first and third lit along their
+// crests, the second and fourth shaded in their folds (the model shows a pleat standing forward with the one and a
+// pleat set back with the other). Its hem: the same cloth with a darker hem stitched along its foot, the bottom three
+// rows the lowest piece shows. The rail and its rings: brushed steel. The band tying back an open curtain: twisted
+// brass cord. The partition: a smooth cream bulkhead panel, its seams faint along two edges and no rivets, a match
+// for the airframe's white panels without being one.
+{
+  const CREST = [0.86, 0.97, 1.0, 0.92];
+  const FOLD = [0.76, 0.7, 0.66, 0.72];
+  const cloth = (x, y) => {
+    const pleat = Math.floor(x / 4) % 2 === 0 ? CREST : FOLD;
+    const weave = (x + y) % 2 === 0 ? 5 : -5;
+    const thread = y % 4 === 0 ? -6 : 0;
+    const v = clamp(Math.round(242 * pleat[x % 4]) + weave + thread);
+    return [v, v, v];
+  };
+  texture(blockOutput, "cabin_curtain", cloth, 2);
+  texture(blockOutput, "cabin_curtain_hem", (x, y) => {
+    if (y < 12) return cloth(x, y);
+    const darker = y === 12 && x % 2 === 0 ? 0.42 : 0.6;
+    return cloth(x, y).map((v) => Math.round(v * darker));
+  }, 2);
+  texture(blockOutput, "cabin_curtain_rail", (x, y) => ((x * 7 + y * 3) % 5 === 0 ? [0xd2, 0xd7, 0xdc] : [0xa4, 0xaa, 0xb1]), 3);
+  texture(blockOutput, "cabin_curtain_tie", (x, y) => ((x + y) % 4 < 2 ? [0xd8, 0xac, 0x40] : [0xa4, 0x7c, 0x22]), 2);
+  texture(blockOutput, "cabin_partition", (x, y) => (x === 0 || y === 0 ? [0xdb, 0xd3, 0xc0] : [0xee, 0xe7, 0xd6]), 2);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {
