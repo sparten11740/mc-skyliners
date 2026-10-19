@@ -208,7 +208,11 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<Block> LIVERY_PANEL = BLOCKS.registerSimpleBlock("livery_panel", metal(MapColor.COLOR_BLUE));
     public static final DeferredBlock<Block> CABIN_FLOOR = BLOCKS.registerSimpleBlock("cabin_floor", metal(MapColor.COLOR_GRAY));
     public static final DeferredBlock<Block> ENGINE_INTAKE = BLOCKS.registerSimpleBlock("engine_intake", metal(MapColor.COLOR_BLACK));
-    /** Built into the crown, the walls and the hold's belly so no corner of the cabin is dark enough for mobs. */
+    /**
+     * Built into the crown, the walls, the hold's belly and the walls of the pool, as bright as the flight deck's
+     * dimmer has it; the spawn guard, not their light, keeps mobs out of the cabin, so they can be turned down to a
+     * night glow.
+     */
     public static final DeferredBlock<CabinLightBlock> CABIN_LIGHT = BLOCKS.registerBlock(
         "cabin_light", CabinLightBlock::new, metal(MapColor.SNOW).lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15)).sound(SoundType.GLASS)
     );

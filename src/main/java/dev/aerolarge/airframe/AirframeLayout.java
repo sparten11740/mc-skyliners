@@ -422,7 +422,8 @@ public final class AirframeLayout {
     /**
      * Cabin lights set into the hull, on every few stations: one in the crown and one in each wall just above head
      * height over the main deck, and one in the belly of the hold. Spaced so that light reaches every block of the
-     * cabin and hold, and no mob finds a dark spot to spawn in.
+     * cabin and hold when they are bright; mobs are kept out by the spawn guard, not by the light, so the dimmer can
+     * turn them down to a night glow.
      */
     private void lights() {
         int wallRow = floorY + 3;
