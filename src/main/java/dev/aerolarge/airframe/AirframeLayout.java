@@ -145,6 +145,11 @@ public final class AirframeLayout {
 
     private final double scale;
     private final AirframePalette palette;
+    private final ShellStyle style;
+    /** The snapped style's cut of the skin, once asked for. */
+    private SnappedShell snapped;
+    /** The stations of the windscreen's side posts, by side (1 to starboard, -1 to port) and the post's angle. */
+    private final Map<Integer, Map<Double, Integer>> postStations = new HashMap<>();
     private final Map<BlockPos, BlockState> cells = new HashMap<>();
     /** Block entities to set up once placed, by layout position. */
     private final Map<BlockPos, Fitting> fittings = new HashMap<>();
@@ -174,15 +179,16 @@ public final class AirframeLayout {
     /** The row the tires stand on, once the landing gear is down. */
     private int ground;
 
-    private AirframeLayout(double scale, AirframePalette palette) {
+    private AirframeLayout(double scale, AirframePalette palette, ShellStyle style) {
         this.scale = scale;
         this.palette = palette;
+        this.style = style;
         this.floorY = (int) Math.floor(FLOOR * HEIGHT * scale);
     }
 
     /** The finished layout, its lowest blocks (the tires) at y 0 and its nose tip at z 0. */
     public static AirframeLayout create(double scale, boolean furnished) {
-        AirframeLayout layout = new AirframeLayout(scale, AirframePalette.fromConfig());
+        AirframeLayout layout = new AirframeLayout(scale, AirframePalette.fromConfig(), AerolargeConfig.SHELL_STYLE.get());
         layout.fuselage();
         layout.windows();
         layout.lights();
@@ -236,6 +242,12 @@ public final class AirframeLayout {
 
     double scale() {
         return scale;
+    }
+
+    /** Where the flight deck leaves room for the Physics Assembler, which must stay open; null without a flight deck. */
+    @Nullable
+    BlockPos assemblerSpot() {
+        return assemblerSpot;
     }
 
     int floorY() {
@@ -340,7 +352,7 @@ public final class AirframeLayout {
         return cells.containsKey(new BlockPos(x, y, z));
     }
 
-    private boolean inFuselage(int x, int y, int z) {
+    boolean inFuselage(int x, int y, int z) {
         return AirframeShape.inFuselage(x / scale, (y + 0.5) / scale, (z + 0.5) / scale);
     }
 
@@ -353,7 +365,7 @@ public final class AirframeLayout {
      * lies beyond it, and -1 where it leaves next to nothing of it. The skin is found from the block's middle, straight
      * out the way the fuselage faces there.
      */
-    private int shapeAt(int x, int y, int z) {
+    int shapeAt(int x, int y, int z) {
         double cx = x / scale;
         double cy = (y + 0.5) / scale;
         double cz = (z + 0.5) / scale;
@@ -380,7 +392,7 @@ public final class AirframeLayout {
     }
 
     /** Whether the block at the position is the fuselage's skin: inside it and touching the outside. */
-    private boolean inSkin(BlockPos pos) {
+    boolean inSkin(BlockPos pos) {
         if (!inFuselage(pos)) {
             return false;
         }
@@ -522,9 +534,17 @@ public final class AirframeLayout {
      * to the curve, which a whole light would stick out of.
      */
     private void light(int x, int y, int z) {
-        if (stateAt(x, y, z).is(palette.hull().getBlock()) && shapeAt(x, y, z) == ShellGeometry.WHOLE) {
+        boolean cut = style == ShellStyle.SNAPPED ? snapped().cut(x, y, z) : shapeAt(x, y, z) != ShellGeometry.WHOLE;
+        if (stateAt(x, y, z).is(palette.hull().getBlock()) && !cut) {
             set(x, y, z, palette.light());
         }
+    }
+
+    private SnappedShell snapped() {
+        if (snapped == null) {
+            snapped = new SnappedShell(this);
+        }
+        return snapped;
     }
 
     /**
@@ -717,6 +737,8 @@ public final class AirframeLayout {
         int halfWidth = (int) Math.ceil(WIDTH / 2 * scale) + 1;
         int eyes = (int) Math.floor(Windscreen.EYES * scale);
         for (int side : new int[]{1, -1}) {
+            Map<Double, Integer> stations = new HashMap<>();
+            postStations.put(side, stations);
             Map<Integer, List<BlockPos>> rows = new HashMap<>();
             for (int y = 0; y <= HEIGHT * scale; y++) {
                 for (int z = 0; z <= last; z++) {
@@ -729,7 +751,6 @@ public final class AirframeLayout {
                     }
                 }
             }
-            Map<Double, Integer> stations = new HashMap<>();
             for (double post : Windscreen.SIDE_POSTS) {
                 rows.getOrDefault(eyes, List.of()).stream()
                     .filter(pos -> Math.abs(facing(pos) - post) <= Windscreen.POST_TOLERANCE)
@@ -738,14 +759,25 @@ public final class AirframeLayout {
             }
             for (List<BlockPos> row : rows.values()) {
                 for (BlockPos pos : row) {
-                    boolean post = stations.entrySet().stream().anyMatch(station -> pos.getZ() == station.getValue()
-                        && Math.abs(facing(pos) - station.getKey()) <= Windscreen.POST_TOLERANCE);
-                    if (!post) {
+                    if (windscreenAt(pos)) {
                         set(pos.getX(), pos.getY(), pos.getZ(), glass);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Whether skin at this block is the windscreen's glass: under the glass and not one of its posts. The shell pass
+     * asks it too, for the skin it adds around the curve, so the glass ends along the same rows and stations.
+     */
+    boolean windscreenAt(BlockPos pos) {
+        if (!Windscreen.covers((pos.getY() + 0.5) / scale, (pos.getZ() + 0.5) / scale)) {
+            return false;
+        }
+        Map<Double, Integer> stations = postStations.getOrDefault(pos.getX() >= 0 ? 1 : -1, Map.of());
+        return stations.entrySet().stream().noneMatch(station -> pos.getZ() == station.getValue()
+            && Math.abs(facing(pos) - station.getKey()) <= Windscreen.POST_TOLERANCE);
     }
 
     /** Which way the fuselage's skin faces at a block, in degrees round from straight ahead: 0 forward, 90 sideways. */
@@ -942,14 +974,33 @@ public final class AirframeLayout {
     }
 
     /**
-     * Cuts the fuselage's skin to its curve. Every skin block the fuselage's surface passes through becomes shell, cut
-     * where the surface crosses it, and the windscreen's glass and the cabin windows are cut the same way. Outside
-     * blocks the surface still passes through get shell (or glass, or window) of their own, so the skin closes into one
-     * smooth surface. Cut or not, window panes right above one another are then joined into tall windows.
+     * Cuts the fuselage's skin to its curve, in the configured style ({@link ShellStyle}); then, cut or not, window
+     * panes right above one another are joined into tall windows.
+     */
+    private void shell() {
+        if (style == ShellStyle.SNAPPED) {
+            snapped().apply();
+        } else {
+            fittedShell();
+        }
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            if (CabinWindowBlock.isPane(cell.getValue())) {
+                BlockPos pos = cell.getKey();
+                cell.setValue(cell.getValue()
+                    .setValue(CabinWindowBlock.UP, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() + 1, pos.getZ())))
+                    .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() - 1, pos.getZ()))));
+            }
+        }
+    }
+
+    /**
+     * The fitted style: every skin block the fuselage's surface passes through becomes shell, cut where the surface
+     * crosses it, and the windscreen's glass and the cabin windows are cut the same way. Outside blocks the surface
+     * still passes through get shell (or glass, or window) of their own, so the skin closes into one smooth surface.
      * Skin next to anything built onto the hull from outside (the wings, gear or exterior lights) or round a door stays
      * as it is so nothing opens up around it, and no shell is added over the doors set into the skin.
      */
-    private void shell() {
+    private void fittedShell() {
         BlockState shell = AerolargeRegistry.AIRFRAME_SHELL.get().defaultBlockState();
         BlockState curvedPane = AerolargeRegistry.CABIN_WINDOW_SHELL.get().defaultBlockState();
         Map<BlockPos, BlockState> shaped = new HashMap<>();
@@ -982,21 +1033,13 @@ public final class AirframeLayout {
             shaped.put(pos, ShellBlock.withShape(outer, shape));
         }
         cells.putAll(shaped);
-        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
-            if (CabinWindowBlock.isPane(cell.getValue())) {
-                BlockPos pos = cell.getKey();
-                cell.setValue(cell.getValue()
-                    .setValue(CabinWindowBlock.UP, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() + 1, pos.getZ())))
-                    .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() - 1, pos.getZ()))));
-            }
-        }
     }
 
     /**
      * Whether a door is set into the skin right beside this block. The skin round a door stays whole: a door is flat,
      * and skin cut to the curve beside it would leave a wedge of open air along its edges.
      */
-    private boolean nextToDoor(BlockPos pos) {
+    boolean nextToDoor(BlockPos pos) {
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
             if (stateAt(next.getX(), next.getY(), next.getZ()).is(AerolargeRegistry.AIRLINER_DOOR.get())) {
@@ -1030,7 +1073,7 @@ public final class AirframeLayout {
      * fuselage and is not hull, glass, a window or a light; with {@code setIn}, also whatever is set into the skin
      * itself, like the doors.
      */
-    private boolean nextToFitting(BlockPos pos, boolean setIn) {
+    boolean nextToFitting(BlockPos pos, boolean setIn) {
         for (Direction side : Direction.values()) {
             BlockPos next = pos.relative(side);
             BlockState state = cells.get(next);

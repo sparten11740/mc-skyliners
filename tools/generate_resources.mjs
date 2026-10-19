@@ -1805,6 +1805,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.airframe": "Airframe",
   "aerolarge.configuration.scale": "Scale",
   "aerolarge.configuration.blocksPerTick": "Blocks per Tick",
+  "aerolarge.configuration.shellStyle": "Shell Style",
   "aerolarge.configuration.flight": "Flight",
   "aerolarge.configuration.wingBlock": "Wing Block",
   "aerolarge.configuration.engineBlock": "Engine Block",

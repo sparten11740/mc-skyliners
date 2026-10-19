@@ -43,9 +43,11 @@ face. It refuses while anything is in the way and says where; sneak to build thr
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
-blocks cut to the fuselage's curve, and two rows of tall cabin windows run its length down each side, cut to the curve
-with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the cabin walls keep it
-bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
+blocks cut to the fuselage's curve (`shellStyle` in the server config: `FITTED` cuts each block as close to the curve as
+one cut can, `SNAPPED` cuts every block through its corners and edge middles only, in slopes that run into each other
+without a step, and rounds off the inside of the nose too), and two rows of tall cabin windows run its length down each
+side, cut to the curve with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the
+cabin walls keep it bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
 and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. While

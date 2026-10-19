@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import dev.aerolarge.airframe.ShellStyle;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Server settings: how big the airliner is built and which other mods' blocks make it fly. */
@@ -7,6 +8,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.DoubleValue SCALE;
     public static final ModConfigSpec.IntValue BLOCKS_PER_TICK;
+    public static final ModConfigSpec.EnumValue<ShellStyle> SHELL_STYLE;
     public static final ModConfigSpec.ConfigValue<String> WING_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENGINE_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ASSEMBLER_BLOCK;
@@ -33,6 +35,13 @@ public final class AerolargeConfig {
         BLOCKS_PER_TICK = builder
             .comment("How many blocks a blueprint places each tick while the airliner goes up.")
             .defineInRange("blocksPerTick", 6000, 500, 100000);
+        SHELL_STYLE = builder
+            .comment(
+                "How the fuselage's skin is cut to its curve. FITTED cuts each block as close to the curve as one cut can, so neighbouring blocks",
+                "meet with small steps; SNAPPED cuts through block corners and edge middles only, in 45 degree and one-in-two slopes that run",
+                "into each other without a step, and also rounds off the inside of the nose's skin. Read when a blueprint is used."
+            )
+            .defineEnum("shellStyle", ShellStyle.FITTED);
         builder.pop();
 
         builder.push("flight");
