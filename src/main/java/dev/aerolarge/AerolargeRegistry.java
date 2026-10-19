@@ -60,6 +60,8 @@ import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.PendantLightBlock;
+import dev.aerolarge.block.PlugDoorBlock;
+import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
@@ -255,11 +257,25 @@ public final class AerolargeRegistry {
     );
     public static final DeferredBlock<CabinWindowBlock> CABIN_WINDOW = BLOCKS.registerBlock("cabin_window", CabinWindowBlock::new, glass());
     public static final DeferredBlock<TransparentBlock> COCKPIT_WINDOW = BLOCKS.registerBlock("cockpit_window", TransparentBlock::new, glass());
+    /**
+     * The doors inside the cabin (the cockpit door, the WC's, the crew room's), and the hull's doors in airliners built
+     * before the plug doors.
+     */
     public static final DeferredBlock<DoorBlock> AIRLINER_DOOR = BLOCKS.registerBlock(
         "airliner_door",
         properties -> new DoorBlock(AIRLINER, properties),
         metal(MapColor.SNOW).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
+    /**
+     * The doors in the hull's sides: one panel over each doorway, drawn by its renderer as it moves out of the frame
+     * and swings away. Placed only by the blueprints, so it has no item.
+     */
+    public static final DeferredBlock<PlugDoorBlock> PLUG_DOOR = BLOCKS.registerBlock("plug_door", PlugDoorBlock::new, metal(MapColor.SNOW).noOcclusion());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PlugDoorBlockEntity>> PLUG_DOOR_ENTITY =
+        BLOCK_ENTITIES.register("plug_door", () -> BlockEntityType.Builder.of(PlugDoorBlockEntity::new, PLUG_DOOR.get()).build(null));
+    /** A plug door's pneumatic hiss as it starts to move, and the clunk of its latches. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_HISS = sound("plug_door_hiss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_LATCH = sound("plug_door_latch");
     /** The airstairs' panel beside the forward door, and the ground crew's button on the nose gear that calls it. */
     public static final DeferredBlock<AirstairControllerBlock> AIRSTAIR_CONTROLLER = BLOCKS.registerBlock(
         "airstair_controller", AirstairControllerBlock::new, metal(MapColor.COLOR_YELLOW)

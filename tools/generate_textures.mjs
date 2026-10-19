@@ -216,6 +216,41 @@ texture(blockOutput, "airliner_door_bottom", (x, y) => {
   if (y === 12) return BLUE;
   return WHITE;
 }, 2);
+// The plug doors in the hull's sides, drawn by their renderer a block at a time, two blocks wide and two or three
+// tall: a texture for each block, left or right as seen from outside, and bottom, middle or top. White skin like the
+// plating round the doorway, the door's seam (a grey gap, a pale edge inside it) along the panel's outer edges, a
+// rounded window across the middle of the top blocks framed like the cabin windows, and a flush handle across the
+// middle of the bottom blocks with the red flag that shows the door armed beside it. The inside is drawn with the same
+// blocks, mirrored, so it reads the same from the cabin.
+const ARMED = [0xc8, 0x2c, 0x2c];
+for (const column of ["left", "right"]) {
+  for (const row of ["bottom", "middle", "top"]) {
+    texture(blockOutput, `plug_door_${column}_${row}`, (x, y) => {
+      // Across the whole door, 32 pixels wide, from its left edge seen from outside.
+      const across = column === "left" ? x : x + SIZE;
+      const fromEdge = Math.min(
+        column === "left" ? x : SIZE,
+        column === "right" ? SIZE - 1 - x : SIZE,
+        row === "top" ? y : SIZE,
+        row === "bottom" ? SIZE - 1 - y : SIZE,
+      );
+      if (fromEdge === 0) return STEEL_DARK;
+      if (fromEdge === 1) return SEAM;
+      if (row === "top") {
+        const dx = Math.max(Math.abs(across - 15.5) - 1.5, 0);
+        const dy = Math.max(5 - y, y - 10, 0);
+        const corner = Math.hypot(dx, dy);
+        if (corner <= 1.9) return across - y > 7 && across - y < 10 && y < 8 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
+        if (corner <= 2.6) return FRAME_DARK;
+      }
+      if (row === "bottom" && y >= 3 && y <= 5) {
+        if (across >= 12 && across <= 19) return y === 4 && across >= 13 && across <= 18 ? STEEL : FRAME_DARK;
+        if (across >= 21 && across <= 22) return ARMED;
+      }
+      return WHITE;
+    }, 2);
+  }
+}
 texture(itemOutput, "airliner_door", (x, y) => {
   if (x < 4 || x > 11) return CLEAR;
   if (x === 4 || x === 11 || y === 0 || y === 15) return FRAME_DARK;

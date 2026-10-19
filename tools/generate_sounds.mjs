@@ -339,6 +339,34 @@ writeSound("pa_chime", CHIME);
   writeSound("blue_ice_bonk", samples);
 }
 
+// The plug doors. Their pneumatic assist as a door starts to move: a hiss of air, noise with its lows taken out,
+// bursting in and dying away as the pressure goes.
+{
+  const length = 0.9;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = random() * 2 - 1;
+    low += 0.35 * (white - low);
+    samples[i] = (white - 0.6 * low) * Math.min(1, t * 60) * Math.exp(-t / 0.35);
+  }
+  writeSound("plug_door_hiss", samples);
+}
+// Its latches: a dull thud of the door against its stops with a metallic knock on top, a few heavy partials dying fast.
+{
+  const samples = new Float64Array(Math.round(0.4 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += 2 * Math.PI * (55 + 70 * Math.exp(-t / 0.03)) / RATE;
+    samples[i] = Math.exp(-t / 0.08) * Math.sin(phase) + (t < 0.006 ? (random() * 2 - 1) * (1 - t / 0.006) : 0);
+  }
+  bell(samples, 0.004, 780, 0.05);
+  bell(samples, 0.004, 1290, 0.035);
+  writeSound("plug_door_latch", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

@@ -298,5 +298,21 @@
         "name": "aerolarge:blue_ice_bonk"
       }
     ]
+  },
+  "plug_door_hiss": {
+    "subtitle": "subtitles.aerolarge.plug_door_hiss",
+    "sounds": [
+      {
+        "name": "aerolarge:plug_door_hiss"
+      }
+    ]
+  },
+  "plug_door_latch": {
+    "subtitle": "subtitles.aerolarge.plug_door_latch",
+    "sounds": [
+      {
+        "name": "aerolarge:plug_door_latch"
+      }
+    ]
   }
 }

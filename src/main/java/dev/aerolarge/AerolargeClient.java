@@ -20,6 +20,7 @@ import dev.aerolarge.client.ParachuteLayer;
 import dev.aerolarge.client.PassengerCameras;
 import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.PilotHud;
+import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.TabBanners;
@@ -47,11 +48,11 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
- * flight displays, autopilot screen, tail camera display, passenger screens and engine intakes, its engines' sound and
- * contrails, the camera shake aboard, the passenger screens' outside cameras and the tail camera display's live
- * picture, parachutes: opening them by jumping, and the canopy over their wearers; the pilot helmet's visor and the
- * pilots' head-up display on it; the creative tab's section banners; the curtains' dye colours; and the settings
- * screen in the Mods menu.
+ * flight displays, autopilot screen, tail camera display, passenger screens, engine intakes and hull doors, its
+ * engines' sound and contrails, the camera shake aboard, the passenger screens' outside cameras and the tail camera
+ * display's live picture, parachutes: opening them by jumping, and the canopy over their wearers; the pilot helmet's
+ * visor and the pilots' head-up display on it; the creative tab's section banners; the curtains' dye colours; and the
+ * settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -125,6 +126,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineIntakeRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.PLUG_DOOR_ENTITY.get(), context -> new PlugDoorRenderer());
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);

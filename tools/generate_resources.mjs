@@ -68,6 +68,25 @@ if (withVanilla) {
 }
 write(`assets/${ID}/models/item/airliner_door.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/airliner_door` } });
 
+// The plug doors in the hull's sides: drawn whole by their renderer, panel and all (see PlugDoorRenderer), so the
+// model only gives the particles; placed only by the blueprints, so no item and no loot. Part of the airframe, in
+// its tags (see cubes), but no vanilla door: it opens for villagers itself.
+write(`assets/${ID}/blockstates/plug_door.json`, { variants: { "": { model: `${ID}:block/plug_door` } } });
+write(`assets/${ID}/models/block/plug_door.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
+cubes.plug_door = null;
+// The plug door's pneumatic hiss and the clunk of its latches (see tools/generate_sounds.mjs).
+function plugDoorSounds() {
+  return Object.fromEntries(["plug_door_hiss", "plug_door_latch"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function plugDoorLang() {
+  return {
+    "block.aerolarge.plug_door": "Plug Door",
+    "subtitles.aerolarge.plug_door_hiss": "Door hisses",
+    "subtitles.aerolarge.plug_door_latch": "Door latches",
+  };
+}
+
 // The airstair controller is a plain cube; the call button is vanilla's stone button, retextured.
 {
   const name = "airstair_controller";
@@ -199,6 +218,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   for (const name of ["toilet_flush", "blue_ice_crack", "blue_ice_bonk"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  Object.assign(sounds, plugDoorSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -1974,6 +1994,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinDecorLang,
   ...holdAndTailLang(),
   ...VACUUM_TOILET_LANG,
+  ...plugDoorLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
