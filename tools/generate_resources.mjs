@@ -841,6 +841,13 @@ for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
 
 write(`assets/${ID}/lang/en_us.json`, {
   "itemGroup.aerolarge": "Aerolarge",
+  "itemGroup.aerolarge.blueprints": "Blueprints",
+  "itemGroup.aerolarge.airframe": "Airframe",
+  "itemGroup.aerolarge.flight_deck": "Flight Deck",
+  "itemGroup.aerolarge.cabin": "Cabin",
+  "itemGroup.aerolarge.gym": "Gym Hall",
+  "itemGroup.aerolarge.drops": "Skydiving and Drops",
+  "itemGroup.aerolarge.airport": "Airport",
   "block.aerolarge.airframe_panel": "Airframe Panel",
   "block.aerolarge.airframe_fairing": "Airframe Fairing",
   "block.aerolarge.livery_panel": "Livery Panel",

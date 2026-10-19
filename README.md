@@ -14,7 +14,8 @@ airliner is a building.
 
 ## In game
 
-Both blueprints are in the Aerolarge creative tab; there is no recipe for them.
+Both blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
+banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops, and the airport.
 
 - **Airliner Blueprint**: the airframe with an empty cabin.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with an indoor

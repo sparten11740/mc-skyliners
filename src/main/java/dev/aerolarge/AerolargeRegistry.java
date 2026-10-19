@@ -74,6 +74,7 @@ import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.TrolleyItem;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -491,18 +492,37 @@ public final class AerolargeRegistry {
         () -> new AirlinerBlueprintItem(true, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
 
+    /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
+    public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
+    }
+
+    /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
+    public static final List<TabSection> TAB_SECTIONS = List.of(
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT)),
+        new TabSection("airframe", List.of(
+            AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
+            AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
+            AIRSTAIR_CALL_BUTTON_ITEM
+        )),
+        new TabSection("flight_deck", List.of(
+            THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM, HANDSET_ITEM,
+            SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM, DROP_RELEASE_ITEM
+        )),
+        new TabSection("cabin", List.of(
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, GALLEY_ITEM, TROLLEY_ITEM,
+            CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE
+        )),
+        new TabSection("gym", List.of(BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM)),
+        new TabSection("drops", List.of(
+            JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
+        )),
+        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM))
+    );
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("aerolarge", () -> CreativeModeTab.builder()
         .title(Component.translatable("itemGroup.aerolarge"))
         .icon(() -> AIRLINER_BLUEPRINT.get().getDefaultInstance())
-        .displayItems((parameters, output) -> List.of(
-            AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
-            COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
-            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
-            JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
-            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
-            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, DROP_RELEASE_ITEM,
-            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE
-        ).forEach(item -> output.accept(item.get())))
+        .displayItems((parameters, output) -> TAB_SECTIONS.forEach(section -> section.items().forEach(item -> output.accept(item.get()))))
         .build());
 
     private AerolargeRegistry() {
