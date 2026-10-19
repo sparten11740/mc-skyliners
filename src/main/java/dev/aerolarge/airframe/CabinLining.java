@@ -33,20 +33,26 @@ final class CabinLining {
     /** Lines the cabin, with lockers wherever the test accepts the station, in metres from the nose. */
     void apply(DoublePredicate lockersAt, int fromZ, int toZ) {
         for (int z = fromZ; z <= toZ; z++) {
-            if (layout.ceiling(0, z) < floor + MIN_HEADROOM || layout.openHalfWidth(floor + LOCKERS, z) < MIN_HALF_WIDTH) {
+            if (layout.ceiling(0, z) < floor + MIN_HEADROOM) {
                 continue;
             }
             double metres = (z + 0.5) / layout.scale();
             boolean lockers = metres <= AirframeShape.TAIL_START && lockersAt.test(metres);
             for (int side : new int[]{1, -1}) {
+                // Each wall is found from the hull in. Measured out from the middle, the starboard locker and strip
+                // just put in the same row, or a light or rope hanging in the cabin, would be taken for the wall, and
+                // the lining would stand off it in mid-air.
+                int lockerX = layout.besideWall(side, floor + LOCKERS, z);
+                if (Math.abs(lockerX) < MIN_HALF_WIDTH) {
+                    continue;
+                }
                 Direction wall = side > 0 ? Direction.EAST : Direction.WEST;
                 if (lockers) {
-                    int x = side * layout.openHalfWidth(floor + LOCKERS, z);
-                    layout.furnish(x, floor + LOCKERS, z,
+                    layout.furnish(lockerX, floor + LOCKERS, z,
                         AerolargeRegistry.OVERHEAD_BIN.get().defaultBlockState().setValue(OverheadBinBlock.FACING, wall.getOpposite()));
                 }
-                int x = side * layout.openHalfWidth(floor + STRIP, z);
-                layout.furnish(x, floor + STRIP, z, AerolargeRegistry.LIGHT_STRIP.get().defaultBlockState().setValue(LightStripBlock.FACING, wall));
+                layout.furnish(layout.besideWall(side, floor + STRIP, z), floor + STRIP, z,
+                    AerolargeRegistry.LIGHT_STRIP.get().defaultBlockState().setValue(LightStripBlock.FACING, wall));
             }
         }
     }

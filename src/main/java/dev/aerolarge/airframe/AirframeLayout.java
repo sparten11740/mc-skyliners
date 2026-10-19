@@ -228,6 +228,20 @@ public final class AirframeLayout {
         return x;
     }
 
+    /**
+     * The cabin's block against the hull on one side (1 to starboard, -1 to port) at this height and station, found
+     * from outside in through the skin; 0 where the hull closes in to the middle. Unlike {@link #openHalfWidth}, which
+     * measures out from the middle and only to starboard, it finds each wall on its own, so nothing standing in the
+     * cabin, on either side, is taken for the wall. Whatever already stands in that block is the caller's to check.
+     */
+    int besideWall(int side, int y, int z) {
+        int x = side * ((int) Math.ceil(WIDTH / 2 * scale) + 1);
+        while (x != 0 && (!inFuselage(x, y, z) || inSkin(new BlockPos(x, y, z)))) {
+            x -= side;
+        }
+        return x;
+    }
+
     /** The highest open block above the floor at this column, below the crown of the hull. */
     int ceiling(int x, int z) {
         int y = floorY + 1;
