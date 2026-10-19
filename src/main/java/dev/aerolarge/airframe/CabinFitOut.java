@@ -53,8 +53,11 @@ final class CabinFitOut {
      * screens for the row behind it; nearer than this to a row, the walls get no screens of their own.
      */
     private static final double ROW_REACH = 2.5;
-    /** Along a wall, a screen at most every this many stations: one between each pair of windows. */
-    private static final int WALL_SPACING = 2;
+    /**
+     * Along a wall, a screen at most every this many stations: the windows are two stations apart, so one in every
+     * fourth gap between them, enough to see one from any seat without lining the walls with them.
+     */
+    private static final int WALL_SPACING = 8;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -368,8 +371,9 @@ final class CabinFitOut {
     /**
      * Passenger screens, found from the seats and walls already laid out, so they follow whatever the fit-out holds.
      * Where there are rows of seats, one on the back of each seat that has another right behind it in the next row,
-     * facing that passenger. Along the walls away from the rows, one between each pair of main deck windows at seated
-     * eye height, facing into the cabin: never over a window, and never by a door, which has no windows beside it.
+     * facing that passenger. Along the walls away from the rows, one between a pair of main deck windows every
+     * {@link #WALL_SPACING} stations at seated eye height, facing into the cabin: never over a window, and never by a
+     * door, which has no windows beside it.
      */
     private void screens() {
         NavigableMap<Integer, Set<Integer>> rows = seatRows();

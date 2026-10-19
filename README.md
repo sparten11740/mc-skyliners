@@ -32,10 +32,10 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   line the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
   ceiling over the bar and from planters of moss hung over the pool's rim, potted azaleas in moss along the pool's
   sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
-  Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
-  the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall the rooms off from the
-  doors' aisles, each with a curtained archway and a picture over it of what lies through it, with lavatories by
-  the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and signs).
+  Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
+  seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
+  the rooms off from the doors' aisles, each with a curtained archway and a picture over it of what lies through it,
+  with lavatories by the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and signs).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
