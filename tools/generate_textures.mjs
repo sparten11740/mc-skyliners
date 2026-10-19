@@ -665,4 +665,18 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
+// it reaches out); its sides steel with a hazard band along the top.
+{
+  const stripe = (x, y) => ((x + y) % 4 < 2 ? HAZARD : RUBBER);
+  texture(blockOutput, "jet_bridge_top", (x, y) => {
+    if (x <= 1 || y <= 1 || x >= 14 || y >= 14) return stripe(x, y);
+    const head = y >= 3 && y <= 7 && Math.abs(x - 7.5) <= y - 2.5;
+    const shaft = y > 7 && y <= 12 && x >= 6 && x <= 9;
+    if (head || shaft) return WHITE;
+    return (x + y * 3) % 5 === 0 ? STEEL_DARK : STEEL;
+  });
+  texture(blockOutput, "jet_bridge_side", (x, y) => (y <= 1 ? stripe(x, y) : x === 0 || x === 15 || y === 15 ? STEEL_DARK : STEEL));
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

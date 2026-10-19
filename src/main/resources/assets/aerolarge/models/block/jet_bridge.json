@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_top",
+  "textures": {
+    "top": "aerolarge:block/jet_bridge_top",
+    "side": "aerolarge:block/jet_bridge_side"
+  }
+}

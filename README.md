@@ -160,6 +160,16 @@ away, step by step from the bottom up once nobody is standing on them, and unfol
 until they meet the ground. Work it with the button beside it inside or outside, by using the panel itself, with any
 redstone signal, or from the ground with the yellow call button on the front of the nose gear.
 
+### Jet bridge
+
+For an airfield with a terminal, set a Jet Bridge into the terminal floor at the mouth of the bridge, its arrow
+pointing out toward where the airliner parks, level with the cabin floor and in line with a door. Using it (or a
+redstone signal) sends out a glazed tunnel, three blocks wide and high inside, slice by slice to the airliner, its
+black canopy closing against the curve of the hull around the door; it docks at a door in the world or aboard an
+assembled airliner standing still, up to 32 blocks out. If no door lines up it says which way to move the bridge.
+Use it again to fold it back once everyone is off it; it also pulls back on its own when the airliner starts to
+move, and breaking it takes the whole tunnel with it.
+
 ### Flying it
 
 The finished airliner is covered in Create's Super Glue, in overlapping stretches the Physics Assembler can find from

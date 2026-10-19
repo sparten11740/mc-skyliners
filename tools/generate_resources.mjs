@@ -484,6 +484,17 @@ for (const name of ["drop_bay", "drop_release"]) {
   cubes[name] = null;
 }
 
+// The jet bridge: a steel tread plate set into the terminal floor, a white arrow on it pointing the way the bridge
+// reaches out (north, as drawn) inside a hazard border; hazard stripes along the top of its sides.
+write(`assets/${ID}/models/block/jet_bridge.json`, {
+  parent: "minecraft:block/cube_top",
+  textures: { top: `${ID}:block/jet_bridge_top`, side: `${ID}:block/jet_bridge_side` },
+});
+facing("jet_bridge");
+write(`assets/${ID}/models/item/jet_bridge.json`, { parent: `${ID}:block/jet_bridge` });
+dropsItself("jet_bridge");
+cubes.jet_bridge = null;
+
 // Cabin service. The galley: stainless cupboards with an oven and a coffee machine. The trolley, drawn as its item's
 // model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark wheels.
 // The meals, pretzels and coffee: flat icons.
@@ -697,7 +708,7 @@ write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`]))
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio"];
+const GROUND = ["landing_target", "tower_radio", "jet_bridge"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "hoop", "scoreboard", "ball_rack", "galley"];
@@ -757,6 +768,7 @@ shaped("window_shades", ["W", "P"], { W: "minecraft:white_wool", P: `${ID}:instr
 shaped("cabin_lights", ["G", "P"], { G: "minecraft:glowstone_dust", P: `${ID}:instrument_panel` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
+shaped("jet_bridge", ["GGG", "IPI", "IRI"], { G: "minecraft:glass", I: "minecraft:iron_ingot", P: "minecraft:piston", R: "minecraft:redstone" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
 shaped("cabin_floor", ["CC", "PP"], { C: "minecraft:gray_carpet", P: `${ID}:airframe_panel` }, 4);
 shaped("airliner_door", ["PP", "PG", "PP"], { P: `${ID}:airframe_panel`, G: "minecraft:glass" }, 3);
@@ -876,6 +888,16 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.galley.restocked": "Trolley restocked",
   "message.aerolarge.galley.full": "The trolley is already full",
   "subtitles.aerolarge.trolley_squeak": "Trolley squeaks",
+  "block.aerolarge.jet_bridge": "Jet Bridge",
+  "message.aerolarge.jet_bridge.docking": "Docking at the airliner door %s blocks out",
+  "message.aerolarge.jet_bridge.no_door": "No airliner door within %s blocks ahead of the bridge",
+  "message.aerolarge.jet_bridge.misaligned": "Not lined up with the airliner door %s blocks out: move the bridge %s",
+  "message.aerolarge.jet_bridge.left": "%s left",
+  "message.aerolarge.jet_bridge.right": "%s right",
+  "message.aerolarge.jet_bridge.up": "%s up",
+  "message.aerolarge.jet_bridge.down": "%s down",
+  "message.aerolarge.jet_bridge.moving": "Wait for the airliner to stop",
+  "message.aerolarge.jet_bridge.blocked": "Something stands in the way %s blocks out, short of the airliner door %s blocks out",
   "block.aerolarge.cargo_crate": "Care Package",
   "container.aerolarge.cargo_crate": "Care Package",
   "entity.aerolarge.falling_crate": "Care Package",

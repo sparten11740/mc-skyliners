@@ -31,6 +31,8 @@ import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.JetBridgeBlock;
+import dev.aerolarge.block.JetBridgeBlockEntity;
 import dev.aerolarge.block.JumpLightBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LandingTargetBlock;
@@ -332,6 +334,12 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> HANDSET_ITEM = ITEMS.registerSimpleBlockItem(HANDSET);
     public static final DeferredItem<BlockItem> TOWER_RADIO_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADIO);
 
+    /** The jet bridge at the terminal, reaching out to an airliner's door. */
+    public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<JetBridgeBlockEntity>> JET_BRIDGE_ENTITY =
+        BLOCK_ENTITIES.register("jet_bridge", () -> BlockEntityType.Builder.of(JetBridgeBlockEntity::new, JET_BRIDGE.get()).build(null));
+    public static final DeferredItem<BlockItem> JET_BRIDGE_ITEM = ITEMS.registerSimpleBlockItem(JET_BRIDGE);
+
     /** Buckling up: the seatbelt switch on the flight deck and the signs it lights in the cabin walls. */
     public static final DeferredBlock<SeatbeltSwitchBlock> SEATBELT_SWITCH = BLOCKS.registerBlock(
         "seatbelt_switch", SeatbeltSwitchBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
@@ -473,7 +481,7 @@ public final class AerolargeRegistry {
         .displayItems((parameters, output) -> List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
-            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
+            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, JET_BRIDGE_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
             SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM,
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, DROP_RELEASE_ITEM,

@@ -51,7 +51,7 @@ public class AirstairControllerBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
-            toggle(level, pos);
+            operate(level, pos, player);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -63,9 +63,14 @@ public class AirstairControllerBlock extends BaseEntityBlock {
         if (powered != state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, powered), Block.UPDATE_CLIENTS);
             if (powered && !level.isClientSide) {
-                toggle(level, pos);
+                operate(level, pos, null);
             }
         }
+    }
+
+    /** Works the controller for the player using it, or for a redstone signal (no player). */
+    protected void operate(Level level, BlockPos pos, @Nullable Player player) {
+        toggle(level, pos);
     }
 
     static void toggle(Level level, BlockPos pos) {

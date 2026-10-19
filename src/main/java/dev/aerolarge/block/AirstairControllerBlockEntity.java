@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -26,7 +27,8 @@ import net.minecraft.world.phys.AABB;
  * The airstairs' memory and motor. It knows the flight as a list of stages, from the landing at the door down to the
  * bottom step, each a few blocks placed relative to itself, so the mechanism keeps working wherever the airliner
  * stands or flies. Folding takes the stages away from the bottom up; unfolding lays them out again from the door
- * down, one every few ticks, and stops early where a step meets the ground.
+ * down, one every few ticks, and stops early where a step meets the ground. The jet bridge runs on it too, laying out
+ * a tunnel it plans afresh each time (see {@link JetBridgeBlockEntity}).
  */
 public class AirstairControllerBlockEntity extends BlockEntity {
     /** Ticks between stages: quick enough to watch, slow enough to see each step fold. */
@@ -49,7 +51,11 @@ public class AirstairControllerBlockEntity extends BlockEntity {
     private int cooldown;
 
     public AirstairControllerBlockEntity(BlockPos pos, BlockState state) {
-        super(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), pos, state);
+        this(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), pos, state);
+    }
+
+    protected AirstairControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     /** Hands the controller the stairs it was built with, already standing. */
@@ -57,6 +63,33 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         this.stages = stages;
         this.out = stages.size();
         this.extending = true;
+        setChanged();
+    }
+
+    /** Lays out a new flight to unfold, in place of the old one, which must be all folded away. */
+    protected void replan(List<List<Step>> stages) {
+        this.stages = stages;
+        setChanged();
+    }
+
+    /** Whether the stairs are out or coming out. */
+    protected boolean unfolding() {
+        return extending;
+    }
+
+    /** Whether the stairs are all folded away and staying that way. */
+    protected boolean folded() {
+        return !extending && out == 0;
+    }
+
+    /** Folds the stairs away at once, as when the controller itself is broken. */
+    protected void foldAway() {
+        if (level != null) {
+            while (out > 0) {
+                takeAway(level, stages.get(--out));
+            }
+        }
+        extending = false;
         setChanged();
     }
 
@@ -78,7 +111,7 @@ public class AirstairControllerBlockEntity extends BlockEntity {
         }
     }
 
-    private void tick(ServerLevel level) {
+    protected void tick(ServerLevel level) {
         boolean moving = extending ? !grounded && out < stages.size() : out > 0;
         if (!moving || --cooldown > 0) {
             return;
@@ -113,16 +146,20 @@ public class AirstairControllerBlockEntity extends BlockEntity {
             waiting = false;
             out--;
             List<Step> stage = stages.get(out);
-            for (Step step : stage) {
-                BlockPos at = worldPosition.offset(step.offset());
-                // Only what the stairs put there: a block someone built in their place stays.
-                if (level.getBlockState(at).is(step.state().getBlock())) {
-                    level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                }
-            }
+            takeAway(level, stage);
             effects(level, stage, false);
         }
         setChanged();
+    }
+
+    private void takeAway(Level level, List<Step> stage) {
+        for (Step step : stage) {
+            BlockPos at = worldPosition.offset(step.offset());
+            // Only what the stairs put there: a block someone built in their place stays.
+            if (level.getBlockState(at).is(step.state().getBlock())) {
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
     }
 
     /** Whether anyone stands on, or is passing through, any part of the stairs that is out. */
