@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.ExitSignBlock;
+import dev.aerolarge.block.VacuumToiletBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarpetBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TripWireHookBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
@@ -467,7 +467,7 @@ final class CabinDividers {
             }
             layout.set(side * (basin + outer) / 2, ceiling, (front + gym) / 2, layout.palette().light());
             layout.set(side * outer, floor + 1, front + 1,
-                Blocks.SMOOTH_QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING, side > 0 ? Direction.EAST : Direction.WEST));
+                AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState().setValue(VacuumToiletBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
             layout.set(side * basin, floor + 1, front + 1,
                 Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
             layout.set(side * basin, floor + 2, front + 1, Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.SOUTH));

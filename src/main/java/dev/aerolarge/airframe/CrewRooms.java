@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
@@ -8,7 +9,6 @@ import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TripWireHookBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
@@ -118,11 +118,12 @@ final class CrewRooms {
     }
 
     /**
-     * The WC: the toilet in the front corner against the hull, its cistern to the bulkhead, and the basin in the front
-     * corner by the aisle, its tap on the bulkhead over it.
+     * The WC: the vacuum toilet in the front corner against the hull, its back to the bulkhead, and the basin in the
+     * front corner by the aisle, its tap on the bulkhead over it.
      */
     private void washroom(int side, int inner, int outer) {
-        layout.furnish(side * outer, deck + 1, front, Blocks.SMOOTH_QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
+        layout.furnish(side * outer, deck + 1, front,
+            AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState().setValue(VacuumToiletBlock.FACING, Direction.SOUTH));
         int basin = side * inner;
         layout.furnish(basin, deck + 1, front,
             Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
