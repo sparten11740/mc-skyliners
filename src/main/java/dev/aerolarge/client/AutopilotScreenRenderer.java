@@ -12,9 +12,7 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -31,9 +29,10 @@ import org.joml.Matrix4f;
  * it, so the map turns as smoothly as the airliner does.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
-    /** Lifts the drawing just off the block face, and each layer of it off the one below. */
+    /** Lifts the drawing just off the block face, each layer of it off the one below, and the text off them all. */
     private static final float SURFACE = 0.502F;
     private static final float LAYER = 0.002F;
+    private static final float TEXT_LIFT = 0.01F;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 170F;
     /** Where the airliner sits on the map: across its middle, this far up from its bottom as a share of its height. */
@@ -72,7 +71,7 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
         pose.translate(-0.5, -0.5, SURFACE);
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer fill = buffers.getBuffer(RenderType.textBackground());
+        VertexConsumer fill = ScreenDrawing.shapes(buffers);
         Font font = Minecraft.getInstance().font;
 
         box(fill, matrix, new Box(0, 0, AutopilotScreenBlockEntity.WIDTH, AutopilotScreenBlockEntity.HEIGHT), 0, CASING);
@@ -91,7 +90,7 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             Component label = button == Button.ENGAGE
                 ? Component.translatable(button.label(), Component.translatable(engaged(autopilot) ? "screen.aerolarge.autopilot.on" : "screen.aerolarge.autopilot.off"))
                 : Component.translatable(button.label());
-            text(font, pose, buffers, label, (button.box.x0() + button.box.x1()) / 2, (button.box.y0() + button.box.y1()) / 2, WHITE, true);
+            text(font, pose, buffers, label, (button.box.x0() + button.box.x1()) / 2, (button.box.y0() + button.box.y1()) / 2, WHITE, ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
     }
@@ -156,18 +155,18 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
 
         // The airliner, nose up.
         float top = z + 3 * LAYER;
-        vertex(fill, matrix, cx, cy + 0.06, top, WHITE);
-        vertex(fill, matrix, cx - 0.04, cy - 0.04, top, WHITE);
-        vertex(fill, matrix, cx, cy - 0.015, top, WHITE);
-        vertex(fill, matrix, cx + 0.04, cy - 0.04, top, WHITE);
+        ScreenDrawing.vertex(fill, matrix, cx, cy + 0.06, top, WHITE);
+        ScreenDrawing.vertex(fill, matrix, cx - 0.04, cy - 0.04, top, WHITE);
+        ScreenDrawing.vertex(fill, matrix, cx, cy - 0.015, top, WHITE);
+        ScreenDrawing.vertex(fill, matrix, cx + 0.04, cy - 0.04, top, WHITE);
     }
 
     /** The autopilot's mode and targets, over the map. */
     private static void header(Font font, PoseStack pose, MultiBufferSource buffers, @Nullable AutopilotBlockEntity autopilot, @Nullable SableClient.Attitude attitude) {
         Box header = AutopilotScreenBlockEntity.HEADER;
         double y = (header.y0() + header.y1()) / 2;
-        text(font, pose, buffers, state(autopilot, attitude), header.x0() + 0.04, y, GREEN, false);
-        textRight(font, pose, buffers, targets(autopilot), header.x1() - 0.04, y, TARGET);
+        text(font, pose, buffers, state(autopilot, attitude), header.x0() + 0.04, y, GREEN, ScreenDrawing.Align.LEFT);
+        text(font, pose, buffers, targets(autopilot), header.x1() - 0.04, y, TARGET, ScreenDrawing.Align.RIGHT);
     }
 
     /** What the autopilot is doing: waiting for the airliner to be assembled, switched off, or its phase and mode. */
@@ -210,9 +209,9 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         Box map = AutopilotScreenBlockEntity.MAP;
         double y = map.y0() + 0.05;
         if (attitude != null) {
-            text(font, pose, buffers, now(attitude, here), map.x0() + 0.04, y, WHITE, false);
+            text(font, pose, buffers, now(attitude, here), map.x0() + 0.04, y, WHITE, ScreenDrawing.Align.LEFT);
         }
-        textRight(font, pose, buffers, Component.translatable("screen.aerolarge.autopilot.range", range), map.x1() - 0.04, y, GREY);
+        text(font, pose, buffers, Component.translatable("screen.aerolarge.autopilot.range", range), map.x1() - 0.04, y, GREY, ScreenDrawing.Align.RIGHT);
     }
 
     /** World places turned onto the map, the airliner's heading up. */
@@ -275,43 +274,22 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         }
         double nx = -(by - ay) / length * width / 2;
         double ny = (bx - ax) / length * width / 2;
-        vertex(fill, matrix, ax - nx, ay - ny, z, colour);
-        vertex(fill, matrix, bx - nx, by - ny, z, colour);
-        vertex(fill, matrix, bx + nx, by + ny, z, colour);
-        vertex(fill, matrix, ax + nx, ay + ny, z, colour);
+        ScreenDrawing.vertex(fill, matrix, ax - nx, ay - ny, z, colour);
+        ScreenDrawing.vertex(fill, matrix, bx - nx, by - ny, z, colour);
+        ScreenDrawing.vertex(fill, matrix, bx + nx, by + ny, z, colour);
+        ScreenDrawing.vertex(fill, matrix, ax + nx, ay + ny, z, colour);
     }
 
+    /** A box on the screen; nothing for a colour of 0. */
     private static void box(VertexConsumer fill, Matrix4f matrix, Box box, float z, int colour) {
-        if (colour == 0) {
-            return;
+        if (colour != 0) {
+            ScreenDrawing.rect(fill, matrix, box.x0(), box.y0(), box.x1(), box.y1(), z, colour);
         }
-        vertex(fill, matrix, box.x0(), box.y0(), z, colour);
-        vertex(fill, matrix, box.x1(), box.y0(), z, colour);
-        vertex(fill, matrix, box.x1(), box.y1(), z, colour);
-        vertex(fill, matrix, box.x0(), box.y1(), z, colour);
     }
 
-    private static void vertex(VertexConsumer fill, Matrix4f matrix, double x, double y, float z, int colour) {
-        fill.addVertex(matrix, (float) x, (float) y, z).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
-    }
-
-    /** Text starting at x (or centred on it), centred on y, in the screen's units, lit as the screen is. */
-    private static void text(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, int colour, boolean centred) {
-        float left = centred ? -font.width(text) / 2F : 0;
-        draw(font, pose, buffers, text, x, y, left, colour);
-    }
-
-    /** Text ending at x, centred on y. */
-    private static void textRight(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, int colour) {
-        draw(font, pose, buffers, text, x, y, -font.width(text), colour);
-    }
-
-    private static void draw(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, float left, int colour) {
-        pose.pushPose();
-        pose.translate(x, y, 0.01);
-        pose.scale(TEXT, -TEXT, TEXT);
-        font.drawInBatch(text, left, -font.lineHeight / 2F, colour, false, pose.last().pose(), buffers, Font.DisplayMode.POLYGON_OFFSET, 0, LightTexture.FULL_BRIGHT);
-        pose.popPose();
+    /** Text placed against x as aligned, centred on y, in the screen's units. */
+    private static void text(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, int colour, ScreenDrawing.Align align) {
+        ScreenDrawing.text(font, pose, buffers, text, x, y, TEXT_LIFT, TEXT, colour, align);
     }
 
     @Override

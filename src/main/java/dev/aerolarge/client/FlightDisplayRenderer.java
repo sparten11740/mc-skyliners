@@ -10,11 +10,10 @@ import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 
 /**
@@ -34,8 +33,9 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final float PER_DEGREE = 0.009F;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 180F;
-    /** Lifts the drawing just off the block face so it does not flicker against it. */
+    /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
+    private static final float TEXT_LIFT = 0.005F;
 
     private static final int BLACK = 0xFF0A0C10;
     private static final int SKY = 0xFF2D6FD1;
@@ -55,24 +55,24 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
         pose.translate(0, 0, SURFACE);
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer fill = buffers.getBuffer(RenderType.textBackground());
-        quad(fill, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BLACK);
+        VertexConsumer fill = ScreenDrawing.shapes(buffers);
+        ScreenDrawing.rect(fill, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BLACK);
 
         Font font = Minecraft.getInstance().font;
         if (attitude == null) {
-            text(font, pose, buffers, "STBY", 0, 0, GREEN, true);
-            text(font, pose, buffers, "ASSEMBLE TO FLY", 0, -0.12F, WHITE, true);
+            text(font, pose, buffers, "STBY", 0, 0, GREEN);
+            text(font, pose, buffers, "ASSEMBLE TO FLY", 0, -0.12F, WHITE);
             pose.popPose();
             return;
         }
         attitudeIndicator(fill, matrix, attitude);
 
-        text(font, pose, buffers, String.valueOf(Math.round(attitude.airspeed())), -0.34F, ADI_RAISE, WHITE, true);
-        text(font, pose, buffers, "SPD", -0.34F, ADI_RAISE + 0.08F, GREEN, true);
-        text(font, pose, buffers, String.valueOf(Math.round(attitude.altitude())), 0.34F, ADI_RAISE, WHITE, true);
-        text(font, pose, buffers, "ALT", 0.34F, ADI_RAISE + 0.08F, GREEN, true);
-        text(font, pose, buffers, String.format(Locale.ROOT, "%+d", Math.round(attitude.verticalSpeed())), 0.34F, ADI_RAISE - 0.09F, GREEN, true);
-        text(font, pose, buffers, String.format(Locale.ROOT, "HDG %03d", Math.round(attitude.heading()) % 360), 0, -0.29F, WHITE, true);
+        text(font, pose, buffers, String.valueOf(Math.round(attitude.airspeed())), -0.34F, ADI_RAISE, WHITE);
+        text(font, pose, buffers, "SPD", -0.34F, ADI_RAISE + 0.08F, GREEN);
+        text(font, pose, buffers, String.valueOf(Math.round(attitude.altitude())), 0.34F, ADI_RAISE, WHITE);
+        text(font, pose, buffers, "ALT", 0.34F, ADI_RAISE + 0.08F, GREEN);
+        text(font, pose, buffers, String.format(Locale.ROOT, "%+d", Math.round(attitude.verticalSpeed())), 0.34F, ADI_RAISE - 0.09F, GREEN);
+        text(font, pose, buffers, String.format(Locale.ROOT, "HDG %03d", Math.round(attitude.heading()) % 360), 0, -0.29F, WHITE);
         pose.popPose();
     }
 
@@ -88,7 +88,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         float cx = shift * upX;
         float cy = ADI_RAISE + shift * upY;
 
-        quad(fill, matrix, -ADI, ADI_RAISE - ADI, ADI, ADI_RAISE + ADI, 0.001F, SKY);
+        ScreenDrawing.rect(fill, matrix, -ADI, ADI_RAISE - ADI, ADI, ADI_RAISE + ADI, 0.001F, SKY);
         List<float[]> ground = clipBelow(new float[][]{
             {-ADI, ADI_RAISE - ADI}, {ADI, ADI_RAISE - ADI}, {ADI, ADI_RAISE + ADI}, {-ADI, ADI_RAISE + ADI}
         }, cx, cy, upX, upY);
@@ -110,9 +110,9 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
             polygon(fill, matrix, rung, 0.003F, WHITE);
         }
         // The aircraft symbol: wings either side of a dot in the middle, fixed to the screen.
-        quad(fill, matrix, -0.13F, ADI_RAISE - 0.006F, -0.05F, ADI_RAISE + 0.006F, 0.004F, YELLOW);
-        quad(fill, matrix, 0.05F, ADI_RAISE - 0.006F, 0.13F, ADI_RAISE + 0.006F, 0.004F, YELLOW);
-        quad(fill, matrix, -0.01F, ADI_RAISE - 0.01F, 0.01F, ADI_RAISE + 0.01F, 0.004F, YELLOW);
+        ScreenDrawing.rect(fill, matrix, -0.13F, ADI_RAISE - 0.006F, -0.05F, ADI_RAISE + 0.006F, 0.004F, YELLOW);
+        ScreenDrawing.rect(fill, matrix, 0.05F, ADI_RAISE - 0.006F, 0.13F, ADI_RAISE + 0.006F, 0.004F, YELLOW);
+        ScreenDrawing.rect(fill, matrix, -0.01F, ADI_RAISE - 0.01F, 0.01F, ADI_RAISE + 0.01F, 0.004F, YELLOW);
     }
 
     /** The part of a convex polygon on the far side of a line from its up direction (Sutherland-Hodgman). */
@@ -158,32 +158,15 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
             float[] b = points.get(i);
             float[] c = points.get(i + 1);
             float[] d = i + 2 < points.size() ? points.get(i + 2) : c;
-            vertex(fill, matrix, a[0], a[1], z, colour);
-            vertex(fill, matrix, b[0], b[1], z, colour);
-            vertex(fill, matrix, c[0], c[1], z, colour);
-            vertex(fill, matrix, d[0], d[1], z, colour);
+            ScreenDrawing.vertex(fill, matrix, a[0], a[1], z, colour);
+            ScreenDrawing.vertex(fill, matrix, b[0], b[1], z, colour);
+            ScreenDrawing.vertex(fill, matrix, c[0], c[1], z, colour);
+            ScreenDrawing.vertex(fill, matrix, d[0], d[1], z, colour);
         }
     }
 
-    private static void quad(VertexConsumer fill, Matrix4f matrix, float x0, float y0, float x1, float y1, float z, int colour) {
-        vertex(fill, matrix, x0, y0, z, colour);
-        vertex(fill, matrix, x1, y0, z, colour);
-        vertex(fill, matrix, x1, y1, z, colour);
-        vertex(fill, matrix, x0, y1, z, colour);
-    }
-
-    private static void vertex(VertexConsumer fill, Matrix4f matrix, float x, float y, float z, int colour) {
-        fill.addVertex(matrix, x, y, z).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
-    }
-
-    /** Text centred on (x, y), in the screen's units, lit as the screen is. */
-    private static void text(Font font, PoseStack pose, MultiBufferSource buffers, String text, float x, float y, int colour, boolean centred) {
-        pose.pushPose();
-        pose.translate(x, y, 0.005F);
-        pose.scale(TEXT, -TEXT, TEXT);
-        float left = centred ? -font.width(text) / 2F : 0;
-        font.drawInBatch(text, left, -font.lineHeight / 2F, colour, false, pose.last().pose(), buffers,
-            Font.DisplayMode.POLYGON_OFFSET, 0, LightTexture.FULL_BRIGHT);
-        pose.popPose();
+    /** Text centred on (x, y), in the screen's units. */
+    private static void text(Font font, PoseStack pose, MultiBufferSource buffers, String text, float x, float y, int colour) {
+        ScreenDrawing.text(font, pose, buffers, Component.literal(text), x, y, TEXT_LIFT, TEXT, colour, ScreenDrawing.Align.CENTRE);
     }
 }

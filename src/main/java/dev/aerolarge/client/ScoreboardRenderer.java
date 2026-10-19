@@ -7,7 +7,6 @@ import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
@@ -45,11 +44,6 @@ public class ScoreboardRenderer implements BlockEntityRenderer<ScoreboardBlockEn
 
     /** Text centred on the point, at the size given. */
     private static void text(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, float size, int colour) {
-        pose.pushPose();
-        pose.translate(x, y, 0);
-        pose.scale(size, -size, size);
-        font.drawInBatch(text, -font.width(text) / 2F, -font.lineHeight / 2F, colour, false, pose.last().pose(), buffers,
-            Font.DisplayMode.POLYGON_OFFSET, 0, LightTexture.FULL_BRIGHT);
-        pose.popPose();
+        ScreenDrawing.text(font, pose, buffers, text, x, y, 0, size, colour, ScreenDrawing.Align.CENTRE);
     }
 }
