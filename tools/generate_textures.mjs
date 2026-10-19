@@ -456,6 +456,10 @@ blueprint("furnished_airliner_blueprint", true);
     const glow = 1 - Math.abs(y - 7.5) / 8;
     return [clamp(Math.round(215 + 40 * glow)), clamp(Math.round(228 + 27 * glow)), 255];
   }, 0);
+  texture(blockOutput, "light_strip_night", (x, y) => {
+    const glow = 1 - Math.abs(y - 7.5) / 8;
+    return [clamp(Math.round(30 + 40 * glow)), clamp(Math.round(50 + 50 * glow)), clamp(Math.round(150 + 90 * glow))];
+  }, 0);
   texture(blockOutput, "light_cable", () => [0x18, 0x19, 0x1b], 2);
   texture(blockOutput, "pendant_shade", (x, y) => (y % 4 === 0 ? [0x3c, 0x40, 0x46] : [0x4a, 0x4f, 0x56]), 3);
   const PLASTIC = [0xe6, 0xe4, 0xde];
@@ -508,6 +512,21 @@ blueprint("furnished_airliner_blueprint", true);
     return ball ? ((x + y) % 5 === 0 ? [0x1a, 0x12, 0x0c] : ORANGE) : [0x2a, 0x2d, 0x31];
   });
   texture(blockOutput, "ball_rack_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL : [0x2a, 0x2d, 0x31]));
+}
+
+// The cabin lights' dimmer: a dark face showing its setting, a bulb with rays when bright, a dull amber bulb when
+// dimmed, a blue crescent moon at night.
+{
+  const bulb = (x, y) => Math.hypot(x - 7.5, y - 6.5) < 3.2 || (x >= 6 && x <= 9 && y >= 9 && y <= 11);
+  const rays = (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 6.5);
+    return r > 4.4 && r < 6.2 && (Math.abs(x - 7.5) < 0.6 || Math.abs(y - 6.5) < 0.6 || Math.abs(Math.abs(x - 7.5) - Math.abs(y - 6.5)) < 0.7);
+  };
+  const face = (paint) => (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? STEEL_DARK : paint(x, y) ?? [0x16, 0x18, 0x1c]);
+  texture(blockOutput, "cabin_lights_bright", face((x, y) => (bulb(x, y) ? [0xff, 0xe8, 0x80] : rays(x, y) ? [0xff, 0xd0, 0x40] : null)), 1);
+  texture(blockOutput, "cabin_lights_dim", face((x, y) => (bulb(x, y) ? [0x9a, 0x70, 0x30] : null)), 1);
+  texture(blockOutput, "cabin_lights_night", face((x, y) =>
+    (Math.hypot(x - 7.5, y - 7.5) < 4.5 && Math.hypot(x - 9.5, y - 6) > 3.6 ? [0x70, 0x9c, 0xff] : null)), 1);
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

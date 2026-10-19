@@ -391,23 +391,32 @@ function dropsItself(name) {
 
 // The cabin's lining and lights, drawn facing north. The light strip: a glowing bar along the top of the wall it is
 // fixed to. The pendant light: a slim black cable down to a flat grey shade, glowing underneath; the cable alone for
-// the blocks above it. The overhead locker: a white bin against the wall, its door facing out, the passenger service
+// the blocks above it. Both glow at full brightness when bright, are lit only by their own lower light when dimmed,
+// and glow a deep blue at night. The overhead locker: a white bin against the wall, its door facing out, the passenger service
 // panel underneath; open, its door shows the luggage inside.
 {
-  write(`assets/${ID}/models/block/light_strip.json`, boxes(
-    { strip: `${ID}:block/light_strip`, particle: `${ID}:block/light_strip` },
-    [[[0, 12, 0], [16, 15, 3], "#strip", true]],
-  ));
-  facing("light_strip");
-  write(`assets/${ID}/models/block/pendant_light.json`, boxes(
-    { cable: `${ID}:block/light_cable`, shade: `${ID}:block/pendant_shade`, glow: `${ID}:block/light_strip`, particle: `${ID}:block/pendant_shade` },
-    [
-      [[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"],
-      [[3, 4.5, 3], [13, 8, 13], "#shade"],
-      [[4, 4, 4], [12, 4.5, 12], "#glow", true],
-    ],
-  ));
-  write(`assets/${ID}/blockstates/pendant_light.json`, { variants: { "": { model: `${ID}:block/pendant_light` } } });
+  const brightness = { bright: ["", "light_strip", true], dim: ["_dim", "light_strip", false], night: ["_night", "light_strip_night", true] };
+  for (const [suffix, glow, lit] of Object.values(brightness)) {
+    write(`assets/${ID}/models/block/light_strip${suffix}.json`, boxes(
+      { strip: `${ID}:block/${glow}`, particle: `${ID}:block/${glow}` },
+      [[[0, 12, 0], [16, 15, 3], "#strip", lit]],
+    ));
+    write(`assets/${ID}/models/block/pendant_light${suffix}.json`, boxes(
+      { cable: `${ID}:block/light_cable`, shade: `${ID}:block/pendant_shade`, glow: `${ID}:block/${glow}`, particle: `${ID}:block/pendant_shade` },
+      [
+        [[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"],
+        [[3, 4.5, 3], [13, 8, 13], "#shade"],
+        [[4, 4, 4], [12, 4.5, 12], "#glow", lit],
+      ],
+    ));
+  }
+  write(`assets/${ID}/blockstates/light_strip.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.entries(brightness).map(([level, [suffix]]) =>
+      [`brightness=${level},facing=${facing}`, { model: `${ID}:block/light_strip${suffix}`, y }]))),
+  });
+  write(`assets/${ID}/blockstates/pendant_light.json`, {
+    variants: Object.fromEntries(Object.entries(brightness).map(([level, [suffix]]) => [`brightness=${level}`, { model: `${ID}:block/pendant_light${suffix}` }])),
+  });
   write(`assets/${ID}/models/block/light_cable.json`, boxes(
     { cable: `${ID}:block/light_cable`, particle: `${ID}:block/light_cable` },
     [[[7.5, 0, 7.5], [8.5, 16, 8.5], "#cable"]],
@@ -474,6 +483,23 @@ function dropsItself(name) {
     cubes[name] = null;
   }
   write(`assets/${ID}/models/item/basketball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/basketball` } });
+}
+
+// The cabin lights' dimmer: a small module on the panel, drawn facing north, its face and top showing the setting.
+{
+  for (const level of ["bright", "dim", "night"]) {
+    write(`assets/${ID}/models/block/cabin_lights_${level}.json`, boxes(
+      { face: `${ID}:block/cabin_lights_${level}`, side: `${ID}:block/handset_cradle`, particle: `${ID}:block/handset_cradle` },
+      [[[3, 0, 4], [13, 4, 12], { north: "#face", up: "#face", all: "#side" }]],
+    ));
+  }
+  write(`assets/${ID}/blockstates/cabin_lights.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["bright", "dim", "night"].map((level) =>
+      [`brightness=${level},facing=${facing}`, { model: `${ID}:block/cabin_lights_${level}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/cabin_lights.json`, { parent: `${ID}:block/cabin_lights_bright` });
+  dropsItself("cabin_lights");
+  cubes.cabin_lights = null;
 }
 
 // The autopilot screen: dark panels, drawn over live by its renderer from the block holding it; facing the pilots,
@@ -602,6 +628,7 @@ shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecr
 shaped("hoop", ["III", "S S", " S "], { I: "minecraft:iron_ingot", S: "minecraft:string" }, 1);
 shaped("scoreboard", ["BBB", "LGL", "BBB"], { B: "minecraft:black_concrete", L: "minecraft:redstone_lamp", G: "minecraft:glowstone" }, 1);
 shaped("ball_rack", ["IBI", "IBI"], { I: "minecraft:iron_bars", B: `${ID}:basketball` }, 1);
+shaped("cabin_lights", ["G", "P"], { G: "minecraft:glowstone_dust", P: `${ID}:instrument_panel` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -711,6 +738,10 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.ball_bounce": "Basketball bounces",
   "subtitles.aerolarge.basket_swish": "Basket swishes",
   "subtitles.aerolarge.scoreboard_buzzer": "Scoreboard buzzes",
+  "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
+  "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
+  "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
+  "message.aerolarge.cabin_lights.night": "Cabin lights set for the night",
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.light_cable": "Light Cable",

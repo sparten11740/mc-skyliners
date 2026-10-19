@@ -1,19 +1,51 @@
 {
   "variants": {
-    "facing=north": {
+    "brightness=bright,facing=north": {
       "model": "aerolarge:block/light_strip",
       "y": 0
     },
-    "facing=east": {
+    "brightness=dim,facing=north": {
+      "model": "aerolarge:block/light_strip_dim",
+      "y": 0
+    },
+    "brightness=night,facing=north": {
+      "model": "aerolarge:block/light_strip_night",
+      "y": 0
+    },
+    "brightness=bright,facing=east": {
       "model": "aerolarge:block/light_strip",
       "y": 90
     },
-    "facing=south": {
+    "brightness=dim,facing=east": {
+      "model": "aerolarge:block/light_strip_dim",
+      "y": 90
+    },
+    "brightness=night,facing=east": {
+      "model": "aerolarge:block/light_strip_night",
+      "y": 90
+    },
+    "brightness=bright,facing=south": {
       "model": "aerolarge:block/light_strip",
       "y": 180
     },
-    "facing=west": {
+    "brightness=dim,facing=south": {
+      "model": "aerolarge:block/light_strip_dim",
+      "y": 180
+    },
+    "brightness=night,facing=south": {
+      "model": "aerolarge:block/light_strip_night",
+      "y": 180
+    },
+    "brightness=bright,facing=west": {
       "model": "aerolarge:block/light_strip",
+      "y": 270
+    },
+    "brightness=dim,facing=west": {
+      "model": "aerolarge:block/light_strip_dim",
+      "y": 270
+    },
+    "brightness=night,facing=west": {
+      "model": "aerolarge:block/light_strip_night",
       "y": 270
     }
   }

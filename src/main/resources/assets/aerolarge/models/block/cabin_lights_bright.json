@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "face": "aerolarge:block/cabin_lights_bright",
+    "side": "aerolarge:block/handset_cradle",
+    "particle": "aerolarge:block/handset_cradle"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        4,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#face"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

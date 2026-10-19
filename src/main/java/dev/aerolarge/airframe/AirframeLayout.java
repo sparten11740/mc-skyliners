@@ -8,6 +8,10 @@ import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
+import dev.aerolarge.block.Brightness;
+import dev.aerolarge.block.CabinControlBlock;
+import dev.aerolarge.block.CabinControlBlockEntity;
+import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.FairingBlock;
@@ -104,6 +108,8 @@ public final class AirframeLayout {
     private BlockPos jumpSwitch;
     /** The seatbelt switch in the instrument panel; null without a flight deck. */
     private BlockPos seatbeltSwitch;
+    /** The cabin lights' dimmer, on the panel; null without a flight deck. */
+    private BlockPos cabinLights;
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
     private int minY = Integer.MAX_VALUE;
@@ -157,6 +163,7 @@ public final class AirframeLayout {
         layout.trimTail();
         layout.boardingStairs();
         layout.assembler();
+        layout.cabinControls();
         return layout.lifted();
     }
 
@@ -816,6 +823,11 @@ public final class AirframeLayout {
         if (switchX <= panelWidth && stateAt(switchX, deck + 1, panelZ).is(panel.getBlock())) {
             jumpSwitch = new BlockPos(switchX, deck + 1, panelZ);
             set(switchX, deck + 1, panelZ, AerolargeRegistry.JUMP_SWITCH.get().defaultBlockState().setValue(JumpSwitchBlock.FACING, Direction.SOUTH));
+            // The cabin lights' dimmer on it.
+            if (isOpen(switchX, deck + 2, panelZ)) {
+                cabinLights = new BlockPos(switchX, deck + 2, panelZ);
+                set(switchX, deck + 2, panelZ, AerolargeRegistry.CABIN_LIGHTS.get().defaultBlockState().setValue(CabinLightsBlock.FACING, Direction.SOUTH));
+            }
         }
         // On the captain's side of the screen: the seatbelt switch in the panel, and the handset on it.
         int captainX = -switchX;
@@ -1345,6 +1357,27 @@ public final class AirframeLayout {
                     set(0, floorY + 1, z, state);
                     return;
                 }
+            }
+        });
+    }
+
+    /**
+     * Wires the cabin controls on the flight deck, once everything stands, to what they work: the dimmer to every
+     * light in the airliner that has a brightness, front to back, so its setting runs down the cabin.
+     */
+    private void cabinControls() {
+        if (cabinLights == null) {
+            return;
+        }
+        List<BlockPos> lights = cells.entrySet().stream()
+            .filter(cell -> cell.getValue().hasProperty(Brightness.PROPERTY) && !(cell.getValue().getBlock() instanceof CabinControlBlock))
+            .map(Map.Entry::getKey)
+            .sorted(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX))
+            .toList();
+        BlockPos at = cabinLights;
+        fittings.put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof CabinControlBlockEntity control) {
+                control.configure(offsets(at, lights, rotation));
             }
         });
     }

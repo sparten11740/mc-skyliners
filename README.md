@@ -45,8 +45,9 @@ right a notch, sneak and use to steer left) and beside the first officer's the p
 is built. A primary flight display in front of each seat shows attitude, airspeed,
 altitude, vertical speed and heading once the airliner is assembled. Against the wall behind the captain's seat is the
 Physics Assembler.
-On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch
-and the captain's handset.
+On the instrument panel beside the autopilot screen are the jump light switch (see Skydiving), the seatbelt switch,
+the captain's handset and the cabin lights' dimmer. The dimmer steps every light in the cabin from bright to dimmed
+(as for take-off and landing) to a blue night glow and back, the change running down the cabin front to back.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
 from a hundred down to ten, then retard), and warns of too much bank or sinking too fast too low, whoever flies.

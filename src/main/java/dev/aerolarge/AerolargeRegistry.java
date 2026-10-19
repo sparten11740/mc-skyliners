@@ -9,6 +9,10 @@ import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.Brightness;
+import dev.aerolarge.block.CabinControlBlockEntity;
+import dev.aerolarge.block.CabinLightBlock;
+import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
@@ -151,8 +155,8 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<Block> CABIN_FLOOR = BLOCKS.registerSimpleBlock("cabin_floor", metal(MapColor.COLOR_GRAY));
     public static final DeferredBlock<Block> ENGINE_INTAKE = BLOCKS.registerSimpleBlock("engine_intake", metal(MapColor.COLOR_BLACK));
     /** Built into the crown, the walls and the hold's belly so no corner of the cabin is dark enough for mobs. */
-    public static final DeferredBlock<Block> CABIN_LIGHT = BLOCKS.registerSimpleBlock(
-        "cabin_light", metal(MapColor.SNOW).lightLevel(state -> 15).sound(SoundType.GLASS)
+    public static final DeferredBlock<CabinLightBlock> CABIN_LIGHT = BLOCKS.registerBlock(
+        "cabin_light", CabinLightBlock::new, metal(MapColor.SNOW).lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15)).sound(SoundType.GLASS)
     );
     public static final DeferredBlock<Block> LANDING_GEAR = BLOCKS.registerSimpleBlock("landing_gear", metal(MapColor.METAL));
     public static final DeferredBlock<Block> LANDING_GEAR_TIRE = BLOCKS.registerSimpleBlock(
@@ -303,11 +307,13 @@ public final class AerolargeRegistry {
     /** Modern cabin lighting: LED strips along the tops of the walls, and pendant lights hung on slim cables. */
     public static final DeferredBlock<LightStripBlock> LIGHT_STRIP = BLOCKS.registerBlock(
         "light_strip", LightStripBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion().lightLevel(state -> 13)
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
+            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(13))
     );
     public static final DeferredBlock<PendantLightBlock> PENDANT_LIGHT = BLOCKS.registerBlock(
         "pendant_light", PendantLightBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> 15)
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.LANTERN).noOcclusion()
+            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15))
     );
     public static final DeferredBlock<LightCableBlock> LIGHT_CABLE = BLOCKS.registerBlock(
         "light_cable", LightCableBlock::new,
@@ -324,6 +330,13 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
+    /** The cabin lights' dimmer on the flight deck, and the block entity any cabin control keeps what it works in. */
+    public static final DeferredBlock<CabinLightsBlock> CABIN_LIGHTS = BLOCKS.registerBlock(
+        "cabin_lights", CabinLightsBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CabinControlBlockEntity>> CABIN_CONTROL_ENTITY =
+        BLOCK_ENTITIES.register("cabin_control", () -> BlockEntityType.Builder.of(CabinControlBlockEntity::new, CABIN_LIGHTS.get()).build(null));
+    public static final DeferredItem<BlockItem> CABIN_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LIGHTS);
 
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
@@ -363,7 +376,7 @@ public final class AerolargeRegistry {
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
             AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, NAV_LIGHT_ITEM, FLIGHT_DISPLAY_ITEM,
             JUMP_SWITCH_ITEM, JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, LANDING_TARGET_ITEM, PARACHUTE, HANDSET_ITEM, TOWER_RADIO_ITEM,
-            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SWITCH_ITEM, SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, OVERHEAD_BIN_ITEM, CABIN_LIGHTS_ITEM,
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
