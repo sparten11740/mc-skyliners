@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import com.mojang.serialization.Codec;
 import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
@@ -28,7 +29,6 @@ import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
-import com.mojang.serialization.Codec;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.ParachuteItem;
 import java.util.List;
@@ -228,7 +228,6 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
 
-    /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     /** Skydiving out of the airliner: the jump light by the doors, the rack of parachutes and the target to land on. */
     public static final DeferredBlock<JumpLightBlock> JUMP_LIGHT = BLOCKS.registerBlock(
         "jump_light", JumpLightBlock::new, glass().lightLevel(state -> state.getValue(JumpLightBlock.SIGNAL).light())
@@ -251,6 +250,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> PARACHUTE_RACK_ITEM = ITEMS.registerSimpleBlockItem(PARACHUTE_RACK);
     public static final DeferredItem<BlockItem> LANDING_TARGET_ITEM = ITEMS.registerSimpleBlockItem(LANDING_TARGET);
 
+    /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
         () -> new AirlinerBlueprintItem(false, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))

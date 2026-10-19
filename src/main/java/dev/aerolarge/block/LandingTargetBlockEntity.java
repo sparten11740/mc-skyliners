@@ -83,9 +83,9 @@ public class LandingTargetBlockEntity extends BlockEntity {
 
     private void score(ServerPlayer player, double distance) {
         boolean record = distance < best;
-        String metres = String.format(Locale.ROOT, "%.1f", distance);
+        String blocks = String.format(Locale.ROOT, "%.1f", distance);
         Component message = Component.translatable(record ? "message.aerolarge.landing_target.record" : "message.aerolarge.landing_target.landed",
-            player.getDisplayName(), metres);
+            player.getDisplayName(), blocks);
         if (record) {
             best = distance;
             bestName = player.getGameProfile().getName();
