@@ -285,13 +285,13 @@ are spent at a duty-free counter.
 A Duty-Free Counter (craftable) is a shop counter with a glass showcase on top. Use it and its shop opens with the
 ding of a door bell: the trading screen, each of its goods shown by its picture and its price in emeralds, so it needs
 no reading. An emerald buys four paper planes, two airline coffees, four bags of pretzels, a chicken or a pasta meal,
-or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6 and a model
-airliner 8. Each sale rings the till. It never runs out and its prices never change, and nobody works behind it, so it
-stands anywhere: at the airport, or aboard, where there is nobody to lose in flight. The furnished airliner has a
-duty-free kiosk at the front of the lounge, to port across from the bar: a row of counters facing the aisle under a
-lime and white striped awning, a shelf of flowers and candles behind them, and far enough back from the aft doors
-that a shopper is out of reach of the air rushing out of one opened in flight. (At the smallest scales the lounge is
-too narrow for it.)
+or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6, a model airliner 8
+and a pilot helmet 10. Each sale rings the till. It never runs out and its prices never change, and nobody works
+behind it, so it stands anywhere: at the airport, or aboard, where there is nobody to lose in flight. The furnished
+airliner has a duty-free kiosk at the front of the lounge, to port across from the bar: a row of counters facing the
+aisle under a lime and white striped awning, a shelf of flowers and candles behind them, and far enough back from the
+aft doors that a shopper is out of reach of the air rushing out of one opened in flight. (At the smallest scales the
+lounge is too narrow for it.)
 
 ### Basketball
 
@@ -339,6 +339,11 @@ from the height it left at, hundreds of blocks.
 A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
 or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter.
+
+A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
+roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
+the same way as the cap, and protects as much as a leather cap. Craft it from five iron ingots round a black stained
+glass pane, with two black wool under them for the ear cups, or buy it at a duty-free counter for 10 emeralds.
 
 ### Skydiving
 

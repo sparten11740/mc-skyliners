@@ -928,6 +928,62 @@ write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/gen
   cap.display = { gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.625, 0.625, 0.625] } };
   write(`assets/${ID}/models/item/pilot_cap.json`, cap);
 }
+// The pilot's helmet: a flat icon everywhere but on the head, where it is drawn as its own model, as the cap is. The
+// model: a white shell round the crown, back and ears, stepped in toward the top, with the stripe over its middle; a
+// bulge for each ear cup and the airline's roundel above it; the visor down over the eyes, wrapping back round the
+// sides of the face, under the cover it slides up into, with a knob to pull it by; and a microphone on a boom from the
+// right ear cup round to the mouth.
+{
+  const crown = { up: "#stripe", north: "#stripe", south: "#stripe", all: "#shell" };
+  const helmet = boxes(
+    { shell: `${ID}:item/pilot_helmet_shell`, stripe: `${ID}:item/pilot_helmet_stripe`, visor: `${ID}:item/pilot_helmet_visor`,
+      trim: `${ID}:item/pilot_helmet_trim`, logo: `${ID}:item/pilot_helmet_logo`, particle: `${ID}:item/pilot_helmet_shell` },
+    [
+      [[0.6, 7.4, 0.8], [15.4, 14.2, 15.4], crown],
+      [[1.4, 14.2, 1.6], [14.6, 15.4, 14.6], crown],
+      [[2.8, 15.4, 3], [13.2, 16, 13.2], crown],
+      [[1, 3, 9.4], [15, 7.4, 15.2], { south: "#stripe", all: "#shell" }],
+      [[0.6, 3.4, 2.2], [1.8, 7.4, 9.4], "#shell"],
+      [[14.2, 3.4, 2.2], [15.4, 7.4, 9.4], "#shell"],
+      [[0.1, 3.8, 4.8], [0.6, 8, 9.6], "#shell"],
+      [[15.4, 3.8, 4.8], [15.9, 8, 9.6], "#shell"],
+      [[1.2, 10.2, 0], [14.8, 12.6, 1], "#shell"],
+      [[7, 11, -0.5], [9, 12.8, 0], "#trim"],
+      [[1.8, 5.2, 0.2], [14.2, 10.2, 0.9], { north: "#visor", all: "#trim" }],
+      [[15.4, 3.8, 2], [16, 4.4, 7], "#trim"],
+      [[11, 3.6, 0.4], [15.6, 4.2, 1], "#trim"],
+      [[15, 3.7, 0.4], [16, 4.3, 2.4], "#trim"],
+      [[9.4, 3.2, 0], [11, 4.6, 1.2], "#trim"],
+    ],
+  );
+  const [, , , , , , , , , knob, visor] = helmet.elements;
+  visor.faces.north.uv = [0, 0, 16, 16];
+  // The knob stands out past the front of the model's box, so its faces are given a patch of the texture of their own.
+  Object.values(knob.faces).forEach((face) => (face.uv = [0, 0, 2, 2]));
+  for (const [x0, x1, angle, side] of [[1, 1.8, -22.5, "west"], [14.2, 15, 22.5, "east"]]) {
+    helmet.elements.push({
+      from: [x0, 5.4, 0.3], to: [x1, 10, 3.3],
+      rotation: { origin: [(x0 + x1) / 2, 7.7, 1.8], axis: "y", angle },
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face,
+        face === side ? { texture: "#visor", uv: [0, 0, 6, 16] } : { texture: "#trim" }])),
+    });
+  }
+  for (const [x0, x1, side] of [[0.4, 0.6, "west"], [15.4, 15.6, "east"]]) {
+    helmet.elements.push({ from: [x0, 9, 5.6], to: [x1, 13, 9.6], faces: { [side]: { texture: "#logo", uv: [0, 0, 16, 16] } } });
+  }
+  write(`assets/${ID}/models/item/pilot_helmet_worn.json`, helmet);
+  // A generated model's flat layers are only made when it is baked as an item model of its own, so the icon is made by
+  // NeoForge's item layers instead; its parent still gives it an item's transforms in the hand and on the ground.
+  write(`assets/${ID}/models/item/pilot_helmet.json`, {
+    loader: "neoforge:separate_transforms",
+    gui_light: "front",
+    base: {
+      parent: "minecraft:item/generated", loader: "neoforge:item_layers",
+      textures: { layer0: `${ID}:item/pilot_helmet`, particle: `${ID}:item/pilot_helmet` },
+    },
+    perspectives: { head: { parent: `${ID}:item/pilot_helmet_worn` } },
+  });
+}
 // The model airliner on its stand, drawn nose north: a white fuselage with a blue cheat line, swept wings with an
 // engine under each, a tailplane and a blue fin, on a black pole and base.
 {
@@ -988,6 +1044,7 @@ const DUTY_FREE_LANG = {
   "subtitles.aerolarge.paper_plane_whoosh": "Paper plane whooshes",
   "item.aerolarge.pilot_cap": "Pilot Cap",
   "block.aerolarge.model_airliner": "Model Airliner",
+  "item.aerolarge.pilot_helmet": "Pilot Helmet",
 };
 
 // The cabin controls: small modules on the panel, drawn facing north, their face and top showing the setting. The
@@ -1505,6 +1562,8 @@ shaped("duty_free_counter", ["GGG", "ECE", "WWW"], { G: "minecraft:glass", E: "m
 shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
 shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
+// The pilot's helmet: an iron shell, a dark glass visor across its middle and black wool ear cups under it.
+shaped("pilot_helmet", ["III", "IGI", "W W"], { I: "minecraft:iron_ingot", G: "minecraft:black_stained_glass_pane", W: "minecraft:black_wool" }, 1);
 shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);

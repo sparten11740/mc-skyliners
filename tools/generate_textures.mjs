@@ -1003,6 +1003,67 @@ blueprint("furnished_airliner_blueprint", true);
   texture(itemOutput, "pilot_cap_band", (x, y) => (y === 2 ? [0x40, 0x44, 0x4c] : [0x12, 0x13, 0x16]), 1);
   texture(itemOutput, "pilot_cap_gold", (x, y) => ((x + y) % 5 === 0 ? [0xff, 0xe8, 0x90] : GOLD), 2);
 
+  // The pilot's helmet. Its icon: the helmet from its left side, nose to the right, white with the livery's blue
+  // stripe over the crown, the airline's roundel on the ear cup, the gold visor down over the eyes under the cover it
+  // slides up into, and the microphone on its boom in front of the mouth, outlined dark. Worn, its model shows a white
+  // shell darkening a little toward the rim, the stripe edged in gold, the visor gold at the top darkening to smoked
+  // bronze with a glint across it, dark trim, and the roundel: a white airliner from above on blue, ringed in gold.
+  {
+    const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * Math.min(1, Math.max(0, t))));
+    const SHELL = [0xf6, 0xf7, 0xf9];
+    const SHELL_SHADE = [0xb8, 0xc0, 0xcc];
+    const VISOR_TOP = [0xe8, 0xb4, 0x3c];
+    const VISOR_BOTTOM = [0x24, 0x1a, 0x10];
+    const VISOR_GLINT = [0xfc, 0xe8, 0xa8];
+    const TRIM = [0x26, 0x29, 0x2f];
+    const visor = (t) => mix(VISOR_TOP, VISOR_BOTTOM, Math.min(1, Math.max(0, t)) ** 0.8);
+    texture(itemOutput, "pilot_helmet", outlined((x, y) => {
+      if (x < 0 || y < 0 || x > 15 || y > 15) return null;
+      const cx = x + 0.5;
+      const cy = y + 0.5;
+      const radius = Math.hypot((cx - 7.6) / 6.4, (cy - 7.9) / 6.3);
+      const angle = Math.atan2(cy - 7.9, cx - 7.6);
+      // The visor bulges a little past the shell.
+      if (cx > 9.5 && cy > 6.3 && cy < 10.9 && Math.hypot((cx - 7.6) / 7.0, (cy - 7.9) / 6.6) <= 1) {
+        if ((x === 11 && y === 7) || (x === 12 && y === 7) || (x === 11 && y === 8)) return VISOR_GLINT;
+        return visor((cy - 6.3) / 4.6);
+      }
+      if (x >= 13 && x <= 14 && y >= 12 && y <= 13) return [0x10, 0x10, 0x12];
+      if (y === 13 && x >= 8 && x <= 12) return [0x6a, 0x70, 0x7a];
+      if (radius > 1) return null;
+      // The face is open under the visor, and the shell's rim rises from the nape toward it.
+      if (cx > 9.5 && cy > 10.9) return null;
+      if (cy > 13.3 - (cx - 2) * 0.15) return null;
+      if (cx > 9.5 && cy > 4.6 && cy <= 6.3) return cy < 5.5 ? SHELL : mix(SHELL, SHELL_SHADE, 0.6);
+      const ear = Math.max(Math.abs(cx - 6.5), Math.abs(cy - 9.5));
+      if (ear < 0.5) return [0xf8, 0xf8, 0xf8];
+      if (ear < 1.5) return BLUE;
+      if (Math.hypot(cx - 6.5, cy - 9.5) < 2.6) return mix(SHELL, SHELL_SHADE, 0.75);
+      if (radius > 0.7 && radius < 0.88 && angle < -0.8 && angle > -2.8) return BLUE;
+      return mix(SHELL, SHELL_SHADE, (cx * 0.6 + cy - 6) / 12);
+    }), 0);
+    texture(itemOutput, "pilot_helmet_shell", (x, y) => mix(SHELL, SHELL_SHADE, y / 40), 2);
+    texture(itemOutput, "pilot_helmet_stripe", (x, y) => (x === 6 || x === 9 ? GOLD : x === 7 || x === 8 ? BLUE : mix(SHELL, SHELL_SHADE, y / 40)), 2);
+    // The visor's top row is the dark seam under its cover.
+    texture(itemOutput, "pilot_helmet_visor", (x, y) => {
+      if (y === 0) return TRIM;
+      const tint = visor((y - 1) / 14);
+      const glint = Math.abs(x - 1.4 * y - 1);
+      return glint < 1.6 && y < 9 ? mix(VISOR_GLINT, tint, glint / 2.4 + y / 14) : tint;
+    }, 1);
+    texture(itemOutput, "pilot_helmet_trim", () => TRIM, 3);
+    texture(itemOutput, "pilot_helmet_logo", (x, y) => {
+      const r = Math.hypot(x - 7.5, y - 7.5);
+      if (r > 7.6) return CLEAR;
+      if (r > 6.4) return GOLD;
+      const across = Math.abs(x - 7.5);
+      const wing = across <= 6 && y - 5 >= (across - 1) * 0.5 && y - 5 <= (across - 1) * 0.5 + 2;
+      const fuselage = across < 1 && y >= 2 && y <= 12;
+      const tail = y >= 11 && y <= 12 && across <= 3 - (y - 11);
+      return fuselage || wing || tail ? [0xf8, 0xf8, 0xf8] : BLUE;
+    }, 0);
+  }
+
   // The duty-free counter. Its cabinet shows the bottom ten rows of its textures: navy under a gold trim, its front
   // a white shopping bag with a green emerald on it, a picture of what the counter is for. On its top, seen through
   // the glass case, the goods laid out on a white cloth: a gift box, a pilot's cap, a perfume bottle and a paper plane.

@@ -49,7 +49,8 @@ public final class DutyFreeShop implements Merchant {
         new Trade(4, AerolargeRegistry.PARACHUTE, 1),
         new Trade(5, AerolargeRegistry.PILOT_CAP, 1),
         new Trade(6, AerolargeRegistry.CARGO_CRATE_ITEM, 1),
-        new Trade(8, AerolargeRegistry.MODEL_AIRLINER_ITEM, 1)
+        new Trade(8, AerolargeRegistry.MODEL_AIRLINER_ITEM, 1),
+        new Trade(10, AerolargeRegistry.PILOT_HELMET, 1)
     );
 
     private final ServerLevel level;

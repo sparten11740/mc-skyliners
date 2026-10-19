@@ -92,6 +92,7 @@ import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
+import dev.aerolarge.item.PilotHelmetItem;
 import dev.aerolarge.item.TrolleyItem;
 import java.util.List;
 import java.util.function.Supplier;
@@ -707,6 +708,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DUTY_FREE_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(DUTY_FREE_COUNTER);
     public static final DeferredHolder<SoundEvent, SoundEvent> SHOP_BELL = sound("shop_bell");
     public static final DeferredHolder<SoundEvent, SoundEvent> CASH_REGISTER = sound("cash_register");
+    /** The pilot's flight helmet, its visor down over the eyes. */
+    public static final DeferredItem<PilotHelmetItem> PILOT_HELMET = ITEMS.register("pilot_helmet", () -> new PilotHelmetItem(new Item.Properties().stacksTo(1)));
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -732,6 +735,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CALL_BUTTON_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
+            PILOT_HELMET,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM

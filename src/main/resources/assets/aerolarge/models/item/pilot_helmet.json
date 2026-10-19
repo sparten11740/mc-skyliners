@@ -1,0 +1,17 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "gui_light": "front",
+  "base": {
+    "parent": "minecraft:item/generated",
+    "loader": "neoforge:item_layers",
+    "textures": {
+      "layer0": "aerolarge:item/pilot_helmet",
+      "particle": "aerolarge:item/pilot_helmet"
+    }
+  },
+  "perspectives": {
+    "head": {
+      "parent": "aerolarge:item/pilot_helmet_worn"
+    }
+  }
+}
