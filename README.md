@@ -36,11 +36,11 @@ thrust, quieter from inside the cabin, and high up it leaves a contrail.
 
 Steps at the front of the main deck lead up to the flight deck, raised so the pilots look straight out through the
 windscreen: tinted glass cut to the nose's curve like the skin around it, framed into panes by posts.
-On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right: use one to push it
-a notch forward, sneak and use it to pull it back. Each drives its engine's thrusters through relays hidden in the
-nacelle, so splitting left and right also steers the airliner on the ground. Beside the captain's seat is the nose
-wheel tiller (use it to steer right a notch, sneak and use to steer left) and beside the first officer's the parking
-brake, set when the airliner is built. A primary flight display in front of each seat shows attitude, airspeed,
+On the pedestal between the two seats are four thrust levers, engines 1 to 4 from left to right. They move together:
+use any of them to push all four a notch forward, sneak and use it to pull them back. Each drives its engine's
+thrusters through relays hidden in the nacelle. Beside the captain's seat is the nose wheel tiller (use it to steer
+right a notch, sneak and use to steer left) and beside the first officer's the parking brake, set when the airliner
+is built. A primary flight display in front of each seat shows attitude, airspeed,
 altitude, vertical speed and heading once the airliner is assembled. Behind the seats is the Physics Assembler.
 
 A synthetic voice calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground
@@ -58,9 +58,9 @@ tiller and the parking brake. While it flies it shows its phase, speed, height, 
 on the flight deck.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
-control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). Sable's wings lift
-by how far they meet the air at an angle, whichever side it comes from, so the autopilot steers that angle of
-attack rather than the nose itself. It needs Sable (Create Aeronautics) to read where the airliner is.
+control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). Part of the
+tailplane pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed.
+It needs Sable (Create Aeronautics) to read where the airliner is.
 
 ### Airstairs
 

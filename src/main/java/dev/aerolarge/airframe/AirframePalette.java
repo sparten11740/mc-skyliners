@@ -58,6 +58,11 @@ record AirframePalette(
         return lift.map(state -> with(state, "facing", normal.getSerializedName())).orElse(fallback);
     }
 
+    /** Whether the state is the lifting surface, turned any way. */
+    boolean isLift(BlockState state) {
+        return lift.isPresent() && state.is(lift.get().getBlock());
+    }
+
     private static Optional<BlockState> block(String id) {
         return id(id).flatMap(BuiltInRegistries.BLOCK::getOptional).map(Block::defaultBlockState);
     }

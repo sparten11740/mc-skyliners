@@ -135,6 +135,7 @@ public final class AirframeLayout {
         }
         layout.shell();
         layout.landingGear();
+        layout.trimTail();
         layout.boardingStairs();
         layout.assembler();
         return layout.lifted();
@@ -385,7 +386,11 @@ public final class AirframeLayout {
         }
     }
 
-    /** The fin: swept back over the tail cone, livery on both faces around an upright lifting layer. */
+    /**
+     * The fin: swept back over the tail cone, livery on both faces around an upright lifting layer. A lifting block
+     * pushes along its face's normal at any speed, whichever way the air meets it, so the layer alternates between
+     * facing port and starboard: the pushes cancel and only the part that steadies the tail against sideslip is left.
+     */
     private void fin() {
         int bottom = (int) Math.floor((HEIGHT - 2) * scale);
         int top = (int) Math.ceil((HEIGHT + FIN_HEIGHT) * scale);
@@ -408,7 +413,8 @@ public final class AirframeLayout {
                     if (x != 0 && Math.abs(x / scale) > half || inFuselage(x, y, z) || has(x, y, z)) {
                         continue;
                     }
-                    set(x, y, z, x == 0 ? palette.lift(Direction.EAST, palette.livery()) : palette.livery());
+                    Direction face = Math.floorMod(y + z, 2) == 0 ? Direction.EAST : Direction.WEST;
+                    set(x, y, z, x == 0 ? palette.lift(face, palette.livery()) : palette.livery());
                 }
             }
         }
@@ -671,11 +677,10 @@ public final class AirframeLayout {
             levers.add(lever);
             set(lever.getX(), lever.getY(), lever.getZ(),
                 AerolargeRegistry.THRUST_LEVER.get().defaultBlockState().setValue(ThrustLeverBlock.FACING, Direction.NORTH));
-            int engine = i + 1;
             List<BlockPos> relays = engineRelays.getOrDefault(engines[i], List.of()).stream().map(relay -> relay.subtract(lever)).toList();
             fittings.put(lever, (blockEntity, rotation) -> {
                 if (blockEntity instanceof ThrustLeverBlockEntity thrustLever) {
-                    thrustLever.configure(engine, relays.stream().map(offset -> offset.rotate(rotation)).toList());
+                    thrustLever.configure(relays.stream().map(offset -> offset.rotate(rotation)).toList());
                 }
             });
         }
@@ -1039,6 +1044,46 @@ public final class AirframeLayout {
             moment += weight * (cell.getKey().getZ() + 0.5);
         }
         return mass > 0 ? moment / mass : LENGTH * scale / 2;
+    }
+
+    /**
+     * Trims the tailplane like a real one, which pushes down to balance the wings. Every lifting block pushes along its
+     * face's normal in proportion to the airspeed, whatever the angle, and the wings lift behind the centre of mass,
+     * which would pitch the nose down the faster the airliner goes, harder than the pitch jets can hold. So some of
+     * the tailplane's blocks are turned to face down, the furthest aft first and in mirrored pairs, until the steady
+     * lift no longer turns the airliner about its centre of mass. What the angle of the air adds still steadies it.
+     */
+    private void trimTail() {
+        double balance = centreOfMassZ();
+        double tailStart = STABILIZER_ROOT_LEADING_EDGE * scale;
+        BlockState up = palette.lift(Direction.UP, palette.hull());
+        double moment = 0;
+        List<BlockPos> tail = new ArrayList<>();
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            if (!palette.isLift(cell.getValue()) || !cell.getValue().equals(up)) {
+                continue;
+            }
+            BlockPos pos = cell.getKey();
+            moment += pos.getZ() + 0.5 - balance;
+            if (pos.getZ() >= tailStart && pos.getX() >= 0) {
+                tail.add(pos);
+            }
+        }
+        tail.sort(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).reversed());
+        BlockState down = palette.lift(Direction.DOWN, palette.hull());
+        for (BlockPos pos : tail) {
+            BlockPos mirror = new BlockPos(-pos.getX(), pos.getY(), pos.getZ());
+            boolean pair = pos.getX() != 0 && palette.isLift(stateAt(mirror.getX(), mirror.getY(), mirror.getZ()));
+            double change = 2 * (pos.getZ() + 0.5 - balance) * (pair ? 2 : 1);
+            if (Math.abs(moment - change) >= Math.abs(moment)) {
+                continue;
+            }
+            moment -= change;
+            set(pos.getX(), pos.getY(), pos.getZ(), down);
+            if (pair) {
+                set(mirror.getX(), mirror.getY(), mirror.getZ(), down);
+            }
+        }
     }
 
     /** The block's mass in Sable, from the tags Sable weighs blocks by; air and fluids weigh nothing here. */

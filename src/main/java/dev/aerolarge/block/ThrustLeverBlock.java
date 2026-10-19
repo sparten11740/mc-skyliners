@@ -27,9 +27,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * One engine's thrust lever on the flight deck's throttle quadrant. Using it pushes it a notch forward (more
- * thrust), using it while sneaking pulls it a notch back; its engine's thrusters follow through the relays in the
- * nacelle. FACING is the way the nose points, and the lever pushes toward it.
+ * One engine's thrust lever on the flight deck's throttle quadrant. The four move together, the way a pilot's hand
+ * moves them, so the engines never pull the airliner off to one side: using any of them pushes them all a notch
+ * forward (more thrust), using it while sneaking pulls them all a notch back. Each engine's thrusters follow its
+ * lever through the relays in the nacelle. FACING is the way the nose points, and the lever pushes toward it.
  */
 public class ThrustLeverBlock extends BaseEntityBlock {
     private static final MapCodec<ThrustLeverBlock> CODEC = simpleCodec(ThrustLeverBlock::new);
@@ -38,6 +39,8 @@ public class ThrustLeverBlock extends BaseEntityBlock {
     /** The redstone signal each notch sends the thrusters: idle, then quarters up to full. */
     private static final int[] POWER = {0, 4, 8, 12, 15};
     private static final VoxelShape SHAPE = Block.box(3, 0, 2, 13, 10, 14);
+    /** How far along the quadrant, either way, the other levers moved with this one are looked for. */
+    private static final int QUADRANT = 4;
 
     public ThrustLeverBlock(Properties properties) {
         super(properties);
@@ -81,12 +84,19 @@ public class ThrustLeverBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
         }
         if (!level.isClientSide) {
-            level.setBlock(pos, state.setValue(THRUST, thrust), Block.UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5F, 0.6F + thrust * 0.1F);
-            if (level.getBlockEntity(pos) instanceof ThrustLeverBlockEntity lever) {
-                lever.drive(power(state.setValue(THRUST, thrust)));
-                player.displayClientMessage(Component.translatable("message.aerolarge.thrust", lever.engine(), thrust * 25), true);
+            Direction along = state.getValue(FACING).getClockWise();
+            for (int k = -QUADRANT; k <= QUADRANT; k++) {
+                BlockPos at = pos.relative(along, k);
+                BlockState other = level.getBlockState(at);
+                if (other.is(this) && other.getValue(FACING) == state.getValue(FACING)) {
+                    level.setBlock(at, other.setValue(THRUST, thrust), Block.UPDATE_ALL);
+                    if (level.getBlockEntity(at) instanceof ThrustLeverBlockEntity lever) {
+                        lever.drive(POWER[thrust]);
+                    }
+                }
             }
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5F, 0.6F + thrust * 0.1F);
+            player.displayClientMessage(Component.translatable("message.aerolarge.thrust", thrust * 25), true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

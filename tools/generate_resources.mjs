@@ -370,7 +370,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
   "block.aerolarge.instrument_panel": "Instrument Panel",
-  "message.aerolarge.thrust": "Engine %s thrust: %s%%",
+  "message.aerolarge.thrust": "Thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
   "block.aerolarge.nav_light": "Navigation Light",
   "block.aerolarge.engine_core": "Engine Core",
