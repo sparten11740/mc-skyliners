@@ -372,8 +372,9 @@ final class CabinFitOut {
      * Passenger screens, found from the seats and walls already laid out, so they follow whatever the fit-out holds.
      * Where there are rows of seats, one on the back of each seat that has another right behind it in the next row,
      * facing that passenger. Along the walls away from the rows, one between a pair of main deck windows every
-     * {@link #WALL_SPACING} stations at seated eye height, facing into the cabin: never over a window, and never by a
-     * door, which has no windows beside it.
+     * {@link #WALL_SPACING} stations at seated eye height, facing into the cabin: never over a window, never by a
+     * door, which has no windows beside it, and never right over a seat along the wall (a gym bench, a lounge sofa),
+     * where it would be in the head of whoever sits there.
      */
     private void screens() {
         NavigableMap<Integer, Set<Integer>> rows = seatRows();
@@ -399,7 +400,7 @@ final class CabinFitOut {
             for (int z = 0; z < length; z++) {
                 int x = layout.besideWall(side, floor + EYES, z);
                 boolean fits = x != 0 && layout.isOpen(x, floor + EYES, z) && layout.isPlainHull(x + side, floor + EYES, z)
-                    && windowAt(side, z - 1) && windowAt(side, z + 1);
+                    && windowAt(side, z - 1) && windowAt(side, z + 1) && !seats.contains(new BlockPos(x, floor + 1, z));
                 if (fits && z - last >= WALL_SPACING && rows.subMap(z - reach, true, z + reach, true).isEmpty()) {
                     layout.furnish(x, floor + EYES, z, facingIn);
                     last = z;
