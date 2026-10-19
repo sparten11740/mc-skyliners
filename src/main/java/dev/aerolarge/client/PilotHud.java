@@ -37,25 +37,27 @@ import org.joml.Matrix4f;
 /**
  * The pilots' head-up display, shown by the visor of a pilot helmet: while the local player wears one on the flight
  * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies, drawn as a
- * real HUD is, in thin green lines and figures straight over the view round its middle, with what the autopilot is set
- * to in magenta, and bent onto the visor's curve ({@link HelmetVisor}). Round the crosshair a slim horizon line and the
- * pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon amber once banked as far as the
- * "bank angle" callout), and the flight path marker, where the airliner is going. Left of them the speed on a narrow
- * moving tape, the speed set as a magenta bug and a trend arrow to the speed ten seconds on; under it a picture of what
- * the autopilot is doing, and its name. Right of them the height the autopilot holds (its own block's) on a moving tape,
- * the height set as a magenta bug, the ground as an amber line rising up it once near, and beyond it a bar that climbs
- * green or sinks amber; under it the wheels' height above the ground and the climb or sink with an arrow. Above them a
- * heading scale, the heading in a box over it and the heading set as a magenta bug, with the autopilot's mode (straight
- * on or round a circle) beside it. Pictures and colours carry it, and numbers only where the number is the point, so
- * that it works for players who cannot read yet.
+ * real HUD is, in thin green lines and figures straight over the view round its middle, edged dark so they read
+ * against bright sky, with what the autopilot is set to in magenta, and bent onto the visor's curve
+ * ({@link HelmetVisor}). Round the crosshair a slim horizon line and the pitch ladder, which tilt against the bank and
+ * drop as the nose comes up (the horizon amber once banked as far as the "bank angle" callout), and the flight path
+ * marker, where the airliner is going. Left of them the speed on a narrow moving tape, the speed set as a magenta bug
+ * and a trend arrow to the speed ten seconds on; under it a picture of what the autopilot is doing, and its name. Right
+ * of them the height the autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the
+ * ground as an amber line rising up it once near, and beyond it a bar that climbs green or sinks amber; under it the
+ * wheels' height above the ground and the climb or sink with an arrow. Above them a heading scale, the heading in a box
+ * over it and the heading set as a magenta bug, with the autopilot's mode (straight on or round a circle) beside it.
+ * Pictures and colours carry it, and numbers only where the number is the point, so that it works for players who
+ * cannot read yet.
  *
  * <p>It is drawn in units of its own, a screen pixel each at GUI scale 2 and growing with the GUI scale, times
  * {@code pilotHudScale} from the client config: about half as big as the rest of the HUD. The airliner's attitude and
  * height come from its pose as the client draws it, so the HUD moves as smoothly as the airliner does; the autopilot's
- * phase, mode and targets from what its block sends the clients. It hides with the rest of the HUD (F1), behind any
- * screen, under the debug screen and while looking through an outside camera, and is off altogether with
- * {@code pilotHud} off in the client config. As it comes on it fades in, with a beep when it is the helmet going on that
- * turns it on; walking back within reach of the autopilot with the helmet on, it only fades in.
+ * phase, mode and targets from what its block sends the clients. Being on the visor, it shows only in first person. It
+ * hides with the rest of the HUD (F1), behind any screen, under the debug screen and while looking through an outside
+ * camera, and is off altogether with {@code pilotHud} off in the client config. As it comes on it fades in, with a
+ * beep when it is the helmet going on that turns it on; walking back within reach of the autopilot with the helmet on,
+ * it only fades in.
  */
 public final class PilotHud {
     /** While no autopilot has been found, how often the airliner the player rides is searched for one, in ticks. */
@@ -86,8 +88,12 @@ public final class PilotHud {
      */
     private static final float PIXELS_PER_GUI_SCALE = 0.5F;
     private static final float LEAST_PIXELS_PER_UNIT = 1;
-    /** How opaque the HUD is laid over the view: see-through, as a HUD's light is. */
+    /**
+     * How opaque the HUD is laid over the view, see-through as a HUD's light is; and how dark the thin edge round its
+     * lines and figures is, enough to read them against bright sky and white skin without a panel behind them.
+     */
     private static final float OPACITY = 0.72F;
+    private static final float OUTLINE = 0.4F;
 
     /** The speed and height tapes: their spines' distance either side of the middle, and half their height. */
     private static final float TAPE_X = 100;
@@ -114,8 +120,6 @@ public final class PilotHud {
     private static final float BUG_HALF = 3;
     /** The box with the figure now in the middle of a tape or over the heading scale: half its height. */
     private static final float BOX_HALF = 5.5F;
-    /** The faint dark behind a box's figure, so it reads against bright sky. */
-    private static final int BACKING = 0x50000000;
     /** The climb bar beyond the height tape's numbers: its gap from them, half its width, and the climb at its ends. */
     private static final float CLIMB_BAR_GAP = 3;
     private static final float CLIMB_BAR_HALF = 1;
@@ -369,7 +373,7 @@ public final class PilotHud {
         AutopilotBlockEntity autopilot = held.autopilot;
         Targets targets = Targets.of(autopilot);
         float pixelsPerUnit = pixelsPerUnit(minecraft.getWindow());
-        HelmetVisor.drawCurved(graphics, HALF_WIDTH, HALF_HEIGHT, pixelsPerUnit, OPACITY * fade, () -> {
+        HelmetVisor.drawCurved(graphics, HALF_WIDTH, HALF_HEIGHT, pixelsPerUnit, OPACITY * fade, OUTLINE * fade, () -> {
             Canvas canvas = new Canvas(graphics, minecraft.font, pixelsPerUnit);
             attitude(canvas, reading);
             speedTape(canvas, autopilot.phase(), reading, targets.speed());
@@ -381,11 +385,11 @@ public final class PilotHud {
 
     /**
      * Whether something hides the HUD while it is on: the rest of the HUD hidden, a screen open, or the player not
-     * looking out through their own eyes.
+     * looking out through their own eyes, and so not through the visor: in third person, or through an outside camera.
      */
     private static boolean hidden(Minecraft minecraft, LocalPlayer player) {
-        return minecraft.options.hideGui || minecraft.screen != null
-            || minecraft.getDebugOverlay().showDebugScreen() || PassengerCameras.looking() || minecraft.getCameraEntity() != player;
+        return minecraft.options.hideGui || minecraft.screen != null || minecraft.getDebugOverlay().showDebugScreen()
+            || !minecraft.options.getCameraType().isFirstPerson() || PassengerCameras.looking() || minecraft.getCameraEntity() != player;
     }
 
     /** Screen pixels per unit of the HUD: as the GUI scale and the player's size setting make it, but all on screen. */
@@ -692,13 +696,12 @@ public final class PilotHud {
             matrix = graphics.pose().last().pose();
         }
 
-        /** A box framed a unit wide, its figure's faint backing inside. */
+        /** A box framed a unit wide, for a figure, left clear inside. */
         void box(float x0, float y0, float x1, float y1) {
             rect(x0, y0, x1, y0 + 1, HUD);
             rect(x0, y1 - 1, x1, y1, HUD);
             rect(x0, y0 + 1, x0 + 1, y1 - 1, HUD);
             rect(x1 - 1, y0 + 1, x1, y1 - 1, HUD);
-            rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, BACKING);
         }
 
         void rect(float x0, float y0, float x1, float y1, int colour) {
