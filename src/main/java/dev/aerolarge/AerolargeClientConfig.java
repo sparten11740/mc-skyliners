@@ -7,6 +7,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.BooleanValue CAMERA_SHAKE;
     public static final ModConfigSpec.BooleanValue PILOT_HUD;
+    public static final ModConfigSpec.DoubleValue PILOT_HUD_SCALE;
     public static final ModConfigSpec.BooleanValue TAIL_CAMERA_FEED;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_FPS;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
@@ -18,9 +19,13 @@ public final class AerolargeClientConfig {
             .define("cameraShake", true);
         PILOT_HUD = builder
             .comment("Show the pilot's head-up display in a pilot helmet's visor on the flight deck of an assembled airliner: the",
-                "speed in the top left corner, the height in the top right, the heading and the attitude at the top in the middle,",
-                "with what the autopilot does and the speed, height and heading it is set to.")
+                "horizon and the flight path round the crosshair, the speed left of them, the height right of them and the heading",
+                "above, with what the autopilot does and the speed, height and heading it is set to.")
             .define("pilotHud", true);
+        PILOT_HUD_SCALE = builder
+            .comment("How big the pilot's head-up display is drawn: 1 is about half the size of the rest of the HUD, and it grows",
+                "with the GUI scale as the rest of the HUD does.")
+            .defineInRange("pilotHudScale", 1.0, 0.5, 2.0);
         TAIL_CAMERA_FEED = builder
             .comment("Show the live picture from the camera on top of the fin on the flight deck's tail camera display. It draws",
                 "the world a second time, small, while a display is in sight; turn it off if that costs too much. It is never",

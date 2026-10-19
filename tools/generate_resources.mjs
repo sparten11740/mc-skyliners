@@ -1874,6 +1874,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.tailCameraFps": "Tail Camera Pictures a Second",
   "aerolarge.configuration.tailCameraResolution": "Tail Camera Picture Height",
   "aerolarge.configuration.pilotHud": "Pilot HUD",
+  "aerolarge.configuration.pilotHudScale": "Pilot HUD Size",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
   "item.aerolarge.airliner_blueprint": "Airliner Blueprint",
   "item.aerolarge.furnished_airliner_blueprint": "Furnished Airliner Blueprint",

@@ -176,19 +176,24 @@ flown or the heading being turned to, and north; touch the map to zoom it out, a
 back in.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
-either pilot's seat, or standing at the pedestal), its visor shows a head-up display in the top corners of the screen,
-in the flight deck's colours, with whatever the autopilot is set to fly in magenta; without the helmet there is none.
-Putting the helmet on there switches it on with a beep, and it fades in. Top left is the speed on a moving tape, the
-speed set as a magenta mark beside it and a green arrow to where the speed will be in ten seconds; under it a picture
-of what the autopilot is doing, and its name: taking off, climbing, cruising, descending, landing, braking to a stop
-after landing, or a red power symbol while it is off. Top right is the height on a moving tape (the autopilot's own,
-as it holds it), the height set as a magenta mark and, once it is near, the ground rising up the tape in brown; beside
-it a bar that climbs green or sinks amber, and under it the wheels' height above the ground and the climb or sink with
-an arrow. At the top in the middle is a heading strip with the heading set as a magenta mark and the mode beside it
-(straight on, or circling left or right with the circle's radius), and under it a small attitude indicator: sky and
-ground, the pitch ladder, and the bank pointer, amber past 35 degrees. It hides with the rest of the HUD (F1), behind
-any screen, under the debug screen and while you look through an outside camera; turn it off with `pilotHud` in the
-client config.
+either pilot's seat, or standing at the pedestal), its visor shows a head-up display round the middle of the view:
+thin, see-through green lines and figures, as a real HUD's, with whatever the autopilot is set to fly in magenta,
+curving with the visor (its rows lift a little toward their ends); without the helmet there is none. Putting the
+helmet on there switches it on with a beep, and it fades in. Round the crosshair are a slim horizon line and the
+pitch ladder, tilting with the bank and dropping as the nose comes up (the horizon amber past 35 degrees of bank),
+and the flight path marker, a small ring with wings showing where the airliner is going. Left of them is the speed on
+a narrow moving tape, the speed set as a magenta mark beside it and an arrow to where the speed will be in ten
+seconds; under it a picture of what the autopilot is doing, and its name: taking off, climbing, cruising, descending,
+landing, braking to a stop after landing, or a red power symbol while it is off. Right of them is the height on a
+moving tape (the autopilot's own, as it holds it), the height set as a magenta mark and, once it is near, the ground
+rising up the tape as an amber line; beyond it a bar that climbs green or sinks amber, and under it the wheels'
+height above the ground and the climb or sink with an arrow. Above them is a heading scale with the heading in a box,
+the heading set as a magenta mark and the mode beside it (straight on, or circling left or right with the circle's
+radius). It is drawn about half the size of the rest of the HUD and grows with the GUI scale; `pilotHudScale` in the
+client config makes it bigger or smaller. It hides with the rest of the HUD (F1), behind any screen, under the debug
+screen and while you look through an outside camera; turn it off with `pilotHud` in the client config. While you wear
+the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold, darkens it
+faintly toward the edges and catches a little light along its top.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
@@ -436,9 +441,10 @@ suitcases hidden in the hold (Lost and Found).
 
 ### Settings
 
-The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`
-and the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button
-while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
+The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
+`pilotHudScale` and the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there
+from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button while
+playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
 

@@ -1,5 +1,7 @@
 package dev.aerolarge.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.AerolargeClientConfig;
@@ -10,8 +12,6 @@ import dev.aerolarge.block.AutopilotBlockEntity.Phase;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.ScreenDrawing.Align;
 import dev.aerolarge.item.PilotHelmetItem;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -28,7 +28,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -37,24 +36,26 @@ import org.joml.Matrix4f;
 
 /**
  * The pilots' head-up display, shown by the visor of a pilot helmet: while the local player wears one on the flight
- * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies in the top
- * corners of the screen, in the flight deck's glass-cockpit colours (see {@link AutopilotScreenRenderer}) on dark
- * glass, with what the autopilot is set to in magenta. Top left the speed on a moving tape, the speed set as a
- * magenta bug beside it and a green arrow to the speed ten seconds on; under it a picture of what the autopilot is
- * doing, and its name. Top right the height the autopilot holds (its own block's) on a moving tape, the height set as
- * a magenta bug, the ground rising up the tape as a brown band once it is near and a bar beside it that climbs green
- * or sinks amber; under it the wheels' height above the ground and the climb or sink with an arrow. At the top in the
- * middle a heading strip with the heading set as a magenta bug, the autopilot's mode (straight on or round a circle)
- * beside it, and under it a small attitude indicator: sky and ground, the pitch ladder and the bank pointer, clear of
- * the crosshair. Pictures and colours carry it, and numbers only where the number is the point, so that it works for
- * players who cannot read yet.
+ * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies, drawn as a
+ * real HUD is, in thin green lines and figures straight over the view round its middle, with what the autopilot is set
+ * to in magenta, and bent onto the visor's curve ({@link HelmetVisor}). Round the crosshair a slim horizon line and the
+ * pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon amber once banked as far as the
+ * "bank angle" callout), and the flight path marker, where the airliner is going. Left of them the speed on a narrow
+ * moving tape, the speed set as a magenta bug and a trend arrow to the speed ten seconds on; under it a picture of what
+ * the autopilot is doing, and its name. Right of them the height the autopilot holds (its own block's) on a moving tape,
+ * the height set as a magenta bug, the ground as an amber line rising up it once near, and beyond it a bar that climbs
+ * green or sinks amber; under it the wheels' height above the ground and the climb or sink with an arrow. Above them a
+ * heading scale, the heading in a box over it and the heading set as a magenta bug, with the autopilot's mode (straight
+ * on or round a circle) beside it. Pictures and colours carry it, and numbers only where the number is the point, so
+ * that it works for players who cannot read yet.
  *
- * <p>The airliner's attitude and height come from its pose as the client draws it, so the HUD moves as smoothly as the
- * airliner does; the autopilot's phase, mode and targets from what its block sends the clients. Its shapes are drawn
- * a batch at a time rather than one by one, so it costs a few draw calls a frame. It hides with the rest of the HUD
- * (F1), behind any screen, under the debug screen and while looking through an outside camera, and is off altogether
- * with {@code pilotHud} off in the client config. As it comes on it fades in, with a beep when it is the helmet going
- * on that turns it on; walking back within reach of the autopilot with the helmet on, it only fades in.
+ * <p>It is drawn in units of its own, a screen pixel each at GUI scale 2 and growing with the GUI scale, times
+ * {@code pilotHudScale} from the client config: about half as big as the rest of the HUD. The airliner's attitude and
+ * height come from its pose as the client draws it, so the HUD moves as smoothly as the airliner does; the autopilot's
+ * phase, mode and targets from what its block sends the clients. It hides with the rest of the HUD (F1), behind any
+ * screen, under the debug screen and while looking through an outside camera, and is off altogether with
+ * {@code pilotHud} off in the client config. As it comes on it fades in, with a beep when it is the helmet going on that
+ * turns it on; walking back within reach of the autopilot with the helmet on, it only fades in.
  */
 public final class PilotHud {
     /** While no autopilot has been found, how often the airliner the player rides is searched for one, in ticks. */
@@ -69,90 +70,105 @@ public final class PilotHud {
     private static final double TREND_MIN = 1;
     /** Climbing or sinking slower than this, in blocks a second, shows no arrow. */
     private static final double STEADY = 0.05;
-    /** Banked further than this, in degrees, the bank pointer turns amber, as the callouts say "bank angle" then. */
+    /** Banked further than this, in degrees, the horizon turns amber, as the callouts say "bank angle" then. */
     private static final double BANK_WARNING = 35;
-    /** Vanilla draws the status effects' icons top right, in rows this tall: the helpful ones, then the harmful. */
-    private static final int EFFECT_ROW = 26;
     /** How long the HUD takes to fade in as it comes on, in milliseconds. */
     private static final float FADE_IN_MILLIS = 600;
     /** How loud the beep of the HUD coming on is, as a share of full volume: about as loud as a button's click. */
     private static final float BEEP_VOLUME = 0.4F;
 
-    /** How far in from the edges of the screen the glass stands, and its padding round what is on it, in GUI pixels. */
-    private static final int MARGIN = 4;
-    private static final int PAD = 3;
-    /** A row with a picture is as tall as the picture; the gap after a picture, and between the rows and the scales. */
-    private static final int ROW = Icon.SIZE;
-    private static final int ICON_GAP = 3;
-    private static final int GAP = 3;
-    /** The speed and height tapes: how tall, and how wide each. */
-    private static final int TAPE_HEIGHT = 72;
-    private static final int SPEED_TAPE_WIDTH = 30;
-    private static final int ALTITUDE_TAPE_WIDTH = 34;
-    /** Pixels per block a second on the speed tape and per block on the height tape. */
-    private static final float PIXELS_PER_SPEED = 1.5F;
-    private static final float PIXELS_PER_BLOCK = 1F;
+    /** Half the HUD's width and height round the middle of the screen, in its units. */
+    private static final float HALF_WIDTH = 150;
+    private static final float HALF_HEIGHT = 100;
+    /**
+     * Screen pixels per unit of the HUD for each step of the GUI scale, at a {@code pilotHudScale} of 1: half the GUI's
+     * own size. Never fewer than the least, below which its text could not be read.
+     */
+    private static final float PIXELS_PER_GUI_SCALE = 0.5F;
+    private static final float LEAST_PIXELS_PER_UNIT = 1;
+    /** How opaque the HUD is laid over the view: see-through, as a HUD's light is. */
+    private static final float OPACITY = 0.72F;
+
+    /** The speed and height tapes: their spines' distance either side of the middle, and half their height. */
+    private static final float TAPE_X = 100;
+    private static final float TAPE_HALF_HEIGHT = 45;
+    /** The room for a tape's numbers, on the outer side of its spine; its marks are on the inner side. */
+    private static final float TAPE_NUMBERS = 30;
+    /** How far from a tape's or a scale's ends its marks and numbers fade out, so they slide in and out softly. */
+    private static final float END_FADE = 8;
+    /** Units per block a second on the speed tape and per block on the height tape. */
+    private static final float UNITS_PER_SPEED = 1.2F;
+    private static final float UNITS_PER_BLOCK = 0.8F;
     /** Each tape is marked every so many blocks a second or blocks, and numbered every so many. */
     private static final int SPEED_TICK = 5;
     private static final int SPEED_LABEL = 10;
     private static final int ALTITUDE_TICK = 10;
     private static final int ALTITUDE_LABEL = 20;
-    /** Marks along a scale's edge: a numbered one's length and the others'. */
-    private static final int LONG_TICK = 5;
-    private static final int SHORT_TICK = 3;
-    /** The space beside a tape, on its marked side, for the bug and the trend arrow. */
-    private static final int BUG_ROOM = 7;
-    /** The bug: how far it reaches from the scale's edge, and half its breadth. */
-    private static final float BUG_LENGTH = 5;
-    private static final float BUG_HALF = 4;
-    /** The box with the figure now in the middle of a tape: half its height. */
-    private static final int BOX_HALF = 6;
-    /** The climb bar beside the height tape: its width, its gap from the tape, and the climb at its ends. */
-    private static final int CLIMB_BAR_WIDTH = 5;
-    private static final int CLIMB_BAR_GAP = 2;
+    /** Marks along a scale: a numbered one's length and the others'. */
+    private static final float LONG_TICK = 4;
+    private static final float SHORT_TICK = 2;
+    /** The gap between a scale's marks and its numbers. */
+    private static final float LABEL_GAP = 3;
+    /** The bug: how far it reaches from the spine, and half its breadth. */
+    private static final float BUG_LENGTH = 4;
+    private static final float BUG_HALF = 3;
+    /** The box with the figure now in the middle of a tape or over the heading scale: half its height. */
+    private static final float BOX_HALF = 5.5F;
+    /** The faint dark behind a box's figure, so it reads against bright sky. */
+    private static final int BACKING = 0x50000000;
+    /** The climb bar beyond the height tape's numbers: its gap from them, half its width, and the climb at its ends. */
+    private static final float CLIMB_BAR_GAP = 3;
+    private static final float CLIMB_BAR_HALF = 1;
     private static final double CLIMB_BAR_RANGE = 8;
-    /** The heading strip: half its width, and pixels per degree; marked every 5 degrees and numbered every 10. */
-    private static final int HEADING_HALF_WIDTH = 60;
-    private static final float PIXELS_PER_DEGREE = 2;
+    /** The ground on the height tape: how far its line reaches in from the spine, and the spacing of its hatching. */
+    private static final float GROUND_WIDTH = 7;
+    private static final float GROUND_HATCH = 4;
+    /** The gap between a tape and what is above or below it, and between a picture and its words. */
+    private static final float GAP = 4;
+    private static final float ICON_GAP = 3;
+
+    /** The heading scale: the line its marks stand on, half its width, and units per degree. */
+    private static final float HEADING_Y = -70;
+    private static final float HEADING_HALF_WIDTH = 50;
+    private static final float UNITS_PER_DEGREE = 1.6F;
+    /** It is marked every 5 degrees and numbered every 10. */
     private static final int HEADING_TICK = 5;
     private static final int HEADING_LABEL = 10;
-    /** The heading box's half width, and how far down the strip it reaches. */
-    private static final int HEADING_BOX_HALF = 12;
-    private static final int HEADING_BOX_HEIGHT = 11;
-    /** Room either side of the strip for the mode's picture and the heading or radius set. */
-    private static final int HEADING_SIDE = 24;
-    /** The attitude indicator: half its width and height, pixels per degree of pitch, and the bank scale's radius. */
-    private static final int ADI_HALF_WIDTH = 32;
-    private static final int ADI_HALF_HEIGHT = 20;
-    private static final float PIXELS_PER_PITCH = 1.2F;
-    private static final float BANK_RADIUS = 17;
-    /** The bank scale's marks, in degrees, the longer ones at level and at 30 either way. */
-    private static final int[] BANK_MARKS = {-45, -30, -20, -10, 0, 10, 20, 30, 45};
+    /** The heading box's half width, and how far above the scale's line its middle is. */
+    private static final float HEADING_BOX_HALF = 11;
+    private static final float HEADING_BOX_Y = 22;
+
+    /** Units per degree of pitch on the ladder. */
+    private static final float UNITS_PER_PITCH = 2;
+    /** The horizon line: half its length, and the gap in its middle, clear of the crosshair. */
+    private static final float HORIZON_HALF = 70;
+    private static final float HORIZON_GAP = 12;
     /** Pitch ladder rungs every so many degrees, as far as this either way. */
     private static final int RUNG_STEP = 5;
-    private static final int RUNG_LIMIT = 20;
-    /** Half the aircraft symbol's span, and where its wings start out from its middle. */
-    private static final int SYMBOL_HALF = 18;
-    private static final int SYMBOL_GAP = 7;
+    private static final int RUNG_LIMIT = 30;
+    /** A rung's half length every 10 degrees and between, the gap in its middle, and the ticks at its ends. */
+    private static final float LONG_RUNG = 16;
+    private static final float SHORT_RUNG = 10;
+    private static final float RUNG_GAP = 6;
+    private static final float RUNG_TICK = 3;
+    /** The ladder only reaches this far from the middle, fading out over its last stretch, so it stays round the view. */
+    private static final float LADDER_REACH = 60;
+    private static final float LADDER_FADE = 12;
+    /** The flight path marker: its ring's radius, its wings' and fin's length. */
+    private static final float MARKER_RADIUS = 3;
+    private static final float MARKER_WING = 4;
+    private static final float MARKER_FIN = 3;
+    /** The marker's ring, drawn as so many straight pieces. */
+    private static final int MARKER_SIDES = 12;
     /** Where the middle of a line of text is, in font pixels below its top: half its capitals' height. */
     private static final float TEXT_MIDDLE = 3.5F;
 
-    private static final int GLASS = 0xA005080D;
-    private static final int GLASS_EDGE = 0x904A525E;
-    private static final int TAPE = 0xC0000000;
-    private static final int BOX = 0xFF000000;
-    private static final int WHITE = AutopilotScreenRenderer.WHITE;
-    private static final int GREEN = AutopilotScreenRenderer.GREEN;
-    private static final int AMBER = AutopilotScreenRenderer.AMBER;
-    private static final int MAGENTA = AutopilotScreenRenderer.TARGET;
-    private static final int GREY = AutopilotScreenRenderer.GREY;
-    /** The fixed marks the moving scales are read against, yellow as the flight displays' aircraft symbol. */
-    private static final int YELLOW = 0xFFF2CF30;
-    private static final int SKY = 0xC02D6FD1;
-    private static final int GROUND = 0xC07A4E26;
+    /** The symbology's green, a HUD's, bright enough to read against the sky once laid on see-through. */
+    private static final int HUD = 0xFF70FFA0;
+    /** What the autopilot is set to: a lighter magenta than the flight displays', to show up on the view. */
+    private static final int TARGET = 0xFFFF80F4;
+    private static final int WARNING = AutopilotScreenRenderer.AMBER;
 
-    private static final Icon SPEED = Icon.of("autopilot/speed");
-    private static final Icon ALTITUDE = Icon.of("autopilot/altitude");
     private static final Icon GROUND_HEIGHT = Icon.of("autopilot/ground_height");
     private static final Icon OFF = Icon.of("autopilot/disengage");
     private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
@@ -264,6 +280,14 @@ public final class PilotHud {
      */
     private record Reading(double airspeed, double trend, double altitude, double radio, double climb, double pitch, double roll,
                            double heading) {
+        /**
+         * Degrees above the horizon it is going. Its speed along the nose stands in for its whole speed, which is near
+         * enough as it flies nose first; standing still, it is level.
+         */
+        double flightPath() {
+            double along = Math.sqrt(Math.max(0, airspeed * airspeed - climb * climb));
+            return along < 1e-3 && Math.abs(climb) < 1e-3 ? 0 : Math.toDegrees(Math.atan2(climb, along));
+        }
     }
 
     /**
@@ -322,7 +346,7 @@ public final class PilotHud {
         wearing = nowWearing;
     }
 
-    /** Draws the HUD, if it is on and nothing hides it. */
+    /** Draws the HUD onto the visor, if it is on and nothing hides it. */
     public static void overlay(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
@@ -344,12 +368,15 @@ public final class PilotHud {
         float fade = Math.min(1, (Util.getMillis() - bootedAt) / FADE_IN_MILLIS);
         AutopilotBlockEntity autopilot = held.autopilot;
         Targets targets = Targets.of(autopilot);
-        Canvas canvas = new Canvas(graphics, minecraft.font, (float) minecraft.getWindow().getGuiScale(), fade);
-        int middle = graphics.guiWidth() / 2;
-        speedPanel(canvas, MARGIN, MARGIN, autopilot.phase(), reading, targets.speed());
-        altitudePanel(canvas, graphics.guiWidth() - MARGIN, MARGIN + effectsBelow(player), reading, targets.altitude());
-        int strip = headingPanel(canvas, middle, MARGIN, autopilot, reading, targets.heading());
-        attitudeIndicator(canvas, middle, strip + GAP + ADI_HALF_HEIGHT, reading);
+        float pixelsPerUnit = pixelsPerUnit(minecraft.getWindow());
+        HelmetVisor.drawCurved(graphics, HALF_WIDTH, HALF_HEIGHT, pixelsPerUnit, OPACITY * fade, () -> {
+            Canvas canvas = new Canvas(graphics, minecraft.font, pixelsPerUnit);
+            attitude(canvas, reading);
+            speedTape(canvas, autopilot.phase(), reading, targets.speed());
+            altitudeTape(canvas, reading, targets.altitude());
+            headingScale(canvas, autopilot, reading, targets.heading());
+            canvas.flush();
+        });
     }
 
     /**
@@ -361,56 +388,92 @@ public final class PilotHud {
             || minecraft.getDebugOverlay().showDebugScreen() || PassengerCameras.looking() || minecraft.getCameraEntity() != player;
     }
 
-    /** How far down the top right corner's figures move to clear the status effects' icons there. */
-    private static int effectsBelow(LocalPlayer player) {
-        boolean helpful = false;
-        boolean harmful = false;
-        for (MobEffectInstance effect : player.getActiveEffects()) {
-            if (effect.showIcon()) {
-                if (effect.getEffect().value().isBeneficial()) {
-                    helpful = true;
-                } else {
-                    harmful = true;
-                }
-            }
-        }
-        return harmful ? 2 * EFFECT_ROW : helpful ? EFFECT_ROW : 0;
+    /** Screen pixels per unit of the HUD: as the GUI scale and the player's size setting make it, but all on screen. */
+    private static float pixelsPerUnit(Window window) {
+        double size = window.getGuiScale() * PIXELS_PER_GUI_SCALE * AerolargeClientConfig.PILOT_HUD_SCALE.get();
+        float wanted = Math.max(LEAST_PIXELS_PER_UNIT, (float) size);
+        return Math.min(wanted, Math.min(window.getWidth() / (2 * HALF_WIDTH), window.getHeight() / (2 * HALF_HEIGHT)));
     }
 
     /**
-     * The top left corner: the speed set, the speed tape with its bug and trend arrow, and what the autopilot is
-     * doing, as wide as the longest name of what it can be doing.
+     * Round the middle: the horizon line and the pitch ladder, tilting against the bank and dropping as the nose comes
+     * up, each rung fading out as it nears the ladder's reach; then the flight path marker, upright, as far above or
+     * below the middle as the airliner is going above or below where its nose points.
      */
-    private static void speedPanel(Canvas canvas, int x0, int y0, Phase phase, Reading reading, double target) {
-        int nameRoom = canvas.font.width(AP_OFF);
-        for (Phase each : Phase.values()) {
-            nameRoom = Math.max(nameRoom, canvas.font.width(phaseName(each)));
+    private static void attitude(Canvas canvas, Reading reading) {
+        double roll = Math.toRadians(reading.roll());
+        // Toward the sky, on a screen whose y runs down; and along the horizon, left to right.
+        float upX = (float) -Math.sin(roll);
+        float upY = (float) -Math.cos(roll);
+        float alongX = -upY;
+        float alongY = upX;
+        float drop = (float) (reading.pitch() * UNITS_PER_PITCH);
+        for (int degrees = -RUNG_LIMIT; degrees <= RUNG_LIMIT; degrees += RUNG_STEP) {
+            float x = upX * (degrees * UNITS_PER_PITCH - drop);
+            float y = upY * (degrees * UNITS_PER_PITCH - drop);
+            float reach = degrees == 0 ? HORIZON_HALF : degrees % (2 * RUNG_STEP) == 0 ? LONG_RUNG : SHORT_RUNG;
+            float gap = degrees == 0 ? HORIZON_GAP : RUNG_GAP;
+            int colour = degrees == 0 && Math.abs(reading.roll()) > BANK_WARNING ? WARNING : HUD;
+            int faded = fade(colour, (LADDER_REACH - (float) Math.hypot(x, y)) / LADDER_FADE);
+            if (faded >>> 24 == 0) {
+                continue;
+            }
+            for (int side = -1; side <= 1; side += 2) {
+                float startX = x + side * alongX * gap;
+                float startY = y + side * alongY * gap;
+                float endX = x + side * alongX * reach;
+                float endY = y + side * alongY * reach;
+                if (degrees < 0) {
+                    // Below the horizon the rungs are dashed, as on a real HUD, so up and down cannot be mistaken.
+                    float midX = (startX + endX) / 2;
+                    float midY = (startY + endY) / 2;
+                    canvas.line(startX, startY, midX - side * alongX, midY - side * alongY, 1, faded);
+                    canvas.line(midX + side * alongX, midY + side * alongY, endX, endY, 1, faded);
+                } else {
+                    canvas.line(startX, startY, endX, endY, 1, faded);
+                }
+                if (degrees != 0 && degrees % (2 * RUNG_STEP) == 0) {
+                    // Ticks at its ends pointing toward the horizon, and its degrees beside them.
+                    float toward = -Math.signum(degrees) * RUNG_TICK;
+                    canvas.line(endX, endY, endX + upX * toward, endY + upY * toward, 1, faded);
+                    canvas.text(String.valueOf(Math.abs(degrees)), endX + side * alongX * (LABEL_GAP + 5), endY + side * alongY * (LABEL_GAP + 5),
+                        faded, Align.CENTRE);
+                }
+            }
         }
-        int width = 2 * PAD + Math.max(SPEED_TAPE_WIDTH + BUG_ROOM, ROW + ICON_GAP + nameRoom);
-        int tapeTop = y0 + PAD + ROW + GAP;
-        int phaseY = tapeTop + TAPE_HEIGHT + GAP;
-        canvas.glass(x0, y0, x0 + width, phaseY + ROW + PAD);
-        canvas.flush();
-        canvas.icon(SPEED, x0 + PAD, y0 + PAD);
-        canvas.icon(phaseIcon(phase), x0 + PAD, phaseY);
+        float rise = (float) Mth.clamp((reading.flightPath() - reading.pitch()) * UNITS_PER_PITCH, -LADDER_REACH, LADDER_REACH);
+        float markerX = upX * rise;
+        float markerY = upY * rise;
+        canvas.ring(markerX, markerY, MARKER_RADIUS, HUD);
+        canvas.line(markerX - MARKER_RADIUS - MARKER_WING, markerY, markerX - MARKER_RADIUS, markerY, 1, HUD);
+        canvas.line(markerX + MARKER_RADIUS, markerY, markerX + MARKER_RADIUS + MARKER_WING, markerY, 1, HUD);
+        canvas.line(markerX, markerY - MARKER_RADIUS, markerX, markerY - MARKER_RADIUS - MARKER_FIN, 1, HUD);
+    }
 
-        Tape tape = new Tape(x0 + PAD, tapeTop, x0 + PAD + SPEED_TAPE_WIDTH, tapeTop + TAPE_HEIGHT, true, reading.airspeed(), PIXELS_PER_SPEED, 0);
-        tape.draw(canvas, SPEED_TICK, SPEED_LABEL, Double.NaN);
+    /**
+     * Left of the middle: the speed tape, its bug and trend arrow, the speed set over it, and under it what the
+     * autopilot is doing.
+     */
+    private static void speedTape(Canvas canvas, Phase phase, Reading reading, double target) {
+        Tape tape = new Tape(-TAPE_X, 1, reading.airspeed(), UNITS_PER_SPEED, 0);
+        tape.draw(canvas, SPEED_TICK, SPEED_LABEL);
         if (Math.abs(reading.trend()) >= TREND_MIN) {
-            float x = tape.x1() + 2;
+            float x = tape.spine() + 2;
             float end = tape.clamp(tape.y(reading.airspeed() + reading.trend()));
-            float way = Math.signum(tape.middle() - end);
-            canvas.line(x, tape.middle(), x, end + way * 2, 1, GREEN);
-            canvas.triangle(x, end, x - 2.5F, end + way * 3, x + 2.5F, end + way * 3, GREEN);
+            float way = -Math.signum(end);
+            canvas.line(x, 0, x, end + way * 2, 1, HUD);
+            canvas.triangle(x, end, x - 2, end + way * 3, x + 2, end + way * 3, HUD);
         }
-        tape.box(canvas, String.valueOf(Math.round(reading.airspeed())));
         tape.bug(canvas, target);
-        if (!Double.isNaN(target)) {
-            canvas.text(String.valueOf(Math.round(target)), x0 + PAD + ROW + ICON_GAP, y0 + PAD + ROW / 2F, MAGENTA, Align.LEFT);
-        }
-        Component name = phase == Phase.OFF ? AP_OFF : phaseName(phase);
-        canvas.text(name, x0 + PAD + ROW + ICON_GAP, phaseY + ROW / 2F, phase == Phase.OFF ? AMBER : GREEN, Align.LEFT);
+        tape.readout(canvas, String.valueOf(Math.round(reading.airspeed())));
+        tape.set(canvas, target);
+
+        float x = tape.spine() - TAPE_NUMBERS;
+        float y = TAPE_HALF_HEIGHT + GAP;
         canvas.flush();
+        canvas.icon(phaseIcon(phase), x, y);
+        Component name = phase == Phase.OFF ? AP_OFF : phaseName(phase);
+        canvas.text(name, x + Icon.SIZE + ICON_GAP, y + Icon.SIZE / 2F, phase == Phase.OFF ? WARNING : HUD, Align.LEFT);
     }
 
     private static Component phaseName(Phase phase) {
@@ -431,113 +494,83 @@ public final class PilotHud {
     }
 
     /**
-     * The top right corner, standing in from the right edge: the height set, the height tape with its bug and the
-     * ground, the climb bar beside it, and under them the height above the ground and the climb or sink.
+     * Right of the middle: the height tape with its bug and the ground, the climb bar beyond its numbers, the height set
+     * over it, and under it the wheels' height above the ground and the climb or sink.
      */
-    private static void altitudePanel(Canvas canvas, int x1, int y0, Reading reading, double target) {
-        int width = 2 * PAD + BUG_ROOM + ALTITUDE_TAPE_WIDTH + CLIMB_BAR_GAP + CLIMB_BAR_WIDTH;
-        int x0 = x1 - width;
-        int tapeTop = y0 + PAD + ROW + GAP;
-        int radioY = tapeTop + TAPE_HEIGHT + GAP;
-        int climbY = radioY + ROW;
-        canvas.glass(x0, y0, x1, climbY + ROW + PAD);
-        canvas.flush();
-        canvas.icon(ALTITUDE, x0 + PAD, y0 + PAD);
-        canvas.icon(GROUND_HEIGHT, x0 + PAD, radioY);
-
-        int barX1 = x1 - PAD;
-        int barX0 = barX1 - CLIMB_BAR_WIDTH;
-        int tapeX1 = barX0 - CLIMB_BAR_GAP;
-        Tape tape = new Tape(tapeX1 - ALTITUDE_TAPE_WIDTH, tapeTop, tapeX1, tapeTop + TAPE_HEIGHT, false, reading.altitude(), PIXELS_PER_BLOCK,
-            Double.NEGATIVE_INFINITY);
-        double ground = Double.isNaN(reading.radio()) ? Double.NaN : reading.altitude() - reading.radio();
-        tape.draw(canvas, ALTITUDE_TICK, ALTITUDE_LABEL, ground);
-        climbBar(canvas, barX0, barX1, tape, reading.climb());
-        tape.box(canvas, String.valueOf(Math.round(reading.altitude())));
-        tape.bug(canvas, target);
-
-        float textX = x0 + PAD + ROW + ICON_GAP;
-        if (!Double.isNaN(target)) {
-            canvas.text(String.valueOf(Math.round(target)), textX, y0 + PAD + ROW / 2F, MAGENTA, Align.LEFT);
-        }
+    private static void altitudeTape(Canvas canvas, Reading reading, double target) {
+        Tape tape = new Tape(TAPE_X, -1, reading.altitude(), UNITS_PER_BLOCK, Double.NEGATIVE_INFINITY);
+        tape.draw(canvas, ALTITUDE_TICK, ALTITUDE_LABEL);
         if (!Double.isNaN(reading.radio())) {
-            canvas.text(String.valueOf(Math.round(reading.radio())), textX, radioY + ROW / 2F, WHITE, Align.LEFT);
+            tape.ground(canvas, reading.altitude() - reading.radio());
         }
+        climbBar(canvas, tape.spine() + TAPE_NUMBERS + CLIMB_BAR_GAP, reading.climb());
+        tape.bug(canvas, target);
+        tape.readout(canvas, String.valueOf(Math.round(reading.altitude())));
+        tape.set(canvas, target);
+
+        float x = tape.spine() + 1;
+        float radioY = TAPE_HALF_HEIGHT + GAP;
+        float climbY = radioY + Icon.SIZE;
+        float textX = x + Icon.SIZE + ICON_GAP;
         double climb = reading.climb();
-        float arrowX = x0 + PAD + ROW / 2F;
-        float arrowY = climbY + ROW / 2F;
+        float arrowX = x + Icon.SIZE / 2F;
+        float arrowY = climbY + Icon.SIZE / 2F;
         if (climb > STEADY) {
-            canvas.triangle(arrowX, arrowY - 4, arrowX - 4, arrowY + 3, arrowX + 4, arrowY + 3, GREEN);
+            canvas.triangle(arrowX, arrowY - 4, arrowX - 4, arrowY + 3, arrowX + 4, arrowY + 3, HUD);
         } else if (climb < -STEADY) {
-            canvas.triangle(arrowX, arrowY + 4, arrowX + 4, arrowY - 3, arrowX - 4, arrowY - 3, AMBER);
+            canvas.triangle(arrowX, arrowY + 4, arrowX + 4, arrowY - 3, arrowX - 4, arrowY - 3, WARNING);
         }
-        canvas.text(String.format(Locale.ROOT, "%.1f", Math.abs(climb)), textX, arrowY, WHITE, Align.LEFT);
         canvas.flush();
+        canvas.icon(GROUND_HEIGHT, x, radioY);
+        if (!Double.isNaN(reading.radio())) {
+            canvas.text(String.valueOf(Math.round(reading.radio())), textX, radioY + Icon.SIZE / 2F, HUD, Align.LEFT);
+        }
+        canvas.text(String.format(Locale.ROOT, "%.1f", Math.abs(climb)), textX, arrowY, HUD, Align.LEFT);
     }
 
-    /** The climb bar: up from its middle in green as the airliner climbs, down in amber as it sinks. */
-    private static void climbBar(Canvas canvas, float x0, float x1, Tape tape, double climb) {
-        float middle = tape.middle();
-        float reach = tape.y1() - middle - 1;
-        canvas.rect(x0, tape.y0(), x1, tape.y1(), TAPE);
-        float end = middle - (float) (Mth.clamp(climb / CLIMB_BAR_RANGE, -1, 1) * reach);
-        canvas.rect(x0 + 1, Math.min(middle, end), x1 - 1, Math.max(middle, end), climb >= 0 ? GREEN : AMBER);
-        // Marks halfway to either end, and the middle across.
-        for (int mark = -1; mark <= 1; mark += 2) {
-            float y = middle + mark * reach / 2;
-            canvas.rect(x0, y - 0.5F, x0 + 2, y + 0.5F, GREY);
-        }
-        canvas.rect(x0, middle - 0.5F, x1, middle + 0.5F, WHITE);
+    /** The climb bar: a thin line up from its middle as the airliner climbs, down in amber as it sinks. */
+    private static void climbBar(Canvas canvas, float x, double climb) {
+        float end = -(float) (Mth.clamp(climb / CLIMB_BAR_RANGE, -1, 1) * TAPE_HALF_HEIGHT);
+        canvas.rect(x - CLIMB_BAR_HALF, Math.min(0, end), x + CLIMB_BAR_HALF, Math.max(0, end), climb >= 0 ? HUD : WARNING);
+        canvas.rect(x - 2 * CLIMB_BAR_HALF - 1, -0.5F, x + 2 * CLIMB_BAR_HALF + 1, 0.5F, HUD);
     }
 
     /**
-     * At the top in the middle: the heading strip, the heading now in a box over its middle, the heading set as a bug
-     * under it, and beside it the autopilot's mode, straight on or round a circle, with the heading or the circle's
-     * radius set. Returns where the glass behind it ends.
+     * Above the middle: the heading scale, the heading now in a box over its middle and a caret under it, the heading
+     * set as a magenta bug, and beside it the autopilot's mode, straight on or round a circle, with the heading or the
+     * circle's radius set.
      */
-    private static int headingPanel(Canvas canvas, int middle, int y0, AutopilotBlockEntity autopilot, Reading reading, double target) {
-        int top = y0 + PAD;
-        int bottom = top + ROW;
-        int y1 = bottom + (int) BUG_LENGTH + 1;
-        float x0 = middle - HEADING_HALF_WIDTH;
-        float x1 = middle + HEADING_HALF_WIDTH;
-        canvas.glass(x0 - ICON_GAP - HEADING_SIDE - PAD, y0, x1 + ICON_GAP + HEADING_SIDE + PAD, y1);
-        canvas.rect(x0, top, x1, bottom, TAPE);
+    private static void headingScale(Canvas canvas, AutopilotBlockEntity autopilot, Reading reading, double target) {
         double heading = reading.heading();
-        float span = HEADING_HALF_WIDTH / PIXELS_PER_DEGREE;
+        float span = HEADING_HALF_WIDTH / UNITS_PER_DEGREE;
         for (int bearing = Mth.ceil((heading - span) / HEADING_TICK) * HEADING_TICK; bearing <= heading + span; bearing += HEADING_TICK) {
-            float x = (float) (middle + (bearing - heading) * PIXELS_PER_DEGREE);
-            float length = bearing % HEADING_LABEL == 0 ? LONG_TICK : SHORT_TICK;
-            canvas.rect(x - 0.5F, bottom - length, x + 0.5F, bottom, WHITE);
+            float x = (float) ((bearing - heading) * UNITS_PER_DEGREE);
+            int colour = fade(HUD, (HEADING_HALF_WIDTH - Math.abs(x)) / END_FADE);
+            boolean numbered = bearing % HEADING_LABEL == 0;
+            canvas.rect(x - 0.5F, HEADING_Y - (numbered ? LONG_TICK : SHORT_TICK), x + 0.5F, HEADING_Y, colour);
+            if (numbered) {
+                canvas.text(headingLabel(Math.floorMod(bearing, 360)), x, HEADING_Y - LONG_TICK - LABEL_GAP - TEXT_MIDDLE, colour, Align.CENTRE);
+            }
         }
-        // The numbers just past either end too, so they slide in cut off rather than appear whole.
-        canvas.clip(x0, top, x1, bottom);
-        int first = Mth.ceil((heading - span - HEADING_LABEL) / HEADING_LABEL) * HEADING_LABEL;
-        for (int bearing = first; bearing <= heading + span + HEADING_LABEL; bearing += HEADING_LABEL) {
-            float x = (float) (middle + (bearing - heading) * PIXELS_PER_DEGREE);
-            canvas.text(headingLabel(Math.floorMod(bearing, 360)), x, top + 1 + TEXT_MIDDLE, WHITE, Align.CENTRE);
-        }
-        canvas.unclip();
-
-        canvas.box(middle - HEADING_BOX_HALF, top, middle + HEADING_BOX_HALF, top + HEADING_BOX_HEIGHT);
-        canvas.rect(middle - 0.5F, top + HEADING_BOX_HEIGHT, middle + 0.5F, bottom, YELLOW);
         if (!Double.isNaN(target)) {
-            float x = (float) (middle + Mth.clamp(Mth.wrapDegrees(target - heading), -span, span) * PIXELS_PER_DEGREE);
-            canvas.triangle(x, bottom, x - BUG_HALF, bottom + BUG_LENGTH, x + BUG_HALF, bottom + BUG_LENGTH, MAGENTA);
+            float x = (float) (Mth.clamp(Mth.wrapDegrees(target - heading), -span, span) * UNITS_PER_DEGREE);
+            canvas.triangle(x, HEADING_Y + 1, x - BUG_HALF, HEADING_Y + 1 + BUG_LENGTH, x + BUG_HALF, HEADING_Y + 1 + BUG_LENGTH, TARGET);
         }
-        canvas.text(String.format(Locale.ROOT, "%03d", Math.round(heading) % 360), middle, top + HEADING_BOX_HEIGHT / 2F, WHITE, Align.CENTRE);
+        canvas.triangle(0, HEADING_Y + 1, -2, HEADING_Y + 4, 2, HEADING_Y + 4, HUD);
+        float boxY = HEADING_Y - HEADING_BOX_Y;
+        canvas.box(-HEADING_BOX_HALF, boxY - BOX_HALF, HEADING_BOX_HALF, boxY + BOX_HALF);
+        canvas.text(String.format(Locale.ROOT, "%03d", Math.round(heading) % 360), 0, boxY, HUD, Align.CENTRE);
         if (autopilot.phase() != Phase.OFF) {
+            float middle = HEADING_Y - LONG_TICK;
             canvas.flush();
-            canvas.icon(lateralIcon(autopilot.lateral()), (int) x0 - ICON_GAP - ROW, top);
+            canvas.icon(lateralIcon(autopilot.lateral()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
             String set = autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))
                 : !Double.isNaN(target) ? String.format(Locale.ROOT, "%03d", Math.round(target) % 360) : "";
-            canvas.text(set, x1 + ICON_GAP, top + ROW / 2F, MAGENTA, Align.LEFT);
+            canvas.text(set, HEADING_HALF_WIDTH + ICON_GAP, middle, TARGET, Align.LEFT);
         }
-        canvas.flush();
-        return y1;
     }
 
-    /** A heading strip's number: the compass point at north, east, south and west, else the tens of degrees. */
+    /** A heading scale's number: the compass point at north, east, south and west, else the tens of degrees. */
     private static Component headingLabel(int bearing) {
         return bearing % 90 == 0 ? Component.translatable(COMPASS_KEY + bearing / 45) : Component.literal(String.valueOf(bearing / 10));
     }
@@ -551,179 +584,97 @@ public final class PilotHud {
         };
     }
 
-    /**
-     * The attitude indicator round a middle: sky over ground split by the horizon, which tilts against the bank and
-     * drops as the nose comes up, the pitch ladder along it, all cut to the indicator; the bank scale round its top
-     * and the pointer that turns with the sky; and the aircraft symbol fixed in its middle.
-     */
-    private static void attitudeIndicator(Canvas canvas, float cx, float cy, Reading reading) {
-        float x0 = cx - ADI_HALF_WIDTH;
-        float y0 = cy - ADI_HALF_HEIGHT;
-        float x1 = cx + ADI_HALF_WIDTH;
-        float y1 = cy + ADI_HALF_HEIGHT;
-        canvas.frame(x0 - 1, y0 - 1, x1 + 1, y1 + 1, GLASS_EDGE);
-        canvas.rect(x0, y0, x1, y1, SKY);
-        double roll = Math.toRadians(reading.roll());
-        // Toward the sky, on a screen whose y runs down; and along the horizon, left to right.
-        float upX = (float) -Math.sin(roll);
-        float upY = (float) -Math.cos(roll);
-        float alongX = -upY;
-        float alongY = upX;
-        float drop = (float) (reading.pitch() * PIXELS_PER_PITCH);
-        float px = cx - upX * drop;
-        float py = cy - upY * drop;
-        float[][] box = {{x0, y0}, {x0, y1}, {x1, y1}, {x1, y0}};
-        canvas.polygon(below(box, px, py, upX, upY), GROUND);
-        for (int degrees = -RUNG_LIMIT; degrees <= RUNG_LIMIT; degrees += RUNG_STEP) {
-            float half = degrees == 0 ? 2 * ADI_HALF_WIDTH : degrees % (2 * RUNG_STEP) == 0 ? 10 : 5;
-            float rx = px + upX * degrees * PIXELS_PER_PITCH;
-            float ry = py + upY * degrees * PIXELS_PER_PITCH;
-            float[] rung = clip(rx - alongX * half, ry - alongY * half, rx + alongX * half, ry + alongY * half, x0, y0, x1, y1);
-            if (rung != null) {
-                canvas.line(rung[0], rung[1], rung[2], rung[3], 1, WHITE);
-            }
-        }
-        for (int mark : BANK_MARKS) {
-            float length = mark % 30 == 0 ? 4 : 2.5F;
-            float sx = (float) Math.sin(Math.toRadians(mark));
-            float sy = (float) -Math.cos(Math.toRadians(mark));
-            canvas.line(cx + sx * BANK_RADIUS, cy + sy * BANK_RADIUS, cx + sx * (BANK_RADIUS - length), cy + sy * (BANK_RADIUS - length), 1, WHITE);
-        }
-        int pointer = Math.abs(reading.roll()) > BANK_WARNING ? AMBER : WHITE;
-        float tip = BANK_RADIUS - 4.5F;
-        float base = tip - 4;
-        canvas.triangle(cx + upX * tip, cy + upY * tip, cx + upX * base - alongX * 3, cy + upY * base - alongY * 3,
-            cx + upX * base + alongX * 3, cy + upY * base + alongY * 3, pointer);
-        canvas.rect(cx - SYMBOL_HALF, cy - 1, cx - SYMBOL_GAP, cy + 1, YELLOW);
-        canvas.rect(cx + SYMBOL_GAP, cy - 1, cx + SYMBOL_HALF, cy + 1, YELLOW);
-        canvas.rect(cx - 1, cy - 1, cx + 1, cy + 1, YELLOW);
-        canvas.flush();
-    }
-
-    /** The part of a convex polygon on the far side of a line from its up direction (Sutherland-Hodgman). */
-    private static List<float[]> below(float[][] polygon, float px, float py, float upX, float upY) {
-        List<float[]> out = new ArrayList<>();
-        for (int i = 0; i < polygon.length; i++) {
-            float[] a = polygon[i];
-            float[] b = polygon[(i + 1) % polygon.length];
-            float da = (a[0] - px) * upX + (a[1] - py) * upY;
-            float db = (b[0] - px) * upX + (b[1] - py) * upY;
-            if (da <= 0) {
-                out.add(a);
-            }
-            if (da * db < 0) {
-                float t = da / (da - db);
-                out.add(new float[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t});
-            }
-        }
-        return out;
-    }
-
-    /** The part of a line inside a box (Liang-Barsky), as its two ends; null if none of it is. */
-    @Nullable
-    private static float[] clip(float ax, float ay, float bx, float by, float x0, float y0, float x1, float y1) {
-        float dx = bx - ax;
-        float dy = by - ay;
-        float t0 = 0;
-        float t1 = 1;
-        float[] p = {-dx, dx, -dy, dy};
-        float[] q = {ax - x0, x1 - ax, ay - y0, y1 - ay};
-        for (int i = 0; i < 4; i++) {
-            if (p[i] == 0) {
-                if (q[i] < 0) {
-                    return null;
-                }
-                continue;
-            }
-            float t = q[i] / p[i];
-            if (p[i] < 0) {
-                t0 = Math.max(t0, t);
-            } else {
-                t1 = Math.min(t1, t);
-            }
-        }
-        return t0 > t1 ? null : new float[]{ax + dx * t0, ay + dy * t0, ax + dx * t1, ay + dy * t1};
+    /** A colour with its alpha scaled by a share, kept between none and all of it. */
+    private static int fade(int colour, float share) {
+        return Math.round((colour >>> 24) * Mth.clamp(share, 0, 1)) << 24 | colour & 0xFFFFFF;
     }
 
     /**
-     * A moving tape: values up it, the one now level with its middle, marked along the side toward the middle of the
-     * screen and numbered on the other, from its lowest value on.
+     * A moving tape round the middle of the HUD's height: a spine with values up it, the one now level with the
+     * middle; marked on the spine's inner side (toward the middle of the screen, the given way along x) and numbered
+     * on its outer side, from its lowest value on, both fading out toward its ends.
      */
-    private record Tape(float x0, float y0, float x1, float y1, boolean marksRight, double value, float pixelsPer, double lowest) {
-        float middle() {
-            return (y0 + y1) / 2;
-        }
-
+    private record Tape(float spine, float inward, double value, float unitsPer, double lowest) {
         /** Where a value is up the tape, however far beyond its ends. */
         float y(double of) {
-            return (float) (middle() - (of - value) * pixelsPer);
+            return (float) -((of - value) * unitsPer);
         }
 
         float clamp(float y) {
-            return Mth.clamp(y, y0, y1);
+            return Mth.clamp(y, -TAPE_HALF_HEIGHT, TAPE_HALF_HEIGHT);
         }
 
-        /** The edge the marks are along, and which way is out from it. */
-        float edge() {
-            return marksRight ? x1 : x0;
+        /** How much of a mark shows that far up or down: fading out toward the ends. */
+        float shown(float y) {
+            return (TAPE_HALF_HEIGHT - Math.abs(y)) / END_FADE;
         }
 
-        float out() {
-            return marksRight ? 1 : -1;
-        }
-
-        /**
-         * The tape and its marks, the ground as a brown band up from the bottom where the value the ground stands at
-         * (NaN for none) is on it; then its numbers, cut to it.
-         */
-        void draw(Canvas canvas, int tick, int label, double ground) {
-            canvas.rect(x0, y0, x1, y1, TAPE);
-            if (!Double.isNaN(ground) && y(ground) < y1) {
-                float top = Math.max(y0, y(ground));
-                canvas.rect(x0, top, x1, y1, GROUND);
-                canvas.rect(x0, top, x1, top + 1, AMBER);
-            }
-            float reach = (y1 - y0) / 2 / pixelsPer;
+        /** The spine, its marks, and its numbers, those near the middle left out for the box over it. */
+        void draw(Canvas canvas, int tick, int label) {
+            canvas.rect(spine - 0.5F, -TAPE_HALF_HEIGHT, spine + 0.5F, TAPE_HALF_HEIGHT, HUD);
+            float reach = TAPE_HALF_HEIGHT / unitsPer;
             for (int mark = Mth.ceil(Math.max(lowest, value - reach) / tick) * tick; mark <= value + reach; mark += tick) {
                 float y = y(mark);
                 float length = mark % label == 0 ? LONG_TICK : SHORT_TICK;
-                canvas.rect(edge() - out() * length, y - 0.5F, edge(), y + 0.5F, WHITE);
+                canvas.rect(Math.min(spine, spine + inward * length), y - 0.5F, Math.max(spine, spine + inward * length), y + 0.5F, fade(HUD, shown(y)));
             }
-            canvas.clip(x0, y0, x1, y1);
-            float textX = edge() - out() * (LONG_TICK + 2);
-            int first = Mth.ceil(Math.max(lowest, value - reach - label) / label) * label;
-            for (int mark = first; mark <= value + reach + label; mark += label) {
-                canvas.text(String.valueOf(mark), textX, y(mark), WHITE, marksRight ? Align.RIGHT : Align.LEFT);
+            float textX = spine - inward * LABEL_GAP;
+            for (int mark = Mth.ceil(Math.max(lowest, value - reach) / label) * label; mark <= value + reach; mark += label) {
+                float y = y(mark);
+                float clear = (Math.abs(y) - BOX_HALF - 1) / BOX_HALF;
+                canvas.text(String.valueOf(mark), textX, y, fade(HUD, Math.min(shown(y), clear)), inward > 0 ? Align.RIGHT : Align.LEFT);
             }
-            canvas.unclip();
         }
 
-        /** The value set, as a magenta bug pointing at the tape from beside its marks, kept to the tape's ends. */
+        /**
+         * The ground, at the height it stands at, once it is on the tape: an amber line in from the spine, hatched
+         * below. It is never above the value now, the wheels' height over it being at least nothing.
+         */
+        void ground(Canvas canvas, double ground) {
+            float top = y(ground);
+            if (top >= TAPE_HALF_HEIGHT) {
+                return;
+            }
+            float inner = spine + inward * GROUND_WIDTH;
+            canvas.rect(Math.min(spine, inner), top - 0.5F, Math.max(spine, inner), top + 0.5F, fade(WARNING, shown(top)));
+            for (float y = top; y + GROUND_HATCH <= TAPE_HALF_HEIGHT; y += GROUND_HATCH) {
+                canvas.line(spine, y + GROUND_HATCH, inner, y, 1, fade(WARNING, shown(y + GROUND_HATCH)));
+            }
+        }
+
+        /** The value set, as a magenta bug pointing at the spine from its inner side, kept to the tape's ends. */
         void bug(Canvas canvas, double target) {
             if (Double.isNaN(target)) {
                 return;
             }
             float y = clamp(y(target));
-            float tip = edge() + out();
-            float base = tip + out() * BUG_LENGTH;
-            canvas.triangle(tip, y, base, y - BUG_HALF, base, y + BUG_HALF, MAGENTA);
+            float tip = spine + inward;
+            float base = tip + inward * BUG_LENGTH;
+            canvas.triangle(tip, y, base, y - BUG_HALF, base, y + BUG_HALF, TARGET);
         }
 
-        /** The value now in a box over the tape's middle, with the yellow mark it is read against beside it. */
-        void box(Canvas canvas, String figure) {
-            float middle = middle();
-            canvas.triangle(edge(), middle, edge() + out() * 4, middle - 3, edge() + out() * 4, middle + 3, YELLOW);
-            canvas.box(x0, middle - BOX_HALF, x1, middle + BOX_HALF);
-            canvas.text(figure, (x0 + x1) / 2, middle, WHITE, Align.CENTRE);
+        /** The value now in a box over the numbers' middle, against the spine. */
+        void readout(Canvas canvas, String figure) {
+            float near = spine - inward;
+            float far = spine - inward * TAPE_NUMBERS;
+            canvas.box(Math.min(near, far), -BOX_HALF, Math.max(near, far), BOX_HALF);
+            canvas.text(figure, (near + far) / 2, 0, HUD, Align.CENTRE);
+        }
+
+        /** The value set, in magenta over the tape's numbers; nothing while there is none. */
+        void set(Canvas canvas, double target) {
+            if (!Double.isNaN(target)) {
+                canvas.text(String.valueOf(Math.round(target)), spine - inward * LABEL_GAP, -TAPE_HALF_HEIGHT - GAP - TEXT_MIDDLE, TARGET,
+                    inward > 0 ? Align.RIGHT : Align.LEFT);
+            }
         }
     }
 
     /**
-     * Drawing onto the GUI a batch at a time: shapes and text go into the GUI's shared buffer in the order they are
-     * drawn, each run of shapes or of text drawn in one go as the next begins, rather than each shape on its own as
-     * {@link GuiGraphics#fill} does. Pictures are drawn at once instead, so whatever they go over is flushed first.
-     * Positions are in GUI pixels, fractions and all; text lands on whole screen pixels, so it stays sharp at any GUI
-     * scale. Everything is drawn as see-through as the HUD is faded in.
+     * Drawing the HUD a batch at a time, in its own units round the middle of the screen (the GUI's pose is set up for
+     * them by {@link HelmetVisor}): shapes and text go into the GUI's shared buffer in the order they are drawn, each
+     * run of shapes or of text drawn in one go as the next begins. Pictures are drawn at once instead, so whatever they
+     * go over is flushed first. Text lands on whole screen pixels, so it stays sharp.
      */
     private static final class Canvas {
         /** Text this faint is not drawn: the font draws a colour with next to no alpha fully opaque. */
@@ -731,41 +682,23 @@ public final class PilotHud {
 
         private final GuiGraphics graphics;
         private final Font font;
-        private final float guiScale;
+        private final float pixelsPerUnit;
         private final Matrix4f matrix;
-        private final float fade;
 
-        Canvas(GuiGraphics graphics, Font font, float guiScale, float fade) {
+        Canvas(GuiGraphics graphics, Font font, float pixelsPerUnit) {
             this.graphics = graphics;
             this.font = font;
-            this.guiScale = guiScale;
-            this.fade = fade;
+            this.pixelsPerUnit = pixelsPerUnit;
             matrix = graphics.pose().last().pose();
         }
 
-        /** A colour as faded in. */
-        private int faded(int colour) {
-            return Math.round((colour >>> 24) * fade) << 24 | colour & 0xFFFFFF;
-        }
-
-        /** Dark glass, edged a shade lighter. */
-        void glass(float x0, float y0, float x1, float y1) {
-            frame(x0, y0, x1, y1, GLASS_EDGE);
-            rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, GLASS);
-        }
-
-        /** A black box framed in white, for a figure. */
+        /** A box framed a unit wide, its figure's faint backing inside. */
         void box(float x0, float y0, float x1, float y1) {
-            frame(x0, y0, x1, y1, WHITE);
-            rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, BOX);
-        }
-
-        /** A frame a pixel wide inside a rectangle, its inside left clear: see-through colours would add up there. */
-        void frame(float x0, float y0, float x1, float y1, int colour) {
-            rect(x0, y0, x1, y0 + 1, colour);
-            rect(x0, y1 - 1, x1, y1, colour);
-            rect(x0, y0 + 1, x0 + 1, y1 - 1, colour);
-            rect(x1 - 1, y0 + 1, x1, y1 - 1, colour);
+            rect(x0, y0, x1, y0 + 1, HUD);
+            rect(x0, y1 - 1, x1, y1, HUD);
+            rect(x0, y0 + 1, x0 + 1, y1 - 1, HUD);
+            rect(x1 - 1, y0 + 1, x1, y1 - 1, HUD);
+            rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, BACKING);
         }
 
         void rect(float x0, float y0, float x1, float y1, int colour) {
@@ -787,19 +720,21 @@ public final class PilotHud {
             quad(ax - nx, ay - ny, bx - nx, by - ny, bx + nx, by + ny, ax + nx, ay + ny, colour);
         }
 
-        /** A convex polygon as a fan of quads. */
-        void polygon(List<float[]> points, int colour) {
-            for (int i = 1; i + 1 < points.size(); i += 2) {
-                float[] a = points.getFirst();
-                float[] b = points.get(i);
-                float[] c = points.get(i + 1);
-                float[] d = i + 2 < points.size() ? points.get(i + 2) : c;
-                quad(a[0], a[1], b[0], b[1], c[0], c[1], d[0], d[1], colour);
+        /** A ring a unit wide, as a run of short lines. */
+        void ring(float cx, float cy, float radius, int colour) {
+            for (int side = 0; side < MARKER_SIDES; side++) {
+                double from = 2 * Math.PI * side / MARKER_SIDES;
+                double to = 2 * Math.PI * (side + 1) / MARKER_SIDES;
+                line(cx + radius * (float) Math.cos(from), cy + radius * (float) Math.sin(from), cx + radius * (float) Math.cos(to),
+                    cy + radius * (float) Math.sin(to), 1, colour);
             }
         }
 
         /** A convex quad, its corners taken round the way the GUI's own shapes go, as the other way is culled. */
         void quad(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy, int colour) {
+            if (colour >>> 24 == 0) {
+                return;
+            }
             float turning = ax * by - bx * ay + bx * cy - cx * by + cx * dy - dx * cy + dx * ay - ax * dy;
             VertexConsumer shapes = graphics.bufferSource().getBuffer(RenderType.gui());
             if (turning > 0) {
@@ -816,7 +751,7 @@ public final class PilotHud {
         }
 
         private void vertex(VertexConsumer shapes, float x, float y, int colour) {
-            shapes.addVertex(matrix, x, y, 0).setColor(faded(colour));
+            shapes.addVertex(matrix, x, y, 0).setColor(colour);
         }
 
         void text(String text, float x, float y, int colour, Align align) {
@@ -825,8 +760,7 @@ public final class PilotHud {
 
         /** Text placed against x as aligned, centred on y. */
         void text(Component text, float x, float y, int colour, Align align) {
-            int drawn = faded(colour);
-            if (Integer.compareUnsigned(drawn, FAINTEST_TEXT) < 0) {
+            if (Integer.compareUnsigned(colour, FAINTEST_TEXT) < 0) {
                 return;
             }
             float left = switch (align) {
@@ -834,37 +768,33 @@ public final class PilotHud {
                 case CENTRE -> x - font.width(text) / 2F;
                 case RIGHT -> x - font.width(text);
             };
-            font.drawInBatch(text, snap(left), snap(y - TEXT_MIDDLE), drawn, false, matrix, graphics.bufferSource(), Font.DisplayMode.NORMAL, 0,
+            font.drawInBatch(text, snap(left), snap(y - TEXT_MIDDLE), colour, false, matrix, graphics.bufferSource(), Font.DisplayMode.NORMAL, 0,
                 LightTexture.FULL_BRIGHT);
         }
 
         private float snap(float at) {
-            return Math.round(at * guiScale) / guiScale;
+            return Math.round(at * pixelsPerUnit) / pixelsPerUnit;
         }
 
-        /** A picture, blended in as faded in: drawn at once, pictures are not blended by themselves. */
-        void icon(Icon icon, int x, int y) {
+        /**
+         * A picture, a unit to each of its pixels, blended as the rest of the HUD is so its edges come out right on the
+         * visor: drawn at once, pictures are not blended by themselves.
+         */
+        void icon(Icon icon, float x, float y) {
             RenderSystem.enableBlend();
-            graphics.setColor(1F, 1F, 1F, fade);
-            graphics.blit(icon.texture(), x, y, Icon.SIZE, Icon.SIZE, 0, 0, Icon.SIZE, Icon.SIZE, Icon.SIZE, Icon.SIZE);
-            graphics.setColor(1F, 1F, 1F, 1F);
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            graphics.pose().pushPose();
+            graphics.pose().translate(snap(x), snap(y), 0);
+            graphics.blit(icon.texture(), 0, 0, Icon.SIZE, Icon.SIZE, 0, 0, Icon.SIZE, Icon.SIZE, Icon.SIZE, Icon.SIZE);
+            graphics.pose().popPose();
+            RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
         }
 
         /** Draws whatever is still waiting in a batch. */
         void flush() {
             graphics.flush();
-        }
-
-        /** Flushes, then cuts what is drawn from now until {@link #unclip} to a box. */
-        void clip(float x0, float y0, float x1, float y1) {
-            graphics.flush();
-            graphics.enableScissor(Mth.floor(x0), Mth.floor(y0), Mth.ceil(x1), Mth.ceil(y1));
-        }
-
-        void unclip() {
-            graphics.flush();
-            graphics.disableScissor();
         }
     }
 }
