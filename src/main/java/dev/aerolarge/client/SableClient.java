@@ -6,18 +6,21 @@ import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world, which one a player is
- * riding, and how one is moving and lying for its instruments. Every call works without Sable too (nothing is
- * assembled then); Sable's classes are only touched once it is known to be installed.
+ * riding and how that one moves, and how one is moving and lying for its instruments. Every call works without Sable
+ * too (nothing is assembled then); Sable's classes are only touched once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -48,6 +51,16 @@ public final class SableClient {
         return SABLE ? Access.attitude(blockEntity, nose, partialTick) : null;
     }
 
+    /** The airliner a player is riding: how it moves (blocks a second) and how high its middle is above the ground. */
+    public record Ride(Vector3d velocity, double heightAboveGround) {
+    }
+
+    /** What the entity is riding, or null when it is not on an assembled airliner. */
+    @Nullable
+    static Ride ride(Entity entity) {
+        return SABLE ? Access.ride(entity) : null;
+    }
+
     private static final class Access {
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
@@ -74,6 +87,17 @@ public final class SableClient {
             double roll = Math.toDegrees(Math.asin(Math.clamp(-right.y, -1, 1)));
             double heading = (Math.toDegrees(Math.atan2(nose.x, -nose.z)) + 360) % 360;
             return new Attitude(pitch, roll, heading, velocity.dot(nose), velocity.y, pose.position().y());
+        }
+
+        @Nullable
+        static Ride ride(Entity entity) {
+            SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            if (airliner == null) {
+                return null;
+            }
+            Vector3dc middle = airliner.logicalPose().position();
+            int ground = entity.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(middle.x()), Mth.floor(middle.z()));
+            return new Ride(velocity(airliner), middle.y() - ground);
         }
 
         /** Blocks a second, from where the airliner was last tick and is now. */

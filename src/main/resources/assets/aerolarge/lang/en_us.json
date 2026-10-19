@@ -43,6 +43,7 @@
   "aerolarge.configuration.climbHeight": "Climb Height",
   "aerolarge.configuration.rotateSpeed": "Rotate Speed",
   "aerolarge.configuration.cruiseSpeed": "Cruise Speed",
+  "aerolarge.configuration.cameraShake": "Camera Shake",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
   "item.aerolarge.airliner_blueprint": "Airliner Blueprint",
   "item.aerolarge.furnished_airliner_blueprint": "Furnished Airliner Blueprint",
