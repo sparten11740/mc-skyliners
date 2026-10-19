@@ -12,6 +12,8 @@ const VANILLA = process.argv[2];
 const withVanilla = VANILLA !== undefined && existsSync(VANILLA);
 if (!withVanilla) console.log("No vanilla assets given: leaving the door and call button files as they are");
 const ID = "aerolarge";
+// How far a model drawn facing north is turned for each horizontal facing.
+const yRot = { north: 0, east: 90, south: 180, west: 270 };
 
 function write(path, value) {
   const file = resolve(ROOT, path);
@@ -130,13 +132,61 @@ cubes.thrust_relay = null;
   cubes.airframe_fairing = null;
 }
 
+// The tiller (a handle on a pedestal, swung left or right through its five notches) and the parking brake (a lever
+// up when set, down when released); both drawn nose north and turned for the other ways.
+{
+  const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
+  const textures = { base: `${ID}:block/thrust_lever_base`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`, particle: `${ID}:block/thrust_lever_base` };
+  for (let steer = 0; steer <= 4; steer++) {
+    const rotation = { origin: [8, 8, 8], axis: "y", angle: 45 - 22.5 * steer };
+    write(`assets/${ID}/models/block/tiller_${steer}.json`, {
+      parent: "minecraft:block/block",
+      textures,
+      elements: [
+        { from: [4, 0, 4], to: [12, 7, 12], faces: all("#base") },
+        { from: [7, 7, 3], to: [9, 9, 9], rotation, faces: all("#handle") },
+        { from: [6.5, 7, 2], to: [9.5, 10, 4], rotation, faces: all("#knob") },
+      ],
+    });
+  }
+  for (const [set, angle] of [[true, -22.5], [false, 45]]) {
+    const rotation = { origin: [8, 6, 8], axis: "x", angle };
+    write(`assets/${ID}/models/block/parking_brake_${set ? "set" : "released"}.json`, {
+      parent: "minecraft:block/block",
+      textures,
+      elements: [
+        { from: [5, 0, 5], to: [11, 6, 11], faces: all("#base") },
+        { from: [7, 6, 7], to: [9, 14, 9], rotation, faces: all("#handle") },
+        { from: [6, 13, 6], to: [10, 15, 10], rotation, faces: all("#knob") },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/tiller.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [0, 1, 2, 3, 4].map((steer) => [`facing=${facing},steer=${steer}`, { model: `${ID}:block/tiller_${steer}`, y }]))),
+  });
+  write(`assets/${ID}/blockstates/parking_brake.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [true, false].map((set) => [`facing=${facing},powered=${set}`, { model: `${ID}:block/parking_brake_${set ? "set" : "released"}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/tiller.json`, { parent: `${ID}:block/tiller_2` });
+  write(`assets/${ID}/models/item/parking_brake.json`, { parent: `${ID}:block/parking_brake_set` });
+  for (const name of ["tiller", "parking_brake"]) {
+    write(`data/${ID}/loot_table/blocks/${name}.json`, {
+      type: "minecraft:block",
+      pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${name}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+      random_sequence: `${ID}:blocks/${name}`,
+    });
+    cubes[name] = null;
+  }
+}
+
 // The instrument panel: screens on the front, plain panel elsewhere.
 write(`assets/${ID}/models/block/instrument_panel.json`, {
   parent: "minecraft:block/orientable",
   textures: { front: `${ID}:block/instrument_panel`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
 });
 write(`assets/${ID}/models/item/instrument_panel.json`, { parent: `${ID}:block/instrument_panel` });
-const yRot = { north: 0, east: 90, south: 180, west: 270 };
 write(`assets/${ID}/blockstates/instrument_panel.json`, {
   variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
 });
@@ -229,6 +279,8 @@ shaped("thrust_lever", ["K", "S", "P"], { K: "minecraft:quartz", S: "minecraft:s
 shaped("instrument_panel", ["GGG", "RPR"], { G: "minecraft:black_stained_glass_pane", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 3);
 shaped("airframe_fairing", ["P ", "PP"], { P: `${ID}:airframe_panel` }, 4);
 shaped("autopilot", ["CRC", "RPR"], { C: "minecraft:comparator", R: "minecraft:redstone", P: `${ID}:instrument_panel` }, 1);
+shaped("tiller", [" S ", "RPR"], { S: "minecraft:stick", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
+shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:redstone", P: `${ID}:airframe_panel` }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
 
 write(`assets/${ID}/lang/en_us.json`, {
@@ -253,8 +305,15 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.instrument_panel": "Instrument Panel",
   "message.aerolarge.thrust": "Engine %s thrust: %s%%",
   "block.aerolarge.autopilot": "Autopilot",
-  "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the thrust levers.",
-  "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers have the engines.",
+  "block.aerolarge.tiller": "Nose Wheel Tiller",
+  "block.aerolarge.parking_brake": "Parking Brake",
+  "message.aerolarge.tiller.left": "Nose wheel: steering left",
+  "message.aerolarge.tiller.right": "Nose wheel: steering right",
+  "message.aerolarge.tiller.centre": "Nose wheel: straight ahead",
+  "message.aerolarge.brake.set": "Parking brake set",
+  "message.aerolarge.brake.released": "Parking brake released",
+  "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to %s blocks. Use it again to hand back to the controls.",
+  "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",
   "message.aerolarge.autopilot.status": "AP %s  |  %s b/s  |  %s blocks  |  pitch %s°  bank %s°",
   "message.aerolarge.autopilot.phase.takeoff": "TAKE-OFF",

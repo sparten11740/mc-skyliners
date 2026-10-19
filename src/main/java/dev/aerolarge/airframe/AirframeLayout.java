@@ -10,8 +10,11 @@ import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.LinkedControlBlockEntity;
+import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
+import dev.aerolarge.block.TillerBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -33,6 +36,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -65,6 +69,9 @@ public final class AirframeLayout {
     private final Map<Double, List<BlockPos>> engineRelays = new HashMap<>();
     /** The control jets' relays, by what they do. */
     private final Map<AutopilotBlockEntity.Channel, List<BlockPos>> jetRelays = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+    /** The nose gear's steering relays, by the way they turn it, and the main gear's brake relays. */
+    private final Map<String, List<BlockPos>> steerRelays = new HashMap<>();
+    private final List<BlockPos> brakeRelays = new ArrayList<>();
     /** Where the flight deck leaves room for the Physics Assembler, behind the pilots; null without a flight deck. */
     private BlockPos assemblerSpot;
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
@@ -477,38 +484,76 @@ public final class AirframeLayout {
                 }
             });
         }
-        autopilot(new BlockPos(0, deck + 1, pedestalZ), engines, levers);
+        int seatX = openHalfWidth(deck + 1, pedestalZ) >= 4 ? 4 : 3;
         palette.seat().ifPresent(seat -> {
-            int seatX = openHalfWidth(deck + 1, pedestalZ) >= 4 ? 4 : 3;
             set(-seatX, deck + 1, pedestalZ, seat);
             set(seatX, deck + 1, pedestalZ, seat);
         });
+        List<BlockPos> controls = new ArrayList<>(levers);
+        BlockPos tiller = new BlockPos(-seatX - 1, deck + 1, pedestalZ);
+        BlockPos brake = new BlockPos(seatX + 1, deck + 1, pedestalZ);
+        if (isOpen(tiller.getX(), tiller.getY(), tiller.getZ()) && isOpen(brake.getX(), brake.getY(), brake.getZ())) {
+            groundControls(tiller, brake);
+            controls.add(tiller);
+            controls.add(brake);
+        }
+        autopilot(new BlockPos(0, deck + 1, pedestalZ), engines, controls);
         assemblerSpot = new BlockPos(0, deck + 1, pedestalZ + 2);
     }
 
     /**
-     * The autopilot panel in the middle of the pedestal, wired to every relay it flies with: the four engines' and
-     * the control jets', and to the thrust levers it hands the engines back to.
+     * The autopilot panel in the middle of the pedestal, wired to every relay it flies with: the four engines', the
+     * control jets', and the landing gear's steering and brake relays, and to the controls it hands the airliner back
+     * to.
      */
-    private void autopilot(BlockPos at, double[] engines, List<BlockPos> levers) {
+    private void autopilot(BlockPos at, double[] engines, List<BlockPos> controls) {
         set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
-        Map<AutopilotBlockEntity.Channel, List<BlockPos>> channels = new EnumMap<>(AutopilotBlockEntity.Channel.class);
         AutopilotBlockEntity.Channel[] engineChannels = {
             AutopilotBlockEntity.Channel.ENGINE_1, AutopilotBlockEntity.Channel.ENGINE_2,
             AutopilotBlockEntity.Channel.ENGINE_3, AutopilotBlockEntity.Channel.ENGINE_4
         };
-        for (int i = 0; i < engines.length; i++) {
-            channels.put(engineChannels[i], engineRelays.getOrDefault(engines[i], List.of()));
-        }
-        channels.putAll(jetRelays);
-        Map<AutopilotBlockEntity.Channel, List<BlockPos>> relative = new EnumMap<>(AutopilotBlockEntity.Channel.class);
-        channels.forEach((channel, relays) -> relative.put(channel, relays.stream().map(relay -> relay.subtract(at)).toList()));
-        List<BlockPos> leverOffsets = levers.stream().map(lever -> lever.subtract(at)).toList();
+        // Wired up when the airliner is built: the landing gear, whose steering and brake relays it works too, goes on
+        // after the flight deck.
         fittings.put(at, (blockEntity, rotation) -> {
             if (blockEntity instanceof AutopilotBlockEntity autopilot) {
+                Map<AutopilotBlockEntity.Channel, List<BlockPos>> channels = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+                for (int i = 0; i < engines.length; i++) {
+                    channels.put(engineChannels[i], engineRelays.getOrDefault(engines[i], List.of()));
+                }
+                channels.putAll(jetRelays);
+                channels.put(AutopilotBlockEntity.Channel.STEER_LEFT, steerRelays.getOrDefault(TillerBlock.LEFT, List.of()));
+                channels.put(AutopilotBlockEntity.Channel.STEER_RIGHT, steerRelays.getOrDefault(TillerBlock.RIGHT, List.of()));
+                channels.put(AutopilotBlockEntity.Channel.BRAKES, brakeRelays);
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turned = new EnumMap<>(AutopilotBlockEntity.Channel.class);
-                relative.forEach((channel, offsets) -> turned.put(channel, offsets.stream().map(offset -> offset.rotate(rotation)).toList()));
-                autopilot.configure(turned, leverOffsets.stream().map(offset -> offset.rotate(rotation)).toList());
+                channels.forEach((channel, relays) -> turned.put(channel, offsets(at, relays, rotation)));
+                autopilot.configure(turned, offsets(at, controls, rotation));
+            }
+        });
+    }
+
+    /** Positions in the layout as offsets from a block, turned with the airliner. */
+    private static List<BlockPos> offsets(BlockPos from, List<BlockPos> positions, Rotation rotation) {
+        return positions.stream().map(pos -> pos.subtract(from).rotate(rotation)).toList();
+    }
+
+    /**
+     * The nose wheel tiller beside the captain's seat and the parking brake beside the first officer's, wired when the
+     * airliner is built to the steering relays at the nose gear's wheel mounts and the brake relays on the main gear's.
+     */
+    private void groundControls(BlockPos tiller, BlockPos brake) {
+        set(tiller.getX(), tiller.getY(), tiller.getZ(), AerolargeRegistry.TILLER.get().defaultBlockState().setValue(TillerBlock.FACING, Direction.NORTH));
+        fittings.put(tiller, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LinkedControlBlockEntity control) {
+                control.configure(Map.of(
+                    TillerBlock.LEFT, offsets(tiller, steerRelays.getOrDefault(TillerBlock.LEFT, List.of()), rotation),
+                    TillerBlock.RIGHT, offsets(tiller, steerRelays.getOrDefault(TillerBlock.RIGHT, List.of()), rotation)
+                ));
+            }
+        });
+        set(brake.getX(), brake.getY(), brake.getZ(), AerolargeRegistry.PARKING_BRAKE.get().defaultBlockState().setValue(ParkingBrakeBlock.FACING, Direction.NORTH));
+        fittings.put(brake, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LinkedControlBlockEntity control) {
+                control.configure(Map.of(ParkingBrakeBlock.BRAKES, offsets(brake, brakeRelays, rotation)));
             }
         });
     }
@@ -686,12 +731,12 @@ public final class AirframeLayout {
     private void landingGear() {
         ground = minY - Math.max(2, (int) Math.round(GROUND_CLEARANCE * scale));
         double balance = centreOfMassZ();
-        strut(0, (int) Math.round(NOSE_GEAR_Z * scale), ground);
+        strut(0, (int) Math.round(NOSE_GEAR_Z * scale), ground, true);
         for (double[] gear : MAIN_GEAR) {
             int x = (int) Math.round(gear[0] * scale);
             int z = (int) Math.round(balance + gear[1] * scale);
-            strut(x, z, ground);
-            strut(-x, z, ground);
+            strut(x, z, ground, false);
+            strut(-x, z, ground, false);
         }
         // The tires reach below the wheel mounts to the ground row, so that is what stands on the ground.
         minY = Math.min(minY, ground);
@@ -816,16 +861,26 @@ public final class AirframeLayout {
     /**
      * One landing gear leg at (x, z): a strut down from the airframe to an axle a block above the ground, with a
      * wheel mount on either side facing out, each fitted with a tire so the assembled airliner rolls fore and aft.
-     * Without wheel mounts the leg ends in fixed tire blocks instead.
+     * The nose leg's mounts get steering relays before and behind them, the main legs' brake relays on top (a mount
+     * brakes by a signal from above). A mount steers by the signal at one side less the one at the other, both seen
+     * from the way it faces (more at its clockwise side turns the airliner left), so the two mounts of the nose leg,
+     * facing apart, are each wired their own way round for their wheels to turn together. Without wheel mounts the leg
+     * ends in fixed tire blocks instead.
      */
-    private void strut(int x, int z, int ground) {
+    private void strut(int x, int z, int ground, boolean steers) {
         int axle = ground + 1;
         if (palette.wheelMount().isPresent() && palette.tireItem().isPresent()) {
-            for (int side : new int[]{1, -1}) {
-                BlockState mount = AirframePalette.with(palette.wheelMount().get(), "facing", side > 0 ? "east" : "west");
-                set(x + side, axle, z, mount);
+            for (Direction out : new Direction[]{Direction.EAST, Direction.WEST}) {
+                BlockPos at = new BlockPos(x + out.getStepX(), axle, z);
+                set(at.getX(), at.getY(), at.getZ(), AirframePalette.with(palette.wheelMount().get(), "facing", out.getSerializedName()));
                 Item tire = palette.tireItem().get();
-                fittings.put(new BlockPos(x + side, axle, z), (blockEntity, rotation) -> fitTire(blockEntity, tire));
+                fittings.put(at, (blockEntity, rotation) -> fitTire(blockEntity, tire));
+                if (steers) {
+                    relay(at.relative(out.getClockWise()), steerRelays.computeIfAbsent(TillerBlock.LEFT, ignored -> new ArrayList<>()));
+                    relay(at.relative(out.getCounterClockWise()), steerRelays.computeIfAbsent(TillerBlock.RIGHT, ignored -> new ArrayList<>()));
+                } else {
+                    relay(at.above(), brakeRelays);
+                }
             }
             for (int y = axle; y < axle + 64 && (y == axle || !has(x, y, z)); y++) {
                 set(x, y, z, palette.gear());
@@ -844,6 +899,14 @@ public final class AirframeLayout {
         }
         for (int y = ground + tireHeight; y < ground + tireHeight + 64 && !has(x, y, z); y++) {
             set(x, y, z, palette.gear());
+        }
+    }
+
+    /** A relay at the position if it is free, added to the group. */
+    private void relay(BlockPos pos, List<BlockPos> group) {
+        if (!has(pos.getX(), pos.getY(), pos.getZ())) {
+            set(pos.getX(), pos.getY(), pos.getZ(), AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
+            group.add(pos);
         }
     }
 

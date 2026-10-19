@@ -16,6 +16,8 @@
     "aerolarge:cockpit_windscreen",
     "aerolarge:thrust_relay",
     "aerolarge:airframe_fairing",
+    "aerolarge:tiller",
+    "aerolarge:parking_brake",
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",

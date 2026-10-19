@@ -9,9 +9,12 @@ import dev.aerolarge.block.CockpitWindscreenBlock;
 import dev.aerolarge.block.CockpitWindscreenBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.LinkedControlBlockEntity;
+import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
+import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.WindscreenBlock;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import java.util.List;
@@ -119,6 +122,13 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThrustLeverBlockEntity>> THRUST_LEVER_ENTITY =
         BLOCK_ENTITIES.register("thrust_lever", () -> BlockEntityType.Builder.of(ThrustLeverBlockEntity::new, THRUST_LEVER.get()).build(null));
+    /** The nose wheel tiller and the parking brake, beside the pilots' seats, sharing one kind of linked block entity. */
+    public static final DeferredBlock<TillerBlock> TILLER = BLOCKS.registerBlock("tiller", TillerBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    public static final DeferredBlock<ParkingBrakeBlock> PARKING_BRAKE = BLOCKS.registerBlock(
+        "parking_brake", ParkingBrakeBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
+        BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
         "autopilot", AutopilotBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)
     );
@@ -145,6 +155,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> THRUST_LEVER_ITEM = ITEMS.registerSimpleBlockItem(THRUST_LEVER);
     public static final DeferredItem<BlockItem> INSTRUMENT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(INSTRUMENT_PANEL);
     public static final DeferredItem<BlockItem> AUTOPILOT_ITEM = ITEMS.registerSimpleBlockItem(AUTOPILOT);
+    public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
+    public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
 
@@ -165,7 +177,7 @@ public final class AerolargeRegistry {
         .displayItems((parameters, output) -> List.of(
             AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM,
             COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM, AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM,
-            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM
+            AIRSTAIR_CONTROLLER_ITEM, AIRSTAIR_CALL_BUTTON_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM
         ).forEach(item -> output.accept(item.get())))
         .build());
 
