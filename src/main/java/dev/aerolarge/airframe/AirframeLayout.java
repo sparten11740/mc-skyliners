@@ -1387,9 +1387,8 @@ public final class AirframeLayout {
                     relay(at.above(), brakeRelays);
                 }
             }
-            for (int y = axle; y < axle + 64 && (y == axle || !has(x, y, z)); y++) {
-                set(x, y, z, palette.gear());
-            }
+            set(x, axle, z, palette.gear());
+            leg(x, axle + 1, z);
             return;
         }
         int tireHalfWidth = (int) Math.round(0.45 * scale);
@@ -1402,7 +1401,19 @@ public final class AirframeLayout {
                 }
             }
         }
-        for (int y = ground + tireHeight; y < ground + tireHeight + 64 && !has(x, y, z); y++) {
+        leg(x, ground + tireHeight, z);
+    }
+
+    /**
+     * A gear leg from row y up to the airframe, and on up through any skin there cut to the hull's curve (the gear goes
+     * on after the skin is cut), so the leg meets the hull itself instead of stopping short under a sliver of skin.
+     */
+    private void leg(int x, int y, int z) {
+        int top = y + 64;
+        for (; y < top && !has(x, y, z); y++) {
+            set(x, y, z, palette.gear());
+        }
+        for (; y < top && stateAt(x, y, z).is(AerolargeRegistry.AIRFRAME_SHELL.get()); y++) {
             set(x, y, z, palette.gear());
         }
     }
