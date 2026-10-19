@@ -49,7 +49,7 @@ public record SetAutopilot(BlockPos pos, Action action, AutopilotBlockEntity.Set
         if (!level.isLoaded(pos) || !(level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot) || !autopilot.canBeWorkedBy(player)) {
             return;
         }
-        // In chat: the action bar is the autopilot's status line while it flies, and would cover this at once.
+        // In chat, with the autopilot's other messages (engaged, landing, landed, off), to be read again.
         player.displayClientMessage(autopilot.set(payload.action(), payload.settings()), false);
         level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
     }
