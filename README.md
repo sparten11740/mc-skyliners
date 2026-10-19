@@ -171,6 +171,12 @@ wing blocks, and every airframe block is in `#sable:super_light`. Which blocks a
 (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
 thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default).
 
+### Settings
+
+The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`) are there
+from the title screen. The server settings belong to a world, so they open from the pause menu's Mods button while
+playing it in single player; on a dedicated server they are in the world's `serverconfig/aerolarge-server.toml`.
+
 ## Building
 
 ```sh

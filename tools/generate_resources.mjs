@@ -964,8 +964,11 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.flight": "Flight",
   "aerolarge.configuration.wingBlock": "Wing Block",
   "aerolarge.configuration.engineBlock": "Engine Block",
+  "aerolarge.configuration.thrustSetting": "Thrust Setting",
   "aerolarge.configuration.assemblerBlock": "Assembler Block",
   "aerolarge.configuration.wheelMountBlock": "Wheel Mount Block",
   "aerolarge.configuration.tireItem": "Tire Item",
+  "aerolarge.configuration.cabin": "Cabin",
+  "aerolarge.configuration.turbulence": "Turbulence",
 });
 console.log("ok");

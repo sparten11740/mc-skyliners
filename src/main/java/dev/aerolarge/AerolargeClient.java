@@ -25,12 +25,14 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
- * flight displays and autopilot screen, its engines' sound and contrails, the camera shake aboard, and parachutes:
- * opening them by jumping, and the canopy over their wearers.
+ * flight displays and autopilot screen, its engines' sound and contrails, the camera shake aboard, parachutes:
+ * opening them by jumping, and the canopy over their wearers; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -39,6 +41,7 @@ public final class AerolargeClient {
 
     public AerolargeClient(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
+        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
