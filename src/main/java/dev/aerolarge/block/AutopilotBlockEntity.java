@@ -42,8 +42,15 @@ import net.minecraft.world.phys.Vec3;
  * the flight path instead would steepen a climb as it grew steeper. Heading: it banks toward it, turning the
  * wings' lift sideways, and in an orbit it banks into the circle from the start and steers onto it. Engaged in the air
  * it holds the height, speed and heading it found. The flight deck's autopilot screen sets the targets; switching it
- * off hands the airliner back to its controls: the thrust levers, the tiller and the parking brake. Whether it is
- * engaged or not, it also gives the flight deck its callouts (see {@link Callouts}).
+ * off hands the airliner back to its controls: the thrust levers, the tiller and the parking brake.
+ *
+ * <p>Whether it is engaged or not, it gives the flight deck its callouts (see {@link Callouts}), and off it still
+ * keeps the airliner safe: in the air its jets steady any quick pitching or rolling and push the nose and the wings
+ * back once they go past {@link #PROTECT_CLIMB}, {@link #PROTECT_DIVE} or {@link #PROTECT_BANK} degrees, righting it
+ * even from upside down; past {@link #MAX_SAFE_SPEED}, or climbing fast enough to coast past the top of the world, it
+ * cuts the engines itself until the airliner has slowed and levelled, then hands them back to the levers. Nothing
+ * else holds the airliner while it is flown on the thrust levers: at full thrust its engines would pitch it up until
+ * it tumbled, or fling it off far faster than the world can be made around it.
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -67,6 +74,24 @@ public class AutopilotBlockEntity extends BlockEntity {
         RADIUS_DOWN, RADIUS_UP
     }
 
+    /**
+     * The attitude the airliner is kept within with the autopilot off, in degrees: the nose up or down, and the bank
+     * either way.
+     */
+    private static final double PROTECT_CLIMB = 25;
+    private static final double PROTECT_DIVE = 20;
+    private static final double PROTECT_BANK = 35;
+    /**
+     * The fastest it lets the airliner go on the thrust levers, in blocks a second, and how far below that it must
+     * slow before the levers have the engines again.
+     */
+    private static final double MAX_SAFE_SPEED = 90;
+    private static final double GOVERNOR_MARGIN = 15;
+    /**
+     * How far below the top of the world the airliner is kept, in blocks; once it would coast past that, it must
+     * come down as far again under it before the levers have the engines again.
+     */
+    private static final int CEILING_MARGIN = 30;
     /** Nose attitude at rotation, in degrees: what lifts the airliner off the runway. */
     private static final double ROTATION_PITCH = 9;
     /** Rate of climb asked for, in blocks a second per block of height still to go, and the most up and down. */
@@ -93,10 +118,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double CRUISE_THRUST = 6;
     private static final double SPEED_GAIN = 0.6;
     /** Signal per degree of pitch or bank error, and per degree a second it is changing at (damping). */
-    private static final double PITCH_GAIN = 1.5;
-    private static final double PITCH_DAMPING = 0.8;
-    private static final double ROLL_GAIN = 1.0;
-    private static final double ROLL_DAMPING = 0.6;
+    private static final double PITCH_GAIN = 0.75;
+    private static final double PITCH_DAMPING = 0.4;
+    private static final double ROLL_GAIN = 0.5;
+    private static final double ROLL_DAMPING = 0.3;
     /**
      * Degrees of bank per degree off the heading wanted, taken off per degree a second it turns faster than it should
      * (damping, so it rolls out before it swings past), and the steepest bank it flies.
@@ -155,6 +180,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean primed;
     /** How far its block stands above the bottom of the wheels, for the radio altitude. */
     private int wheelsBelow;
+    /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
+    private boolean governing;
     private final Callouts callouts = new Callouts();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
@@ -238,7 +265,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         } else {
             phase = Phase.TAKEOFF;
             runwayAltitude = state.position().y;
-            targetAltitude = runwayAltitude + AerolargeConfig.AUTOPILOT_CLIMB.get();
+            targetAltitude = Math.min(runwayAltitude + AerolargeConfig.AUTOPILOT_CLIMB.get(), ceiling(level));
             targetSpeed = AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get();
             message = Component.translatable("message.aerolarge.autopilot.engaged", AerolargeConfig.AUTOPILOT_CLIMB.get());
         }
@@ -288,7 +315,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             }
             case ALTITUDE_DOWN, ALTITUDE_UP -> {
                 double floor = runwayAltitude + 2 * ALTITUDE_STEP;
-                targetAltitude = Math.max(floor, targetAltitude + (command == Command.ALTITUDE_UP ? ALTITUDE_STEP : -ALTITUDE_STEP));
+                double up = targetAltitude + (command == Command.ALTITUDE_UP ? ALTITUDE_STEP : -ALTITUDE_STEP);
+                targetAltitude = Mth.clamp(up, floor, Math.max(floor, ceiling(level)));
                 yield Component.translatable("message.aerolarge.autopilot.altitude", Math.round(targetAltitude));
             }
             case SPEED_DOWN, SPEED_UP -> {
@@ -316,7 +344,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         return getBlockState().getValue(AutopilotBlock.FACING);
     }
 
-    /** Each tick while the airliner is assembled: the callouts watch it, and the autopilot flies it if engaged. */
+    /**
+     * Each tick while the airliner is assembled: the callouts watch it, and the autopilot flies it if engaged, or
+     * keeps it from tipping over if not.
+     */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
@@ -332,7 +363,62 @@ public class AutopilotBlockEntity extends BlockEntity {
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
+        } else {
+            autopilot.protect(serverLevel, flight);
         }
+    }
+
+    /**
+     * With the autopilot off, in the air: the jets damp quick pitching and rolling, and push the nose and the wings
+     * back inside the safe attitude once they go past it. On the ground they stay quiet.
+     */
+    private void protect(ServerLevel level, SableFlight.State state) {
+        double pitch = state.pitch();
+        double roll = state.roll();
+        if (!primed) {
+            lastPitch = pitch;
+            lastRoll = roll;
+            primed = true;
+        }
+        double pitchRate = (pitch - lastPitch) * 20;
+        double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
+        lastPitch = pitch;
+        lastRoll = roll;
+        int pitchCommand = 0;
+        int rollCommand = 0;
+        if (radioAltitude(level, state) > AIRBORNE) {
+            double climbLimit = state.apex() > ceiling(level) ? 0 : PROTECT_CLIMB;
+            double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
+            double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
+            pitchCommand = (int) Math.round(PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate);
+            rollCommand = (int) Math.round(ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate);
+        }
+        drive(level, Channel.PITCH_UP, Mth.clamp(pitchCommand, 0, 15));
+        drive(level, Channel.PITCH_DOWN, Mth.clamp(-pitchCommand, 0, 15));
+        drive(level, Channel.ROLL_RIGHT, Mth.clamp(rollCommand, 0, 15));
+        drive(level, Channel.ROLL_LEFT, Mth.clamp(-rollCommand, 0, 15));
+
+        double speed = state.airspeed();
+        double apex = state.apex();
+        if (speed > MAX_SAFE_SPEED || apex > ceiling(level)) {
+            if (!governing) {
+                governing = true;
+                setChanged();
+            }
+            // Every tick, so a lever moved meanwhile does not get the engines back.
+            for (Channel engine : new Channel[]{Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4}) {
+                drive(level, engine, 0);
+            }
+        } else if (governing && speed < MAX_SAFE_SPEED - GOVERNOR_MARGIN && apex < ceiling(level) - CEILING_MARGIN) {
+            governing = false;
+            resyncControls(level);
+            setChanged();
+        }
+    }
+
+    /** The highest the airliner is let go: some way below the top of the world. */
+    private static double ceiling(Level level) {
+        return level.getMaxBuildHeight() - CEILING_MARGIN;
     }
 
     private void fly(ServerLevel level, SableFlight.State state) {
@@ -349,7 +435,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             primed = true;
         }
         double pitchRate = (pitch - lastPitch) * 20;
-        double rollRate = (roll - lastRoll) * 20;
+        double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         double climbRate = (climb - lastClimb) * 20;
         double rotateSpeed = AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get();
         Phase was = phase;
@@ -491,12 +577,17 @@ public class AutopilotBlockEntity extends BlockEntity {
         for (Channel channel : Channel.values()) {
             drive(serverLevel, channel, 0);
         }
+        resyncControls(serverLevel);
+        serverLevel.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+    }
+
+    /** The engines, the nose wheel and the brakes follow their controls again. */
+    private void resyncControls(ServerLevel level) {
         for (BlockPos offset : controls) {
-            if (serverLevel.getBlockEntity(worldPosition.offset(offset)) instanceof Control control) {
+            if (level.getBlockEntity(worldPosition.offset(offset)) instanceof Control control) {
                 control.resync();
             }
         }
-        serverLevel.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
     }
 
     private void drive(ServerLevel level, Channel channel, int power) {
@@ -521,6 +612,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveTargets(tag);
         tag.putDouble("Trim", trim);
         tag.putInt("WheelsBelow", wheelsBelow);
+        tag.putBoolean("Governing", governing);
     }
 
     /** What the screen shows: the phase, the modes and the targets. */
@@ -550,6 +642,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             controls = Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY));
             trim = tag.getDouble("Trim");
             wheelsBelow = tag.getInt("WheelsBelow");
+            governing = tag.getBoolean("Governing");
         }
         phase = parse(Phase.class, tag.getString("Phase"), Phase.OFF);
         lateral = parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING);

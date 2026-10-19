@@ -70,6 +70,9 @@ public final class AirframeLayout {
     private static final int SUSPENSION_STRENGTH = 180;
     /** How far from a block's middle, in blocks, its skin is looked for: past it either way the block is whole or empty. */
     private static final double SKIN_REACH = 1.5;
+    /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
+    private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
+    private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -798,9 +801,10 @@ public final class AirframeLayout {
     }
 
     /**
-     * Control jets for the autopilot, standing in for the control surfaces the airliner does not have: one on top of
-     * and one under each tailplane tip to pitch it (pushing the tail down lifts the nose), and one on top of and one
-     * under each wingtip to roll it. Each is a thruster pointing up or down with its own relay right behind it.
+     * Control jets for the autopilot, standing in for the control surfaces the airliner does not have: jets on top of
+     * and under the outer tailplane to pitch it (pushing the tail down lifts the nose), and on top of and under the
+     * outer wings to roll it, at a few stations along each so they can hold the airliner against its engines. Each
+     * is a thruster pointing up or down with its own relay right behind it.
      */
     private void controlJets() {
         if (palette.engine().isEmpty()) {
@@ -809,20 +813,23 @@ public final class AirframeLayout {
         BlockState down = AirframePalette.with(palette.engine().get(), "facing", "down");
         BlockState up = AirframePalette.with(palette.engine().get(), "facing", "up");
         for (int side : new int[]{1, -1}) {
-            double tailTip = 0.8 * STABILIZER_HALF_SPAN;
-            double tailChord = lerp(STABILIZER_ROOT_CHORD, STABILIZER_TIP_CHORD, 0.8);
-            int tailX = side * (int) Math.round(tailTip * scale);
-            int tailZ = (int) Math.round((STABILIZER_ROOT_LEADING_EDGE + STABILIZER_SWEEP * tailTip + tailChord / 2) * scale);
-            jetPair(tailX, tailZ, down, up, AutopilotBlockEntity.Channel.PITCH_UP, AutopilotBlockEntity.Channel.PITCH_DOWN);
-
-            double wingTip = 0.85 * WING_HALF_SPAN;
-            double wingChord = lerp(WING_ROOT_CHORD, WING_TIP_CHORD, 0.85);
-            int wingX = side * (int) Math.round(wingTip * scale);
-            int wingZ = (int) Math.round((wingLeadingEdge(wingTip) + wingChord / 2) * scale);
-            // Pushing the right tip down rolls right; pushing the left tip down rolls left; pushing up the opposite.
-            jetPair(wingX, wingZ, down, up,
-                side > 0 ? AutopilotBlockEntity.Channel.ROLL_RIGHT : AutopilotBlockEntity.Channel.ROLL_LEFT,
-                side > 0 ? AutopilotBlockEntity.Channel.ROLL_LEFT : AutopilotBlockEntity.Channel.ROLL_RIGHT);
+            for (double station : TAIL_JET_STATIONS) {
+                double tailX = station * STABILIZER_HALF_SPAN;
+                double tailChord = lerp(STABILIZER_ROOT_CHORD, STABILIZER_TIP_CHORD, station);
+                int x = side * (int) Math.round(tailX * scale);
+                int z = (int) Math.round((STABILIZER_ROOT_LEADING_EDGE + STABILIZER_SWEEP * tailX + tailChord / 2) * scale);
+                jetPair(x, z, down, up, AutopilotBlockEntity.Channel.PITCH_UP, AutopilotBlockEntity.Channel.PITCH_DOWN);
+            }
+            for (double station : WING_JET_STATIONS) {
+                double wingX = station * WING_HALF_SPAN;
+                double wingChord = lerp(WING_ROOT_CHORD, WING_TIP_CHORD, station);
+                int x = side * (int) Math.round(wingX * scale);
+                int z = (int) Math.round((wingLeadingEdge(wingX) + wingChord / 2) * scale);
+                // Pushing the right wing down rolls right; pushing the left wing down rolls left; pushing up the opposite.
+                jetPair(x, z, down, up,
+                    side > 0 ? AutopilotBlockEntity.Channel.ROLL_RIGHT : AutopilotBlockEntity.Channel.ROLL_LEFT,
+                    side > 0 ? AutopilotBlockEntity.Channel.ROLL_LEFT : AutopilotBlockEntity.Channel.ROLL_RIGHT);
+            }
         }
     }
 

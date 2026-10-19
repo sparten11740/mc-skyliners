@@ -32,9 +32,9 @@ public final class SableFlight {
             return Math.toDegrees(Math.asin(Math.clamp(nose.y, -1, 1)));
         }
 
-        /** Degrees the airliner banks, positive with the right wing down. */
+        /** Degrees the airliner banks, positive with the right wing down, all the way round: past 90 it is upside down. */
         public double roll() {
-            return Math.toDegrees(Math.asin(Math.clamp(-right.y, -1, 1)));
+            return Math.toDegrees(Math.atan2(-right.y, up.y));
         }
 
         /** The compass heading of the nose, as Minecraft yaw: 0 south, 90 west, 180 north, 270 east. */
@@ -51,6 +51,12 @@ public final class SableFlight {
         /** How fast the airliner moves the way its nose points. */
         public double airspeed() {
             return velocity.dot(nose);
+        }
+
+        /** The height it would coast up to if nothing but gravity slowed its climb. */
+        public double apex() {
+            double climb = Math.max(velocity.y, 0);
+            return gravity > 0 ? position.y + climb * climb / (2 * gravity) : position.y;
         }
     }
 

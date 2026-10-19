@@ -65,11 +65,18 @@ heading up: the track flown, the circle being flown or the heading being turned 
 zoom it out, and again past the widest to zoom back in.
 
 The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
-control jets on top of and under the tailplane tips (to pitch it) and the wingtips (to roll it). It turns by
+control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
 hard along the nose, so it learns the pitch that holds the height at its speed as it flies. Part of the tailplane
 pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It needs
 Sable (Create Aeronautics) to read where the airliner is.
+
+Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
+control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,
+or the wings more than 35 either way, righting it even from upside down. Past 90 blocks a second, or climbing fast
+enough to coast past the top of the world, it cuts the engines itself, and hands them back to the levers once the
+airliner has slowed to 75 and is well below the top again. Without that, full thrust would loop the airliner or
+fling it off faster than the world can be generated around it.
 
 ### Airstairs
 
