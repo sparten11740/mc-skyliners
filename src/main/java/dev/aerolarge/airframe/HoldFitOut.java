@@ -1,0 +1,189 @@
+package dev.aerolarge.airframe;
+
+import dev.aerolarge.Aerolarge;
+import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CargoCrateBlock;
+import dev.aerolarge.block.SuitcaseBlock;
+import dev.aerolarge.block.SuitcaseBlockEntity;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.storage.loot.LootTable;
+
+/**
+ * The furnished airliner's hold, between the moon pool and the drop bay: luggage piled up both sides behind cargo
+ * nets of chain, suitcases in four colours with care packages packed with supplies among them, and yellow and black
+ * hazard stripes along the walkway down the middle, which stays clear all the way from the pool to the bay, and on
+ * from the bay to the hatch and the cargo door. Three golden suitcases are hidden about the hold: one in each pile and
+ * one at the far end of the hold aft of the cargo door. It only goes into open hold space, and is left out where the
+ * hold is too low to walk in.
+ */
+final class HoldFitOut {
+    /** Kept clear of luggage forward of the drop bay, in metres, so it can be loaded from all round. */
+    private static final double BAY_CLEARANCE = 2;
+    /** How many rows of luggage are piled up the hold's sides, above its floor. */
+    private static final int PILE_ROWS = 3;
+    /** The luggage is stowed in bays this many stations long, a station left clear between them. */
+    private static final int BAY_LENGTH = 4;
+    /** The hold has to be at least this many rows tall to stow luggage in: at the smallest scales it is a crawlspace. */
+    private static final int LEAST_HEIGHT = 3;
+    /** How many stations apart the chains of the cargo nets hang. */
+    private static final int NET_SPACING = 2;
+    /** A player's height in blocks: the last golden suitcase is hidden as far aft as there is room to stand. */
+    private static final int STANDING_ROOM = 2;
+    private static final DyeColor[] COLOURS = SuitcaseBlock.COLOR.getPossibleValues().toArray(DyeColor[]::new);
+    private static final ResourceKey<LootTable> SUITCASE = loot("suitcase");
+    private static final ResourceKey<LootTable> GOLDEN_SUITCASE = loot("golden_suitcase");
+    private static final ResourceKey<LootTable> CARE_PACKAGE = loot("care_package");
+
+    private final AirframeLayout layout;
+    private final int floor;
+
+    HoldFitOut(AirframeLayout layout) {
+        this.layout = layout;
+        this.floor = layout.floorY();
+    }
+
+    private static ResourceKey<LootTable> loot(String name) {
+        return ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "chests/" + name));
+    }
+
+    void apply() {
+        BlockPos bay = layout.bay();
+        if (bay == null || floor - (bay.getY() + 1) < LEAST_HEIGHT) {
+            return;
+        }
+        int bottom = bay.getY() + 1;
+        // From the bay forward to the moon pool's wall, the first station of the hold left clear against it.
+        int fore = bay.getZ();
+        while (layout.isOpen(0, bottom, fore - 1)) {
+            fore--;
+        }
+        int from = fore + 1;
+        int to = bay.getZ() - (int) Math.ceil(BAY_CLEARANCE * layout.scale());
+        if (to - from < BAY_LENGTH) {
+            return;
+        }
+        List<BlockPos> starboard = new ArrayList<>();
+        List<BlockPos> port = new ArrayList<>();
+        for (int z = from; z <= to; z++) {
+            stow(z, z - from, bottom, starboard, port);
+        }
+        // One golden suitcase a third of the way along the port pile, halfway up it, and one two thirds of the way
+        // along the starboard pile, on top; the last at the far end of the hold.
+        hide(port, from + (to - from) / 3, bottom + (PILE_ROWS + 1) / 2, 1);
+        hide(starboard, from + 2 * (to - from) / 3, Math.min(floor - 1, bottom + PILE_ROWS), 2);
+        BlockPos end = farEnd(bay, bottom);
+        if (end.getZ() > bay.getZ()) {
+            golden(end, Direction.NORTH, 3);
+        }
+    }
+
+    /**
+     * The far end of the hold aft of the bay, past the cargo door, where its floor has climbed the belly's curve a
+     * step at a time: the last spot down the middle with room to stand.
+     */
+    private BlockPos farEnd(BlockPos bay, int bottom) {
+        int y = bottom;
+        int z = bay.getZ();
+        while (true) {
+            int next = y;
+            while (next < floor && !layout.isOpen(0, next, z + 1)) {
+                next++;
+            }
+            if (next > y + 1 || floor - next < STANDING_ROOM) {
+                return new BlockPos(0, y, z);
+            }
+            y = next;
+            z++;
+        }
+    }
+
+    /**
+     * One station of the hold: on each side, the net along the edge of the floor, a hazard stripe inside it, and
+     * unless the station is a gap between bays, the luggage piled behind the net up the hull's curve, whose suitcases
+     * go on the side's list.
+     */
+    private void stow(int z, int along, int bottom, List<BlockPos> starboard, List<BlockPos> port) {
+        boolean gap = along % (BAY_LENGTH + 1) == BAY_LENGTH;
+        boolean crates = along / (BAY_LENGTH + 1) % 2 == 0;
+        for (int side : new int[]{1, -1}) {
+            int edge = 0;
+            while (layout.isOpen(side * (edge + 1), bottom, z)) {
+                edge++;
+            }
+            if (along % NET_SPACING == 0) {
+                for (int y = bottom; y < floor; y++) {
+                    layout.furnish(side * edge, y, z, Blocks.CHAIN.defaultBlockState());
+                }
+            }
+            if (edge > 1) {
+                layout.furnish(side * (edge - 1), bottom, z, (Math.floorMod(z, 2) == 0 ? Blocks.YELLOW_CARPET : Blocks.BLACK_CARPET).defaultBlockState());
+            }
+            if (gap) {
+                continue;
+            }
+            Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
+            for (int y = bottom + 1; y <= Math.min(floor - 1, bottom + PILE_ROWS); y++) {
+                for (int x = side * (edge + 1); layout.isOpen(x, y, z); x += side) {
+                    if (crates && y == bottom + 1 && x == side * (edge + 1)) {
+                        crate(new BlockPos(x, y, z), facing);
+                    } else {
+                        suitcase(new BlockPos(x, y, z), facing, COLOURS[Math.floorMod(3 * x + 5 * y + 7 * z, COLOURS.length)]);
+                        (side > 0 ? starboard : port).add(new BlockPos(x, y, z));
+                    }
+                }
+            }
+        }
+    }
+
+    /** A care package, packed with supplies when the airliner is built, so it can be loaded into the bay and dropped. */
+    private void crate(BlockPos at, Direction facing) {
+        layout.set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.CARGO_CRATE.get().defaultBlockState().setValue(CargoCrateBlock.FACING, facing));
+        layout.fittings().put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof RandomizableContainerBlockEntity crate) {
+                crate.setLootTable(CARE_PACKAGE, 0);
+                crate.unpackLootTable(null);
+            }
+        });
+    }
+
+    private void suitcase(BlockPos at, Direction facing, DyeColor colour) {
+        layout.set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.SUITCASE.get().defaultBlockState()
+            .setValue(SuitcaseBlock.FACING, facing).setValue(SuitcaseBlock.COLOR, colour));
+        layout.fittings().put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof SuitcaseBlockEntity suitcase) {
+                suitcase.pack(SUITCASE, 0);
+            }
+        });
+    }
+
+    /**
+     * Swaps a suitcase of the pile for golden suitcase number {@code index}: the one nearest the station, then nearest
+     * the row, then the furthest out, the deepest in the pile.
+     */
+    private void hide(List<BlockPos> pile, int z, int row, int index) {
+        pile.stream()
+            .min(Comparator.comparingInt((BlockPos at) -> Math.abs(at.getZ() - z))
+                .thenComparingInt(at -> Math.abs(at.getY() - row))
+                .thenComparingInt(at -> -Math.abs(at.getX())))
+            .ifPresent(at -> golden(at, layout.stateAt(at.getX(), at.getY(), at.getZ()).getValue(SuitcaseBlock.FACING), index));
+    }
+
+    private void golden(BlockPos at, Direction facing, int index) {
+        layout.set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.GOLDEN_SUITCASE.get().defaultBlockState().setValue(SuitcaseBlock.FACING, facing));
+        layout.fittings().put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof SuitcaseBlockEntity suitcase) {
+                suitcase.pack(GOLDEN_SUITCASE, index);
+            }
+        });
+    }
+}

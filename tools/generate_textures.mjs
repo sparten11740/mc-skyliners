@@ -1186,6 +1186,28 @@ blueprint("furnished_airliner_blueprint", true);
     return dx + dy > 1.5 ? [r * 0.75, g * 0.75, b * 0.75] : [r, g, b];
   }, 3);
 
+  // Suitcases: a hard shell in its colour with ridges down it and darker rims; the golden one shines gold, a white
+  // star on it so it stands out from every other in the pile.
+  const SHELLS = { red: [0xd0, 0x30, 0x30], blue: [0x30, 0x60, 0xd0], green: [0x30, 0xa0, 0x50], purple: [0x90, 0x40, 0xc0] };
+  const shell = ([r, g, b], x, y) => {
+    if (y <= 3 || y === 15) return [r * 0.6, g * 0.6, b * 0.6];
+    return x % 3 === 0 ? [r * 0.8, g * 0.8, b * 0.8] : [r, g, b];
+  };
+  for (const [colour, rgb] of Object.entries(SHELLS)) {
+    texture(blockOutput, `suitcase_${colour}`, (x, y) => shell(rgb, x, y), 4);
+  }
+  // A five-pointed star, a point straight up: its edge runs from 4.6 pixels out at the points to 2 at the notches.
+  const star = (x, y) => {
+    const degrees = ((Math.atan2(x - 7.5, 9.5 - y) * 180) / Math.PI + 360) % 72;
+    const toPoint = Math.abs(degrees - 36) / 36;
+    return Math.hypot(x - 7.5, y - 9.5) <= 2 + 2.6 * toPoint;
+  };
+  texture(blockOutput, "golden_suitcase", (x, y) => {
+    if (star(x, y)) return [0xff, 0xff, 0xf0];
+    if (y > 3 && (x + y === 7 || x + y === 8)) return [0xff, 0xf0, 0xa0];
+    return shell(GOLD, x, y);
+  }, 4);
+
   // Fairy lights: bulbs in four colours along a dark wire, by column, so each bulb of the model shows one colour
   // whichever face it is seen from; at night the same bulbs glow dim.
   const BULBS = [[0xff, 0x50, 0x50], [0xff, 0xe0, 0x50], [0x60, 0xf0, 0x70], [0x60, 0xa8, 0xff]];

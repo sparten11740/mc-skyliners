@@ -70,6 +70,8 @@ import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
 import dev.aerolarge.block.SpringboardBlock;
+import dev.aerolarge.block.SuitcaseBlock;
+import dev.aerolarge.block.SuitcaseBlockEntity;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
 import dev.aerolarge.block.ThrustLeverBlock;
@@ -574,6 +576,8 @@ public final class AerolargeRegistry {
     /** The light the secret door's glowing book gives, and the fairy lights full on, in light levels. */
     private static final int HINT_GLOW = 3;
     private static final int FAIRY_GLOW = 12;
+    /** The light a golden suitcase gives, in light levels: enough to catch the eye in the hold's dark corners. */
+    private static final int GOLDEN_GLOW = 4;
     /**
      * The kids' den in the tail: the secret bookshelf door into it, its glowing book faintly lighting the shelf, the
      * ball pit, and fairy lights, a string of coloured bulbs as bright as the dimmer has them.
@@ -599,6 +603,20 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> BALL_PIT_ITEM = ITEMS.registerSimpleBlockItem(BALL_PIT);
     public static final DeferredItem<BlockItem> FAIRY_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(FAIRY_LIGHTS);
+    /**
+     * Luggage in the hold: suitcases in four colours, and the golden suitcases hidden among them, giving a faint glow
+     * to be found by in the dark; each a small container.
+     */
+    public static final DeferredBlock<SuitcaseBlock> SUITCASE = BLOCKS.registerBlock(
+        "suitcase", properties -> new SuitcaseBlock(properties, false), luggage(MapColor.COLOR_RED)
+    );
+    public static final DeferredBlock<SuitcaseBlock> GOLDEN_SUITCASE = BLOCKS.registerBlock(
+        "golden_suitcase", properties -> new SuitcaseBlock(properties, true), luggage(MapColor.GOLD).lightLevel(state -> GOLDEN_GLOW)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SuitcaseBlockEntity>> SUITCASE_ENTITY =
+        BLOCK_ENTITIES.register("suitcase", () -> BlockEntityType.Builder.of(SuitcaseBlockEntity::new, SUITCASE.get(), GOLDEN_SUITCASE.get()).build(null));
+    public static final DeferredItem<BlockItem> SUITCASE_ITEM = ITEMS.registerSimpleBlockItem(SUITCASE);
+    public static final DeferredItem<BlockItem> GOLDEN_SUITCASE_ITEM = ITEMS.registerSimpleBlockItem(GOLDEN_SUITCASE);
 
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
     public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
@@ -717,7 +735,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
             MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM,
-            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM
         )),
         new TabSection("gym", List.of(
             BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
@@ -743,6 +761,12 @@ public final class AerolargeRegistry {
      */
     private static BlockBehaviour.Properties metal(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(AerolargeRegistry::never);
+    }
+
+    /** A suitcase's hard shell: quick to pick up, small enough to see past, and nothing spawns on it. */
+    private static BlockBehaviour.Properties luggage(MapColor color) {
+        return BlockBehaviour.Properties.of().mapColor(color).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never);
     }
 
     private static boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> type) {

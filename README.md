@@ -28,8 +28,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
-  the bar a secret door into a den in the tail (see below). Plants line
-  the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
+  the bar a secret door into a den in the tail; the hold under the cabin is stowed with luggage (both below). Plants
+  line the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
   ceiling over the bar and from planters of moss hung over the pool's rim, potted azaleas in moss along the pool's
   sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
   Passenger screens (see below) line the cabin walls between the windows, and wherever seats stand in rows across
@@ -226,6 +226,16 @@ basketball and star rockets. The ball pit swallows whatever walks or falls in wi
 wade through it a little slower, a fall into it never hurts, nobody under the balls is smothered, and a jump always
 gets you out. The secret door, the ball pit and the fairy lights can be crafted.
 
+### The hold
+
+In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
+behind cargo nets of chain, with yellow and black stripes along the walkway down the middle, which stays clear from
+the pool to the drop bay and on to the hatch and the cargo door. The suitcases, in four colours, each hold a few
+things a traveller packs; among them are care packages packed with supplies, ready to load into the drop bay. Three
+golden suitcases are hidden about the hold: they glint, glow faintly and chime softly when someone comes near.
+Opening one counts toward Lost and Found in the First Flight advancements, with a fanfare the first time; find all
+three to earn it. Suitcases can be crafted; golden ones can only be found.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
@@ -393,8 +403,9 @@ The First Flight tab of the advancements marks the milestones: aboard as the air
 than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
 a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
 villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free), a paper plane thrown
-out of an airliner in flight coming down 100 blocks away (Air Mail) and a dive into the moon pool off its springboard
-or its tower while the airliner flies, 15 metres or more above the ground (Cannonball).
+out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into the moon pool off its springboard
+or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), and the three golden
+suitcases hidden in the hold (Lost and Found).
 
 ### Settings
 

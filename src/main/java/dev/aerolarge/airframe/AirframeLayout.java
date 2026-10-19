@@ -163,6 +163,8 @@ public final class AirframeLayout {
     private BlockPos seatbeltSwitch;
     /** The drop release on the first officer's side console; null without a flight deck. */
     private BlockPos dropRelease;
+    /** The drop bay in the belly; null where it found no belly under the hold. */
+    private BlockPos bay;
     /** The cabin lights' dimmer on the panel and the window shades' control by the captain; null without a flight deck. */
     private BlockPos cabinLights;
     private BlockPos windowShades;
@@ -216,6 +218,9 @@ public final class AirframeLayout {
         layout.seatbeltSigns();
         layout.dropBay();
         layout.holdHatch();
+        if (furnished) {
+            new HoldFitOut(layout).apply();
+        }
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -239,6 +244,12 @@ public final class AirframeLayout {
 
     AirframePalette palette() {
         return palette;
+    }
+
+    /** The drop bay in the belly, once laid; null without one. */
+    @Nullable
+    BlockPos bay() {
+        return bay;
     }
 
     /** Whether the block at this position is part of the cabin or hold's open space. */
@@ -776,13 +787,14 @@ public final class AirframeLayout {
             int z = station + dz;
             for (int y = 0; y < floorY; y++) {
                 if (stateAt(0, y, z).is(palette.hull().getBlock()) && isOpen(0, y + 1, z)) {
-                    BlockPos bay = new BlockPos(0, y, z);
+                    BlockPos laid = new BlockPos(0, y, z);
+                    bay = laid;
                     set(0, y, z, AerolargeRegistry.DROP_BAY.get().defaultBlockState());
                     if (dropRelease != null) {
                         BlockPos at = dropRelease;
                         fittings.put(at, (blockEntity, rotation) -> {
                             if (blockEntity instanceof DropReleaseBlockEntity control) {
-                                control.configure(bay.subtract(at).rotate(rotation));
+                                control.configure(laid.subtract(at).rotate(rotation));
                             }
                         });
                     }

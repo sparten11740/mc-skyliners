@@ -1,14 +1,16 @@
 package dev.aerolarge;
 
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
  * The First Flight advancements: milestones of flying the airliner, from climbing away from the runway to a gentle
- * touchdown. Each has one criterion, "done", that nothing in the game triggers; the mod grants it where the moment
- * happens. The advancements themselves are data, under {@code first_flight/}.
+ * touchdown. Most have one criterion, "done"; Lost and Found has one for each golden suitcase in the hold. Nothing in
+ * the game triggers them: the mod grants them where the moment happens. The advancements themselves are data, under
+ * {@code first_flight/}.
  */
 public enum FirstFlight {
     /** Tried to get up while the seatbelt signs were on. */
@@ -30,14 +32,36 @@ public enum FirstFlight {
     /** Bought something at a duty-free counter. */
     DUTY_FREE,
     /** Dived into the moon pool off its springboard or its tower in flight. */
-    CANNONBALL;
+    CANNONBALL,
+    /** Found the golden suitcases hidden in an airliner's hold: "suitcase_1" and on, one criterion each. */
+    LOST_AND_FOUND;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "first_flight/" + name().toLowerCase(Locale.ROOT));
-        AdvancementHolder advancement = player.server.getAdvancements().get(id);
+        award(player, "done");
+    }
+
+    /** Grants the player one of this milestone's criteria; whether they did not have it yet. */
+    public boolean award(ServerPlayer player, String criterion) {
+        AdvancementHolder advancement = advancement(player);
+        return advancement != null && player.getAdvancements().award(advancement, criterion);
+    }
+
+    /** How many of this milestone's criteria the player has. */
+    public int progress(ServerPlayer player) {
+        AdvancementHolder advancement = advancement(player);
+        int done = 0;
         if (advancement != null) {
-            player.getAdvancements().award(advancement, "done");
+            for (String ignored : player.getAdvancements().getOrStartProgress(advancement).getCompletedCriteria()) {
+                done++;
+            }
         }
+        return done;
+    }
+
+    @Nullable
+    private AdvancementHolder advancement(ServerPlayer player) {
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "first_flight/" + name().toLowerCase(Locale.ROOT));
+        return player.server.getAdvancements().get(id);
     }
 }

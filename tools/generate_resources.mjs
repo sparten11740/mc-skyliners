@@ -711,9 +711,86 @@ write(`data/${ID}/loot_table/chests/den_treasure.json`, {
   }]),
   random_sequence: `${ID}:chests/den_treasure`,
 });
+// Suitcases, drawn facing north: a hard shell standing on its end, a black handle on top; one model per shell colour,
+// and the golden suitcase's, whatever its colour. Broken, a suitcase gives itself back and spills what is in it.
+{
+  const colours = ["red", "blue", "green", "purple"];
+  for (const name of [...colours.map((colour) => `suitcase_${colour}`), "golden_suitcase"]) {
+    write(`assets/${ID}/models/block/${name}.json`, boxes(
+      { case: `${ID}:block/${name}`, handle: `${ID}:block/light_cable`, particle: `${ID}:block/${name}` },
+      [
+        [[2, 0, 5], [14, 13, 11], "#case"],
+        [[6, 13, 7.5], [7, 15, 8.5], "#handle"],
+        [[9, 13, 7.5], [10, 15, 8.5], "#handle"],
+        [[6, 15, 7.5], [10, 16, 8.5], "#handle"],
+      ],
+    ));
+  }
+  write(`assets/${ID}/blockstates/suitcase.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => colours.map((colour) =>
+      [`color=${colour},facing=${facing}`, { model: `${ID}:block/suitcase_${colour}`, y }]))),
+  });
+  facing("golden_suitcase");
+  write(`assets/${ID}/models/item/suitcase.json`, { parent: `${ID}:block/suitcase_red` });
+  write(`assets/${ID}/models/item/golden_suitcase.json`, { parent: `${ID}:block/golden_suitcase` });
+  for (const name of ["suitcase", "golden_suitcase"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// What is packed in the hold. A suitcase: two to four of socks, paper, a book, cookies, string, leather, berries, a
+// dye, a clock or a spyglass. A golden suitcase: gold, golden carrots, a diamond and two golden star rockets. A care
+// package: bread, apples, torches, steak and a signal flare to mark where it lands.
+{
+  const entry = (name, min = 1, max = min, weight = 1) => ({
+    type: "minecraft:item", name, weight,
+    ...(max > 1 ? { functions: [{ function: "minecraft:set_count", count: min === max ? min : { type: "minecraft:uniform", min, max } }] } : {}),
+  });
+  const chest = (name, pools) => write(`data/${ID}/loot_table/chests/${name}.json`, {
+    type: "minecraft:chest", pools, random_sequence: `${ID}:chests/${name}`,
+  });
+  const each = (entries) => entries.map((one) => ({ rolls: 1.0, bonus_rolls: 0.0, entries: [one] }));
+  chest("suitcase", [{
+    rolls: { type: "minecraft:uniform", min: 2, max: 4 }, bonus_rolls: 0.0,
+    entries: [
+      entry("minecraft:white_wool", 1, 2, 3), entry("minecraft:paper", 1, 3, 2), entry("minecraft:book"), entry("minecraft:cookie", 1, 3, 3),
+      entry("minecraft:string", 1, 2, 2), entry("minecraft:leather"), entry("minecraft:sweet_berries", 2, 4, 2), entry("minecraft:red_dye"),
+      entry("minecraft:yellow_dye"), entry("minecraft:light_blue_dye"), entry("minecraft:clock"), entry("minecraft:spyglass"),
+    ],
+  }]);
+  chest("golden_suitcase", each([
+    entry("minecraft:gold_ingot", 2, 4), entry("minecraft:golden_carrot", 3), entry("minecraft:diamond"),
+    {
+      ...entry("minecraft:firework_rocket", 2),
+      functions: [
+        { function: "minecraft:set_count", count: 2 },
+        {
+          function: "minecraft:set_components",
+          components: { "minecraft:fireworks": { flight_duration: 1, explosions: [{ shape: "star", colors: [0xffd040], has_twinkle: true }] } },
+        },
+      ],
+    },
+  ]));
+  chest("care_package", each([
+    entry("minecraft:bread", 3, 5), entry("minecraft:apple", 2, 4), entry("minecraft:torch", 8, 16), entry("minecraft:cooked_beef", 2, 3),
+    entry(`${ID}:signal_flare`),
+  ]));
+}
+// Lost and Found, in the First Flight tab: one criterion for each of the hold's golden suitcases (GOLDEN_SUITCASES in
+// SuitcaseBlockEntity), granted as each is first opened; it is done once all three are found.
+write(`data/${ID}/advancement/first_flight/lost_and_found.json`, {
+  parent: `${ID}:first_flight/root`,
+  display: {
+    icon: { id: `${ID}:golden_suitcase` },
+    title: { translate: `advancements.${ID}.first_flight.lost_and_found.title` },
+    description: { translate: `advancements.${ID}.first_flight.lost_and_found.description` },
+    frame: "goal",
+  },
+  criteria: Object.fromEntries([1, 2, 3].map((index) => [`suitcase_${index}`, { trigger: "minecraft:impossible" }])),
+});
 // What of the hold's and the tail's is fitted rather than built in: breakable, and no part of the airframe.
 function holdAndTailFittings() {
-  return ["floor_hatch", "secret_bookshelf", "ball_pit", "fairy_lights"];
+  return ["floor_hatch", "secret_bookshelf", "ball_pit", "fairy_lights", "suitcase", "golden_suitcase"];
 }
 // The secret door's creak is a wooden door's, deep and slow; the ball pit's plop a chicken's egg or a pop.
 function holdAndTailSounds() {
@@ -737,6 +814,8 @@ function holdAndTailRecipes() {
   shaped("secret_bookshelf", ["BG", "BL"], { B: "minecraft:bookshelf", G: "minecraft:glowstone_dust", L: "minecraft:lever" }, 1);
   shaped("ball_pit", ["RYB", "WWW"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", W: "minecraft:white_wool" }, 3);
   shaped("fairy_lights", ["RYB", "SGS"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", S: "minecraft:string", G: "minecraft:glowstone_dust" }, 6);
+  // A golden suitcase is found, not made.
+  shaped("suitcase", [" N ", "LCL"], { N: "minecraft:iron_nugget", L: "minecraft:leather", C: "minecraft:chest" }, 1);
 }
 function holdAndTailLang() {
   return {
@@ -747,6 +826,13 @@ function holdAndTailLang() {
     "subtitles.aerolarge.secret_bookshelf_open": "Bookshelf creaks open",
     "subtitles.aerolarge.secret_bookshelf_close": "Bookshelf creaks shut",
     "subtitles.aerolarge.ball_pit_plop": "Ball pit plops",
+    "block.aerolarge.suitcase": "Suitcase",
+    "block.aerolarge.golden_suitcase": "Golden Suitcase",
+    "container.aerolarge.suitcase": "Suitcase",
+    "container.aerolarge.golden_suitcase": "Golden Suitcase",
+    "message.aerolarge.golden_suitcase.found": "A golden suitcase! %s of %s found",
+    "advancements.aerolarge.first_flight.lost_and_found.title": "Lost and Found",
+    "advancements.aerolarge.first_flight.lost_and_found.description": "Find the three golden suitcases hidden in an airliner's hold",
   };
 }
 
