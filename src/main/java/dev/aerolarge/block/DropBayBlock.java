@@ -84,10 +84,13 @@ public class DropBayBlock extends BaseEntityBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** Taken apart, it spills whatever was still aboard. */
+    /**
+     * Taken apart, it spills whatever was still aboard; not when it is only moved, as Sable moves it into an assembled
+     * airliner's plot and back, its load going with it.
+     */
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof DropBayBlockEntity bay) {
+        if (!isMoving && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof DropBayBlockEntity bay) {
             for (ItemStack load = bay.unload(); !load.isEmpty(); load = bay.unload()) {
                 Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, load);
             }

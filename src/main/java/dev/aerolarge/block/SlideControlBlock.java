@@ -87,10 +87,13 @@ public class SlideControlBlock extends BaseEntityBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** Taken apart on purpose, it takes its slide away at once, steps and all. */
+    /**
+     * Taken apart on purpose, it takes its slide away at once, steps and all; not when it is only moved, as Sable moves
+     * it into an assembled airliner's plot and back.
+     */
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!level.isClientSide && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof SlideControlBlockEntity slide) {
+        if (!level.isClientSide && !movedByPiston && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof SlideControlBlockEntity slide) {
             slide.stowAway();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

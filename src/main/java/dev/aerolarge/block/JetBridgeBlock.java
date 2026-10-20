@@ -68,9 +68,10 @@ public class JetBridgeBlock extends AirstairControllerBlock {
         }
     }
 
+    /** Taken apart, it folds its bridge away; not when it is only moved, as Sable moves blocks, its bridge going with it. */
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!level.isClientSide && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof JetBridgeBlockEntity bridge) {
+        if (!level.isClientSide && !movedByPiston && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof JetBridgeBlockEntity bridge) {
             bridge.foldAway();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

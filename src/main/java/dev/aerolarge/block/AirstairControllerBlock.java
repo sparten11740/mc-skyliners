@@ -79,10 +79,13 @@ public class AirstairControllerBlock extends BaseEntityBlock {
         }
     }
 
-    /** Taken apart on purpose, it takes its stairs away at once, steps, hatch and all. */
+    /**
+     * Taken apart on purpose, it takes its stairs away at once, steps, hatch and all; not when it is only moved, as
+     * Sable moves it into an assembled airliner's plot and back, or it would shut its hatch where it stood.
+     */
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!level.isClientSide && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof AirstairBlockEntity airstairs) {
+        if (!level.isClientSide && !movedByPiston && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof AirstairBlockEntity airstairs) {
             airstairs.stowAway();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
