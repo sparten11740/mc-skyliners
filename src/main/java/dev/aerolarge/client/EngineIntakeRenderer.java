@@ -26,6 +26,9 @@ import net.minecraft.world.phys.Vec3;
  * {@link EngineCoreBlockEntity.Intake}) and how its iris and fan stand, in flat colours lit by the light just in front
  * of the intake, and in proportion to the nacelle, so it looks the same at any scale. An engine built before its core
  * knew where its intake is draws nothing and keeps its plain face.
+ *
+ * <p>The cowl stands proud of the nacelle, so it shows from beside and behind it too and is always drawn; what lies
+ * inside the duct is left out with the camera behind the nacelle's face, where the face and the duct's wall hide it.
  */
 public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlockEntity> {
     /** Vanilla's plain white texture, painted over in the vertices' colours. */
@@ -88,11 +91,21 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
     /** The cosine and sine at every step round the circle, the first repeated at the end. */
     private static final float[] COS = new float[SEGMENTS + 1];
     private static final float[] SIN = new float[SEGMENTS + 1];
+    /**
+     * The same at every step round the iris's petals, before they turn: worked out once, rather than for each of the
+     * iris's 640 points in every frame.
+     */
+    private static final float[] IRIS_COS = new float[PETALS * IRIS_STEPS + 1];
+    private static final float[] IRIS_SIN = new float[PETALS * IRIS_STEPS + 1];
 
     static {
         for (int i = 0; i <= SEGMENTS; i++) {
             COS[i] = (float) Math.cos(2 * Math.PI * i / SEGMENTS);
             SIN[i] = (float) Math.sin(2 * Math.PI * i / SEGMENTS);
+        }
+        for (int i = 0; i <= PETALS * IRIS_STEPS; i++) {
+            IRIS_COS[i] = (float) Math.cos(2 * Math.PI * i / (PETALS * IRIS_STEPS));
+            IRIS_SIN[i] = (float) Math.sin(2 * Math.PI * i / (PETALS * IRIS_STEPS));
         }
     }
 
@@ -123,6 +136,15 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
         float curl = (radius - mouth) / 2;
         float sides = PROUD * radius - curl;
         cowl(paint, radius, mouth, curl, sides);
+        if (Sight.eye(pose.last()).z > 0) {
+            inDuct(paint, buffers, pose, engine, partialTick, radius, mouth, sides);
+        }
+        pose.popPose();
+    }
+
+    /** What lies inside the duct: the iris, as far as it is shut, and behind it the fan, its spinner and the glow. */
+    private static void inDuct(Painter paint, MultiBufferSource buffers, PoseStack pose, EngineCoreBlockEntity engine, float partialTick,
+                               float radius, float mouth, float sides) {
         float open = ease(engine.iris(partialTick));
         if (open < 1) {
             iris(paint, mouth, sides - IRIS_IN * radius, open);
@@ -135,7 +157,6 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
             // Last: taking another buffer finishes the one the rest went into.
             glow(buffers.getBuffer(RenderType.eyes(GLOW)), pose.last(), mouth, GLOW_OUT * radius, glowStrength(engine.spool()));
         }
-        pose.popPose();
     }
 
     /** Eases the iris in and out, so its petals start and stop gently. */
@@ -173,24 +194,37 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
      * middle out, turning a little as they go, the way a camera's iris opens.
      */
     private static void iris(Painter paint, float mouth, float out, float open) {
-        double petal = 2 * Math.PI / PETALS;
-        double turn = IRIS_TURN * open;
         float aperture = mouth * open;
+        // Each ring the petals are drawn in, from the wall in: how far it is from the axis, and how far round it is
+        // turned, as the petals turn and their seams wind, as a cosine and a sine.
+        float[] ring = new float[IRIS_RINGS + 1];
+        float[] turnCos = new float[IRIS_RINGS + 1];
+        float[] turnSin = new float[IRIS_RINGS + 1];
+        for (int i = 0; i <= IRIS_RINGS; i++) {
+            ring[i] = mouth + (aperture - mouth) * i / IRIS_RINGS;
+            double turn = IRIS_TURN * open + seam(ring[i], mouth);
+            turnCos[i] = (float) Math.cos(turn);
+            turnSin[i] = (float) Math.sin(turn);
+        }
         for (int k = 0; k < PETALS; k++) {
             int colour = k % 2 == 0 ? PETAL : PETAL_SHADE;
             for (int i = 0; i < IRIS_RINGS; i++) {
-                float outer = mouth + (aperture - mouth) * i / IRIS_RINGS;
-                float inner = mouth + (aperture - mouth) * (i + 1) / IRIS_RINGS;
                 for (int j = 0; j < IRIS_STEPS; j++) {
-                    double from = turn + petal * (k + (double) j / IRIS_STEPS);
-                    double to = turn + petal * (k + (double) (j + 1) / IRIS_STEPS);
-                    paint.flat(outer, from + seam(outer, mouth), out, colour);
-                    paint.flat(outer, to + seam(outer, mouth), out, colour);
-                    paint.flat(inner, to + seam(inner, mouth), out, colour);
-                    paint.flat(inner, from + seam(inner, mouth), out, colour);
+                    int from = k * IRIS_STEPS + j;
+                    irisPoint(paint, ring[i], from, turnCos[i], turnSin[i], out, colour);
+                    irisPoint(paint, ring[i], from + 1, turnCos[i], turnSin[i], out, colour);
+                    irisPoint(paint, ring[i + 1], from + 1, turnCos[i + 1], turnSin[i + 1], out, colour);
+                    irisPoint(paint, ring[i + 1], from, turnCos[i + 1], turnSin[i + 1], out, colour);
                 }
             }
         }
+    }
+
+    /** A point of the iris: this far from the axis, at a step round its petals, turned as far as its ring is. */
+    private static void irisPoint(Painter paint, float radius, int step, float turnCos, float turnSin, float out, int colour) {
+        float cos = IRIS_COS[step] * turnCos - IRIS_SIN[step] * turnSin;
+        float sin = IRIS_SIN[step] * turnCos + IRIS_COS[step] * turnSin;
+        paint.vertex(radius * cos, radius * sin, out, 0, 0, 1, colour);
     }
 
     /** How far round a seam between the iris's petals has wound, this far from the axis. */
