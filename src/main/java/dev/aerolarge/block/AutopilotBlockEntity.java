@@ -66,7 +66,8 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * it tumbled, or fling it off far faster than the world can be made around it.
  *
  * <p>Set to take off or to land, and once it has landed and stopped, it makes the cabin announcements (see
- * {@link CabinAnnouncements}).
+ * {@link CabinAnnouncements}); and air traffic control talks to the airliner (see {@link AtcRadio}), so set to take
+ * off it holds the brakes until the tower has cleared it.
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -229,7 +230,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
-    private static final double FLIGHT_DECK = 24;
+    static final double FLIGHT_DECK = 24;
     /**
      * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
      * radius per press.
@@ -284,8 +285,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     private int wheelsBelow;
     /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
     private boolean governing;
-    private final Callouts callouts = new Callouts();
-    private final CabinAnnouncements announcements = new CabinAnnouncements();
+    /** Whether, set to take off, it still holds the brakes for the tower's clearance (see {@link AtcRadio#clearing}). */
+    private boolean awaitingClearance;
+    private final Airtime airtime = new Airtime();
+    private final Callouts callouts = new Callouts(airtime);
+    private final CabinAnnouncements announcements = new CabinAnnouncements(airtime);
+    private final AtcRadio atc = new AtcRadio(airtime, callouts);
     private final Turbulence turbulence = new Turbulence();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
@@ -398,11 +403,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (engaging) {
             engage(level, state);
             if (phase == Phase.TAKEOFF) {
-                announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+                // Cleared by the tower first, if it talks; the cabin hears the take-off announcement as the brakes come off.
+                awaitingClearance = atc.requestTakeOff(level.getGameTime());
+                if (!awaitingClearance) {
+                    announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+                }
             }
         } else if (phase == Phase.LAND) {
             // A go-around: it climbs away again, and the next tick finds whether to climb, descend or hold.
             phase = Phase.CLIMB;
+            if (level instanceof ServerLevel serverLevel) {
+                atc.goAround(serverLevel, this, state, radioAltitude(level, state));
+            }
         }
         targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
         double floor = floor(runwayAltitude);
@@ -434,13 +446,16 @@ public class AutopilotBlockEntity extends BlockEntity {
      * in the air.
      */
     private Component land(Level level, SableFlight.State state) {
-        if (radioAltitude(level, state) <= AIRBORNE) {
+        double radio = radioAltitude(level, state);
+        if (radio <= AIRBORNE) {
             return Component.translatable("message.aerolarge.autopilot.on_ground");
         }
         if (phase == Phase.OFF) {
             engage(level, state);
         }
-        if (phase != Phase.LAND) {
+        if (phase != Phase.LAND && level instanceof ServerLevel serverLevel) {
+            // The tower clears it to land, then the cabin hears the landing announcement.
+            atc.approach(serverLevel, this, state, radio);
             announcements.announce(CabinAnnouncements.Announcement.LANDING, this);
         }
         phase = Phase.LAND;
@@ -522,8 +537,8 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Each tick: a cabin announcement waiting for the one before it has its turn; and while the airliner is assembled,
-     * the callouts watch it, rough air comes and goes, and the autopilot flies it if engaged, or keeps it from tipping
-     * over if not.
+     * the callouts watch it, rough air comes and goes, the autopilot flies it if engaged, or keeps it from tipping over
+     * if not, and air traffic control talks to it.
      */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -539,13 +554,15 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
-        autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), autopilot.radioAltitude(serverLevel, flight), flight.airspeed());
-        Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, autopilot.radioAltitude(serverLevel, flight));
+        double radio = autopilot.radioAltitude(serverLevel, flight);
+        autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
+        Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, radio);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {
             autopilot.protect(serverLevel, flight);
         }
+        autopilot.atc.tick(serverLevel, autopilot, flight, radio, autopilot.phase);
     }
 
     /**
@@ -615,8 +632,14 @@ public class AutopilotBlockEntity extends BlockEntity {
             speedCommand = speed;
             primed = true;
         }
-        // The speed held moves toward the one set no faster than an airliner speeds up or slows down.
-        speedCommand += Mth.clamp(targetSpeed - speedCommand, -MAX_ACCELERATION / 20, MAX_ACCELERATION / 20);
+        boolean holding = holdingForClearance(level.getGameTime());
+        if (holding) {
+            // On the brakes, the speed held starts from where it stands once they come off.
+            speedCommand = speed;
+        } else {
+            // The speed held moves toward the one set no faster than an airliner speeds up or slows down.
+            speedCommand += Mth.clamp(targetSpeed - speedCommand, -MAX_ACCELERATION / 20, MAX_ACCELERATION / 20);
+        }
         double pitchRate = (pitch - lastPitch) * 20;
         double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         double climbRate = (climb - lastClimb) * 20;
@@ -639,11 +662,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         double bank = 0;
         if (takingOff) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
-            slowTicks = accelerating || speed < 2 ? 0 : slowTicks + 1;
-            boolean rotate = speed >= rotateSpeed || slowTicks > 40;
+            slowTicks = accelerating || holding || speed < 2 ? 0 : slowTicks + 1;
+            boolean rotate = !holding && (speed >= rotateSpeed || slowTicks > 40);
             targetPitch = rotate ? ROTATION_PITCH : 0;
-            // Speeding up down the runway as fast as is comfortable, on to the speed it will climb at.
-            thrust = holdSpeed(speed, speedCommand);
+            // Speeding up down the runway as fast as is comfortable, on to the speed it will climb at; idle while it
+            // holds for the clearance.
+            thrust = holding ? 0 : holdSpeed(speed, speedCommand);
             if (radio > AIRBORNE) {
                 phase = Phase.CLIMB;
                 // The pitch it lifts off at is where the trim starts learning from.
@@ -709,9 +733,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         drive(level, Channel.ROLL_RIGHT, rolls ? Mth.clamp(rollCommand, 0, 15) : 0);
         drive(level, Channel.ROLL_LEFT, rolls ? Mth.clamp(-rollCommand, 0, 15) : 0);
 
-        // The brakes are off while it flies and on once it has landed; on the ground it also steers the nose wheel to
-        // hold the heading.
-        drive(level, Channel.BRAKES, rollingOut ? 15 : 0);
+        // The brakes are off while it flies and on while it holds for the take-off clearance and once it has landed; on
+        // the ground it also steers the nose wheel to hold the heading.
+        drive(level, Channel.BRAKES, rollingOut || holding ? 15 : 0);
         double headingError = Mth.wrapDegrees(wanted - state.heading());
         int steer = onGround ? Mth.clamp((int) Math.round(STEER_GAIN * headingError), -15, 15) : 0;
         drive(level, Channel.STEER_RIGHT, Math.max(0, steer));
@@ -742,6 +766,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         } else {
             setChanged();
         }
+    }
+
+    /**
+     * Whether, set to take off, it still holds the brakes for the tower's clearance; once the tower has given it, or
+     * has had to leave it out, the cabin hears the take-off announcement as the brakes come off.
+     */
+    private boolean holdingForClearance(long now) {
+        if (awaitingClearance && !atc.clearing(now)) {
+            awaitingClearance = false;
+            announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+        }
+        return awaitingClearance;
     }
 
     /**
@@ -830,6 +866,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Switches off: the jets go quiet, and the engines, the nose wheel and the brakes follow their controls again. */
     private void disengage() {
         phase = Phase.OFF;
+        awaitingClearance = false;
         changed();
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
@@ -876,6 +913,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putInt("WheelsBelow", wheelsBelow);
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
+        tag.putBoolean("AwaitingClearance", awaitingClearance);
     }
 
     /** What the screen shows: the phase, the modes and the targets. */
@@ -911,6 +949,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             wheelsBelow = tag.getInt("WheelsBelow");
             governing = tag.getBoolean("Governing");
             climbingOut = tag.getBoolean("ClimbingOut");
+            // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.
+            awaitingClearance = tag.getBoolean("AwaitingClearance");
         }
         phase = parse(Phase.class, tag.getString("Phase"), Phase.OFF);
         lateral = parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING);

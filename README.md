@@ -202,6 +202,23 @@ curtains), and off again once stopped, so everyone can get up. Announcements nev
 for while another plays waits for it to end, and the same one is not made again within a minute, however often the
 buttons are pressed.
 
+Air traffic control talks to the airliner over the flight deck's radio, calling it "Aerolarge three eight zero": a
+man's voice, so it is never taken for the flight deck's own, crackling through a VHF radio's hiss and squelch. Set to
+take off, the autopilot holds the brakes until the tower has cleared it for take-off, a few seconds, and the cabin
+hears the take-off announcement as they come off. Climbing away past 20 blocks above the ground, on the autopilot or
+by hand, the tower hands it to departure, which has it on radar and climbing. Set to land, the tower clears it to
+land, with the wind and the runway, before the cabin hears the landing announcement; going around (Apply while
+landing) has it climb straight ahead. Down and stopped, ground welcomes it home and sends it to the gate. In flight,
+30 blocks or more above the ground and not landing, it chatters every two to five minutes: first the hand-over to the
+next controller, then traffic to look out for, the ride ahead, a flock of geese or a hot air balloon to spot out of the
+window, and other aircraft on the frequency, one of them saying hello; now and then someone presses the button and
+says nothing. Everyone on the flight deck hears it (within 24 blocks of the autopilot, as far as it tells the flight
+deck what it does), and so does whoever wears a pilot helmet anywhere aboard: its ear cups are a headset. It never
+talks over a callout or an announcement: it waits for them to end, and keeps clear of a callout about to be made.
+What has waited too long, or no longer fits what the airliner is doing, is left unsaid. Each transmission has its own
+subtitle ("ATC: Cleared for take-off"). Turn it off with `atcChatter` in the server config, or make it quieter with
+`atcVolume`; each player's Voice/Speech slider turns it down too.
+
 ### Seatbelts and turbulence
 
 The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls on both decks, with a ding, and opens every curtain
@@ -230,8 +247,8 @@ see its name. The game goes on behind the settings, and they close once you step
 
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
-Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: brakes off,
-speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
+Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: once the tower has
+cleared it (a few seconds on the brakes, see Announcements and the radio), brakes off, speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
 thrown down the cabin; it speeds up and slows down that gently in the air too), holding the heading it started on
 with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
 above the ground (or at the altitude set, where the ground below rises that high). Only then does it turn onto the

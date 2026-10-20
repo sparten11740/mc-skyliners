@@ -21,8 +21,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * {@link SeatbeltSwitchBlockEntity}), and off again once parked, letting everyone up; the announcements do the same at
  * the airliner's seatbelt switch.
  *
- * <p>One at a time, and not over and over: one asked for while another plays waits for it to end (only the latest one
- * asked for waits), and one made in the last {@link #REPEAT} ticks is not made again, so pressing the autopilot
+ * <p>One at a time, and not over and over: one asked for while anything else is said on the flight deck (another
+ * announcement, a callout or air traffic control, all sharing its {@link Airtime}) waits for it to end (only the latest
+ * one asked for waits), and one made in the last {@link #REPEAT} ticks is not made again, so pressing the autopilot
  * screen's buttons again and again does not make a chorus of them.
  */
 final class CabinAnnouncements {
@@ -56,12 +57,18 @@ final class CabinAnnouncements {
 
     /** When each announcement was last asked for, in game time. */
     private final Map<Announcement, Long> asked = new EnumMap<>(Announcement.class);
-    /** When the one playing ends, in game time. */
-    private long playingUntil;
+    private final Airtime airtime;
     @Nullable
     private Announcement waiting;
 
-    /** Makes the announcement now, or once the one playing has ended; not again so soon after it was last asked for. */
+    CabinAnnouncements(Airtime airtime) {
+        this.airtime = airtime;
+    }
+
+    /**
+     * Makes the announcement now, or once whatever is being said on the flight deck has ended; not again so soon after
+     * it was last asked for.
+     */
     void announce(Announcement announcement, BlockEntity autopilot) {
         if (!(autopilot.getLevel() instanceof ServerLevel level)) {
             return;
@@ -72,16 +79,16 @@ final class CabinAnnouncements {
             return;
         }
         asked.put(announcement, now);
-        if (now < playingUntil) {
+        if (!airtime.free(now)) {
             waiting = announcement;
         } else {
             play(level, autopilot, announcement);
         }
     }
 
-    /** Each tick: makes the one waiting, once the one playing has ended. */
+    /** Each tick: makes the one waiting, once whatever is being said on the flight deck has ended. */
     void tick(BlockEntity autopilot) {
-        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && level.getGameTime() >= playingUntil) {
+        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && airtime.free(level.getGameTime())) {
             Announcement next = waiting;
             waiting = null;
             play(level, autopilot, next);
@@ -89,7 +96,7 @@ final class CabinAnnouncements {
     }
 
     private void play(ServerLevel level, BlockEntity autopilot, Announcement announcement) {
-        playingUntil = level.getGameTime() + LONGEST;
+        airtime.take(level.getGameTime(), LONGEST);
         for (SeatbeltSwitchBlockEntity seatbelts : SeatbeltSwitchBlockEntity.all(level)) {
             if (seatbelts.getBlockPos().closerThan(autopilot.getBlockPos(), FLIGHT_DECK)) {
                 seatbelts.turn(announcement.seatbelts);

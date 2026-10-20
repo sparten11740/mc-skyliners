@@ -18,6 +18,8 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
+    public static final ModConfigSpec.BooleanValue ATC_CHATTER;
+    public static final ModConfigSpec.DoubleValue ATC_VOLUME;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
     public static final ModConfigSpec.BooleanValue DECOMPRESSION;
     public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
@@ -93,6 +95,19 @@ public final class AerolargeConfig {
                 "Never less than a quarter above the speed it rotated at, so the wings keep lifting."
             )
             .defineInRange("cruiseSpeed", 50.0, 5.0, 300.0);
+        builder.pop();
+
+        builder.push("radio");
+        ATC_CHATTER = builder
+            .comment(
+                "Whether air traffic control talks over the flight deck's radio: clearing the autopilot's take-offs (it holds the brakes",
+                "until cleared) and landings, handing the airliner on as it climbs away, welcoming it in once landed, and chattering every",
+                "few minutes in flight. Heard on the flight deck, and anywhere aboard in a pilot helmet."
+            )
+            .define("atcChatter", true);
+        ATC_VOLUME = builder
+            .comment("How loud air traffic control is, as a share of full volume; each player's Voice/Speech slider turns it down further.")
+            .defineInRange("atcVolume", 0.8, 0.1, 1.0);
         builder.pop();
 
         builder.push("cabin");

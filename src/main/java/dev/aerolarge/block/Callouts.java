@@ -24,6 +24,9 @@ import net.minecraft.world.phys.Vec3;
  * aboard, following them about the cabin. The same calm, evenly pitched voice makes the cabin announcements (see
  * {@link CabinAnnouncements}). Climbing away and touching down gently are milestones for everyone aboard, too (see
  * {@link FirstFlight}).
+ *
+ * <p>A callout cannot wait, so it takes the flight deck's {@link Airtime} whatever else is being said; air traffic
+ * control asks first whether one is due soon (see {@link #quietFor}), so as not to be talked over.
  */
 final class Callouts {
     /** Radio altitudes called out on the way down, in blocks, from the highest. */
@@ -57,6 +60,19 @@ final class Callouts {
      * every callout shorter (its CALLOUT_LONGEST).
      */
     private static final int WARNING_REPEAT = 80;
+    /**
+     * How long a callout is given to be said, in ticks: tools/generate_sounds.mjs keeps every one shorter (its
+     * CALLOUT_LONGEST).
+     */
+    private static final int SPOKEN = 70;
+    /**
+     * How near a warning's limit the airliner may be and still count as quiet: degrees of bank short of "bank angle",
+     * and blocks above the height "pull up" is called under, while sinking at half the rate it is called at.
+     */
+    private static final double BANK_MARGIN = 10;
+    private static final double PULL_UP_MARGIN = 20;
+    /** Ticks more than asked for that a height to be called must be away, at the rate it sinks, to count as quiet. */
+    private static final int LOOKAHEAD_MARGIN = 20;
     /** Everyone this close to the flight deck hears the callouts: everyone aboard. */
     private static final double HEARING = 64;
 
@@ -68,7 +84,15 @@ final class Callouts {
     private boolean flown;
     private double lastRadio = Double.NaN;
     private double lastClimb;
+    private double lastRoll;
+    /** Whether it is rolling along the ground, or has rotated and not yet climbed away: before "positive rate". */
+    private boolean rolling;
     private int warningCooldown;
+    private final Airtime airtime;
+
+    Callouts(Airtime airtime) {
+        this.airtime = airtime;
+    }
 
     /** One tick of watching: says whatever the airliner has just come to, to everyone aboard. */
     void watch(ServerLevel level, SableFlight.State state, double wheelsBelow, Supplier<List<ServerPlayer>> aboard) {
@@ -84,6 +108,8 @@ final class Callouts {
         // How fast it sank the tick before: on the tick the wheels touch, the ground has already stopped it.
         double sink = -lastClimb;
         lastClimb = climb;
+        lastRoll = state.roll();
+        rolling = !calledPositiveRate && (onGround ? speed >= 3 : calledRotate);
         warningCooldown = Math.max(0, warningCooldown - 1);
 
         if (radio > FLOWN) {
@@ -142,8 +168,34 @@ final class Callouts {
         }
     }
 
+    /**
+     * Whether nothing is foreseen to be called out over the next so many ticks, from how the airliner went on the last
+     * tick watched: not along the ground, nor lifting off before "positive rate"; not coming down where a height or
+     * "retard" will be called within that time at the rate it sinks; and not banked or sinking near enough to a
+     * warning's limit for one to come. Nothing but a warning out of the blue can then be called.
+     */
+    boolean quietFor(int ticks) {
+        if (Double.isNaN(lastRadio) || rolling) {
+            return false;
+        }
+        if (Math.abs(lastRoll) > BANK_LIMIT - BANK_MARGIN || lastRadio < PULL_UP_HEIGHT + PULL_UP_MARGIN && lastClimb < -SINK_LIMIT / 2) {
+            return false;
+        }
+        if (!armed || lastClimb >= 0) {
+            return true;
+        }
+        double lowest = lastRadio + lastClimb * (ticks + LOOKAHEAD_MARGIN) / 20.0;
+        for (int height : HEIGHTS) {
+            if (lastRadio > height && lowest <= height) {
+                return false;
+            }
+        }
+        return calledRetard || lastRadio <= RETARD || lowest > RETARD;
+    }
+
     /** Plays the callout to everyone aboard, each hearing it from where they stand as they move about. */
-    private static void say(ServerLevel level, Vec3 position, Holder<SoundEvent> sound) {
+    private void say(ServerLevel level, Vec3 position, Holder<SoundEvent> sound) {
+        airtime.take(level.getGameTime(), SPOKEN);
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : level.players()) {
             if (player.position().distanceToSqr(position) < HEARING * HEARING) {
