@@ -287,6 +287,37 @@ texture(blockOutput, "cabin_light", (x, y) => {
 }, 2);
 // The call button's cap: bright yellow so the ground crew find it.
 texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
+// The integral airstairs, drawn by their renderer a pixel of texture to a pixel of the airliner. A tread: dark grey
+// non-slip plate, ribbed across with raised studs between the ribs; its nosing, safety yellow, a shade darker along
+// its front edge. The stringers: brushed aluminium, streaked lengthways, catching the light along their top edge. The
+// handrails and their posts: polished aluminium, a bright line along them. The hatch below the door: the hull's white
+// skin, two blocks wide, with its seam right round it and a flush latch in each top corner.
+{
+  const GRIP = [0x3a, 0x3e, 0x44];
+  const RIB = [0x58, 0x5d, 0x64];
+  const BRUSHED = [0xb4, 0xbc, 0xc4];
+  texture(blockOutput, "airstair_tread", (x, y) => {
+    if (y % 4 === 0) return RIB;
+    if (y % 4 === 2 && x % 4 === (y % 8 === 2 ? 1 : 3)) return RIB;
+    return GRIP;
+  }, 4);
+  texture(blockOutput, "airstair_nosing", (x, y) => (y >= 14 ? [0xc8, 0x98, 0x12] : HAZARD), 3);
+  texture(blockOutput, "airstair_stringer", (x, y) => {
+    if (y === 0) return [0xd8, 0xde, 0xe3];
+    if (y === 15) return [0x8a, 0x93, 0x9b];
+    const streak = Math.round(6 * Math.sin(y * 2.3) + 3 * Math.sin(y * 5.1 + x * 0.2));
+    return [BRUSHED[0] + streak, BRUSHED[1] + streak, BRUSHED[2] + streak];
+  }, 2);
+  texture(blockOutput, "airstair_rail", (x, y) => (y % 4 === 0 ? [0xf0, 0xf3, 0xf6] : CHROME), 3);
+  texture(blockOutput, "airstair_hatch", (x, y) => {
+    const fromEdge = Math.min(x, 31 - x, y, 15 - y);
+    if (fromEdge === 0) return STEEL_DARK;
+    if (fromEdge === 1) return SEAM;
+    const latch = y >= 3 && y <= 4 && ((x >= 4 && x <= 7) || (x >= 24 && x <= 27));
+    if (latch) return y === 3 ? FRAME_DARK : STEEL;
+    return WHITE;
+  }, 2, 2 * SIZE, SIZE);
+}
 
 // The windscreen renderer tints this plain white sprite into glass and frame.
 texture(blockOutput, "windscreen", () => [255, 255, 255], 0);

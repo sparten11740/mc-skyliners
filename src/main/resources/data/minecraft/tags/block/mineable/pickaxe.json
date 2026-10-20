@@ -12,6 +12,7 @@
     "aerolarge:plug_door",
     "aerolarge:airstair_controller",
     "aerolarge:airstair_call_button",
+    "aerolarge:airstair_step",
     "aerolarge:airframe_shell",
     "aerolarge:cockpit_glass",
     "aerolarge:hull_glass",

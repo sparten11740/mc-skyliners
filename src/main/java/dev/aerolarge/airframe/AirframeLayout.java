@@ -4,7 +4,10 @@ import static dev.aerolarge.airframe.AirframeShape.*;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
+import dev.aerolarge.block.AirstairFlight;
+import dev.aerolarge.block.AirstairStepBlock;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
@@ -144,6 +147,8 @@ public final class AirframeLayout {
     private static final double PASSENGER_DOOR_HEIGHT = 1.93;
     /** How many rows tall the hold's cargo door is: all the hold leaves under the floor at the default scale. */
     private static final int CARGO_DOOR_ROWS = 2;
+    /** How far in from the door's column the hull below the forward port door is looked through for the hold. */
+    private static final int STAIR_MOUTH_SEARCH = 4;
     private static final TagKey<Block> SABLE_WEIGHTLESS = sableTag("weightless");
     private static final TagKey<Block> SABLE_SUPER_LIGHT = sableTag("super_light");
     private static final TagKey<Block> SABLE_LIGHT = sableTag("light");
@@ -175,6 +180,9 @@ public final class AirframeLayout {
     private BlockPos dropRelease;
     /** The drop bay in the belly; null where it found no belly under the hold. */
     private BlockPos bay;
+    /** The airstairs' bay under the cabin floor behind the forward port door; null where the hold has no room. */
+    @Nullable
+    private StairBay stairBay;
     /** The cabin lights' dimmer on the panel and the window shades' control by the captain; null without a flight deck. */
     private BlockPos cabinLights;
     private BlockPos windowShades;
@@ -253,6 +261,8 @@ public final class AirframeLayout {
             new HoldFitOut(layout).apply();
             new DuckHunt(layout).apply();
         }
+        // The airstairs' bay, behind the hull's skin, which the shell pass then cuts as ever: shut, the hatch is skin.
+        layout.stairBay();
         layout.shell();
         layout.landingGear();
         layout.trimTail();
@@ -1923,7 +1933,7 @@ public final class AirframeLayout {
      * part of the airframe) clear of the ground.
      */
     private void landingGear() {
-        ground = minY - Math.max(2, (int) Math.round(GROUND_CLEARANCE * scale));
+        ground = groundRow();
         double balance = centreOfMassZ();
         strut(0, (int) Math.round(NOSE_GEAR_Z * scale), ground, true);
         for (double[] gear : MAIN_GEAR) {
@@ -1937,44 +1947,120 @@ public final class AirframeLayout {
     }
 
     /**
-     * Folding airstairs up to the forward port door, the way passengers board: a landing in front of the door and a
-     * two-wide flight running down toward the nose to the ground, built standing. The airstair controller set into
-     * the hull just aft of the door folds them into nothing and back out, so they are out of the way for flight, and
-     * opens the door as they unfold and shuts it as they fold; a button beside it inside, one outside by the landing,
-     * and a call button on the nose gear for the ground crew work it. It is aft of the door, where the door, swung
-     * forward against the hull, leaves its outside button free.
+     * The row the tires will stand on: far enough below the lowest part of the airframe (the inboard engines, placed
+     * long before the gear) to hold it clear of the ground.
      */
-    private void boardingStairs() {
-        int fore = (int) Math.round(PASSENGER_DOORS[0] * scale);
-        int door = -((int) Math.ceil(WIDTH / 2 * scale) + 1);
-        while (door < 0 && !inFuselage(door, floorY + 1, fore)) {
-            door++;
-        }
-        BlockState landing = Blocks.POLISHED_ANDESITE.defaultBlockState();
-        // Climbing them walks south, toward the door; a stair rises toward the way it faces.
-        BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
-        List<List<AirstairControllerBlockEntity.Step>> stages = new ArrayList<>();
-        stages.add(stage(List.of(
-            new BlockPos(door - 1, floorY, fore), new BlockPos(door - 2, floorY, fore),
-            new BlockPos(door - 1, floorY, fore + 1), new BlockPos(door - 2, floorY, fore + 1)
-        ), landing));
-        // The top step stands level with the landing, so its high side runs flush onto it.
-        for (int k = 1; floorY + 1 - k >= ground; k++) {
-            int y = floorY + 1 - k;
-            stages.add(stage(List.of(new BlockPos(door - 1, y, fore - k), new BlockPos(door - 2, y, fore - k)), step));
-        }
-        stages.removeIf(List::isEmpty);
+    private int groundRow() {
+        return minY - Math.max(2, (int) Math.round(GROUND_CLEARANCE * scale));
+    }
 
-        // The controller is the jamb just aft of the door, a block above its sill.
-        HullDoor served = hullDoors.stream()
-            .filter(hull -> hull.side() < 0 && hull.fore() == fore && hull.bottom() == floorY + 1)
+    /** The forward port door, which the airstairs serve; null if it was not cut. */
+    @Nullable
+    private HullDoor boardingDoor() {
+        int fore = (int) Math.round(PASSENGER_DOORS[0] * scale);
+        return hullDoors.stream()
+            .filter(door -> door.side() < 0 && door.fore() == fore && door.bottom() == floorY + 1)
             .findFirst()
             .orElse(null);
-        if (stages.isEmpty() || served == null) {
+    }
+
+    /**
+     * Where the airstairs stow: how many blocks in from the door's column the bay starts, past the hull's skin below
+     * the sill, which is its mouth, and how long it is.
+     */
+    private record StairBay(int start, int length) {
+    }
+
+    /**
+     * The airstairs' bay: a box under the cabin floor behind the forward port door, in the top row of the hold, walled
+     * off from the rest of it with hull panels and as long as the stairs need folded up in it (see
+     * {@link AirstairFlight}), their sections as few as fit the hold. Its mouth is the hull's skin in the row below the
+     * sill, left as it is: the shell pass cuts it to the curve like the rest, and the controller takes it away as the
+     * hatch opens and puts it back as it shuts. Where the hold has no room for it, there is none, and the stairs slide
+     * into the hull without a bay.
+     */
+    private void stairBay() {
+        HullDoor served = boardingDoor();
+        if (served == null) {
             return;
         }
+        int rise = floorY + 1 - groundRow();
+        Direction out = served.side() > 0 ? Direction.EAST : Direction.WEST;
+        BlockPos[] rows = stairRows(served);
+        int start = 0;
+        for (BlockPos row : rows) {
+            int in = 0;
+            while (in < STAIR_MOUTH_SEARCH && !isOpen(row.relative(out, -in))) {
+                in++;
+            }
+            start = Math.max(start, in);
+        }
+        int room = 0;
+        while (open(rows, out, start + room)) {
+            room++;
+        }
+        int sections = AirstairFlight.sectionsFor(rise, room);
+        if (start >= STAIR_MOUTH_SEARCH || sections == 0) {
+            return;
+        }
+        int length = (int) Math.ceil(AirstairFlight.bayLength(rise, sections));
+        Direction right = out.getCounterClockWise();
+        for (int in = start; in <= start + length; in++) {
+            for (int column = -1; column <= AirstairFlight.WIDTH; column++) {
+                BlockPos at = rows[0].relative(right, column).relative(out, -in);
+                boolean channel = in < start + length && column >= 0 && column < AirstairFlight.WIDTH;
+                wall(channel ? at.below() : at);
+            }
+        }
+        stairBay = new StairBay(start, length);
+    }
+
+    /** The row under the sill in each of the stairs' two columns, at the door's column: the bay's mouth. */
+    private BlockPos[] stairRows(HullDoor served) {
+        Direction right = (served.side() > 0 ? Direction.EAST : Direction.WEST).getCounterClockWise();
+        BlockPos door = served.controller();
+        BlockPos row = new BlockPos(door.getX(), floorY - 1, door.getZ());
+        return new BlockPos[]{row, row.relative(right)};
+    }
+
+    /** Whether both rows are open this many blocks in from the door's column. */
+    private boolean open(BlockPos[] rows, Direction out, int in) {
+        for (BlockPos row : rows) {
+            if (!isOpen(row.relative(out, -in))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isOpen(BlockPos pos) {
+        return isOpen(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /** A hull panel of the bay's walls, where the hold was open; anything else there stays. */
+    private void wall(BlockPos pos) {
+        if (isOpen(pos)) {
+            set(pos.getX(), pos.getY(), pos.getZ(), palette.hull());
+        }
+    }
+
+    /**
+     * The integral airstairs at the forward port door, the way passengers board (see
+     * {@link AirstairBlockEntity}): a flight running straight out from the door down to the ground,
+     * stowed in the bay below it, and built down, its steps laid and its hatch open. The airstair controller set into
+     * the hull just aft of the door folds them away and brings them out again, opening the door as they come out and
+     * shutting it as they go; a button beside it inside, one outside by the top of the stairs, and a call button on the
+     * nose gear for the ground crew work it. It is aft of the door, where the door, swung forward against the hull,
+     * leaves its outside button free.
+     */
+    private void boardingStairs() {
+        HullDoor served = boardingDoor();
+        if (served == null) {
+            return;
+        }
+        // The controller is the jamb just aft of the door, a block above its sill.
         int row = floorY + 2;
-        int panelZ = fore + PlugDoorBlock.COLUMNS;
+        int panelZ = served.fore() + PlugDoorBlock.COLUMNS;
         int panelX = served.outer();
         if (!has(panelX, row, panelZ)) {
             return;
@@ -1988,17 +2074,30 @@ public final class AirframeLayout {
             set(panelX - 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.WEST));
         }
         BlockPos controller = new BlockPos(panelX, row, panelZ);
+        int rise = floorY + 1 - ground;
+        int fitting = stairBay == null ? 0 : AirstairFlight.sectionsFor(rise, stairBay.length());
+        int sections = fitting == 0 ? AirstairFlight.FEWEST_SECTIONS : fitting;
+        List<AirstairControllerBlockEntity.Step> hatch = stairHatch(served, controller);
+        int length = laidStairs(served, rise);
+        if (length < AirstairFlight.shortest(rise, sections)) {
+            length = 0;
+        }
+        // Built with the stairs down, the hatch is open: its skin is the controller's to put back.
+        for (AirstairControllerBlockEntity.Step part : length > 0 ? hatch : List.<AirstairControllerBlockEntity.Step>of()) {
+            BlockPos at = controller.offset(part.offset());
+            set(at.getX(), at.getY(), at.getZ(), Blocks.AIR.defaultBlockState());
+        }
+        layStairs(served, length);
+        float inset = hatchInset(served);
         BlockPos servedDoor = served.controller().subtract(controller);
-        List<List<AirstairControllerBlockEntity.Step>> relative = stages.stream()
-            .map(stage -> stage.stream().map(at -> new AirstairControllerBlockEntity.Step(at.offset().subtract(controller), at.state())).toList())
-            .toList();
+        int laid = length;
         fittings.put(controller, (blockEntity, rotation) -> {
-            if (blockEntity instanceof AirstairControllerBlockEntity airstairs) {
-                airstairs.configure(relative.stream().map(stage -> stage.stream().map(at -> {
-                    BlockPos offset = at.offset().rotate(rotation);
-                    BlockState turned = at.state().rotate(blockEntity.getLevel(), blockEntity.getBlockPos().offset(offset), rotation);
+            if (blockEntity instanceof AirstairBlockEntity airstairs) {
+                airstairs.configure(servedDoor.rotate(rotation), rise, laid, sections, inset, hatch.stream().map(part -> {
+                    BlockPos offset = part.offset().rotate(rotation);
+                    BlockState turned = part.state().rotate(blockEntity.getLevel(), blockEntity.getBlockPos().offset(offset), rotation);
                     return new AirstairControllerBlockEntity.Step(offset, turned);
-                }).toList()).toList(), servedDoor.rotate(rotation));
+                }).toList());
             }
         });
 
@@ -2011,17 +2110,89 @@ public final class AirframeLayout {
         }
     }
 
-    /** One stage of the stairs: those of its blocks that fit, placed standing. */
-    private List<AirstairControllerBlockEntity.Step> stage(List<BlockPos> positions, BlockState state) {
-        List<AirstairControllerBlockEntity.Step> stage = new ArrayList<>();
-        for (BlockPos pos : positions) {
-            if (!has(pos.getX(), pos.getY(), pos.getZ())) {
-                set(pos.getX(), pos.getY(), pos.getZ(), state);
-                stage.add(new AirstairControllerBlockEntity.Step(pos, state));
+    /**
+     * The hatch over the bay's mouth, as the shell pass left it: the skin in the row under the sill, in both columns,
+     * from just outside the door's face (a sliver of skin the curve leaves there) in to the bay; none without a bay.
+     * Each block from the controller, shut.
+     */
+    private List<AirstairControllerBlockEntity.Step> stairHatch(HullDoor served, BlockPos controller) {
+        if (stairBay == null) {
+            return List.of();
+        }
+        Direction out = served.side() > 0 ? Direction.EAST : Direction.WEST;
+        List<AirstairControllerBlockEntity.Step> hatch = new ArrayList<>();
+        for (BlockPos row : stairRows(served)) {
+            for (int in = -1; in < stairBay.start(); in++) {
+                BlockPos at = row.relative(out, -in);
+                BlockState skin = cells.get(at);
+                if (skin != null && !skin.isAir()) {
+                    hatch.add(new AirstairControllerBlockEntity.Step(at.subtract(controller), skin));
+                }
             }
         }
-        return stage;
+        return List.copyOf(hatch);
     }
+
+    /**
+     * How far down the stairs can be laid as built: blocks down from the sill, each a block further out, as far as
+     * nothing of the airliner stands in their way, at most the whole rise.
+     */
+    private int laidStairs(HullDoor served, int rise) {
+        for (int down = 1; down <= rise; down++) {
+            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+                BlockPos step = stairStep(served, down, column);
+                if (has(step.getX(), step.getY(), step.getZ()) || has(step.getX(), step.getY() + 1, step.getZ())) {
+                    return down - 1;
+                }
+            }
+        }
+        return rise;
+    }
+
+    /** The stairs' steps down this far, each with the guard over it holding its side's handrail. */
+    private void layStairs(HullDoor served, int length) {
+        Direction up = served.side() > 0 ? Direction.WEST : Direction.EAST;
+        BlockState block = AerolargeRegistry.AIRSTAIR_STEP.get().defaultBlockState();
+        for (int down = 1; down <= length; down++) {
+            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+                BlockPos step = stairStep(served, down, column);
+                AirstairStepBlock.Edge edge = column == 0 ? AirstairStepBlock.Edge.LEFT : AirstairStepBlock.Edge.RIGHT;
+                set(step.getX(), step.getY(), step.getZ(), AirstairStepBlock.step(block, up));
+                set(step.getX(), step.getY() + 1, step.getZ(), AirstairStepBlock.guard(block, up, edge));
+            }
+        }
+    }
+
+    /**
+     * The airstairs' step {@code down} blocks below the sill, as far out from the door's face, in one of the flight's
+     * columns (0 the left, seen from outside), as {@link AirstairBlockEntity} lays them.
+     */
+    private BlockPos stairStep(HullDoor served, int down, int column) {
+        Direction out = served.side() > 0 ? Direction.EAST : Direction.WEST;
+        return served.controller().relative(out.getCounterClockWise(), column).relative(out, down).below(down);
+    }
+
+    /**
+     * How far in from the door's face the hull's skin lies at the bay's mouth, in blocks: where the curve below the
+     * door crosses the mouth's middle, between the stairs' two columns. The hatch is drawn there as it swings.
+     */
+    private float hatchInset(HullDoor served) {
+        double y = (floorY - 0.5) / scale;
+        double z = (served.fore() + PlugDoorBlock.COLUMNS / 2.0) / scale;
+        double inside = 0;
+        double outside = WIDTH;
+        for (int halving = 0; halving < 24; halving++) {
+            double middle = (inside + outside) / 2;
+            if (AirframeShape.inFuselage(middle, y, z)) {
+                inside = middle;
+            } else {
+                outside = middle;
+            }
+        }
+        double face = Math.abs(served.outer()) + 0.5;
+        return (float) Math.max(0, face - inside * scale);
+    }
+
 
     public Map<BlockPos, Fitting> fittings() {
         return fittings;

@@ -519,11 +519,21 @@ flight no villager opens one. The cockpit door and the doors of the WC and the c
 
 ### Airstairs
 
-The forward port door has folding airstairs. The Airstair Controller set into the hull just aft of the door folds
-them away, step by step from the bottom up once nobody is standing on them, and unfolds them again from the door
-down until they meet the ground; the door opens as they unfold and shuts as they fold. Work it with the button beside
-it inside or outside by the landing, by using the panel itself, with any redstone signal, or from the ground with the
-yellow call button on the front of the nose gear.
+The forward port door has integral airstairs, like the ones built into regional and business jets: a flight of open
+treads running straight out from the door down to the ground, each a dark non-slip plate with a yellow nosing, between
+slim aluminium stringers, with a handrail along either side on thin posts, the top tread level with the sill. Stowed,
+they lie folded under the cabin floor in a bay behind a hatch in the hull below the door, and nothing of them shows.
+The Airstair Controller set into the hull just aft of the door brings them out: the door opens, the hatch drops, the
+folded flight slides out of its bay, rises to the sill and tips down to its slope, its lower sections run out down to
+the ground and the handrails rise, to the hum of their hydraulics and the clunk of their latches, in under five
+seconds. They reach as far down as the ground lets them, so on uneven ground, or over something in the way, they end
+where it meets them, and they are walked up and down like any stairs. Worked again, they go back the same way once
+nobody is on them (a chime says they are waiting), and the door shuts behind them. They only come out while the
+airliner stands still, and fold away by themselves as it starts to move. Work them with the button beside the
+controller inside or outside by the top of the stairs, by using the panel itself, with any redstone signal, or from the
+ground with the yellow call button on the front of the nose gear. An airliner is built with them down. In one built
+before them, the old stairs of blocks fold away the old way the first time they are worked, and from then on the new
+ones come out, folding into the hold behind the hull below the door.
 
 ### Jet bridge
 
@@ -582,7 +592,8 @@ shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its 
 flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, in the layers `PlugDoorMesh` cuts the panel and its lining
-into; `TailCameraFeed` draws the fin camera's
+into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
+from their `AirstairBlockEntity`; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), the one place Veil is touched. Assets
 are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the

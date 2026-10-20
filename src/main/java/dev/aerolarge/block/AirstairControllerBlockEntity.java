@@ -1,6 +1,5 @@
 package dev.aerolarge.block;
 
-import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +26,15 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The airstairs' memory and motor. It knows the flight as a list of stages, from the landing at the door down to the
- * bottom step, each a few blocks placed relative to itself, so the mechanism keeps working wherever the airliner
- * stands or flies. Folding takes the stages away from the bottom up; unfolding lays them out again from the door
- * down, one every few ticks, and stops early where a step meets the ground. The airliner's airstairs also work the
- * door they serve, opening it as they unfold and shutting it as they fold. The jet bridge runs on it too, laying out
- * a tunnel it plans afresh each time (see {@link JetBridgeBlockEntity}).
+ * A flight of blocks laid out and taken away stage by stage: the jet bridge's tunnel (see
+ * {@link JetBridgeBlockEntity}), and the airstairs of airliners built before they folded into the hull (see
+ * {@link AirstairBlockEntity}, which folds those away the first time). It knows the flight as a list of stages, from
+ * the door outward, each a few blocks placed relative to itself, so the mechanism keeps working wherever the airliner
+ * stands or flies. Folding takes the stages away from the far end back; unfolding lays them out again from the door
+ * out, one every few ticks, and stops early where a stage meets the ground. It also works the door the flight serves,
+ * opening it as it unfolds and shutting it as it folds.
  */
-public class AirstairControllerBlockEntity extends BlockEntity {
+public abstract class AirstairControllerBlockEntity extends BlockEntity {
     /** Ticks between stages: quick enough to watch, slow enough to see each step fold. */
     private static final int STAGE_TICKS = 3;
     /** While someone stands on the stairs, how often folding looks again whether they have stepped off. */
@@ -57,16 +57,12 @@ public class AirstairControllerBlockEntity extends BlockEntity {
     @Nullable
     private BlockPos door;
 
-    public AirstairControllerBlockEntity(BlockPos pos, BlockState state) {
-        this(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), pos, state);
-    }
-
     protected AirstairControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-    /** Hands the controller the stairs it was built with, already standing, and where the door they serve is from it. */
-    public void configure(List<List<Step>> stages, BlockPos door) {
+    /** Hands the controller the flight it was built with, already standing, and where the door it serves is from it. */
+    protected void configure(List<List<Step>> stages, BlockPos door) {
         this.stages = stages;
         this.out = stages.size();
         this.extending = true;
@@ -93,6 +89,22 @@ public class AirstairControllerBlockEntity extends BlockEntity {
     /** Whether the stairs are all folded away and staying that way. */
     protected boolean folded() {
         return !extending && out == 0;
+    }
+
+    /** Whether any stage of the flight is out. */
+    protected boolean standing() {
+        return out > 0;
+    }
+
+    /** How many stages the flight has. */
+    protected int stageCount() {
+        return stages.size();
+    }
+
+    /** Where the door the flight serves is from the controller, its bottom left part; null for none. */
+    @Nullable
+    protected BlockPos door() {
+        return door;
     }
 
     /** Folds the stairs away at once, as when the controller itself is broken. */

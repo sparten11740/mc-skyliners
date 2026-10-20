@@ -111,6 +111,15 @@ function plugDoorLang() {
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
+// The integral airstairs are drawn by their controller's renderer (see AirstairRenderer); the steps it lays under them
+// are invisible, so their model only gives the particles feet kick up off the treads. Laid only by the controller, so
+// no item and no loot; light like the rest of the airliner, but no part of its hull (see airstairFittings).
+write(`assets/${ID}/blockstates/airstair_step.json`, { variants: { "": { model: `${ID}:block/airstair_step` } } });
+write(`assets/${ID}/models/block/airstair_step.json`, { textures: { particle: `${ID}:block/airstair_tread` } });
+cubes.airstair_step = null;
+function airstairFittings() {
+  return ["airstair_step"];
+}
 // The airstairs' hydraulic motor and the clunk of their latches (see tools/generate_sounds.mjs).
 function airstairSounds() {
   return Object.fromEntries(["airstair_motor", "airstair_latch"].map((name) =>
@@ -118,6 +127,7 @@ function airstairSounds() {
 }
 function airstairLang() {
   return {
+    "block.aerolarge.airstair_step": "Airstair Step",
     "subtitles.aerolarge.airstair_motor": "Airstairs whirr",
     "subtitles.aerolarge.airstair_latch": "Airstairs latch",
   };
@@ -2069,6 +2079,7 @@ const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${gr
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
+FITTINGS.push(...airstairFittings());
 FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));

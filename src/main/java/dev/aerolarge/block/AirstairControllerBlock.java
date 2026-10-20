@@ -21,8 +21,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * The airstairs' control panel, set into the hull beside the forward door. Using it, pressing a button on either
- * face of it, or any redstone signal switching on folds the stairs away or unfolds them again; see
- * {@link AirstairControllerBlockEntity}.
+ * face of it, or any redstone signal switching on folds the stairs away or brings them out again; see
+ * {@link AirstairBlockEntity}. Broken, it takes the stairs away with it.
  */
 public class AirstairControllerBlock extends BaseEntityBlock {
     private static final MapCodec<AirstairControllerBlock> CODEC = simpleCodec(AirstairControllerBlock::new);
@@ -79,15 +79,27 @@ public class AirstairControllerBlock extends BaseEntityBlock {
         }
     }
 
-    @Nullable
+    /** Taken apart on purpose, it takes its stairs away at once, steps, hatch and all. */
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new AirstairControllerBlockEntity(pos, state);
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide && !state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof AirstairBlockEntity airstairs) {
+            airstairs.stowAway();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Nullable
     @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new AirstairBlockEntity(pos, state);
+    }
+
+    /** The server runs the stairs; every client runs the same clock, to draw them moving in between. */
+    @Nullable
+    @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), AirstairControllerBlockEntity::serverTick);
+        return level.isClientSide
+            ? createTickerHelper(type, AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), AirstairBlockEntity::clientTick)
+            : createTickerHelper(type, AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), AirstairControllerBlockEntity::serverTick);
     }
 }

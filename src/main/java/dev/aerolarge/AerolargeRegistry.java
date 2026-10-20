@@ -2,9 +2,10 @@ package dev.aerolarge;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
-import dev.aerolarge.block.AirstairControllerBlockEntity;
+import dev.aerolarge.block.AirstairStepBlock;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
@@ -294,8 +295,18 @@ public final class AerolargeRegistry {
         properties -> new AirstairCallButtonBlock(AIRLINER, properties),
         BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairControllerBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
-        BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairControllerBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
+        BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
+    /**
+     * What the airstairs stand on once down: invisible steps and the handrails' guards over them, laid and taken up
+     * by the controller only, so they cannot be mined, blown up or moved, and drop nothing.
+     */
+    public static final DeferredBlock<AirstairStepBlock> AIRSTAIR_STEP = BLOCKS.registerBlock(
+        "airstair_step", AirstairStepBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
     /** The airstairs' hydraulic motor running, and the clunk of their latches and their hatch's. */
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_MOTOR = sound("airstair_motor");
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_LATCH = sound("airstair_latch");
