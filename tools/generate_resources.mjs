@@ -1304,6 +1304,72 @@ function cargoNetLang() {
   };
 }
 
+// The hold's floor (see CargoFloorBlock), drawn with its tie-down rail along the north edge: a panel of anti-slip
+// plating a pixel thick; on it, along the north edge, the yellow seat track half a pixel proud, its slot and round
+// cut-outs along it; and down the middle the steel roller track a pixel proud between two lips, its rollers across it.
+// The ball mat (see BallMatBlock): the same plating, and on it sixteen polished steel balls in rows of four, standing
+// a pixel proud in their sockets. Both run on into the next panel along them, and are held as a carpet is.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const plate = (texture) => ({
+    from: [0, 0, 0], to: [16, 1, 16],
+    faces: {
+      up: { texture }, down: { texture, cullface: "down" },
+      ...Object.fromEntries(["north", "south", "east", "west"].map((side) => [side, { texture, uv: [0, 15, 16, 16], cullface: side }])),
+    },
+  });
+  // A strip along the panel from its west edge to its east, its ends against the next panel's.
+  const strip = (from, to, texture, top, side) => ({
+    from, to,
+    faces: {
+      up: { texture, uv: top }, north: { texture, uv: side }, south: { texture, uv: side },
+      east: { texture, uv: side, cullface: "east" }, west: { texture, uv: side, cullface: "west" },
+    },
+  });
+  write(`assets/${ID}/models/block/cargo_floor.json`, {
+    parent: "minecraft:block/block",
+    textures: {
+      plate: block("cargo_floor_plate"), rail: block("cargo_floor_rail"), roller: block("cargo_floor_roller"), steel: block("cargo_net_steel"),
+      particle: block("cargo_floor_plate"),
+    },
+    elements: [
+      plate("#plate"),
+      strip([0, 1, 0.5], [16, 1.5, 3.5], "#rail", [0, 0, 16, 3], [0, 4, 16, 4.5]),
+      strip([0, 1, 7], [16, 1.75, 7.5], "#steel", [0, 0, 16, 0.5], [0, 0, 16, 0.75]),
+      strip([0, 1, 11.5], [16, 1.75, 12], "#steel", [0, 0, 16, 0.5], [0, 0, 16, 0.75]),
+      strip([0, 1, 7.5], [16, 2, 11.5], "#roller", [0, 0, 16, 4], [0, 0, 16, 1]),
+    ],
+  });
+  facing("cargo_floor");
+  const balls = [1, 5, 9, 13].flatMap((x) => [1, 5, 9, 13].map((z) => solid([x, 1, z], [x + 2, 2, z + 2], "#ball")));
+  write(`assets/${ID}/models/block/ball_mat.json`, {
+    parent: "minecraft:block/block",
+    textures: { plate: block("ball_mat"), ball: block("ball_mat_ball"), particle: block("ball_mat") },
+    elements: [plate("#plate"), ...balls],
+  });
+  write(`assets/${ID}/blockstates/ball_mat.json`, { variants: { "": { model: block("ball_mat") } } });
+  for (const name of ["cargo_floor", "ball_mat"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: block(name) });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// The floor panels are laid in the hold rather than built into the airliner: breakable, and no part of the airframe.
+function cargoFloorFittings() {
+  return ["cargo_floor", "ball_mat"];
+}
+// Smooth stone plating with iron nuggets for its rollers or its balls, and the rail's yellow paint.
+function cargoFloorRecipes() {
+  shaped("cargo_floor", ["NYN", "SSS"], { N: "minecraft:iron_nugget", Y: "minecraft:yellow_dye", S: "minecraft:smooth_stone_slab" }, 3);
+  shaped("ball_mat", ["NNN", "SSS"], { N: "minecraft:iron_nugget", S: "minecraft:smooth_stone_slab" }, 3);
+}
+function cargoFloorLang() {
+  return {
+    "block.aerolarge.cargo_floor": "Cargo Floor",
+    "block.aerolarge.ball_mat": "Ball Mat",
+  };
+}
+
 // Rubber ducks: their fittings, sound, recipes and names are in the functions below, which the shared lists further
 // down take in. The duck, drawn facing north from RubberDuckBlock.BOXES: a yellow body with its head on the front, an
 // eye either side of the head, an orange beak and a cocked tail. Its renderer draws it, sitting or afloat, so one model
@@ -3131,6 +3197,7 @@ FITTINGS.push(...lavatoryBasinFittings());
 FITTINGS.push(...bulkheadSignFittings());
 FITTINGS.push(...denFurnitureFittings());
 FITTINGS.push(...cargoNetFittings());
+FITTINGS.push(...cargoFloorFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3245,6 +3312,7 @@ bulkheadSignRecipes();
 denFurnitureRecipes();
 airstairButtonRecipes();
 cargoNetRecipes();
+cargoFloorRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3592,6 +3660,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...denFurnitureLang(),
   ...airstairButtonLang(),
   ...cargoNetLang(),
+  ...cargoFloorLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -389,6 +389,12 @@ runs down it. Nothing gets through a net, but it is a mesh to reach through: poi
 behind it, unless at its steel track, its fittings or an edge strap; sneak, or hold a net, to take hold of the webbing
 itself. Cargo nets can be crafted.
 
+Cargo Floor is a hold's floor panel, laid on a floor like a carpet: dark anti-slip plating with a steel roller track
+down its middle, and along one edge, the one you face as you put it down, a yellow tie-down rail, the slotted seat
+track nets and straps lock into; the rollers run along the rail, and panels laid in a row run on into each other. A
+Ball Mat is a panel of polished steel ball-transfer units, each in its socket, on which a load turns any way. Both can
+be crafted.
+
 ### Vacuum toilets
 
 A Vacuum Toilet (craftable from iron and a bucket) is an airliner's toilet: a stainless steel bowl in a white shroud,

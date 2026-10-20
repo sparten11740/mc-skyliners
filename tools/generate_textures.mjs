@@ -1796,6 +1796,40 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
 }
 
+// The hold's floor (see CargoFloorBlock and BallMatBlock). Its plating: dark grey anti-slip plate, raised lentils two
+// pixels long in fours, each four turned the other way from the next. The tie-down rail, laid along the texture's top
+// three rows: yellow seat track with a dark slot down its middle, widening into a round cut-out every four pixels;
+// below them its yellow sides. The roller track's rollers across it in its top four rows: steel rollers two pixels
+// wide between dark gaps, a highlight down one side of each, darker at their ends. The ball mat: the plating, plain,
+// with the rim of a dark socket round each ball in rows of four, and its balls polished steel, a white glint on each.
+{
+  const PLATE = [0x50, 0x56, 0x5d];
+  const LENTIL = [0x78, 0x7e, 0x86];
+  const SLOT = [0x26, 0x24, 0x1c];
+  texture(blockOutput, "cargo_floor_plate", (x, y) => {
+    const [lx, ly] = [x % 4, y % 4];
+    const turned = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 1;
+    const lentil = lx >= 1 && lx <= 2 && ly >= 1 && ly <= 2 && (turned ? lx + ly === 3 : lx === ly);
+    return lentil ? LENTIL : PLATE;
+  }, 3);
+  texture(blockOutput, "cargo_floor_rail", (x, y) => {
+    const cutout = x % 4 === 1 || x % 4 === 2;
+    if (y === 1 || (y === 0 || y === 2) && cutout) return SLOT;
+    return y <= 2 ? HAZARD : [0xc4, 0x96, 0x16];
+  }, 3);
+  texture(blockOutput, "cargo_floor_roller", (x, y) => {
+    if (x % 3 === 0) return [0x30, 0x33, 0x38];
+    if (y === 0 || y === 3) return [0x86, 0x8c, 0x94];
+    return x % 3 === 1 ? [0xe0, 0xe4, 0xe8] : [0xb4, 0xba, 0xc0];
+  }, 2);
+  // A ball stands on the second and third pixels of every four each way; its socket's rim shows round its far sides.
+  texture(blockOutput, "ball_mat", (x, y) => {
+    const [lx, ly] = [x % 4, y % 4];
+    return (lx === 3 && ly >= 1) || (ly === 3 && lx >= 1) ? [0x2c, 0x30, 0x34] : PLATE;
+  }, 3);
+  texture(blockOutput, "ball_mat_ball", (x, y) => (x % 4 === 1 && y % 4 === 1 ? [0xfa, 0xfc, 0xff] : CHROME), 2);
+}
+
 // The vacuum toilet. Its shroud: white plastic, a touch greyer toward the foot. The rim and the bowl's sides: brushed
 // stainless, streaked along. The bowl's floor, where its model shows it (the middle six pixels square, a pixel below
 // the middle): stainless round a pool of the blue rinse water, the drain dark in the middle of it. The seat: a little

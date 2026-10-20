@@ -12,6 +12,7 @@ import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
+import dev.aerolarge.block.BallMatBlock;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.BeanBagBlock;
@@ -30,6 +31,7 @@ import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CabinWindowShellBlock;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
+import dev.aerolarge.block.CargoFloorBlock;
 import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
@@ -746,6 +748,11 @@ public final class AerolargeRegistry {
             .isValidSpawn(AerolargeRegistry::never)
     );
     public static final DeferredItem<BlockItem> CARGO_NET_ITEM = ITEMS.registerSimpleBlockItem(CARGO_NET);
+    /** The hold's floor panels, laid like carpet: roller tracks with a tie-down rail, and ball mats. */
+    public static final DeferredBlock<CargoFloorBlock> CARGO_FLOOR = BLOCKS.registerBlock("cargo_floor", CargoFloorBlock::new, metal(MapColor.COLOR_GRAY));
+    public static final DeferredBlock<BallMatBlock> BALL_MAT = BLOCKS.registerBlock("ball_mat", BallMatBlock::new, metal(MapColor.COLOR_GRAY));
+    public static final DeferredItem<BlockItem> CARGO_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(CARGO_FLOOR);
+    public static final DeferredItem<BlockItem> BALL_MAT_ITEM = ITEMS.registerSimpleBlockItem(BALL_MAT);
 
     /**
      * The secret bookshelf door's creak, opening and shutting: a wooden door's, played deep and slow (see the sounds
@@ -1024,7 +1031,7 @@ public final class AerolargeRegistry {
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
-            CARGO_NET_ITEM
+            CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
