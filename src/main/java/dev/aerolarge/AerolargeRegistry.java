@@ -353,6 +353,8 @@ public final class AerolargeRegistry {
     /** A plug door's pneumatic hiss as it starts to move, and the clunk of its latches. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_HISS = sound("plug_door_hiss");
     public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_LATCH = sound("plug_door_latch");
+    /** The siren wailing through the cabin while a door stands open in flight (see {@code Decompression}). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> DOOR_ALARM = sound("door_alarm");
     /** The airstairs' panel beside the forward door, and the ground crew's button on the nose gear that calls it. */
     public static final DeferredBlock<AirstairControllerBlock> AIRSTAIR_CONTROLLER = BLOCKS.registerBlock(
         "airstair_controller", AirstairControllerBlock::new, metal(MapColor.COLOR_YELLOW)

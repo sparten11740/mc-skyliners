@@ -112,16 +112,19 @@ write(`assets/${ID}/models/item/airliner_door.json`, { parent: "minecraft:item/g
 write(`assets/${ID}/blockstates/plug_door.json`, { variants: { "": { model: `${ID}:block/plug_door` } } });
 write(`assets/${ID}/models/block/plug_door.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
 cubes.plug_door = null;
-// The plug door's pneumatic hiss and the clunk of its latches (see tools/generate_sounds.mjs).
+// The plug door's pneumatic hiss, the clunk of its latches, and the alarm while one stands open in flight (see
+// tools/generate_sounds.mjs).
 function plugDoorSounds() {
-  return Object.fromEntries(["plug_door_hiss", "plug_door_latch"].map((name) =>
+  const sounds = Object.fromEntries(["plug_door_hiss", "plug_door_latch"].map((name) =>
     [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+  return { ...sounds, door_alarm: { subtitle: `subtitles.${ID}.door_alarm`, sounds: [{ name: `${ID}:door_alarm` }] } };
 }
 function plugDoorLang() {
   return {
     "block.aerolarge.plug_door": "Plug Door",
     "subtitles.aerolarge.plug_door_hiss": "Door hisses",
     "subtitles.aerolarge.plug_door_latch": "Door latches",
+    "subtitles.aerolarge.door_alarm": "Door alarm wails",
   };
 }
 

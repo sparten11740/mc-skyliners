@@ -459,6 +459,14 @@
       }
     ]
   },
+  "door_alarm": {
+    "subtitle": "subtitles.aerolarge.door_alarm",
+    "sounds": [
+      {
+        "name": "aerolarge:door_alarm"
+      }
+    ]
+  },
   "airstair_motor": {
     "subtitle": "subtitles.aerolarge.airstair_motor",
     "sounds": [

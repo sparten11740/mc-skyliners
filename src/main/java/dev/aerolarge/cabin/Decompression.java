@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -109,6 +110,12 @@ public final class Decompression {
     private static final int WIND_TICKS = 200;
     /** How long a plug door stands open in flight before it shuts by itself, in ticks: ten seconds. */
     private static final int SHUT_AFTER = 10 * SharedConstants.TICKS_PER_SECOND;
+    /**
+     * The door alarm: its horn played to everyone aboard, wherever they are, again each time its two-second clip ends,
+     * in ticks, for as long as a door stands open in flight.
+     */
+    private static final int ALARM_TICKS = 2 * SharedConstants.TICKS_PER_SECOND;
+    private static final float ALARM_VOLUME = 1;
     /** The bang as a door gives way in flight: a wind charge's burst, loud and deep. */
     private static final float BANG_VOLUME = 2;
     private static final float BANG_PITCH = 0.5F;
@@ -129,11 +136,12 @@ public final class Decompression {
     private int searched;
     /**
      * Whether the air is rushing out; and, by the foot of each open door, the tick its wind runs out and the tick it shuts
-     * by itself.
+     * by itself; and the tick the alarm's wail ends.
      */
     private boolean blowing;
     private final Map<BlockPos, Long> wind = new HashMap<>();
     private final Map<BlockPos, Long> shutAt = new HashMap<>();
+    private long alarmUntil;
 
     /**
      * One tick of the assembled airliner the autopilot is part of, its nose pointing the given way in the plot, with how
@@ -163,6 +171,7 @@ public final class Decompression {
                 player.displayClientMessage(warning, false);
             }
         }
+        alarm(level, autopilot);
         List<BlockPos> feet = open.stream().map(Doorway::foot).toList();
         wind.keySet().retainAll(feet);
         shutAt.keySet().retainAll(feet);
@@ -282,9 +291,28 @@ public final class Decompression {
         blowing = false;
         wind.clear();
         shutAt.clear();
+        alarmUntil = 0;
         ClientboundStopSoundPacket stop = new ClientboundStopSoundPacket(SoundEvents.ELYTRA_FLYING.getLocation(), SoundSource.AMBIENT);
+        ClientboundStopSoundPacket silence = new ClientboundStopSoundPacket(AerolargeRegistry.DOOR_ALARM.getId(), SoundSource.BLOCKS);
         for (ServerPlayer player : Aboard.players(autopilot)) {
             player.connection.send(stop);
+            player.connection.send(silence);
+        }
+    }
+
+    /**
+     * Sounds the door alarm through the cabin, each time its wail has ended: to everyone aboard, following them about,
+     * so it is as loud anywhere aboard as by the door.
+     */
+    private void alarm(ServerLevel level, BlockEntity autopilot) {
+        long now = level.getGameTime();
+        if (now < alarmUntil) {
+            return;
+        }
+        alarmUntil = now + ALARM_TICKS;
+        long seed = level.getRandom().nextLong();
+        for (ServerPlayer player : Aboard.players(autopilot)) {
+            player.connection.send(new ClientboundSoundEntityPacket(AerolargeRegistry.DOOR_ALARM, SoundSource.BLOCKS, player, ALARM_VOLUME, 1.0F, seed));
         }
     }
 

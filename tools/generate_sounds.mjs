@@ -366,6 +366,63 @@ writeSound("pa_chime", CHIME);
   bell(samples, 0.004, 1290, 0.035);
   writeSound("plug_door_latch", samples);
 }
+// The door alarm while a door stands open in flight: a warning horn's whoop, twice in the clip, rising from a growl to
+// a shriek and cut off, as a ship's or a plant's alarm horn sounds. A full sawtooth and square, all their harmonics up
+// to where the horn speaker stops, through that speaker's two honking resonances and driven a little into clipping;
+// then the cabin's hard walls echo it back. The echoes wrap round the clip's end, so played again and again it loops
+// without a seam. No noise, so it never shifts the sounds after it.
+{
+  const length = 2.0;
+  const whoops = 2;
+  const whoop = 0.72;
+  const from = 260;
+  const to = 820;
+  const dry = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  for (let i = 0; i < dry.length; i++) {
+    const t = (i / RATE) % (length / whoops);
+    if (t >= whoop) {
+      continue;
+    }
+    // Rising fast at first and slowing toward the top, as a horn's rotor spins up.
+    const rise = 1 - Math.pow(1 - t / whoop, 2.2);
+    const frequency = from + (to - from) * rise;
+    phase += 2 * Math.PI * frequency / RATE;
+    let tone = 0;
+    for (let k = 1; k * frequency < 7000; k++) {
+      tone += Math.sin(k * phase) * (k % 2 === 1 ? 1.25 : 0.8) / k;
+    }
+    const envelope = Math.min(1, t / 0.015) * Math.min(1, (whoop - t) / 0.02);
+    dry[i] = envelope * tone;
+  }
+  // The horn speaker: its two resonances, each a two-pole band-pass, over some of the dry sound.
+  const resonance = (input, centre, q) => {
+    const out = new Float64Array(input.length);
+    const w = 2 * Math.PI * centre / RATE;
+    const alpha = Math.sin(w) / (2 * q);
+    const [b0, b2, a0, a1, a2] = [alpha, -alpha, 1 + alpha, -2 * Math.cos(w), 1 - alpha];
+    let [x1, x2, y1, y2] = [0, 0, 0, 0];
+    for (let i = 0; i < input.length; i++) {
+      const y = (b0 * input[i] + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+      [x2, x1, y2, y1] = [x1, input[i], y1, y];
+      out[i] = y;
+    }
+    return out;
+  };
+  const honk = resonance(dry, 1150, 3);
+  const bite = resonance(dry, 2600, 4);
+  const horn = dry.map((s, i) => Math.tanh(1.6 * (0.35 * s + 1.4 * honk[i] + 0.9 * bite[i])));
+  // The cabin: a few short echoes off its walls, wrapping round the clip's end.
+  const samples = new Float64Array(horn.length);
+  const echoes = [[0, 1], [0.019, 0.32], [0.031, 0.24], [0.047, 0.17], [0.071, 0.11], [0.103, 0.07]];
+  for (const [delay, gain] of echoes) {
+    const shift = Math.round(delay * RATE);
+    for (let i = 0; i < samples.length; i++) {
+      samples[(i + shift) % samples.length] += gain * horn[i];
+    }
+  }
+  writeSound("door_alarm", samples, 0.8);
+}
 
 // Rubber ducks, with their own noise, so they never shift the sounds above. A squeak is air forced through the duck's
 // reed: a buzzy tone, its pitch swooping up and back down, rattling and breathy. squeak() adds one to the samples.
