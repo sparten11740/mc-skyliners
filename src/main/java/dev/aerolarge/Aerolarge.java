@@ -5,6 +5,7 @@ import dev.aerolarge.block.BrewCoffee;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.block.UnstickAirliner;
 import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
 import dev.aerolarge.cabin.Passengers;
@@ -70,9 +71,10 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("5")
+        event.registrar("6")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
+            .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,

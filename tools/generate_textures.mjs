@@ -1339,7 +1339,8 @@ blueprint("furnished_airliner_blueprint", true);
 // the runway to land; a green tick to apply; a red power symbol to switch the autopilot off. For the pilot's HUD, the
 // phases those buttons leave out: a green airliner climbing or descending beside a white arrow up or down, and an
 // amber one braking along the runway toward a red stop bar; and the height above the ground, an airliner seen from
-// the side over the grass with a cyan arrow between them.
+// the side over the grass with a cyan arrow between them. To hop a stuck airliner free: a cyan airliner seen from the
+// side, lifted off the grass on two white arrows, puffs of the jets' exhaust under them.
 {
   const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui");
   const panelOutput = resolve(guiOutput, "panel");
@@ -1482,6 +1483,19 @@ blueprint("furnished_airliner_blueprint", true);
     if (arrow(x, y, 7.5, 6, 9, true) || arrow(x, y, 7.5, 10, 12, false)) return CYAN;
     if (y === 13) return GREEN;
     return y >= 14 ? [0x7a, 0x4e, 0x26] : null;
+  });
+  icon(autopilotOutput, "unstuck", (x, y) => {
+    const fin = y >= 1 && y <= 3 && x >= 1 && x <= y;
+    const fuselage = (y === 4 && x >= 1 && x <= 12) || (y === 5 && x >= 1 && x <= 14);
+    const engine = y === 6 && x >= 7 && x <= 8;
+    if (fin || fuselage || engine) return y === 4 || fin ? CYAN : CYAN_DARK;
+    if (arrow(x, y, 3.5, 7, 10, true) || arrow(x, y, 11.5, 7, 10, true)) return INK;
+    // Each puff a little cloud of three lobes, lit along its top.
+    for (const cx of [3.5, 11.5]) {
+      const lobes = [[cx - 1.4, 13.2], [cx + 1.4, 13.2], [cx, 12.2]];
+      if (lobes.some(([px, py]) => Math.hypot(x - px, y - py) <= 1.45)) return y <= 11 ? INK : PALE;
+    }
+    return y === 15 ? GREEN : null;
   });
 
   // Air traffic control talking (see AtcHeadset): a pilot's headset, its band over the top, a white ear cup either side

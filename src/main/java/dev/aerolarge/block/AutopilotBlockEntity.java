@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -70,6 +71,9 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * <p>Set to take off or to land, and once it has landed and stopped, it makes the cabin announcements (see
  * {@link CabinAnnouncements}); and air traffic control talks to the airliner (see {@link AtcRadio}), so set to take
  * off it holds the brakes until the tower has cleared it.
+ *
+ * <p>Stuck on the ground with its engines running, the airliner can be hopped free from the settings screen: for a
+ * moment the control jets push it up off whatever holds it (see {@link Hop}), then go back to flying it.
  */
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
@@ -247,6 +251,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     public static final int MIN_RADIUS = 150;
     public static final int MAX_RADIUS = 1000;
     private static final double DEFAULT_RADIUS = 600;
+    private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
@@ -298,6 +303,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Turbulence turbulence = new Turbulence();
     /** The airstairs and slides it has put away before taking off, which it holds the brakes for till they are. */
     private final Stowing stowing = new Stowing();
+    /** Hopping the airliner free when it is stuck on the ground. */
+    private final Hop hop = new Hop();
+    /** Whether the settings screen offers to hop the airliner free: found on the server each tick, sent to the clients. */
+    private boolean stuck;
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -349,6 +358,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         return orbitRadius;
     }
 
+    /** Whether the airliner is stuck on the ground with its engines running, and the jets ready to hop it free. */
+    public boolean stuck() {
+        return stuck;
+    }
+
     /**
      * Whether a player can work the autopilot from where they are: within reach of it, give or take the few blocks a
      * container's screen stays open past reach, which takes in the flight deck's autopilot screen. With Sable, reach is
@@ -356,6 +370,19 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     public boolean canBeWorkedBy(Player player) {
         return !player.isSpectator() && Container.stillValidBlockEntity(this, player);
+    }
+
+    /**
+     * The autopilot a player's settings screen asks for at a position: one standing there, already loaded, that they
+     * can work; null for none. Checked loaded first, so that a position from a client never loads a chunk.
+     */
+    @Nullable
+    public static AutopilotBlockEntity workedBy(ServerPlayer player, BlockPos pos) {
+        Level level = player.level();
+        if (!level.isLoaded(pos) || !level.getBlockState(pos).is(AerolargeRegistry.AUTOPILOT.get())) {
+            return null;
+        }
+        return level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot && autopilot.canBeWorkedBy(player) ? autopilot : null;
     }
 
     /**
@@ -477,6 +504,24 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading));
     }
 
+    /**
+     * Hops the airliner free from its settings screen, if it is stuck: only on the ground, with its engines running and
+     * its brakes off, once it has stood still a moment, and not again till the jets have rested (see {@link Hop}). A
+     * parking brake set is left set: holding the airliner is what it is for. Says what it does, or why it cannot.
+     */
+    public Component unstick() {
+        SableFlight.State state = SableFlight.read(this, nose());
+        if (state == null || !(level instanceof ServerLevel serverLevel)) {
+            return Component.translatable("message.aerolarge.autopilot.not_assembled");
+        }
+        Hop.Hold hold = hop.hold(stance(serverLevel, state, radioAltitude(serverLevel, state)));
+        if (hold == Hop.Hold.NONE) {
+            hop.start(serverLevel, worldPosition, state);
+            offerHop(false);
+        }
+        return Component.translatable(hold.message());
+    }
+
     /** A setting from the screen, or the target it was shown from if it comes back as the screen showed it. */
     private static double unlessSame(double target, int setting) {
         return Math.round(target) == setting ? target : setting;
@@ -558,16 +603,25 @@ public class AutopilotBlockEntity extends BlockEntity {
         autopilot.announcements.tick(autopilot);
         SableFlight.State flight = SableFlight.read(autopilot, autopilot.nose());
         if (flight == null) {
+            // Disassembled under it: nothing left to fly, nor to hop free.
             if (autopilot.phase != Phase.OFF) {
-                // Disassembled under it: nothing left to fly.
                 autopilot.disengage();
             }
+            if (autopilot.hop.stop()) {
+                autopilot.setJets(serverLevel, 0, 0);
+            }
+            autopilot.offerHop(false);
             return;
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
         double radio = autopilot.radioAltitude(serverLevel, flight);
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
         Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, radio);
+        // Before the jets are set: a burst ending now hands them back this tick. It ends before the wheels would coast
+        // clear of the ground: taking off, the autopilot would take that for lifting off.
+        boolean clear = radio + flight.apex() - flight.position().y > AIRBORNE;
+        autopilot.hop.tick(flight, clear, serverLevel.getGameTime());
+        autopilot.offerHop(autopilot.hop.watch(autopilot.stance(serverLevel, flight, radio)) == Hop.Hold.NONE);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {
@@ -601,10 +655,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             pitchCommand = (int) Math.round(PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate);
             rollCommand = (int) Math.round(ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate);
         }
-        drive(level, Channel.PITCH_UP, Mth.clamp(pitchCommand, 0, 15));
-        drive(level, Channel.PITCH_DOWN, Mth.clamp(-pitchCommand, 0, 15));
-        drive(level, Channel.ROLL_RIGHT, Mth.clamp(rollCommand, 0, 15));
-        drive(level, Channel.ROLL_LEFT, Mth.clamp(-rollCommand, 0, 15));
+        driveJets(level, state, pitchCommand, rollCommand);
 
         double speed = state.airspeed();
         double apex = state.apex();
@@ -614,7 +665,7 @@ public class AutopilotBlockEntity extends BlockEntity {
                 setChanged();
             }
             // Every tick, so a lever moved meanwhile does not get the engines back.
-            for (Channel engine : new Channel[]{Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4}) {
+            for (Channel engine : ENGINES) {
                 drive(level, engine, 0);
             }
         } else if (governing && speed < MAX_SAFE_SPEED - GOVERNOR_MARGIN && apex < ceiling(level) - CEILING_MARGIN) {
@@ -740,10 +791,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         int pitchCommand = (int) Math.round(PITCH_GAIN * (targetPitch - pitch) - PITCH_DAMPING * pitchRate);
         int rollCommand = (int) Math.round(ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate);
         boolean rolls = !onGround || radio > 0.5;
-        drive(level, Channel.PITCH_UP, Mth.clamp(pitchCommand, 0, 15));
-        drive(level, Channel.PITCH_DOWN, Mth.clamp(-pitchCommand, 0, 15));
-        drive(level, Channel.ROLL_RIGHT, rolls ? Mth.clamp(rollCommand, 0, 15) : 0);
-        drive(level, Channel.ROLL_LEFT, rolls ? Mth.clamp(-rollCommand, 0, 15) : 0);
+        driveJets(level, state, pitchCommand, rolls ? rollCommand : 0);
 
         // The brakes are off while it flies and on while it holds for the take-off clearance and once it has landed; on
         // the ground it also steers the nose wheel to hold the heading.
@@ -831,6 +879,74 @@ public class AutopilotBlockEntity extends BlockEntity {
         Vec3 at = state.position();
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
         return at.y - 0.5 - wheelsBelow - ground;
+    }
+
+    /**
+     * Sets the control jets to pitch and roll the airliner as asked, in signal up and to the right; while it hops
+     * free, as the hop needs them instead.
+     */
+    private void driveJets(ServerLevel level, SableFlight.State state, int pitch, int roll) {
+        if (hop.firing()) {
+            hopJets(level, state);
+        } else {
+            setJets(level, pitch, roll);
+        }
+    }
+
+    private void setJets(ServerLevel level, int pitch, int roll) {
+        drive(level, Channel.PITCH_UP, Mth.clamp(pitch, 0, 15));
+        drive(level, Channel.PITCH_DOWN, Mth.clamp(-pitch, 0, 15));
+        drive(level, Channel.ROLL_RIGHT, Mth.clamp(roll, 0, 15));
+        drive(level, Channel.ROLL_LEFT, Mth.clamp(-roll, 0, 15));
+    }
+
+    /**
+     * The control jets for a hop: those under the wings at full and those over them quiet, so both wings lift alike;
+     * the tailplane's as the hop holds the nose. A jet under a wing rolls the airliner away from it, so rolling left
+     * fires the right wing's jets under it, and rolling right the left wing's.
+     */
+    private void hopJets(ServerLevel level, SableFlight.State state) {
+        Direction right = nose().getClockWise();
+        for (Channel roll : new Channel[]{Channel.ROLL_LEFT, Channel.ROLL_RIGHT}) {
+            int under = roll == Channel.ROLL_LEFT ? 1 : -1;
+            Map<Boolean, List<BlockPos>> lifting = relays.getOrDefault(roll, List.of()).stream()
+                .collect(Collectors.partitioningBy(relay -> Integer.signum(relay.getX() * right.getStepX() + relay.getZ() * right.getStepZ()) == under));
+            Relays.drive(level, worldPosition, lifting.get(true), 15);
+            Relays.drive(level, worldPosition, lifting.get(false), 0);
+        }
+        int tail = hop.tail(state.pitch());
+        drive(level, Channel.PITCH_DOWN, Mth.clamp(tail, 0, 15));
+        drive(level, Channel.PITCH_UP, Mth.clamp(-tail, 0, 15));
+    }
+
+    /**
+     * How the airliner stands for hopping it free: whether it is on the ground (not airborne, as taking off and landing
+     * reckon it), and whether its engines are running and its brakes on, whoever set them: the thrust levers and the
+     * parking brake, or the autopilot.
+     */
+    private Hop.Stance stance(ServerLevel level, SableFlight.State state, double radio) {
+        return new Hop.Stance(level.getGameTime(), state.velocity().length(), radio <= AIRBORNE, powered(level, ENGINES), powered(level, Channel.BRAKES));
+    }
+
+    /** Whether any relay of the channels gives off a signal. */
+    private boolean powered(Level level, Channel... channels) {
+        for (Channel channel : channels) {
+            for (BlockPos offset : relays.getOrDefault(channel, List.of())) {
+                BlockState relay = level.getBlockState(worldPosition.offset(offset));
+                if (relay.getBlock() instanceof ThrustRelayBlock && relay.getValue(ThrustRelayBlock.POWER) > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Offers to hop the airliner free on the settings screen, or stops offering it, telling the clients when that changes. */
+    private void offerHop(boolean offered) {
+        if (offered != stuck) {
+            stuck = offered;
+            changed();
+        }
     }
 
     /** A heading as a compass bearing, 0 north and 90 east, three digits. */
@@ -1001,6 +1117,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         orbitX = tag.getDouble("OrbitX");
         orbitZ = tag.getDouble("OrbitZ");
         orbitRadius = tag.contains("OrbitRadius") ? tag.getDouble("OrbitRadius") : DEFAULT_RADIUS;
+        // Only ever in the update sent to clients: the server finds it afresh each tick.
+        stuck = tag.getBoolean("Stuck");
     }
 
     private static <E extends Enum<E>> E parse(Class<E> type, String name, E fallback) {
@@ -1015,6 +1133,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         saveTargets(tag);
+        tag.putBoolean("Stuck", stuck);
         return tag;
     }
 

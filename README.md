@@ -277,6 +277,18 @@ with the nose wheel; then it pulls the thrust levers to idle, centres the tiller
 switches itself off. It lands on whatever lies below, so line it up over open, level ground first. Applying the
 settings while it comes down goes around, climbing away to the altitude set.
 
+On the ground, an airliner that will not move, held by whatever it has run into or sunk into, can be hopped free.
+Once it has stood still (slower than a block a second) for 2 seconds with its engines running (on the thrust levers,
+or taking off on the autopilot) and its brakes off, the settings show Unstuck (a cyan airliner lifted off the grass on
+two white arrows over puffs of exhaust) in place of Land. It fires the control jets under the wings at full,
+with the roar of jets on the flight deck, taking the weight off the wheels so the engines can move the airliner again.
+The jets under the tailplane fire too, but all of them push from behind the centre of mass, and together they would
+tip the airliner onto its nose, so the tailplane's hold the nose where it stood: under it at full while the nose stays
+up, easing off as it dips and pushing the tail down past that. The burst lasts two and a half seconds, or ends as soon
+as the airliner would coast up 2 blocks, or its wheels clear of the ground (so it never takes off); then the jets are
+the autopilot's again, and they rest 5 seconds before they hop it again. It is never offered in the air, nor while the brakes hold the airliner: the parking brake set is what
+keeps it from moving, so release it first (Unstuck leaves the brake as it is).
+
 The big screen shows the autopilot at work. Its right side is the autopilot's buttons, lit for what it is doing;
 touching them opens the settings. Its left side is a moving map, heading up: the track flown, the circle being
 flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom

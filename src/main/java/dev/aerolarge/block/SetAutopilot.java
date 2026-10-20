@@ -9,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -43,14 +42,12 @@ public record SetAutopilot(BlockPos pos, Action action, AutopilotBlockEntity.Set
         if (!(context.player() instanceof ServerPlayer player)) {
             return;
         }
-        Level level = player.level();
-        BlockPos pos = payload.pos();
-        // Checked loaded first, so that a position from a client never loads a chunk.
-        if (!level.isLoaded(pos) || !(level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot) || !autopilot.canBeWorkedBy(player)) {
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.workedBy(player, payload.pos());
+        if (autopilot == null) {
             return;
         }
         // In chat, with the autopilot's other messages (engaged, landing, landed, off), to be read again.
         player.displayClientMessage(autopilot.set(payload.action(), payload.settings()), false);
-        level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
+        player.level().playSound(null, payload.pos(), SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
     }
 }

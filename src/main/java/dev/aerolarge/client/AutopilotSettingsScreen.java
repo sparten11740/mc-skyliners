@@ -8,6 +8,7 @@ import dev.aerolarge.block.AutopilotBlockEntity.Phase;
 import dev.aerolarge.block.AutopilotBlockEntity.Settings;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.block.UnstickAirliner;
 import dev.aerolarge.client.PanelArt.ArrowButton;
 import dev.aerolarge.client.PanelArt.CloseButton;
 import dev.aerolarge.client.PanelArt.Icon;
@@ -44,8 +45,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * then the heading, altitude, speed and circle radius, each slid, stepped with the arrows either side of its slider or
  * typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
  * engaging flies the settings (taking off first on the ground); engaged, they can be applied, or the autopilot
- * switched off. In the air it can also be told to land. The server checks it all again (see {@link SetAutopilot}).
- * The game goes on behind it, and it closes once the player is out of the autopilot's reach.
+ * switched off. In the air it can also be told to land; stuck on the ground with its engines running, the airliner can
+ * be hopped free in that button's place instead. The server checks it all again (see {@link SetAutopilot} and
+ * {@link UnstickAirliner}). The game goes on behind it, and it closes once the player is out of the autopilot's reach.
  */
 public class AutopilotSettingsScreen extends Screen {
     /** The panel's size, the space inside its bezel, and the width of what is on its face. */
@@ -107,6 +109,7 @@ public class AutopilotSettingsScreen extends Screen {
     private static final Icon APPLY = Icon.of("autopilot/apply");
     private static final Icon DISENGAGE = Icon.of("autopilot/disengage");
     private static final Icon LAND = Icon.of("autopilot/land");
+    private static final Icon UNSTUCK = Icon.of("autopilot/unstuck");
     private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
     private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
     private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
@@ -129,6 +132,7 @@ public class AutopilotSettingsScreen extends Screen {
     private IconButton apply;
     private IconButton disengage;
     private IconButton land;
+    private IconButton unstuck;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -185,7 +189,7 @@ public class AutopilotSettingsScreen extends Screen {
         }
 
         // Along the bottom in three places: engage across the first two, or apply and disengage in them once engaged;
-        // then land. Cancel is the close button in the title bar.
+        // then land, or hop the airliner free. Cancel is the close button in the title bar.
         int buttonWidth = (CONTENT - 2 * ACTION_GAP) / 3;
         int buttonY = top + ACTIONS_Y;
         Component engageLabel = Component.translatable(takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage");
@@ -195,8 +199,11 @@ public class AutopilotSettingsScreen extends Screen {
             APPLY, PanelArt.GREEN, false, () -> send(SetAutopilot.Action.FLY)));
         disengage = addRenderableWidget(new IconButton(x + buttonWidth + ACTION_GAP, buttonY, buttonWidth, ACTION_HEIGHT,
             Component.translatable("screen.aerolarge.autopilot_settings.disengage"), DISENGAGE, PanelArt.RED, false, () -> send(SetAutopilot.Action.OFF)));
-        land = addRenderableWidget(new IconButton(x + 2 * (buttonWidth + ACTION_GAP), buttonY, buttonWidth, ACTION_HEIGHT,
+        int lastX = x + 2 * (buttonWidth + ACTION_GAP);
+        land = addRenderableWidget(new IconButton(lastX, buttonY, buttonWidth, ACTION_HEIGHT,
             Component.translatable("screen.aerolarge.autopilot_settings.land"), LAND, PanelArt.AMBER, false, () -> send(SetAutopilot.Action.LAND)));
+        unstuck = addRenderableWidget(new IconButton(lastX, buttonY, buttonWidth, ACTION_HEIGHT,
+            Component.translatable("screen.aerolarge.autopilot_settings.unstuck"), UNSTUCK, PanelArt.CYAN, true, this::unstick));
         int closeX = left + WIDTH - PanelArt.BORDER - CLOSE_INSET - CloseButton.SIZE;
         addRenderableWidget(new CloseButton(closeX, top + PanelArt.BORDER + CLOSE_INSET, this::onClose));
         refresh();
@@ -227,6 +234,9 @@ public class AutopilotSettingsScreen extends Screen {
         disengage.visible = on;
         // Only in the air, and not while it lands already.
         land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
+        // Stuck on the ground with its engines running, where landing is no use, it can be hopped free instead.
+        unstuck.visible = assembled && autopilot.stuck();
+        land.visible = !unstuck.visible;
         heading.setActive(lateral == Lateral.HEADING);
         radius.setActive(lateral != Lateral.HEADING);
     }
@@ -246,6 +256,12 @@ public class AutopilotSettingsScreen extends Screen {
     private void send(SetAutopilot.Action action) {
         Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value());
         PacketDistributor.sendToServer(new SetAutopilot(pos, action, settings));
+        onClose();
+    }
+
+    /** Asks for the airliner to be hopped free, and closes so it is seen to hop. */
+    private void unstick() {
+        PacketDistributor.sendToServer(new UnstickAirliner(pos));
         onClose();
     }
 
