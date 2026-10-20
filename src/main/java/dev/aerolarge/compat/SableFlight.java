@@ -26,8 +26,9 @@ import org.joml.Vector3d;
 /**
  * Where an assembled airliner is and how it is moving, read from Sable. A block of an assembled airliner lives in
  * Sable's plot, away from where the airliner is seen; projecting a few points of the plot out into the world gives
- * the airliner's position and the directions its nose, right wing and roof point. The cabin's trolleys live in the
- * plot too while they are inside the hull, carried along with the airliner's blocks (see {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is known to be
+ * the airliner's position and the directions its nose, right wing and roof point. The cabin's loose things (trolleys,
+ * basketballs) live in the plot too while they are inside the hull, carried along with the airliner's blocks (see
+ * {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is known to be
  * installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the world.
  * {@link #cabinVelocity} also serves the client, for entities that move the same on both sides (the paper plane).
  */
@@ -138,7 +139,7 @@ public final class SableFlight {
     }
 
     /**
-     * Keeps one of the cabin's loose things (a trolley) in the air around it, on the server. Inside the
+     * Keeps one of the cabin's loose things (a trolley, a basketball) in the air around it, on the server. Inside the
      * hull of an assembled airliner the air moves with the airliner, so there the thing lives among the airliner's
      * blocks, in its plot, where Sable carries it along with them as it does Create's seats (its type is in
      * {@code #sable:retain_in_sub_level}, so Sable leaves it there): it rolls, bounces and is pushed relative to the
@@ -151,6 +152,15 @@ public final class SableFlight {
         if (SABLE) {
             Access.keepWithCabin(entity);
         }
+    }
+
+    /**
+     * Takes something just thrown in the world among the blocks of the assembled airliner whose hull it is inside, its
+     * velocity taken as relative to the cabin (the thrower's own, aboard) and turned into the airliner's frame; whether
+     * it went aboard one. Before it is added to the level.
+     */
+    public static boolean takeAboard(Entity entity) {
+        return SABLE && Access.takeAboard(entity);
     }
 
     /**
@@ -317,6 +327,15 @@ public final class SableFlight {
                 Vec3 carried = Sable.HELPER.getVelocity(level, airliner, airliner.logicalPose().transformPositionInverse(entity.position()));
                 board(airliner, entity, entity.getDeltaMovement().subtract(carried.scale(1.0 / SharedConstants.TICKS_PER_SECOND)));
             }
+        }
+
+        static boolean takeAboard(Entity entity) {
+            SubLevel airliner = hullAround(entity.level(), entity.getBoundingBox().getCenter());
+            if (airliner == null) {
+                return false;
+            }
+            board(airliner, entity, entity.getDeltaMovement());
+            return true;
         }
 
         /**

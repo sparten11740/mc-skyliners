@@ -593,6 +593,9 @@ look, sneaking for a softer throw. It bounces off the floor and walls and rolls 
 pick it up, hit it to knock it on. A ball that drops through a hoop scores two points, or three thrown from beyond
 the three-point line, for the side the hoop counts for: HOME at the front hoop, GUEST at the back (sneak and use a
 hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
+Aboard an assembled airliner the ball flies, bounces and rolls with the cabin, in flight as on the ground, the way
+Create's seats ride along: inside the hull it moves among the airliner's own blocks. Out through an open door (or
+pulled out as the cabin decompresses) it leaves the airliner, in flight at the airliner's speed, and falls away.
 Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere, and so can its floor: Gym Floor is
 a sprung sports floor of narrow lacquered maple strips, laid the way you face, over white panelling underneath (the
 hold under the gym hall sees a ceiling, not floorboards). Use white dye on a board to paint a court line on it, as
@@ -848,9 +851,9 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
 shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys among an
-assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and puts them out into the
-world at the airliner's speed once they leave it; `EngineIntakeRenderer` draws the intakes round over
+flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys and basketballs
+among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and puts them out
+into the world at the airliner's speed once they leave it; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,

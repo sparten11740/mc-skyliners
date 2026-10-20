@@ -11,6 +11,7 @@ import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AirstairRenderer;
 import dev.aerolarge.client.AtcHeadset;
 import dev.aerolarge.client.AutopilotScreenRenderer;
+import dev.aerolarge.client.BasketballRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CloudlessCabin;
@@ -41,7 +42,6 @@ import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
 import dev.aerolarge.client.TrolleyRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
-import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
@@ -70,9 +70,6 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
-    /** How big the basketball is drawn, as a share of an item's sprite. */
-    private static final float BALL_SIZE = 1.4F;
-
     public AerolargeClient(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
@@ -166,7 +163,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SLIDE_CONTROL_ENTITY.get(), context -> new SlideRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
-        event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), context -> new ThrownItemRenderer<>(context, BALL_SIZE, false));
+        event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);

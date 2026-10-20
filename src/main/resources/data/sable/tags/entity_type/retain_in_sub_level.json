@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:trolley"
+    "aerolarge:trolley",
+    "aerolarge:basketball"
   ]
 }

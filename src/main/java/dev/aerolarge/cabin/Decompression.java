@@ -55,10 +55,10 @@ import net.minecraft.world.phys.Vec3;
  * it, which open from one room of the cabin into another. A door stands in the airliner's plot, so its wind and fog
  * are set there, where Sable carries them along with the airliner; the doorway is projected out into the world for the
  * pull, since whoever stands aboard a flying airliner is in the world. Sable carries them along with the cabin too, so
- * they are pushed relative to the cabin. Trolleys live in the plot (see {@link SableFlight#keepWithCabin}): each is
- * seen projected out into the world like the rest, its push turned back into the airliner's frame, and once clear of
- * the sill it is sent out into the world at the airliner's speed. Any other loose thing clear of the airliner is carried
- * by nothing, and is sent off at the airliner's speed.
+ * they are pushed relative to the cabin. Trolleys and basketballs live in the plot (see
+ * {@link SableFlight#keepWithCabin}): each is seen projected out into the world like the rest, its push turned back
+ * into the airliner's frame, and once clear of the sill it is sent out into the world at the airliner's speed. Any
+ * other loose thing clear of the airliner is carried by nothing, and is sent off at the airliner's speed.
  */
 public final class Decompression {
     /** Each assembled airliner's, by its autopilot: forgotten with it, so its doors are found afresh once reassembled. */
