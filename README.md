@@ -3,8 +3,8 @@
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
 wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
 a main deck and an upper deck over a cargo hold with a hatch down to it, six passenger doors and a cargo door, a
-flight deck behind a wrap-around windscreen, swept wings with four engines, the tail, landing gear and folding
-airstairs.
+flight deck behind a wrap-around windscreen, swept wings with four engines, the tail, landing gear, folding airstairs
+and evacuation slides.
 
 ## Requirements
 
@@ -575,16 +575,18 @@ ones come out, folding into the hold behind the hull below the door.
 
 ### Evacuation slides
 
-An Evacuation Slide Control, set into the wall beside a plug door, works an evacuation slide packed in that door, as an
-airliner's are: a red panel in a yellow frame showing someone sliding down a slide, so it needs no reading, with a red
-handle in a slot down its side. Only its panel works it. Pull the handle and the door opens; once it is open the pack
-drops out onto the sill, and the slide unrolls down to the ground and inflates with the roar of its gas, in two seconds:
-a big yellow slide with a raised rail along each side over a grey beam, grey underneath, a silver reflective stripe
-along its rails, held to the sill by its girt bar and as wide as the doorway at its head, widening out past the parked
-door, rounding out onto the ground and running a little way along it to its curled toe. Step out of the doorway onto it
-and it carries you down, seated, quickly and smoothly, and sets you down on the ground just past its toe with no fall to
-hurt you; sneaking does not get you off halfway, and nobody walks up it: try, and down you go. Villagers go down it the
-same way, and find their way out of the airliner down it.
+Every passenger door but the forward port door, which has the airstairs, has an evacuation slide packed in it, as an
+airliner's does; the cargo door in the hold has none. Its control is set into the cabin wall beside the door, a block
+above the sill, in the jamb just aft of it (just ahead of it where that has no room): a red panel in a yellow frame
+showing someone sliding down a slide, so it needs no reading, with a red handle in a slot down its side. It only works
+from inside the cabin; outside it is the hull's skin. Pull the handle and the door opens; once it is open the pack drops
+out onto the sill, and the slide unrolls down to the ground and inflates with the roar of its gas, in two seconds: a big
+yellow slide with a raised rail along each side over a grey beam, grey underneath, a silver reflective stripe along its
+rails, held to the sill by its girt bar and as wide as the doorway at its head, widening out past the parked door,
+rounding out onto the ground and running a little way along it to its curled toe. Step out of the doorway onto it and it
+carries you down, seated, quickly and smoothly, and sets you down on the ground just past its toe with no fall to hurt
+you; sneaking does not get you off halfway, and nobody walks up it: try, and down you go. Villagers go down it the same
+way, and find their way out of the airliner down it.
 
 It comes down at 35 degrees, or steeper (up to 45) or shallower (down to 25) where something is in its way, as far down
 as the ground lies below the door, measured from the world as it comes out, aboard an assembled airliner too. It only
@@ -593,7 +595,8 @@ comes out while the airliner stands still, with the ground within its reach (eig
 says why. Pull the handle again and it deflates and rolls itself back up into the doorway once nobody is on it (a chime
 says it is waiting), and the door shuts behind it, as it does behind the airstairs, rather than leave an open door over
 a long drop. It goes the same way by itself as soon as the airliner starts to move, and when the door is shut on it. An
-Evacuation Slide Control can be crafted; put up beside a plug door, it serves that door.
+airliner is built with its slides packed; one built before them has none. An Evacuation Slide Control can be crafted and
+put up beside a plug door of your own, which it then serves.
 
 ### Jet bridge
 

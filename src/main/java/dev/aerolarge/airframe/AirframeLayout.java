@@ -38,6 +38,8 @@ import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
+import dev.aerolarge.block.SlideControlBlock;
+import dev.aerolarge.block.SlideControlBlockEntity;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
@@ -258,6 +260,7 @@ public final class AirframeLayout {
             }
         }
         layout.skydiving();
+        layout.slideControls();
         layout.seatbeltSigns();
         layout.dropBay();
         layout.holdHatch();
@@ -545,7 +548,7 @@ public final class AirframeLayout {
 
     /**
      * Whether one of the passenger doors, cut through the hull later, takes the station, or the controls set into the
-     * hull just beside it (the airstairs' panel, a jump light).
+     * hull just beside it (the airstairs' panel, a jump light, a slide's control).
      */
     boolean doorAt(int z) {
         for (double station : PASSENGER_DOORS) {
@@ -910,6 +913,51 @@ public final class AirframeLayout {
             y--;
         }
         set(light.getX() - side, y, z, AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, Direction.SOUTH));
+    }
+
+    /**
+     * Evacuation slides at the passenger doors, but for the forward port door, which has the airstairs (and the cargo
+     * door in the hold, which is no way out for passengers): each worked by a control set into the cabin wall beside
+     * its door, its panel facing into the cabin, a block above the sill in the jamb just aft of the door, or failing
+     * that just ahead of it (the aft doors' jump lights take that one), or failing both level with the sill; each where
+     * it replaces plain skin with open cabin in front of it. The slides themselves are packed in the doors, so nothing
+     * more is built for them.
+     */
+    private void slideControls() {
+        HullDoor stairs = boardingDoor();
+        for (HullDoor door : hullDoors) {
+            if (door == stairs || door.bottom() != floorY + 1) {
+                continue;
+            }
+            BlockPos control = slideControl(door);
+            if (control != null) {
+                BlockPos served = door.controller().subtract(control);
+                fittings.put(control, (blockEntity, rotation) -> {
+                    if (blockEntity instanceof SlideControlBlockEntity slide) {
+                        slide.configure(served.rotate(rotation));
+                    }
+                });
+            }
+        }
+    }
+
+    /** The slide control beside one door, set into the wall in the first spot that has room for it; null for none. */
+    @Nullable
+    private BlockPos slideControl(HullDoor door) {
+        int[] jambs = {door.fore() + PlugDoorBlock.COLUMNS, door.fore() - 1};
+        BlockState control = AerolargeRegistry.SLIDE_CONTROL.get().defaultBlockState()
+            .setValue(SlideControlBlock.FACING, door.side() > 0 ? Direction.WEST : Direction.EAST);
+        for (int y : new int[]{door.bottom() + 1, door.bottom()}) {
+            for (int z : jambs) {
+                int inside = besideWall(door.side(), y, z);
+                int wall = inside + door.side();
+                if (inside != 0 && isOpen(inside, y, z) && isPlainHull(wall, y, z)) {
+                    set(wall, y, z, control);
+                    return new BlockPos(wall, y, z);
+                }
+            }
+        }
+        return null;
     }
 
     /**
