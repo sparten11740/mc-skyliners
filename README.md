@@ -543,7 +543,11 @@ hemp rope hung from a ceiling on a steel eye, ending in a knot: jump up into it 
 nothing bumps into it, and it comes down if what it hangs from is taken away. A Glass Backboard is a pane of
 toughened glass in an aluminium frame, put up facing you; pieces side by side and one over another make one board,
 framed round its outside, and a board three wide and two high shows the red shooter's square over its middle, where
-a hoop put up against it goes.
+a hoop put up against it goes. A Gym Bench (Turnbank) is a low bench of lacquered ash, the balance beam along its
+underside, on a steel frame of legs, one block tall so it stands under a window without covering it: use it to sit
+down on it facing the way it was put down. Like the cabin seats it is one of Create's seats underneath, so the
+seatbelts and villager passengers treat it as a seat. Benches side by side make one long bench, with legs only at its
+ends.
 
 For hide and seek, press the big yellow button with the eye on it beside either hoop (or sneak and use a
 scoreboard): every scoreboard in the hall counts down from ten in huge numbers, amber, then red for the last three,

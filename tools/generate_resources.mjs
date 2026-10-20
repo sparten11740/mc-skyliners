@@ -3422,7 +3422,7 @@ for (const name of POOL) {
 // the shared lists further down take in. The wall bars (see RungLadderBlock), drawn facing north, their wall to the
 // south: an ash upright down either side against the wall, so bars side by side share a pair of uprights between
 // them, and four round rungs across; the top piece's top rung hangs out from the wall on a bracket at either end.
-const GYM_HALL = ["wall_bars", "gym_mat", "climbing_rope", "glass_backboard"];
+const GYM_HALL = ["wall_bars", "gym_mat", "climbing_rope", "glass_backboard", "gym_bench"];
 {
   const textures = { wood: `${ID}:block/wall_bars_wood`, particle: `${ID}:block/wall_bars_wood` };
   const uprights = [[[0, 0, 11], [1.5, 16, 16], "#wood"], [[14.5, 0, 11], [16, 16, 16], "#wood"]];
@@ -3533,6 +3533,31 @@ const GYM_HALL = ["wall_bars", "gym_mat", "climbing_rope", "glass_backboard"];
   ]);
   write(`assets/${ID}/models/item/glass_backboard.json`, { ...item, render_type: "minecraft:translucent", elements: [...item.elements, glass] });
 }
+// The gym bench (see GymBenchBlock), drawn facing north, whoever sits on it facing north: an ash board at a seat's
+// height across the block, the narrow balance beam along its underside, and at each end that does not run on into
+// another bench a steel frame of two legs on a foot rail, its left end to the west. In the hand, a bench on both.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { wood: block("wall_bars_wood"), steel: block("cabin_rail_steel"), particle: block("wall_bars_wood") };
+  const board = [[[0, 6, 4], [16, 8, 12], "#wood"], [[0, 4, 6.75], [16, 6, 9.25], "#wood"]];
+  const legs = (x0, x1) => [
+    [[x0, 1, 4.5], [x1, 6, 6], "#steel"],
+    [[x0, 1, 10], [x1, 6, 11.5], "#steel"],
+    [[x0, 0, 4], [x1, 1, 12], "#steel"],
+  ];
+  write(`assets/${ID}/models/block/gym_bench.json`, boxes(textures, board));
+  write(`assets/${ID}/models/block/gym_bench_legs_left.json`, boxes(textures, legs(1, 2.5)));
+  write(`assets/${ID}/models/block/gym_bench_legs_right.json`, boxes(textures, legs(13.5, 15)));
+  const multipart = [];
+  for (const [facing, y] of Object.entries(yRot)) {
+    const turned = (model) => ({ model: block(model), ...(y ? { y } : {}) });
+    multipart.push({ when: { facing }, apply: turned("gym_bench") });
+    multipart.push({ when: { facing, left: "false" }, apply: turned("gym_bench_legs_left") });
+    multipart.push({ when: { facing, right: "false" }, apply: turned("gym_bench_legs_right") });
+  }
+  write(`assets/${ID}/blockstates/gym_bench.json`, { multipart });
+  write(`assets/${ID}/models/item/gym_bench.json`, boxes(textures, [...board, ...legs(1, 2.5), ...legs(13.5, 15)]));
+}
 // The gym hall's fittings are fitted into the cabin rather than built into the airliner: breakable, and no part of
 // the airframe.
 function gymHallFittings() {
@@ -3543,12 +3568,13 @@ function gymHallClimbable() {
   return ["wall_bars", "climbing_rope"];
 }
 // Wall bars of birch, its uprights planks and its rungs sticks; a mat of blue wool padded with feathers; a rope of
-// string; a backboard of glass panes in an iron frame round a red square.
+// string; a backboard of glass panes in an iron frame round a red square; a bench of birch on iron legs.
 function gymHallRecipes() {
   shaped("wall_bars", ["PSP", "PSP", "PSP"], { P: "minecraft:birch_planks", S: "minecraft:stick" }, 3);
   shaped("gym_mat", ["WWW", "FFF"], { W: "minecraft:blue_wool", F: "minecraft:feather" }, 3);
   shaped("climbing_rope", ["SS", "SS", "SS"], { S: "minecraft:string" }, 3);
   shaped("glass_backboard", ["GGG", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:red_dye" }, 3);
+  shaped("gym_bench", ["PPP", "I I"], { P: "minecraft:birch_planks", I: "minecraft:iron_ingot" }, 2);
 }
 function gymHallLang() {
   return {
@@ -3556,6 +3582,7 @@ function gymHallLang() {
     "block.aerolarge.gym_mat": "Gym Mat",
     "block.aerolarge.climbing_rope": "Climbing Rope",
     "block.aerolarge.glass_backboard": "Glass Backboard",
+    "block.aerolarge.gym_bench": "Gym Bench",
   };
 }
 for (const name of GYM_HALL) {
@@ -3628,8 +3655,8 @@ const VACUUM_TOILET_LANG = {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
-// The care package is a wooden crate, the gym floor maple and the wall bars ash.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`, `${ID}:wall_bars`]));
+// The care package is a wooden crate, the gym floor maple, and the wall bars and the gym bench ash.
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.

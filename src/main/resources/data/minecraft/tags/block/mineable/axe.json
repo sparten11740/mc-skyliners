@@ -3,6 +3,7 @@
   "values": [
     "aerolarge:cargo_crate",
     "aerolarge:gym_floor",
-    "aerolarge:wall_bars"
+    "aerolarge:wall_bars",
+    "aerolarge:gym_bench"
   ]
 }

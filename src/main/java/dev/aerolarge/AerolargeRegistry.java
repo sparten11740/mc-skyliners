@@ -57,6 +57,7 @@ import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GlassBackboardBlock;
+import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymMatBlock;
 import dev.aerolarge.block.GymRingsBlock;
@@ -1003,7 +1004,7 @@ public final class AerolargeRegistry {
 
     /**
      * The gym hall's fittings: the wall bars and the climbing ropes, climbed as a ladder is, the mats in front of the
-     * bars and the hoops' glass backboards. Nothing spawns on any of them.
+     * bars, the hoops' glass backboards and the benches along the walls. Nothing spawns on any of them.
      */
     public static final DeferredBlock<RungLadderBlock> WALL_BARS = BLOCKS.registerBlock(
         "wall_bars", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.WALL_BARS), gymFitting(MapColor.WOOD).sound(SoundType.LADDER)
@@ -1015,10 +1016,14 @@ public final class AerolargeRegistry {
         "climbing_rope", ClimbingRopeBlock::new, gymFitting(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noCollission().ignitedByLava()
     );
     public static final DeferredBlock<GlassBackboardBlock> GLASS_BACKBOARD = BLOCKS.registerBlock("glass_backboard", GlassBackboardBlock::new, glass());
+    public static final DeferredBlock<GymBenchBlock> GYM_BENCH = BLOCKS.registerBlock(
+        "gym_bench", GymBenchBlock::new, gymFitting(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD)
+    );
     public static final DeferredItem<BlockItem> WALL_BARS_ITEM = ITEMS.registerSimpleBlockItem(WALL_BARS);
     public static final DeferredItem<BlockItem> GYM_MAT_ITEM = ITEMS.registerSimpleBlockItem(GYM_MAT);
     public static final DeferredItem<BlockItem> CLIMBING_ROPE_ITEM = ITEMS.registerSimpleBlockItem(CLIMBING_ROPE);
     public static final DeferredItem<BlockItem> GLASS_BACKBOARD_ITEM = ITEMS.registerSimpleBlockItem(GLASS_BACKBOARD);
+    public static final DeferredItem<BlockItem> GYM_BENCH_ITEM = ITEMS.registerSimpleBlockItem(GYM_BENCH);
 
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
@@ -1090,7 +1095,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, GYM_MAT_ITEM, BASKETBALL_ITEM, HOOP_ITEM, GLASS_BACKBOARD_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM,
-            HIDE_AND_SEEK_BUTTON_ITEM, WALL_BARS_ITEM, CLIMBING_ROPE_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM,
+            HIDE_AND_SEEK_BUTTON_ITEM, WALL_BARS_ITEM, CLIMBING_ROPE_ITEM, GYM_RINGS_ITEM, GYM_BENCH_ITEM, SPRINGBOARD_ITEM,
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("drops", List.of(
