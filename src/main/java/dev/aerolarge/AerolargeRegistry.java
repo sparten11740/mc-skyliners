@@ -44,6 +44,8 @@ import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
+import dev.aerolarge.block.DiscoBallBlock;
+import dev.aerolarge.block.DiscoBallBlockEntity;
 import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
@@ -928,6 +930,21 @@ public final class AerolargeRegistry {
             .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
     );
     public static final DeferredItem<BlockItem> BEAN_BAG_ITEM = ITEMS.registerSimpleBlockItem(BEAN_BAG);
+    /** The light a disco ball gives while it is on, in light levels: the den stays lit wherever its spots are not drawn. */
+    private static final int DISCO_GLOW = 10;
+    /**
+     * The den's disco ball: mirror glass, hung overhead with nothing to bump into, quick to take down; it lights the
+     * room round it while on.
+     */
+    public static final DeferredBlock<DiscoBallBlock> DISCO_BALL = BLOCKS.registerBlock(
+        "disco_ball", DiscoBallBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.GLASS).noCollission().noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+            .lightLevel(state -> state.getValue(DiscoBallBlock.LIT) ? DISCO_GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DiscoBallBlockEntity>> DISCO_BALL_ENTITY =
+        BLOCK_ENTITIES.register("disco_ball", () -> BlockEntityType.Builder.of(DiscoBallBlockEntity::new, DISCO_BALL.get()).build(null));
+    public static final DeferredItem<BlockItem> DISCO_BALL_ITEM = ITEMS.registerSimpleBlockItem(DISCO_BALL);
     /**
      * Luggage in the hold: suitcases in four colours, and the golden suitcases hidden among them, giving a faint glow
      * to be found by in the dark; each a small container.
@@ -1246,7 +1263,7 @@ public final class AerolargeRegistry {
             PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
-            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM, DISCO_BALL_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
             CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM, ULD_CONTAINER_ITEM
         )),

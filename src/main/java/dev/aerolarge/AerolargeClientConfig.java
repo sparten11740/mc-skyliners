@@ -13,6 +13,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RENDER_DISTANCE;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
     public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
+    public static final ModConfigSpec.BooleanValue DISCO_LIGHTS;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
 
     static {
@@ -53,6 +54,12 @@ public final class AerolargeClientConfig {
                 "is drawn with Veil's extra buffers and its lights; turn it off if that costs too much. Never with Iris installed:",
                 "the night lights only glow blue then.")
             .define("nightLights", true);
+        DISCO_LIGHTS = builder
+            .comment("Let a disco ball that is on cast spots of coloured light that sweep round the room as it turns, through Veil",
+                "(which comes with Sable). While a disco ball is near, every frame is drawn with Veil's extra buffers and its",
+                "lights; turn it off if that costs too much. Never with Iris installed: the ball then only turns and glints, and",
+                "lights the room as a lamp does.")
+            .define("discoLights", true);
         CLOUDLESS_CABIN = builder
             .comment("Keep the clouds out of the airliner's cabin: while you are inside its hull and the cloud layer passes the",
                 "airliner, the clouds are not drawn for you, so no slab of cloud cuts through the floor, the walls and the seats.",

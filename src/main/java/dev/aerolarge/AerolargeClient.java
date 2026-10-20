@@ -5,6 +5,7 @@ import dev.aerolarge.block.BunkBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CurtainBlock;
+import dev.aerolarge.block.DiscoBallBlockEntity;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.RubberDuckBlockEntity;
@@ -16,6 +17,8 @@ import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.DiscoBallRenderer;
+import dev.aerolarge.client.DiscoLights;
 import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.FallingCrateRenderer;
@@ -66,7 +69,8 @@ import net.neoforged.neoforge.common.NeoForge;
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
  * flight displays, autopilot screen, tail camera display, passenger screens, engine intakes, hull doors and
  * airstairs, its engines' sound and contrails, the camera shake aboard, the passenger screens' outside cameras and the
- * tail camera display's live picture, the cabin's blue light at night, the clouds kept out of the cabin, parachutes:
+ * tail camera display's live picture, the cabin's blue light at night, the den's disco ball turning and its coloured
+ * spots, the clouds kept out of the cabin, parachutes:
  * opening them by jumping, and the canopy over their wearers; the pilot helmet's visor and the pilots' head-up display
  * on it; the radio's headset on screen while air traffic control talks; the creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
  */
@@ -95,6 +99,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(TailCameraFeed::loggingOut);
         NeoForge.EVENT_BUS.addListener(NightLights::frame);
         NeoForge.EVENT_BUS.addListener(NightLights::loggingOut);
+        NeoForge.EVENT_BUS.addListener(DiscoLights::frame);
+        NeoForge.EVENT_BUS.addListener(DiscoLights::loggingOut);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
@@ -125,6 +131,7 @@ public final class AerolargeClient {
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
+        DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -166,6 +173,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SLIDE_CONTROL_ENTITY.get(), context -> new SlideRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
+        event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);

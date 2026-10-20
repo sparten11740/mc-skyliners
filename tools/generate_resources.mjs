@@ -1146,20 +1146,44 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   });
   cubes.bean_bag = null;
 }
+// The den's disco ball (see DiscoBallBlock): the ball itself, turning, is drawn by its renderer over its mirror tile's
+// texture (see DiscoBallRenderer), so the block's model is only what it hangs by, on or off: a slim cable from the top
+// of the block down to a chrome cap on top of the ball. Its particles are the ball's mirror tiles; in the hand, a
+// picture of the ball.
+{
+  write(`assets/${ID}/models/block/disco_ball.json`, boxes(
+    { rod: `${ID}:block/light_cable`, cap: `${ID}:block/lavatory_basin_chrome`, particle: `${ID}:block/disco_ball` },
+    [
+      [[7.5, 13, 7.5], [8.5, 16, 8.5], "#rod"],
+      [[7, 12.5, 7], [9, 13.5, 9], "#cap"],
+    ],
+  ));
+  write(`assets/${ID}/blockstates/disco_ball.json`, {
+    variants: Object.fromEntries([false, true].map((lit) => [`lit=${lit}`, { model: `${ID}:block/disco_ball` }])),
+  });
+  write(`assets/${ID}/models/item/disco_ball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/disco_ball` } });
+  dropsItself("disco_ball");
+  cubes.disco_ball = null;
+}
 // The den's furniture is fitted into it rather than built into the airliner: breakable, and no part of the airframe.
 function denFurnitureFittings() {
-  return ["bunk", "bean_bag"];
+  return ["bunk", "bean_bag", "disco_ball"];
 }
 // A bunk: light blue wool on birch planks, with glowstone for the reading light. A bean bag: orange wool round a
-// handful of cocoa beans.
+// handful of cocoa beans. A disco ball: glass panes round an amethyst shard, on glowstone for its light, hung from an
+// iron nugget.
 function denFurnitureRecipes() {
   shaped("bunk", ["G  ", "WWW", "PPP"], { G: "minecraft:glowstone_dust", W: "minecraft:light_blue_wool", P: "minecraft:birch_planks" }, 1);
   shaped("bean_bag", ["WCW", "WWW"], { W: "minecraft:orange_wool", C: "minecraft:cocoa_beans" }, 1);
+  shaped("disco_ball", [" N ", "PAP", "PGP"], {
+    N: "minecraft:iron_nugget", P: "minecraft:glass_pane", A: "minecraft:amethyst_shard", G: "minecraft:glowstone_dust",
+  }, 1);
 }
 function denFurnitureLang() {
   return {
     "block.aerolarge.bunk": "Bunk",
     "block.aerolarge.bean_bag": "Bean Bag",
+    "block.aerolarge.disco_ball": "Disco Ball",
   };
 }
 // The den's treasure chest: cookies, a golden apple, a signal flare, a basketball and three twinkling star rockets.
@@ -4748,6 +4772,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.pilotHud": "Pilot HUD",
   "aerolarge.configuration.pilotHudScale": "Pilot HUD Size",
   "aerolarge.configuration.nightLights": "Blue Night Lights",
+  "aerolarge.configuration.discoLights": "Disco Ball Spots",
   "aerolarge.configuration.cloudlessCabin": "Cloudless Cabin",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
   "item.aerolarge.airliner_blueprint": "Airliner Blueprint",

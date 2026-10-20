@@ -13,9 +13,10 @@ import org.joml.Vector3f;
 
 /**
  * Real light drawn through Veil's light renderer (Veil comes inside Sable's jar), for the cabin's blue night lights
- * ({@link NightLights}): Veil's area lights, a glowing face of a size that shines out of one side of it, within an
- * angle of straight out and as far as it reaches, added, shone, placed and removed; and the buffers Veil draws them
- * from kept on while they are near (see {@link Buffers}). A light is held outside as the handle Veil gave for it.
+ * ({@link NightLights}) and the disco ball's spots ({@link DiscoLights}): Veil's area lights, a glowing face of a size
+ * that shines out of one side of it, within an angle of straight out and as far as it reaches, added, shone, placed
+ * and removed; and the buffers Veil draws them from kept on while they are near (see {@link Buffers}). A light is held
+ * outside as the handle Veil gave for it.
  *
  * <p>Veil's own classes are only touched in {@link Veil}, and only once Veil is known to be installed: callers check
  * {@link #USABLE} first.

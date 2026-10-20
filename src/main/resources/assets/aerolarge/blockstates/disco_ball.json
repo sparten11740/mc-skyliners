@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "aerolarge:block/disco_ball"
+    },
+    "lit=true": {
+      "model": "aerolarge:block/disco_ball"
+    }
+  }
+}

@@ -461,6 +461,14 @@ and its back heaped up behind. Use it to sit down in it: like the cabin seats it
 so villager passengers take it for one too. A fall into it never hurts, only flumps. Put down, it faces you, its back
 away from you; use a dye on it to dye it, orange until dyed, and taken down it keeps its colour. It can be crafted.
 
+A Disco Ball is a ball faceted all over with little mirror tiles, hanging on a short rod: put it up under a ceiling or
+at the end of a light cable. It is on when put up: it turns slowly, its tiles glinting as they catch the light, and
+it casts twelve spots of coloured light, red, green, blue and every colour between, each changing colour as it goes,
+that sweep round the room's walls, floor and ceiling as the ball turns; it lights the room round it too. Use it to
+switch it off: it slows to a stop with a falling chime and goes dark; use it again and it spins up with a rising one.
+The spots are drawn through Veil, which comes with Sable (`discoLights` in the client settings); without it, or with
+Iris installed, the ball still turns, glints and lights the room. Nothing bumps into it. It can be crafted.
+
 ### The hold
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
@@ -878,9 +886,10 @@ taken from a coffee machine (Barista).
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
-`tailCameraResolution`, the cabin's blue `nightLights`, and `cloudlessCabin`) are there from the title screen. The
-server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
-they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
+`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, and `cloudlessCabin`)
+are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods
+button while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its
+own.
 
 ## Building
 
@@ -911,8 +920,9 @@ from their `AirstairBlockEntity`; `SlideRenderer` draws an evacuation slide infl
 `EvacuationSlide` lays it out for the ground and builds it, from its `SlideControlBlockEntity`, and `SlideRide` carries
 whoever slides down it; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
-at night through Veil's light renderer, the only places Veil is touched; `CloudlessCabin` leaves the clouds out of the
-player's view while the camera is inside a hull in the cloud layer. Assets
+at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
+renderer, by way of `VeilLights`: `TailCameraFeed` and `VeilLights` are the only places Veil is touched;
+`CloudlessCabin` leaves the clouds out of the player's view while the camera is inside a hull in the cloud layer. Assets
 are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

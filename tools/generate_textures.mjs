@@ -2149,6 +2149,53 @@ blueprint("furnished_airliner_blueprint", true);
   }, 1);
 }
 
+// The den's disco ball (see DiscoBallBlock). A mirror tile, which its renderer lays over each of the ball's facets:
+// cool bright silver, shading off from its top left, a white gleam across its middle, inside a line of dark grout.
+{
+  texture(blockOutput, "disco_ball", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return [0x3a, 0x3e, 0x46];
+    if (Math.abs(x - y) <= 1 && x + y >= 8 && x + y <= 18) return [0xfa, 0xfc, 0xff];
+    const v = 238 - 2.5 * (x + y);
+    return [v - 6, v - 2, v + 6];
+  }, 3);
+  // A tile's glint: a four-pointed star, white on black, its renderer adding it over the tile in the light's colour;
+  // 32x32, as the nav lights' glow is, so its long thin points do not show their pixels.
+  const pixels = [];
+  for (let y = 0; y < 32; y++) {
+    const row = [];
+    for (let x = 0; x < 32; x++) {
+      const dx = x - 15.5;
+      const dy = y - 15.5;
+      const point = (along, across) => Math.max(0, 1 - Math.abs(along) / 16) ** 2 * Math.max(0, 1 - Math.abs(across) / 1.8);
+      const core = Math.max(0, 1 - Math.hypot(dx, dy) / 6) ** 2;
+      const v = Math.round(255 * Math.min(1, Math.max(point(dx, dy), point(dy, dx)) + core));
+      row.push([v, v, v, 255]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(miscOutput, "disco_glint.png"), encodePng(pixels));
+  // In the hand: the ball hanging from its cable by a chrome cap, a grid of mirror tiles in dark grout, lit from its
+  // top left, where one tile gleams white, and darkening to its rim; a few tiles catch red, green, blue, yellow and
+  // pink, and a sparkle twinkles off it.
+  const FLECKS = { "2,3": [0xf0, 0x40, 0x40], "3,4": [0x40, 0xd0, 0x50], "1,4": [0x40, 0x80, 0xf0], "3,2": [0xf0, 0xd0, 0x30], "4,3": [0xf0, 0x50, 0xc0] };
+  texture(itemOutput, "disco_ball", (x, y) => {
+    if (x === 13 && y === 3) return [0xff, 0xff, 0xff];
+    if (Math.abs(x - 13) + Math.abs(y - 3) === 1) return [0xff, 0xf0, 0xa0];
+    if (y <= 2) return x === 7 ? [0x50, 0x52, 0x58] : x === 8 ? [0x30, 0x32, 0x36] : CLEAR;
+    if (y === 3 && x >= 6 && x <= 9) return [0xc8, 0xcc, 0xd2];
+    const nx = (x - 7.5) / 6.1;
+    const ny = (y - 9.5) / 6.1;
+    const r = Math.hypot(nx, ny);
+    if (r > 1) return CLEAR;
+    const lit = Math.max(0.4, 1 - 0.25 * (nx + ny) - 0.25 * r ** 4);
+    if ((x + 1) % 3 === 0 || y % 3 === 0) return [0x7c, 0x80, 0x8a].map((c) => clamp(Math.round(c * lit)));
+    const tile = `${Math.floor((x + 1) / 3)},${Math.floor(y / 3)}`;
+    if (tile === "1,2") return [0xff, 0xff, 0xff];
+    const shade = (Math.floor((x + 1) / 3) * 5 + Math.floor(y / 3) * 3) % 4 === 0 ? 0.85 : 1;
+    return (FLECKS[tile] ?? [0xe0, 0xe4, 0xec]).map((c) => clamp(Math.round(c * lit * shade)));
+  }, 0);
+}
+
 // The hold's cargo net (see CargoNetBlock): charcoal webbing two pixels wide in a diamond lattice, one diamond to a
 // block with its corners at the middles of the block's edges, a shade lighter along one edge of each strap, sewn where
 // the straps cross with a pale bar tack, and clear between; the lattice is the same mirrored either way across the
