@@ -32,13 +32,15 @@ import org.lwjgl.opengl.GL11;
  * eyes, the visor tints the view a touch toward its gold, darkens it faintly toward the edges and catches a little
  * light along its top: kept light, so the world stays clear. And the pilots' head-up display ({@link PilotHud}) is
  * shown on it, in parts round the screen: drawn first into a picture of their own, the size of the window, then each
- * part laid over the view from it, edged dark, so it reads against bright sky, and with a soft glow. That picture is
- * drawn anew each frame, a few hundred shapes and some text, and laid on in a handful of draws, so it costs next to
- * nothing.
+ * part laid over the view from it, bent onto the visor's curve ({@link VisorCurve}) as it lies at its place on the
+ * screen, edged dark, so it reads against bright sky, and with a soft glow. That picture is drawn anew each frame, a
+ * few hundred shapes and some text, and laid on in a handful of draws, so it costs next to nothing.
  */
 public final class HelmetVisor {
     /** How far round each part of a HUD its picture is laid on, in GUI pixels, so that none of its edge is cut off. */
     private static final float PADDING = 2;
+    /** The most a part's area is laid on in one piece, in GUI pixels each way: small enough that its curve is smooth. */
+    private static final float CELL = 6;
     /**
      * The glow round the symbology: faint copies of the picture laid round it, each this far off in screen pixels and
      * this opaque as a share of the HUD's own opacity.
@@ -91,11 +93,11 @@ public final class HelmetVisor {
     }
 
     /**
-     * Draws a HUD's parts onto the visor: each painter draws its part flat in the HUD's units, each the given number of
-     * screen pixels, round where its part goes; then the parts are laid over the view this opaque, edged dark this
-     * opaque, and with their glow.
+     * Draws a HUD's parts onto the visor: each painter draws its part flat in the HUD's units round where its part
+     * goes; then the parts are bent onto the visor's curve and laid over the view this opaque, edged dark this opaque,
+     * and with their glow.
      */
-    static void draw(GuiGraphics graphics, float pixelsPerUnit, float opacity, float outline, List<Part> parts) {
+    static void draw(GuiGraphics graphics, VisorCurve curve, float opacity, float outline, List<Part> parts) {
         Minecraft minecraft = Minecraft.getInstance();
         Window window = minecraft.getWindow();
         if (window.getWidth() == 0 || window.getHeight() == 0) {
@@ -103,7 +105,7 @@ public final class HelmetVisor {
             return;
         }
         float guiScale = (float) window.getGuiScale();
-        float unit = pixelsPerUnit / guiScale;
+        float unit = curve.unit();
         Box[] areas = new Box[parts.size()];
 
         graphics.flush();
@@ -127,8 +129,7 @@ public final class HelmetVisor {
         minecraft.getMainRenderTarget().bindWrite(true);
 
         Matrix4f matrix = graphics.pose().last().pose();
-        float width = window.getWidth() / guiScale;
-        float height = window.getHeight() / guiScale;
+        float[] mesh = mesh(areas, curve, window.getWidth() / guiScale, window.getHeight() / guiScale);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, target.getColorTextureId());
         RenderSystem.enableBlend();
@@ -137,13 +138,13 @@ public final class HelmetVisor {
         RenderSystem.disableDepthTest();
         float outlineOffset = OUTLINE_OFFSET / guiScale;
         for (float[] direction : OUTLINE_DIRECTIONS) {
-            lay(matrix, areas, width, height, direction[0] * outlineOffset, direction[1] * outlineOffset, 0, outline);
+            lay(matrix, mesh, direction[0] * outlineOffset, direction[1] * outlineOffset, 0, outline);
         }
         float glowOffset = GLOW_OFFSET / guiScale;
         for (float[] direction : GLOW_DIRECTIONS) {
-            lay(matrix, areas, width, height, direction[0] * glowOffset, direction[1] * glowOffset, 1, opacity * GLOW);
+            lay(matrix, mesh, direction[0] * glowOffset, direction[1] * glowOffset, 1, opacity * GLOW);
         }
-        lay(matrix, areas, width, height, 0, 0, 1, opacity);
+        lay(matrix, mesh, 0, 0, 1, opacity);
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
@@ -163,27 +164,64 @@ public final class HelmetVisor {
     }
 
     /**
-     * Lays the picture's areas over the view, moved this far, this opaque: in its own colours at a light of 1, or only
-     * their shape in black at 0. The picture is the size of the screen, its bottom row its first, as OpenGL keeps it.
+     * The parts' areas, cut into small cells and bent onto the visor: each cell's corners, taken round the way the GUI's
+     * own shapes go (the other way is culled), as where each lands on the screen and where it is in the picture, four
+     * figures a corner. The picture is the size of the screen, given in GUI pixels, its bottom row its first, as OpenGL
+     * keeps it.
      */
-    private static void lay(Matrix4f matrix, Box[] areas, float width, float height, float offsetX, float offsetY, float light, float opacity) {
-        // The picture's colours are weighted by its alpha, so they are scaled by the opacity as well as its alpha.
-        float shade = light * opacity;
-        BufferBuilder mesh = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        for (Box area : areas) {
-            // Round the way the GUI's own shapes go, as the other way is culled.
-            corner(mesh, matrix, area.left(), area.top(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
-            corner(mesh, matrix, area.left(), area.bottom(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
-            corner(mesh, matrix, area.right(), area.bottom(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
-            corner(mesh, matrix, area.right(), area.top(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
+    private static float[] mesh(Box[] areas, VisorCurve curve, float width, float height) {
+        int[] columns = new int[areas.length];
+        int[] rows = new int[areas.length];
+        int cells = 0;
+        for (int i = 0; i < areas.length; i++) {
+            columns[i] = Math.max(1, Mth.ceil((areas[i].right() - areas[i].left()) / CELL));
+            rows[i] = Math.max(1, Mth.ceil((areas[i].bottom() - areas[i].top()) / CELL));
+            cells += columns[i] * rows[i];
         }
-        BufferUploader.drawWithShader(mesh.buildOrThrow());
+        float[] mesh = new float[cells * 16];
+        float[] point = new float[2];
+        int at = 0;
+        for (int i = 0; i < areas.length; i++) {
+            Box area = areas[i];
+            float cellWidth = (area.right() - area.left()) / columns[i];
+            float cellHeight = (area.bottom() - area.top()) / rows[i];
+            for (int row = 0; row < rows[i]; row++) {
+                float top = area.top() + row * cellHeight;
+                for (int column = 0; column < columns[i]; column++) {
+                    float left = area.left() + column * cellWidth;
+                    at = corner(mesh, at, curve, area, left, top, width, height, point);
+                    at = corner(mesh, at, curve, area, left, top + cellHeight, width, height, point);
+                    at = corner(mesh, at, curve, area, left + cellWidth, top + cellHeight, width, height, point);
+                    at = corner(mesh, at, curve, area, left + cellWidth, top, width, height, point);
+                }
+            }
+        }
+        return mesh;
     }
 
-    /** A corner of an area, where it is on the screen and in the picture. */
-    private static VertexConsumer corner(BufferBuilder mesh, Matrix4f matrix, float x, float y, float width, float height, float offsetX,
-                                         float offsetY) {
-        return mesh.addVertex(matrix, x + offsetX, y + offsetY, 0).setUv(x / width, 1 - y / height);
+    /** Puts a corner of a cell of a part's area into the mesh at the given place, and gives the place after it. */
+    private static int corner(float[] mesh, int at, VisorCurve curve, Box area, float x, float y, float width, float height, float[] point) {
+        curve.bend(x, y, area, point);
+        mesh[at] = point[0];
+        mesh[at + 1] = point[1];
+        mesh[at + 2] = x / width;
+        mesh[at + 3] = 1 - y / height;
+        return at + 4;
+    }
+
+    /**
+     * Lays the picture over the view through the mesh, moved this far, this opaque: in its own colours at a light of 1,
+     * or only its shape in black at 0.
+     */
+    private static void lay(Matrix4f matrix, float[] mesh, float offsetX, float offsetY, float light, float opacity) {
+        // The picture's colours are weighted by its alpha, so they are scaled by the opacity as well as its alpha.
+        float shade = light * opacity;
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (int at = 0; at < mesh.length; at += 4) {
+            buffer.addVertex(matrix, mesh[at] + offsetX, mesh[at + 1] + offsetY, 0).setUv(mesh[at + 2], mesh[at + 3])
+                .setColor(shade, shade, shade, opacity);
+        }
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
     /** Draws the visor over the view while a pilot helmet is worn and the player looks out through their own eyes. */

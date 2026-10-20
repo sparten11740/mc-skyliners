@@ -1,20 +1,24 @@
 package dev.aerolarge.client;
 
+import javax.annotation.Nullable;
+
 /**
- * Where the parts of the pilots' head-up display ({@link PilotHud}) go on a screen this big, in GUI pixels from its top
- * left corner: clear of the rest of the HUD, and leaving the middle of the view to the horizon round the crosshair. The
- * heading goes in a slim strip at the top in the middle, under any boss bars. The speed and the height go either side
- * of the hotbar at the bottom of the screen, past the offhand slot and the attack indicator, under the chat or beside
- * it, and clear of the subtitles while they show. Where they do not both fit there, as on a small screen or with a big
- * HUD, they go out in the left and right parts of the screen instead, level with the crosshair, or as much higher as
- * keeps the speed above the chat.
+ * Where the parts of the pilots' head-up display ({@link PilotHud}) go on the visor's screen, in GUI pixels from its
+ * top left corner: clear of the rest of the HUD, and leaving the middle of the view to the horizon round the
+ * crosshair. The heading goes in a slim strip at the top in the middle, under any boss bars. The speed and the height
+ * go either side of the hotbar at the bottom of the screen, past the offhand slot and the attack indicator, under the
+ * chat or beside it, and clear of the subtitles while they show. Where they do not both fit there, as on a small
+ * screen or with a big HUD, they go out in the left and right parts of the screen instead, level with the crosshair,
+ * or as much higher as keeps the speed above the chat. Each part is placed by where it lands once bent onto the
+ * visor's curve, which draws it in toward the middle of the screen.
  *
+ * @param curve      the visor's curve, on a screen as big as the GUI's
  * @param chatWidth  how wide the chat is set, at the screen's left edge
  * @param chatHeight how high it is set, while closed
  * @param subtitles  whether subtitles show, in a box at the bottom right corner
  * @param bossBars   where the boss bars at the top of the screen end; its top while there are none
  */
-record HudLayout(float width, float height, float chatWidth, float chatHeight, boolean subtitles, float bossBars) {
+record HudLayout(VisorCurve curve, float chatWidth, float chatHeight, boolean subtitles, float bossBars) {
     /** Half the hotbar's width, with the offhand slot or the attack indicator beside it, either side. */
     private static final float HOTBAR_HALF = 91 + 29;
     /** How far above the screen's bottom the chat's lowest line ends, and how much wider its lines are than it is set. */
@@ -29,6 +33,8 @@ record HudLayout(float width, float height, float chatWidth, float chatHeight, b
     private static final float GAP = 4;
     /** Out in the left and right parts of the screen, how far the tapes are from its middle, as a share of its width. */
     private static final float SIDE = 0.25F;
+    /** How many times a part is moved to put its bent box where wanted: each step leaves a fifth of the miss at most. */
+    private static final int FIT_STEPS = 4;
 
     /** An area, or how far a part reaches round its origin: its left, top, right and bottom edges. */
     record Box(float left, float top, float right, float bottom) {
@@ -56,38 +62,76 @@ record HudLayout(float width, float height, float chatWidth, float chatHeight, b
     record Placement(Point speed, Point altitude, Point heading, Point attitude) {
     }
 
+    /** An edge of a box. */
+    private enum Edge {
+        LEFT, TOP, RIGHT, BOTTOM;
+
+        float of(Box box) {
+            return switch (this) {
+                case LEFT -> box.left();
+                case TOP -> box.top();
+                case RIGHT -> box.right();
+                case BOTTOM -> box.bottom();
+            };
+        }
+    }
+
     /** Places the parts, given how far each reaches round its origin. */
     Placement place(Box speed, Box altitude, Box heading, Box attitude) {
-        float middle = width / 2;
+        float middle = curve.width() / 2;
+        float height = curve.height();
         Point centre = new Point(middle, height / 2);
-        Point headingAt = new Point(middle, Math.max(MARGIN, bossBars + GAP) - heading.top());
-        Point speedAt = new Point(middle - HOTBAR_HALF - GAP - speed.right(), height - MARGIN - speed.bottom());
-        Point altitudeAt = new Point(middle + HOTBAR_HALF + GAP - altitude.left(), height - MARGIN - altitude.bottom());
-        if (clear(speed.at(speedAt)) && clear(altitude.at(altitudeAt))) {
+        Point headingAt = fit(heading, null, middle, Edge.TOP, Math.max(MARGIN, bossBars + GAP));
+        Point speedAt = fit(speed, Edge.RIGHT, middle - HOTBAR_HALF - GAP, Edge.BOTTOM, height - MARGIN);
+        Point altitudeAt = fit(altitude, Edge.LEFT, middle + HOTBAR_HALF + GAP, Edge.BOTTOM, height - MARGIN);
+        if (clear(onScreen(speed, speedAt)) && clear(onScreen(altitude, altitudeAt))) {
             return new Placement(speedAt, altitudeAt, headingAt, centre);
         }
-        float reach = Math.min(width * SIDE, Math.min(middle - MARGIN + speed.left(), middle - MARGIN - altitude.right()));
-        float y = height / 2;
+        float reach = Math.min(curve.width() * SIDE, Math.min(middle - MARGIN + speed.left(), middle - MARGIN - altitude.right()));
+        Point speedSide = new Point(middle - reach, height / 2);
         Box chat = chat();
-        if (speed.at(new Point(middle - reach, y)).overlaps(chat)) {
-            y = chat.top() - GAP - speed.bottom();
+        if (onScreen(speed, speedSide).overlaps(chat)) {
+            speedSide = fit(speed, null, speedSide.x(), Edge.BOTTOM, chat.top() - GAP);
         }
-        y = Math.max(y, MARGIN - Math.min(speed.top(), altitude.top()));
-        return new Placement(new Point(middle - reach, y), new Point(middle + reach, y), headingAt, centre);
+        if (onScreen(speed, speedSide).top() < MARGIN) {
+            speedSide = fit(speed, null, speedSide.x(), Edge.TOP, MARGIN);
+        }
+        return new Placement(speedSide, new Point(middle + reach, speedSide.y()), headingAt, centre);
+    }
+
+    /**
+     * Where a part's origin goes for its bent box's edges to land where wanted: one edge across at x (or, with none,
+     * its origin at x) and one up or down at y. The curve draws things in, so the part is moved out until they land.
+     */
+    private Point fit(Box reach, @Nullable Edge across, float x, Edge down, float y) {
+        Point at = new Point(across == null ? x : x - across.of(reach), y - down.of(reach));
+        for (int step = 0; step < FIT_STEPS; step++) {
+            Box bent = onScreen(reach, at);
+            at = new Point(across == null ? at.x() : at.x() + x - across.of(bent), at.y() + y - down.of(bent));
+        }
+        return at;
+    }
+
+    /** Where a part with its origin there lands on the screen, bent onto the visor. */
+    private Box onScreen(Box reach, Point origin) {
+        return curve.bent(reach.at(origin));
     }
 
     /** Whether a part placed there is on the screen and clear of the chat and the subtitles. */
     private boolean clear(Box box) {
-        return box.left() >= MARGIN && box.right() <= width - MARGIN && box.top() >= MARGIN && !box.overlaps(chat())
+        return box.left() >= MARGIN && box.right() <= curve.width() - MARGIN && box.top() >= MARGIN && !box.overlaps(chat())
             && !(subtitles && box.overlaps(subtitleBox()));
-    }
-
-    private Box subtitleBox() {
-        return new Box(width - SUBTITLES_WIDTH, height - SUBTITLES_BOTTOM - SUBTITLES_HEIGHT, width, height - SUBTITLES_BOTTOM);
     }
 
     /** Where the chat's lines show, its own scale at most as big as the GUI's. */
     private Box chat() {
-        return new Box(0, height - CHAT_BOTTOM - chatHeight, chatWidth + CHAT_PADDING, height - CHAT_BOTTOM);
+        float bottom = curve.height() - CHAT_BOTTOM;
+        return new Box(0, bottom - chatHeight, chatWidth + CHAT_PADDING, bottom);
+    }
+
+    private Box subtitleBox() {
+        float width = curve.width();
+        float bottom = curve.height() - SUBTITLES_BOTTOM;
+        return new Box(width - SUBTITLES_WIDTH, bottom - SUBTITLES_HEIGHT, width, bottom);
     }
 }

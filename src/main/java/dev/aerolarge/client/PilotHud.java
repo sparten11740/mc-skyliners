@@ -44,12 +44,12 @@ import org.joml.Matrix4f;
  * The pilots' head-up display, shown by the visor of a pilot helmet: while the local player wears one on the flight
  * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies, drawn as a
  * real HUD is, in thin green lines and figures straight over the view, edged dark so they read against bright sky, with
- * what the autopilot is set to in magenta, on the visor ({@link HelmetVisor}). It comes in parts, placed by
- * {@link HudLayout} out of the way of the rest of the HUD and of the middle of the view. Round the crosshair a slim
- * horizon line and the pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon amber once
- * banked as far as the "bank angle" callout), and the flight path marker, where the airliner is going. Left of the
- * hotbar the speed on a narrow moving tape, the speed set as a magenta bug and a trend arrow to the speed ten seconds
- * on, and beside it a picture of what the autopilot is doing, with its name. Right of the hotbar the height the
+ * what the autopilot is set to in magenta, bent onto the visor's curve ({@link HelmetVisor}). It comes in parts,
+ * placed by {@link HudLayout} out of the way of the rest of the HUD and of the middle of the view. Round the crosshair
+ * a slim horizon line and the pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon
+ * amber once banked as far as the "bank angle" callout), and the flight path marker, where the airliner is going. Left
+ * of the hotbar the speed on a narrow moving tape, the speed set as a magenta bug and a trend arrow to the speed ten
+ * seconds on, and beside it a picture of what the autopilot is doing, with its name. Right of the hotbar the height the
  * autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the ground as an amber line
  * rising up it once near, a bar beyond it that climbs green or sinks amber, and beside that the wheels' height above
  * the ground and the climb or sink with an arrow. At the top of the screen a heading scale, the heading in a box over
@@ -432,10 +432,10 @@ public final class PilotHud {
         Font font = minecraft.font;
         Box speedReach = speedReach(font);
         ChatComponent chat = minecraft.gui.getChat();
-        HudLayout layout = new HudLayout(graphics.guiWidth(), graphics.guiHeight(), chat.getWidth(), chat.getHeight(),
-            minecraft.options.showSubtitles().get(), bossBars);
+        VisorCurve curve = new VisorCurve(graphics.guiWidth(), graphics.guiHeight(), unit);
+        HudLayout layout = new HudLayout(curve, chat.getWidth(), chat.getHeight(), minecraft.options.showSubtitles().get(), bossBars);
         Placement at = layout.place(speedReach.scaled(unit), ALTITUDE_REACH.scaled(unit), HEADING_REACH.scaled(unit), ATTITUDE_REACH.scaled(unit));
-        HelmetVisor.draw(graphics, pixelsPerUnit, OPACITY * fade, OUTLINE * fade, List.of(
+        HelmetVisor.draw(graphics, curve, OPACITY * fade, OUTLINE * fade, List.of(
             new HelmetVisor.Part(at.attitude(), ATTITUDE_REACH, painter(graphics, font, pixelsPerUnit, canvas -> attitude(canvas, reading))),
             new HelmetVisor.Part(at.speed(), speedReach,
                 painter(graphics, font, pixelsPerUnit, canvas -> speedTape(canvas, autopilot.phase(), reading, targets.speed(), speedReach.left()))),
