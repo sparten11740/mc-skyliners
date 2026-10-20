@@ -3,6 +3,7 @@ package dev.aerolarge;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.block.AirstairBlockEntity;
+import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairStepBlock;
@@ -312,6 +313,12 @@ public final class AerolargeRegistry {
         properties -> new AirstairCallButtonBlock(AIRLINER, properties),
         BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
+    /** The lit push-button beside the airstairs' controller, inside the cabin and out, a stone button in all it does. */
+    public static final DeferredBlock<AirstairButtonBlock> AIRSTAIR_BUTTON = BLOCKS.registerBlock(
+        "airstair_button",
+        properties -> new AirstairButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
     /**
@@ -467,6 +474,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> NAV_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(NAV_LIGHT);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
+    public static final DeferredItem<BlockItem> AIRSTAIR_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_BUTTON);
 
     /** Skydiving out of the airliner: the jump light by the doors, the rack of parachutes and the target to land on. */
     public static final DeferredBlock<JumpLightBlock> JUMP_LIGHT = BLOCKS.registerBlock(
@@ -990,7 +998,7 @@ public final class AerolargeRegistry {
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
-            AIRSTAIR_CALL_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
+            AIRSTAIR_CALL_BUTTON_ITEM, AIRSTAIR_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,

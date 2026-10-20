@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "G",
+    "B"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "B": {
+      "item": "aerolarge:airstair_call_button"
+    }
+  },
+  "result": {
+    "id": "aerolarge:airstair_button",
+    "count": 1
+  }
+}

@@ -147,6 +147,64 @@ function plugDoorLang() {
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
+// The airstair button beside the controller (see AirstairButtonBlock), drawn as vanilla draws a button, lying on the
+// floor and turned by the blockstate as vanilla's buttons are: a dark steel bezel a pixel thick, and on it the square
+// cap, glowing whatever the light around, a pixel and a half proud, or half a pixel pressed in. The cap's face shows the
+// middle six pixels of its texture, the staircase, the right way up for someone standing at the button's foot; on a
+// wall, turned up off the floor, it would stand on its head and back to front, so a wall button's face is turned half
+// round to read the right way up. In the hand, the button upright, its cap to the north.
+{
+  const name = "airstair_button";
+  const block = (texture) => `${ID}:block/${texture}`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const cap = (from, to, turned) => ({
+    from, to, shade: false,
+    faces: Object.fromEntries(["north", "south", "east", "west", "up"].map((face) =>
+      [face, { texture: "#cap", ...(face === "up" && turned ? { rotation: 180 } : {}), ...lit }])),
+  });
+  for (const wall of [false, true]) {
+    for (const pressed of [false, true]) {
+      write(`assets/${ID}/models/block/${name}${wall ? "_wall" : ""}${pressed ? "_pressed" : ""}.json`, {
+        parent: "minecraft:block/block",
+        textures: { bezel: block(`${name}_bezel`), cap: block(`${name}${pressed ? "_pressed" : ""}`), particle: block(`${name}_bezel`) },
+        elements: [solid([4, 0, 4], [12, 1, 12], "#bezel"), cap([5, 1, 5], [11, pressed ? 1.5 : 2.5, 11], wall)],
+      });
+    }
+  }
+  write(`assets/${ID}/models/block/${name}_inventory.json`, {
+    parent: "minecraft:block/block",
+    textures: { bezel: block(`${name}_bezel`), cap: block(name), particle: block(`${name}_bezel`) },
+    elements: [
+      solid([4, 4, 8], [12, 12, 9], "#bezel"),
+      { from: [5, 5, 6.5], to: [11, 11, 8], shade: false, faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#cap", ...lit }])) },
+    ],
+  });
+  // Turned as vanilla's: on the floor and the wall to face the way it looks, on the ceiling upside down and the other
+  // way round.
+  const ceiling = { north: 180, east: 270, south: 0, west: 90 };
+  write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(["floor", "wall", "ceiling"].flatMap((face) => Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((powered) => {
+      const turn = face === "ceiling" ? ceiling[facing] : y;
+      return [`face=${face},facing=${facing},powered=${powered}`, {
+        model: `${ID}:block/${name}${face === "wall" ? "_wall" : ""}${powered ? "_pressed" : ""}`,
+        ...(face === "wall" ? { x: 90 } : face === "ceiling" ? { x: 180 } : {}),
+        ...(turn ? { y: turn } : {}),
+      }];
+    })))),
+  });
+  write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
+  dropsItself(name);
+  cubes[name] = null;
+}
+// The illuminated button: the call button with glowstone dust over it to light its cap.
+function airstairButtonRecipes() {
+  shaped("airstair_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: `${ID}:airstair_call_button` }, 1);
+}
+function airstairButtonLang() {
+  return {
+    "block.aerolarge.airstair_button": "Airstair Button",
+  };
+}
 // The integral airstairs are drawn by their controller's renderer (see AirstairRenderer); the steps it lays under them
 // are invisible, so their model only gives the particles feet kick up off the treads. Laid only by the controller, so
 // no item and no loot; light like the rest of the airliner, but no part of its hull (see airstairFittings).
@@ -3021,8 +3079,9 @@ FITTINGS.push(...bulkheadSignFittings());
 FITTINGS.push(...denFurnitureFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
-// What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
-write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !b.includes("call_button"))));
+// What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
+// and the airstairs' buttons, the call button on the gear and the one on the skin outside by the top of the stairs.
+write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !b.endsWith("_button"))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
 // controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
@@ -3130,6 +3189,7 @@ gymFloorRecipes();
 lavatoryBasinRecipes();
 bulkheadSignRecipes();
 denFurnitureRecipes();
+airstairButtonRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3475,6 +3535,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...lavatoryBasinLang(),
   ...bulkheadSignLang(),
   ...denFurnitureLang(),
+  ...airstairButtonLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

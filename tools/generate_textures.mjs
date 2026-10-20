@@ -312,6 +312,17 @@ texture(blockOutput, "cabin_light_night", (x, y) => {
 }, 2);
 // The call button's cap: bright yellow so the ground crew find it.
 texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
+// The airstair button beside the controller (see AirstairButtonBlock): its cap the call button's amber, lit from
+// behind, the middle six pixels the face, with the controller's staircase on it in three steps rising to the right in
+// dark amber; pressed, the cap glows brighter, nearly white, the stairs a deeper amber on it. Its bezel: dark steel,
+// a lighter line along the top of each row of brushing.
+{
+  const STAIRS = ["....##", "....##", "..####", "..####", "######", "######"];
+  const cap = (glow, glyph) => (x, y) => (STAIRS[y - 5]?.[x - 5] === "#" ? glyph : glow);
+  texture(blockOutput, "airstair_button", cap([0xf6, 0xae, 0x22], [0x5a, 0x34, 0x08]), 1);
+  texture(blockOutput, "airstair_button_pressed", cap([0xff, 0xec, 0xa8], [0xa8, 0x6c, 0x10]), 1);
+  texture(blockOutput, "airstair_button_bezel", (x, y) => (y % 3 === 0 ? [0x6e, 0x74, 0x7c] : [0x4a, 0x50, 0x57]), 2);
+}
 // The integral airstairs, drawn by their renderer a pixel of texture to a pixel of the airliner. A tread: dark grey
 // non-slip plate, ribbed across with raised studs between the ribs; its nosing, safety yellow, a shade darker along
 // its front edge. The stringers: brushed aluminium, streaked lengthways, catching the light along their top edge. The

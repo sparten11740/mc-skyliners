@@ -635,6 +635,11 @@ ground with the yellow call button on the front of the nose gear. An airliner is
 before them, the old stairs of blocks fold away the old way the first time they are worked, and from then on the new
 ones come out, folding into the hold behind the hull below the door.
 
+An Airstair Button is an illuminated push-button in a dark steel bezel, its square cap glowing amber whatever the
+light, with the controller's staircase on it; pressed, it sinks in and glows brighter. It is a stone button in all it
+does: it stays down a second and powers what it is on, so put on an airstair controller it works the stairs. It can be
+crafted from a call button and glowstone dust.
+
 ### Evacuation slides
 
 Every passenger door but the forward port door, which has the airstairs, has an evacuation slide packed in it, as an

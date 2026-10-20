@@ -12,6 +12,7 @@
     "aerolarge:plug_door",
     "aerolarge:airstair_controller",
     "aerolarge:airstair_call_button",
+    "aerolarge:airstair_button",
     "aerolarge:airstair_step",
     "aerolarge:slide_control",
     "aerolarge:slide_step",
