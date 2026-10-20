@@ -12,6 +12,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.IntValue TAIL_CAMERA_FPS;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
     public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
+    public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -44,6 +45,12 @@ public final class AerolargeClientConfig {
                 "is drawn with Veil's extra buffers and its lights; turn it off if that costs too much. Never with Iris installed:",
                 "the night lights only glow blue then.")
             .define("nightLights", true);
+        CLOUDLESS_CABIN = builder
+            .comment("Keep the clouds out of the airliner's cabin: while you are inside its hull and the cloud layer passes the",
+                "airliner, the clouds are not drawn for you, so no slab of cloud cuts through the floor, the walls and the seats.",
+                "With Fast or Fancy graphics the windows never show the clouds behind them anyway; with Fabulous graphics the",
+                "clouds outside the windows go too while the cloud layer passes. Outside the hull the clouds are always drawn.")
+            .define("cloudlessCabin", true);
         SPEC = builder.build();
     }
 

@@ -57,7 +57,12 @@ and each intake is round too: a polished lip curling into the duct, the fan and 
 an engine is at rest an iris shuts its intake; it opens as soon as the engine is asked for thrust, and behind the
 turning fan the engine glows a dull red, brighter the harder it runs, until it has spun down and the iris shuts again.
 Each engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a
-contrail.
+contrail. Flying through the cloud layer, the clouds stay outside: while you are inside the hull of an airliner that
+reaches into the clouds, they are not drawn for you, so no slab of cloud cuts through the floor, the walls or the
+seats; out on the wing or the airstairs, or looking through an outside camera, they are back, and from outside the
+airliner still flies in and out of them. With Fast or Fancy graphics the windows never show the clouds behind them
+anyway; with Fabulous graphics the clouds outside the windows go too while the airliner is in the cloud layer. Turn it
+off with `cloudlessCabin` in the client config.
 
 ### Flight deck
 
@@ -595,10 +600,10 @@ taken from a coffee machine (Barista).
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
-`pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`, and the
-cabin's blue `nightLights`) are there from the title screen. The server settings open only while a world is loaded,
-from the pause menu's Mods button while playing in single player; they are kept in `config/aerolarge-server.toml`, on
-a dedicated server in its own.
+`pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`, the cabin's
+blue `nightLights`, and `cloudlessCabin`) are there from the title screen. The server settings open only while a world
+is loaded, from the pause menu's Mods button while playing in single player; they are kept in
+`config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
 
@@ -620,7 +625,8 @@ shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDo
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
 from their `AirstairBlockEntity`; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
-at night through Veil's light renderer, the only places Veil is touched. Assets
+at night through Veil's light renderer, the only places Veil is touched; `CloudlessCabin` leaves the clouds out of the
+player's view while the camera is inside a hull in the cloud layer. Assets
 are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

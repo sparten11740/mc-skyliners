@@ -4,6 +4,7 @@ import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
@@ -34,8 +35,8 @@ import org.joml.Vector3dc;
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
- * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, and which ones
- * come near a point and how they lie as they are drawn; and holding Sable's water occlusion off while a camera's
+ * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, which ones come
+ * near a point or hold it and how they lie as they are drawn; and holding Sable's water occlusion off while a camera's
  * picture is drawn. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
  * once it is known to be installed.
  */
@@ -172,6 +173,18 @@ public final class SableClient {
     /** Each assembled airliner within reach of a point in the world, as it last moved; none without Sable. */
     static List<Near> near(Level level, Vec3 point, double reach) {
         return SABLE ? Access.near(level, point, reach) : List.of();
+    }
+
+    /**
+     * An assembled airliner whose bounds hold a point in the world: where that point is among its blocks as the airliner
+     * is drawn, and how low and how high its bounds reach in the world.
+     */
+    public record Around(Vec3 point, double bottom, double top) {
+    }
+
+    /** Each assembled airliner whose bounds hold a point in the world, as drawn at this partial tick; none without Sable. */
+    static List<Around> around(Level level, Vec3 point, float partialTick) {
+        return SABLE ? Access.around(level, point, partialTick) : List.of();
     }
 
     /**
@@ -318,6 +331,18 @@ public final class SableClient {
             List<Near> found = new ArrayList<>();
             for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, around)) {
                 found.add(new Near(airliner.getUniqueId(), airliner.logicalPose().transformPositionInverse(point)));
+            }
+            return found;
+        }
+
+        static List<Around> around(Level level, Vec3 point, float partialTick) {
+            List<Around> found = new ArrayList<>();
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(BlockPos.containing(point)))) {
+                if (airliner instanceof ClientSubLevel drawn) {
+                    // Over this tick and the last, so it holds the airliner wherever it is drawn between them.
+                    BoundingBox3dc bounds = drawn.boundingBox();
+                    found.add(new Around(drawn.renderPose(partialTick).transformPositionInverse(point), bounds.minY(), bounds.maxY()));
+                }
             }
             return found;
         }

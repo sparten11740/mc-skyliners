@@ -8,6 +8,7 @@ import dev.aerolarge.client.AirstairRenderer;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
+import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.FallingCrateRenderer;
@@ -56,9 +57,9 @@ import net.neoforged.neoforge.common.NeoForge;
  * The client side: the model of the skin cut to the hull's curve, the renderers for the airliner's exterior lights,
  * flight displays, autopilot screen, tail camera display, passenger screens, engine intakes, hull doors and
  * airstairs, its engines' sound and contrails, the camera shake aboard, the passenger screens' outside cameras and the
- * tail camera display's live picture, the cabin's blue light at night, parachutes: opening them by jumping, and the
- * canopy over their wearers; the pilot helmet's visor and the pilots' head-up display on it; the creative tab's
- * section banners; the curtains' dye colours; and the settings screen in the Mods menu.
+ * tail camera display's live picture, the cabin's blue light at night, the clouds kept out of the cabin, parachutes:
+ * opening them by jumping, and the canopy over their wearers; the pilot helmet's visor and the pilots' head-up display
+ * on it; the creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -88,6 +89,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(TailCameraFeed::loggingOut);
         NeoForge.EVENT_BUS.addListener(NightLights::frame);
         NeoForge.EVENT_BUS.addListener(NightLights::loggingOut);
+        NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
+        NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);
