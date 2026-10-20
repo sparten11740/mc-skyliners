@@ -1,5 +1,6 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
@@ -57,10 +58,13 @@ public class PlugDoorBlockEntity extends BlockEntity {
      */
     private static final double MOVING = 0.5;
     /**
-     * How far out of the frame the panel moves before it swings away, in blocks: a little further than the door is
-     * deep, lining and handle and all, so swung round it stands just clear of the hull.
+     * How far out of the frame a door hinged at its side moves before it swings away, in blocks, from a doorway in a
+     * flush stretch of hull: a little further than the door is deep, lining and handle and all, so swung round it
+     * stands just clear of the hull.
      */
-    public static final float PLUG = 0.55F;
+    private static final float PLUG = 0.55F;
+    /** How many blocks out past the doorway's outer face the hull round it is looked at, for how far it bulges out. */
+    private static final int BULGE = 2;
     private static final float HISS_VOLUME = 0.8F;
     private static final float LATCH_VOLUME = 0.9F;
     /** The latches clunk higher coming free than going home. */
@@ -78,6 +82,8 @@ public class PlugDoorBlockEntity extends BlockEntity {
     /** Whether a villager opened it, so it shuts again behind it; and how long no villager has been at it, in ticks. */
     private boolean forVillagers;
     private int villagersGone;
+    /** How far out of its frame the panel moves (see {@link #standoff()}), worked out afresh each time it opens. */
+    private float standoff = Float.NaN;
 
     public PlugDoorBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.PLUG_DOOR_ENTITY.get(), pos, state);
@@ -101,6 +107,82 @@ public class PlugDoorBlockEntity extends BlockEntity {
     /** How many rows tall the door is. */
     public int rows() {
         return level == null ? 0 : PlugDoorBlock.rows(level, worldPosition);
+    }
+
+    /**
+     * How far out of its frame the panel moves before it swings away, in blocks. A door hinged at its side moves out
+     * far enough that swung round it stands just clear of the hull where it parks, wherever the hull there bulges out
+     * past the doorway; one hinged along its top moves out past whatever of the hull above it reaches further out than
+     * the doorway, so it swings up clear of it, and not at all where that hull is flush with the doorway.
+     */
+    public float standoff() {
+        if (Float.isNaN(standoff) && level != null) {
+            standoff = standoff(level, worldPosition);
+        }
+        return Float.isNaN(standoff) ? 0 : standoff;
+    }
+
+    /** How far out of its frame the panel of the door with its bottom left part here moves (see {@link #standoff()}). */
+    private static float standoff(BlockGetter level, BlockPos controller) {
+        BlockState state = level.getBlockState(controller);
+        int rows = PlugDoorBlock.rows(level, controller);
+        PlugDoorBlock.Hinge hinge = state.getValue(PlugDoorBlock.HINGE);
+        if (hinge == PlugDoorBlock.Hinge.TOP) {
+            return bulge(level, controller, state, 0, PlugDoorBlock.COLUMNS - 1, rows, rows);
+        }
+        // The columns beside the doorway the panel parks against: to its right for a door hinged on the right.
+        int from = hinge == PlugDoorBlock.Hinge.RIGHT ? PlugDoorBlock.COLUMNS : -PlugDoorBlock.COLUMNS;
+        return PLUG + bulge(level, controller, state, from, from + PlugDoorBlock.COLUMNS - 1, 0, rows - 1);
+    }
+
+    /**
+     * How far the airliner's own hull (not what is built against it, such as a jet bridge) reaches out past the
+     * doorway's outer face, in blocks, over these columns and rows of the door's, counted as its parts are: none where
+     * it is flush with the doorway or further in.
+     */
+    private static float bulge(BlockGetter level, BlockPos controller, BlockState door, int fromColumn, int toColumn, int fromRow, int toRow) {
+        Direction out = door.getValue(PlugDoorBlock.FACING);
+        Direction right = PlugDoorBlock.right(door);
+        float bulge = 0;
+        for (int column = fromColumn; column <= toColumn; column++) {
+            for (int row = fromRow; row <= toRow; row++) {
+                for (int depth = 1; depth <= BULGE; depth++) {
+                    BlockPos at = controller.relative(right, column).above(row).relative(out, depth);
+                    BlockState state = level.getBlockState(at);
+                    if (state.is(Aboard.AIRFRAME)) {
+                        bulge = Math.max(bulge, depth - 1 + outermost(level, at, state, out));
+                    }
+                }
+            }
+        }
+        return bulge;
+    }
+
+    /**
+     * How far across its block a block reaches the way out, 0 to 1, from the side in: exactly where the skin is cut to
+     * the hull's curve; minus infinity where it has no shape at all.
+     */
+    private static float outermost(BlockGetter level, BlockPos pos, BlockState state, Direction out) {
+        float most = Float.NEGATIVE_INFINITY;
+        int shape = ShellBlock.shape(state);
+        if (shape != ShellGeometry.WHOLE) {
+            for (ShellGeometry.Face face : ShellGeometry.faces(shape)) {
+                for (float[] corner : face.corners()) {
+                    most = Math.max(most, outward(out, corner[0], corner[2]));
+                }
+            }
+            return most;
+        }
+        for (AABB box : state.getShape(level, pos).toAabbs()) {
+            most = Math.max(most, Math.max(outward(out, box.minX, box.minZ), outward(out, box.maxX, box.maxZ)));
+        }
+        return most;
+    }
+
+    /** How far across a block a point in it (x and z, 0 to 1) lies the way out, from the side in. */
+    private static float outward(Direction out, double x, double z) {
+        double across = out.getAxis() == Direction.Axis.X ? x : z;
+        return (float) (out.getAxisDirection() == Direction.AxisDirection.POSITIVE ? across : 1 - across);
     }
 
     /** Someone used the door: it opens, or shuts. */
@@ -195,6 +277,7 @@ public class PlugDoorBlockEntity extends BlockEntity {
             villagers(level);
         }
         lastTicks = ticks;
+        settle();
         if (open) {
             if (ticks < SWING_TICKS) {
                 ticks++;
@@ -230,10 +313,18 @@ public class PlugDoorBlockEntity extends BlockEntity {
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, PlugDoorBlockEntity door) {
         door.lastTicks = door.ticks;
+        door.settle();
         if (door.held) {
             return;
         }
         door.ticks = Math.clamp(door.ticks + (door.open ? 1 : -1), 0, SWING_TICKS);
+    }
+
+    /** Shut, the door forgets how far out it stood: the hull round it may have changed by the time it opens again. */
+    private void settle() {
+        if (ticks == 0) {
+            standoff = Float.NaN;
+        }
     }
 
     /**
@@ -269,7 +360,7 @@ public class PlugDoorBlockEntity extends BlockEntity {
 
     /** Whether anyone stands where the panel goes back into its frame: in it, or just outside, where it comes in from. */
     private boolean inTheWay(ServerLevel level) {
-        AABB panel = across(-PlugDoorBlock.DEPTH / 16.0, PLUG);
+        AABB panel = across(-PlugDoorBlock.DEPTH / 16.0, standoff());
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, around(level, 1), LivingEntity::isAlive)) {
             if (panel.intersects(inPlot(level, entity))) {
                 return true;

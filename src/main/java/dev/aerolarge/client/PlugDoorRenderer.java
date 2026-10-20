@@ -29,7 +29,8 @@ import net.minecraft.world.phys.AABB;
  * frame, then is carried round on its arm, the way an airliner's is: the arm swings out and forward about a hinge
  * beside the doorway while the panel stays square to the hull, so it ends up flat against the hull beside the doorway,
  * lining and all just clear of it, its outside still facing out. A door hinged along its top, the cargo door, swings up
- * and out about its top edge instead. Shutting runs the same way back.
+ * and out about its top edge instead, first moving out of a doorway the hull above it stands proud of. Shutting runs
+ * the same way back.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from outside, y up from the sill, z out,
  * the hull's outer face at z 1.
@@ -80,15 +81,26 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         pose.mulPose(Axis.YP.rotationDegrees(-out.toYRot()));
         pose.translate(-0.5, 0, -0.5);
         if (hinge == PlugDoorBlock.Hinge.TOP) {
-            pose.pushPose();
-            pose.translate(0, rows, 1);
-            pose.mulPose(Axis.XN.rotationDegrees(TOP_SWING * ease(progress)));
-            pose.translate(0, -rows, -1);
-            panel(paint, pose.last(), rows, hinge);
-            pose.popPose();
+            swingUp(paint, pose, rows, door.standoff(), progress);
         } else {
-            swing(paint, pose, rows, hinge, progress);
+            swing(paint, pose, rows, hinge, door.standoff(), progress);
         }
+        pose.popPose();
+    }
+
+    /**
+     * A door hinged along its top, this far through its swing: up and out about its top edge, once out of the doorway
+     * as far as the hull above it stands out past it, if it does.
+     */
+    private static void swingUp(Painter paint, PoseStack pose, int rows, float standoff, float progress) {
+        boolean recessed = standoff > 0;
+        float plug = recessed ? ease(Math.clamp(progress / PLUG_SHARE, 0F, 1F)) : 0;
+        float swing = recessed ? ease(Math.clamp((progress - PLUG_SHARE) / (1 - PLUG_SHARE), 0F, 1F)) : ease(progress);
+        pose.pushPose();
+        pose.translate(0, rows, 1 + standoff * plug);
+        pose.mulPose(Axis.XN.rotationDegrees(TOP_SWING * swing));
+        pose.translate(0, -rows, -1);
+        panel(paint, pose.last(), rows, PlugDoorBlock.Hinge.TOP);
         pose.popPose();
     }
 
@@ -98,7 +110,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
      * carries the panel round with it square to the hull, from the doorway to beside it, as far again as the arm is
      * long.
      */
-    private static void swing(Painter paint, PoseStack pose, int rows, PlugDoorBlock.Hinge hinge, float progress) {
+    private static void swing(Painter paint, PoseStack pose, int rows, PlugDoorBlock.Hinge hinge, float standoff, float progress) {
         // Which way across the panel moves: to the right (1) for a hinge on the right, seen from outside, or the left.
         int side = hinge == PlugDoorBlock.Hinge.RIGHT ? 1 : -1;
         float plug = ease(Math.clamp(progress / PLUG_SHARE, 0F, 1F));
@@ -106,11 +118,11 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         float arm = (PlugDoorBlock.COLUMNS + GAP) / 2;
         float dx = side * arm * (1 - (float) Math.cos(turn));
         float dy = LIFT * plug;
-        float dz = PlugDoorBlockEntity.PLUG * plug + arm * (float) Math.sin(turn);
+        float dz = standoff * plug + arm * (float) Math.sin(turn);
         if (turn > 0) {
+            // The arm's hinge stands as far out past the hull as the lining's face is once out of the frame.
             float hingeX = PlugDoorBlock.COLUMNS / 2F + side * arm;
-            float inner = 1 - DEPTH + PlugDoorBlockEntity.PLUG;
-            arm(paint, pose, hingeX, rows / 2F + dy, inner, PlugDoorBlock.COLUMNS / 2F + dx, 1 - DEPTH + dz);
+            arm(paint, pose, hingeX, rows / 2F + dy, 1 - DEPTH + standoff, PlugDoorBlock.COLUMNS / 2F + dx, 1 - DEPTH + dz);
         }
         pose.pushPose();
         pose.translate(dx, dy, dz);
