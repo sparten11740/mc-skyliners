@@ -1,16 +1,11 @@
 package dev.aerolarge.client;
 
 import com.mojang.logging.LogUtils;
-import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.LightStripBlock;
-import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.dynamicbuffer.DynamicBufferType;
-import foundry.veil.api.client.render.light.data.AreaLightData;
-import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -26,7 +21,6 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -34,20 +28,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import org.joml.Matrix3f;
 import org.joml.Vector3d;
-import org.joml.Vector3dc;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 /**
  * The cabin's blue night lighting. With the flight deck's dimmer set for the night, the cabin lights near the camera
  * that are still on (all but those kept on, see {@link CabinLightBlock}), the LED strips and the pendant lights cast
- * real blue light round the cabin, as an airliner's mood lighting does, through Veil's light renderer (Veil comes
- * inside Sable's jar). The light is only drawn: the world's light levels, and so what spawns where, stay as the dimmer
+ * real blue light round the cabin, as an airliner's mood lighting does, through Veil's light renderer (see
+ * {@link VeilLights}). The light is only drawn: the world's light levels, and so what spawns where, stay as the dimmer
  * has them. The lounge's starlit ceiling (a whole ceiling of panels, its stars its night light) and the den's coloured
  * fairy lights keep only their own glow.
  *
@@ -57,27 +47,20 @@ import org.slf4j.Logger;
  * {@link #MAX_RUN} blocks); of all those, only the {@link #MAX_LIGHTS} nearest are drawn. An assembled airliner's
  * lights are placed anew every frame, as Sable draws the airliner at that partial tick, so they fly with it.
  *
- * <p>Veil draws its lights after the world, from what the world's drawing left in two buffers Veil adds to it: each
- * pixel's own colour and the way its surface faces. While its lights are near, this class keeps those buffers on, and
- * lets them go only {@link #RELEASE_AFTER} after the last light went: Veil itself turns them on and off as its lights
- * come into and out of view, and each switch recompiles the game's shaders over the next frames and redraws every
- * chunk in view, a hitch the cabin would otherwise cause each time the player turned round.
+ * <p>While its lights are near, this class keeps Veil's buffers on (see {@link VeilLights.Buffers}), so the cabin does
+ * not cause a hitch each time the player turns round.
  *
- * <p>Never with Iris (or Oculus) installed, with or without a shader pack: Veil then cannot add its buffers, and its
- * lights would be drawn from garbage. Never with the {@code nightLights} setting off; and once drawing the lights has
- * failed, the failure is logged and they stay off until the game is restarted. The lamps' own blue night glow stays.
+ * <p>Never where Veil's lights cannot be drawn ({@link VeilLights#USABLE}), nor with the {@code nightLights} setting
+ * off; and once drawing the lights has failed, the failure is logged and they stay off until the game is restarted.
+ * The lamps' own blue night glow stays.
  */
 public final class NightLights {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final boolean VEIL = ModList.get().isLoaded("veil");
-    private static final boolean SHADER_MODS = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
     /** How far from the camera lamps are looked for, in blocks: either way along and across, and up and down. */
     private static final int REACH = 24;
     private static final int REACH_UP = 12;
     /** How often the blocks round the camera are looked through, in milliseconds. */
     private static final long LOOK_EVERY = 500;
-    /** How long Veil's buffers are kept on after the last light went, in milliseconds. */
-    private static final long RELEASE_AFTER = 10_000;
     /** The most lights drawn at once, the nearest. */
     private static final int MAX_LIGHTS = 32;
     /** Lamps in a row at most this many blocks apart shine as one light: the crown's stand six apart. */
@@ -95,8 +78,8 @@ public final class NightLights {
     private static final float RED = 0.25F;
     private static final float GREEN = 0.45F;
     private static final float BLUE = 1.0F;
-    /** The name Veil's buffers are kept on under. */
-    private static final ResourceLocation BUFFERS = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "night_lights");
+    /** Veil's buffers, kept on while the lights are near. */
+    private static final VeilLights.Buffers BUFFERS = new VeilLights.Buffers("night_lights");
     /** Whether a block is a lamp set for the night: sections whose palettes hold none are skipped whole. */
     private static final Predicate<BlockState> MAYBE_LAMP = state -> lamp(state) != null;
     /** The key the world's own lights are kept under, among the assembled airliners' own. */
@@ -109,10 +92,6 @@ public final class NightLights {
     private static final Vector3d ALONG = new Vector3d();
     private static final Vector3d OUT = new Vector3d();
     private static long lookDue;
-    /** When a light was last drawn, as {@link Util#getMillis}. */
-    private static long litAt;
-    /** Whether Veil's buffers are kept on. */
-    private static boolean holding;
     /** Whether drawing the lights has failed; then none are drawn until the game is restarted. */
     private static boolean failed;
 
@@ -195,7 +174,7 @@ public final class NightLights {
             }
             // The partial tick Sable draws the airliners with.
             place(event.getPartialTick().getGameTimeDeltaPartialTick(false));
-            hold(now);
+            BUFFERS.keep(CABINS.values().stream().anyMatch(cabin -> !cabin.lights.isEmpty()), now);
         } catch (RuntimeException | LinkageError e) {
             failed = true;
             LOGGER.error("The cabin's blue night lights could not be drawn; they stay off until the game is restarted", e);
@@ -209,7 +188,7 @@ public final class NightLights {
 
     /** Whether the lights may be drawn now at all. */
     private static boolean available() {
-        return VEIL && !SHADER_MODS && !failed && AerolargeClientConfig.NIGHT_LIGHTS.get();
+        return VeilLights.USABLE && !failed && AerolargeClientConfig.NIGHT_LIGHTS.get();
     }
 
     /**
@@ -241,7 +220,7 @@ public final class NightLights {
             while (lights.hasNext()) {
                 Map.Entry<Glow, Object> light = lights.next();
                 if (!keep.contains(light.getKey())) {
-                    Lights.remove(light.getValue());
+                    VeilLights.remove(light.getValue());
                     lights.remove();
                 }
             }
@@ -253,11 +232,11 @@ public final class NightLights {
             Cabin cabin = CABINS.computeIfAbsent(frame, key -> new Cabin());
             for (Glow glow : glows) {
                 if (!cabin.lights.containsKey(glow)) {
-                    Object light = Lights.add(glow);
+                    Object light = add(glow);
                     cabin.lights.put(glow, light);
                     if (frame.equals(WORLD)) {
                         // The world's lamps stay put: placed once.
-                        Lights.place(light, set(MIDDLE, glow.middle()), set(ALONG, glow.along()), set(OUT, glow.out()));
+                        VeilLights.place(light, set(MIDDLE, glow.middle()), set(ALONG, glow.along()), set(OUT, glow.out()));
                     }
                 }
             }
@@ -276,41 +255,21 @@ public final class NightLights {
                 // Gone, or not yet where it was looked for: dropped at the next look if it stays so.
                 continue;
             }
-            cabin.lights.forEach((glow, light) -> Lights.place(light,
+            cabin.lights.forEach((glow, light) -> VeilLights.place(light,
                 placing.transform().transformPosition(set(MIDDLE, glow.middle())),
                 placing.turn().transform(set(ALONG, glow.along())),
                 placing.turn().transform(set(OUT, glow.out()))));
         }
     }
 
-    /**
-     * Keeps Veil's buffers on while any light is drawn, and lets them go once none has been for a while: each switch
-     * costs a hitch, so walking in and out of reach of the cabin does not switch them each time.
-     */
-    private static void hold(long now) {
-        boolean lit = CABINS.values().stream().anyMatch(cabin -> !cabin.lights.isEmpty());
-        if (lit) {
-            litAt = now;
-            if (!holding) {
-                Lights.hold();
-                holding = true;
-            }
-        } else if (holding && now - litAt > RELEASE_AFTER) {
-            Lights.release();
-            holding = false;
-        }
-    }
-
     /** Drops every light and lets Veil's buffers go. */
     private static void forget() {
-        if (CABINS.isEmpty() && !holding) {
+        if (CABINS.isEmpty() && !BUFFERS.held()) {
             return;
         }
         try {
-            CABINS.values().forEach(cabin -> cabin.lights.values().forEach(Lights::remove));
-            if (holding) {
-                Lights.release();
-            }
+            CABINS.values().forEach(cabin -> cabin.lights.values().forEach(VeilLights::remove));
+            BUFFERS.release();
         } catch (RuntimeException | LinkageError e) {
             if (!failed) {
                 failed = true;
@@ -318,7 +277,6 @@ public final class NightLights {
             }
         } finally {
             CABINS.clear();
-            holding = false;
         }
     }
 
@@ -484,58 +442,13 @@ public final class NightLights {
     }
 
     /**
-     * The lights in Veil: added, placed, removed, and its buffers kept on for them. Only loaded once Veil is known to be
-     * installed; a light is held outside as the handle Veil gave for it.
+     * A light for the row, an area light the size of its lamps' glowing faces, its row along its length; placed with
+     * {@link VeilLights#place}.
      */
-    private static final class Lights {
-        /** The light's own axes in the world, and its turn from them: reused, as lights fly every frame. */
-        private static final Vector3f X = new Vector3f();
-        private static final Vector3f Y = new Vector3f();
-        private static final Vector3f Z = new Vector3f();
-        private static final Matrix3f TURN = new Matrix3f();
-
-        private Lights() {
-        }
-
-        /** A light for the row, Veil's area light the size of its lamps' glowing faces; placed with {@link #place}. */
-        static Object add(Glow glow) {
-            Lamp lamp = glow.lamp();
-            AreaLightData light = new AreaLightData()
-                .setSize(glow.reach(), lamp.halfWidth)
-                .setDistance(lamp.distance)
-                .setAngle(lamp.angle)
-                .setColor(RED, GREEN, BLUE)
-                .setBrightness(lamp.brightness);
-            return VeilRenderSystem.renderer().getLightRenderer().addLight(light);
-        }
-
-        /**
-         * Puts the light with the middle of its face here in the world, its row running along the one way and shining
-         * the other (both of length one, square to each other). Veil turns a point in the world into the light's own
-         * frame with its orientation: its row along x, across it y, and the way it shines z.
-         */
-        @SuppressWarnings("unchecked")
-        static void place(Object handle, Vector3dc middle, Vector3dc along, Vector3dc out) {
-            AreaLightData light = ((LightRenderHandle<AreaLightData>) handle).getLightData();
-            X.set(along);
-            Z.set(out);
-            Z.cross(X, Y);
-            light.getOrientationMutable().setFromNormalized(TURN.set(X, Y, Z)).conjugate();
-            // Last, as the position marks the light changed for Veil, the orientation with it.
-            light.getPositionMutable().set(middle);
-        }
-
-        static void remove(Object handle) {
-            ((LightRenderHandle<?>) handle).free();
-        }
-
-        /** Keeps the buffers Veil draws its lights from on, as if its lights were in view all along. */
-        static void hold() {
-            VeilRenderSystem.renderer().enableBuffers(BUFFERS, DynamicBufferType.ALBEDO, DynamicBufferType.NORMAL);
-        }
-
-        static void release() {
-            VeilRenderSystem.renderer().disableBuffers(BUFFERS);
-        }
+    private static Object add(Glow glow) {
+        Lamp lamp = glow.lamp();
+        Object light = VeilLights.add(glow.reach(), lamp.halfWidth, lamp.angle);
+        VeilLights.shine(light, lamp.distance, RED, GREEN, BLUE, lamp.brightness);
+        return light;
     }
 }
