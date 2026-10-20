@@ -28,6 +28,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.Joining;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
@@ -442,6 +443,17 @@ public final class AirframeLayout {
 
     BlockState stateAt(int x, int y, int z) {
         return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
+    }
+
+    /**
+     * Joins the block at this position on to what the layout holds round it, if it is one that joins (see
+     * {@link Joining}): nothing in the layout updates its neighbours as it goes in, so it is joined once they stand.
+     */
+    void join(int x, int y, int z) {
+        BlockState state = stateAt(x, y, z);
+        if (state.getBlock() instanceof Joining joining) {
+            set(x, y, z, joining.joined(state, way -> stateAt(x + way.getStepX(), y + way.getStepY(), z + way.getStepZ())));
+        }
     }
 
     private boolean has(int x, int y, int z) {

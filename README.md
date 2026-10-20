@@ -21,7 +21,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
   class just behind the forward doors (rows of business seats, two side by side left and right of the aisle, with
-  wooden consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
+  wooden consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, tiled in a blue mosaic
+  inside a white coping (see The moon pool), its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
   with a diving tower on its front rim (a ladder up to a small platform three metres up, glass rails round it, and
   a springboard sticking out from it over the water), a
@@ -541,7 +542,10 @@ crafted.
 
 ### The moon pool
 
-A pool of your own can be tiled the way the airliner's is, with blocks that can all be crafted. A Pool Deck Tile is a
+The furnished airliner's moon pool is tiled as a real pool is: its basin lined in a blue glass mosaic with a lane line
+down its end walls at the middle of each lane, a white coping round its edge, non-slip tiles round that on the floor
+and on the diving tower, and tiled steps out at its back, their lower tread under the water, with a chrome grab rail
+at either end. A pool of your own can be tiled the same way, with blocks that can all be crafted. A Pool Deck Tile is a
 sand-coloured non-slip tile with a grid of raised dots, for the floor round a pool, its underside a white ceiling.
 Pool Mosaic lines the basin in small glass tiles in the pool's blues; use blue dye on one to lay a lane line into it,
 a dark blue stripe down its middle. Pool Coping is the white stone kerb along the pool's edge, its front edge rounded

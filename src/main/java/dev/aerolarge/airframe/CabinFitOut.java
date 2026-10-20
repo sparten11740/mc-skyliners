@@ -11,6 +11,8 @@ import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
+import dev.aerolarge.block.PoolCopingBlock;
+import dev.aerolarge.block.PoolMosaicBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import java.util.HashSet;
 import java.util.Map;
@@ -68,6 +70,8 @@ final class CabinFitOut {
      * with no stool in front of it, so a player can step right up to it.
      */
     private static final int BAR_COFFEE = 2;
+    /** How wide each of the pool's lanes is, in blocks across: a lane line marks its middle on the end walls. */
+    private static final int LANE_WIDTH = 3;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -181,10 +185,11 @@ final class CabinFitOut {
     }
 
     /**
-     * The pool: a basin of water flush with the floor, reaching down into the hold, lined with tiles and lit from its
-     * walls just under the water line, a quartz rim to stand on, a diving board at the front and steps out at the
-     * back. It is a moon pool: its bottom is glass, and so is the belly of the hull under it, so swimmers look straight
-     * down through the airliner at the ground, or the clouds, below.
+     * The pool: a basin of water flush with the floor, reaching down into the hold, lined with glass mosaic, a lane
+     * line down its end walls at the middle of each lane, and lit from its walls just under the water line; a coping
+     * round its edge with non-slip deck tiles round that, a diving board at the front and tiled steps out at the
+     * back, with a grab rail at either end. It is a moon pool: its bottom is glass, and so is the belly of the hull
+     * under it, so swimmers look straight down through the airliner at the ground, or the clouds, below.
      */
     private void pool(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -193,7 +198,9 @@ final class CabinFitOut {
             return;
         }
         BlockState water = Blocks.WATER.defaultBlockState();
-        BlockState tile = Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
+        BlockState tile = AerolargeRegistry.POOL_MOSAIC.get().defaultBlockState();
+        BlockState lane = tile.setValue(PoolMosaicBlock.LINE, true);
+        BlockState deck = AerolargeRegistry.POOL_DECK_TILE.get().defaultBlockState();
         // Clear glass, the same as the belly's under it, so the two join without a seam.
         BlockState glass = AerolargeRegistry.HULL_GLASS.get().defaultBlockState();
         for (int z = fromZ; z <= toZ; z++) {
@@ -206,21 +213,23 @@ final class CabinFitOut {
                         layout.furnish(x, y, z, water);
                     }
                 } else {
-                    layout.refloor(x, floor, z, rim ? Blocks.SMOOTH_QUARTZ.defaultBlockState() : Blocks.POLISHED_DIORITE.defaultBlockState());
+                    layout.refloor(x, floor, z, rim ? coping(x, z, basin, fromZ, toZ) : deck);
                 }
             }
         }
-        // Line the basin: every open block in the hold that touches the water becomes glass under it and tile beside
+        // Line the basin: every open block in the hold that touches the water becomes glass under it and mosaic beside
         // it, every fourth one of the walls just under the water line a light, so the water cannot run off into the
         // hold. The lights are cabin lights, so the flight deck dims them with the rest and the pool goes dark at
         // night too.
         BlockState light = AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState();
         for (int z = fromZ + 1; z <= toZ - 1; z++) {
+            boolean endWall = z == fromZ + 1 || z == toZ - 1;
             for (int x = -basin - 1; x <= basin + 1; x++) {
+                boolean laneMiddle = endWall && Math.abs(x) <= basin && x % LANE_WIDTH == 0;
                 for (int y = floor - 4; y < floor; y++) {
                     if (layout.isOpen(x, y, z) && touchesWater(x, y, z)) {
                         boolean lit = y == floor - 1 && Math.floorMod(Math.abs(x) + z, 4) == 0;
-                        layout.furnish(x, y, z, isWater(x, y + 1, z) ? glass : lit ? light : tile);
+                        layout.furnish(x, y, z, isWater(x, y + 1, z) ? glass : lit ? light : laneMiddle ? lane : tile);
                     }
                 }
             }
@@ -241,15 +250,20 @@ final class CabinFitOut {
             }
         }
         BlockState board = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM);
-        layout.furnish(0, floor + 1, fromZ + 1, Blocks.SMOOTH_QUARTZ.defaultBlockState());
+        layout.furnish(0, floor + 1, fromZ + 1, deck);
         layout.furnish(0, floor + 1, fromZ + 2, board);
         layout.furnish(0, floor + 1, fromZ + 3, board);
-        // Steps rising toward the back of the pool, out onto the rim.
-        BlockState step = Blocks.SMOOTH_QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+        // Steps rising toward the back of the pool, out onto the rim, the water over their lower treads; one flight,
+        // with a grab rail at either end.
+        BlockState step = AerolargeRegistry.POOL_STEPS.get().defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH)
+            .setValue(StairBlock.WATERLOGGED, true);
         for (int x = -1; x <= 1; x++) {
             if (isWater(x, floor, toZ - 2)) {
                 layout.set(x, floor, toZ - 2, step);
             }
+        }
+        for (int x = -1; x <= 1; x++) {
+            layout.join(x, floor, toZ - 2);
         }
         for (int x : new int[]{-width, width}) {
             layout.furnish(x, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());
@@ -259,6 +273,21 @@ final class CabinFitOut {
             hangLight(-basin / 2, z, 6);
             hangLight(basin / 2, z, 6);
         }
+    }
+
+    /**
+     * The coping at this spot of the rim round a basin reaching {@code basin} either side of the middle between these
+     * stations: its rounded edge out over the water beside it, or a corner piece where the water is only off its corner.
+     */
+    private static BlockState coping(int x, int z, int basin, int fromZ, int toZ) {
+        BlockState coping = AerolargeRegistry.POOL_COPING.get().defaultBlockState();
+        boolean side = Math.abs(x) == basin + 1;
+        boolean end = z == fromZ + 1 || z == toZ - 1;
+        if (side && end) {
+            return coping.setValue(PoolCopingBlock.CORNER, true);
+        }
+        Direction overWater = side ? (x > 0 ? Direction.WEST : Direction.EAST) : z == fromZ + 1 ? Direction.SOUTH : Direction.NORTH;
+        return coping.setValue(PoolCopingBlock.FACING, overWater);
     }
 
     private boolean isWater(int x, int y, int z) {

@@ -160,14 +160,14 @@ final class CabinDecor {
     }
 
     /**
-     * The diving tower (Sprungturm) on the pool's front rim: a white column standing on the pool's bottom at the head
-     * of the basin, a ladder up its front from the rim, and on top a platform reaching back over the rim, with room
-     * for two side by side and two deep, railed with glass along its sides and its back but for the ladder's top. From
-     * the platform's front edge a springboard sticks out over the water, and off it or off the front of the platform
-     * there is only water below. A pendant light hanging where the platform goes moves a block further out. The
-     * platform closes off the middle of the cabin under the crown, which the cabin's lining takes for a station too
-     * low to line, so the walls beside it are lined here. Left out where the pool is too shallow or too narrow, or
-     * the crown too low to bounce under.
+     * The diving tower (Sprungturm) on the pool's front rim: a column tiled like the deck standing on the pool's bottom
+     * at the head of the basin, a ladder up its front from the rim, and on top a platform of non-slip deck tiles
+     * reaching back over the rim, with room for two side by side and two deep, railed with glass along its sides and
+     * its back but for the ladder's top. From the platform's front edge a springboard sticks out over the water, and
+     * off it or off the front of the platform there is only water below. A pendant light hanging where the platform
+     * goes moves a block further out. The platform closes off the middle of the cabin under the crown, which the
+     * cabin's lining takes for a station too low to line, so the walls beside it are lined here. Left out where the
+     * pool is too shallow or too narrow, or the crown too low to bounce under.
      */
     private void highDive() {
         Basin basin = basin();
@@ -183,13 +183,13 @@ final class CabinDecor {
                 moveLightOut(x, z);
             }
         }
-        BlockState white = Blocks.SMOOTH_QUARTZ.defaultBlockState();
+        BlockState tile = AerolargeRegistry.POOL_DECK_TILE.get().defaultBlockState();
         int bottom = floor;
         while (isWater(tower.x(), bottom - 1, tower.first())) {
             bottom--;
         }
         for (int y = bottom; y < tower.top(); y++) {
-            layout.set(tower.x(), y, tower.first(), white);
+            layout.set(tower.x(), y, tower.first(), tile);
         }
         for (int y = floor + 1; y < tower.top(); y++) {
             layout.furnish(tower.x(), y, tower.rim(), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
@@ -197,7 +197,7 @@ final class CabinDecor {
         for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
             for (int z = tower.rim(); z <= tower.first() + 1; z++) {
                 if (tower.isDeck(x, z)) {
-                    layout.furnish(x, tower.top() - 1, z, white);
+                    layout.furnish(x, tower.top() - 1, z, tile);
                     if (!tower.isStanding(x, z)) {
                         layout.furnish(x, tower.top(), z, Blocks.GLASS_PANE.defaultBlockState());
                     }
@@ -488,7 +488,7 @@ final class CabinDecor {
             return;
         }
         for (int x : new int[]{TOWER_X - 1, TOWER_X + 2}) {
-            hangBlossom(x, basin.first() - 1, state -> state.is(Blocks.SMOOTH_QUARTZ));
+            hangBlossom(x, basin.first() - 1, state -> state.is(AerolargeRegistry.POOL_DECK_TILE.get()));
         }
         for (int side : new int[]{1, -1}) {
             for (int z = basin.first() + 1; z <= basin.last(); z += PLANTER_SPACING) {
