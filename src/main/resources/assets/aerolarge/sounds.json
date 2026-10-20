@@ -127,6 +127,150 @@
       }
     ]
   },
+  "atc_cleared_for_takeoff": {
+    "subtitle": "subtitles.aerolarge.atc_cleared_for_takeoff",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_cleared_for_takeoff"
+      }
+    ]
+  },
+  "atc_contact_departure": {
+    "subtitle": "subtitles.aerolarge.atc_contact_departure",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_contact_departure"
+      }
+    ]
+  },
+  "atc_radar_contact": {
+    "subtitle": "subtitles.aerolarge.atc_radar_contact",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_radar_contact"
+      }
+    ]
+  },
+  "atc_cleared_to_land": {
+    "subtitle": "subtitles.aerolarge.atc_cleared_to_land",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_cleared_to_land"
+      }
+    ]
+  },
+  "atc_go_around": {
+    "subtitle": "subtitles.aerolarge.atc_go_around",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_go_around"
+      }
+    ]
+  },
+  "atc_taxi_to_gate": {
+    "subtitle": "subtitles.aerolarge.atc_taxi_to_gate",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_taxi_to_gate"
+      }
+    ]
+  },
+  "atc_contact_center": {
+    "subtitle": "subtitles.aerolarge.atc_contact_center",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_contact_center"
+      }
+    ]
+  },
+  "atc_center_check_in": {
+    "subtitle": "subtitles.aerolarge.atc_center_check_in",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_center_check_in"
+      }
+    ]
+  },
+  "atc_traffic_two_oclock": {
+    "subtitle": "subtitles.aerolarge.atc_traffic_two_oclock",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_traffic_two_oclock"
+      }
+    ]
+  },
+  "atc_traffic_ten_oclock": {
+    "subtitle": "subtitles.aerolarge.atc_traffic_ten_oclock",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_traffic_ten_oclock"
+      }
+    ]
+  },
+  "atc_light_turbulence": {
+    "subtitle": "subtitles.aerolarge.atc_light_turbulence",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_light_turbulence"
+      }
+    ]
+  },
+  "atc_smooth_ride": {
+    "subtitle": "subtitles.aerolarge.atc_smooth_ride",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_smooth_ride"
+      }
+    ]
+  },
+  "atc_geese": {
+    "subtitle": "subtitles.aerolarge.atc_geese",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_geese"
+      }
+    ]
+  },
+  "atc_balloon": {
+    "subtitle": "subtitles.aerolarge.atc_balloon",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_balloon"
+      }
+    ]
+  },
+  "atc_skyhopper_hello": {
+    "subtitle": "subtitles.aerolarge.atc_skyhopper_hello",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_skyhopper_hello"
+      }
+    ]
+  },
+  "atc_cargo_climb": {
+    "subtitle": "subtitles.aerolarge.atc_cargo_climb",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_cargo_climb"
+      }
+    ]
+  },
+  "atc_static_open": {
+    "subtitle": "subtitles.aerolarge.atc_static_open",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_static_open"
+      }
+    ]
+  },
+  "atc_static_clicks": {
+    "subtitle": "subtitles.aerolarge.atc_static_clicks",
+    "sounds": [
+      {
+        "name": "aerolarge:atc_static_clicks"
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.aerolarge.pa_chime",
     "sounds": [

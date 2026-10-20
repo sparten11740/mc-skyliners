@@ -843,7 +843,11 @@ and stone button retextured, so their files come from vanilla's: pass the folder
 voice (the callouts and the cabin announcements) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so
 that part runs on Windows only. The script then flattens the voice's intonation and tunes it to the semitones around
 one note, and FFmpeg adds a faint vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the
-settings for all of it are together in `VOICE`, to tune it.
+settings for all of it are together in `VOICE`, to tune it. Air traffic control is Windows' man's voice ("Microsoft
+David"), through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000 Hz), compresses, clips and
+bit-crushes it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's
+click as the button is pressed and the burst of noise as it is let go; other aircraft are the same voice pitched up or
+down. Its settings and every line said are in `RADIO` and `ATC`.
 
 ## License
 

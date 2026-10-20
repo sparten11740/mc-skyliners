@@ -408,6 +408,35 @@ const VOICE_SUBTITLES = {
   announcement_arrival: "Announcement: Welcome to your destination",
 };
 const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+// Air traffic control on the flight deck's radio (see tools/generate_sounds.mjs and AtcRadio): each transmission
+// subtitled with its gist, other aircraft's as the radio's, and the carrier clips as the crackle they are.
+const ATC_SUBTITLES = {
+  atc_cleared_for_takeoff: "ATC: Cleared for take-off",
+  atc_contact_departure: "ATC: Contact departure",
+  atc_radar_contact: "ATC: Radar contact, climb",
+  atc_cleared_to_land: "ATC: Cleared to land",
+  atc_go_around: "ATC: Go around",
+  atc_taxi_to_gate: "ATC: Welcome, taxi to the gate",
+  atc_contact_center: "ATC: Contact center, good day",
+  atc_center_check_in: "ATC: Center, radar contact",
+  atc_traffic_two_oclock: "ATC: Traffic, two o'clock",
+  atc_traffic_ten_oclock: "ATC: Traffic, ten o'clock",
+  atc_light_turbulence: "ATC: Light turbulence ahead",
+  atc_smooth_ride: "ATC: Smooth ride ahead",
+  atc_geese: "ATC: Geese reported!",
+  atc_balloon: "ATC: Hot air balloon ahead",
+  atc_skyhopper_hello: "Radio: Another plane says hello",
+  atc_cargo_climb: "Radio: A cargo jet climbs",
+  atc_static_open: "Radio crackles",
+  atc_static_clicks: "Radio clicks",
+};
+function atcSounds() {
+  return Object.fromEntries(Object.keys(ATC_SUBTITLES).map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function atcLang() {
+  return Object.fromEntries(Object.entries(ATC_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+}
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
@@ -415,6 +444,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   for (const name of Object.keys(VOICE_SUBTITLES)) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  Object.assign(sounds, atcSounds());
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
@@ -4370,6 +4400,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.brake.released": "Parking brake released",
   "subtitles.aerolarge.engine": "Jet engine roars",
   ...VOICE_LANG,
+  ...atcLang(),
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner: fold the airstairs away and use the Physics Assembler first.",

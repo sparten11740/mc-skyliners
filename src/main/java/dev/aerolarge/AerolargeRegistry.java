@@ -239,6 +239,29 @@ public final class AerolargeRegistry {
     /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PA_CHIME = sound("pa_chime");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");
+    /**
+     * Air traffic control over the flight deck's radio: clearing the take-off, handing over after it, clearing the
+     * landing or a go-around, and welcoming the airliner in; chatter in flight, other aircraft on the frequency among it;
+     * and the carrier's crackle and clicks with nobody speaking.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CLEARED_FOR_TAKEOFF = sound("atc_cleared_for_takeoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CONTACT_DEPARTURE = sound("atc_contact_departure");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_RADAR_CONTACT = sound("atc_radar_contact");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CLEARED_TO_LAND = sound("atc_cleared_to_land");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_GO_AROUND = sound("atc_go_around");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_TAXI_TO_GATE = sound("atc_taxi_to_gate");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CONTACT_CENTER = sound("atc_contact_center");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CENTER_CHECK_IN = sound("atc_center_check_in");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_TRAFFIC_TWO_OCLOCK = sound("atc_traffic_two_oclock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_TRAFFIC_TEN_OCLOCK = sound("atc_traffic_ten_oclock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_LIGHT_TURBULENCE = sound("atc_light_turbulence");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_SMOOTH_RIDE = sound("atc_smooth_ride");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_GEESE = sound("atc_geese");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_BALLOON = sound("atc_balloon");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_SKYHOPPER_HELLO = sound("atc_skyhopper_hello");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_CARGO_CLIMB = sound("atc_cargo_climb");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_STATIC_OPEN = sound("atc_static_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATC_STATIC_CLICKS = sound("atc_static_clicks");
     /** The ding of the seatbelt signs coming on. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SEATBELT_DING = sound("seatbelt_ding");
     /** The whirr of the window shades' motors. */

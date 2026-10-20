@@ -7,9 +7,9 @@ import { execFileSync } from "node:child_process";
 // Run from anywhere: node tools/generate_sounds.mjs
 // Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
-// - the flight deck's voice, its callouts and cabin announcements, spoken by Windows' own speech synthesis
-//   (System.Speech) and then reworked (see VOICE), so this part runs on Windows only. Deterministic apart from the
-//   voice, which is whatever Windows ships.
+// - the flight deck's voice, its callouts and cabin announcements, and air traffic control over the radio, spoken by
+//   Windows' own speech synthesis (System.Speech) and then reworked (see VOICE and RADIO), so those parts run on
+//   Windows only. Deterministic apart from the voices, which are whatever Windows ships.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
 mkdirSync(output, { recursive: true });
@@ -86,12 +86,12 @@ function toOgg(wav, name) {
   toOgg(wav, "engine");
 }
 
-/** Peak-normalises samples to a little under full scale and writes them as the named sound. */
-function writeSound(name, samples) {
+/** Peak-normalises samples to a little under full scale, or to the level given, and writes them as the named sound. */
+function writeSound(name, samples, level = 0.85) {
   let peak = 0;
   samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
   const wav = join(scratch, `${name}.wav`);
-  writeWav(wav, Array.from(samples, (s) => (s / peak) * 0.85));
+  writeWav(wav, Array.from(samples, (s) => (s / peak) * level));
   toOgg(wav, name);
 }
 
@@ -898,14 +898,14 @@ function announcement(voice) {
 }
 
 /**
- * Says every line with the speech synthesis, all in one go, into WAVs in the scratch folder; false, saying why, if
- * the voice is not installed.
+ * Says every line with the speech synthesis in the given voice (its name, rate and pause, as in VOICE), all in one go,
+ * into WAVs in the scratch folder; false, saying what is left as it is, if the voice is not installed.
  */
-function speak(lines) {
+function speak(lines, voice, what) {
   const ssml = (text) => {
     const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const paused = escaped.replace(/\s*\|\s*/g, ` <break time='${VOICE.pause}ms'/> `);
-    return `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><prosody rate='${VOICE.rate}'>${paused}</prosody></speak>`;
+    const paused = escaped.replace(/\s*\|\s*/g, ` <break time='${voice.pause}ms'/> `);
+    return `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><prosody rate='${voice.rate}'>${paused}</prosody></speak>`;
   };
   const said = join(scratch, "lines.json");
   writeFileSync(said, JSON.stringify(Object.entries(lines).map(([name, text]) => ({ wav: join(scratch, `${name}.said.wav`), ssml: ssml(text) }))));
@@ -914,8 +914,8 @@ function speak(lines) {
     "$ProgressPreference = 'SilentlyContinue'",
     "Add-Type -AssemblyName System.Speech",
     "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer",
-    `if (-not ($s.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Name -eq ${quote(VOICE.name)} })) { exit 3 }`,
-    `$s.SelectVoice(${quote(VOICE.name)})`,
+    `if (-not ($s.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Name -eq ${quote(voice.name)} })) { exit 3 }`,
+    `$s.SelectVoice(${quote(voice.name)})`,
     `$format = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(${RATE}, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)`,
     `foreach ($line in (Get-Content -Raw -Encoding UTF8 ${quote(said)} | ConvertFrom-Json)) {`,
     "  $s.SetOutputToWaveFile($line.wav, $format)",
@@ -929,7 +929,7 @@ function speak(lines) {
     return true;
   } catch (error) {
     if (error.status === 3) {
-      console.log(`The voice "${VOICE.name}" is not installed: leaving the callouts and announcements as they are`);
+      console.log(`The voice "${voice.name}" is not installed: leaving ${what} as they are`);
       return false;
     }
     throw error;
@@ -938,7 +938,7 @@ function speak(lines) {
 
 if (process.platform !== "win32") {
   console.log("Not on Windows: leaving the callouts and announcements as they are");
-} else if (speak({ ...CALLOUTS, ...ANNOUNCEMENTS })) {
+} else if (speak({ ...CALLOUTS, ...ANNOUNCEMENTS }, VOICE, "the callouts and announcements")) {
   for (const name of [...Object.keys(CALLOUTS), ...Object.keys(ANNOUNCEMENTS)]) {
     const tuned = join(scratch, `${name}.tuned.wav`);
     const coloured = join(scratch, `${name}.coloured.wav`);
@@ -951,6 +951,199 @@ if (process.platform !== "win32") {
       throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
     }
     writeSound(name, samples);
+  }
+}
+
+// Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
+// deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
+// breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a
+// transmitter's audio is and a little bit-crushed, over the hiss, with the odd crackle and the signal fading a touch in
+// and out; and as the button is let go the carrier drops, the squelch tail rushes in for a moment and it shuts with a
+// click. Other aircraft on the frequency are the same voice pitched up or down, further off: over more hiss and more
+// crackle. The carrier clips are presses of the button with nobody speaking. Tune it all here.
+const RADIO = {
+  // Windows PowerShell's System.Speech sees only the desktop voices; David is the man's. Controllers talk briskly.
+  voice: { name: "Microsoft David Desktop", rate: "+12%", pause: 300 },
+  // The transmitter's filters on the voice: the radio's band, compression and clipping, a little bit crushing, the
+  // band again for what the clipping added, and a nasal honk in the middle of it.
+  transmitter: [
+    "highpass=f=330:poles=2",
+    "highpass=f=330:poles=2",
+    "lowpass=f=2800:poles=2",
+    "lowpass=f=2800:poles=2",
+    "acompressor=threshold=-30dB:ratio=9:attack=2:release=70:makeup=14dB",
+    "asoftclip=type=atan:threshold=0.45:oversample=2",
+    "acrusher=bits=9:mode=log:aa=1:mix=0.35",
+    "highpass=f=300:poles=2",
+    "lowpass=f=3100:poles=2",
+    "equalizer=f=1600:t=q:w=1.3:g=4",
+  ],
+  // The receiver's small speaker, over all of it, hiss, crackles and squelch too.
+  receiver: ["highpass=f=260:poles=2", "highpass=f=260:poles=2", "lowpass=f=3400:poles=2", "lowpass=f=3400:poles=2"],
+  // Who talks: the pitch, in semitones; the carrier's hiss, as a share of the voice's peak; and crackles a second.
+  speakers: {
+    atc: { pitch: 0, hiss: 0.09, crackles: 2.5 },
+    skyhopper: { pitch: 2.5, hiss: 0.15, crackles: 5 },
+    cargo: { pitch: -3, hiss: 0.14, crackles: 5 },
+    nobody: { pitch: 0, hiss: 0.25, crackles: 12 },
+  },
+  // A press of the button, in seconds: the squelch opening, the hiss before the voice and after it, and the squelch
+  // tail; and a quick click of it, as a pilot acknowledges with.
+  timing: {
+    press: { open: 0.05, lead: 0.15, after: 0.08, tail: 0.22 },
+    click: { open: 0.03, lead: 0.03, after: 0.02, tail: 0.12 },
+  },
+  // How loud the squelch's clicks and the tail are, as a share of the voice's peak.
+  squelch: 0.9,
+  tail: 0.75,
+  // How far the signal fades in and out, and the quiet between one press and the next, in seconds.
+  fading: 0.1,
+  gap: 0.45,
+  clickGap: 0.12,
+  // The peak each clip is written at: the voices as the flight deck's, the carrier clips well under them.
+  level: 0.85,
+  carrierLevel: 0.4,
+};
+/**
+ * What is said, each clip one or more presses of the button: who talks and what they say (see AtcRadio for when each is
+ * said). The call sign is spelt for the voice to say it right.
+ */
+const ATC = {
+  atc_cleared_for_takeoff: [["atc", "Aero large three eight zero, runway two seven, cleared for takeoff."]],
+  atc_contact_departure: [["atc", "Aero large three eight zero, contact departure, one two four decimal five. Good day."]],
+  atc_radar_contact: [["atc", "Aero large three eight zero, departure, radar contact. Climb and maintain flight level three five zero."]],
+  atc_cleared_to_land: [["atc", "Aero large three eight zero, wind two seven zero at eight, runway two seven, cleared to land."]],
+  atc_go_around: [["atc", "Aero large three eight zero, roger, go around. Climb straight ahead."]],
+  atc_taxi_to_gate: [["atc", "Aero large three eight zero, welcome home! Taxi to the gate via alpha. Thanks for flying with us."]],
+  atc_contact_center: [["atc", "Aero large three eight zero, contact center, one three two decimal four five. Good day."]],
+  atc_center_check_in: [["atc", "Aero large three eight zero, center, good day. Radar contact, maintain flight level three five zero."]],
+  atc_traffic_two_oclock: [["atc", "Aero large three eight zero, traffic, two o'clock, five miles, opposite direction, two thousand feet below."]],
+  atc_traffic_ten_oclock: [["atc", "Aero large three eight zero, traffic, ten o'clock, eight miles, crossing left to right, a heavy jet."]],
+  atc_light_turbulence: [["atc", "Aero large three eight zero, light turbulence reported ahead. Expect a few bumps."]],
+  atc_smooth_ride: [["atc", "Aero large three eight zero, smooth ride reported ahead. Enjoy the view."]],
+  atc_geese: [["atc", "Aero large three eight zero, caution, a flock of geese reported at your altitude, heading south for the winter."]],
+  atc_balloon: [["atc", "Aero large three eight zero, a hot air balloon, one o'clock, low. The people in the basket are waving at you."]],
+  atc_skyhopper_hello: [
+    ["skyhopper", "Center, Skyhopper two one, we have the big Aero large in sight. Hello up there!"],
+    ["atc", "Skyhopper two one, roger. Aero large three eight zero, Skyhopper says hello."],
+  ],
+  atc_cargo_climb: [
+    ["cargo", "Center, Cargo seven seven, request flight level three niner zero."],
+    ["atc", "Cargo seven seven, climb and maintain flight level three niner zero."],
+  ],
+};
+/**
+ * The longest each kind of clip may run, in seconds, AtcRadio giving each this long: the take-off clearance, which the
+ * autopilot holds the brakes for (so the shorter the better), any other one press, a press and its answer, and a
+ * carrier clip.
+ */
+const ATC_CLEARANCE_LONGEST = 5;
+const ATC_LONGEST = 8;
+const ATC_EXCHANGE_LONGEST = 13;
+const ATC_CARRIER_LONGEST = 2;
+
+// The radio's own noise, so it never shifts the sounds above.
+const radioNoise = (() => {
+  let radioSeed = 0x76686672;
+  return () => {
+    radioSeed = (Math.imul(radioSeed, 1664525) + 1013904223) | 0;
+    return ((radioSeed >>> 0) / 4294967296) * 2 - 1;
+  };
+})();
+
+/** A burst of noise dying away over the given seconds, added to the samples from the given sample on. */
+function noiseBurst(samples, start, seconds, level) {
+  const length = Math.round(seconds * RATE);
+  for (let i = 0; i < length && start + i < samples.length; i++) {
+    samples[start + i] += level * Math.exp((-4 * i) / length) * radioNoise();
+  }
+}
+
+/** One press of the transmit button as the receiver hears it, timed as given, around the voice (its peak 1), if any. */
+function press(voice, speaker, timing) {
+  const open = Math.round(timing.open * RATE);
+  const voiceAt = open + Math.round(timing.lead * RATE);
+  const carrier = voiceAt + voice.length + Math.round(timing.after * RATE);
+  const tail = Math.round(timing.tail * RATE);
+  const samples = new Float64Array(carrier + tail);
+  let fade = 0;
+  for (let i = 0; i < carrier; i++) {
+    fade += 0.0004 * (radioNoise() - fade);
+    const said = i >= voiceAt && i < voiceAt + voice.length ? voice[i - voiceAt] : 0;
+    samples[i] = (1 + RADIO.fading * fade * 30) * (said + speaker.hiss * radioNoise());
+  }
+  // The squelch opening: its click, and a breath of noise settling into the hiss.
+  samples[0] += RADIO.squelch;
+  samples[1] -= RADIO.squelch * 0.7;
+  noiseBurst(samples, 0, timing.open, RADIO.squelch * 0.6);
+  for (let i = 0; i < carrier; i++) {
+    if (radioNoise() > 1 - (2 * speaker.crackles) / RATE) {
+      noiseBurst(samples, i, 0.002 + 0.006 * Math.abs(radioNoise()), 0.15 + 0.6 * Math.abs(radioNoise()) ** 3);
+    }
+  }
+  // Let go: the squelch tail rushing in as the carrier drops, then the squelch shutting.
+  for (let i = 0; i < tail; i++) {
+    const t = i / tail;
+    samples[carrier + i] += RADIO.tail * Math.min(1, t * 40) * (1 - t ** 3) * radioNoise();
+  }
+  samples[samples.length - 2] += RADIO.squelch * 0.5;
+  return samples;
+}
+
+/**
+ * Presses of the button one after another, the gap given between, through the receiver's speaker, written as the
+ * named sound at the level given; fails if it runs longer than it may.
+ */
+function receive(name, presses, gap, level, longest) {
+  const quiet = Math.round(gap * RATE);
+  const joined = new Float64Array(presses.reduce((sum, p) => sum + p.length, 0) + quiet * (presses.length - 1));
+  let at = 0;
+  for (const p of presses) {
+    joined.set(p, at);
+    at += p.length + quiet;
+  }
+  if (joined.length > longest * RATE) {
+    throw new Error(`${name} runs ${(joined.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
+  }
+  let peak = 0;
+  joined.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  const sent = join(scratch, `${name}.sent.wav`);
+  const heard = join(scratch, `${name}.heard.wav`);
+  writeWav(sent, Array.from(joined, (s) => (s / peak) * 0.9));
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", sent, "-af", RADIO.receiver.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", heard]);
+  writeSound(name, readWav(heard), level);
+}
+
+/** A line said, through the transmitter, pitched first for another aircraft's pilot; its peak 1. */
+function transmit(name, pitch) {
+  const said = trim(readWav(join(scratch, `${name}.said.wav`)));
+  let peak = 0;
+  said.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  const input = join(scratch, `${name}.trimmed.wav`);
+  const output = join(scratch, `${name}.transmitted.wav`);
+  writeWav(input, Array.from(said, (s) => (s / peak) * 0.9));
+  const ratio = 2 ** (pitch / 12);
+  const shift = pitch ? [`asetrate=${Math.round(RATE * ratio)}`, `aresample=${RATE}`, `atempo=${(1 / ratio).toFixed(5)}`] : [];
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-af", [...shift, ...RADIO.transmitter].join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", output]);
+  const voice = readWav(output);
+  let voicePeak = 0;
+  voice.forEach((s) => (voicePeak = Math.max(voicePeak, Math.abs(s))));
+  return voice.map((s) => s / voicePeak);
+}
+
+// The carrier clips: someone pressing the button and saying nothing, and a pilot's two quick clicks.
+receive("atc_static_open", [press(new Float64Array(Math.round(0.6 * RATE)), RADIO.speakers.nobody, RADIO.timing.press)], RADIO.gap,
+  RADIO.carrierLevel, ATC_CARRIER_LONGEST);
+receive("atc_static_clicks", [0, 1].map(() => press(new Float64Array(0), RADIO.speakers.nobody, RADIO.timing.click)), RADIO.clickGap,
+  RADIO.carrierLevel, ATC_CARRIER_LONGEST);
+const atcLines = Object.fromEntries(Object.entries(ATC).flatMap(([name, presses]) => presses.map(([, text], i) => [`${name}.${i}`, text])));
+if (process.platform !== "win32") {
+  console.log("Not on Windows: leaving air traffic control's lines as they are");
+} else if (speak(atcLines, RADIO.voice, "air traffic control's lines")) {
+  for (const [name, presses] of Object.entries(ATC)) {
+    const longest = name === "atc_cleared_for_takeoff" ? ATC_CLEARANCE_LONGEST : presses.length > 1 ? ATC_EXCHANGE_LONGEST : ATC_LONGEST;
+    receive(name, presses.map(([who], i) => press(transmit(`${name}.${i}`, RADIO.speakers[who].pitch), RADIO.speakers[who], RADIO.timing.press)),
+      RADIO.gap, RADIO.level, longest);
   }
 }
 
