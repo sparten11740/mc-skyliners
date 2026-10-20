@@ -152,7 +152,9 @@ without a jump. At the back a straight flight climbs to the deck up the starboar
 hall's end. Glass rails, frameless glass on slim brushed steel posts under a steel handrail, run along the stairs' open
 sides, sloping with the flights, and round the floor's open edges and the stairwells, and cabin lights set into the
 floor down its middle light both decks at once; the dimmer and the seatbelt switch work the upper deck's lights and
-signs with the rest. In the Airliner Blueprint the upper deck is one floor the
+signs with the rest. Like every Cabin Floor block it is carpeted on top and finished elsewhere: seen from below it is a
+ceiling of white panels (as the main deck's floor is from the hold), and round its open edges the carpet's edge runs
+over a steel trim and a white fascia. In the Airliner Blueprint the upper deck is one floor the
 whole way, to build on like the main deck. In the furnished airliner the rooms keep their height: over the moon pool
 and its diving tower, the gym hall and the doors' aisles, whose bulkheads carry the archways' pictures, the upper deck
 is a gallery along each wall, railed round an open well to look down into the rooms through, with doorways through

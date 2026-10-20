@@ -34,15 +34,18 @@ const cubes = {
   cockpit_window: "minecraft:translucent",
   cabin_light: null,
 };
-// Cubes whose blockstate is written with their other models below.
+// Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
+const OWN_MODELS = new Set(["cabin_floor"]);
 for (const [name, renderType] of Object.entries(cubes)) {
   if (!OWN_BLOCKSTATES.has(name)) {
     write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   }
-  const model = { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/${name}` } };
-  if (renderType) model.render_type = renderType;
-  write(`assets/${ID}/models/block/${name}.json`, model);
+  if (!OWN_MODELS.has(name)) {
+    const model = { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/${name}` } };
+    if (renderType) model.render_type = renderType;
+    write(`assets/${ID}/models/block/${name}.json`, model);
+  }
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
@@ -55,6 +58,16 @@ for (const [name, renderType] of Object.entries(cubes)) {
     random_sequence: `${ID}:blocks/${name}`,
   });
 }
+
+// The cabin floor: carpet on top, and finished where a floor is seen from elsewhere, as an airliner's is: underneath,
+// where the upper deck's floor is the main deck's ceiling and the main deck's the hold's, white ceiling panels; round
+// its sides, where a gallery or a stairwell shows its edge, the carpet's edge over a steel trim and a white fascia.
+write(`assets/${ID}/models/block/cabin_floor.json`, {
+  parent: "minecraft:block/cube_bottom_top",
+  textures: {
+    top: `${ID}:block/cabin_floor`, bottom: `${ID}:block/cabin_floor_under`, side: `${ID}:block/cabin_floor_edge`, particle: `${ID}:block/cabin_floor`,
+  },
+});
 
 // The cabin light: the cube above as the dimmer has it bright or dimmed, and at night, unless kept on (as the
 // washrooms' and the crew room's are), a soft blue diffuser glowing whatever the light around, as the strips and the

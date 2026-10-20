@@ -179,6 +179,17 @@ texture(blockOutput, "cabin_floor", (x, y) => {
   if ((x + y) % 2 === 0 && d < 2) return CARPET_DARK;
   return CARPET;
 }, 6);
+// Its underside, a ceiling: smooth white ceiling panels, a groove along two edges with a faint shadow inside it. Its
+// sides: the carpet's edge along the top over a brushed steel trim, and below it a white fascia.
+texture(blockOutput, "cabin_floor_under", (x, y) => {
+  if (x === 0 || y === 0) return [0xc8, 0xcd, 0xd3];
+  return x === 1 || y === 1 ? [0xe0, 0xe3, 0xe7] : [0xec, 0xee, 0xf0];
+}, 2);
+texture(blockOutput, "cabin_floor_edge", (x, y) => {
+  if (y <= 1) return x % 4 === 1 ? CARPET_LIGHT : y === 1 ? CARPET_DARK : CARPET;
+  if (y === 2) return x % 3 === 0 ? [0xd2, 0xd8, 0xde] : [0xb0, 0xb8, 0xc0];
+  return y === 3 ? [0xd8, 0xdc, 0xe1] : [0xe8, 0xec, 0xf0];
+}, 2);
 
 // The engine intake: the fan's blades swept around a polished spinner.
 texture(blockOutput, "engine_intake", (x, y) => {

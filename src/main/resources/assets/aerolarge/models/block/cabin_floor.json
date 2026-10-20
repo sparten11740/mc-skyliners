@@ -1,6 +1,9 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "aerolarge:block/cabin_floor"
+    "top": "aerolarge:block/cabin_floor",
+    "bottom": "aerolarge:block/cabin_floor_under",
+    "side": "aerolarge:block/cabin_floor_edge",
+    "particle": "aerolarge:block/cabin_floor"
   }
 }
