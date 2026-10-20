@@ -276,6 +276,8 @@ public final class AirframeLayout {
         layout.shell();
         layout.landingGear();
         layout.trimTail();
+        // The skin is lined inside once it is cut and the gear meets it, before the airstairs keep their hatch's skin.
+        new HullLining(layout).apply();
         layout.boardingStairs();
         layout.assembler();
         layout.crewLocker();
@@ -472,6 +474,11 @@ public final class AirframeLayout {
 
     private boolean inFuselage(BlockPos pos) {
         return inFuselage(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /** Whether a point in the layout, in blocks (a block spans its own coordinates to the next), is inside the fuselage. */
+    boolean inFuselageAt(double x, double y, double z) {
+        return AirframeShape.inFuselage((x - 0.5) / scale, y / scale, z / scale);
     }
 
     /**

@@ -64,6 +64,8 @@ import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.HoopBlock;
+import dev.aerolarge.block.HullPanelBlock;
+import dev.aerolarge.block.HullRelayBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JetBridgeBlock;
 import dev.aerolarge.block.JetBridgeBlockEntity;
@@ -75,6 +77,7 @@ import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
+import dev.aerolarge.block.LinedShellBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.ModelAirlinerBlock;
 import dev.aerolarge.block.NavLightBlock;
@@ -273,7 +276,8 @@ public final class AerolargeRegistry {
         SoundEvents.STONE_BUTTON_CLICK_ON
     ));
 
-    public static final DeferredBlock<Block> AIRFRAME_PANEL = BLOCKS.registerSimpleBlock("airframe_panel", metal(MapColor.SNOW));
+    /** The plain skin: plated outside, lined on each face the blueprints find looking in (see {@link HullPanelBlock}). */
+    public static final DeferredBlock<HullPanelBlock> AIRFRAME_PANEL = BLOCKS.registerBlock("airframe_panel", HullPanelBlock::new, metal(MapColor.SNOW));
     /** Airframe panel with its outer edge cut at 45 degrees, smoothing the steps of the hull's curves. */
     public static final DeferredBlock<FairingBlock> AIRFRAME_FAIRING = BLOCKS.registerBlock(
         "airframe_fairing", FairingBlock::new, metal(MapColor.SNOW).noOcclusion()
@@ -393,6 +397,15 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CockpitGlassBlock> HULL_GLASS = BLOCKS.registerBlock(
         "hull_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
+
+    /**
+     * The hull's lining (see {@link dev.aerolarge.block.Lining}): the skin cut to the hull's curve where the airliner's
+     * inside sees it, lined on that side. Placed only by the blueprints, so no item; it occludes like the plain skin
+     * and gives back an airframe panel.
+     */
+    public static final DeferredBlock<LinedShellBlock> AIRFRAME_LINED_SHELL = BLOCKS.registerBlock(
+        "airframe_lined_shell", properties -> new LinedShellBlock(properties, AerolargeRegistry.AIRFRAME_PANEL), metal(MapColor.SNOW)
+    );
     /** The flight deck: the thrust levers on the console, relays they drive in the nacelles, the instrument panel. */
     public static final DeferredBlock<ThrustLeverBlock> THRUST_LEVER = BLOCKS.registerBlock(
         "thrust_lever", ThrustLeverBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
@@ -436,7 +449,7 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("nav_light", () -> BlockEntityType.Builder.of(NavLightBlockEntity::new, NAV_LIGHT.get()).build(null));
     public static final DeferredBlock<ThrustRelayBlock> THRUST_RELAY = BLOCKS.registerBlock("thrust_relay", ThrustRelayBlock::new, metal(MapColor.SNOW));
     /** The same relay set into the cabin wall beside a lamp it lights, plated like the hull around it. */
-    public static final DeferredBlock<ThrustRelayBlock> HULL_RELAY = BLOCKS.registerBlock("hull_relay", ThrustRelayBlock::new, metal(MapColor.SNOW));
+    public static final DeferredBlock<HullRelayBlock> HULL_RELAY = BLOCKS.registerBlock("hull_relay", HullRelayBlock::new, metal(MapColor.SNOW));
     /** The primary flight displays in the panel, one in front of each pilot. */
     public static final DeferredBlock<FlightDisplayBlock> FLIGHT_DISPLAY = BLOCKS.registerBlock(
         "flight_display", FlightDisplayBlock::new, metal(MapColor.COLOR_BLACK).lightLevel(state -> 7)

@@ -401,6 +401,7 @@
   "container.aerolarge.crew_locker": "Flight Crew Locker",
   "subtitles.aerolarge.crew_locker_open": "Crew locker opens",
   "subtitles.aerolarge.crew_locker_close": "Crew locker shuts",
+  "block.aerolarge.airframe_lined_shell": "Lined Airframe Shell",
   "block.aerolarge.economy_seat": "Economy Seat",
   "block.aerolarge.business_seat": "Business Seat",
   "block.aerolarge.cabin_carpet": "Cabin Carpet",

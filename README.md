@@ -52,7 +52,12 @@ blocks cut to the fuselage's curve (`shellStyle` in the server config: by defaul
 through its corners and edge middles only, in slopes that run into each other without a step, and rounds off the inside
 of the nose too; `FITTED` cuts each block as close to the curve as one cut can), and two rows of tall cabin windows run
 its length down each side, one for each deck, cut to the curve with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the
-cabin walls keep it bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
+cabin walls keep it bright, and nothing spawns inside it on its own. Outside, the skin is white riveted plating; inside,
+wherever it is seen from the cabin, the flight deck, the crew rooms, the den or the hold, it is lined like an
+airliner's cabin, in the overhead lockers' off-white: smooth sidewall panels, a darker dado with an air grille along the
+foot of every wall where a floor meets it, a deep rounded reveal round every cabin window (down its sides, over it and
+under it), light ceiling panels over the crown, and grey floor panels where the skin is underfoot, as along the hold's
+floor. An airliner built before the lining keeps its plating inside until it is built again. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
 and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. While
@@ -778,7 +783,8 @@ The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut
 with the upper deck laid round the rooms under it by `UpperDeck` and its staircases, step by step and landing by
 landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
-shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
+shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
+each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining

@@ -773,6 +773,52 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
 }
 
+// The hull's lining: what the skin shows on the inside, wherever it looks into the cabin, the hold or the flight deck,
+// in the overhead lockers' off-white plastic, so the walls, the lockers and the doors' padded lining read as one
+// moulded cabin. The sidewall: smooth panels with a faint joint down one edge and the rounded edge beside it catching
+// the light. The ceiling over the crown: a shade lighter, a groove along two edges like the ceiling panels under a
+// deck. Underfoot, where the skin is the floor (the hold's belly, a ledge along the edge of a deck): grey composite
+// floor panels with a fine non-slip grain. The dado along the foot of a wall: a warm grey panel under a pale capping
+// rail, an air-return grille low down in it. Round a window the lining turns in to the window's frame through a deep
+// rounded reveal, a pale lip where it leaves the wall shading down into the recess: down one side of the window, or
+// both sides of a pillar between two; over it (the head, facing down, darker); under it (the sill, facing up, lighter),
+// over the dado's capping rail where the dado runs under the window.
+{
+  const LINING = [0xe6, 0xe4, 0xde];
+  const JOINT = [0xda, 0xd7, 0xd0];
+  const EDGE = [0xee, 0xec, 0xe7];
+  // A reveal's pixels from its lip (0) to the window's frame (4).
+  const REVEAL = [[0xf3, 0xf1, 0xec], [0xdd, 0xda, 0xd2], [0xd2, 0xcf, 0xc6], [0xc6, 0xc2, 0xb9], [0xb8, 0xb4, 0xaa]];
+  const SILL = [[0xf4, 0xf2, 0xed], [0xe7, 0xe4, 0xdd], [0xde, 0xdb, 0xd3], [0xd5, 0xd2, 0xc9], [0xcb, 0xc7, 0xbe]];
+  const DEEP = REVEAL.length - 1;
+  const wall = (x) => (x === 0 ? JOINT : x === 1 ? EDGE : LINING);
+  const dado = (x, y) => {
+    if (y <= 4) return wall(x);
+    if (y === 5) return EDGE;
+    if (y === 6) return [0xa6, 0xa2, 0x99];
+    if (y >= 12 && y <= 13 && x >= 2 && x <= 13) return x % 2 === 0 ? [0x5e, 0x5c, 0x57] : [0xa0, 0x9c, 0x93];
+    return x === 0 ? [0xaa, 0xa6, 0x9d] : [0xbd, 0xb9, 0xb0];
+  };
+  texture(blockOutput, "hull_lining", (x) => wall(x), 2);
+  texture(blockOutput, "hull_lining_ceiling", (x, y) => {
+    if (x === 0 || y === 0) return [0xcc, 0xcb, 0xc6];
+    return x === 1 || y === 1 ? [0xe2, 0xe1, 0xdc] : [0xf0, 0xef, 0xeb];
+  }, 2);
+  texture(blockOutput, "hull_lining_floor", (x, y) => {
+    if (x === 0 || y === 0) return [0x5c, 0x60, 0x66];
+    return x % 2 === 1 && (x + y) % 4 === 1 ? [0x8a, 0x8e, 0x94] : [0x78, 0x7c, 0x82];
+  }, 3);
+  texture(blockOutput, "hull_lining_dado", dado, 2);
+  texture(blockOutput, "hull_lining_reveal", (x) => (x > 15 - REVEAL.length ? REVEAL[x - (16 - REVEAL.length)] : wall(x)), 2);
+  texture(blockOutput, "hull_lining_reveal_pair", (x) => {
+    if (x < REVEAL.length) return REVEAL[DEEP - x];
+    return x > 15 - REVEAL.length ? REVEAL[x - (16 - REVEAL.length)] : LINING;
+  }, 2);
+  texture(blockOutput, "hull_lining_reveal_head", (x, y) => (y > 15 - REVEAL.length ? REVEAL[y - (16 - REVEAL.length)] : wall(x)), 2);
+  texture(blockOutput, "hull_lining_reveal_sill", (x, y) => (y < SILL.length ? SILL[DEEP - y] : wall(x)), 2);
+  texture(blockOutput, "hull_lining_dado_sill", (x, y) => (y < SILL.length ? SILL[DEEP - y] : dado(x, y)), 2);
+}
+
 // The signal flare: a red paper tube with a white band, its tip burning yellow-white; and its icon, the tube with a
 // wisp of smoke above.
 {

@@ -17,6 +17,7 @@
     "aerolarge:airframe_shell",
     "aerolarge:cockpit_glass",
     "aerolarge:hull_glass",
+    "aerolarge:airframe_lined_shell",
     "aerolarge:thrust_relay",
     "aerolarge:hull_relay",
     "aerolarge:airframe_fairing",

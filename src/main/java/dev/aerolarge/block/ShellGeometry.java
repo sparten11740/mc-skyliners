@@ -85,6 +85,7 @@ public final class ShellGeometry {
     private static final List<List<Face>> FACES = new ArrayList<>(COUNT);
     private static final VoxelShape[] SHAPES = new VoxelShape[COUNT];
     private static final VoxelShape[] OCCLUSIONS = new VoxelShape[COUNT];
+    private static final double[][] OUTWARD = new double[COUNT][];
 
     static {
         for (int shape = 0; shape < COUNT; shape++) {
@@ -94,6 +95,7 @@ public final class ShellGeometry {
             FACES.add(faces(PLANES[shape]));
             SHAPES[shape] = shape == WHOLE ? Shapes.block() : stepped(PLANES[shape]);
             OCCLUSIONS[shape] = shape == WHOLE ? Shapes.block() : plates(shape);
+            OUTWARD[shape] = outward(PLANES[shape]);
         }
     }
 
@@ -137,6 +139,14 @@ public final class ShellGeometry {
      */
     public static VoxelShape occlusion(int shape) {
         return OCCLUSIONS[shape];
+    }
+
+    /**
+     * The way a shape's cut faces, out of what the block keeps: the normals of its faces cut across the block added
+     * up, each by its area, so a fold's larger face counts for more; nothing for the whole block.
+     */
+    public static double[] outward(int shape) {
+        return OUTWARD[shape].clone();
     }
 
     /** Whether the shape's cut leaves this side of the block whole: every corner of it kept. */
@@ -525,6 +535,24 @@ public final class ShellGeometry {
             }
         }
         return List.copyOf(faces);
+    }
+
+    /** The normals of the planes' cuts across the block added up, each by its cut's area (see {@link #outward(int)}). */
+    private static double[] outward(double[][] planes) {
+        double[] out = new double[3];
+        for (double[] plane : planes) {
+            List<double[]> cut = section(plane);
+            for (double[] other : planes) {
+                if (other != plane) {
+                    cut = clip(cut, other);
+                }
+            }
+            double area = area(cut);
+            for (int k = 0; k < 3; k++) {
+                out[k] += plane[k] * area;
+            }
+        }
+        return out;
     }
 
     /** A polygon's area, for telling a face from a sliver left by rounding. */

@@ -36,7 +36,7 @@ const cubes = {
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
-const OWN_MODELS = new Set(["cabin_floor"]);
+const OWN_MODELS = new Set(["cabin_floor", "airframe_panel"]);
 for (const [name, renderType] of Object.entries(cubes)) {
   if (!OWN_BLOCKSTATES.has(name)) {
     write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
@@ -319,6 +319,34 @@ for (const [name, skin, renderType, part] of [
   });
   cubes[name] = null;
 }
+
+// The hull's lining (see Lining): the plain skin (the whole panel, and the relay in the cabin wall that passes for
+// one) and the skin cut to the curve where the airliner's inside sees it, drawn by the "shell" loader with the
+// lining's panels on the faces the block says are lined and the plating on the rest. The panel's item is the same
+// model, plated all round, shown as a block. The lined skin cut to the curve gives back a panel, as the plain does.
+{
+  const lining = Object.fromEntries(["", "_ceiling", "_floor", "_dado", "_reveal", "_reveal_pair", "_reveal_head", "_reveal_sill", "_dado_sill"]
+    .map((look) => [`lining${look}`, `${ID}:block/hull_lining${look}`]));
+  const skin = { skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` };
+  write(`assets/${ID}/models/block/airframe_panel.json`, {
+    parent: "minecraft:block/block",
+    loader: `${ID}:shell`,
+    render_type: "minecraft:solid",
+    textures: { ...skin, ...lining },
+  });
+  write(`assets/${ID}/blockstates/airframe_lined_shell.json`, { variants: { "": { model: `${ID}:block/airframe_lined_shell` } } });
+  write(`assets/${ID}/models/block/airframe_lined_shell.json`, { loader: `${ID}:shell`, render_type: "minecraft:solid", textures: { ...skin, ...lining } });
+  write(`data/${ID}/loot_table/blocks/airframe_lined_shell.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:airframe_panel` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/airframe_lined_shell`,
+  });
+  cubes.airframe_lined_shell = null;
+}
+function hullLiningLang() {
+  return { "block.aerolarge.airframe_lined_shell": "Lined Airframe Shell" };
+}
+
 write(`assets/${ID}/blockstates/thrust_relay.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 write(`assets/${ID}/models/block/thrust_relay.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/thrust_relay` } });
 cubes.thrust_relay = null;
@@ -4144,6 +4172,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...coffeeMachineLang(),
   ...cabinStairsLang(),
   ...crewLockerLang(),
+  ...hullLiningLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),
   ...gymFloorLang(),
