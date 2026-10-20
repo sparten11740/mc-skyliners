@@ -57,7 +57,7 @@ final class CabinDividers {
     private static final double ARCH_HEIGHT = 1.5;
     private static final int LEAST_ARCH = 2;
     /** How far a divider may stand from where it is meant to, in stations, to find one that suits it. */
-    private static final int SNAP = 2;
+    static final int SNAP = 2;
     /** How many blocks of headroom the lavatories have under their ceilings, as the WC behind the flight deck has. */
     private static final int HEADROOM = 3;
 
@@ -110,8 +110,8 @@ final class CabinDividers {
         if (furnished(CabinFitOut.BUSINESS)) {
             // Ahead of business class its wall to the doors' aisle, or the curtain alone where no wall fits; behind,
             // its wall to the pool.
-            if (divide(CabinFitOut.BUSINESS[0] - 0.5, DyeColor.BLUE, BulkheadSignBlock.Picture.SEAT, true) == null) {
-                Section front = near(CabinFitOut.BUSINESS[0] - 0.5, this::curtainFits);
+            if (divide(CabinFitOut.BUSINESS[0] - CabinFitOut.BULKHEAD_AHEAD, DyeColor.BLUE, BulkheadSignBlock.Picture.SEAT, true) == null) {
+                Section front = near(CabinFitOut.BUSINESS[0] - CabinFitOut.BULKHEAD_AHEAD, this::curtainFits);
                 if (front != null) {
                     aisleCurtain(front, DyeColor.BLUE);
                 }

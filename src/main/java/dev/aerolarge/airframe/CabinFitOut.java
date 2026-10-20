@@ -56,6 +56,8 @@ final class CabinFitOut {
     private static final double BUSINESS_PITCH = 1.5;
     /** How many business class seats stand side by side either side of the aisle. */
     private static final int BUSINESS_SEATS = 2;
+    /** How far ahead of business class its front bulkhead is meant to stand, in metres (see {@link CabinDividers}). */
+    static final double BULKHEAD_AHEAD = 0.5;
     /** Seated eye height: passenger screens hang this many blocks over the floor, the row above the seats. */
     private static final int EYES = 2;
     /** A station with at least this many seats across it is a row of seats; seats along a wall have one to a station. */
@@ -158,9 +160,10 @@ final class CabinFitOut {
 
     /**
      * The business class: rows of business seats facing forward, as many as fit side by side either side of the aisle
-     * up to two, each with a seat console at armrest height either side, shared between neighbours; the cabin's blue
-     * carpet throughout, the aisle's runner either side of the aisle, its path lights toward the seats; and pendant
-     * lights over the aisle hung high enough to clear the overhead lockers and the light strips along the walls.
+     * up to two, each with a seat console at armrest height either side, shared between neighbours, the first row with
+     * its legroom clear of the bulkhead ahead wherever that ends up; the cabin's blue carpet throughout, the aisle's
+     * runner either side of the aisle, its path lights toward the seats; and pendant lights over the aisle hung high
+     * enough to clear the overhead lockers and the light strips along the walls.
      */
     private void businessClass(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -174,8 +177,12 @@ final class CabinFitOut {
         // while there are no rows.
         int aisle = width;
         // Each row is legroom, then the seats, their backs as high as a seated passenger's head, with the screen for
-        // the row behind set onto them; the first row's legroom is toward the door aisle.
-        for (int z = fromZ + pitch - 2; z + 1 <= toZ; z += pitch) {
+        // the row behind set onto them. The bulkhead ahead of the room goes up later, where the hull beside it lets it
+        // (see CabinDividers), which can be on the room's first stations; the first row's legroom is behind the last
+        // station it may take, so the row never faces the bulkhead with no room for its legs, and at most a station
+        // ahead of the room.
+        int bulkhead = (int) Math.floor((BUSINESS[0] - BULKHEAD_AHEAD) * layout.scale()) + CabinDividers.SNAP;
+        for (int z = Math.max(fromZ + pitch - 2, bulkhead + pitch); z + 1 <= toZ; z += pitch) {
             for (int side : new int[]{1, -1}) {
                 // From the wall in: a console, a seat, a console and so on, leaving the aisle down the middle clear.
                 for (int k = 0, x = width - 1; k < BUSINESS_SEATS && x - 1 >= 1; k++, x -= 2) {

@@ -226,7 +226,7 @@ final class UpperDeck {
      */
     private void business() {
         double scale = layout.scale();
-        int front = (int) Math.floor((CabinFitOut.BUSINESS[0] - 0.5) * scale);
+        int front = (int) Math.floor((CabinFitOut.BUSINESS[0] - CabinFitOut.BULKHEAD_AHEAD) * scale);
         int aft = (int) Math.floor((CabinFitOut.BUSINESS[1] + CabinFitOut.POOL[0]) / 2 * scale);
         int from = front + WALL_SNAP + 1;
         int to = aft - WALL_SNAP - 1;
