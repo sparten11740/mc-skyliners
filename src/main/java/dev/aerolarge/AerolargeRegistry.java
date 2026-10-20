@@ -27,6 +27,8 @@ import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.CoffeeMachineBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.CrewLockerBlock;
+import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
@@ -359,6 +361,15 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<PilotSeatBlock> PILOT_SEAT = BLOCKS.registerBlock(
         "pilot_seat", PilotSeatBlock::new, metal(MapColor.COLOR_BLACK).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
+    /** The flight crew's locker, where the pilots' helmets and caps are stowed, and its door's sounds. */
+    public static final DeferredBlock<CrewLockerBlock> CREW_LOCKER = BLOCKS.registerBlock(
+        "crew_locker", CrewLockerBlock::new, metal(MapColor.METAL).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrewLockerBlockEntity>> CREW_LOCKER_ENTITY =
+        BLOCK_ENTITIES.register("crew_locker", () -> BlockEntityType.Builder.of(CrewLockerBlockEntity::new, CREW_LOCKER.get()).build(null));
+    public static final DeferredItem<BlockItem> CREW_LOCKER_ITEM = ITEMS.registerSimpleBlockItem(CREW_LOCKER);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CREW_LOCKER_OPEN = sound("crew_locker_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CREW_LOCKER_CLOSE = sound("crew_locker_close");
     /** The exterior lights: navigation lights, strobes and beacons on the wingtips, tail and fuselage. */
     public static final DeferredBlock<NavLightBlock> NAV_LIGHT = BLOCKS.registerBlock(
         "nav_light", NavLightBlock::new, glass().lightLevel(state -> 9).noCollission()
@@ -881,7 +892,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CALL_BUTTON_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
-            PILOT_HELMET, PILOT_SEAT_ITEM,
+            PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM

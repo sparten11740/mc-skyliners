@@ -268,6 +268,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   Object.assign(sounds, airstairSounds());
   Object.assign(sounds, rubberDuckSounds());
   Object.assign(sounds, coffeeMachineSounds());
+  Object.assign(sounds, crewLockerSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -2114,6 +2115,74 @@ function flightDeckLang() {
   };
 }
 
+// The flight crew's locker: its models here, its fittings, sounds, recipe and names in the functions after them, which
+// the shared lists further down take in. Drawn facing north, its back against the south side of its block: a slim
+// cabinet of brushed grey panels, its white door on the front with the helmet on it, a toe kick under the door and a
+// chrome handle by the door's west edge, hinged along its east edge. Open, the cabinet's inside shows, dark, with a
+// shelf across it, and the door stands swung out on its hinge half way round, as far as a model turns a part.
+{
+  const textures = {
+    side: `${ID}:block/crew_locker_side`, door: `${ID}:block/crew_locker_door`, inside: `${ID}:block/crew_locker_inside`,
+    handle: `${ID}:block/crew_locker_handle`, particle: `${ID}:block/crew_locker_side`,
+  };
+  const hinge = { angle: -45, axis: "y", origin: [15, 8, 9] };
+  const door = [
+    [[1, 1, 8], [15, 16, 9], { north: "#door", all: "#side" }],
+    [[2, 7, 7], [3, 11, 8], "#handle"],
+  ];
+  write(`assets/${ID}/models/block/crew_locker.json`, boxes(textures, [
+    [[1, 0, 9], [15, 16, 16], { north: "#inside", all: "#side" }],
+    ...door,
+  ]));
+  const open = boxes(textures, [
+    [[1, 0, 15], [15, 16, 16], { north: "#inside", all: "#side" }],
+    [[1, 0, 9], [2, 16, 15], { east: "#inside", all: "#side" }],
+    [[14, 0, 9], [15, 16, 15], { west: "#inside", all: "#side" }],
+    [[2, 15, 9], [14, 16, 15], { down: "#inside", all: "#side" }],
+    [[2, 0, 9], [14, 1, 15], { up: "#inside", all: "#side" }],
+    [[2, 8, 10], [14, 9, 15], "#side"],
+    ...door,
+  ]);
+  for (const element of open.elements.slice(-door.length)) element.rotation = hinge;
+  write(`assets/${ID}/models/block/crew_locker_open.json`, open);
+  write(`assets/${ID}/blockstates/crew_locker.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isOpen) =>
+      [`facing=${facing},open=${isOpen}`, { model: `${ID}:block/crew_locker${isOpen ? "_open" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/crew_locker.json`, { parent: `${ID}:block/crew_locker` });
+  dropsItself("crew_locker");
+  cubes.crew_locker = null;
+}
+// What of the crew locker is fitted rather than built in: breakable, and no part of the airframe.
+function crewLockerFittings() {
+  return ["crew_locker"];
+}
+// The door of a light metal cabinet: an iron trapdoor's, higher and softer.
+function crewLockerSounds() {
+  return {
+    crew_locker_open: {
+      subtitle: `subtitles.${ID}.crew_locker_open`,
+      sounds: [1, 2, 3, 4].map((n) => ({ name: `minecraft:block/iron_trapdoor/open${n}`, volume: 0.7, pitch: 1.4 })),
+    },
+    crew_locker_close: {
+      subtitle: `subtitles.${ID}.crew_locker_close`,
+      sounds: [1, 2, 3, 4].map((n) => ({ name: `minecraft:block/iron_trapdoor/close${n}`, volume: 0.7, pitch: 1.5 })),
+    },
+  };
+}
+// Iron round a chest, an iron trapdoor for its door.
+function crewLockerRecipes() {
+  shaped("crew_locker", ["ITI", "ICI"], { I: "minecraft:iron_ingot", T: "minecraft:iron_trapdoor", C: "minecraft:chest" }, 1);
+}
+function crewLockerLang() {
+  return {
+    "block.aerolarge.crew_locker": "Flight Crew Locker",
+    "container.aerolarge.crew_locker": "Flight Crew Locker",
+    "subtitles.aerolarge.crew_locker_open": "Crew locker opens",
+    "subtitles.aerolarge.crew_locker_close": "Crew locker shuts",
+  };
+}
+
 for (const name of ["airliner_blueprint", "furnished_airliner_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
@@ -2296,6 +2365,7 @@ FITTINGS.push(...airstairFittings());
 FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
 FITTINGS.push(...cabinStairsFittings());
+FITTINGS.push(...crewLockerFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2399,6 +2469,7 @@ flightDeckRecipes();
 rubberDuckRecipes();
 coffeeMachineRecipes();
 cabinStairsRecipes();
+crewLockerRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2736,6 +2807,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...rubberDuckLang(),
   ...coffeeMachineLang(),
   ...cabinStairsLang(),
+  ...crewLockerLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

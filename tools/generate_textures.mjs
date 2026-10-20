@@ -403,6 +403,51 @@ texture(blockOutput, "thrust_relay", (x, y) => (y === 7 || y === 8 ? [0xb0, 0x20
   texture(blockOutput, "pilot_seat_harness", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? [0x4a, 0x5c, 0x80] : [0x24, 0x33, 0x52]), 2);
 }
 
+// The flight crew's locker. Its cabinet: brushed grey panels, streaked up and down, catching the light along their top.
+// Its door, the face the model lays from column 1 (the hinge) to 14 and down to row 14: brushed white in a grey edge,
+// and on it, so that someone who cannot read yet knows what is inside, the pilot's helmet as its icon shows it,
+// outlined dark: white with the livery's blue stripe over the crown, seen from its left side, the gold visor down over
+// the eyes under its dark cover, the airline's roundel on the ear cup and the shell coming down to the nape. Under it
+// a vent slot; by the free edge, where the model's handle stands, a shadow under the handle. Inside: dark, the same
+// streaks fainter, darkest along the floor. The handle: chrome.
+{
+  const brushed = (base, depth) => (x, y) => {
+    const streak = Math.round(depth * (Math.sin(x * 2.3) + 0.6 * Math.sin(x * 5.1 + y * 0.15)));
+    return base.map((v) => v + streak);
+  };
+  const cabinet = brushed([0xb8, 0xbf, 0xc6], 3);
+  texture(blockOutput, "crew_locker_side", (x, y) => (y === 0 ? [0xd8, 0xdd, 0xe2] : cabinet(x, y)), 2);
+  const inside = brushed([0x2e, 0x31, 0x36], 1);
+  texture(blockOutput, "crew_locker_inside", (x, y) => (y === 15 ? [0x1c, 0x1e, 0x22] : inside(x, y)), 2);
+  texture(blockOutput, "crew_locker_handle", (x) => (x % 2 === 0 ? CHROME : [0xb4, 0xbb, 0xc2]), 1);
+  // The helmet, from column 2 and row 1 of the door.
+  const HELMET = [
+    "...ooooo...",
+    "..obbbbbo..",
+    ".owwbbbwwo.",
+    "owwwwwwwwwo",
+    "owwwwwwdddo",
+    "owwbbwwGyGo",
+    "owwbbwwGGGo",
+    "owwwwwwgggo",
+    "osswwwsooo.",
+    ".ossssso...",
+  ];
+  const HELMET_COLOURS = {
+    o: [0x3a, 0x40, 0x48], w: [0xf8, 0xf9, 0xfb], s: [0xc4, 0xcb, 0xd5], b: BLUE, d: [0x26, 0x29, 0x2f],
+    G: [0xf0, 0xc0, 0x48], y: [0xfc, 0xe8, 0xa8], g: [0xa8, 0x74, 0x24],
+  };
+  const door = brushed([0xe6, 0xe9, 0xec], 1.5);
+  texture(blockOutput, "crew_locker_door", (x, y) => {
+    if (x === 1 || x === 14 || y === 0 || y === 14) return [0xc4, 0xc9, 0xcf];
+    const pixel = HELMET[y - 1]?.[x - 2];
+    if (pixel !== undefined && pixel !== ".") return HELMET_COLOURS[pixel];
+    if (y === 12 && x >= 4 && x <= 11) return [0x5c, 0x62, 0x6a];
+    if (x === 13 && y === 9) return [0xb0, 0xb6, 0xbd];
+    return door(x, y);
+  }, 1);
+}
+
 // Exterior lights: a coloured lens with a bright core, one per kind, and the soft round glow their renderer draws.
 const LENSES = {
   red: [0xe8, 0x20, 0x18],

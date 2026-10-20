@@ -119,6 +119,13 @@ reaches two blocks to the right of where it is put, as you face it, and needs th
 an assembled airliner with an autopilot it shows that airliner's fin camera. Against the wall behind the captain's
 seat is the Physics Assembler.
 
+A Flight Crew Locker is a slim cabinet of brushed grey panels for the crew's things, its white door hinged on one side
+with a small chrome handle on the other, and on the door the pilot's helmet, white with its blue stripe and gold visor,
+so even someone who cannot read yet knows what is inside. Use it and its door swings open with the clank of a light
+metal cabinet onto a row of nine slots; it swings shut again once nobody is looking in. It can be crafted (a chest and
+an iron trapdoor in iron) and put down anywhere, its door toward you; broken, it gives itself back and spills what is
+in it.
+
 In a nose too narrow for the centre console (at the smallest scales) the thrust levers stand between the seats with the
 autopilot's control head among them, the tiller and the parking brake outboard of the seats where there is room, and
 the switches, the dimmer and the handset on the panel either side of the screens.

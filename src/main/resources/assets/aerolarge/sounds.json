@@ -378,5 +378,55 @@
         "name": "aerolarge:coffee_ready"
       }
     ]
+  },
+  "crew_locker_open": {
+    "subtitle": "subtitles.aerolarge.crew_locker_open",
+    "sounds": [
+      {
+        "name": "minecraft:block/iron_trapdoor/open1",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open2",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open3",
+        "volume": 0.7,
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/open4",
+        "volume": 0.7,
+        "pitch": 1.4
+      }
+    ]
+  },
+  "crew_locker_close": {
+    "subtitle": "subtitles.aerolarge.crew_locker_close",
+    "sounds": [
+      {
+        "name": "minecraft:block/iron_trapdoor/close1",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close2",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close3",
+        "volume": 0.7,
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block/iron_trapdoor/close4",
+        "volume": 0.7,
+        "pitch": 1.5
+      }
+    ]
   }
 }
