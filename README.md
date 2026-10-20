@@ -407,6 +407,16 @@ screen put against the back of a seat's upper half sits on the seat's back. Both
 airliner business class and the lounge's armchairs are business seats (grey and red), and the upper deck's rows, the
 gym hall's seats between its windows and the crew room's seats economy seats (light blue, blue and light grey).
 
+### Cabin carpet
+
+Cabin Carpet is an airliner's woven carpet, a pixel thick like vanilla's: small diamonds on a fine twill, in the
+cabin's blue until dyed (use a dye on it; taken up, it keeps its colour). An Aisle Carpet is the aisle's runner, woven
+in ribs along the aisle, with a strip of floor path lights along one edge (the edge you face as you put it down): small
+warm white lights in an aluminium channel that glow whatever the light around, but light nothing. Laid either side of
+an aisle with the lights toward the seats, the two strips lead the way out, as an airliner's emergency lighting does.
+Both can be crafted. In the furnished airliner business class is carpeted blue and the upper deck grey, each with the
+runner along its aisle, the lounge and the duty-free kiosk red, and the den's steps in the colours of the rainbow.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it

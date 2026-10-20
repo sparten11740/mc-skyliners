@@ -1,0 +1,124 @@
+{
+  "parent": "minecraft:block/thin_block",
+  "textures": {
+    "pile": "aerolarge:block/aisle_carpet",
+    "light": "aerolarge:block/aisle_light",
+    "channel": "aerolarge:block/aisle_light_channel",
+    "particle": "aerolarge:block/aisle_carpet"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#pile",
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        0.5
+      ],
+      "to": [
+        16,
+        1.25,
+        1.5
+      ],
+      "shade": false,
+      "faces": {
+        "up": {
+          "texture": "#light",
+          "uv": [
+            0,
+            7,
+            16,
+            8
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "north": {
+          "texture": "#channel",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#channel",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

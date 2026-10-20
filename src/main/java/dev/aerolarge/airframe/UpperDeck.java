@@ -1,6 +1,8 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AisleCarpetBlock;
+import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.GalleyBlock;
@@ -67,6 +69,8 @@ final class UpperDeck {
     private static final double SEATS_ACROSS = 1.5;
     /** Rows over the floor to seated eye height, where the screens hang on the seat backs. */
     private static final int EYES = 2;
+    /** How far the aisle between the rows reaches either side of the middle, in blocks: three blocks wide. */
+    private static final int AISLE = 1;
 
     private final AirframeLayout layout;
     private final boolean furnished;
@@ -405,18 +409,22 @@ final class UpperDeck {
     /**
      * The furnished upper deck: its galley at the top of the forward staircase, rows of seats over business class with
      * a screen on the back of each seat that has another behind it, a grey carpet wherever its floor is whole and has
-     * headroom, and an exit sign over the top of each staircase, the way down.
+     * headroom, the aisle's runner with its path lights along the aisle between the rows, and an exit sign over the
+     * top of each staircase, the way down.
      */
     void furnish() {
         galley();
         rows();
-        BlockState carpet = Blocks.LIGHT_GRAY_CARPET.defaultBlockState();
+        BlockState carpet = CabinCarpetBlock.carpet(AerolargeRegistry.CABIN_CARPET.get(), DyeColor.LIGHT_GRAY);
+        BlockState runner = CabinCarpetBlock.carpet(AerolargeRegistry.AISLE_CARPET.get(), DyeColor.LIGHT_GRAY);
         int half = (int) Math.ceil(AirframeShape.WIDTH / 2 * layout.scale()) + 1;
         for (int z = start; z <= end; z++) {
             for (int x = -half; whole(z) && x <= half; x++) {
-                // Not on the ledge under the hull's curve, where nobody stands.
+                // Not on the ledge under the hull's curve, where nobody stands; between the rows, the aisle's runner
+                // along both edges of the aisle, its path lights toward the seats.
+                boolean aisle = Math.abs(x) == AISLE && z >= businessFrom && z <= businessTo;
                 if (layout.isCabinFloor(x, deck, z) && layout.isOpen(x, deck + STANDING_ROOM, z)) {
-                    layout.furnish(x, deck + 1, z, carpet);
+                    layout.furnish(x, deck + 1, z, aisle ? runner.setValue(AisleCarpetBlock.FACING, x > 0 ? Direction.EAST : Direction.WEST) : carpet);
                 }
             }
         }
@@ -453,7 +461,7 @@ final class UpperDeck {
         // A cross aisle at either end, onto the galleries' doorways through the bulkheads.
         for (int z = businessFrom + 1; z + 1 < businessTo; z += PITCH) {
             int outer = Math.min(room(z), room(z + 1));
-            for (int x = 2; x < 2 + across && x < outer; x++) {
+            for (int x = AISLE + 1; x < AISLE + 1 + across && x < outer; x++) {
                 for (int side : new int[]{1, -1}) {
                     int at = side * x;
                     // On the floor, with its legroom behind it open for the screen on its back.

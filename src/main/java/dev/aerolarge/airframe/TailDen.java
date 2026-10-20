@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.LightStripBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,9 +167,9 @@ final class TailDen {
         }
     }
 
-    /** Carpet over the station's floor, wherever it has the belly or the floor under it. */
+    /** The cabin's carpet over the station's floor, in the colour, wherever it has the belly or the floor under it. */
     private void carpet(Station station, DyeColor colour) {
-        BlockState carpet = carpet(colour);
+        BlockState carpet = CabinCarpetBlock.carpet(AerolargeRegistry.CABIN_CARPET.get(), colour);
         for (int x = -reach; x <= reach; x++) {
             if (!layout.isOpen(x, station.y() - 1, station.z())) {
                 layout.furnish(x, station.y(), station.z(), carpet);
@@ -216,7 +217,7 @@ final class TailDen {
             cushion(layout.besideWall(side, station.y(), station.z()), station);
             return;
         }
-        BlockState blanket = carpet(softColour());
+        BlockState blanket = blanket(softColour());
         for (Station station : run) {
             int x = layout.besideWall(side, station.y(), station.z());
             if (layout.isOpen(x, station.y(), station.z()) && layout.isOpen(x, station.y() + 1, station.z()) && layout.isOpen(x, station.y() + 2, station.z())) {
@@ -266,7 +267,8 @@ final class TailDen {
         });
     }
 
-    private static BlockState carpet(DyeColor colour) {
+    /** A bunk's blanket: vanilla's carpet in the colour, a soft throw over the mattress. */
+    private static BlockState blanket(DyeColor colour) {
         return BuiltInRegistries.BLOCK.get(ResourceLocation.withDefaultNamespace(colour.getSerializedName() + "_carpet")).defaultBlockState();
     }
 }

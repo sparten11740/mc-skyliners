@@ -6,6 +6,7 @@ import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairStepBlock;
+import dev.aerolarge.block.AisleCarpetBlock;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
@@ -14,6 +15,7 @@ import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinArchBlock;
+import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
@@ -638,6 +640,11 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> ECONOMY_SEAT_ITEM = ITEMS.registerSimpleBlockItem(ECONOMY_SEAT);
     public static final DeferredItem<BlockItem> BUSINESS_SEAT_ITEM = ITEMS.registerSimpleBlockItem(BUSINESS_SEAT);
+    /** The cabin's carpet, and the aisle's runner with its floor path lights: a woven pile, as soft as vanilla's. */
+    public static final DeferredBlock<CabinCarpetBlock> CABIN_CARPET = BLOCKS.registerBlock("cabin_carpet", CabinCarpetBlock::new, carpet());
+    public static final DeferredBlock<AisleCarpetBlock> AISLE_CARPET = BLOCKS.registerBlock("aisle_carpet", AisleCarpetBlock::new, carpet());
+    public static final DeferredItem<BlockItem> CABIN_CARPET_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CARPET);
+    public static final DeferredItem<BlockItem> AISLE_CARPET_ITEM = ITEMS.registerSimpleBlockItem(AISLE_CARPET);
     /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
@@ -944,7 +951,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
-            ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM,
+            ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM,
@@ -988,6 +995,12 @@ public final class AerolargeRegistry {
 
     private static DeferredHolder<SoundEvent, SoundEvent> sound(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, name)));
+    }
+
+    /** A woven carpet: as quick to take up as vanilla's, and nothing spawns on it. */
+    private static BlockBehaviour.Properties carpet() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.1F).sound(SoundType.WOOL).ignitedByLava()
+            .isValidSpawn(AerolargeRegistry::never);
     }
 
     private static BlockBehaviour.Properties glass() {

@@ -1,10 +1,12 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.DutyFreeCounterBlock;
 import dev.aerolarge.cabin.Decompression;
 import java.util.List;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -119,7 +121,7 @@ final class DutyFreeKiosk {
             layout.furnish(wall, floor + 1, z, Blocks.SMOOTH_QUARTZ.defaultBlockState());
             layout.furnish(wall, floor + 2, z, GOODS.get(i % GOODS.size()));
             layout.furnish(counters, floor + 1, z, counter);
-            layout.furnish(shoppers, floor + 1, z, Blocks.RED_CARPET.defaultBlockState());
+            layout.furnish(shoppers, floor + 1, z, CabinCarpetBlock.carpet(AerolargeRegistry.CABIN_CARPET.get(), DyeColor.RED));
             BlockState stripe = (z % 2 == 0 ? Blocks.LIME_WOOL : Blocks.WHITE_WOOL).defaultBlockState();
             layout.furnish(counters, floor + AWNING, z, stripe);
             layout.furnish(shoppers, floor + AWNING, z, stripe);

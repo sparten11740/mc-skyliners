@@ -403,6 +403,8 @@
   "subtitles.aerolarge.crew_locker_close": "Crew locker shuts",
   "block.aerolarge.economy_seat": "Economy Seat",
   "block.aerolarge.business_seat": "Business Seat",
+  "block.aerolarge.cabin_carpet": "Cabin Carpet",
+  "block.aerolarge.aisle_carpet": "Aisle Carpet",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

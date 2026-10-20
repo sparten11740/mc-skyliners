@@ -1041,6 +1041,28 @@ blueprint("furnished_airliner_blueprint", true);
   }, 2);
 }
 
+// The cabin carpet (see CabinCarpetBlock), drawn in light greys and tinted on the client to the carpet's colour: a
+// fine twill with small diamonds woven into it, every other row of them half a step along, each a lighter ring round a
+// dark knot. The aisle's runner: the same pile in fine ribs running along the aisle, a darker band along the edge
+// where its lights are set in. The floor path lights: small warm white lights every four pixels in a dim channel, and
+// the channel's aluminium sides.
+{
+  const grey = (v) => [v, v, v];
+  texture(blockOutput, "cabin_carpet", (x, y) => {
+    const cx = (x + (Math.floor(y / 8) % 2) * 4) % 8;
+    const d = Math.abs(cx - 4) + Math.abs((y % 8) - 4);
+    if (d === 0) return grey(0xa2);
+    if (d === 3) return grey(0xf4);
+    return grey((x + 2 * y) % 4 === 0 ? 0xc8 : 0xdc);
+  }, 3);
+  texture(blockOutput, "aisle_carpet", (x, y) => {
+    if (y <= 2) return grey(y === 2 ? 0xb4 : 0xa8);
+    return grey(y % 3 === 0 ? 0xc6 : 0xde);
+  }, 3);
+  texture(blockOutput, "aisle_light", (x) => (x % 4 === 1 || x % 4 === 2 ? [0xff, 0xf2, 0xc8] : [0x8a, 0x80, 0x66]), 0);
+  texture(blockOutput, "aisle_light_channel", (x, y) => (y % 4 === 0 ? [0xd2, 0xd8, 0xde] : [0xa2, 0xa9, 0xb0]), 2);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {

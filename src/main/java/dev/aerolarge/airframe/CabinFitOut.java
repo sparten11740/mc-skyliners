@@ -1,7 +1,9 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AisleCarpetBlock;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
@@ -126,9 +128,9 @@ final class CabinFitOut {
 
     /**
      * The business class: rows of business seats facing forward, as many as fit side by side either side of the aisle
-     * up to two, each with a wooden console at armrest height either side, shared between neighbours; a blue carpet
-     * throughout, and pendant lights over the aisle hung high enough to clear the overhead lockers and the light strips
-     * along the walls.
+     * up to two, each with a wooden console at armrest height either side, shared between neighbours; the cabin's blue
+     * carpet throughout, the aisle's runner either side of the aisle, its path lights toward the seats; and pendant
+     * lights over the aisle hung high enough to clear the overhead lockers and the light strips along the walls.
      */
     private void businessClass(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -138,6 +140,9 @@ final class CabinFitOut {
         }
         BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), DyeColor.GRAY, Direction.NORTH);
         BlockState console = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
+        // How far out from the middle the aisle reaches, to just inside the innermost consoles; the whole cabin's width
+        // while there are no rows.
+        int aisle = width;
         // Each row is legroom, then the seats, their backs as high as a seated passenger's head, with the screen for
         // the row behind set onto them; the first row's legroom is toward the door aisle.
         for (int z = fromZ + pitch - 2; z + 1 <= toZ; z += pitch) {
@@ -147,16 +152,30 @@ final class CabinFitOut {
                     seat(side * x, z, seat);
                     layout.furnish(side * (x + 1), floor + 1, z, console);
                     layout.furnish(side * (x - 1), floor + 1, z, console);
+                    aisle = Math.min(aisle, x - 2);
                 }
             }
         }
-        for (int z = fromZ; z <= toZ; z++) {
-            for (int x = -width; x <= width; x++) {
-                layout.furnish(x, floor + 1, z, Blocks.BLUE_CARPET.defaultBlockState());
-            }
-        }
+        carpet(fromZ, toZ, width, aisle, DyeColor.BLUE);
         for (int z = fromZ + 1; z <= toZ; z += 4) {
             hangLight(0, z, 7);
+        }
+    }
+
+    /**
+     * Carpets a room wall to wall, out to the width given either side of the middle, in the colour: the cabin carpet,
+     * and where the room has an aisle narrower than itself, reaching {@code aisle} out from the middle, the aisle's
+     * runner along both its edges, the path lights along the edge toward the seats. Only open floor is carpeted, round
+     * whatever stands on it.
+     */
+    private void carpet(int fromZ, int toZ, int width, int aisle, DyeColor colour) {
+        BlockState carpet = CabinCarpetBlock.carpet(AerolargeRegistry.CABIN_CARPET.get(), colour);
+        BlockState runner = CabinCarpetBlock.carpet(AerolargeRegistry.AISLE_CARPET.get(), colour);
+        for (int z = fromZ; z <= toZ; z++) {
+            for (int x = -width; x <= width; x++) {
+                boolean edge = aisle > 0 && aisle < width && Math.abs(x) == aisle;
+                layout.furnish(x, floor + 1, z, edge ? runner.setValue(AisleCarpetBlock.FACING, x > 0 ? Direction.EAST : Direction.WEST) : carpet);
+            }
         }
     }
 
@@ -333,9 +352,9 @@ final class CabinFitOut {
     }
 
     /**
-     * The lounge: carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in front,
-     * the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind it, a row
-     * of red armchairs (business seats) and low tables along the port wall, and a plant in the other corner.
+     * The lounge: red carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in
+     * front, the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind
+     * it, a row of red armchairs (business seats) and low tables along the port wall, and a plant in the other corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
@@ -365,9 +384,7 @@ final class CabinFitOut {
                     layout.furnish(-width + 2, floor + 1, z, Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
                 }
             }
-            for (int x = -width; x <= width; x++) {
-                layout.furnish(x, floor + 1, z, Blocks.RED_CARPET.defaultBlockState());
-            }
+            carpet(z, z, width, 0, DyeColor.RED);
         }
         if (frontWidth >= 3) {
             layout.set(-frontWidth, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());

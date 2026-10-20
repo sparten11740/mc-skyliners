@@ -66,6 +66,8 @@
     "aerolarge:cabin_rail",
     "aerolarge:economy_seat",
     "aerolarge:business_seat",
+    "aerolarge:cabin_carpet",
+    "aerolarge:aisle_carpet",
     "aerolarge:autopilot_screen",
     "aerolarge:flight_display",
     "aerolarge:tail_camera_display",

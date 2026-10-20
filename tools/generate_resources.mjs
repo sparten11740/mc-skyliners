@@ -2131,6 +2131,81 @@ function cabinSeatLang() {
   };
 }
 
+// The cabin carpet (see CabinCarpetBlock): its pile a pixel thick, as vanilla's carpet's is, every face of it tinted
+// to the carpet's colour. The aisle carpet (see AisleCarpetBlock), drawn with its lights along the north edge: the
+// same pile, and on it, a quarter of a pixel proud, the floor path lights in their channel from one side of the block
+// to the other, so a run of them is one strip; the lights glow at full brightness whatever the light around, and are
+// not tinted. In the hand, as vanilla's carpet is held. Taken up, each keeps its colour.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const pile = {
+    from: [0, 0, 0], to: [16, 1, 16],
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, {
+      texture: "#pile", tintindex: 0,
+      ...(side === "up" || side === "down" ? {} : { uv: [0, 15, 16, 16] }),
+      ...(side === "up" ? {} : { cullface: side }),
+    }])),
+  };
+  write(`assets/${ID}/models/block/cabin_carpet.json`, {
+    parent: "minecraft:block/thin_block", textures: { pile: block("cabin_carpet"), particle: block("cabin_carpet") }, elements: [pile],
+  });
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  write(`assets/${ID}/models/block/aisle_carpet.json`, {
+    parent: "minecraft:block/thin_block",
+    textures: { pile: block("aisle_carpet"), light: block("aisle_light"), channel: block("aisle_light_channel"), particle: block("aisle_carpet") },
+    elements: [
+      pile,
+      {
+        from: [0, 1, 0.5], to: [16, 1.25, 1.5], shade: false,
+        faces: {
+          up: { texture: "#light", uv: [0, 7, 16, 8], ...lit },
+          north: { texture: "#channel", uv: [0, 0, 16, 1] },
+          south: { texture: "#channel", uv: [0, 0, 16, 1] },
+        },
+      },
+    ],
+  });
+  write(`assets/${ID}/blockstates/cabin_carpet.json`, { variants: { "": { model: `${ID}:block/cabin_carpet` } } });
+  facing("aisle_carpet");
+  for (const name of ["cabin_carpet", "aisle_carpet"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    const carpet = `${ID}:${name}`;
+    write(`data/${ID}/loot_table/blocks/${name}.json`, {
+      type: "minecraft:block",
+      pools: [{
+        rolls: 1.0,
+        bonus_rolls: 0.0,
+        entries: [{
+          type: "minecraft:item",
+          name: carpet,
+          functions: [{
+            function: "minecraft:copy_state", block: carpet, properties: ["color"],
+            conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: carpet, properties: { color: "blue" } } }],
+          }],
+        }],
+        conditions: [{ condition: "minecraft:survives_explosion" }],
+      }],
+      random_sequence: `${ID}:blocks/${name}`,
+    });
+    cubes[name] = null;
+  }
+}
+// The carpets are laid in the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function cabinCarpetFittings() {
+  return ["cabin_carpet", "aisle_carpet"];
+}
+// Blue wool woven on string; the aisle's, carpet with glowstone for its lights.
+function cabinCarpetRecipes() {
+  shaped("cabin_carpet", ["WW", "SS"], { W: "minecraft:blue_wool", S: "minecraft:string" }, 4);
+  shaped("aisle_carpet", ["CCC", " G "], { C: `${ID}:cabin_carpet`, G: "minecraft:glowstone_dust" }, 3);
+}
+function cabinCarpetLang() {
+  return {
+    "block.aerolarge.cabin_carpet": "Cabin Carpet",
+    "block.aerolarge.aisle_carpet": "Aisle Carpet",
+  };
+}
+
 // The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
 // with its back against the south side of its block, as deep as the tail camera display's upright one (see
 // AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
@@ -2588,6 +2663,7 @@ FITTINGS.push(...coffeeMachineFittings());
 FITTINGS.push(...cabinStairsFittings());
 FITTINGS.push(...crewLockerFittings());
 FITTINGS.push(...cabinSeatFittings());
+FITTINGS.push(...cabinCarpetFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2694,6 +2770,7 @@ cabinStairsRecipes();
 crewLockerRecipes();
 slideRecipes();
 cabinSeatRecipes();
+cabinCarpetRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3034,6 +3111,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinStairsLang(),
   ...crewLockerLang(),
   ...cabinSeatLang(),
+  ...cabinCarpetLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
