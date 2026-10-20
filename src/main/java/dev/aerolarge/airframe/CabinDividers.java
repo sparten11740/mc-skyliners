@@ -18,18 +18,21 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarpetBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TripWireHookBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.Half;
 
 /**
  * The furnished cabin's rooms walled off from the doors' aisles between them, the way an airliner's are: a cream
  * bulkhead right across the cabin at each end of a room that faces a door's aisle, and between business class and the
  * pool, its archway over the middle aisle hung with a curtain in the room's colour (navy for business class, cyan for
- * the pool, lime for the gym hall, red for the lounge), drawn open. Over each archway, on the side facing the doors, a
- * picture in coloured wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who
- * cannot read yet. A curtain on its own across the aisle at the front of business class, lavatories either side of
+ * the pool, lime for the gym hall, red for the lounge), drawn open. Each archway rounds off over the aisle and is
+ * framed in wood, a head's height clear right across it; over it, on the side facing the doors, a picture in coloured
+ * wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who cannot read yet. A
+ * curtain on its own across the aisle at the front of business class, lavatories either side of
  * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, the gym
  * hall's hoops mounted on its end walls, its own dividing curtain (Trennvorhang) right across the middle of the court,
  * and a green running man over every passenger door.
@@ -41,13 +44,28 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * there) rules the station out.
  */
 final class CabinDividers {
-    /** How far either side of the middle an archway reaches: over the aisle, three blocks wide. */
+    /** How far either side of the middle the aisle reaches: three blocks wide, as a curtain alone across it hangs. */
     private static final int AISLE = 1;
-    /** How tall an archway is, in metres, and at least in blocks: a head's height clear under it. */
+    /**
+     * How far either side of the middle an archway reaches, in metres, and at least the aisle: wider at the larger
+     * scales, where it would otherwise be a slot in the wall.
+     */
+    private static final double ARCH_REACH = 0.5;
+    /**
+     * How tall an archway is at its sides, in metres, and at least in blocks: a head's height clear right across it.
+     * Over that it rounds off, a row higher for each block it steps in, up to its crown over the middle.
+     */
     private static final double ARCH_HEIGHT = 1.5;
     private static final int LEAST_ARCH = 2;
-    /** How many rows of plain wall stand between an archway and the picture over it. */
+    /** How many rows of trim head an archway, between its crown and the picture over it. */
     private static final int LINTEL = 1;
+    /**
+     * The archways' frame: a wooden architrave round each, its jambs either side and its head over the crown, as an
+     * airliner's bulkhead openings are trimmed; and where it rounds off, fillets of smooth quartz (as near the
+     * partition's cream as a stair comes) turned upside down, stepping in to the crown.
+     */
+    private static final BlockState TRIM = Blocks.SPRUCE_PLANKS.defaultBlockState();
+    private static final BlockState FILLET = Blocks.SMOOTH_QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.HALF, Half.TOP);
     /** How far a divider may stand from where it is meant to, in stations, to find one that suits it. */
     private static final int SNAP = 2;
     /** How many blocks of headroom the lavatories have under their ceilings, as the WC behind the flight deck has. */
@@ -73,8 +91,10 @@ final class CabinDividers {
 
     private final AirframeLayout layout;
     private final int floor;
-    /** How many rows tall the archways are at this scale. */
+    /** How many rows tall the archways are at this scale at their sides, the full width clear. */
     private final int arch;
+    /** How far either side of the middle the archways reach at this scale, in blocks: as many rows as they round off. */
+    private final int span;
     private final BlockState partition = AerolargeRegistry.CABIN_PARTITION.get().defaultBlockState();
     /** Every piece of curtain hung, joined into curtains once they all hang. */
     private final List<BlockPos> curtains = new ArrayList<>();
@@ -83,6 +103,7 @@ final class CabinDividers {
         this.layout = layout;
         this.floor = layout.floorY();
         this.arch = Math.max(LEAST_ARCH, (int) Math.round(ARCH_HEIGHT * layout.scale()));
+        this.span = Math.max(AISLE, (int) Math.round(ARCH_REACH * layout.scale()));
     }
 
     /**
@@ -226,12 +247,12 @@ final class CabinDividers {
             for (int x = wall.reach().get(y - wall.bottom())[0]; x <= wall.reach().get(y - wall.bottom())[1]; x++) {
                 if (inArch(x, y)) {
                     hang(x, y, wall.z(), color);
-                } else if (fillable(x, y, wall.z())) {
-                    layout.set(x, y, wall.z(), partition);
+                } else if (!inCrown(x, y) && fillable(x, y, wall.z())) {
+                    layout.set(x, y, wall.z(), frame(x, y));
                 }
             }
         }
-        int over = floor + arch + LINTEL + picture.length;
+        int over = crown() + LINTEL + picture.length;
         picture(wall.z(), 0, over, picture, seenFromAhead);
         return wall;
     }
@@ -319,13 +340,13 @@ final class CabinDividers {
      */
     private boolean wallFits(Section section) {
         int z = section.z();
-        if (!clearOfDoorsAndSigns(z) || section.top() < floor + arch + LINTEL) {
+        if (!clearOfDoorsAndSigns(z) || section.top() < crown() + LINTEL) {
             return false;
         }
         for (int y = section.bottom(); y <= section.top(); y++) {
             for (int x = section.reach().get(y - section.bottom())[0]; x <= section.reach().get(y - section.bottom())[1]; x++) {
                 boolean passable = fillable(x, y, z) && !layout.stateAt(x, floor, z).is(Blocks.WATER);
-                if (inArch(x, y) ? !passable : !fillable(x, y, z) && !whole(x, y, z)) {
+                if (inArch(x, y) || inCrown(x, y) ? !passable : !fillable(x, y, z) && !whole(x, y, z)) {
                     return false;
                 }
                 if (!plainAround(section, x, y)) {
@@ -375,8 +396,35 @@ final class CabinDividers {
         return layout.stateAt(x, y, z).is(layout.palette().light().getBlock());
     }
 
+    /** Whether the block is in an archway's curtained opening: all of its width, up to where it rounds off. */
     private boolean inArch(int x, int y) {
-        return Math.abs(x) <= AISLE && y <= floor + arch;
+        return Math.abs(x) <= span && y <= floor + arch;
+    }
+
+    /** The archway's top row, its crown over the middle, where it has stepped in a block for every row over its sides. */
+    private int crown() {
+        return floor + arch + span;
+    }
+
+    /** Whether the block is open in the archway's rounded top, over the curtain's rail. */
+    private boolean inCrown(int x, int y) {
+        int over = y - floor - arch;
+        return over >= 1 && over <= span && Math.abs(x) <= span - over;
+    }
+
+    /**
+     * What a wall is built of here: the fillets that round off its archway's top, a block in at each row up; the
+     * archway's trim either side of it and over it; and the partition everywhere else.
+     */
+    private BlockState frame(int x, int y) {
+        int over = y - floor - arch;
+        if (over >= 1 && over <= span && Math.abs(x) == span - over + 1) {
+            // Upside down, its full half outward (starboard is east), so the opening steps in toward the crown.
+            return FILLET.setValue(StairBlock.FACING, x > 0 ? Direction.EAST : Direction.WEST);
+        }
+        boolean jamb = Math.abs(x) == span + 1 && y <= crown();
+        boolean head = Math.abs(x) <= span + 1 && y > crown() && y <= crown() + LINTEL;
+        return jamb || head ? TRIM : partition;
     }
 
     /** Whether a divider can go into this block of the cabin: open, or only carpet, which it takes the place of. */
@@ -432,7 +480,7 @@ final class CabinDividers {
     private void lavatories(Section wall, int gym) {
         int front = wall.z();
         int ceiling = floor + HEADROOM + 1;
-        int inner = AISLE + 1;
+        int inner = span + 1;
         int basin = inner + 1;
         int door = basin + 1;
         if (gym - front < 2) {

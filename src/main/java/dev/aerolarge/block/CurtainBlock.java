@@ -87,8 +87,8 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     private static final double BUNCH_WIDTH = 4.5;
     private static final double BUNCH_FRONT = 5.5;
     private static final double BUNCH_BACK = 10.5;
-    /** The widest, in pieces, a curtain is that an open one can still be used anywhere across: an archway's. */
-    private static final int NARROW = 3;
+    /** The widest, in pieces, a curtain is that an open one can still be used anywhere across: an archway's at most. */
+    private static final int NARROW = 5;
 
     /** Each state's outline, and an open one's on a curtain no wider than an archway's, with the sheet across it. */
     private final ImmutableMap<BlockState, VoxelShape> shapes;

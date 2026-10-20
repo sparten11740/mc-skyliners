@@ -244,9 +244,11 @@ man heading out through a doorway. All three can be crafted.
 
 In the furnished airliner a partition wall stands between each room and the doors' aisle beside it, and between
 business class and the pool, with an archway over the aisle hung with a curtain in the room's colour (navy for
-business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Over each archway, on the
-side facing the doors, a picture in coloured wool shows what lies through it: a seat, a drop of water, a basketball,
-a cup. A curtain on its own crosses the aisle in front of business class. The gym hall's front wall has a lavatory
+business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Each archway is framed in
+spruce, its top rounded off with upside-down smooth quartz stairs stepping in to the crown over the curtain's rail,
+and stays a head's height clear right across; at the largest scales it is wider. Over each archway, on the side
+facing the doors, a picture in coloured wool shows what lies through it: a seat, a drop of water, a basketball, a
+cup. A curtain on its own crosses the aisle in front of business class. The gym hall's front wall has a lavatory
 either side of its archway, each with a toilet, a basin and its tap, and a wooden door under a picture of a person.
 The hoops are mounted on the gym hall's end walls, out of the way of anyone coming through the archways, and a lime
 dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two courts. Over
