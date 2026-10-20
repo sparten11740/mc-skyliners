@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
@@ -10,6 +11,8 @@ import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -23,6 +26,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
@@ -30,9 +34,10 @@ import org.joml.Vector3dc;
 /**
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
- * rides, how one is moving and lying for its instruments, and where its outside cameras are as it flies; and holding
- * Sable's water occlusion off while a camera's picture is drawn. Every call works without Sable too (nothing is
- * assembled then); Sable's classes are only touched once it is known to be installed.
+ * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, and which ones
+ * come near a point and how they lie as they are drawn; and holding Sable's water occlusion off while a camera's
+ * picture is drawn. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
+ * once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -160,6 +165,31 @@ public final class SableClient {
         return SABLE ? Access.view(point, forward, up, partialTick) : null;
     }
 
+    /** An assembled airliner near a point in the world: which one, and where that point is among its blocks. */
+    public record Near(UUID airliner, Vec3 point) {
+    }
+
+    /** Each assembled airliner within reach of a point in the world, as it last moved; none without Sable. */
+    static List<Near> near(Level level, Vec3 point, double reach) {
+        return SABLE ? Access.near(level, point, reach) : List.of();
+    }
+
+    /**
+     * How an assembled airliner lies as it is drawn: the transform taking a position among its blocks into the world,
+     * and its turn, which takes a direction among its blocks into the world.
+     */
+    public record Placing(Matrix4d transform, Quaterniond turn) {
+    }
+
+    /**
+     * How the assembled airliner holding a point among its blocks lies as it is drawn at this partial tick; null once
+     * no airliner holds the point.
+     */
+    @Nullable
+    static Placing placing(Vec3 point, float partialTick) {
+        return SABLE ? Access.placing(point, partialTick) : null;
+    }
+
     private static final class Access {
         /** False once Sable's water occlusion switch was found missing, as a later Sable might move it. */
         static boolean waterOcclusionReachable = true;
@@ -281,6 +311,25 @@ public final class SableClient {
             }
             Pose3dc pose = airliner.renderPose(partialTick);
             return new View(pose.transformPosition(point), pose.transformNormal(forward).normalize(), pose.transformNormal(up).normalize());
+        }
+
+        static List<Near> near(Level level, Vec3 point, double reach) {
+            BoundingBox3d around = new BoundingBox3d(point.x - reach, point.y - reach, point.z - reach, point.x + reach, point.y + reach, point.z + reach);
+            List<Near> found = new ArrayList<>();
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, around)) {
+                found.add(new Near(airliner.getUniqueId(), airliner.logicalPose().transformPositionInverse(point)));
+            }
+            return found;
+        }
+
+        @Nullable
+        static Placing placing(Vec3 point, float partialTick) {
+            ClientSubLevel airliner = Sable.HELPER.getContainingClient(point);
+            if (airliner == null) {
+                return null;
+            }
+            Pose3dc pose = airliner.renderPose(partialTick);
+            return new Placing(pose.bakeIntoMatrix(new Matrix4d()), new Quaterniond(pose.orientation()));
         }
 
         private static Ride ride(SubLevel airliner, Level level) {

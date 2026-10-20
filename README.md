@@ -88,9 +88,13 @@ on the captain's side of it and the captain's handset on the first officer's; ri
 shades' control, and beside the first officer the drop release. The dimmer steps every light in the cabin from bright
 to dimmed (as for take-off and landing) to a blue night glow and back, the change running down the cabin front to
 back; at night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light, and the WC,
-the crew room and the lavatories keep their lights on as dimmed, as an airliner's lavatories do. The window
-shades' control runs every cabin window's shade down, or up again, the same way, with the whirr of their motors. A
-closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
+the crew room and the lavatories keep their lights on as dimmed, as an airliner's lavatories do. Where Veil is
+installed (it comes with Sable), the lights still on at night also cast their blue round the cabin near you, like an
+airliner's mood lighting: the LED strips wash the walls and lockers, the cabin lights the aisle and the pendants the
+floor under them, in flight as well as parked. That light is only drawn; what spawns where still goes by the dim night
+glow. Turn it off with `nightLights` in the client config; with Iris installed it is never drawn, and the lights only
+glow. The window shades' control runs every cabin window's shade down, or up again, the same way, with the whirr of
+their motors. A closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
 
 In front of each seat a primary flight display in the panel shows attitude, airspeed, altitude, vertical speed and
 heading once the airliner is assembled. In the middle, standing just in front of the panel, is one glass unit of two
@@ -572,9 +576,10 @@ taken from a coffee machine (Barista).
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
-`pilotHudScale` and the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`) are there
-from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods button while
-playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
+`pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`, and the
+cabin's blue `nightLights`) are there from the title screen. The server settings open only while a world is loaded,
+from the pause menu's Mods button while playing in single player; they are kept in `config/aerolarge-server.toml`, on
+a dedicated server in its own.
 
 ## Building
 
@@ -594,7 +599,8 @@ the nacelles' faces, from where each engine's core was told they are; `PlugDoorR
 shut, swinging and open, from their `PlugDoorBlockEntity`, in the layers `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
 from their `AirstairBlockEntity`; `TailCameraFeed` draws the fin camera's
-picture through Veil's perspective renderer (Veil comes inside Sable's jar), the one place Veil is touched. Assets
+picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
+at night through Veil's light renderer, the only places Veil is touched. Assets
 are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

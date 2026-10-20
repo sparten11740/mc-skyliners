@@ -11,6 +11,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue TAIL_CAMERA_FEED;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_FPS;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
+    public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -37,6 +38,12 @@ public final class AerolargeClientConfig {
         TAIL_CAMERA_RESOLUTION = builder
             .comment("How many pixels tall the tail camera's picture is drawn; it is a little over twice as wide.")
             .defineInRange("tailCameraResolution", 144, 72, 360);
+        NIGHT_LIGHTS = builder
+            .comment("With the cabin lights set for the night, let the lights near you cast a soft blue light round the cabin, as an",
+                "airliner's mood lighting does, through Veil (which comes with Sable). While a cabin at night is near, every frame",
+                "is drawn with Veil's extra buffers and its lights; turn it off if that costs too much. Never with Iris installed:",
+                "the night lights only glow blue then.")
+            .define("nightLights", true);
         SPEC = builder.build();
     }
 
