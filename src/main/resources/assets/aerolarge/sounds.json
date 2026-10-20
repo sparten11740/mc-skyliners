@@ -11,7 +11,8 @@
     "subtitle": "subtitles.aerolarge.callout_v1",
     "sounds": [
       {
-        "name": "aerolarge:callout_v1"
+        "name": "aerolarge:callout_v1",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -19,7 +20,8 @@
     "subtitle": "subtitles.aerolarge.callout_rotate",
     "sounds": [
       {
-        "name": "aerolarge:callout_rotate"
+        "name": "aerolarge:callout_rotate",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -27,7 +29,8 @@
     "subtitle": "subtitles.aerolarge.callout_positive_rate",
     "sounds": [
       {
-        "name": "aerolarge:callout_positive_rate"
+        "name": "aerolarge:callout_positive_rate",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -35,7 +38,8 @@
     "subtitle": "subtitles.aerolarge.callout_100",
     "sounds": [
       {
-        "name": "aerolarge:callout_100"
+        "name": "aerolarge:callout_100",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -43,7 +47,8 @@
     "subtitle": "subtitles.aerolarge.callout_50",
     "sounds": [
       {
-        "name": "aerolarge:callout_50"
+        "name": "aerolarge:callout_50",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -51,7 +56,8 @@
     "subtitle": "subtitles.aerolarge.callout_40",
     "sounds": [
       {
-        "name": "aerolarge:callout_40"
+        "name": "aerolarge:callout_40",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -59,7 +65,8 @@
     "subtitle": "subtitles.aerolarge.callout_30",
     "sounds": [
       {
-        "name": "aerolarge:callout_30"
+        "name": "aerolarge:callout_30",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -67,7 +74,8 @@
     "subtitle": "subtitles.aerolarge.callout_20",
     "sounds": [
       {
-        "name": "aerolarge:callout_20"
+        "name": "aerolarge:callout_20",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -75,7 +83,8 @@
     "subtitle": "subtitles.aerolarge.callout_10",
     "sounds": [
       {
-        "name": "aerolarge:callout_10"
+        "name": "aerolarge:callout_10",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -83,7 +92,8 @@
     "subtitle": "subtitles.aerolarge.callout_retard",
     "sounds": [
       {
-        "name": "aerolarge:callout_retard"
+        "name": "aerolarge:callout_retard",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -91,7 +101,8 @@
     "subtitle": "subtitles.aerolarge.callout_bank_angle",
     "sounds": [
       {
-        "name": "aerolarge:callout_bank_angle"
+        "name": "aerolarge:callout_bank_angle",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -99,7 +110,8 @@
     "subtitle": "subtitles.aerolarge.callout_pull_up",
     "sounds": [
       {
-        "name": "aerolarge:callout_pull_up"
+        "name": "aerolarge:callout_pull_up",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -107,7 +119,8 @@
     "subtitle": "subtitles.aerolarge.announcement_takeoff",
     "sounds": [
       {
-        "name": "aerolarge:announcement_takeoff"
+        "name": "aerolarge:announcement_takeoff",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -115,7 +128,8 @@
     "subtitle": "subtitles.aerolarge.announcement_landing",
     "sounds": [
       {
-        "name": "aerolarge:announcement_landing"
+        "name": "aerolarge:announcement_landing",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -123,7 +137,8 @@
     "subtitle": "subtitles.aerolarge.announcement_arrival",
     "sounds": [
       {
-        "name": "aerolarge:announcement_arrival"
+        "name": "aerolarge:announcement_arrival",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -131,7 +146,8 @@
     "subtitle": "subtitles.aerolarge.atc_cleared_for_takeoff",
     "sounds": [
       {
-        "name": "aerolarge:atc_cleared_for_takeoff"
+        "name": "aerolarge:atc_cleared_for_takeoff",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -139,7 +155,8 @@
     "subtitle": "subtitles.aerolarge.atc_contact_departure",
     "sounds": [
       {
-        "name": "aerolarge:atc_contact_departure"
+        "name": "aerolarge:atc_contact_departure",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -147,7 +164,8 @@
     "subtitle": "subtitles.aerolarge.atc_radar_contact",
     "sounds": [
       {
-        "name": "aerolarge:atc_radar_contact"
+        "name": "aerolarge:atc_radar_contact",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -155,7 +173,8 @@
     "subtitle": "subtitles.aerolarge.atc_cleared_to_land",
     "sounds": [
       {
-        "name": "aerolarge:atc_cleared_to_land"
+        "name": "aerolarge:atc_cleared_to_land",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -163,7 +182,8 @@
     "subtitle": "subtitles.aerolarge.atc_go_around",
     "sounds": [
       {
-        "name": "aerolarge:atc_go_around"
+        "name": "aerolarge:atc_go_around",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -171,7 +191,8 @@
     "subtitle": "subtitles.aerolarge.atc_taxi_to_gate",
     "sounds": [
       {
-        "name": "aerolarge:atc_taxi_to_gate"
+        "name": "aerolarge:atc_taxi_to_gate",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -179,7 +200,8 @@
     "subtitle": "subtitles.aerolarge.atc_contact_center",
     "sounds": [
       {
-        "name": "aerolarge:atc_contact_center"
+        "name": "aerolarge:atc_contact_center",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -187,7 +209,8 @@
     "subtitle": "subtitles.aerolarge.atc_center_check_in",
     "sounds": [
       {
-        "name": "aerolarge:atc_center_check_in"
+        "name": "aerolarge:atc_center_check_in",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -195,7 +218,8 @@
     "subtitle": "subtitles.aerolarge.atc_traffic_two_oclock",
     "sounds": [
       {
-        "name": "aerolarge:atc_traffic_two_oclock"
+        "name": "aerolarge:atc_traffic_two_oclock",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -203,7 +227,8 @@
     "subtitle": "subtitles.aerolarge.atc_traffic_ten_oclock",
     "sounds": [
       {
-        "name": "aerolarge:atc_traffic_ten_oclock"
+        "name": "aerolarge:atc_traffic_ten_oclock",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -211,7 +236,8 @@
     "subtitle": "subtitles.aerolarge.atc_light_turbulence",
     "sounds": [
       {
-        "name": "aerolarge:atc_light_turbulence"
+        "name": "aerolarge:atc_light_turbulence",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -219,7 +245,8 @@
     "subtitle": "subtitles.aerolarge.atc_smooth_ride",
     "sounds": [
       {
-        "name": "aerolarge:atc_smooth_ride"
+        "name": "aerolarge:atc_smooth_ride",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -227,7 +254,8 @@
     "subtitle": "subtitles.aerolarge.atc_geese",
     "sounds": [
       {
-        "name": "aerolarge:atc_geese"
+        "name": "aerolarge:atc_geese",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -235,7 +263,8 @@
     "subtitle": "subtitles.aerolarge.atc_balloon",
     "sounds": [
       {
-        "name": "aerolarge:atc_balloon"
+        "name": "aerolarge:atc_balloon",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -243,7 +272,8 @@
     "subtitle": "subtitles.aerolarge.atc_skyhopper_hello",
     "sounds": [
       {
-        "name": "aerolarge:atc_skyhopper_hello"
+        "name": "aerolarge:atc_skyhopper_hello",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -251,7 +281,8 @@
     "subtitle": "subtitles.aerolarge.atc_cargo_climb",
     "sounds": [
       {
-        "name": "aerolarge:atc_cargo_climb"
+        "name": "aerolarge:atc_cargo_climb",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -259,7 +290,8 @@
     "subtitle": "subtitles.aerolarge.atc_static_open",
     "sounds": [
       {
-        "name": "aerolarge:atc_static_open"
+        "name": "aerolarge:atc_static_open",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -267,7 +299,8 @@
     "subtitle": "subtitles.aerolarge.atc_static_clicks",
     "sounds": [
       {
-        "name": "aerolarge:atc_static_clicks"
+        "name": "aerolarge:atc_static_clicks",
+        "attenuation_distance": 1024
       }
     ]
   },
@@ -463,7 +496,8 @@
     "subtitle": "subtitles.aerolarge.door_alarm",
     "sounds": [
       {
-        "name": "aerolarge:door_alarm"
+        "name": "aerolarge:door_alarm",
+        "attenuation_distance": 1024
       }
     ]
   },

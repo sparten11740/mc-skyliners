@@ -117,7 +117,7 @@ cubes.plug_door = null;
 function plugDoorSounds() {
   const sounds = Object.fromEntries(["plug_door_hiss", "plug_door_latch"].map((name) =>
     [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
-  return { ...sounds, door_alarm: { subtitle: `subtitles.${ID}.door_alarm`, sounds: [{ name: `${ID}:door_alarm` }] } };
+  return { ...sounds, door_alarm: heardAboard("door_alarm") };
 }
 function plugDoorLang() {
   return {
@@ -391,6 +391,15 @@ cubes.hull_relay = null;
 write(`assets/${ID}/blockstates/engine_core.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 cubes.engine_core = null;
 
+// A sound the server plays to each listener aboard, following them about (the callouts, the announcements, air traffic
+// control, the door alarm): never heard from where it is set off, so how far it carries changes nothing of who hears
+// it. The subtitles, though, keep a sound only while the listener is within that reach of where it started, and in
+// flight the listener is soon hundreds of blocks from there; carrying far keeps its subtitle up while it plays.
+const HEARD_ABOARD = 1024;
+function heardAboard(name) {
+  return { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}`, attenuation_distance: HEARD_ABOARD }] };
+}
+
 // The flight deck's voice (see tools/generate_sounds.mjs): each callout and cabin announcement, subtitled with what it
 // says, the announcements' gist.
 const VOICE_SUBTITLES = {
@@ -434,8 +443,7 @@ const ATC_SUBTITLES = {
   atc_static_clicks: "Radio clicks",
 };
 function atcSounds() {
-  return Object.fromEntries(Object.keys(ATC_SUBTITLES).map((name) =>
-    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+  return Object.fromEntries(Object.keys(ATC_SUBTITLES).map((name) => [name, heardAboard(name)]));
 }
 function atcLang() {
   return Object.fromEntries(Object.entries(ATC_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
@@ -445,7 +453,7 @@ function atcLang() {
 {
   const sounds = { engine: { subtitle: `subtitles.${ID}.engine`, sounds: [{ name: `${ID}:engine` }] } };
   for (const name of Object.keys(VOICE_SUBTITLES)) {
-    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+    sounds[name] = heardAboard(name);
   }
   Object.assign(sounds, atcSounds());
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
