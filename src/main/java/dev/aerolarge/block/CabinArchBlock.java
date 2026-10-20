@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,17 +33,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *
  * <p>PART is which block of the archway it is (see {@link Part}), and FACING points along the wall from the archway's
  * middle out to the side the piece is on; the middle column's look the same either way. Its model draws the curve a
- * pixel at a time, and its outline and what bumps into it follow the curve in quarter-block steps. It sits in the
- * cabin, between rooms already open to each other through the archway under it, so it keeps no light out, and the
- * curved faces inside its block are lit as the cabin round it is.
+ * pixel at a time, and its outline and what bumps into it follow the curve the same way. It sits in the cabin,
+ * between rooms already open to each other through the archway under it, so it keeps no light out, and the curved
+ * faces inside its block are lit as the cabin round it is.
  */
 public class CabinArchBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<CabinArchBlock> CODEC = simpleCodec(CabinArchBlock::new);
     public static final EnumProperty<Part> PART = EnumProperty.create("part", Part.class);
     /** How far out from the opening's edge the white panelling reaches, in pixels, its moulding the first two. */
     public static final int BAND = 6;
-    /** How fine the outline follows the curve, in pixels. */
-    private static final int STEP = 4;
     /** The piece put down when nothing says which: the crown of a narrow archway, the most of an arch one piece shows. */
     private static final Part DEFAULT = Part.NARROW_0_2;
     private static final Map<Part, Map<Direction, VoxelShape>> SHAPES = new EnumMap<>(Part.class);
@@ -83,18 +82,19 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
         }
 
         /**
-         * The outline drawn facing north (out to the north, the wall's faces east and west), in STEP squares across the
-         * wall's face: a square is in it where its middle is out of the opening. The jamb is the whole block.
+         * The outline drawn facing north (out to the north, the wall's faces east and west), a pixel at a time across
+         * the wall's face: a pixel is in it where its middle is out of the opening, just as the model draws it, so the
+         * outline steps round the curve with the arch and never over the open archway. The jamb is the whole block.
          */
         private VoxelShape shapeFacingNorth() {
             if (this == JAMB) {
                 return Shapes.block();
             }
             VoxelShape shape = Shapes.empty();
-            for (int across = 0; across < 16; across += STEP) {
-                for (int up = 0; up < 16; up += STEP) {
-                    if (fromMiddle(16 * out - 8 + across + STEP / 2.0, 16 * (over - 1) + up + STEP / 2.0) >= radius(span)) {
-                        shape = Shapes.or(shape, Block.box(0, up, 16 - across - STEP, 16, up + STEP, 16 - across));
+            for (int across = 0; across < 16; across++) {
+                for (int up = 0; up < 16; up++) {
+                    if (fromMiddle(16 * out - 8 + across + 0.5, 16 * (over - 1) + up + 0.5) >= radius(span)) {
+                        shape = Shapes.joinUnoptimized(shape, Block.box(0, up, 15 - across, 16, up + 1, 16 - across), BooleanOp.OR);
                     }
                 }
             }
