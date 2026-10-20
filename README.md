@@ -550,9 +550,9 @@ or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an emp
 and a pilot helmet 10. Each sale rings the till. It never runs out and its prices never change, and nobody works
 behind it, so it stands anywhere: at the airport, or aboard, where there is nobody to lose in flight. The furnished
 airliner has a duty-free kiosk at the front of the lounge, to port across from the bar: a row of counters facing the
-aisle under a lime and white striped awning, a shelf of flowers and candles behind them, and far enough back from the
-aft doors that a shopper is out of reach of the air rushing out of one opened in flight. (At the smallest scales the
-lounge is too narrow for it.)
+aisle under a lime and white striped awning hung from the ceiling on steel rods, behind them a duty-free display with
+its lit showcases between the windows, and far enough back from the aft doors that a shopper is out of reach of the air
+rushing out of one opened in flight. (At the smallest scales the lounge is too narrow for it.)
 
 A Duty-Free Display is a cabinet in the counters' blue with gold-handled drawers; put another on top of it and that
 one is a lit glass showcase of perfumes under gold caps and boxes of chocolates tied with gold ribbon (a showcase left

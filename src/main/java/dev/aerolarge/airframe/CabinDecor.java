@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AwningBlock;
 import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.GymFloorBlock;
@@ -25,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * The furnished cabin's finishing touches, laid once the fit-out's rooms stand, from what they left: a diving tower
  * at the moon pool, a starlit ceiling over the lounge, the gym hall's roof trusses, rings, team banners and hide and
  * seek buttons, and greenery. Like the fit-out it only goes into open cabin space (and the pool's water, and the
- * light cables and chains of what it hangs from a ceiling or a truss instead of the crown, or moves out of the diving
+ * light cables and rods of what it hangs from a ceiling or a truss instead of the crown, or moves out of the diving
  * tower's way), it keeps clear of the dividers between the zones, which stand already, and anything that does not fit
  * at the airliner's scale is left out.
  */
@@ -363,8 +364,8 @@ final class CabinDecor {
     /**
      * The lounge's starlit ceiling: a dropped ceiling of starlight panels across the lounge, a block under the upper
      * deck's windows so it never cuts across one, with LED strips along its edges where it meets the walls. What hung
-     * from the crown now hangs from it, the pendant lights and the duty-free kiosk's awning: their cables and chains
-     * stop at the panels, and what was above is taken down. It reaches from the bulkhead at the lounge's front to the
+     * from the crown now hangs from it, the pendant lights and the duty-free kiosk's awning: their cables and rods stop
+     * at the panels, and what was above is taken down. It reaches from the bulkhead at the lounge's front to the
      * den's bookcase at its back, so no gap between them opens up into the crown; where either is missing, it stops a
      * row short of the lounge's end. Left out where it would leave too little headroom.
      */
@@ -450,9 +451,9 @@ final class CabinDecor {
         return layout.stateAt(x, y, z).is(AerolargeRegistry.LIGHT_CABLE.get());
     }
 
-    /** Whether what is here hangs something from the crown: a pendant light's cable, or a chain. */
+    /** Whether what is here hangs something from the crown: a pendant light's cable, or an awning's rod. */
     private boolean isHanger(int x, int y, int z) {
-        return isCable(x, y, z) || layout.stateAt(x, y, z).is(Blocks.CHAIN);
+        return isCable(x, y, z) || AwningBlock.isRod(layout.stateAt(x, y, z));
     }
 
     /**

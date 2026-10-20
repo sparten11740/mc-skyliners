@@ -1,24 +1,24 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AwningBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
+import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.DutyFreeCounterBlock;
 import dev.aerolarge.cabin.Decompression;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 
 /**
  * The furnished airliner's duty-free kiosk, at the front of the lounge on the port side, across from the galley and the
- * bar: a row of duty-free counters facing the aisle under a lime and white striped awning hung on chains, and behind
- * them against the wall a shelf of goods on show, flowers and coloured candles like a shop's perfumes. It stands as
- * near the front as it can while a shopper at its counters is out of reach of the air rushing out of an open aft door,
- * and it is left out where the cabin is too narrow for it beside a clear aisle. It is put in before the lounge is
- * furnished, so the lounge's seats and tables fit round it.
+ * bar: a row of duty-free counters facing the aisle under a lime and white striped awning hung on steel rods, and
+ * behind them against the wall the duty-free display's cabinets, a lit showcase of perfumes and chocolates on them
+ * wherever the wall behind has no window in it. It stands as near the front as it can while a shopper at its counters
+ * is out of reach of the air rushing out of an open aft door, and it is left out where the cabin is too narrow for it
+ * beside a clear aisle. It is put in before the lounge is furnished, so the lounge's seats and tables fit round it.
  */
 final class DutyFreeKiosk {
     /** How long the kiosk is along the cabin, in metres, and the fewest stations it can make do with. */
@@ -30,15 +30,6 @@ final class DutyFreeKiosk {
     private static final double DOOR_CLEARANCE = 0.5;
     /** How high over the floor the awning hangs, in blocks: over the counters and the shoppers, clear of their heads. */
     private static final int AWNING = 4;
-    /** The goods on the shelf, in turn along it. */
-    private static final List<BlockState> GOODS = List.of(
-        Blocks.POTTED_RED_TULIP.defaultBlockState(),
-        Blocks.MAGENTA_CANDLE.defaultBlockState().setValue(CandleBlock.CANDLES, 3),
-        Blocks.POTTED_BLUE_ORCHID.defaultBlockState(),
-        Blocks.LIGHT_BLUE_CANDLE.defaultBlockState().setValue(CandleBlock.CANDLES, 4),
-        Blocks.POTTED_ALLIUM.defaultBlockState(),
-        Blocks.LIME_CANDLE.defaultBlockState().setValue(CandleBlock.CANDLES, 2)
-    );
 
     private final AirframeLayout layout;
     private final int floor;
@@ -108,28 +99,33 @@ final class DutyFreeKiosk {
     }
 
     /**
-     * The shelf against the wall with its goods, the counters in front facing the aisle, the shoppers' spots carpeted
-     * like the rest of the lounge so nothing else goes there, and over the counters and the shoppers the awning, hung
-     * from the crown on a chain at each end.
+     * The display against the wall, its showcase on it where the wall right behind has no window in it, the counters
+     * in front facing the aisle, the shoppers' spots carpeted like the rest of the lounge so nothing else goes there,
+     * and over the counters and the shoppers the awning, its valance over the shoppers, hung from the crown on a steel
+     * rod at each end.
      */
     private void build(int wall, int from, int length) {
         BlockState counter = AerolargeRegistry.DUTY_FREE_COUNTER.get().defaultBlockState().setValue(DutyFreeCounterBlock.FACING, Direction.EAST);
+        BlockState display = AerolargeRegistry.DUTY_FREE_DISPLAY.get().defaultBlockState().setValue(DisplayShelfBlock.FACING, Direction.EAST);
+        BlockState canopy = AerolargeRegistry.AWNING.get().defaultBlockState().setValue(AwningBlock.FACING, Direction.EAST);
+        BlockState rod = canopy.setValue(AwningBlock.PART, AwningBlock.Part.ROD);
         int counters = wall + 1;
         int shoppers = wall + 2;
         for (int i = 0; i < length; i++) {
             int z = from + i;
-            layout.furnish(wall, floor + 1, z, Blocks.SMOOTH_QUARTZ.defaultBlockState());
-            layout.furnish(wall, floor + 2, z, GOODS.get(i % GOODS.size()));
+            layout.furnish(wall, floor + 1, z, display);
+            if (layout.besideWall(-1, floor + 2, z) == wall && !layout.besideWindow(wall, floor + 2, z)) {
+                layout.furnish(wall, floor + 2, z, display.setValue(DisplayShelfBlock.TIER, DisplayShelfBlock.Tier.SHELVES));
+            }
             layout.furnish(counters, floor + 1, z, counter);
             layout.furnish(shoppers, floor + 1, z, CabinCarpetBlock.carpet(AerolargeRegistry.CABIN_CARPET.get(), DyeColor.RED));
-            BlockState stripe = (z % 2 == 0 ? Blocks.LIME_WOOL : Blocks.WHITE_WOOL).defaultBlockState();
-            layout.furnish(counters, floor + AWNING, z, stripe);
-            layout.furnish(shoppers, floor + AWNING, z, stripe);
+            layout.furnish(counters, floor + AWNING, z, canopy.setValue(AwningBlock.VALANCE, false));
+            layout.furnish(shoppers, floor + AWNING, z, canopy);
         }
         for (int z : new int[]{from, from + length - 1}) {
-            // Up to the crown, stopping short of the light strip along the wall wherever the hull closes in on the chain.
+            // Up to the crown, stopping short of the light strip along the wall wherever the hull closes in on the rod.
             for (int y = floor + AWNING + 1; layout.isOpen(shoppers, y, z) && layout.besideWall(-1, y, z) != shoppers; y++) {
-                layout.furnish(shoppers, y, z, Blocks.CHAIN.defaultBlockState());
+                layout.furnish(shoppers, y, z, rod);
             }
         }
     }
