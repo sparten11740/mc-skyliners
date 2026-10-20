@@ -103,6 +103,8 @@
     "aerolarge:glass_backboard",
     "aerolarge:gym_bench",
     "aerolarge:vacuum_toilet",
+    "aerolarge:seat_console",
+    "aerolarge:lounge_table",
     "aerolarge:airliner_door"
   ]
 }

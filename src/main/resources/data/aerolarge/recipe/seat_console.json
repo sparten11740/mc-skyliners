@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "DG",
+    "WW"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:dark_oak_slab"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "W": {
+      "item": "minecraft:white_concrete"
+    }
+  },
+  "result": {
+    "id": "aerolarge:seat_console",
+    "count": 2
+  }
+}

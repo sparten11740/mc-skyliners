@@ -473,6 +473,11 @@ screen put against the back of a seat's upper half sits on the seat's back. Both
 airliner business class and the lounge's armchairs are business seats (grey and red), and the upper deck's rows, the
 gym hall's seats between its windows and the crew room's seats economy seats (light blue, blue and light grey).
 
+A Seat Console is a business seat's side console, as high as its armrests: a moulded white unit with a stowage cubby
+in its front, a walnut cocktail tray on top and, at its back by the sitter's shoulder, a reading lamp on a slim chrome
+stalk, its shade glowing warm whatever the light around. Put down, it faces the way you face, as the seats beside it
+do. A Lounge Table is a low round walnut table on a chrome pedestal. Both can be crafted.
+
 ### Cabin carpet
 
 Cabin Carpet is an airliner's woven carpet, a pixel thick like vanilla's: small diamonds on a fine twill, in the

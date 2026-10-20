@@ -2215,4 +2215,15 @@ blueprint("furnished_airliner_blueprint", true);
   }, 0);
 }
 
+// The seat console and the lounge table (see SeatConsoleBlock); their shell, veneer and chrome are the business seat's
+// and the basin's. The console's cubby: dark inside, a navy amenity kit with a gold zip lying in it. The reading
+// lamp's shade, seen from under it: warm white.
+{
+  texture(blockOutput, "seat_console_cubby", (x, y) => {
+    if (y >= 10 && y <= 12 && x >= 5 && x <= 11) return y === 10 ? GOLD : [0x22, 0x2c, 0x56];
+    return (x + y) % 6 === 0 ? [0x30, 0x32, 0x37] : [0x26, 0x28, 0x2c];
+  }, 2);
+  texture(blockOutput, "seat_console_lamp", () => [0xff, 0xec, 0xc4], 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

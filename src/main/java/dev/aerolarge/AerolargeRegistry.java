@@ -101,6 +101,7 @@ import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
+import dev.aerolarge.block.SeatConsoleBlock;
 import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
@@ -1066,6 +1067,19 @@ public final class AerolargeRegistry {
     public static final DeferredItem<PilotHelmetItem> PILOT_HELMET = ITEMS.register("pilot_helmet", () -> new PilotHelmetItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<SoundEvent, SoundEvent> HUD_ON = sound("hud_on");
 
+    /**
+     * Business class's side consoles beside its seats, each with its cocktail tray and reading lamp, and the lounge's
+     * low round tables: moulded and veneered, as quick to take out as the seats, and nothing spawns on them.
+     */
+    public static final DeferredBlock<SeatConsoleBlock> SEAT_CONSOLE = BLOCKS.registerBlock(
+        "seat_console", properties -> new SeatConsoleBlock(properties, SeatConsoleBlock.Kind.CONSOLE), metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredBlock<SeatConsoleBlock> LOUNGE_TABLE = BLOCKS.registerBlock(
+        "lounge_table", properties -> new SeatConsoleBlock(properties, SeatConsoleBlock.Kind.TABLE), metal(MapColor.WOOD).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> SEAT_CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(SEAT_CONSOLE);
+    public static final DeferredItem<BlockItem> LOUNGE_TABLE_ITEM = ITEMS.registerSimpleBlockItem(LOUNGE_TABLE);
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -1097,7 +1111,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
-            ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
+            ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,

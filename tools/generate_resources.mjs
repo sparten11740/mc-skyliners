@@ -3680,6 +3680,86 @@ const VACUUM_TOILET_LANG = {
   write(`assets/${ID}/blockstates/lav_ice.json`, { variants: { "": Object.values(yRot).map((y) => ({ model: `${ID}:block/lav_ice`, y })) } });
 }
 
+// A box of a model for the lounge's, business class's and the galleys' furniture below: every face showing the texture
+// over the part of it the box covers, a face given its own texture (or its own face, as an object) in faces, or left
+// out where faces gives it null; glowing at full brightness whatever the light around where lit.
+function furniture(from, to, texture, faces = {}, lit = false) {
+  return {
+    from, to, ...(lit ? { shade: false } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].filter((side) => faces[side] !== null).map((side) => {
+      const face = typeof faces[side] === "object" ? faces[side] : { texture: faces[side] ?? texture };
+      return [side, { ...face, ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) }];
+    })),
+  };
+}
+
+// The seat console and the lounge table (see SeatConsoleBlock). The console, drawn facing north, the way the seats
+// beside it face: an aluminium plinth, the moulded white unit on it round its cubby (three pixels deep into its front),
+// the walnut cocktail tray as high as a business seat's armrests with an aluminium tray on it, and at its back corner
+// the reading lamp, a chrome stalk under a shade glowing underneath. The table: an aluminium foot rounded off, a chrome
+// pedestal up from it and the walnut top, round, a frame under its edge.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    shell: block("business_seat_shell"), veneer: block("business_seat_veneer"), frame: block("cabin_seat_frame"),
+    chrome: block("lavatory_basin_chrome"), cubby: block("seat_console_cubby"), lamp: block("seat_console_lamp"),
+    particle: block("business_seat_shell"),
+  };
+  write(`assets/${ID}/models/block/seat_console.json`, {
+    parent: "minecraft:block/block",
+    textures,
+    elements: [
+      furniture([1.5, 0, 2], [14.5, 1, 14], "#frame"),
+      furniture([0.5, 1, 1], [15.5, 3, 15], "#shell"),
+      furniture([0.5, 8, 1], [15.5, 10.5, 15], "#shell"),
+      furniture([0.5, 3, 1], [3, 8, 15], "#shell"),
+      furniture([13, 3, 1], [15.5, 8, 15], "#shell"),
+      furniture([3, 3, 4], [13, 8, 15], "#shell", { north: "#cubby" }),
+      furniture([0.5, 10.5, 1], [15.5, 11.5, 15], "#veneer"),
+      furniture([2, 11.5, 2.5], [8.5, 11.75, 8.5], "#frame"),
+      furniture([11, 11.5, 11], [13, 12, 13], "#chrome"),
+      furniture([11.75, 12, 11.75], [12.25, 14.5, 12.25], "#chrome"),
+      furniture([10.5, 14.5, 10.5], [13.5, 15.5, 13.5], "#chrome", { down: null }),
+      furniture([10.5, 14.5, 10.5], [13.5, 14.5, 13.5], "#lamp", { north: null, south: null, east: null, west: null, up: null }, true),
+    ],
+  });
+  write(`assets/${ID}/models/block/lounge_table.json`, {
+    parent: "minecraft:block/block",
+    textures: { ...textures, particle: block("business_seat_veneer") },
+    elements: [
+      furniture([4, 0, 3], [12, 1, 13], "#frame"),
+      furniture([3, 0, 4], [13, 1, 12], "#frame"),
+      furniture([7, 1, 7], [9, 9, 9], "#chrome"),
+      furniture([2.5, 8.5, 2.5], [13.5, 9, 13.5], "#frame"),
+      furniture([3, 9, 1], [13, 10, 15], "#veneer"),
+      furniture([1, 9, 3], [15, 10, 13], "#veneer"),
+      furniture([2, 9, 2], [14, 10, 14], "#veneer"),
+    ],
+  });
+  for (const name of ["seat_console", "lounge_table"]) {
+    facing(name);
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// The console and the table are fitted into the cabin rather than built into the airliner: breakable, and no part of
+// the airframe.
+function seatConsoleFittings() {
+  return ["seat_console", "lounge_table"];
+}
+// A walnut top (dark oak) on a white moulding, the console's with a light for its lamp; the table's on an iron pedestal.
+function seatConsoleRecipes() {
+  shaped("seat_console", ["DG", "WW"], { D: "minecraft:dark_oak_slab", G: "minecraft:glowstone_dust", W: "minecraft:white_concrete" }, 2);
+  shaped("lounge_table", ["DDD", " I "], { D: "minecraft:dark_oak_slab", I: "minecraft:iron_ingot" }, 2);
+}
+function seatConsoleLang() {
+  return {
+    "block.aerolarge.seat_console": "Seat Console",
+    "block.aerolarge.lounge_table": "Lounge Table",
+  };
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -3715,6 +3795,7 @@ FITTINGS.push(...cargoFloorFittings());
 FITTINGS.push(...uldContainerFittings());
 FITTINGS.push(...poolFittings());
 FITTINGS.push(...gymHallFittings());
+FITTINGS.push(...seatConsoleFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3833,6 +3914,7 @@ cargoFloorRecipes();
 uldContainerRecipes();
 poolRecipes();
 gymHallRecipes();
+seatConsoleRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4185,6 +4267,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...uldContainerLang(),
   ...poolLang(),
   ...gymHallLang(),
+  ...seatConsoleLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
