@@ -119,8 +119,9 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         float dy = LIFT * plug;
         float dz = standoff * plug + arm * (float) Math.sin(turn);
         if (turn > 0) {
-            // The arm lies on the crown, its hinge as far out past the hull as the crown is once out of the frame.
-            float crown = 1 - DEPTH - ARM_THICK / 2;
+            // The arm runs along the crown, half sunk into it, its hinge as far out past the hull as the crown is once out
+            // of the frame.
+            float crown = 1 - DEPTH;
             float hingeX = PlugDoorBlock.COLUMNS / 2F + side * arm;
             arm(paint, pose, hingeX, rows / 2F + dy, crown + standoff, PlugDoorBlock.COLUMNS / 2F + dx, crown + dz);
         }

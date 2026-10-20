@@ -57,8 +57,11 @@ public class PlugDoorBlockEntity extends BlockEntity {
      * shuts.
      */
     private static final double MOVING = 0.5;
-    /** How far the open panel stands clear of the hull, in blocks. */
-    private static final float CLEAR = 0.05F;
+    /**
+     * How far the open panel stands clear of the hull, in blocks: room for the half of its arm that stands proud of the
+     * lining's crown, and a little more.
+     */
+    private static final float CLEAR = 0.1F;
     /**
      * How far out of the frame a door hinged at its side moves before it swings away, in blocks, from a doorway in a
      * flush stretch of hull: a little further than the door is deep, lining and handle and all, so swung round it
