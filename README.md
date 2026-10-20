@@ -317,7 +317,9 @@ strip of blue LED light glowing along its foot; side by side the pieces run on i
 A Bar Stool is a chrome stool with a round oxblood leather seat and a footrest ring, to sit on: it is one of Create's
 seats underneath, as the cabin seats are. A Back Bar is a walnut cabinet with smoked glass doors under a stone top;
 put another on top of it and that one is lit shelves of bottles in front of a smoked mirror (shelves left with nothing
-under them come down). All three can be crafted.
+under them come down). All three can be crafted. The furnished airliner's lounge has its bar along the starboard wall:
+the counter with stools in front of every other piece, and behind it the back bar, its shelves of bottles rising
+between the windows with planters between them.
 
 A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
 top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, three big buttons

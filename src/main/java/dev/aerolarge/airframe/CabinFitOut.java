@@ -3,10 +3,12 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AisleCarpetBlock;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
+import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GlassBackboardBlock;
 import dev.aerolarge.block.GymBenchBlock;
@@ -75,6 +77,11 @@ final class CabinFitOut {
     private static final int BAR_COFFEE = 2;
     /** How wide each of the pool's lanes is, in blocks across: a lane line marks its middle on the end walls. */
     private static final int LANE_WIDTH = 3;
+    /**
+     * Every this many stations along the back bar, from the bar's first, lit shelves of bottles on it, where the wall
+     * is right behind them with no window in it; the decor puts planters between them (see {@link CabinDecor}).
+     */
+    private static final int BOTTLE_SPACING = 4;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -405,10 +412,10 @@ final class CabinFitOut {
     }
 
     /**
-     * The lounge: red carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in
-     * front, the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind
-     * it, a row of red armchairs (business seats) and low round tables along the port wall, and a planter in the other
-     * corner.
+     * The lounge: red carpet throughout, a bar along the starboard wall, its counter with stools in front and its back
+     * bar behind, lit shelves of bottles on the back bar every few stations between the windows; the galley that
+     * stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind it, a row of red
+     * armchairs (business seats) and low round tables along the port wall, and a planter in the other corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
@@ -417,6 +424,9 @@ final class CabinFitOut {
         int frontWidth = layout.openHalfWidth(floor + 1, fromZ);
         BlockState armchair = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), DyeColor.RED, Direction.EAST);
         BlockState coffee = AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, Direction.WEST);
+        BlockState counter = AerolargeRegistry.BAR_COUNTER.get().defaultBlockState().setValue(BarCounterBlock.FACING, Direction.WEST);
+        BlockState backBar = AerolargeRegistry.BACK_BAR.get().defaultBlockState().setValue(DisplayShelfBlock.FACING, Direction.WEST);
+        BlockState stool = AerolargeRegistry.BAR_STOOL.get().defaultBlockState();
         // The tail cone narrows through the lounge, so it is fitted station by station, following the walls in.
         for (int z = fromZ; z <= toZ; z++) {
             int width = layout.openHalfWidth(floor + 1, z);
@@ -425,13 +435,17 @@ final class CabinFitOut {
             }
             boolean inner = z > fromZ && z < toZ;
             if (inner) {
-                layout.furnish(width, floor + 1, z, Blocks.BARREL.defaultBlockState());
-                layout.furnish(width - 1, floor + 1, z, Blocks.DARK_OAK_PLANKS.defaultBlockState());
+                layout.furnish(width, floor + 1, z, backBar);
+                layout.furnish(width - 1, floor + 1, z, counter);
                 if ((z - fromZ) % 2 == 1) {
-                    layout.furnish(width - 2, floor + 1, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
+                    layout.furnish(width - 2, floor + 1, z, stool);
                 }
                 if (z - fromZ == BAR_COFFEE) {
                     layout.furnish(width - 1, floor + 2, z, coffee);
+                }
+                if ((z - fromZ) % BOTTLE_SPACING == 1 && layout.stateAt(width, floor + 1, z).is(backBar.getBlock())
+                    && layout.besideWall(1, floor + 2, z) == width && !layout.besideWindow(width, floor + 2, z)) {
+                    layout.furnish(width, floor + 2, z, backBar.setValue(DisplayShelfBlock.TIER, DisplayShelfBlock.Tier.SHELVES));
                 }
                 seat(-width, z, armchair);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {

@@ -53,8 +53,8 @@ final class CabinDecor {
     private static final int MAIN_WINDOWS_TOP = 3;
     /** The planters along the lounge bar's back shelf, in turn. */
     private static final List<PlanterBlock.Plant> SHELF_PLANTS = List.of(PlanterBlock.Plant.FLOWERS, PlanterBlock.Plant.GREENERY);
-    /** Every this many stations along the bar's back shelf, a planter. */
-    private static final int SHELF_SPACING = 3;
+    /** Planters on the bar's back shelf stand at least this many stations apart. */
+    private static final int SHELF_PLANTER_GAP = 2;
     /** Every this many stations along the bar, a spore blossom hanging over it. */
     private static final int BAR_BLOSSOM_SPACING = 4;
     /** Every this many stations along each side of the pool, a planter in flower between two of greenery. */
@@ -467,17 +467,25 @@ final class CabinDecor {
         doorBamboo();
     }
 
-    /** The lounge bar's: its back shelf is the row of barrels along the starboard wall, its counter in front of them. */
+    /**
+     * The lounge bar's: its back shelf is the back bar along the starboard wall, its counter in front of it. A planter
+     * on the back bar wherever it is open against the wall between the windows (never standing off the wall, in front
+     * of what hangs on it), at least a station from the last, so planters stand between the back bar's shelves of
+     * bottles.
+     */
     private void barGreenery() {
         int fromZ = from(CabinFitOut.LOUNGE);
         int plants = 0;
+        int last = fromZ - SHELF_PLANTER_GAP;
         for (int z = fromZ + 1; z < to(CabinFitOut.LOUNGE); z++) {
             int shelf = layout.besideWall(1, floor + 1, z);
-            if (shelf == 0 || !layout.stateAt(shelf, floor + 1, z).is(Blocks.BARREL)) {
+            if (shelf == 0 || !layout.stateAt(shelf, floor + 1, z).is(AerolargeRegistry.BACK_BAR.get())) {
                 continue;
             }
-            if ((z - fromZ) % SHELF_SPACING == 0 && layout.isOpen(shelf, floor + 2, z)) {
+            boolean againstWall = layout.besideWall(1, floor + 2, z) == shelf && !layout.besideWindow(shelf, floor + 2, z);
+            if (z - last >= SHELF_PLANTER_GAP && againstWall && layout.isOpen(shelf, floor + 2, z)) {
                 layout.furnish(shelf, floor + 2, z, planter(SHELF_PLANTS.get(plants++ % SHELF_PLANTS.size()), 1));
+                last = z;
             }
             if ((z - fromZ) % BAR_BLOSSOM_SPACING == BAR_BLOSSOM_SPACING / 2) {
                 hangBlossom(shelf - 1, z, state -> state.is(AerolargeRegistry.STARLIGHT_PANEL.get()));
