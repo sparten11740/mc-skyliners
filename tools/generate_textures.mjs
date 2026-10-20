@@ -1634,6 +1634,15 @@ blueprint("furnished_airliner_blueprint", true);
   // The pool ladder's treads: stainless steel ribbed across for grip, each rib catching the light.
   texture(blockOutput, "pool_ladder_tread", (x, y) => (y % 3 === 0 ? [0xe4, 0xe8, 0xec] : y % 3 === 1 ? [0x9a, 0xa2, 0xaa] : [0xb8, 0xbe, 0xc6]), 2);
 }
+// The gym hall's fittings. The wall bars: pale lacquered ash, a fine grain along it and a glint of lacquer here and
+// there.
+{
+  texture(blockOutput, "wall_bars_wood", (x, y) => {
+    if ((x * 3 + y * 7) % 19 === 0) return [0xf4, 0xe4, 0xc4];
+    const grain = Math.round(5 * Math.sin(x * 1.9 + Math.sin(y * 0.5) * 2));
+    return [0xde + grain, 0xc2 + grain, 0x8e + grain];
+  }, 2);
+}
 // The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
 // layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most
 // are white, a few warm yellow or pale blue, and two are bigger, with a cross of light round them. The stars keep

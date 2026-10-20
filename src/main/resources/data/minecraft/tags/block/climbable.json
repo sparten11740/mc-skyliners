@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:pool_ladder"
+    "aerolarge:pool_ladder",
+    "aerolarge:wall_bars"
   ]
 }

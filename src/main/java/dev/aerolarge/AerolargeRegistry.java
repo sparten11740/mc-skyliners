@@ -998,6 +998,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> POOL_LADDER_ITEM = ITEMS.registerSimpleBlockItem(POOL_LADDER);
 
+    /** The gym hall's fittings: the wall bars, climbed as a ladder is. Nothing spawns on any of them. */
+    public static final DeferredBlock<RungLadderBlock> WALL_BARS = BLOCKS.registerBlock(
+        "wall_bars", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.WALL_BARS), gymFitting(MapColor.WOOD).sound(SoundType.LADDER)
+    );
+    public static final DeferredItem<BlockItem> WALL_BARS_ITEM = ITEMS.registerSimpleBlockItem(WALL_BARS);
+
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
         "paper_plane", () -> EntityType.Builder.<PaperPlane>of(PaperPlane::new, MobCategory.MISC).sized(0.4F, 0.15F)
@@ -1067,7 +1073,8 @@ public final class AerolargeRegistry {
             CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM, ULD_CONTAINER_ITEM
         )),
         new TabSection("gym", List.of(
-            GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM,
+            GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, WALL_BARS_ITEM,
+            GYM_RINGS_ITEM, SPRINGBOARD_ITEM,
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("drops", List.of(
@@ -1102,6 +1109,12 @@ public final class AerolargeRegistry {
     /** A pool's tile: as tough as stone and as hard underfoot, and nothing spawns on it. */
     private static BlockBehaviour.Properties poolTile(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(1.5F, 6.0F).sound(SoundType.STONE).isValidSpawn(AerolargeRegistry::never);
+    }
+
+    /** A fitting of the gym hall's: quick to take down, small enough to see past, and nothing spawns on it. */
+    private static BlockBehaviour.Properties gymFitting(MapColor color) {
+        return BlockBehaviour.Properties.of().mapColor(color).strength(1.0F).noOcclusion().pushReaction(PushReaction.DESTROY)
+            .isValidSpawn(AerolargeRegistry::never);
     }
 
     private static boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> type) {

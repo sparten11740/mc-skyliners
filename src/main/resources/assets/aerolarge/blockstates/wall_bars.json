@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,top=false": {
+      "model": "aerolarge:block/wall_bars"
+    },
+    "facing=north,top=true": {
+      "model": "aerolarge:block/wall_bars_top"
+    },
+    "facing=east,top=false": {
+      "model": "aerolarge:block/wall_bars",
+      "y": 90
+    },
+    "facing=east,top=true": {
+      "model": "aerolarge:block/wall_bars_top",
+      "y": 90
+    },
+    "facing=south,top=false": {
+      "model": "aerolarge:block/wall_bars",
+      "y": 180
+    },
+    "facing=south,top=true": {
+      "model": "aerolarge:block/wall_bars_top",
+      "y": 180
+    },
+    "facing=west,top=false": {
+      "model": "aerolarge:block/wall_bars",
+      "y": 270
+    },
+    "facing=west,top=true": {
+      "model": "aerolarge:block/wall_bars_top",
+      "y": 270
+    }
+  }
+}

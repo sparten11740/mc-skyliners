@@ -534,6 +534,10 @@ side of the middle hang gymnastic rings on chains, over the side of the court by
 off the floor. The teams' banners hang between the upper windows, orange at the HOME end, blue at the GUEST end.
 Gymnastic Rings can be crafted too.
 
+Wall Bars (Sprossenwand) can be crafted for a gym of your own: pale ash uprights against the wall with four round
+rungs between them to every block, climbed as a ladder is. Bars side by side make one wall of them, and stacked up,
+the top rung of the topmost stands out from the wall on brackets, to hang from.
+
 For hide and seek, press the big yellow button with the eye on it beside either hoop (or sneak and use a
 scoreboard): every scoreboard in the hall counts down from ten in huge numbers, amber, then red for the last three,
 with a beep each second, and at nought the buzzer goes and the nought turns green before the score comes back. The

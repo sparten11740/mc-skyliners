@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "aerolarge:cargo_crate",
-    "aerolarge:gym_floor"
+    "aerolarge:gym_floor",
+    "aerolarge:wall_bars"
   ]
 }

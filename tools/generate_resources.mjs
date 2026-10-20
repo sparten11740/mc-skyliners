@@ -3418,6 +3418,51 @@ for (const name of POOL) {
   cubes[name] = null;
 }
 
+// The gym hall's fittings: their models here, their fittings, recipes and names in the functions after them, which
+// the shared lists further down take in. The wall bars (see RungLadderBlock), drawn facing north, their wall to the
+// south: an ash upright down either side against the wall, so bars side by side share a pair of uprights between
+// them, and four round rungs across; the top piece's top rung hangs out from the wall on a bracket at either end.
+const GYM_HALL = ["wall_bars"];
+{
+  const textures = { wood: `${ID}:block/wall_bars_wood`, particle: `${ID}:block/wall_bars_wood` };
+  const uprights = [[[0, 0, 11], [1.5, 16, 16], "#wood"], [[14.5, 0, 11], [16, 16, 16], "#wood"]];
+  const rung = (y) => [[1.5, y, 12.25], [14.5, y + 1.5, 13.75], "#wood"];
+  write(`assets/${ID}/models/block/wall_bars.json`, boxes(textures, [...uprights, ...[1.5, 5.5, 9.5, 13.5].map(rung)]));
+  write(`assets/${ID}/models/block/wall_bars_top.json`, boxes(textures, [
+    ...uprights, ...[1.5, 5.5, 9.5].map(rung),
+    [[0, 13.5, 7], [1.5, 15, 11], "#wood"],
+    [[14.5, 13.5, 7], [16, 15, 11], "#wood"],
+    [[1.5, 13.5, 7], [14.5, 15, 8.5], "#wood"],
+  ]));
+  write(`assets/${ID}/blockstates/wall_bars.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
+      [`facing=${facing},top=${isTop}`, { model: `${ID}:block/wall_bars${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/wall_bars.json`, { parent: `${ID}:block/wall_bars_top` });
+}
+// The gym hall's fittings are fitted into the cabin rather than built into the airliner: breakable, and no part of
+// the airframe.
+function gymHallFittings() {
+  return GYM_HALL;
+}
+// What of the gym hall climbs as a ladder does.
+function gymHallClimbable() {
+  return ["wall_bars"];
+}
+// Wall bars of birch, its uprights planks and its rungs sticks.
+function gymHallRecipes() {
+  shaped("wall_bars", ["PSP", "PSP", "PSP"], { P: "minecraft:birch_planks", S: "minecraft:stick" }, 3);
+}
+function gymHallLang() {
+  return {
+    "block.aerolarge.wall_bars": "Wall Bars",
+  };
+}
+for (const name of GYM_HALL) {
+  dropsItself(name);
+  cubes[name] = null;
+}
+
 // Vacuum toilets (see VacuumToiletBlock) and the blue ice they drop (see BlueIceChunk and LavIceBlock), and what they
 // add to the lang file.
 const VACUUM_TOILET_LANG = {
@@ -3483,14 +3528,14 @@ const VACUUM_TOILET_LANG = {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
-// The care package is a wooden crate, and the gym floor is maple.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`]));
+// The care package is a wooden crate, the gym floor maple and the wall bars ash.
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`, `${ID}:wall_bars`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
 write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airliner_door`]));
 // Climbed as a ladder is.
-write("data/minecraft/tags/block/climbable.json", tag(poolClimbable().map((name) => `${ID}:${name}`)));
+write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
 const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
@@ -3514,6 +3559,7 @@ FITTINGS.push(...cargoNetFittings());
 FITTINGS.push(...cargoFloorFittings());
 FITTINGS.push(...uldContainerFittings());
 FITTINGS.push(...poolFittings());
+FITTINGS.push(...gymHallFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3631,6 +3677,7 @@ cargoNetRecipes();
 cargoFloorRecipes();
 uldContainerRecipes();
 poolRecipes();
+gymHallRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3981,6 +4028,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cargoFloorLang(),
   ...uldContainerLang(),
   ...poolLang(),
+  ...gymHallLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
