@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "M",
+    "Q"
+  ],
+  "key": {
+    "M": {
+      "item": "minecraft:moss_block"
+    },
+    "Q": {
+      "item": "minecraft:quartz_slab"
+    }
+  },
+  "result": {
+    "id": "aerolarge:planter",
+    "count": 2
+  }
+}

@@ -497,6 +497,13 @@ an aisle with the lights toward the seats, the two strips lead the way out, as a
 Both can be crafted. In the furnished airliner business class is carpeted blue and the upper deck grey, each with the
 runner along its aisle, the lounge and the duty-free kiosk red, and the den's steps in the colours of the rainbow.
 
+### Planters
+
+A Planter is a slim white planter box for the cabin, put down with its back to the wall you face. It comes planted
+with low clipped greenery; use a small flower on it to plant it with greenery in flower, bamboo for a stand of bamboo
+canes up to the top of the block, or a fern or leaves for greenery again, the plant used up (unless in creative mode).
+Taken up, it keeps what grows in it. It can be crafted.
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it

@@ -94,6 +94,7 @@ import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.PendantLightBlock;
 import dev.aerolarge.block.PilotSeatBlock;
+import dev.aerolarge.block.PlanterBlock;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.block.PoolCopingBlock;
@@ -1105,6 +1106,16 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> GALLEY_OVEN_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_OVEN);
     public static final DeferredItem<BlockItem> GALLEY_STOWAGE_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_STOWAGE);
     public static final DeferredItem<BlockItem> GALLEY_WORKTOP_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_WORKTOP);
+    /** How long a planter takes to break: a suitcase's while, not an aluminium panel's. */
+    private static final float PLANTER_STRENGTH = 0.8F;
+    /**
+     * The cabin's slim white planters, greenery, flowers or bamboo in each: a light box, quick to pick up, that sounds
+     * like the plants in it, and nothing spawns on it.
+     */
+    public static final DeferredBlock<PlanterBlock> PLANTER = BLOCKS.registerBlock(
+        "planter", PlanterBlock::new, metal(MapColor.PLANT).strength(PLANTER_STRENGTH).sound(SoundType.AZALEA).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> PLANTER_ITEM = ITEMS.registerSimpleBlockItem(PLANTER);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -1139,7 +1150,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
-            DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,

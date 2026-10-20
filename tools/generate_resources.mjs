@@ -3842,6 +3842,82 @@ function galleyUnitLang() {
   };
 }
 
+// The planter (see PlanterBlock), drawn facing north, its back against the south side of the block: a slim white box
+// with a lip round its top and the soil half a pixel under it, and planted in it, clipped greenery in a few mounds,
+// the same in flower, or bamboo, its canes up to the top of the block between a little ground cover and tufts of
+// leaves. In the hand, the greenery. Taken up, it keeps its plant.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    box: block("planter_box"), soil: block("planter_soil"), leaves: block("planter_leaves"), flowers: block("planter_flowers"),
+    cane: block("planter_cane"), particle: block("planter_box"),
+  };
+  const planter = [
+    furniture([1, 0, 7], [15, 6.5, 15], "#box"),
+    furniture([0.5, 6.5, 6.5], [15.5, 7.5, 7.5], "#box"),
+    furniture([0.5, 6.5, 14.5], [15.5, 7.5, 15.5], "#box"),
+    furniture([0.5, 6.5, 7.5], [1.5, 7.5, 14.5], "#box"),
+    furniture([14.5, 6.5, 7.5], [15.5, 7.5, 14.5], "#box"),
+    furniture([1.5, 6.5, 7.5], [14.5, 7, 14.5], "#soil"),
+  ];
+  const mounds = (texture) => [
+    furniture([2, 7, 8], [14, 10.5, 14], texture),
+    furniture([3, 10.5, 8.5], [8, 12.5, 13.5], texture),
+    furniture([8, 10.5, 9], [13, 12, 13], texture),
+  ];
+  const plants = {
+    greenery: mounds("#leaves"),
+    flowers: mounds("#flowers"),
+    bamboo: [
+      furniture([2, 7, 8], [14, 8.5, 14], "#leaves"),
+      ...[[3, 10, 16], [5.5, 12.5, 14], [8, 9, 15.5], [10.5, 11.5, 16], [12.5, 9.5, 13.5]].map(([x, z, top]) => furniture([x, 7, z], [x + 1, top, z + 1], "#cane")),
+      furniture([1.5, 13, 9], [5.5, 14.5, 12], "#leaves"),
+      furniture([7, 14, 8], [10.5, 15.5, 11], "#leaves"),
+      furniture([9.5, 12, 11], [13.5, 13.5, 14], "#leaves"),
+    ],
+  };
+  for (const [plant, parts] of Object.entries(plants)) {
+    write(`assets/${ID}/models/block/planter_${plant}.json`, { parent: "minecraft:block/block", textures, elements: [...planter, ...parts] });
+  }
+  write(`assets/${ID}/blockstates/planter.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(plants).map((plant) =>
+      [`facing=${facing},plant=${plant}`, { model: `${ID}:block/planter_${plant}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/planter.json`, { parent: `${ID}:block/planter_greenery` });
+  const planterId = `${ID}:planter`;
+  write(`data/${ID}/loot_table/blocks/planter.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: planterId,
+        functions: [{
+          function: "minecraft:copy_state", block: planterId, properties: ["plant"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: planterId, properties: { plant: "greenery" } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/planter`,
+  });
+  cubes.planter = null;
+}
+// The planter is fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function planterFittings() {
+  return ["planter"];
+}
+// A white box (quartz, as smooth) round a little moss to grow the greenery in.
+function planterRecipes() {
+  shaped("planter", ["M", "Q"], { M: "minecraft:moss_block", Q: "minecraft:quartz_slab" }, 2);
+}
+function planterLang() {
+  return {
+    "block.aerolarge.planter": "Planter",
+  };
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -3879,6 +3955,7 @@ FITTINGS.push(...poolFittings());
 FITTINGS.push(...gymHallFittings());
 FITTINGS.push(...seatConsoleFittings());
 FITTINGS.push(...galleyUnitFittings());
+FITTINGS.push(...planterFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3999,6 +4076,7 @@ poolRecipes();
 gymHallRecipes();
 seatConsoleRecipes();
 galleyUnitRecipes();
+planterRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4353,6 +4431,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...gymHallLang(),
   ...seatConsoleLang(),
   ...galleyUnitLang(),
+  ...planterLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

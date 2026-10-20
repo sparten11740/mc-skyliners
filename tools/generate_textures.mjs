@@ -2270,4 +2270,21 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "galley_bay", (x, y) => (y % 3 === 0 ? [0x1a, 0x1b, 0x1e] : [0x30, 0x32, 0x37]), 2);
 }
 
+// The planter (see PlanterBlock): its box glossy white, a band of light along the top of each side and a faint shadow
+// at its foot; the soil dark and crumbly; clipped greenery, small leaves in three greens; the same in flower, pink and
+// white blossoms dotted through it; and the bamboo's canes, green with a pale node every few pixels.
+{
+  texture(blockOutput, "planter_box", (x, y) => (y <= 1 ? [0xfa, 0xfa, 0xf8] : y >= 14 ? [0xd8, 0xd8, 0xd4] : [0xee, 0xee, 0xea]), 2);
+  texture(blockOutput, "planter_soil", (x, y) => ((x * 3 + y * 5) % 7 === 0 ? [0x5a, 0x40, 0x2c] : [0x3a, 0x2a, 0x1e]), 4);
+  const LEAVES = [[0x3c, 0x7c, 0x34], [0x4e, 0x96, 0x3e], [0x2c, 0x5e, 0x2a]];
+  const leaves = (x, y) => LEAVES[(x * 7 + y * 3 + ((x * y) % 5)) % 3];
+  texture(blockOutput, "planter_leaves", leaves, 6);
+  texture(blockOutput, "planter_flowers", (x, y) => {
+    if ((x * 5 + y * 3) % 11 === 0) return [0xf2, 0x9a, 0xc8];
+    if ((x * 3 + y * 7) % 13 === 0) return [0xfa, 0xf4, 0xf6];
+    return leaves(x, y);
+  }, 6);
+  texture(blockOutput, "planter_cane", (x, y) => (y % 5 === 0 ? [0xb8, 0xc8, 0x6a] : x % 2 === 0 ? [0x6a, 0x9c, 0x3a] : [0x58, 0x88, 0x30]), 3);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
