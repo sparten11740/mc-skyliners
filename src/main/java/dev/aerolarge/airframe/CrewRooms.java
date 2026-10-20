@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinLightBlock;
+import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
@@ -146,8 +147,8 @@ final class CrewRooms {
     /**
      * The crew room: a couch of seats along the hull, at {@code couch} out from the middle so a sitter's head is
      * clear of its curve, and the galley counter across the room's back beside it, reaching in from the hull at
-     * {@code counter}: the oven against the hull, its door facing into the room, the cupboard with the coffee machine
-     * inboard of it, both clear of the door.
+     * {@code counter}: the oven against the hull, its door facing into the room, and inboard of it the cupboard with
+     * the coffee machine on top, also facing into the room, both clear of the door.
      */
     private void crewRoom(int side, int inner, int couch, int counter) {
         BlockState seat = AirframePalette.seat(DyeColor.LIGHT_GRAY).orElse(Blocks.LIGHT_GRAY_WOOL.defaultBlockState());
@@ -160,7 +161,8 @@ final class CrewRooms {
         }
         if (counter - 1 > inner) {
             layout.furnish(side * (counter - 1), deck + 1, back - 1, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
-            layout.furnish(side * (counter - 1), deck + 2, back - 1, Blocks.BREWING_STAND.defaultBlockState());
+            layout.furnish(side * (counter - 1), deck + 2, back - 1,
+                AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, Direction.NORTH));
         }
     }
 }

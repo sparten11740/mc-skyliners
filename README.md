@@ -242,7 +242,8 @@ a cappuccino or a mocha, froths the milk with a hiss of steam from its wand; its
 again to take the drink out; while it brews it only beeps. An espresso gives 45 seconds of Haste, a cappuccino 45
 seconds of Speed, and a mocha, sweet with chocolate, half a minute of Speed and a few seconds of Regeneration, each a
 little more filling than the one before; the cup goes with the drink. The machine can be crafted, the drinks only
-brewed.
+brewed. Both blueprints have one on the cupboard in the crew room behind the flight deck, and the furnished airliner
+another on the lounge's bar, just behind the galley.
 
 ### Curtains, bulkheads and signs
 

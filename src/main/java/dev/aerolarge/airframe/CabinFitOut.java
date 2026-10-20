@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -58,6 +59,11 @@ final class CabinFitOut {
      * fourth gap between them, enough to see one from any seat without lining the walls with them.
      */
     private static final int WALL_SPACING = 8;
+    /**
+     * How many stations into the lounge the coffee machine stands on the bar, near the galley at its head: on a station
+     * with no stool in front of it, so a player can step right up to it.
+     */
+    private static final int BAR_COFFEE = 2;
 
     private final AirframeLayout layout;
     private final int floor;
@@ -328,8 +334,8 @@ final class CabinFitOut {
 
     /**
      * The lounge: carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in front,
-     * the galley that stocks the cabin crew's trolley at its head, a row of red seats and low tables along the port
-     * wall, and a plant in the other corner.
+     * the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind it, a row
+     * of red seats and low tables along the port wall, and a plant in the other corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
@@ -337,6 +343,7 @@ final class CabinFitOut {
         }
         int frontWidth = layout.openHalfWidth(floor + 1, fromZ);
         BlockState sofa = AirframePalette.seat(DyeColor.RED).orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
+        BlockState coffee = AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, Direction.WEST);
         // The tail cone narrows through the lounge, so it is fitted station by station, following the walls in.
         for (int z = fromZ; z <= toZ; z++) {
             int width = layout.openHalfWidth(floor + 1, z);
@@ -349,6 +356,9 @@ final class CabinFitOut {
                 layout.furnish(width - 1, floor + 1, z, Blocks.DARK_OAK_PLANKS.defaultBlockState());
                 if ((z - fromZ) % 2 == 1) {
                     layout.furnish(width - 2, floor + 1, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
+                }
+                if (z - fromZ == BAR_COFFEE) {
+                    layout.furnish(width - 1, floor + 2, z, coffee);
                 }
                 seat(-width, z, sofa);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {
