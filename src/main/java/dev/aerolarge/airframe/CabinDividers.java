@@ -31,11 +31,11 @@ import net.minecraft.world.level.block.state.properties.Half;
  * pool, its archway over the middle aisle hung with a curtain in the room's colour (navy for business class, cyan for
  * the pool, lime for the gym hall, red for the lounge), drawn open. Each archway rounds off over the aisle and is
  * framed in wood, a head's height clear right across it; over it, on the side facing the doors, a picture in coloured
- * wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who cannot read yet. A
- * curtain on its own across the aisle at the front of business class, lavatories either side of
- * the archway into the gym hall, built onto its bulkhead as an airliner's are into the monuments by its doors, the gym
- * hall's hoops mounted on its end walls, its own dividing curtain (Trennvorhang) right across the middle of the court,
- * and a green running man over every passenger door.
+ * wool of what lies through it (a seat, a drop of water, a basketball, a cup), for passengers who cannot read yet.
+ * Business class is walled off at its front too, or, where no wall fits there, a curtain on its own crosses the aisle;
+ * then lavatories either side of the archway into the gym hall, built onto its bulkhead as an airliner's are into the
+ * monuments by its doors, the gym hall's hoops mounted on its end walls, its own dividing curtain (Trennvorhang) right
+ * across the middle of the court, and a green running man over every passenger door.
  *
  * <p>Each wall stands at the station nearest where it is meant to that leaves the hull beside and over it plain skin,
  * so no window, light or seatbelt sign is walled in, and never in a door's aisle; a curtain on its own only keeps
@@ -132,10 +132,13 @@ final class CabinDividers {
     /** Divides off the rooms the fit-out has furnished; at the smallest scales it furnishes none, so none is. */
     void apply() {
         if (furnished(CabinFitOut.BUSINESS)) {
-            // Ahead of business class the curtain alone, the doors' aisle in front of it; behind, its wall to the pool.
-            Section front = near(CabinFitOut.BUSINESS[0] - 0.5, this::curtainFits);
-            if (front != null) {
-                aisleCurtain(front, DyeColor.BLUE);
+            // Ahead of business class its wall to the doors' aisle, or the curtain alone where no wall fits; behind,
+            // its wall to the pool.
+            if (divide(CabinFitOut.BUSINESS[0] - 0.5, DyeColor.BLUE, SEAT, true) == null) {
+                Section front = near(CabinFitOut.BUSINESS[0] - 0.5, this::curtainFits);
+                if (front != null) {
+                    aisleCurtain(front, DyeColor.BLUE);
+                }
             }
             divide((CabinFitOut.BUSINESS[1] + CabinFitOut.POOL[0]) / 2, DyeColor.BLUE, SEAT, false);
         }
