@@ -22,14 +22,27 @@ public final class Relays {
     private Relays() {
     }
 
-    /** Sets every relay at the offsets from origin to the signal, leaving those already there untouched. */
+    /**
+     * Sets every relay at the offsets from origin to the signal, leaving those already there untouched, and sends the
+     * clients the change.
+     */
     public static void drive(Level level, BlockPos origin, List<BlockPos> offsets, int power) {
+        drive(level, origin, offsets, power, true);
+    }
+
+    /**
+     * Sets every relay at the offsets from origin to the signal, leaving those already there untouched; the thrusters
+     * beside them follow either way, and the clients are sent the change only if synced. Each relay sent has every
+     * client redraw the part of the airliner it is in, so relays nothing on a client reads are best left unsent.
+     */
+    public static void drive(Level level, BlockPos origin, List<BlockPos> offsets, int power, boolean synced) {
         int signal = Mth.clamp(power, 0, 15);
+        int flags = synced ? Block.UPDATE_ALL : Block.UPDATE_NEIGHBORS;
         for (BlockPos offset : offsets) {
             BlockPos pos = origin.offset(offset);
             BlockState state = level.getBlockState(pos);
             if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
-                level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), Block.UPDATE_ALL);
+                level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), flags);
             }
         }
     }

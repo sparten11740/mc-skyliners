@@ -80,7 +80,17 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 public class AutopilotBlockEntity extends BlockEntity {
     /** Everything the autopilot sets, each a group of relays next to thrusters. */
     public enum Channel {
-        ENGINE_1, ENGINE_2, ENGINE_3, ENGINE_4, PITCH_UP, PITCH_DOWN, ROLL_LEFT, ROLL_RIGHT, STEER_LEFT, STEER_RIGHT, BRAKES
+        ENGINE_1, ENGINE_2, ENGINE_3, ENGINE_4, PITCH_UP, PITCH_DOWN, ROLL_LEFT, ROLL_RIGHT, STEER_LEFT, STEER_RIGHT, BRAKES;
+
+        /**
+         * Whether the clients are sent its relays' signal as it changes. Not the control jets': nothing on a client
+         * reads them (a thruster takes its signal on the server and sends the clients its own state), and they change
+         * often enough in flight that every client redrawing the tailplane and the wings each time would cost far more
+         * than the change itself. The engines' are: an engine's core on the client spools up to its own signal.
+         */
+        boolean synced() {
+            return this != PITCH_UP && this != PITCH_DOWN && this != ROLL_LEFT && this != ROLL_RIGHT;
+        }
     }
 
     /**
@@ -974,8 +984,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             int under = roll == Channel.ROLL_LEFT ? 1 : -1;
             Map<Boolean, List<BlockPos>> lifting = relays.getOrDefault(roll, List.of()).stream()
                 .collect(Collectors.partitioningBy(relay -> Integer.signum(relay.getX() * right.getStepX() + relay.getZ() * right.getStepZ()) == under));
-            Relays.drive(level, worldPosition, lifting.get(true), 15);
-            Relays.drive(level, worldPosition, lifting.get(false), 0);
+            Relays.drive(level, worldPosition, lifting.get(true), 15, roll.synced());
+            Relays.drive(level, worldPosition, lifting.get(false), 0, roll.synced());
         }
         int tail = hop.tail(state.pitch());
         drive(level, Channel.PITCH_DOWN, Mth.clamp(tail, 0, 15));
@@ -1083,7 +1093,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     private void drive(ServerLevel level, Channel channel, int power) {
         mendLinks(level);
-        Relays.drive(level, worldPosition, relays.getOrDefault(channel, List.of()), power);
+        Relays.drive(level, worldPosition, relays.getOrDefault(channel, List.of()), power, channel.synced());
     }
 
     /** Once after loading, as it first works its relays or the controls, mends its links to them if they lead nowhere. */

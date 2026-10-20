@@ -916,8 +916,9 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
 `ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies (holding the signals it sends its thrusters through small wobbles with `SteadySignal`), reading the airliner
-from Sable through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
+flies (holding the signals it sends its thrusters through small wobbles with `SteadySignal`, and not sending the
+clients the control jets' relays, which nothing there reads), reading the airliner from Sable through `SableFlight`,
+which also keeps the cabin's trolleys, basketballs and
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other
 blocks that work blocks round them keep where those are as offsets from themselves, which `Turning` turns with them
