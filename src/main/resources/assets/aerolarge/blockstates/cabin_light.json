@@ -1,6 +1,21 @@
 {
   "variants": {
-    "": {
+    "brightness=bright,kept_on=false": {
+      "model": "aerolarge:block/cabin_light"
+    },
+    "brightness=bright,kept_on=true": {
+      "model": "aerolarge:block/cabin_light"
+    },
+    "brightness=dim,kept_on=false": {
+      "model": "aerolarge:block/cabin_light"
+    },
+    "brightness=dim,kept_on=true": {
+      "model": "aerolarge:block/cabin_light"
+    },
+    "brightness=night,kept_on=false": {
+      "model": "aerolarge:block/cabin_light_night"
+    },
+    "brightness=night,kept_on=true": {
       "model": "aerolarge:block/cabin_light"
     }
   }

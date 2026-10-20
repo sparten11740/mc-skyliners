@@ -285,6 +285,13 @@ texture(blockOutput, "cabin_light", (x, y) => {
   const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
   return [clamp(240 + glow * 15), clamp(236 + glow * 19), clamp(214 + glow * 30)];
 }, 2);
+// At night the same diffuser glows a soft blue, a shade dimmer than the strips', in its frame left dark.
+texture(blockOutput, "cabin_light_night", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return [0x22, 0x27, 0x30];
+  if (x === 1 || y === 1 || x === 14 || y === 14) return [0x2c, 0x33, 0x40];
+  const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
+  return [clamp(Math.round(24 + 30 * glow)), clamp(Math.round(40 + 45 * glow)), clamp(Math.round(120 + 90 * glow))];
+}, 2);
 // The call button's cap: bright yellow so the ground crew find it.
 texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
 // The integral airstairs, drawn by their renderer a pixel of texture to a pixel of the airliner. A tread: dark grey

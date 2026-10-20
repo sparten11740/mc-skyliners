@@ -34,8 +34,12 @@ const cubes = {
   cockpit_window: "minecraft:translucent",
   cabin_light: null,
 };
+// Cubes whose blockstate is written with their other models below.
+const OWN_BLOCKSTATES = new Set(["cabin_light"]);
 for (const [name, renderType] of Object.entries(cubes)) {
-  write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
+  if (!OWN_BLOCKSTATES.has(name)) {
+    write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
+  }
   const model = { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/${name}` } };
   if (renderType) model.render_type = renderType;
   write(`assets/${ID}/models/block/${name}.json`, model);
@@ -49,6 +53,25 @@ for (const [name, renderType] of Object.entries(cubes)) {
       conditions: [{ condition: "minecraft:survives_explosion" }],
     }],
     random_sequence: `${ID}:blocks/${name}`,
+  });
+}
+
+// The cabin light: the cube above as the dimmer has it bright or dimmed, and at night, unless kept on (as the
+// washrooms' and the crew room's are), a soft blue diffuser glowing whatever the light around, as the strips and the
+// pendants glow at night.
+{
+  const faces = Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, {
+    texture: "#all", cullface: face, neoforge_data: { block_light: 15, sky_light: 15 },
+  }]));
+  write(`assets/${ID}/models/block/cabin_light_night.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { all: `${ID}:block/cabin_light_night`, particle: `${ID}:block/cabin_light` },
+    elements: [{ from: [0, 0, 0], to: [16, 16, 16], shade: false, faces }],
+  });
+  write(`assets/${ID}/blockstates/cabin_light.json`, {
+    variants: Object.fromEntries(["bright", "dim", "night"].flatMap((level) => [false, true].map((keptOn) =>
+      [`brightness=${level},kept_on=${keptOn}`, { model: `${ID}:block/cabin_light${level === "night" && !keptOn ? "_night" : ""}` }]))),
   });
 }
 
