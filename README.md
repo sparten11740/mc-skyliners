@@ -441,8 +441,9 @@ upper deck). Each is out of the doors' aisles and above everyone's head.
 Behind the lounge's bar a wall of bookshelves closes off the tail. One of its books glows: that bookshelf is a secret
 door, and while someone is near, sparks drift into the book with a faint shimmer. Use it and it swings open with a
 deep creak; it swings shut by itself after ten seconds, once nobody stands in the doorway, or when used again. Behind
-it the tail is a den for children: a landing with two bean bags, a ball pit, then the tail cone's steps climbing to
-the top of the tail, each carpeted in the next colour of the rainbow, with bunks (see below, their reading lights on)
+it the tail is a den for children: a landing with two bean bags, a ball pit with a disco ball (see below) turning over
+it, hung from the crown on a cable and throwing its coloured spots round the den, then the tail cone's steps climbing
+to the top of the tail, each carpeted in the next colour of the rainbow, with bunks (see below, their reading lights on)
 along the walls where a step is wide enough and bean bags where it is not, all in soft colours, fairy lights along
 both walls that dim with the cabin lights, and at the very top a treasure chest with cookies, a golden apple, a signal
 flare, a basketball and star rockets. The ball pit swallows whatever walks or falls in with a plop and a spray of

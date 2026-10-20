@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.BunkBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
+import dev.aerolarge.block.DiscoBallBlock;
 import dev.aerolarge.block.LightStripBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +29,14 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * The kids' den in the tail of the furnished airliner, behind a secret door. The lounge ends behind its bar at a wall
  * of bookshelves across the cabin, hull panels above them up to the crown; one of the bookshelves is a door, its
  * glowing book the hint. Behind it the tail room and the tail cone over it are the den, all the way up to where the
- * tail closes in: a landing with two bean bags, a pit of coloured balls to sink into, then the cone's steps up, each
- * carpeted its own colour of the rainbow, padded bunks (see {@link BunkBlock}) along the walls where a step is wide
- * enough and a bean bag (see {@link BeanBagBlock}) where it is not, fairy lights along both walls (on the dimmer, like
- * every light aboard) and a treasure chest at the very top. Bar the bookcase it is all soft furnishings, carpet and
- * light fittings, kept light because it sits far aft of the centre of mass; the gear and the tailplane's trim go on
- * after the fit-out, so they balance it. It only ever goes into open cabin space, but for taking down a lounge pendant
- * light hanging over it, and is left out where the tail is too small to hold it.
+ * tail closes in: a landing with two bean bags, a pit of coloured balls to sink into with a disco ball (see
+ * {@link DiscoBallBlock}) hanging over it, then the cone's steps up, each carpeted its own colour of the rainbow, padded
+ * bunks (see {@link BunkBlock}) along the walls where a step is wide enough and a bean bag (see {@link BeanBagBlock})
+ * where it is not, fairy lights along both walls (on the dimmer, like every light aboard) and a treasure chest at the
+ * very top. Bar the bookcase it is all soft furnishings, carpet and light fittings, kept light because it sits far aft
+ * of the centre of mass; the gear and the tailplane's trim go on after the fit-out, so they balance it. It only ever
+ * goes into open cabin space, but for taking down a lounge pendant light hanging over it, and is left out where the
+ * tail is too small to hold it.
  */
 final class TailDen {
     /** How many rows of shelves the bookcase has; above them the wall is the hull's panels, a quarter the weight. */
@@ -45,6 +47,13 @@ final class TailDen {
     private static final int LEAST_STATIONS = 4;
     /** How many blocks deep the ball pit is. */
     private static final int PIT_DEPTH = 2;
+    /**
+     * How far above the ball pit's floor the disco ball hangs, in blocks: over the head of a child leaping up out of
+     * the balls, and still in reach from the landing and the first step up to switch it off and on.
+     */
+    private static final int BALL_ABOVE = 5;
+    /** Where the den is too low for that, the least it hangs above the pit's floor, as high as the crown lets it. */
+    private static final int LEAST_BALL_ABOVE = 4;
     /** How far above the den's floor the fairy lights hang, at most. */
     private static final int LIGHTS_ABOVE = 3;
     /** How far out from the middle a step's wall has to be, in blocks, for a bunk along it with a way up between. */
@@ -105,6 +114,7 @@ final class TailDen {
         for (int i = 1; i <= pitEnd; i++) {
             pit(den.get(i));
         }
+        discoBall(den.get((1 + pitEnd) / 2));
         List<Station> steps = den.subList(pitEnd + 1, den.size());
         treasure(den.getLast());
         for (int side : new int[]{1, -1}) {
@@ -189,6 +199,30 @@ final class TailDen {
                 }
             }
         }
+    }
+
+    /**
+     * The disco ball, on, down the middle over a station of the ball pit, hung from the crown on a light cable as the
+     * lounge's pendant lights are: {@link #BALL_ABOVE} over the pit's floor, or as high as the crown lets it where that
+     * is lower, but never lower than {@link #LEAST_BALL_ABOVE}; none where the den is not that tall.
+     */
+    private void discoBall(Station over) {
+        int z = over.z();
+        int top = over.y() + PIT_DEPTH;
+        if (!layout.isOpen(0, top, z)) {
+            return;
+        }
+        while (layout.isOpen(0, top + 1, z)) {
+            top++;
+        }
+        int ball = Math.min(over.y() + BALL_ABOVE, top);
+        if (ball < over.y() + LEAST_BALL_ABOVE) {
+            return;
+        }
+        for (int y = top; y > ball; y--) {
+            layout.furnish(0, y, z, AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState());
+        }
+        layout.furnish(0, ball, z, AerolargeRegistry.DISCO_BALL.get().defaultBlockState().setValue(DiscoBallBlock.LIT, true));
     }
 
     /**
