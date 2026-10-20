@@ -134,7 +134,13 @@ whole way, to build on like the main deck. In the furnished airliner the rooms k
 and its diving tower, the gym hall and the doors' aisles, whose bulkheads carry the archways' pictures, the upper deck
 is a gallery along each wall, railed round an open well to look down into the rooms through, with doorways through
 the bulkheads; the gym hall's rings and climbing ropes and the pendant lights by the walls hang from the galleries
-where they run over them. At scale 1 the airliner is too small for an upper deck.
+where they run over them. Over business class it is a whole floor between business class's bulkheads, on a grey
+carpet: rows of seats facing forward (three side by side either side of the aisle at the default scale, more at the
+larger ones), each with a high back and a passenger screen on it for the seat behind, a cross aisle at either end
+onto the galleries and a walkway along the windows; business class's pendant lights hang from its underside. Where
+the floor behind the flight deck is deep enough for the forward staircase (from scale 3), it is whole too, with the
+upper deck's own galley and a cupboard against the starboard wall across from the stairs' top. An exit sign glows
+over the top of each staircase, the way down to the doors. At scale 1 the airliner is too small for an upper deck.
 
 ### Announcements and the radio
 

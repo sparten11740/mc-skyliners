@@ -238,9 +238,12 @@ public final class AirframeLayout {
             new CabinFitOut(layout).apply();
         }
         new CabinLining(layout).apply(furnished ? CabinFitOut::lockersFit : metres -> true, 0, (int) Math.ceil(LENGTH * layout.scale));
-        // The stairs up to it go in once the rooms below stand and are lined.
+        // The stairs up to it go in once the rooms below stand and are lined, and in the furnished airliner its seats.
         if (layout.upperDeck != null) {
             layout.upperDeck.finish();
+            if (furnished) {
+                layout.upperDeck.furnish();
+            }
         }
         layout.skydiving();
         layout.seatbeltSigns();

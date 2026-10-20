@@ -1,11 +1,19 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.ExitSignBlock;
+import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.PassengerScreenBlock;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrossCollisionBlock;
@@ -20,13 +28,16 @@ import net.minecraft.world.level.block.state.properties.Half;
  * back, up the starboard wall where the gym hall ends.
  *
  * <p>In the empty airliner it is one floor the whole way, left for building in like the main deck. In the furnished
- * one the rooms keep their height: it is a whole floor only behind the flight deck where that is as deep as the
- * forward staircase, and over the rooms (the moon pool and its diving tower, the gym hall with its hoops, ropes and
- * rings) and the doors' aisles, whose bulkheads carry the archways' pictures, a gallery along each wall, railed with
- * glass round an open well, through doorways in the bulkheads, so the rooms can be looked down into.
+ * one it is a whole floor only where the rooms under it do not need the cabin's height: over business class, where it
+ * has rows of seats of its own, and behind the flight deck where that is as deep as the forward staircase, with the
+ * upper deck's galley across from it. Over the tall rooms (the moon pool and its diving tower, the gym hall with its
+ * hoops, ropes and rings) and the doors' aisles, whose bulkheads carry the archways' pictures, it is a gallery along
+ * each wall instead, railed with glass round an open well, through doorways in the bulkheads, so the rooms keep their
+ * height and can be looked down into.
  *
- * <p>The floor goes in with the airframe, before the rooms under it are fitted out round it; the stairs, the rails and
- * the doorways once they stand. Where the airliner is too small to stand up on both decks there is no upper deck.
+ * <p>The floor goes in with the airframe, before the rooms under it are fitted out round it; the floor over business
+ * class, the stairs, the rails and the doorways once they stand. Where the airliner is too small to stand up on both
+ * decks there is no upper deck.
  */
 final class UpperDeck {
     /** A player's height, in blocks: the headroom the deck keeps over its floor, and over the main deck under it. */
@@ -48,8 +59,16 @@ final class UpperDeck {
     private static final int[][] SPIRAL = {{1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}};
     /** How many stations deep the forward staircase is, round its newel. */
     private static final int SPIRAL_DEPTH = 3;
+    /** How far a bulkhead may stand from where it is meant to, in stations (see {@link CabinDividers}). */
+    private static final int WALL_SNAP = 2;
     /** Where the aft staircase's top step is, in metres from the nose: a metre short of the gym hall's back end. */
     private static final double AFT_STAIRS_TOP = CabinFitOut.GYM[1] - 1.0;
+    /** How far apart the upper deck's rows are, seat to seat, in blocks: a seat, its back and legroom in front. */
+    private static final int PITCH = 3;
+    /** How many seats stand side by side either side of the aisle, a metre and a half's worth. */
+    private static final double SEATS_ACROSS = 1.5;
+    /** Rows over the floor to seated eye height, where the screens hang on the seat backs. */
+    private static final int EYES = 2;
 
     private final AirframeLayout layout;
     private final boolean furnished;
@@ -61,6 +80,11 @@ final class UpperDeck {
     private int end;
     /** The first station of the forward doors' aisle, behind which the furnished deck's floor is whole. */
     private final int firstAisle;
+    /** In the furnished airliner, the stretch over business class where the floor is whole, between its bulkheads. */
+    private int businessFrom = 0;
+    private int businessTo = -1;
+    /** The tops of the staircases, as (station, side): where the exit signs go. */
+    private final List<int[]> stairHeads = new ArrayList<>();
 
     private UpperDeck(AirframeLayout layout, boolean furnished) {
         this.layout = layout;
@@ -120,10 +144,10 @@ final class UpperDeck {
 
     /**
      * Whether the deck's floor is whole across the station, not a gallery either side of a well: behind the flight deck
-     * where that is as deep as the forward staircase.
+     * where that is as deep as the forward staircase, and over business class.
      */
     private boolean whole(int z) {
-        return !furnished || z < firstAisle && firstAisle - start >= SPIRAL_DEPTH;
+        return !furnished || z < firstAisle && firstAisle - start >= SPIRAL_DEPTH || z >= businessFrom && z <= businessTo;
     }
 
     /**
@@ -165,19 +189,95 @@ final class UpperDeck {
      */
     boolean walkwayBeside(int side, int z) {
         int x = layout.besideWall(side, deck + 1, z);
-        return x != 0 && z >= start && z <= end && layout.isCabinFloor(x, deck, z) && layout.isOpen(x, deck + 1, z);
+        return x != 0 && z >= start && z <= end && layout.isCabinFloor(x, deck, z);
     }
 
     /**
-     * Finishes the deck once the rooms under it stand: the stairs up to the deck, the doorways along the galleries
-     * through the bulkheads, the cabin lights in the floor and the rails round every edge.
+     * Finishes the deck once the rooms under it stand: the floor over business class in the furnished airliner, the
+     * stairs up to the deck, the doorways along the galleries through the bulkheads, the cabin lights in the floor and
+     * the rails round every edge.
      */
     void finish() {
+        if (furnished) {
+            business();
+        }
         spiral();
         straight();
         doorways();
         lights();
         rails();
+    }
+
+    /**
+     * The whole floor over business class in the furnished airliner, across the well between its galleries from the
+     * bulkhead ahead of it to the one behind it, wherever they ended up standing, so neither is closed over and both
+     * keep their pictures over their archways. What hung from the crown there now hangs from the floor: a light's
+     * cable stops at it, a light that hung at its row or over it moves down under it, and what was above is taken
+     * down. Not where it would leave too little room for a row of seats.
+     */
+    private void business() {
+        double scale = layout.scale();
+        int front = (int) Math.floor((CabinFitOut.BUSINESS[0] - 0.5) * scale);
+        int aft = (int) Math.floor((CabinFitOut.BUSINESS[1] + CabinFitOut.POOL[0]) / 2 * scale);
+        int from = front + WALL_SNAP + 1;
+        int to = aft - WALL_SNAP - 1;
+        for (int z = front + WALL_SNAP; z >= front - WALL_SNAP; z--) {
+            if (CabinDividers.standsAt(layout, z)) {
+                from = z + 1;
+                break;
+            }
+        }
+        for (int z = aft - WALL_SNAP; z <= aft + WALL_SNAP; z++) {
+            if (CabinDividers.standsAt(layout, z)) {
+                to = z - 1;
+                break;
+            }
+        }
+        if (to - from + 1 < PITCH + 2) {
+            return;
+        }
+        BlockState panel = layout.palette().floor();
+        for (int z = from; z <= to; z++) {
+            for (int x = layout.besideWall(-1, deck, z); x <= layout.besideWall(1, deck, z); x++) {
+                if (layout.isCabinFloor(x, deck, z)) {
+                    continue;
+                }
+                hangUnder(x, z);
+                if (layout.isOpen(x, deck, z)) {
+                    layout.set(x, deck, z, panel);
+                }
+            }
+        }
+        businessFrom = from;
+        businessTo = to;
+    }
+
+    /**
+     * Rehangs what hangs from the crown through the deck's row in this column under the deck's floor: a pendant
+     * light's cable cut at the floor, and a light hanging at or over the floor's row moved down under it, its cable
+     * taken down; anything else stays, and the floor leaves it a hole.
+     */
+    private void hangUnder(int x, int z) {
+        int top = deck;
+        while (layout.isOpen(x, top, z) || hanging(x, top, z)) {
+            top++;
+        }
+        BlockState light = null;
+        for (int y = deck; y < top; y++) {
+            if (layout.stateAt(x, y, z).is(AerolargeRegistry.PENDANT_LIGHT.get())) {
+                light = layout.stateAt(x, y, z);
+            }
+            layout.set(x, y, z, Blocks.AIR.defaultBlockState());
+        }
+        if (light != null && layout.isOpen(x, deck - 1, z)) {
+            layout.set(x, deck - 1, z, light);
+        }
+    }
+
+    /** Whether a pendant light or its cable hangs here. */
+    private boolean hanging(int x, int y, int z) {
+        BlockState state = layout.stateAt(x, y, z);
+        return state.is(AerolargeRegistry.LIGHT_CABLE.get()) || state.is(AerolargeRegistry.PENDANT_LIGHT.get());
     }
 
     /**
@@ -206,6 +306,7 @@ final class UpperDeck {
             int[] next = SPIRAL[(k + 1) % SPIRAL.length];
             step(cx + at[0], floor + 1 + k, cz + at[1], Direction.fromDelta(next[0] - at[0], 0, next[1] - at[1]));
         }
+        stairHeads.add(new int[]{cz + SPIRAL[steps % SPIRAL.length][1], -1});
     }
 
     /**
@@ -227,6 +328,7 @@ final class UpperDeck {
             for (int k = 0; k < steps; k++) {
                 step(x, floor + 1 + k, first + k, Direction.SOUTH);
             }
+            stairHeads.add(new int[]{top, 1});
             return;
         }
     }
@@ -392,5 +494,108 @@ final class UpperDeck {
     private boolean joins(BlockPos pos) {
         BlockState state = layout.stateAt(pos.getX(), pos.getY(), pos.getZ());
         return state.is(Blocks.GLASS_PANE) || state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+    }
+
+    /**
+     * The furnished upper deck: its galley at the top of the forward staircase, rows of seats over business class with
+     * a screen on the back of each seat that has another behind it, a grey carpet wherever its floor is whole and has
+     * headroom, and an exit sign over the top of each staircase, the way down.
+     */
+    void furnish() {
+        galley();
+        rows();
+        BlockState carpet = Blocks.LIGHT_GRAY_CARPET.defaultBlockState();
+        int half = (int) Math.ceil(AirframeShape.WIDTH / 2 * layout.scale()) + 1;
+        for (int z = start; z <= end; z++) {
+            for (int x = -half; whole(z) && x <= half; x++) {
+                // Not on the ledge under the hull's curve, where nobody stands.
+                if (layout.isCabinFloor(x, deck, z) && layout.isOpen(x, deck + STANDING_ROOM, z)) {
+                    layout.furnish(x, deck + 1, z, carpet);
+                }
+            }
+        }
+        exitSigns();
+    }
+
+    /**
+     * The upper deck's galley, against the starboard wall across from the top of the forward staircase: the galley
+     * that stocks the cabin crew's trolley, facing the aisle, and a cupboard beside it; where the floor behind the
+     * flight deck is whole.
+     */
+    private void galley() {
+        if (firstAisle - start < SPIRAL_DEPTH) {
+            return;
+        }
+        int x = room(start);
+        if (x < 2 || !layout.isCabinFloor(x, deck, start) || !layout.isCabinFloor(x, deck, start + 1)) {
+            return;
+        }
+        layout.furnish(x, deck + 1, start, AerolargeRegistry.GALLEY.get().defaultBlockState().setValue(GalleyBlock.FACING, Direction.WEST));
+        layout.furnish(x, deck + 1, start + 1, Blocks.BARREL.defaultBlockState());
+    }
+
+    /**
+     * Rows of seats over business class, facing forward, either side of a three-wide aisle, each with a back as high as
+     * a seated passenger's head behind it; clear of the walls, where a walkway runs along the windows, and of either
+     * end, where a cross aisle runs between the galleries' doorways. Then a screen on the back of each seat that has
+     * another right behind it, facing it.
+     */
+    private void rows() {
+        BlockState seat = AirframePalette.seat(DyeColor.LIGHT_BLUE)
+            .orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
+        BlockState back = Blocks.LIGHT_BLUE_WOOL.defaultBlockState();
+        int across = Math.max(1, (int) Math.round(SEATS_ACROSS * layout.scale()));
+        TreeMap<Integer, Set<Integer>> rows = new TreeMap<>();
+        // A cross aisle at either end, onto the galleries' doorways through the bulkheads.
+        for (int z = businessFrom + 1; z + 1 < businessTo; z += PITCH) {
+            int outer = Math.min(room(z), room(z + 1));
+            for (int x = 2; x < 2 + across && x < outer; x++) {
+                for (int side : new int[]{1, -1}) {
+                    int at = side * x;
+                    if (!layout.isCabinFloor(at, deck, z) || !layout.isCabinFloor(at, deck, z + 1)
+                        || !layout.isOpen(at, deck + 1, z) || !layout.isOpen(at, deck + 1, z + 1) || !layout.isOpen(at, deck + EYES, z + 1)) {
+                        continue;
+                    }
+                    layout.set(at, deck + 1, z, seat);
+                    layout.set(at, deck + 1, z + 1, back);
+                    layout.set(at, deck + EYES, z + 1, back);
+                    rows.computeIfAbsent(z, ignored -> new TreeSet<>()).add(at);
+                }
+            }
+        }
+        BlockState screen = AerolargeRegistry.PASSENGER_SCREEN.get().defaultBlockState().setValue(PassengerScreenBlock.FACING, Direction.SOUTH);
+        rows.forEach((z, seats) -> {
+            Set<Integer> behind = rows.get(z + PITCH);
+            for (int x : seats) {
+                if (behind != null && behind.contains(x)) {
+                    layout.furnish(x, deck + EYES, z + 2, screen);
+                }
+            }
+        });
+    }
+
+    /** How far out from the middle the deck is a head's height clear at a station, to the nearer wall. */
+    private int room(int z) {
+        return Math.min(-layout.besideWall(-1, deck + STANDING_ROOM, z), layout.besideWall(1, deck + STANDING_ROOM, z));
+    }
+
+    /**
+     * A green running man on the wall over the top of each staircase, just over head height, facing into the cabin:
+     * the way down to the doors. At the head's own station, or the next one where a window takes its wall or anything
+     * hangs on it under the sign.
+     */
+    private void exitSigns() {
+        int y = deck + 1 + STANDING_ROOM;
+        for (int[] head : stairHeads) {
+            int side = head[1];
+            for (int z : new int[]{head[0], head[0] + 1, head[0] - 1}) {
+                int x = layout.besideWall(side, y, z);
+                if (x != 0 && layout.isOpen(x, y, z) && layout.isPlainHull(x + side, y, z) && layout.isOpen(x, y - 1, z)) {
+                    layout.set(x, y, z, AerolargeRegistry.EXIT_SIGN.get().defaultBlockState()
+                        .setValue(ExitSignBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST));
+                    break;
+                }
+            }
+        }
     }
 }
