@@ -34,8 +34,9 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   the pool's sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
   Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
-  the rooms off from the doors' aisles, each with a curtained archway and a picture over it of what lies through it,
-  with lavatories by the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and signs).
+  the rooms off from the doors' aisles, each with a curtained white archway and a picture over it of what lies
+  through it, with lavatories by the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and
+  signs).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
@@ -260,13 +261,13 @@ which piece it is; put down, it is the right-hand side of an archway as you face
 
 In the furnished airliner a partition wall stands between each room and the doors' aisle beside it, and between
 business class and the pool, with an archway over the aisle hung with a curtain in the room's colour (navy for
-business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Each archway is framed in
-spruce, its top rounded off with upside-down smooth quartz stairs stepping in to the crown over the curtain's rail,
-and stays a head's height clear right across; at the largest scales it is wider. Over each archway, on the side
-facing the doors, a picture in coloured wool shows what lies through it: a seat, a drop of water, a basketball, a
-cup. Business class has such a wall at its front as well, across the forward doors' aisle (where it has no room for
-one, a curtain on its own crosses the aisle there instead). The gym hall's front wall has a lavatory
-either side of its archway, each with a toilet, a basin and its tap, and a wooden door under a picture of a person.
+business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Each archway is built of
+Cabin Arch pieces, a round white arch over the curtain's rail on white jambs, and stays a head's height clear right
+across; at the largest scales it is wider. Over each archway, on the side facing the doors, a picture in coloured
+wool shows what lies through it: a seat, a drop of water, a basketball, a cup. Business class has such a wall at its
+front as well, across the forward doors' aisle (where it has no room for one, a curtain on its own crosses the aisle
+there instead). The gym hall's front wall has a lavatory either side of its archway, each with a toilet, a basin and
+its tap, and a wooden door under a picture of a person.
 The hoops are mounted on the gym hall's end walls, out of the way of anyone coming through the archways, and a lime
 dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two courts. Over
 every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights set for the
