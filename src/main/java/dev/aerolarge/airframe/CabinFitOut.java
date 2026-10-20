@@ -17,6 +17,7 @@ import dev.aerolarge.block.PoolCopingBlock;
 import dev.aerolarge.block.PoolMosaicBlock;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
+import dev.aerolarge.block.SeatConsoleBlock;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -38,8 +39,7 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * behind the forward doors, big seats left and right of the aisle; an indoor moon pool sunk into the hold so its water
  * lies flush with the floor; a full-height gym hall (Turnhalle) over the wing box; and a lounge with a bar in the
  * tail, all lit by pendant lights, with the kids' den behind it (see {@link TailDen}); and passenger screens on the
- * seat backs and the walls. Everything is vanilla blocks but the lights, the pool's glass, the screens, the den's
- * secret door and ball pit, and the seats, cabin seats that are Create's underneath so they can be sat in. It only
+ * seat backs and the walls. The seats are cabin seats, Create's underneath so they can be sat in. It only
  * ever goes into open cabin space or replaces cabin floor, so the doors and the space in front of them stay as they
  * were, and so does the hull, but for the belly under the pool, which is glazed.
  */
@@ -150,7 +150,7 @@ final class CabinFitOut {
 
     /**
      * The business class: rows of business seats facing forward, as many as fit side by side either side of the aisle
-     * up to two, each with a wooden console at armrest height either side, shared between neighbours; the cabin's blue
+     * up to two, each with a seat console at armrest height either side, shared between neighbours; the cabin's blue
      * carpet throughout, the aisle's runner either side of the aisle, its path lights toward the seats; and pendant
      * lights over the aisle hung high enough to clear the overhead lockers and the light strips along the walls.
      */
@@ -161,7 +161,7 @@ final class CabinFitOut {
             return;
         }
         BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), DyeColor.GRAY, Direction.NORTH);
-        BlockState console = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
+        BlockState console = AerolargeRegistry.SEAT_CONSOLE.get().defaultBlockState().setValue(SeatConsoleBlock.FACING, Direction.NORTH);
         // How far out from the middle the aisle reaches, to just inside the innermost consoles; the whole cabin's width
         // while there are no rows.
         int aisle = width;
@@ -405,7 +405,8 @@ final class CabinFitOut {
     /**
      * The lounge: red carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in
      * front, the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind
-     * it, a row of red armchairs (business seats) and low tables along the port wall, and a plant in the other corner.
+     * it, a row of red armchairs (business seats) and low round tables along the port wall, and a plant in the other
+     * corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
@@ -432,7 +433,7 @@ final class CabinFitOut {
                 }
                 seat(-width, z, armchair);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {
-                    layout.furnish(-width + 2, floor + 1, z, Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
+                    layout.furnish(-width + 2, floor + 1, z, AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState());
                 }
             }
             carpet(z, z, width, 0, DyeColor.RED);

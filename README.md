@@ -21,7 +21,7 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
   class just behind the forward doors (rows of business seats, two side by side left and right of the aisle, with
-  wooden consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, tiled in a blue mosaic
+  seat consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, tiled in a blue mosaic
   inside a white coping (see The moon pool), its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
   with a diving tower on its front rim (a chrome pool ladder up to a small platform three metres up, the cabin's
@@ -476,7 +476,8 @@ gym hall's seats between its windows and the crew room's seats economy seats (li
 A Seat Console is a business seat's side console, as high as its armrests: a moulded white unit with a stowage cubby
 in its front, a walnut cocktail tray on top and, at its back by the sitter's shoulder, a reading lamp on a slim chrome
 stalk, its shade glowing warm whatever the light around. Put down, it faces the way you face, as the seats beside it
-do. A Lounge Table is a low round walnut table on a chrome pedestal. Both can be crafted.
+do. A Lounge Table is a low round walnut table on a chrome pedestal. Both can be crafted. In the furnished airliner
+business class's seats have a console either side, and the lounge's armchairs a round table in front of them.
 
 ### Cabin carpet
 
