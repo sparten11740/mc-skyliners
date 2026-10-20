@@ -918,6 +918,10 @@ paper planes among an assembled airliner's blocks while they are inside its hull
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other
 blocks that work blocks round them keep where those are as offsets from themselves, which `Turning` turns with them
 when the Physics Assembler sets the airliner down on another heading, and mends those an older version left unturned;
+Sable draws an assembled airliner's block entities every frame wherever the camera looks, so the busiest renderers
+leave out what the camera cannot see themselves, as `Sight` tells them where it stands: `PassengerScreenRenderer` draws
+a screen only from in front of it, its text laid out once a tick for all of an airliner's screens and faded out as it
+gets too small to read;
 `EngineIntakeRenderer` draws the intakes round
 over the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining

@@ -4,8 +4,8 @@ package dev.aerolarge.client;
  * Whether an assembled airliner stands on its wheels, judged from how high its middle is above the ground: the height
  * its middle rests at is learnt whenever it has stood still a while, and it counts as on the ground while it is within
  * a block of that. Until it has been seen standing still once, it counts as in the air. One for each thing watching an
- * airliner, taking it in once a tick: the camera shake for the one the player rides, and each passenger screen for its
- * own.
+ * airliner, taking it in once a tick: the camera shake for the one the player rides, and the passenger screens for
+ * each one they are part of.
  */
 final class GroundContact {
     /** Slower than this across the ground and than this up or down, in blocks a second, the airliner stands still. */

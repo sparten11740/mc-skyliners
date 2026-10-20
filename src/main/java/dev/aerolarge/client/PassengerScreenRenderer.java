@@ -5,9 +5,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -16,6 +19,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
@@ -25,8 +29,13 @@ import org.joml.Vector3d;
  * altitude above sea level, its speed over the ground, how fast it climbs or sinks, the way it is heading, how high it
  * is above the ground and how far it has flown since it took off, and along the bottom the time in the air and that
  * using the screen shows the outside cameras (see {@link PassengerCameras}). The figures are read from the airliner
- * each tick as the client has it; each screen keeps its own log of the flight (see {@link Trip}). On an airliner that
- * is not assembled it shows a standby page.
+ * each tick as the client has it, and the page's text is laid out from them once a tick for all the airliner's
+ * screens, which share one log of its flight (see {@link Trip}). On an airliner that is not assembled it shows a
+ * standby page.
+ *
+ * <p>A screen is only drawn with the camera in front of it, as its face is drawn from the front only, and no further
+ * off than the game draws any block entity, past which its block's miniature of the page stands in. Its text fades
+ * out as it gets too small on the screen to be read, a few pixels tall, and is left out beyond that.
  */
 public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScreenBlockEntity> {
     /** The screen's face, from the middle of its block toward the way it faces, lifted just off the panel. */
@@ -60,6 +69,18 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
     private static final float SMALL = 1 / 330F;
     private static final float FIGURE = 1 / 150F;
     private static final float WELCOME = 1 / 190F;
+    /** How tall a digit is, in font pixels. */
+    private static final int DIGIT = 7;
+    /**
+     * How many pixels tall the figures, the biggest text, stand on the screen while the text is drawn whole, and by
+     * when it has faded out: a few pixels tall, a figure can no longer be read. The game's text shader leaves out text
+     * drawn fainter than {@link #FAINTEST}, so it is not drawn at all from there on.
+     */
+    private static final float SHARP = 3;
+    private static final float GONE = 2;
+    private static final float FAINTEST = 0.1F;
+    /** How long an airliner's flight is kept once nothing asks after its screens any more, in ticks: a minute. */
+    private static final long FORGET = 1200;
     /**
      * The height of the sea the altitude is measured from: an ordinary world's, which is all the client knows (only
      * the server's world generator knows another).
@@ -89,8 +110,11 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
 
     private static final Tile[] TILES = tiles();
 
-    /** Each screen's log of the flight; forgotten with the screen. */
-    private final Map<PassengerScreenBlockEntity, Trip> trips = new WeakHashMap<>();
+    /** Each assembled airliner's flight, as all its screens show it; forgotten a while after nothing asks after it. */
+    private final Map<UUID, Flight> flights = new HashMap<>();
+    /** The standby page's text, and the game time it was laid out at. */
+    private List<ScreenDrawing.Label> standby = List.of();
+    private long standbyLaidOut = Long.MIN_VALUE;
 
     /** A rectangle on the screen. */
     private record Tile(double x0, double y0, double x1, double y1) {
@@ -100,6 +124,18 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
     private record Reading(String label, String figure, @Nullable String unit, int colour) {
     }
 
+    /**
+     * Only with the camera in front of the screen, as its face is drawn from the front only, and as far off as the game
+     * draws any block entity. Sable asks this of every screen of an assembled airliner every frame, whether it is in
+     * sight or not, so the airliner's flight is followed here, the same while no screen of it is drawn.
+     */
+    @Override
+    public boolean shouldRender(PassengerScreenBlockEntity screen, Vec3 camera) {
+        follow(screen);
+        Direction facing = screen.getBlockState().getValue(PassengerScreenBlock.FACING);
+        return Sight.facing(screen.getBlockPos(), facing, FACE, camera, getViewDistance());
+    }
+
     @Override
     public void render(PassengerScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Level level = screen.getLevel();
@@ -107,7 +143,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
             return;
         }
         Direction facing = screen.getBlockState().getValue(PassengerScreenBlock.FACING);
-        SableClient.Ride ride = SableClient.ride(screen);
+        Flight flight = follow(screen);
 
         pose.pushPose();
         // Onto the screen's face, x to the viewer's right and y up, from its middle.
@@ -117,50 +153,89 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BACKGROUND);
-        Font font = Minecraft.getInstance().font;
-        if (ride == null) {
-            trips.remove(screen);
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "welcome"), 0, WELCOME_Y, TEXT_LIFT, WELCOME, WHITE, ScreenDrawing.Align.CENTRE);
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "standby"), 0, STANDBY_Y, TEXT_LIFT, SMALL, ACCENT, ScreenDrawing.Align.CENTRE);
-        } else {
-            Trip trip = trips.computeIfAbsent(screen, ignored -> new Trip());
-            trip.update(ride, level.getGameTime());
-            flightInfo(font, pose, buffers, shapes, matrix, readings(ride, trip), trip.status(ride), trip.flightTicks(level.getGameTime()));
+        if (flight != null) {
+            panels(shapes, matrix);
+        }
+        // The text over it all, as clear as it can still be made out from here.
+        float strength = Math.clamp((Sight.pixels(pose.last(), DIGIT * FIGURE) - GONE) / (SHARP - GONE), 0F, 1F);
+        if (strength >= FAINTEST) {
+            Font font = Minecraft.getInstance().font;
+            long now = level.getGameTime();
+            int alpha = Math.round(255 * strength);
+            for (ScreenDrawing.Label label : flight != null ? flight.page(font, now) : standby(font, now)) {
+                label.draw(font, pose, buffers, TEXT_LIFT, alpha);
+            }
         }
         pose.popPose();
     }
 
-    /** The page of flight information: the bands and tiles first, then all the text over them. */
-    private static void flightInfo(Font font, PoseStack pose, MultiBufferSource buffers, VertexConsumer shapes, Matrix4f matrix,
-                                   Reading[] readings, String status, long flightTicks) {
+    /**
+     * The flight of the assembled airliner the screen is part of, followed up to this tick; null while the screen
+     * stands among blocks that are not assembled.
+     */
+    @Nullable
+    private Flight follow(PassengerScreenBlockEntity screen) {
+        Level level = screen.getLevel();
+        UUID airliner = level != null ? SableClient.airliner(screen) : null;
+        if (airliner == null) {
+            return null;
+        }
+        long now = level.getGameTime();
+        Flight flight = flights.get(airliner);
+        if (flight == null) {
+            flights.values().removeIf(old -> old.forgotten(now));
+            flight = new Flight(now);
+            flights.put(airliner, flight);
+        }
+        flight.follow(screen, now);
+        return flight;
+    }
+
+    /** The standby page's text, laid out once a tick. */
+    private List<ScreenDrawing.Label> standby(Font font, long now) {
+        if (standbyLaidOut != now) {
+            standbyLaidOut = now;
+            standby = List.of(
+                ScreenDrawing.Label.of(font, Component.translatable(KEY + "welcome"), 0, WELCOME_Y, WELCOME, WHITE, ScreenDrawing.Align.CENTRE),
+                ScreenDrawing.Label.of(font, Component.translatable(KEY + "standby"), 0, STANDBY_Y, SMALL, ACCENT, ScreenDrawing.Align.CENTRE));
+        }
+        return standby;
+    }
+
+    /** The page of flight information's bands and tiles, under its text. */
+    private static void panels(VertexConsumer shapes, Matrix4f matrix) {
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER, HALF_WIDTH, HALF_HEIGHT, LAYER, BAND);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER - STRIPE, HALF_WIDTH, HALF_HEIGHT - HEADER, LAYER, ACCENT);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, -HALF_HEIGHT + FOOTER, LAYER, BAND);
         for (Tile tile : TILES) {
             ScreenDrawing.rect(shapes, matrix, tile.x0(), tile.y0(), tile.x1(), tile.y1(), LAYER, TILE);
         }
+    }
 
+    /** The page of flight information's text: the header, a reading in each tile and the footer. */
+    private static List<ScreenDrawing.Label> flightInfo(Font font, Reading[] readings, String status, long flightTicks) {
+        List<ScreenDrawing.Label> text = new ArrayList<>();
         double header = HALF_HEIGHT - HEADER / 2;
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "title"), -HALF_WIDTH + MARGIN, header, TEXT_LIFT, TITLE, WHITE, ScreenDrawing.Align.LEFT);
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "status." + status), HALF_WIDTH - MARGIN, header, TEXT_LIFT, TITLE, ACCENT,
-            ScreenDrawing.Align.RIGHT);
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "title"), -HALF_WIDTH + MARGIN, header, TITLE, WHITE, ScreenDrawing.Align.LEFT));
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "status." + status), HALF_WIDTH - MARGIN, header, TITLE, ACCENT,
+            ScreenDrawing.Align.RIGHT));
         for (int i = 0; i < TILES.length; i++) {
-            reading(font, pose, buffers, TILES[i], readings[i]);
+            reading(font, text, TILES[i], readings[i]);
         }
         double footer = -HALF_HEIGHT + FOOTER / 2;
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "flight_time", time(flightTicks)), -HALF_WIDTH + MARGIN, footer, TEXT_LIFT, SMALL,
-            LABEL, ScreenDrawing.Align.LEFT);
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "cameras"), HALF_WIDTH - MARGIN, footer, TEXT_LIFT, SMALL, ACCENT,
-            ScreenDrawing.Align.RIGHT);
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "flight_time", time(flightTicks)), -HALF_WIDTH + MARGIN, footer, SMALL, LABEL,
+            ScreenDrawing.Align.LEFT));
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "cameras"), HALF_WIDTH - MARGIN, footer, SMALL, ACCENT, ScreenDrawing.Align.RIGHT));
+        return text;
     }
 
     /**
-     * One tile: its label in the top corner, the figure across its middle with the unit after it, the figure made
-     * smaller where it would not otherwise fit.
+     * One tile's text: its label in the top corner, the figure across its middle with the unit after it, the figure
+     * made smaller where it would not otherwise fit.
      */
-    private static void reading(Font font, PoseStack pose, MultiBufferSource buffers, Tile tile, Reading reading) {
-        ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + reading.label()), tile.x0() + PAD, tile.y1() - LABEL_DROP, TEXT_LIFT, SMALL, LABEL,
-            ScreenDrawing.Align.LEFT);
+    private static void reading(Font font, List<ScreenDrawing.Label> text, Tile tile, Reading reading) {
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + reading.label()), tile.x0() + PAD, tile.y1() - LABEL_DROP, SMALL, LABEL,
+            ScreenDrawing.Align.LEFT));
         Component figure = Component.literal(reading.figure());
         Component unit = reading.unit() != null ? Component.translatable(KEY + reading.unit()) : Component.empty();
         double unitWidth = font.width(unit) * SMALL;
@@ -170,8 +245,8 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         double figureWidth = font.width(figure) * size;
         double left = (tile.x0() + tile.x1() - figureWidth - gap - unitWidth) / 2;
         double y = (tile.y0() + tile.y1()) / 2 - FIGURE_DROP;
-        ScreenDrawing.text(font, pose, buffers, figure, left, y, TEXT_LIFT, size, reading.colour(), ScreenDrawing.Align.LEFT);
-        ScreenDrawing.text(font, pose, buffers, unit, left + figureWidth + gap, y - BASELINE * (size - SMALL), TEXT_LIFT, SMALL, LABEL, ScreenDrawing.Align.LEFT);
+        text.add(ScreenDrawing.Label.of(font, figure, left, y, size, reading.colour(), ScreenDrawing.Align.LEFT));
+        text.add(ScreenDrawing.Label.of(font, unit, left + figureWidth + gap, y - BASELINE * (size - SMALL), SMALL, LABEL, ScreenDrawing.Align.LEFT));
     }
 
     /** What the six tiles show, in their order across and down. */
@@ -224,14 +299,58 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
     }
 
     /**
-     * What a screen has seen of its airliner's flight: whether it is in the air, when it last took off and how far
-     * across the ground it has flown since, and the way it was last seen going. The distance adds up the airliner's
-     * moves tick by tick; a stretch the screen was not drawn for counts as the crow flies. Taking off starts a new
-     * flight; landing stops the clock but keeps the figures up until the next take-off.
+     * An assembled airliner as its screens show it: its flight, followed once a tick however many screens ask, as the
+     * airliner was that tick, and the page's text, laid out from them once a tick for whichever screens are drawn.
+     */
+    private static final class Flight {
+        private final Trip trip = new Trip();
+        @Nullable
+        private SableClient.Ride ride;
+        /** The game times something last asked after it, it was last followed and its page last laid out at. */
+        private long asked;
+        private long followed = Long.MIN_VALUE;
+        private long laidOut = Long.MIN_VALUE;
+        private List<ScreenDrawing.Label> page = List.of();
+
+        Flight(long now) {
+            asked = now;
+        }
+
+        void follow(PassengerScreenBlockEntity screen, long now) {
+            asked = now;
+            if (now == followed) {
+                return;
+            }
+            SableClient.Ride found = SableClient.ride(screen);
+            if (found != null) {
+                followed = now;
+                ride = found;
+                trip.update(found, now);
+            }
+        }
+
+        /** Whether nothing has asked after it for so long that the airliner is gone, or it was in another world. */
+        boolean forgotten(long now) {
+            return now < asked || now - asked > FORGET;
+        }
+
+        List<ScreenDrawing.Label> page(Font font, long now) {
+            if (laidOut != now && ride != null) {
+                laidOut = now;
+                page = flightInfo(font, readings(ride, trip), trip.status(ride), trip.flightTicks(now));
+            }
+            return page;
+        }
+    }
+
+    /**
+     * What the screens have seen of their airliner's flight: whether it is in the air, when it last took off and how
+     * far across the ground it has flown since, and the way it was last seen going. The distance adds up the airliner's
+     * moves tick by tick; a stretch it was not followed for counts as the crow flies. Taking off starts a new flight;
+     * landing stops the clock but keeps the figures up until the next take-off.
      */
     private static final class Trip {
         private final GroundContact ground = new GroundContact();
-        private long lastTick = Long.MIN_VALUE;
         @Nullable
         private Vector3d last;
         private boolean airborne;
@@ -242,12 +361,8 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         /** The compass heading it was last seen going, 0 north and 90 east; NaN before it has moved. */
         private double track = Double.NaN;
 
-        /** Takes in the airliner as it is this tick, once a tick however often the screen is drawn. */
+        /** Takes in the airliner as it is this tick, once a tick. */
         void update(SableClient.Ride ride, long gameTime) {
-            if (gameTime == lastTick) {
-                return;
-            }
-            lastTick = gameTime;
             boolean onGround = ground.onGround(ride);
             if (!onGround && !airborne) {
                 airborne = true;
