@@ -23,7 +23,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The galley, where the cabin crew's trolleys are stocked: using it fills every trolley standing by it, or, with none
- * there, rolls out a full one a couple of blocks in front of it. FACING is the way its front looks.
+ * there, rolls out a full one a couple of blocks in front of it. FACING is the way its front looks. Aboard an assembled
+ * airliner the galley and the trolleys in its cabin all stand among the airliner's blocks (see {@link Trolley}), so it
+ * looks for them, and rolls a new one out, right there, in flight as on the ground.
  */
 public class GalleyBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<GalleyBlock> CODEC = simpleCodec(GalleyBlock::new);

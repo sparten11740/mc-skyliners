@@ -18,7 +18,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Who is aboard an airliner, seen from one of its blocks (the flight deck's handset, the autopilot, a seatbelt
- * switch). Once assembled, everyone riding it: standing on it or seated in it, wherever it flies. Standing as blocks
+ * switch). Once assembled, everyone riding it: standing on it or seated in it, wherever it flies, and the loose things
+ * carried among its blocks (see {@link SableFlight#keepWithCabin}). Standing as blocks
  * in the world, everyone inside its hull within its length of that block: airframe somewhere overhead and somewhere
  * underfoot, whatever hangs from the ceiling or stands on the floor between.
  */

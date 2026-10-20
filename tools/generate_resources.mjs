@@ -4214,6 +4214,9 @@ write(`data/${ID}/tags/block/unbreakable.json`, tag([
     "simulated:physics_assembler"].map((id) => ({ id, required: false })),
 ]));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
+// The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
+// to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight).
+write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`]));
 
 // Recipes, for repairing and extending an airliner in survival; the blueprints themselves are creative only.
 const item = (id) => ({ item: id });

@@ -1,6 +1,7 @@
 package dev.aerolarge.entity;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.compat.SableFlight;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +24,11 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The cabin crew's trolley: pushed down the aisle by walking into it, rolling to a stop with a squeak now and then,
  * and serving whoever uses it the next of its meals ("Chicken or pasta?"), pretzels or coffee while its stock lasts.
- * The galley restocks it (see {@link dev.aerolarge.block.GalleyBlock}). Sneak and hit it to fold it up into an item.
+ * The galley restocks it (see {@link dev.aerolarge.block.GalleyBlock}). Sneak and hit it to fold it up and carry it.
+ *
+ * <p>Inside an assembled airliner's hull it stands among the airliner's blocks, in Sable's plot, and Sable carries it
+ * along with them (see {@link SableFlight#keepWithCabin}): it rolls on the cabin floor in flight as on the ground.
+ * Whoever pushes or hits it stands in the world, so their push is turned into the airliner's frame first.
  */
 public class Trolley extends Entity {
     /** Servings a full trolley carries. */
@@ -74,9 +79,17 @@ public class Trolley extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
+    /** The yaw of something facing the given way across the floor. */
+    public static float yaw(Vec3 facing) {
+        return (float) Math.toDegrees(Math.atan2(-facing.x, facing.z));
+    }
+
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide) {
+            SableFlight.keepWithCabin(this);
+        }
         Vec3 velocity = getDeltaMovement().add(0, -GRAVITY, 0);
         move(MoverType.SELF, velocity);
         setDeltaMovement(onGround() ? new Vec3(velocity.x * ROLLING, Math.max(velocity.y, 0), velocity.z * ROLLING) : velocity);
@@ -101,10 +114,10 @@ public class Trolley extends Entity {
         if (by.isPassengerOfSameVehicle(this)) {
             return;
         }
-        Vec3 away = position().subtract(by.position()).multiply(1, 0, 1);
+        Vec3 away = position().subtract(SableFlight.toPlot(level(), blockPosition(), by.position(), false)).multiply(1, 0, 1);
         if (away.lengthSqr() > 1e-4) {
             setDeltaMovement(getDeltaMovement().add(away.normalize().scale(PUSH)));
-            setYRot((float) Math.toDegrees(Math.atan2(-away.x, away.z)));
+            setYRot(yaw(away));
         }
     }
 
@@ -128,7 +141,11 @@ public class Trolley extends Entity {
         return InteractionResult.SUCCESS;
     }
 
-    /** Hit, it is knocked on its way; hit while sneaking, it folds up into an item. */
+    /**
+     * Hit, it is knocked on its way; hit while sneaking, it folds up into the hitter's hands (at their feet if they have
+     * no room), not onto the floor: an item dropped among an airliner's blocks is put out into the world without the
+     * airliner's speed, and in flight would be left behind.
+     */
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (level().isClientSide || isRemoved() || !(source.getEntity() instanceof Player player)) {
@@ -136,11 +153,12 @@ public class Trolley extends Entity {
         }
         if (player.isShiftKeyDown()) {
             if (!player.getAbilities().instabuild) {
-                spawnAtLocation(new ItemStack(AerolargeRegistry.TROLLEY_ITEM.get()));
+                player.getInventory().placeItemBackInInventory(new ItemStack(AerolargeRegistry.TROLLEY_ITEM.get()));
             }
             discard();
         } else {
-            setDeltaMovement(getDeltaMovement().add(player.getLookAngle().multiply(1, 0, 1).normalize().scale(KNOCK)));
+            Vec3 look = SableFlight.turnToPlot(level(), blockPosition(), player.getLookAngle());
+            setDeltaMovement(getDeltaMovement().add(look.multiply(1, 0, 1).normalize().scale(KNOCK)));
         }
         return true;
     }

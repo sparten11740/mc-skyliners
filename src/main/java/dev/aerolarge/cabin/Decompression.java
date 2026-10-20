@@ -54,9 +54,11 @@ import net.minecraft.world.phys.Vec3;
  * are looked at; only the doors in the hull's sides count, not the cockpit door or the WC's and the crew room's behind
  * it, which open from one room of the cabin into another. A door stands in the airliner's plot, so its wind and fog
  * are set there, where Sable carries them along with the airliner; the doorway is projected out into the world for the
- * pull, since whatever is aboard a flying airliner is in the world. Sable carries that along with the cabin too, so it
- * is pushed relative to the cabin; only a loose thing clear of the airliner is carried by nothing, and is sent off at
- * the airliner's speed.
+ * pull, since whoever stands aboard a flying airliner is in the world. Sable carries them along with the cabin too, so
+ * they are pushed relative to the cabin. Trolleys live in the plot (see {@link SableFlight#keepWithCabin}): each is
+ * seen projected out into the world like the rest, its push turned back into the airliner's frame, and once clear of
+ * the sill it is sent out into the world at the airliner's speed. Any other loose thing clear of the airliner is carried
+ * by nothing, and is sent off at the airliner's speed.
  */
 public final class Decompression {
     /** Each assembled airliner's, by its autopilot: forgotten with it, so its doors are found afresh once reassembled. */
@@ -172,8 +174,10 @@ public final class Decompression {
             AABB near = new AABB(doorway.world(), doorway.world()).inflate(reach);
             around = around == null ? near : around.minmax(near);
         }
+        // Sable's lookup finds what lives among the airliner's blocks around the doorways too.
         for (Entity entity : level.getEntities((Entity) null, around, Decompression::loose)) {
-            pull(level, entity, nearest(open, entity), flight.up(), reach);
+            Vec3 centre = SableFlight.toWorld(level, entity.getBoundingBox().getCenter());
+            pull(level, entity, centre, nearest(open, centre), flight.up(), reach);
         }
     }
 
@@ -294,19 +298,18 @@ public final class Decompression {
         return takes && !entity.isPassenger() && !entity.isSpectator() && !(entity instanceof Player player && player.getAbilities().flying);
     }
 
-    /** The open doorway nearest the entity: the one whose air takes it. */
-    private static Doorway nearest(List<Doorway> open, Entity entity) {
-        Vec3 centre = entity.getBoundingBox().getCenter();
+    /** The open doorway nearest an entity's middle in the world: the one whose air takes it. */
+    private static Doorway nearest(List<Doorway> open, Vec3 centre) {
         return open.stream().min(Comparator.comparingDouble(doorway -> doorway.world().distanceToSqr(centre))).orElseThrow();
     }
 
     /**
-     * Pulls the entity toward the doorway, the harder the closer, and flings it out once it is in it. Only from inside,
-     * and only where the air has a clear way to the door: not up through the floor from the hold, or round a wall.
-     * Whatever is already out past the middle of the doorway is only sped on its way while still in it.
+     * Pulls the entity, its middle at the given point in the world, toward the doorway, the harder the closer, and
+     * flings it out once it is in it. Only from inside, and only where the air has a clear way to the door: not up
+     * through the floor from the hold, or round a wall. Whatever is already out past the middle of the doorway is only
+     * sped on its way while still in it.
      */
-    private static void pull(ServerLevel level, Entity entity, Doorway doorway, Vec3 up, double reach) {
-        Vec3 centre = entity.getBoundingBox().getCenter();
+    private static void pull(ServerLevel level, Entity entity, Vec3 centre, Doorway doorway, Vec3 up, double reach) {
         Vec3 offset = centre.subtract(doorway.world());
         double distance = offset.length();
         double depth = offset.dot(doorway.outward());
@@ -315,7 +318,7 @@ public final class Decompression {
         }
         if (depth > 0) {
             if (distance < FLING_RANGE) {
-                fling(entity, doorway, depth);
+                fling(level, entity, doorway, depth);
             }
             return;
         }
@@ -328,24 +331,33 @@ public final class Decompression {
             push = push.add(doorway.outward().scale(FLING));
         }
         if (!(entity instanceof LivingEntity)) {
-            // Loose things slide along the floor: lifted off it, nothing carries them along with the cabin any more.
+            // Loose things slide along the floor: one lifted off it in the world is carried along with the cabin no more.
             push = push.subtract(up.scale(push.dot(up)));
         }
-        entity.push(push);
-        entity.hurtMarked = true;
+        push(level, entity, push);
     }
 
     /**
      * Speeds the entity out of the doorway, depth blocks out past its middle. Anything alive leaves keeping the speed
-     * the cabin carried it at; a loose thing clear of the sill is carried by nothing any more, so it is sent off at the
+     * the cabin carried it at. A loose thing clear of the sill is carried by nothing any more: one that lived among the
+     * airliner's blocks is sent out into the world at the airliner's speed plus its own, any other is sent off at the
      * airliner's speed, or it would stop dead in the air as the airliner flies on.
      */
-    private static void fling(Entity entity, Doorway doorway, double depth) {
-        if (!(entity instanceof LivingEntity) && depth > 0.5 + entity.getBbWidth() / 2) {
-            entity.setDeltaMovement(doorway.velocity().add(doorway.outward().scale(FLING)));
+    private static void fling(ServerLevel level, Entity entity, Doorway doorway, double depth) {
+        Vec3 out = doorway.outward().scale(FLING);
+        if (entity instanceof LivingEntity || depth <= 0.5 + entity.getBbWidth() / 2) {
+            push(level, entity, out);
+        } else if (SableFlight.sendOut(entity)) {
+            push(level, entity, out);
         } else {
-            entity.push(doorway.outward().scale(FLING));
+            entity.setDeltaMovement(doorway.velocity().add(out));
+            entity.hurtMarked = true;
         }
+    }
+
+    /** Pushes the entity, in the world's directions: turned into the airliner's frame for what lives among its blocks. */
+    private static void push(ServerLevel level, Entity entity, Vec3 push) {
+        entity.push(SableFlight.turnToPlot(level, entity.blockPosition(), push));
         entity.hurtMarked = true;
     }
 

@@ -326,7 +326,10 @@ At the head of the lounge's bar is the galley, a stainless trolley bay with a tr
 panel. Use it to roll out a full trolley, or to restock the trolleys standing by it. Push a trolley down the aisle by
 walking into it (it squeaks); use it to be served the next of its meals: a chicken meal, airline coffee (a minute of
 Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it to fold it up and carry it. Galley, trolley
-and food can all be crafted.
+and food can all be crafted. Aboard an assembled airliner a trolley rolls with the cabin, in flight as on the ground,
+the way Create's seats ride along: inside the hull it stands among the airliner's own blocks, and the galley rolls out
+and restocks trolleys there. Rolled out of an open door it drops out of the airliner, and in flight it leaves at the
+airliner's speed.
 
 The galley's other units are as stainless, each put down facing you: a Galley Oven, a dark glass door under a strip of
 controls and status lights, which cooks food as a smoker does, twice as fast as a furnace, its window glowing orange
@@ -845,7 +848,9 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
 shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
+flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys among an
+assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and puts them out into the
+world at the airliner's speed once they leave it; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
