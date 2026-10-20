@@ -7,6 +7,7 @@ import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.LightStripBlock;
+import dev.aerolarge.block.PlanterBlock;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import java.util.ArrayList;
@@ -50,17 +51,17 @@ final class CabinDecor {
     private static final int STARLIGHT_HEADROOM = 6;
     /** Over the floor up to this row the windows are the main deck's; any higher, the upper deck's. */
     private static final int MAIN_WINDOWS_TOP = 3;
-    /** The potted plants along the lounge bar's back shelf, in turn. */
-    private static final List<Block> SHELF_PLANTS = List.of(Blocks.POTTED_FLOWERING_AZALEA, Blocks.POTTED_BLUE_ORCHID, Blocks.POTTED_ORANGE_TULIP);
-    /** Every this many stations along the bar's back shelf, a potted plant. */
+    /** The planters along the lounge bar's back shelf, in turn. */
+    private static final List<PlanterBlock.Plant> SHELF_PLANTS = List.of(PlanterBlock.Plant.FLOWERS, PlanterBlock.Plant.GREENERY);
+    /** Every this many stations along the bar's back shelf, a planter. */
     private static final int SHELF_SPACING = 3;
     /** Every this many stations along the bar, a spore blossom hanging over it. */
     private static final int BAR_BLOSSOM_SPACING = 4;
-    /** Every this many stations along each side of the pool, a potted azalea between patches of moss. */
+    /** Every this many stations along each side of the pool, a planter in flower between two of greenery. */
     private static final int PLANTER_SPACING = 4;
     /** A spore blossom hangs no lower than this many rows over the floor, clear of heads. */
     private static final int BLOSSOM_CLEARANCE = 4;
-    /** How many stations either side of a passenger door the potted bamboo stands: just outside the door's aisle. */
+    /** How many stations either side of a passenger door the bamboo planters stand: just outside the door's aisle. */
     private static final int BAMBOO_FROM_DOOR = 3;
     /**
      * A truss spans the gym hall's crown along the highest row still within this many blocks either side of as wide
@@ -455,10 +456,10 @@ final class CabinDecor {
     }
 
     /**
-     * Greenery along the walls and overhead, never underfoot in an aisle: potted flowers along the lounge bar's back
-     * shelf and spore blossoms hanging from the starlit ceiling over the bar, drifting their spores down; potted
-     * azaleas in patches of moss along the pool's sides, and spore blossoms under the diving tower's platform over the
-     * rim; and potted bamboo either side of each passenger door, just clear of its aisle.
+     * Greenery along the walls and overhead, never underfoot in an aisle: planters along the lounge bar's back shelf
+     * and spore blossoms hanging from the starlit ceiling over the bar, drifting their spores down; planters along the
+     * pool's sides, and spore blossoms under the diving tower's platform over the rim; and bamboo planters either side
+     * of each passenger door, just clear of its aisle. Each planter stands with its back to the wall.
      */
     private void greenery() {
         barGreenery();
@@ -476,7 +477,7 @@ final class CabinDecor {
                 continue;
             }
             if ((z - fromZ) % SHELF_SPACING == 0 && layout.isOpen(shelf, floor + 2, z)) {
-                layout.furnish(shelf, floor + 2, z, SHELF_PLANTS.get(plants++ % SHELF_PLANTS.size()).defaultBlockState());
+                layout.furnish(shelf, floor + 2, z, planter(SHELF_PLANTS.get(plants++ % SHELF_PLANTS.size()), 1));
             }
             if ((z - fromZ) % BAR_BLOSSOM_SPACING == BAR_BLOSSOM_SPACING / 2) {
                 hangBlossom(shelf - 1, z, state -> state.is(AerolargeRegistry.STARLIGHT_PANEL.get()));
@@ -485,8 +486,9 @@ final class CabinDecor {
     }
 
     /**
-     * The pool's: a potted azalea every few stations along each side against the wall, with moss either side of it,
-     * and a spore blossom under each back corner of the diving tower's platform, where it reaches out over the rim.
+     * The pool's: a planter in flower every few stations along each side against the wall, a planter of greenery
+     * either side of it, and a spore blossom under each back corner of the diving tower's platform, where it reaches
+     * out over the rim.
      */
     private void poolGreenery() {
         Basin basin = basin();
@@ -502,10 +504,10 @@ final class CabinDecor {
                 if (x == 0 || keptForDivider(z) || !layout.isOpen(x, floor + 1, z)) {
                     continue;
                 }
-                layout.furnish(x, floor + 1, z, Blocks.POTTED_FLOWERING_AZALEA.defaultBlockState());
+                layout.furnish(x, floor + 1, z, planter(PlanterBlock.Plant.FLOWERS, side));
                 for (int dz : new int[]{-1, 1}) {
                     if (!keptForDivider(z + dz)) {
-                        layout.furnish(x, floor + 1, z + dz, Blocks.MOSS_CARPET.defaultBlockState());
+                        layout.furnish(x, floor + 1, z + dz, planter(PlanterBlock.Plant.GREENERY, side));
                     }
                 }
             }
@@ -530,8 +532,8 @@ final class CabinDecor {
     }
 
     /**
-     * Potted bamboo against both walls either side of each passenger door, where the station is plain cabin, its
-     * floor not made over into one of the rooms.
+     * A bamboo planter against both walls either side of each passenger door, where the station is plain cabin, its
+     * floor not made over into one of the rooms. One block tall, as the windows come down to just over it.
      */
     private void doorBamboo() {
         for (double station : AirframeShape.PASSENGER_DOORS) {
@@ -540,11 +542,16 @@ final class CabinDecor {
                 for (int side : new int[]{1, -1}) {
                     int x = layout.besideWall(side, floor + 1, z);
                     if (x != 0 && !keptForDivider(z) && layout.isCabinFloor(0, floor, z)) {
-                        layout.furnish(x, floor + 1, z, Blocks.POTTED_BAMBOO.defaultBlockState());
+                        layout.furnish(x, floor + 1, z, planter(PlanterBlock.Plant.BAMBOO, side));
                     }
                 }
             }
         }
+    }
+
+    /** A planter with the plant in it, its back to the wall on this side (1 to starboard, -1 to port). */
+    private static BlockState planter(PlanterBlock.Plant plant, int side) {
+        return PlanterBlock.planted(AerolargeRegistry.PLANTER.get(), plant, side > 0 ? Direction.WEST : Direction.EAST);
     }
 
     /**

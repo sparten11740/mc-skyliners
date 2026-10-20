@@ -32,9 +32,10 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
   the bar a secret door into a den in the tail; the hold under the cabin is stowed with luggage (both below). Plants
-  line the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
-  ceiling over the bar and from under the diving tower's platform over the pool's rim, potted azaleas in moss along
-  the pool's sides and potted bamboo by the doors. The seats are cabin seats (see Cabin seats), to sit in.
+  line the walls: planters (see Planters) on the bar's back shelf, spore blossoms drifting their spores down from the
+  starlit ceiling over the bar and from under the diving tower's platform over the pool's rim, planters of flowers
+  between greenery along the pool's sides and in its corners, and bamboo by the doors. The seats are cabin seats (see
+  Cabin seats), to sit in.
   Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
   the rooms off from the doors' aisles, each with a curtained white archway and a backlit sign over it of what lies

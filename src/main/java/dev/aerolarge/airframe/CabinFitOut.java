@@ -13,6 +13,7 @@ import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
+import dev.aerolarge.block.PlanterBlock;
 import dev.aerolarge.block.PoolCopingBlock;
 import dev.aerolarge.block.PoolMosaicBlock;
 import dev.aerolarge.block.RungLadderBlock;
@@ -280,8 +281,9 @@ final class CabinFitOut {
             }
         }
         for (int x : new int[]{-width, width}) {
-            layout.furnish(x, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());
-            layout.furnish(x, floor + 1, toZ, Blocks.POTTED_FERN.defaultBlockState());
+            BlockState planter = PlanterBlock.planted(AerolargeRegistry.PLANTER.get(), PlanterBlock.Plant.GREENERY, x > 0 ? Direction.WEST : Direction.EAST);
+            layout.furnish(x, floor + 1, fromZ, planter);
+            layout.furnish(x, floor + 1, toZ, planter);
         }
         for (int z = fromZ + 2; z <= toZ - 2; z += 5) {
             hangLight(-basin / 2, z, 6);
@@ -405,7 +407,7 @@ final class CabinFitOut {
     /**
      * The lounge: red carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in
      * front, the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind
-     * it, a row of red armchairs (business seats) and low round tables along the port wall, and a plant in the other
+     * it, a row of red armchairs (business seats) and low round tables along the port wall, and a planter in the other
      * corner.
      */
     private void lounge(int fromZ, int toZ) {
@@ -439,7 +441,7 @@ final class CabinFitOut {
             carpet(z, z, width, 0, DyeColor.RED);
         }
         if (frontWidth >= 3) {
-            layout.set(-frontWidth, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());
+            layout.set(-frontWidth, floor + 1, fromZ, PlanterBlock.planted(AerolargeRegistry.PLANTER.get(), PlanterBlock.Plant.GREENERY, Direction.EAST));
             layout.set(frontWidth, floor + 1, fromZ, AerolargeRegistry.GALLEY.get().defaultBlockState().setValue(GalleyBlock.FACING, Direction.WEST));
         }
         for (int z = fromZ + 1; z <= toZ; z += 4) {

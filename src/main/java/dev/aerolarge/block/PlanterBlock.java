@@ -86,6 +86,11 @@ public class PlanterBlock extends HorizontalDirectionalBlock {
         builder.add(FACING, PLANT);
     }
 
+    /** A planter of this block with the plant in it, its front facing the way given, as the blueprints put one in. */
+    public static BlockState planted(Block planter, Plant plant, Direction facing) {
+        return planter.defaultBlockState().setValue(PLANT, plant).setValue(FACING, facing);
+    }
+
     /** Its front toward whoever puts it down, its back to the wall they face. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
