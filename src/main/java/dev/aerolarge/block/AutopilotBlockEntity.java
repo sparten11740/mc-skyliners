@@ -292,6 +292,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final CabinAnnouncements announcements = new CabinAnnouncements(airtime);
     private final AtcRadio atc = new AtcRadio(airtime, callouts);
     private final Turbulence turbulence = new Turbulence();
+    /** The airstairs and slides it has put away before taking off, which it holds the brakes for till they are. */
+    private final Stowing stowing = new Stowing();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -403,6 +405,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (engaging) {
             engage(level, state);
             if (phase == Phase.TAKEOFF) {
+                // Airstairs and slides down on the ground would hold it where it stands: they go away first.
+                if (level instanceof ServerLevel server) {
+                    stowing.start(server, worldPosition);
+                }
                 // Cleared by the tower first, if it talks; the cabin hears the take-off announcement as the brakes come off.
                 awaitingClearance = atc.requestTakeOff(level.getGameTime());
                 if (!awaitingClearance) {
@@ -632,7 +638,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             speedCommand = speed;
             primed = true;
         }
-        boolean holding = holdingForClearance(level.getGameTime());
+        boolean clearing = holdingForClearance(level.getGameTime());
+        boolean holding = stowing.waiting(level) || clearing;
         if (holding) {
             // On the brakes, the speed held starts from where it stands once they come off.
             speedCommand = speed;

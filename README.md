@@ -249,8 +249,10 @@ see its name. The game goes on behind the settings, and they close once you step
 
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
-Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: once the tower has
-cleared it (a few seconds on the brakes, see Announcements and the radio), brakes off, speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
+Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the
+airstairs folded away and any evacuation slide packed first (down on the ground they would hold the airliner where it
+stands), and once they are and the tower has cleared it (a few seconds on the brakes, see Announcements and the radio;
+it waits for the stairs and slides 20 seconds at most, as someone standing on the stairs keeps them out), brakes off, speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
 thrown down the cabin; it speeds up and slows down that gently in the air too), holding the heading it started on
 with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
 above the ground (or at the altitude set, where the ground below rises that high). Only then does it turn onto the

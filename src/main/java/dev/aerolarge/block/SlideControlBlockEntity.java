@@ -167,6 +167,18 @@ public class SlideControlBlockEntity extends BlockEntity {
         }
     }
 
+    /** Whether the slide is packed: not out, coming out or going away. */
+    boolean packed() {
+        return !deployed && ticks == 0;
+    }
+
+    /** Sends the slide away if it is out or coming out, as its airliner is set to take off (see {@link Stowing}). */
+    void stow() {
+        if (deployed && level instanceof ServerLevel server) {
+            retract(server);
+        }
+    }
+
     /** Sets the slide coming out, unless the airliner is moving or the slide has nowhere to come down. */
     private void deploy(ServerLevel level, @Nullable Player player) {
         PlugDoorBlockEntity served = servedDoor();
