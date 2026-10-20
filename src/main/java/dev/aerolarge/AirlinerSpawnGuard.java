@@ -18,7 +18,10 @@ final class AirlinerSpawnGuard {
 
     static void onSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
         MobSpawnType type = event.getSpawnType();
-        if ((type == MobSpawnType.NATURAL || type == MobSpawnType.CHUNK_GENERATION) && insideAirliner(event.getLevel(), event.getPos())) {
+        // A spawn already turned down, by the mob's own rules (too light, the wrong ground) or by another mod, is left
+        // alone: the hull is only looked for round spawns that would go ahead.
+        if ((type == MobSpawnType.NATURAL || type == MobSpawnType.CHUNK_GENERATION) && event.getPlacementCheckResult()
+            && insideAirliner(event.getLevel(), event.getPos())) {
             event.setResult(MobSpawnEvent.SpawnPlacementCheck.Result.FAIL);
         }
     }
