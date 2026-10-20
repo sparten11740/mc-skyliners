@@ -2206,6 +2206,39 @@ function cabinCarpetLang() {
   };
 }
 
+// The gym hall's sprung floor (see GymFloorBlock): maple boards on top, their strips running north and south, turned
+// a quarter for strips along the x axis; a court line painted white over them; the boards' edges round the sides and
+// white panelling underneath, the ceiling of the hold below. Taken up, a board comes back plain.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  for (const [name, top] of [["gym_floor", "gym_floor"], ["gym_floor_line", "gym_floor_line"]]) {
+    write(`assets/${ID}/models/block/${name}.json`, {
+      parent: "minecraft:block/cube_bottom_top",
+      textures: { top: block(top), bottom: block("cabin_stairs_panel"), side: block("gym_floor") },
+    });
+  }
+  write(`assets/${ID}/blockstates/gym_floor.json`, {
+    variants: Object.fromEntries([["z", 0], ["x", 90]].flatMap(([axis, y]) => [false, true].map((line) =>
+      [`axis=${axis},line=${line}`, { model: `${ID}:block/gym_floor${line ? "_line" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/gym_floor.json`, { parent: `${ID}:block/gym_floor` });
+  dropsItself("gym_floor");
+  cubes.gym_floor = null;
+}
+// The gym floor is laid in the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function gymFloorFittings() {
+  return ["gym_floor"];
+}
+// Birch boards laid on slime, for the spring.
+function gymFloorRecipes() {
+  shaped("gym_floor", ["PPP", " S "], { P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 3);
+}
+function gymFloorLang() {
+  return {
+    "block.aerolarge.gym_floor": "Gym Floor",
+  };
+}
+
 // The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
 // with its back against the south side of its block, as deep as the tail camera display's upright one (see
 // AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
@@ -2643,8 +2676,8 @@ const VACUUM_TOILET_LANG = {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
-// The care package is a wooden crate.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`]));
+// The care package is a wooden crate, and the gym floor is maple.
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
@@ -2664,6 +2697,7 @@ FITTINGS.push(...cabinStairsFittings());
 FITTINGS.push(...crewLockerFittings());
 FITTINGS.push(...cabinSeatFittings());
 FITTINGS.push(...cabinCarpetFittings());
+FITTINGS.push(...gymFloorFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2771,6 +2805,7 @@ crewLockerRecipes();
 slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
+gymFloorRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3112,6 +3147,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...crewLockerLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),
+  ...gymFloorLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

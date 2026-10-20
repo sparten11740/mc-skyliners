@@ -1063,6 +1063,24 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "aisle_light_channel", (x, y) => (y % 4 === 0 ? [0xd2, 0xd8, 0xde] : [0xa2, 0xa9, 0xb0]), 2);
 }
 
+// The gym hall's sprung floor (see GymFloorBlock): strips of lacquered maple two pixels wide running up the texture,
+// each a shade of its own with a faint grain along it, a darker seam down one side of each and a butt joint across it
+// at its own height, so the joints stagger; a glint of lacquer here and there. A court line: white paint over the
+// same boards, their seams and joints faint under it.
+{
+  const strip = (x) => Math.floor(x / 2);
+  const tone = (x) => [0, 9, -6, 4, -10, 6, -3, 11][strip(x)];
+  const joint = (x, y) => y === (strip(x) * 7 + 3) % 16;
+  texture(blockOutput, "gym_floor", (x, y) => {
+    if (joint(x, y)) return [0xa6, 0x7e, 0x4e];
+    if (x % 2 === 0) return [0xc4 + tone(x), 0x9c + tone(x), 0x66 + tone(x)];
+    if ((x * 5 + y * 3) % 23 === 0) return [0xf2, 0xdc, 0xb4];
+    const grain = Math.round(3 * Math.sin(y * 1.3 + strip(x)));
+    return [0xd8 + tone(x) + grain, 0xb2 + tone(x) + grain, 0x7a + tone(x) + grain];
+  }, 2);
+  texture(blockOutput, "gym_floor_line", (x, y) => (joint(x, y) || x % 2 === 0 ? [0xe2, 0xe2, 0xda] : [0xf4, 0xf4, 0xee]), 2);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {

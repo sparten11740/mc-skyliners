@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinWindowBlock;
+import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.LightStripBlock;
@@ -663,7 +664,7 @@ final class CabinDecor {
     private void rings(int z) {
         int x = layout.besideWall(-1, floor + 1, z) + RINGS_FROM_WALL;
         int y = floor + Math.max(RINGS_LOWEST, (int) Math.round(RINGS_METRES * layout.scale()));
-        if (layout.stateAt(x, floor, z).is(Blocks.WHITE_CONCRETE) || !layout.isOpen(x, y, z)) {
+        if (GymFloorBlock.isLine(layout.stateAt(x, floor, z)) || !layout.isOpen(x, y, z)) {
             return;
         }
         int top = y;

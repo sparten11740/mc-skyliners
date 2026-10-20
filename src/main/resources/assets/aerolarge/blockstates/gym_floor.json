@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "axis=z,line=false": {
+      "model": "aerolarge:block/gym_floor"
+    },
+    "axis=z,line=true": {
+      "model": "aerolarge:block/gym_floor_line"
+    },
+    "axis=x,line=false": {
+      "model": "aerolarge:block/gym_floor",
+      "y": 90
+    },
+    "axis=x,line=true": {
+      "model": "aerolarge:block/gym_floor_line",
+      "y": 90
+    }
+  }
+}

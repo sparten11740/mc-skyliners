@@ -8,6 +8,7 @@ import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.ScoreboardBlock;
@@ -270,7 +271,7 @@ final class CabinFitOut {
     }
 
     /**
-     * The gym hall (Turnhalle): the cabin's whole height over a birch parquet court with white lines, a basketball
+     * The gym hall (Turnhalle): the cabin's whole height over a sprung maple court with white lines, a basketball
      * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and mats along the
      * port wall, climbing ropes and seats along starboard facing the court, between its windows.
      */
@@ -280,15 +281,15 @@ final class CabinFitOut {
             return;
         }
         int middle = (fromZ + toZ) / 2;
-        BlockState parquet = Blocks.BIRCH_PLANKS.defaultBlockState();
-        BlockState line = Blocks.WHITE_CONCRETE.defaultBlockState();
+        BlockState boards = AerolargeRegistry.GYM_FLOOR.get().defaultBlockState();
+        BlockState line = boards.setValue(GymFloorBlock.LINE, true);
         double circle = Math.min(3, width - 1);
         for (int z = fromZ; z <= toZ; z++) {
             for (int x = -width; x <= width; x++) {
                 boolean boundary = (Math.abs(x) == width - 1 && z >= fromZ + 1 && z <= toZ - 1)
                     || ((z == fromZ + 1 || z == toZ - 1) && Math.abs(x) <= width - 1);
                 boolean centre = z == middle || Math.abs(Math.hypot(x, z - middle) - circle) < 0.5;
-                layout.refloor(x, floor, z, boundary || centre ? line : parquet);
+                layout.refloor(x, floor, z, boundary || centre ? line : boards);
             }
         }
 

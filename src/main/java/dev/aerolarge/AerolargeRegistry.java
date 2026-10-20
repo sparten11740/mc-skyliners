@@ -48,6 +48,7 @@ import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
+import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
@@ -645,6 +646,12 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<AisleCarpetBlock> AISLE_CARPET = BLOCKS.registerBlock("aisle_carpet", AisleCarpetBlock::new, carpet());
     public static final DeferredItem<BlockItem> CABIN_CARPET_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CARPET);
     public static final DeferredItem<BlockItem> AISLE_CARPET_ITEM = ITEMS.registerSimpleBlockItem(AISLE_CARPET);
+    /** The gym hall's sprung maple floor, its court lines painted on: as tough as planks, and nothing spawns on it. */
+    public static final DeferredBlock<GymFloorBlock> GYM_FLOOR = BLOCKS.registerBlock(
+        "gym_floor", GymFloorBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 3.0F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> GYM_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(GYM_FLOOR);
     /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
@@ -958,7 +965,7 @@ public final class AerolargeRegistry {
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(
-            BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
+            GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
         )),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

@@ -464,7 +464,10 @@ look, sneaking for a softer throw. It bounces off the floor and walls and rolls 
 pick it up, hit it to knock it on. A ball that drops through a hoop scores two points, or three thrown from beyond
 the three-point line, for the side the hoop counts for: HOME at the front hoop, GUEST at the back (sneak and use a
 hoop to swap it). The scoreboard over each backboard keeps the score; use it to sound the buzzer and start again.
-Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere.
+Hoops, balls, scoreboards and racks can all be crafted to build a court anywhere, and so can its floor: Gym Floor is
+a sprung sports floor of narrow lacquered maple strips, laid the way you face, over white panelling underneath (the
+hold under the gym hall sees a ceiling, not floorboards). Use white dye on a board to paint a court line on it, as
+the gym hall's court is lined.
 
 Over the court the gym hall's pendant lights hang from metal roof trusses (Create's girders). From the trusses either
 side of the middle hang gymnastic rings on chains, over the side of the court by the wall bars: use them to swing up

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:cargo_crate"
+    "aerolarge:cargo_crate",
+    "aerolarge:gym_floor"
   ]
 }
