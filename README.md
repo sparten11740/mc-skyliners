@@ -276,10 +276,11 @@ another on the lounge's bar, just behind the galley.
 
 A Cabin Curtain hangs in pleats across the way you face; curtains put up beside, under or over one another join
 into one curtain on a steel rail. Use any piece to draw the whole curtain open or shut, a column at a time away from
-the piece used, with a swish; use a dye on it to dye all of it, for one dye, and taken down it keeps its colour. It
-is only cloth: players, villagers, trolleys and basketballs pass straight through it, open or shut, and it keeps no
-light out. A Cabin Partition is a plain cream bulkhead panel to build walls with, a Cabin Arch a piece of a white
-archway in one, and an Exit Sign a green running man heading out through a doorway. All four can be crafted. A Cabin
+the piece used, with a swish; drawn open, only its gathered ends and its rail show, and those are what to use. Use a
+dye on it to dye all of it, for one dye, and taken down it keeps its colour. It is only cloth: players, villagers,
+trolleys and basketballs pass straight through it, open or shut, and it keeps no light out. A Cabin Partition is a
+plain cream bulkhead panel to build walls with, a Cabin Arch a piece of a white archway in one, and an Exit Sign a
+green running man heading out through a doorway. All four can be crafted. A Cabin
 Arch piece is a block of a round white arch over an opening three or five blocks wide, or of the jambs either side of
 it: smooth white panelling round the opening with a moulding along its edge, a bead and a groove behind it, set into
 cream panels like the partition's and the same from either side. Taken down, or picked from an archway, a piece keeps

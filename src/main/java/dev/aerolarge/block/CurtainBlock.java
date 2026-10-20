@@ -70,36 +70,30 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
     /** How many ticks apart neighbouring columns follow one another as the curtain is drawn. */
     private static final int TICKS_PER_COLUMN = 2;
     /**
-     * The outlines, in pixels, drawn for a curtain facing north: the cloth through the middle of the block, its hem a
-     * pixel off the floor; open, the strip along the top where the rail runs (or would, lower down, so the piece can
-     * still be used) and a bunch of gathered cloth at each end. An open curtain no wider than an archway's also has a
-     * thin sheet where the cloth hangs when drawn, so it can be drawn shut from anywhere across the archway; a wider
-     * one, like the gym hall's, has not, so whatever is beyond it, a basketball across the court, can still be reached.
+     * The outlines, in pixels, drawn for a curtain facing north, round only what its model draws: shut, the cloth
+     * through the middle of the block, its hem a pixel off the floor; open, the rail and its rings along the top of the
+     * curtain's top pieces and a bunch of gathered cloth at each end. An open piece between the ends and under the top
+     * draws nothing and has no outline, so the crosshair passes through an open curtain as the eye does; it is drawn
+     * shut by its gathered ends or its rail.
      */
     private static final double CLOTH_FRONT = 6.5;
     private static final double CLOTH_BACK = 9.5;
-    private static final double DRAWN_FRONT = 7.5;
-    private static final double DRAWN_BACK = 8.5;
     private static final double HEM = 1;
-    private static final double RAIL_BOTTOM = 14.5;
+    private static final double RAIL_BOTTOM = 14;
     private static final double RAIL_FRONT = 7;
     private static final double RAIL_BACK = 9;
     private static final double BUNCH_WIDTH = 4.5;
     private static final double BUNCH_FRONT = 5.5;
     private static final double BUNCH_BACK = 10.5;
-    /** The widest, in pieces, a curtain is that an open one can still be used anywhere across: an archway's at most. */
-    private static final int NARROW = 5;
 
-    /** Each state's outline, and an open one's on a curtain no wider than an archway's, with the sheet across it. */
+    /** Each state's outline. */
     private final ImmutableMap<BlockState, VoxelShape> shapes;
-    private final ImmutableMap<BlockState, VoxelShape> sheets;
 
     public CurtainBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(LEFT, false)
             .setValue(RIGHT, false).setValue(UP, false).setValue(DOWN, false).setValue(COLOR, DyeColor.WHITE));
-        shapes = getShapeForEachState(state -> outline(state, false));
-        sheets = getShapeForEachState(state -> outline(state, true));
+        shapes = getShapeForEachState(CurtainBlock::outline);
     }
 
     @Override
@@ -335,30 +329,7 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(OPEN) && narrow(level, pos, state) ? sheets.get(state) : shapes.get(state);
-    }
-
-    /**
-     * Whether the piece's row of the curtain is no wider than an archway's, counted along the row either way no
-     * further than it takes to tell: the outline is asked for often.
-     */
-    private static boolean narrow(BlockGetter level, BlockPos pos, BlockState state) {
-        Direction left = leftOf(state.getValue(FACING));
-        int width = 1;
-        for (Direction way : new Direction[]{left, left.getOpposite()}) {
-            BlockPos at = pos;
-            BlockState piece = state;
-            while (width <= NARROW) {
-                BlockState next = level.getBlockState(at.relative(way));
-                if (!carriesOn(piece, way, next)) {
-                    break;
-                }
-                at = at.relative(way);
-                piece = next;
-                width++;
-            }
-        }
-        return width <= NARROW;
+        return shapes.get(state);
     }
 
     @Override
@@ -390,22 +361,21 @@ public class CurtainBlock extends HorizontalDirectionalBlock {
         return super.mirror(state, mirror).setValue(LEFT, state.getValue(RIGHT)).setValue(RIGHT, state.getValue(LEFT));
     }
 
-    /** What can be clicked of a piece: see the outline constants. */
-    private static VoxelShape outline(BlockState state, boolean sheet) {
+    /** What can be clicked of a piece: what it draws (see the outline constants), and nothing where it draws nothing. */
+    private static VoxelShape outline(BlockState state) {
         double bottom = state.getValue(DOWN) ? 0 : HEM;
         Direction facing = state.getValue(FACING);
         if (!state.getValue(OPEN)) {
             return box(facing, 0, bottom, CLOTH_FRONT, 16, 16, CLOTH_BACK);
         }
-        VoxelShape shape = box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK);
-        if (sheet) {
-            shape = Shapes.or(shape, box(facing, 0, bottom, DRAWN_FRONT, 16, 16, DRAWN_BACK));
-        }
+        boolean top = !state.getValue(UP);
+        double bunchTop = top ? RAIL_BOTTOM : 16;
+        VoxelShape shape = top ? box(facing, 0, RAIL_BOTTOM, RAIL_FRONT, 16, 16, RAIL_BACK) : Shapes.empty();
         if (!state.getValue(LEFT)) {
-            shape = Shapes.or(shape, box(facing, 0, bottom, BUNCH_FRONT, BUNCH_WIDTH, 16, BUNCH_BACK));
+            shape = Shapes.or(shape, box(facing, 0, bottom, BUNCH_FRONT, BUNCH_WIDTH, bunchTop, BUNCH_BACK));
         }
         if (!state.getValue(RIGHT)) {
-            shape = Shapes.or(shape, box(facing, 16 - BUNCH_WIDTH, bottom, BUNCH_FRONT, 16, 16, BUNCH_BACK));
+            shape = Shapes.or(shape, box(facing, 16 - BUNCH_WIDTH, bottom, BUNCH_FRONT, 16, bunchTop, BUNCH_BACK));
         }
         return shape;
     }
