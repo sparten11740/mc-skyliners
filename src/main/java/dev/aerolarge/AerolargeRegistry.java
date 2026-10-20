@@ -85,6 +85,9 @@ import dev.aerolarge.block.SecretBookshelfBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
+import dev.aerolarge.block.SlideControlBlock;
+import dev.aerolarge.block.SlideControlBlockEntity;
+import dev.aerolarge.block.SlideStepBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
@@ -102,6 +105,7 @@ import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.BlueIceChunk;
 import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.PaperPlane;
+import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
@@ -314,6 +318,32 @@ public final class AerolargeRegistry {
     /** The airstairs' hydraulic motor running, and the clunk of their latches and their hatch's. */
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_MOTOR = sound("airstair_motor");
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_LATCH = sound("airstair_latch");
+
+    /**
+     * The evacuation slides packed in plug doors: each one's control in the wall beside its door, which keeps and works
+     * the slide, the invisible steps it lays under the slide once it is out, laid and taken up by the control only, and
+     * the ride that carries whoever steps onto it down to the ground. The gas rushing in as it inflates and out as it
+     * deflates, and the whoosh of someone setting off down it.
+     */
+    public static final DeferredBlock<SlideControlBlock> SLIDE_CONTROL = BLOCKS.registerBlock(
+        "slide_control", SlideControlBlock::new, metal(MapColor.COLOR_RED)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SlideControlBlockEntity>> SLIDE_CONTROL_ENTITY =
+        BLOCK_ENTITIES.register("slide_control", () -> BlockEntityType.Builder.of(SlideControlBlockEntity::new, SLIDE_CONTROL.get()).build(null));
+    public static final DeferredItem<BlockItem> SLIDE_CONTROL_ITEM = ITEMS.registerSimpleBlockItem(SLIDE_CONTROL);
+    public static final DeferredBlock<SlideStepBlock> SLIDE_STEP = BLOCKS.registerBlock(
+        "slide_step", SlideStepBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<SlideRide>> SLIDE_RIDE = ENTITY_TYPES.register(
+        "slide_ride", () -> EntityType.Builder.<SlideRide>of(SlideRide::new, MobCategory.MISC).sized(0.5F, 0.25F)
+            .clientTrackingRange(10).updateInterval(20).noSummon().fireImmune().build("slide_ride")
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> SLIDE_INFLATE = sound("slide_inflate");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SLIDE_DEFLATE = sound("slide_deflate");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SLIDE_WHOOSH = sound("slide_whoosh");
 
     /**
      * The skin cut to the curve of the hull, and below it the glass cut alike; placed only by the blueprints, so they
@@ -889,7 +919,7 @@ public final class AerolargeRegistry {
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
-            AIRSTAIR_CALL_BUTTON_ITEM, FLOOR_HATCH_ITEM
+            AIRSTAIR_CALL_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,

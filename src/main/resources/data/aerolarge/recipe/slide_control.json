@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "Y",
+    "L",
+    "P"
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:yellow_wool"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:slide_control",
+    "count": 1
+  }
+}

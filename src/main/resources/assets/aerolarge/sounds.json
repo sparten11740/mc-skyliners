@@ -331,6 +331,30 @@
       }
     ]
   },
+  "slide_inflate": {
+    "subtitle": "subtitles.aerolarge.slide_inflate",
+    "sounds": [
+      {
+        "name": "aerolarge:slide_inflate"
+      }
+    ]
+  },
+  "slide_deflate": {
+    "subtitle": "subtitles.aerolarge.slide_deflate",
+    "sounds": [
+      {
+        "name": "aerolarge:slide_deflate"
+      }
+    ]
+  },
+  "slide_whoosh": {
+    "subtitle": "subtitles.aerolarge.slide_whoosh",
+    "sounds": [
+      {
+        "name": "aerolarge:slide_whoosh"
+      }
+    ]
+  },
   "rubber_duck_squeak": {
     "subtitle": "subtitles.aerolarge.rubber_duck_squeak",
     "sounds": [

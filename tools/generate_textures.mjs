@@ -333,6 +333,74 @@ texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0
   }, 2, 2 * SIZE, SIZE);
 }
 
+// The evacuation slides, drawn by their renderer a pixel of texture to a pixel of the airliner, across from the lane's
+// middle (x 0) to its edge and down it (y). The lane: bright slide yellow, a faint weave across it, the darker seam
+// down its middle where its two halves meet and a pale line where it meets the rail. Its underside and the beams under
+// the rails: the grey of the slide's coated underside, seams down them. A rail, round it from its top (x 0), outward
+// first, to its bottom (x 8) and back up its inside: yellow, shaded underneath, a highlight along its top and the
+// silver reflective stripe along its outer side, its panels' seams across it. The girt bar: dark grey webbing with a
+// red tag. What is still packed: the grey cover, the yellow of the folded slide showing at its folds, a red pull tab.
+// The control in the cabin wall: a red panel in a yellow frame with a dark bezel, someone sliding down a slide in white
+// on it, so it needs no reading, the handle's slot down its right side; the handle's red grip, its steel stem, and the
+// lamp beside it, dark or lit green.
+{
+  const SLIDE = [0xf4, 0xc2, 0x1c];
+  const SLIDE_DARK = [0xd6, 0xa2, 0x10];
+  const SLIDE_LIGHT = [0xfc, 0xda, 0x5a];
+  const UNDERSIDE = [0x8c, 0x90, 0x95];
+  const UNDERSIDE_DARK = [0x72, 0x76, 0x7b];
+  const STRIPE = [0xe4, 0xea, 0xf0];
+  const SIGNAL_RED = [0xc8, 0x22, 0x1c];
+  texture(blockOutput, "slide_lane", (x, y) => {
+    if (x === 0) return SLIDE_DARK;
+    if (x === 15) return SLIDE_LIGHT;
+    return (x + 2 * y) % 6 === 0 ? [0xe8, 0xb6, 0x14] : SLIDE;
+  }, 3);
+  texture(blockOutput, "slide_underside", (x, y) => (x === 0 || y % 8 === 0 ? UNDERSIDE_DARK : UNDERSIDE), 3);
+  texture(blockOutput, "slide_beam", (x, y) => (y % 8 === 0 || x === 8 ? UNDERSIDE_DARK : UNDERSIDE), 3);
+  texture(blockOutput, "slide_rail", (x, y) => {
+    if (x === 3 || x === 4) return STRIPE;
+    if (y % 8 === 0) return SLIDE_DARK;
+    if (x === 0 || x === 15) return SLIDE_LIGHT;
+    return x >= 6 && x <= 10 ? SLIDE_DARK : SLIDE;
+  }, 3);
+  texture(blockOutput, "slide_girt", (x, y) => {
+    if (x >= 6 && x <= 8 && y >= 4 && y <= 11) return SIGNAL_RED;
+    return (x + y) % 3 === 0 ? [0x4a, 0x4e, 0x54] : [0x34, 0x38, 0x3d];
+  }, 2);
+  texture(blockOutput, "slide_pack", (x, y) => {
+    if (y >= 6 && y <= 9 && x >= 6 && x <= 9) return SIGNAL_RED;
+    if (y % 5 === 2) return SLIDE;
+    return x % 8 === 0 ? UNDERSIDE_DARK : UNDERSIDE;
+  }, 3);
+  // The panel's picture, one character a pixel: K the bezel, Y the frame, R the red panel, W someone sitting on the
+  // slide, S the slide, D the handle's slot.
+  const PANEL = [
+    "KKKKKKKKKKKKKKKK",
+    "KYYYYYYYYYYYYYYK",
+    "KYRWWRRRRRRRRRYK",
+    "KYRWWRRRRRRRRRYK",
+    "KYWRRRWRRRRRDRYK",
+    "KYRWWWRRRRRRDRYK",
+    "KYSSWWWRRRRRDRYK",
+    "KYRSSWWWRRRRDRYK",
+    "KYRRSSSWWRRRDRYK",
+    "KYRRRSSSRWRRDRYK",
+    "KYRRRRSSSRRRDRYK",
+    "KYRRRRRSSSRRDRYK",
+    "KYRRRRRRSSSRDRYK",
+    "KYRRRRRRRRSRRRYK",
+    "KYYYYYYYYYYYYYYK",
+    "KKKKKKKKKKKKKKKK",
+  ];
+  const colours = { K: [0x2a, 0x2d, 0x32], Y: [0xf2, 0xc0, 0x1a], R: [0xc4, 0x26, 0x20], W: [0xf6, 0xf6, 0xf2], S: SLIDE, D: [0x5a, 0x10, 0x0c] };
+  texture(blockOutput, "slide_control", (x, y) => colours[PANEL[y][x]], 2);
+  texture(blockOutput, "slide_control_grip", (x, y) => (y <= 1 ? [0xe8, 0x4a, 0x40] : SIGNAL_RED), 2);
+  texture(blockOutput, "slide_control_stem", (x, y) => (x <= 1 ? CHROME : STEEL), 2);
+  texture(blockOutput, "slide_control_lamp", (x, y) => (x <= 1 && y <= 1 ? [0x40, 0x46, 0x40] : [0x1e, 0x24, 0x20]), 0);
+  texture(blockOutput, "slide_control_lamp_lit", (x, y) => (x <= 1 && y <= 1 ? [0xc8, 0xff, 0xc8] : [0x3c, 0xe0, 0x5a]), 0);
+}
+
 // The windscreen renderer tints this plain white sprite into glass and frame.
 texture(blockOutput, "windscreen", () => [255, 255, 255], 0);
 

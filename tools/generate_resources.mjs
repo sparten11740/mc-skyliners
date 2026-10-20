@@ -155,6 +155,77 @@ function airstairLang() {
     "subtitles.aerolarge.airstair_latch": "Airstairs latch",
   };
 }
+// The evacuation slides. The control, set into the cabin wall beside a door, drawn facing north: the hull's skin all
+// round but on its north face, which is its red panel, a red handle in the slot down its side, up while the slide is
+// packed and down once it is out, and a lamp beside it, dark or glowing green. The slides themselves are drawn by the
+// control's renderer (see SlideRenderer), and the steps under them are invisible, so their model only gives the
+// particles; laid only by the control, so no item and no loot, light like the rest of the airliner but no part of its
+// hull (see slideFittings).
+{
+  const skin = { texture: "#skin" };
+  for (const out of [false, true]) {
+    const name = `slide_control${out ? "_out" : ""}`;
+    // The handle's stem from its pivot to its grip, and the grip across it, up or down the slot.
+    const [stemFrom, stemTo, gripFrom, gripTo] = out ? [3, 7.5, 1.5, 3] : [7.5, 12.5, 12, 13.5];
+    const lamp = { texture: "#lamp", ...(out ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) };
+    write(`assets/${ID}/models/block/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures: {
+        face: `${ID}:block/slide_control`, skin: `${ID}:block/airframe_panel`, stem: `${ID}:block/slide_control_stem`,
+        grip: `${ID}:block/slide_control_grip`, lamp: `${ID}:block/slide_control_lamp${out ? "_lit" : ""}`, particle: `${ID}:block/slide_control`,
+      },
+      elements: [
+        {
+          from: [0, 0, 0], to: [16, 16, 16],
+          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+            [face, { ...(face === "north" ? { texture: "#face" } : skin), cullface: face }])),
+        },
+        solid([2.5, 6.5, -1], [4.5, 8.5, 0], "#stem"),
+        solid([3, stemFrom, -1.25], [4, stemTo, -0.25], "#stem"),
+        solid([1.5, gripFrom, -2.5], [5.5, gripTo, -0.5], "#grip"),
+        { from: [6, 12, -0.5], to: [8, 14, 0], ...(out ? { shade: false } : {}), faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, lamp])) },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/slide_control.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((out) =>
+      [`deployed=${out},facing=${facing}`, { model: `${ID}:block/slide_control${out ? "_out" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/slide_control.json`, { parent: `${ID}:block/slide_control` });
+  dropsItself("slide_control");
+  cubes.slide_control = null;
+  write(`assets/${ID}/blockstates/slide_step.json`, { variants: { "": { model: `${ID}:block/slide_step` } } });
+  write(`assets/${ID}/models/block/slide_step.json`, { textures: { particle: `${ID}:block/slide_lane` } });
+  cubes.slide_step = null;
+}
+function slideFittings() {
+  return ["slide_step"];
+}
+// The gas rushing in as a slide inflates and out as it deflates, and someone setting off down it (see
+// tools/generate_sounds.mjs).
+function slideSounds() {
+  return Object.fromEntries(["slide_inflate", "slide_deflate", "slide_whoosh"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+// A slide of yellow wool on a lever in a panel.
+function slideRecipes() {
+  shaped("slide_control", ["Y", "L", "P"], { Y: "minecraft:yellow_wool", L: "minecraft:lever", P: `${ID}:airframe_panel` }, 1);
+}
+function slideLang() {
+  return {
+    "block.aerolarge.slide_control": "Evacuation Slide Control",
+    "block.aerolarge.slide_step": "Evacuation Slide",
+    "entity.aerolarge.slide_ride": "Evacuation Slide",
+    "subtitles.aerolarge.slide_inflate": "Slide inflates",
+    "subtitles.aerolarge.slide_deflate": "Slide deflates",
+    "subtitles.aerolarge.slide_whoosh": "Someone slides down",
+    "message.aerolarge.slide.moving": "The slide only comes out while the airliner stands still",
+    "message.aerolarge.slide.no_ground": "No ground within the slide's reach below this door",
+    "message.aerolarge.slide.blocked": "Something is in the slide's way",
+    "message.aerolarge.slide.too_low": "The ground is right below the door: no slide needed",
+    "message.aerolarge.slide.no_door": "This slide control is not next to a door",
+  };
+}
 // The skin, the windscreen and the moon pool's clear glass cut to the hull's curve: one model each for every shape,
 // baked by the mod's own "shell" loader from the block's corners. They give back the part they are cut from (the
 // clear glass, plain glass). The relay hidden in the
@@ -266,6 +337,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   }
   Object.assign(sounds, plugDoorSounds());
   Object.assign(sounds, airstairSounds());
+  Object.assign(sounds, slideSounds());
   Object.assign(sounds, rubberDuckSounds());
   Object.assign(sounds, coffeeMachineSounds());
   Object.assign(sounds, crewLockerSounds());
@@ -2362,6 +2434,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
+FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
 FITTINGS.push(...cabinStairsFittings());
@@ -2470,6 +2543,7 @@ rubberDuckRecipes();
 coffeeMachineRecipes();
 cabinStairsRecipes();
 crewLockerRecipes();
+slideRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2803,6 +2877,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
   ...airstairLang(),
+  ...slideLang(),
   ...flightDeckLang(),
   ...rubberDuckLang(),
   ...coffeeMachineLang(),

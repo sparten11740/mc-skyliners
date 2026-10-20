@@ -570,6 +570,85 @@ const stairNoise = (() => {
   writeSound("airstair_latch", samples);
 }
 
+// The evacuation slides, with their own noise, so they never shift the sounds above. Inflating, as long as the slide
+// takes to come out: the bang of the gas bottle's valve firing, a deep thump with a crack of noise on it, then the
+// roar of the aspirators gulping air into the slide, a loud rush that swells in at once and darkens as the slide fills,
+// the fabric flapping as it unrolls, until it is firm with a soft thud and the last of the rush dies away.
+const slideNoise = (() => {
+  let slideSeed = 0x736c6964;
+  return () => {
+    slideSeed = (Math.imul(slideSeed, 1664525) + 1013904223) | 0;
+    return (slideSeed >>> 0) / 4294967296;
+  };
+})();
+{
+  const length = 2.2;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  let band = 0;
+  let thump = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = slideNoise() * 2 - 1;
+    // The rush: darker the fuller the slide gets, its band of noise narrowing down.
+    const dark = 0.05 + 0.25 * Math.exp(-t / 0.7);
+    low += 0.02 * (white - low);
+    band += dark * (white - band);
+    const swell = Math.min(1, t / 0.06) * Math.min(1, Math.max(0, (1.95 - t) / 0.55));
+    // The fabric flapping as it unrolls, between the bang and the slide coming down onto the ground: a quick
+    // irregular beat on the rush.
+    const flapping = t > 0.1 && t < 1.3 ? 0.5 * Math.max(0, Math.sin(2 * Math.PI * 14 * t + 3 * Math.sin(2 * Math.PI * 2.3 * t))) ** 4 : 0;
+    samples[i] = swell * (1.4 * band + 0.9 * low) * (1 + flapping);
+    // The valve's bang, and the thud as the slide comes firm.
+    if (t < 0.25) {
+      thump += (2 * Math.PI * (45 + 50 * Math.exp(-t / 0.03))) / RATE;
+      samples[i] += 0.9 * Math.exp(-t / 0.07) * Math.sin(thump) + (t < 0.02 ? 1.0 * white * (1 - t / 0.02) : 0);
+    }
+    const settle = t - 1.8;
+    if (settle >= 0 && settle < 0.3) {
+      samples[i] += 0.7 * Math.exp(-settle / 0.06) * Math.sin(2 * Math.PI * 70 * settle);
+    }
+  }
+  writeSound("slide_inflate", samples);
+}
+// Deflating: the gas let out, a strong hiss of air through the relief valves falling away as the pressure goes, the
+// slide sagging with a few soft flaps of fabric.
+{
+  const length = 1.8;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = slideNoise() * 2 - 1;
+    const high = white - previous;
+    previous = white;
+    low += (0.08 + 0.2 * Math.exp(-t / 0.5)) * (white - low);
+    const pressure = Math.min(1, t / 0.04) * Math.exp(-t / 0.6);
+    const sag = Math.max(0, Math.sin(2 * Math.PI * 2.5 * t)) ** 6 * Math.exp(-t / 0.8);
+    samples[i] = pressure * (0.5 * high + 1.6 * low) + 0.4 * sag * low;
+  }
+  writeSound("slide_deflate", samples);
+}
+// Someone setting off down a slide: the swish of them sliding over the fabric, a band of noise sweeping up as they
+// pick up speed and fading away down the lane.
+{
+  const length = 0.8;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = slideNoise() * 2 - 1;
+    const sweep = 0.05 + 0.3 * Math.sin((Math.PI * t) / length);
+    low += sweep * (white - low);
+    band += (sweep * 0.3) * (low - band);
+    const envelope = Math.min(1, t / 0.08) * Math.exp(-Math.max(0, t - 0.25) / 0.2);
+    samples[i] = envelope * (low - band);
+  }
+  writeSound("slide_whoosh", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

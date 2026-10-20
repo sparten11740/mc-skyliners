@@ -1,0 +1,176 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "face": "aerolarge:block/slide_control",
+    "skin": "aerolarge:block/airframe_panel",
+    "stem": "aerolarge:block/slide_control_stem",
+    "grip": "aerolarge:block/slide_control_grip",
+    "lamp": "aerolarge:block/slide_control_lamp",
+    "particle": "aerolarge:block/slide_control"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#skin",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#skin",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#skin",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#skin",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#skin",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        6.5,
+        -1
+      ],
+      "to": [
+        4.5,
+        8.5,
+        0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stem"
+        },
+        "south": {
+          "texture": "#stem"
+        },
+        "east": {
+          "texture": "#stem"
+        },
+        "west": {
+          "texture": "#stem"
+        },
+        "up": {
+          "texture": "#stem"
+        },
+        "down": {
+          "texture": "#stem"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        7.5,
+        -1.25
+      ],
+      "to": [
+        4,
+        12.5,
+        -0.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stem"
+        },
+        "south": {
+          "texture": "#stem"
+        },
+        "east": {
+          "texture": "#stem"
+        },
+        "west": {
+          "texture": "#stem"
+        },
+        "up": {
+          "texture": "#stem"
+        },
+        "down": {
+          "texture": "#stem"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        12,
+        -2.5
+      ],
+      "to": [
+        5.5,
+        13.5,
+        -0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#grip"
+        },
+        "south": {
+          "texture": "#grip"
+        },
+        "east": {
+          "texture": "#grip"
+        },
+        "west": {
+          "texture": "#grip"
+        },
+        "up": {
+          "texture": "#grip"
+        },
+        "down": {
+          "texture": "#grip"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        12,
+        -0.5
+      ],
+      "to": [
+        8,
+        14,
+        0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp"
+        },
+        "east": {
+          "texture": "#lamp"
+        },
+        "west": {
+          "texture": "#lamp"
+        },
+        "up": {
+          "texture": "#lamp"
+        },
+        "down": {
+          "texture": "#lamp"
+        }
+      }
+    }
+  ]
+}

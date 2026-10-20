@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "deployed=false,facing=north": {
+      "model": "aerolarge:block/slide_control",
+      "y": 0
+    },
+    "deployed=true,facing=north": {
+      "model": "aerolarge:block/slide_control_out",
+      "y": 0
+    },
+    "deployed=false,facing=east": {
+      "model": "aerolarge:block/slide_control",
+      "y": 90
+    },
+    "deployed=true,facing=east": {
+      "model": "aerolarge:block/slide_control_out",
+      "y": 90
+    },
+    "deployed=false,facing=south": {
+      "model": "aerolarge:block/slide_control",
+      "y": 180
+    },
+    "deployed=true,facing=south": {
+      "model": "aerolarge:block/slide_control_out",
+      "y": 180
+    },
+    "deployed=false,facing=west": {
+      "model": "aerolarge:block/slide_control",
+      "y": 270
+    },
+    "deployed=true,facing=west": {
+      "model": "aerolarge:block/slide_control_out",
+      "y": 270
+    }
+  }
+}

@@ -550,10 +550,10 @@ the doorway), its outside still facing out. The cargo door swings up and out on 
 out of its doorway where the hull above it stands proud of it. Open, the doorway is clear, and the panel outside is
 in nobody's way; use the empty doorway to shut it again. The panel comes back the same way and latches home with a
 clunk, but not on anyone: while someone stands where it goes back in, it waits, with a chime. The airstairs and a
-docked jet bridge open the door they serve, and shut it again as they fold. Villagers find their way through the
-doors as through wooden ones: while the airliner stands still, a door opens for a villager walking up to it and shuts
-again behind it; in flight no villager opens one. The cockpit door and the doors of the WC and the crew room are
-ordinary doors.
+docked jet bridge open the door they serve, and shut it again as they fold, and so does an evacuation slide (see
+Evacuation slides). Villagers find their way through the doors as through wooden ones: while the airliner stands
+still, a door opens for a villager walking up to it and shuts again behind it; in flight no villager opens one. The
+cockpit door and the doors of the WC and the crew room are ordinary doors.
 
 ### Airstairs
 
@@ -572,6 +572,28 @@ controller inside or outside by the top of the stairs, by using the panel itself
 ground with the yellow call button on the front of the nose gear. An airliner is built with them down. In one built
 before them, the old stairs of blocks fold away the old way the first time they are worked, and from then on the new
 ones come out, folding into the hold behind the hull below the door.
+
+### Evacuation slides
+
+An Evacuation Slide Control, set into the wall beside a plug door, works an evacuation slide packed in that door, as an
+airliner's are: a red panel in a yellow frame showing someone sliding down a slide, so it needs no reading, with a red
+handle in a slot down its side. Only its panel works it. Pull the handle and the door opens; once it is open the pack
+drops out onto the sill, and the slide unrolls down to the ground and inflates with the roar of its gas, in two seconds:
+a big yellow slide with a raised rail along each side over a grey beam, grey underneath, a silver reflective stripe
+along its rails, held to the sill by its girt bar and as wide as the doorway at its head, widening out past the parked
+door, rounding out onto the ground and running a little way along it to its curled toe. Step out of the doorway onto it
+and it carries you down, seated, quickly and smoothly, and sets you down on the ground just past its toe with no fall to
+hurt you; sneaking does not get you off halfway, and nobody walks up it: try, and down you go. Villagers go down it the
+same way, and find their way out of the airliner down it.
+
+It comes down at 35 degrees, or steeper (up to 45) or shallower (down to 25) where something is in its way, as far down
+as the ground lies below the door, measured from the world as it comes out, aboard an assembled airliner too. It only
+comes out while the airliner stands still, with the ground within its reach (eight blocks down for each unit of
+`scale`) and nothing in its way: in flight, over a drop, or onto the airliner itself, it refuses with a bass note and
+says why. Pull the handle again and it deflates and rolls itself back up into the doorway once nobody is on it (a chime
+says it is waiting), and the door shuts behind it, as it does behind the airstairs, rather than leave an open door over
+a long drop. It goes the same way by itself as soon as the airliner starts to move, and when the door is shut on it. An
+Evacuation Slide Control can be crafted; put up beside a plug door, it serves that door.
 
 ### Jet bridge
 
@@ -633,7 +655,9 @@ flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRende
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
-from their `AirstairBlockEntity`; `TailCameraFeed` draws the fin camera's
+from their `AirstairBlockEntity`; `SlideRenderer` draws an evacuation slide inflating and deflating, as
+`EvacuationSlide` lays it out for the ground and builds it, from its `SlideControlBlockEntity`, and `SlideRide` carries
+whoever slides down it; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
 at night through Veil's light renderer, the only places Veil is touched; `CloudlessCabin` leaves the clouds out of the
 player's view while the camera is inside a hull in the cloud layer. Assets

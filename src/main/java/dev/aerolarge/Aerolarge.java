@@ -12,6 +12,7 @@ import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.AutopilotSettingsScreen;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
+import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
 import dev.aerolarge.radio.Broadcasts;
@@ -47,6 +48,7 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);
+        NeoForge.EVENT_BUS.addListener(SlideRide::onMount);
         NeoForge.EVENT_BUS.addListener(Passengers::onInteract);
         NeoForge.EVENT_BUS.addListener(Passengers::onTick);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
