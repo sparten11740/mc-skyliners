@@ -4638,6 +4638,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.cameraShake": "Camera Shake",
   "aerolarge.configuration.tailCameraFeed": "Tail Camera Picture",
   "aerolarge.configuration.tailCameraFps": "Tail Camera Pictures a Second",
+  "aerolarge.configuration.tailCameraRenderDistance": "Tail Camera Render Distance",
   "aerolarge.configuration.tailCameraResolution": "Tail Camera Picture Height",
   "aerolarge.configuration.pilotHud": "Pilot HUD",
   "aerolarge.configuration.pilotHudScale": "Pilot HUD Size",

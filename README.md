@@ -121,9 +121,13 @@ with CAM TAIL and a blinking recording light in the corner. The picture is drawn
 while a display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without
 one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
 while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
-graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps` and `tailCameraResolution` also set
-how often and how sharp the picture is drawn. A Tail Camera Display can be crafted and put up in your own builds too:
-against a wall it stands upright, and put up against the underside of a block it hangs from it tilted toward you. It
+graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
+`tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It reaches 16 chunks by
+default (2 to 32), never further than your own render distance, since the world is only loaded that far round you, and
+the fog closes in at its edge as it does at the edge of your own view. The further it reaches, the more each picture
+costs: what the camera sees is worked out afresh every time it is drawn, while the game waits, about four times as much
+at twice the distance. A Tail Camera Display can be crafted and put up in your own builds too: against a wall it
+stands upright, and put up against the underside of a block it hangs from it tilted toward you. It
 reaches two blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole. On
 an assembled airliner with an autopilot it shows that airliner's fin camera. Against the wall behind the captain's
 seat is the Physics Assembler, and across from it, against the wall behind the first officer's, the flight crew's
@@ -832,10 +836,10 @@ taken from a coffee machine (Barista).
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
-`pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps` and `tailCameraResolution`, the cabin's
-blue `nightLights`, and `cloudlessCabin`) are there from the title screen. The server settings open only while a world
-is loaded, from the pause menu's Mods button while playing in single player; they are kept in
-`config/aerolarge-server.toml`, on a dedicated server in its own.
+`pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
+`tailCameraResolution`, the cabin's blue `nightLights`, and `cloudlessCabin`) are there from the title screen. The
+server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
+they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
 

@@ -10,6 +10,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.DoubleValue PILOT_HUD_SCALE;
     public static final ModConfigSpec.BooleanValue TAIL_CAMERA_FEED;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_FPS;
+    public static final ModConfigSpec.IntValue TAIL_CAMERA_RENDER_DISTANCE;
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
     public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
@@ -36,6 +37,13 @@ public final class AerolargeClientConfig {
         TAIL_CAMERA_FPS = builder
             .comment("How many times a second, at most, the tail camera's picture is drawn anew.")
             .defineInRange("tailCameraFps", 15, 1, 30);
+        TAIL_CAMERA_RENDER_DISTANCE = builder
+            .comment("How far the tail camera's picture reaches, in chunks, before the fog closes in. It never reaches further",
+                "than your own render distance: the world is only loaded that far round you. The further it reaches, the more",
+                "each picture costs: what the camera sees is worked out afresh every time the picture is drawn, while the game",
+                "waits, and there is about four times as much to work out at twice the distance. Lower it, or tailCameraFps, if",
+                "the picture makes the game stutter.")
+            .defineInRange("tailCameraRenderDistance", 16, 2, 32);
         TAIL_CAMERA_RESOLUTION = builder
             .comment("How many pixels tall the tail camera's picture is drawn; it is a little over twice as wide.")
             .defineInRange("tailCameraResolution", 144, 72, 360);

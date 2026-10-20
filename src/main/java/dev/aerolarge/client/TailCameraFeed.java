@@ -49,8 +49,9 @@ import org.slf4j.Logger;
  * The live pictures on the tail camera displays: the world drawn from the camera on top of each assembled airliner's fin
  * ({@link OutsideCamera#TAIL}) into a small picture of its own, which every display aboard that airliner shows. An
  * airliner's picture is drawn only while one of its displays was in view and within {@link #REACH} blocks in the frame
- * before, at most {@code tailCameraFps} times a second and one airliner a frame; once none of its displays has been
- * seen for a while, the picture is thrown away. With no display about, nothing is drawn or kept at all.
+ * before, at most {@code tailCameraFps} times a second and one airliner a frame. It reaches as far as the
+ * {@code tailCameraRenderDistance} setting or the player's own render distance, whichever is less. Once none of its
+ * displays has been seen for a while, the picture is thrown away; with no display about, nothing is drawn or kept.
  *
  * <p>The picture is drawn before each frame, outside the frame's own drawing of the world, by Veil's perspective
  * renderer. Veil comes inside Sable's jar, so it is there whenever an airliner can be assembled, and it is made for
@@ -81,18 +82,16 @@ public final class TailCameraFeed {
     /** How often an airliner whose camera cannot be placed (it has no autopilot to go by) is looked at again, in milliseconds. */
     private static final long RETRY_AFTER = 5_000;
     /**
-     * How far the picture reaches, in chunks, at most, whatever the player's own render distance: Veil finds what the
-     * fin camera sees on the main thread, every time the picture is drawn.
-     */
-    private static final int MAX_RENDER_DISTANCE = 12;
-    /**
      * The tail camera's lens is set for a 16:9 screen, as the passenger screens show it; the picture keeps that width
      * of view (the wingtips at its edges) and is cut to the display's shape top and bottom.
      */
     private static final double LENS_ASPECT = 16 / 9.0;
     /** How close to the camera the picture shows anything, in blocks, as the world's own drawing does. */
     private static final float NEAR = 0.05F;
-    /** The far edge of the picture past its render distance, as a share of it, as the world's own drawing has it. */
+    /**
+     * How far the picture's far plane lies, as a multiple of its render distance, as the world's own drawing has it
+     * ({@link GameRenderer#getDepthFar}): well past the fog, so nothing short of the fog is cut off.
+     */
     private static final float FAR = 4;
 
     private static final Map<UUID, Feed> FEEDS = new HashMap<>();
@@ -308,7 +307,11 @@ public final class TailCameraFeed {
             levelRenderer.zTransparentOld = view.eye().z;
             // Panoramic mode leaves out entity outlines, which would draw into the window-sized outline buffer.
             gameRenderer.setPanoramicMode(true);
-            float renderDistance = Math.min(minecraft.options.getEffectiveRenderDistance(), MAX_RENDER_DISTANCE);
+            // As far as the setting asks, but never past the player's own render distance: only that much of the world
+            // is loaded and built round the player. Veil draws with it as the game's render distance, so the world's
+            // own fog closes in at the edge of the picture, as it does at the edge of the player's view.
+            float renderDistance = Math.min(minecraft.options.getEffectiveRenderDistance(),
+                AerolargeClientConfig.TAIL_CAMERA_RENDER_DISTANCE.get());
             Target target = feed.target;
             SableClient.withoutWaterOcclusion(() -> target.draw(lens, view, renderDistance, deltaTracker));
             feed.ready = true;
