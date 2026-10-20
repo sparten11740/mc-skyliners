@@ -986,18 +986,60 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     random_sequence: `${ID}:blocks/bunk`,
   });
   cubes.bunk = null;
+
+  // The bean bag (see BeanBagBlock), drawn facing north, the sitter's back to the south: the bag squashed out over the
+  // floor, bulging at its middle, slumped into a seat with its sides bunched up either side and its back heaped up
+  // behind, all of it tinted to its colour; a dark carrying strap across the top of the back.
+  write(`assets/${ID}/models/block/bean_bag.json`, {
+    parent: "minecraft:block/block",
+    textures: { fabric: block("bean_bag"), strap: block("bean_bag_strap"), particle: block("bean_bag") },
+    elements: [
+      part([1.5, 0, 1.5], [14.5, 1.5, 14.5], "#fabric", true),
+      part([0.5, 1.5, 0.5], [15.5, 5, 15.5], "#fabric", true),
+      part([1.5, 5, 1], [14.5, 6.5, 10.5], "#fabric", true),
+      part([0.5, 5, 2], [3, 8, 10.5], "#fabric", true),
+      part([13, 5, 2], [15.5, 8, 10.5], "#fabric", true),
+      part([1, 5, 10], [15, 10.5, 15.5], "#fabric", true),
+      part([2.5, 10.5, 11], [13.5, 12.5, 15], "#fabric", true),
+      part([6.5, 12.5, 12.5], [9.5, 13.25, 14.5], "#strap"),
+    ],
+  });
+  facing("bean_bag");
+  write(`assets/${ID}/models/item/bean_bag.json`, { parent: `${ID}:block/bean_bag` });
+  const bag = `${ID}:bean_bag`;
+  write(`data/${ID}/loot_table/blocks/bean_bag.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: bag,
+        functions: [{
+          function: "minecraft:copy_state", block: bag, properties: ["color"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: bag, properties: { color: "orange" } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/bean_bag`,
+  });
+  cubes.bean_bag = null;
 }
-// The bunk is fitted into the den rather than built into the airliner: breakable, and no part of the airframe.
+// The den's furniture is fitted into it rather than built into the airliner: breakable, and no part of the airframe.
 function denFurnitureFittings() {
-  return ["bunk"];
+  return ["bunk", "bean_bag"];
 }
-// Light blue wool on birch planks, with glowstone for the reading light.
+// A bunk: light blue wool on birch planks, with glowstone for the reading light. A bean bag: orange wool round a
+// handful of cocoa beans.
 function denFurnitureRecipes() {
   shaped("bunk", ["G  ", "WWW", "PPP"], { G: "minecraft:glowstone_dust", W: "minecraft:light_blue_wool", P: "minecraft:birch_planks" }, 1);
+  shaped("bean_bag", ["WCW", "WWW"], { W: "minecraft:orange_wool", C: "minecraft:cocoa_beans" }, 1);
 }
 function denFurnitureLang() {
   return {
     "block.aerolarge.bunk": "Bunk",
+    "block.aerolarge.bean_bag": "Bean Bag",
   };
 }
 // The den's treasure chest: cookies, a golden apple, a signal flare, a basketball and three twinkling star rockets.

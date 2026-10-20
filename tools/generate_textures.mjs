@@ -1725,7 +1725,7 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
-// The den's bunk (see BunkBlock). Its frame: smooth white laminate. The mattress: white, quilted in
+// The den's furniture. The bunk (see BunkBlock): its frame smooth white laminate. The mattress: white, quilted in
 // diamonds stitched in pale blue. The blanket and the rail's padding are tinted to the bunk's colour, so they are
 // drawn in light greys: the blanket a soft knit in ribs, the padding vinyl with a row of stitches across it every few
 // pixels. The pillow: white, shaded at its edges. The reading light's shade: a dark diffuser while off, warm white and
@@ -1740,6 +1740,16 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "bunk_rail", (x, y) => (y % 4 === 0 && x % 2 === 0 ? [0xb0, 0xb0, 0xb0] : [0xe4, 0xe4, 0xe4]), 3);
   texture(blockOutput, "bunk_pillow", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? [0xde, 0xde, 0xda] : [0xf8, 0xf8, 0xf4]), 2);
   texture(blockOutput, "bunk_lamp", () => [0x5c, 0x60, 0x66], 2);
+  // The bean bag (see BeanBagBlock), tinted to its colour, so drawn in light greys: soft nylon panels sewn together
+  // along darker seams, a few creases running across them where it slumps, a sheen along the top of each panel. Its
+  // carrying strap: dark grey webbing.
+  texture(blockOutput, "bean_bag", (x, y) => {
+    if (x === 0 || x === 8) return [0xb4, 0xb4, 0xb4];
+    const crease = (x + 2 * y) % 9 === 0 ? 18 : 0;
+    const v = (x % 8 === 3 ? 248 : 232) - crease;
+    return [v, v, v];
+  }, 3);
+  texture(blockOutput, "bean_bag_strap", (x, y) => (y % 2 === 0 ? [0x34, 0x36, 0x3a] : [0x28, 0x2a, 0x2e]), 2);
   texture(blockOutput, "bunk_lamp_lit", (x, y) => {
     const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
     return [0xff, clamp(Math.round(232 + 20 * glow)), clamp(Math.round(184 + 50 * glow))];

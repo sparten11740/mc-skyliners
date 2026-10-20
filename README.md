@@ -364,6 +364,11 @@ your right. Use it with an empty hand to switch the reading light on or off; use
 the rail's padding, and taken down it keeps its colour. It is for lying about on, not for sleeping in. It can be
 crafted.
 
+A Bean Bag is a big squashy bag of fabric panels to flop into, slumped into a seat with its sides bunched up round it
+and its back heaped up behind. Use it to sit down in it: like the cabin seats it is one of Create's seats underneath,
+so villager passengers take it for one too. A fall into it never hurts, only flumps. Put down, it faces you, its back
+away from you; use a dye on it to dye it, orange until dyed, and taken down it keeps its colour. It can be crafted.
+
 ### The hold
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides

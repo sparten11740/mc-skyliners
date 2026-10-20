@@ -409,6 +409,7 @@
   "block.aerolarge.lavatory_basin": "Lavatory Basin",
   "block.aerolarge.bulkhead_sign": "Bulkhead Sign",
   "block.aerolarge.bunk": "Bunk",
+  "block.aerolarge.bean_bag": "Bean Bag",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

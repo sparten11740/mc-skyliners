@@ -13,6 +13,7 @@ import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.BulkheadSignBlock;
 import dev.aerolarge.block.BunkBlock;
@@ -802,6 +803,16 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> BUNK_ITEM = ITEMS.registerSimpleBlockItem(BUNK);
     /**
+     * The den's bean bags: one of Create's seats underneath, as soft and as quick to take up as wool; nothing spawns
+     * on them.
+     */
+    public static final DeferredBlock<BeanBagBlock> BEAN_BAG = BLOCKS.registerBlock(
+        "bean_bag", BeanBagBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> BEAN_BAG_ITEM = ITEMS.registerSimpleBlockItem(BEAN_BAG);
+    /**
      * Luggage in the hold: suitcases in four colours, and the golden suitcases hidden among them, giving a faint glow
      * to be found by in the dark; each a small container.
      */
@@ -994,7 +1005,7 @@ public final class AerolargeRegistry {
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
-            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM,
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(
