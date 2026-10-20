@@ -1,6 +1,5 @@
 package dev.aerolarge.item;
 
-import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.Trolley;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +29,7 @@ public class TrolleyItem extends Item {
         if (!level.isClientSide) {
             BlockPos floor = context.getClickedPos();
             Player player = context.getPlayer();
-            float yaw = player == null ? context.getRotation() : Trolley.yaw(SableFlight.turnToPlot(level, floor, player.getLookAngle()));
+            float yaw = player == null ? context.getRotation() : Trolley.yaw(Trolley.across(level, floor, player.getLookAngle()));
             level.addFreshEntity(Trolley.at(level, Vec3.atBottomCenterOf(floor.above()), yaw));
             context.getItemInHand().consume(1, player);
         }

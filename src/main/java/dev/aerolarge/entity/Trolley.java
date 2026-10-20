@@ -4,6 +4,7 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -84,6 +85,15 @@ public class Trolley extends Entity {
         return (float) Math.toDegrees(Math.atan2(-facing.x, facing.z));
     }
 
+    /**
+     * A look in the world, the way it points across the floor at a position, however short: level in the world first,
+     * then turned into the frame of an airliner the position is among the blocks of, and level with its floor.
+     * Levelled the other way round, a look steeply down at a banked airliner's floor would swing round with the bank.
+     */
+    public static Vec3 across(Level level, BlockPos at, Vec3 look) {
+        return SableFlight.turnToPlot(level, at, look.multiply(1, 0, 1)).multiply(1, 0, 1);
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -157,8 +167,7 @@ public class Trolley extends Entity {
             }
             discard();
         } else {
-            Vec3 look = SableFlight.turnToPlot(level(), blockPosition(), player.getLookAngle());
-            setDeltaMovement(getDeltaMovement().add(look.multiply(1, 0, 1).normalize().scale(KNOCK)));
+            setDeltaMovement(getDeltaMovement().add(across(level(), blockPosition(), player.getLookAngle()).normalize().scale(KNOCK)));
         }
         return true;
     }
