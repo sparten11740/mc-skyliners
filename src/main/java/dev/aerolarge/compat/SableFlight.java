@@ -5,6 +5,7 @@ import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
+import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import java.util.function.Predicate;
@@ -14,11 +15,13 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import org.joml.Vector3d;
@@ -30,7 +33,7 @@ import org.joml.Vector3d;
  * basketballs, paper planes) live in the plot too while they are inside the hull, carried along with the airliner's
  * blocks (see {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is
  * known to be installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the
- * world.
+ * world. {@link #fitsAboard} also serves the client, which works out its own player's pose.
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -115,6 +118,18 @@ public final class SableFlight {
     /** Whether the entity lives among an assembled airliner's blocks, in its plot, as the cabin's loose things do. */
     public static boolean inPlot(Entity entity) {
         return SABLE && Access.inPlot(entity);
+    }
+
+    /**
+     * Whether a box round a player standing aboard an assembled airliner, inside its hull, is clear of its blocks as
+     * the airliner lies now; false when they stand aboard none. Sable's own test, for whether a player has room to
+     * stand up, looks at where the airliner's blocks were a tick ago: flying fast nose up, as it climbs, its floor
+     * stood a good half block higher there than it does now under the player, so a player standing on it is made to
+     * crouch or crawl and stays so. This one moves the box back along with the airliner first. It serves the client
+     * too, which works out its own player's pose.
+     */
+    public static boolean fitsAboard(Player player, AABB box) {
+        return SABLE && Access.fitsAboard(player, box);
     }
 
     /**
@@ -277,6 +292,20 @@ public final class SableFlight {
 
         static boolean inPlot(Entity entity) {
             return Sable.HELPER.getContaining(entity) != null;
+        }
+
+        static boolean fitsAboard(Player player, AABB box) {
+            SubLevel airliner = Sable.HELPER.getTrackingSubLevel(player);
+            if (airliner == null) {
+                return false;
+            }
+            Vec3 middle = box.getCenter();
+            Vec3 inPlot = airliner.logicalPose().transformPositionInverse(middle);
+            if (!Aboard.insideHull(player.level(), BlockPos.containing(inPlot))) {
+                return false;
+            }
+            Vec3 lastTick = airliner.lastPose().transformPosition(inPlot);
+            return CanFallAtleastHelper.canFallAtleastWithSubLevels(player.level(), box.move(lastTick.subtract(middle))) == null;
         }
 
         /** The assembled airliner whose hull holds a point in the world; null for none. */

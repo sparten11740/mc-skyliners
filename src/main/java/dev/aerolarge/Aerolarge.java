@@ -5,6 +5,7 @@ import dev.aerolarge.block.BrewCoffee;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
@@ -45,6 +46,7 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
         NeoForge.EVENT_BUS.addListener(HighDive::onTick);
+        NeoForge.EVENT_BUS.addListener(Headroom::onTick);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);
