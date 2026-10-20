@@ -12,6 +12,7 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.Brightness;
+import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
@@ -534,6 +535,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> CABIN_CURTAIN_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CURTAIN);
     public static final DeferredItem<BlockItem> CABIN_PARTITION_ITEM = ITEMS.registerSimpleBlockItem(CABIN_PARTITION);
+    /** The white archways in the bulkheads, a piece at a time: as tough as the partition, and nothing spawns on it. */
+    public static final DeferredBlock<CabinArchBlock> CABIN_ARCH = BLOCKS.registerBlock(
+        "cabin_arch", CabinArchBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(1.5F).sound(SoundType.WOOD).noOcclusion().isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> CABIN_ARCH_ITEM = ITEMS.registerSimpleBlockItem(CABIN_ARCH);
     /**
      * The green running man over the doors, lit as an exit sign is: enough to find a door by with the cabin lights set
      * for the night, and no more than the passenger screens give, so the cabin stays dark.
@@ -851,7 +858,8 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
-            DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
+            DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(

@@ -791,6 +791,14 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "cabin_curtain_tie", (x, y) => ((x + y) % 4 < 2 ? [0xd8, 0xac, 0x40] : [0xa4, 0x7c, 0x22]), 2);
   texture(blockOutput, "cabin_partition", (x, y) => (x === 0 || y === 0 ? [0xdb, 0xd3, 0xc0] : [0xee, 0xe7, 0xd6]), 2);
 }
+// The cabin arch round the bulkheads' archways: smooth white panelling, a shade whiter than the partition's cream and
+// without its seams, so the arch reads as one moulded piece set into the wall; its moulding's bead whiter still, and
+// the groove behind the bead a soft grey, so the moulding shows head on too.
+{
+  texture(blockOutput, "cabin_arch", () => [0xf7, 0xf5, 0xef], 1);
+  texture(blockOutput, "cabin_arch_trim", () => [0xfd, 0xfc, 0xf9], 1);
+  texture(blockOutput, "cabin_arch_groove", () => [0xe0, 0xdd, 0xd6], 1);
+}
 
 // The exit sign over the doors: on green, a white man running into a white doorway, dark inside, as every airliner's
 // exits are marked. The sign shows the middle eight rows, between the first and last columns.

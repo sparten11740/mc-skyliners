@@ -1,0 +1,114 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "trim": "aerolarge:block/cabin_arch_trim",
+    "groove": "aerolarge:block/cabin_arch_groove",
+    "arch": "aerolarge:block/cabin_arch",
+    "wall": "aerolarge:block/cabin_partition",
+    "particle": "aerolarge:block/cabin_arch"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#arch",
+          "uv": [
+            15,
+            15,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#arch",
+          "uv": [
+            0,
+            15,
+            1,
+            16
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        15
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            0,
+            0,
+            15,
+            16
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            1,
+            0,
+            16,
+            16
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        15
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            15,
+            0,
+            16,
+            15
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            0,
+            0,
+            1,
+            15
+          ],
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

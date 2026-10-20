@@ -1383,10 +1383,11 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
-const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "exit_sign"];
+const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
 const ROOM_DIVIDER_LANG = {
   "block.aerolarge.cabin_curtain": "Cabin Curtain",
   "block.aerolarge.cabin_partition": "Cabin Partition",
+  "block.aerolarge.cabin_arch": "Cabin Arch",
   "block.aerolarge.exit_sign": "Exit Sign",
 };
 // The cabin curtain, drawn facing north (see CurtainBlock), one model for each way it can be drawn and joined; the
@@ -1495,11 +1496,176 @@ const ROOM_DIVIDER_LANG = {
     random_sequence: `${ID}:blocks/cabin_curtain`,
   });
   for (const name of ROOM_DIVIDERS) {
-    if (name !== "cabin_curtain") {
+    if (name !== "cabin_curtain" && name !== "cabin_arch") {
       dropsItself(name);
     }
     cubes[name] = null;
   }
+}
+// The cabin arch (see CabinArchBlock): each block of the bulkheads' archways that the curve or its white band passes
+// through, drawn facing north, out from the archway's middle to the north and the wall's faces east and west. The
+// archway is worked out a pixel at a time across the wall, from how far the pixel's middle is from the edge's middle
+// line (round the arch's middle over the opening's sides, straight out to the side below them): inside the radius it
+// is open; the first pixel out is the moulding's bead, flush with the wall's faces; the next its groove, set back half
+// a pixel into both; then white panelling out to BAND; then the bulkhead's own cream panels. Each block is the pixels
+// of each kind in it merged into boxes, showing a face only where a box meets the open archway or something set back
+// further, so the arch's underside steps round its curve a pixel at a time. In the hand, a narrow archway whole.
+{
+  // How far out from the opening's edge the white reaches, in pixels: CabinArchBlock.BAND.
+  const BAND = 6;
+  // CabinArchBlock.Part: the jamb (the same for both sizes), then each size's arch blocks, by columns out from the
+  // middle and rows over the opening, the opening reaching that many blocks either side of the middle.
+  const SPANS = { narrow: 1, wide: 2 };
+  const PARTS = ["jamb", "narrow_1_1", "narrow_2_1", "narrow_0_2", "narrow_1_2", "narrow_2_2",
+    "wide_2_1", "wide_3_1", "wide_2_2", "wide_3_2", "wide_0_3", "wide_1_3", "wide_2_3"];
+  const DEFAULT = "narrow_0_2";
+  const radius = (span) => 16 * span + 8;
+  const rows = (span) => Math.ceil((radius(span) + BAND) / 16);
+  // What each kind of pixel is drawn as, from the opening out: the bead, the groove, the white panelling and the
+  // bulkhead's cream; and how far each is set back into both faces of the wall, in pixels.
+  const KINDS = [
+    { texture: "#trim", inset: 0 },
+    { texture: "#groove", inset: 0.5 },
+    { texture: "#arch", inset: 0 },
+    { texture: "#wall", inset: 0 },
+  ];
+  // The kind of the pixel u across from the opening's middle and v up from the top of its sides; null where it is open.
+  const kindAt = (span, u, v) => {
+    const out = (v >= 0 ? Math.hypot(u + 0.5, v + 0.5) : Math.abs(u + 0.5)) - radius(span);
+    return out < 0 ? null : out < 1 ? 0 : out < 2 ? 1 : out < BAND ? 2 : 3;
+  };
+  // Whether the face of a box of this kind against that pixel shows: against the open archway, or a kind set back
+  // further. The faces between kinds flush with each other are inside the wall.
+  const shows = (kind, against) => against === null || KINDS[against].inset > KINDS[kind].inset;
+  // Boxes of the pixels of each kind in a stretch of the wall, width by height from its corner (u0, v0): each pixel
+  // row by row, as far along as the row runs on in the same kind, then as far up as the rows over it do the same.
+  const merge = (span, u0, v0, width, height) => {
+    const taken = new Set();
+    const found = [];
+    for (let v = 0; v < height; v++) {
+      for (let u = 0; u < width; u++) {
+        const kind = kindAt(span, u0 + u, v0 + v);
+        if (kind === null || taken.has(`${u},${v}`)) continue;
+        let w = 1;
+        while (u + w < width && !taken.has(`${u + w},${v}`) && kindAt(span, u0 + u + w, v0 + v) === kind) w++;
+        const runsOn = (row) => [...Array(w).keys()].every((k) => !taken.has(`${u + k},${row}`) && kindAt(span, u0 + u + k, v0 + row) === kind);
+        let h = 1;
+        while (v + h < height && runsOn(v + h)) h++;
+        for (let k = 0; k < w; k++) for (let l = 0; l < h; l++) taken.add(`${u + k},${v + l}`);
+        found.push({ kind, u, v, w, h });
+      }
+    }
+    return found;
+  };
+  // Whether any pixel along one side of a box shows its face: the pixels just past it, across or up the wall.
+  const exposed = (span, u0, v0, box, side) => {
+    const along = side === "out" || side === "in" ? box.h : box.w;
+    return [...Array(along).keys()].some((k) => {
+      const [u, v] = {
+        out: [box.u + box.w, box.v + k], in: [box.u - 1, box.v + k], up: [box.u + k, box.v + box.h], down: [box.u + k, box.v - 1],
+      }[side];
+      return shows(box.kind, kindAt(span, u0 + u, v0 + v));
+    });
+  };
+  // A face of a box, its texture over the part of it the box covers as a full block's would.
+  const face = (texture, uv, cullface) => ({ texture, uv, ...(cullface ? { cullface } : {}) });
+  // A block's boxes as model elements, drawn facing north: across the wall (u) runs north, up it (v) up, and its
+  // faces are west and east, each set back by its kind's inset.
+  const elements = (span, u0, v0) => merge(span, u0, v0, 16, 16).map((box) => {
+    const { texture, inset } = KINDS[box.kind];
+    const [x0, x1] = [inset, 16 - inset];
+    const [y0, y1] = [box.v, box.v + box.h];
+    const [z0, z1] = [16 - box.u - box.w, 16 - box.u];
+    const faces = {
+      west: face(texture, [z0, 16 - y1, z1, 16 - y0], inset === 0 && "west"),
+      east: face(texture, [16 - z1, 16 - y1, 16 - z0, 16 - y0], inset === 0 && "east"),
+    };
+    if (exposed(span, u0, v0, box, "out")) faces.north = face(texture, [16 - x1, 16 - y1, 16 - x0, 16 - y0], z0 === 0 && "north");
+    if (exposed(span, u0, v0, box, "in")) faces.south = face(texture, [x0, 16 - y1, x1, 16 - y0], z1 === 16 && "south");
+    if (exposed(span, u0, v0, box, "up")) faces.up = face(texture, [x0, z0, x1, z1], y1 === 16 && "up");
+    if (exposed(span, u0, v0, box, "down")) faces.down = face(texture, [x0, 16 - z1, x1, 16 - z0], y0 === 0 && "down");
+    return { from: [x0, y0, z0], to: [x1, y1, z1], faces };
+  });
+  const textures = {
+    trim: `${ID}:block/cabin_arch_trim`, groove: `${ID}:block/cabin_arch_groove`, arch: `${ID}:block/cabin_arch`,
+    wall: `${ID}:block/cabin_partition`, particle: `${ID}:block/cabin_arch`,
+  };
+  // Every block of each size's archway, from its jambs up, that is neither open nor plain wall, checked against PARTS.
+  const found = ["jamb"];
+  for (const [size, span] of Object.entries(SPANS)) {
+    for (let over = 1; over <= rows(span); over++) {
+      for (let out = 0; out <= span + 1; out++) {
+        const kinds = new Set();
+        for (let u = 0; u < 16; u++) for (let v = 0; v < 16; v++) kinds.add(kindAt(span, 16 * out - 8 + u, 16 * (over - 1) + v));
+        if (kinds.size > 1 || !kinds.has(null) && !kinds.has(3)) found.push(`${size}_${out}_${over}`);
+      }
+    }
+  }
+  if (found.join() !== PARTS.join()) throw new Error(`cabin_arch: the curve passes through ${found}, CabinArchBlock.Part lists ${PARTS}`);
+  for (const part of PARTS) {
+    const [size, out, over] = part.split("_");
+    const span = SPANS[size] ?? 1;
+    // The jamb is the column beside the opening, a row below its top.
+    const [u0, v0] = part === "jamb" ? [radius(span), -16] : [16 * Number(out) - 8, 16 * (Number(over) - 1)];
+    write(`assets/${ID}/models/block/cabin_arch_${part}.json`, { parent: "minecraft:block/block", textures, elements: elements(span, u0, v0) });
+  }
+  write(`assets/${ID}/blockstates/cabin_arch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => PARTS.map((part) =>
+      [`facing=${facing},part=${part}`, { model: `${ID}:block/cabin_arch_${part}`, ...(y ? { y } : {}) }]))),
+  });
+  // In the hand, a narrow archway whole, its jambs two rows tall, seen from the front: the wall a fifth of its size,
+  // each kind's boxes over all of it in one flat colour of its texture.
+  {
+    const span = SPANS.narrow;
+    const width = 16 * (2 * span + 3);
+    const height = 32 + 16 * rows(span);
+    const scale = 16 / width;
+    const left = -width / 2;
+    const bottom = -32;
+    const lift = (16 - height * scale) / 2;
+    const flat = [4, 4, 5, 5];
+    const elements = merge(span, left, bottom, width, height).map((box) => {
+      const { texture, inset } = KINDS[box.kind];
+      const faces = { north: { texture, uv: flat }, south: { texture, uv: flat } };
+      for (const side of ["out", "in", "up", "down"]) {
+        if (exposed(span, left, bottom, box, side)) faces[{ out: "east", in: "west", up: "up", down: "down" }[side]] = { texture, uv: flat };
+      }
+      return {
+        from: [box.u * scale, lift + box.v * scale, 8 - (8 - inset) * scale],
+        to: [(box.u + box.w) * scale, lift + (box.v + box.h) * scale, 8 + (8 - inset) * scale],
+        faces,
+      };
+    });
+    write(`assets/${ID}/models/item/cabin_arch.json`, {
+      parent: "minecraft:block/block", textures, elements,
+      display: {
+        gui: { rotation: [15, -25, 0], translation: [0, 0, 0], scale: [0.9, 0.9, 0.9] },
+        ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
+        fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
+        thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.375, 0.375, 0.375] },
+        firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+        firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+      },
+    });
+  }
+  // A piece comes down as itself, kept as the block state to put it down as (as picking one does, see CabinArchBlock);
+  // the piece put down when nothing says which is left off, so those stack with new ones.
+  const arch = `${ID}:cabin_arch`;
+  write(`data/${ID}/loot_table/blocks/cabin_arch.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: arch,
+        functions: [{
+          function: "minecraft:copy_state", block: arch, properties: ["part"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: arch, properties: { part: DEFAULT } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/cabin_arch`,
+  });
 }
 // The exit sign: a thin plate with its back to the wall, drawn facing north, glowing whatever the light around.
 write(`assets/${ID}/models/block/exit_sign.json`, boxes(
@@ -1983,9 +2149,11 @@ shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
 shaped("hide_and_seek_button", ["B", "N", "I"], { B: "minecraft:stone_button", N: "minecraft:note_block", I: "minecraft:iron_ingot" }, 1);
-// Room dividers: cloth hung from a rail on rings, a cream panel of pale wood, and the exit sign's glowing green glass.
+// Room dividers: cloth hung from a rail on rings, a cream panel of pale wood, an arch of cream panels whitened, and
+// the exit sign's glowing green glass.
 shaped("cabin_curtain", ["NSN", "WWW", "WWW"], { N: "minecraft:iron_nugget", S: "minecraft:stick", W: "minecraft:white_wool" }, 6);
 shaped("cabin_partition", ["PPP", "PDP", "PPP"], { P: "minecraft:birch_planks", D: "minecraft:white_dye" }, 8);
+shaped("cabin_arch", ["PDP", "P P"], { P: `${ID}:cabin_partition`, D: "minecraft:white_dye" }, 4);
 shaped("exit_sign", ["GLG"], { G: "minecraft:green_stained_glass_pane", L: "minecraft:glowstone_dust" }, 2);
 holdAndTailRecipes();
 // The vacuum toilet: a bucket for its bowl in iron.

@@ -1,0 +1,250 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "trim": "aerolarge:block/cabin_arch_trim",
+    "groove": "aerolarge:block/cabin_arch_groove",
+    "arch": "aerolarge:block/cabin_arch",
+    "wall": "aerolarge:block/cabin_partition",
+    "particle": "aerolarge:block/cabin_arch"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#arch",
+          "uv": [
+            13,
+            14,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#arch",
+          "uv": [
+            0,
+            14,
+            3,
+            16
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        13
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            0,
+            0,
+            13,
+            16
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            3,
+            0,
+            16,
+            16
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        2,
+        14
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#arch",
+          "uv": [
+            14,
+            12,
+            16,
+            14
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#arch",
+          "uv": [
+            0,
+            12,
+            2,
+            14
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        2,
+        13
+      ],
+      "to": [
+        16,
+        16,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            13,
+            0,
+            14,
+            14
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            2,
+            0,
+            3,
+            14
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        4,
+        15
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#arch",
+          "uv": [
+            15,
+            10,
+            16,
+            12
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#arch",
+          "uv": [
+            0,
+            10,
+            1,
+            12
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        4,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        15
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            14,
+            0,
+            15,
+            12
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            1,
+            0,
+            2,
+            12
+          ],
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        6,
+        15
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wall",
+          "uv": [
+            15,
+            0,
+            16,
+            10
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wall",
+          "uv": [
+            0,
+            0,
+            1,
+            10
+          ],
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}
