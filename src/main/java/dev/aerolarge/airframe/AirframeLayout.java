@@ -5,6 +5,7 @@ import static dev.aerolarge.airframe.AirframeShape.*;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AirstairBlockEntity;
+import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AirstairFlight;
 import dev.aerolarge.block.AirstairStepBlock;
@@ -2130,9 +2131,9 @@ public final class AirframeLayout {
      * {@link AirstairBlockEntity}): a flight running straight out from the door down to the ground,
      * stowed in the bay below it, and built down, its steps laid and its hatch open. The airstair controller set into
      * the hull just aft of the door folds them away and brings them out again, opening the door as they come out and
-     * shutting it as they go; a button beside it inside, one outside by the top of the stairs, and a call button on the
-     * nose gear for the ground crew work it. It is aft of the door, where the door, swung forward against the hull,
-     * leaves its outside button free.
+     * shutting it as they go; a lit push-button on it inside (see {@link AirstairButtonBlock}), one outside by the top of
+     * the stairs, and a call button on the nose gear for the ground crew work it. It is aft of the door, where the door,
+     * swung forward against the hull, leaves its outside button free.
      */
     private void boardingStairs() {
         HullDoor served = boardingDoor();
@@ -2147,7 +2148,7 @@ public final class AirframeLayout {
             return;
         }
         set(panelX, row, panelZ, AerolargeRegistry.AIRSTAIR_CONTROLLER.get().defaultBlockState());
-        BlockState button = Blocks.POLISHED_BLACKSTONE_BUTTON.defaultBlockState().setValue(ButtonBlock.FACE, AttachFace.WALL);
+        BlockState button = AerolargeRegistry.AIRSTAIR_BUTTON.get().defaultBlockState().setValue(ButtonBlock.FACE, AttachFace.WALL);
         if (isOpen(panelX + 1, row, panelZ)) {
             set(panelX + 1, row, panelZ, button.setValue(ButtonBlock.FACING, Direction.EAST));
         }

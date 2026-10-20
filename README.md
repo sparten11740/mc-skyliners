@@ -629,11 +629,11 @@ the ground and the handrails rise, to the hum of their hydraulics and the clunk 
 seconds. They reach as far down as the ground lets them, so on uneven ground, or over something in the way, they end
 where it meets them, and they are walked up and down like any stairs. Worked again, they go back the same way once
 nobody is on them (a chime says they are waiting), and the door shuts behind them. They only come out while the
-airliner stands still, and fold away by themselves as it starts to move. Work them with the button beside the
-controller inside or outside by the top of the stairs, by using the panel itself, with any redstone signal, or from the
-ground with the yellow call button on the front of the nose gear. An airliner is built with them down. In one built
-before them, the old stairs of blocks fold away the old way the first time they are worked, and from then on the new
-ones come out, folding into the hold behind the hull below the door.
+airliner stands still, and fold away by themselves as it starts to move. Work them with the lit Airstair Button (see
+below) on the controller inside or outside by the top of the stairs, by using the panel itself, with any redstone
+signal, or from the ground with the yellow call button on the front of the nose gear. An airliner is built with them
+down. In one built before them, the old stairs of blocks fold away the old way the first time they are worked, and
+from then on the new ones come out, folding into the hold behind the hull below the door.
 
 An Airstair Button is an illuminated push-button in a dark steel bezel, its square cap glowing amber whatever the
 light, with the controller's staircase on it; pressed, it sinks in and glows brighter. It is a stone button in all it
