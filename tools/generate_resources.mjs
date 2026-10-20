@@ -1806,6 +1806,71 @@ write(`assets/${ID}/models/block/exit_sign.json`, boxes(
 facing("exit_sign");
 write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
 
+// The bulkhead sign (see BulkheadSignBlock), drawn facing north, one model for each picture: a whole block of the
+// partition's cream panelling, and on its north face the lightbox, a brushed steel bezel round the block's edge standing
+// three quarters of a pixel proud, and inside it, half a pixel back from the bezel's lip, the printed picture, glowing
+// whatever the light around. In the hand, the first picture. Taken down, a sign keeps its picture, the first left off.
+const BULKHEAD_SIGN_PICTURES = ["seat", "drop", "ball", "cup", "lavatory"];
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const bezel = (from, to) => solid(from, to, "#bezel");
+  for (const picture of BULKHEAD_SIGN_PICTURES) {
+    write(`assets/${ID}/models/block/bulkhead_sign_${picture}.json`, {
+      parent: "minecraft:block/block",
+      textures: { wall: block("cabin_partition"), bezel: block("bulkhead_sign_bezel"), picture: block(`bulkhead_sign_${picture}`), particle: block("cabin_partition") },
+      elements: [
+        {
+          from: [0, 0, 0], to: [16, 16, 16],
+          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#wall", cullface: face }])),
+        },
+        bezel([0, 15, -0.75], [16, 16, 0]),
+        bezel([0, 0, -0.75], [16, 1, 0]),
+        bezel([0, 1, -0.75], [1, 15, 0]),
+        bezel([15, 1, -0.75], [16, 15, 0]),
+        {
+          from: [1, 1, -0.25], to: [15, 15, 0], shade: false,
+          faces: { north: { texture: "#picture", uv: [1, 1, 15, 15], neoforge_data: { block_light: 15, sky_light: 15 } } },
+        },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/bulkhead_sign.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => BULKHEAD_SIGN_PICTURES.map((picture) =>
+      [`facing=${facing},picture=${picture}`, { model: `${ID}:block/bulkhead_sign_${picture}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/bulkhead_sign.json`, { parent: `${ID}:block/bulkhead_sign_${BULKHEAD_SIGN_PICTURES[0]}` });
+  const sign = `${ID}:bulkhead_sign`;
+  write(`data/${ID}/loot_table/blocks/bulkhead_sign.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: sign,
+        functions: [{
+          function: "minecraft:copy_state", block: sign, properties: ["picture"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: sign, properties: { picture: BULKHEAD_SIGN_PICTURES[0] } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/bulkhead_sign`,
+  });
+  cubes.bulkhead_sign = null;
+}
+// The sign is fitted into the bulkheads as they are: breakable, and no part of the airframe.
+function bulkheadSignFittings() {
+  return ["bulkhead_sign"];
+}
+// A partition with a pane of glass over glowstone for its lightbox.
+function bulkheadSignRecipes() {
+  shaped("bulkhead_sign", ["G", "L", "P"], { G: "minecraft:glass_pane", L: "minecraft:glowstone_dust", P: `${ID}:cabin_partition` }, 1);
+}
+function bulkheadSignLang() {
+  return {
+    "block.aerolarge.bulkhead_sign": "Bulkhead Sign",
+  };
+}
+
 // The staircases between the decks: their fittings, recipes and names are in the functions below, which the shared
 // lists further down take in. The stair (see CabinStairsBlock), drawn climbing north: its two steps as its outline is,
 // each a carpeted tread over a white riser and white sides, and along each tread's front edge a brushed steel nosing
@@ -2799,6 +2864,7 @@ FITTINGS.push(...cabinSeatFittings());
 FITTINGS.push(...cabinCarpetFittings());
 FITTINGS.push(...gymFloorFittings());
 FITTINGS.push(...lavatoryBasinFittings());
+FITTINGS.push(...bulkheadSignFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2908,6 +2974,7 @@ cabinSeatRecipes();
 cabinCarpetRecipes();
 gymFloorRecipes();
 lavatoryBasinRecipes();
+bulkheadSignRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3251,6 +3318,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinCarpetLang(),
   ...gymFloorLang(),
   ...lavatoryBasinLang(),
+  ...bulkheadSignLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

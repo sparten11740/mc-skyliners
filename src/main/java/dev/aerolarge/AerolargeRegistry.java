@@ -14,6 +14,7 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.Brightness;
+import dev.aerolarge.block.BulkheadSignBlock;
 import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
@@ -614,6 +615,15 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
     /**
+     * The backlit signs set into the bulkheads over the archways, a picture of what lies through each: a block of the
+     * bulkhead, as tough as the partition, and nothing spawns on it. Its picture glows but lights nothing.
+     */
+    public static final DeferredBlock<BulkheadSignBlock> BULKHEAD_SIGN = BLOCKS.registerBlock(
+        "bulkhead_sign", BulkheadSignBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(1.5F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> BULKHEAD_SIGN_ITEM = ITEMS.registerSimpleBlockItem(BULKHEAD_SIGN);
+    /**
      * The staircases between the decks: carpeted stairs and landings, which sound like the carpet they are, and the glass
      * rails along their open sides and round the upper deck's wells. Nothing spawns on any of them.
      */
@@ -967,6 +977,7 @@ public final class AerolargeRegistry {
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),

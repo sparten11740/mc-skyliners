@@ -986,6 +986,109 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "exit_sign", (x, y) => colours[SIGN[y - 4]?.[x - 1]] ?? [0x16, 0x9c, 0x4a], 2);
 }
 
+// The bulkhead signs over the archways (see BulkheadSignBlock): each picture printed on a warm white lightbox, the
+// fourteen pixels inside the bezel, in the colour of the room it points to, as the curtains are: business class's
+// navy seat, reclined, on its legs; the pool's drop of water over the waves, a glint in it; the gym hall's basketball
+// with its seams; the lounge's cup on its saucer, steaming; and for the lavatories a man and a woman, in blue and red
+// as on every lavatory door. The bezel round it: brushed steel, streaked across.
+{
+  const LIGHTBOX = [0xf6, 0xf4, 0xec];
+  const NAVY = [0x1f, 0x2f, 0x6e];
+  const pictures = {
+    seat: {
+      colours: { N: NAVY },
+      rows: [
+        "..............",
+        "..........##..",
+        ".........####.",
+        ".........###..",
+        "........###...",
+        "........###...",
+        ".......###....",
+        ".......###....",
+        ".##########...",
+        ".##########...",
+        "..##.....##...",
+        "..##.....##...",
+        ".####...####..",
+        "..............",
+      ].map((row) => row.replaceAll("#", "N")),
+    },
+    drop: {
+      colours: { C: [0x12, 0x8f, 0xb8], H: [0x9c, 0xdc, 0xf2] },
+      rows: [
+        "......CC......",
+        "......CC......",
+        ".....CCCC.....",
+        ".....CCCC.....",
+        "....CCCCCC....",
+        "...CCCCCCCC...",
+        "...CHCCCCCC...",
+        "...CHCCCCCC...",
+        "...CCCCCCCC...",
+        "....CCCCCC....",
+        ".....CCCC.....",
+        "..............",
+        ".CC..CC..CC..C",
+        "C..CC..CC..CC.",
+      ],
+    },
+    cup: {
+      colours: { R: [0xc4, 0x2a, 0x2a], S: [0xa4, 0xa6, 0xaa] },
+      rows: [
+        "..............",
+        "....S...S.....",
+        "...S...S......",
+        "....S...S.....",
+        "...S...S......",
+        "..............",
+        ".RRRRRRRRR....",
+        ".RRRRRRRRR.RR.",
+        ".RRRRRRRRR..R.",
+        ".RRRRRRRRR.RR.",
+        "..RRRRRRR.....",
+        "...RRRRR......",
+        "RRRRRRRRRRRRR.",
+        "..............",
+      ],
+    },
+    lavatory: {
+      colours: { M: [0x1f, 0x4f, 0xb0], W: [0xc4, 0x2a, 0x2a] },
+      rows: [
+        "..............",
+        "..MMM....WWW..",
+        "..MMM....WWW..",
+        "..............",
+        ".MMMMM...WWW..",
+        ".MMMMM...WWW..",
+        ".MMMMM..WWWWW.",
+        ".MMMMM..WWWWW.",
+        ".MMMMM.WWWWWWW",
+        "..M.M..WWWWWWW",
+        "..M.M....W.W..",
+        "..M.M....W.W..",
+        "..M.M....W.W..",
+        "..............",
+      ],
+    },
+  };
+  for (const [name, { colours, rows }] of Object.entries(pictures)) {
+    texture(blockOutput, `bulkhead_sign_${name}`, (x, y) => colours[rows[y - 1]?.[x - 1]] ?? LIGHTBOX, 1);
+  }
+  // The basketball worked out round its middle, from each pixel's middle: its outline and seams dark, a seam across it
+  // and one down it, each a pixel wide, and one curving down either side, bowed in toward the middle.
+  texture(blockOutput, "bulkhead_sign_ball", (x, y) => {
+    const u = x + 0.5 - 8;
+    const v = y + 0.5 - 8;
+    const r = Math.hypot(u, v);
+    if (r > 6.5) return LIGHTBOX;
+    const seam = r > 5.6 || x === 7 || y === 7
+      || Math.abs(Math.hypot(u + 10, v) - 6.5) < 0.55 || Math.abs(Math.hypot(u - 10, v) - 6.5) < 0.55;
+    return seam ? [0x2a, 0x1a, 0x10] : [0xe8, 0x74, 0x1c];
+  }, 1);
+  texture(blockOutput, "bulkhead_sign_bezel", (x, y) => (y % 3 === 0 ? [0xc8, 0xcd, 0xd3] : [0xa6, 0xac, 0xb3]), 3);
+}
+
 // The staircases between the decks (see CabinStairsBlock). A tread: the cabin's blue carpet, in the cabin floor's
 // small diamond pattern, between the white tops of the stringers down either side; a landing: the same carpet edge to
 // edge. The risers, the stringers and everything under the stairs: smooth white panelling, a riser shaded a little
