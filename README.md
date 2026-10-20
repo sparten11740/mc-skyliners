@@ -852,9 +852,9 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
 shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys and basketballs
-among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and puts them out
-into the world at the airliner's speed once they leave it; `EngineIntakeRenderer` draws the intakes round over
+flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
+paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
+puts them out into the world at the airliner's speed once they leave it; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,

@@ -27,10 +27,10 @@ import org.joml.Vector3d;
  * Where an assembled airliner is and how it is moving, read from Sable. A block of an assembled airliner lives in
  * Sable's plot, away from where the airliner is seen; projecting a few points of the plot out into the world gives
  * the airliner's position and the directions its nose, right wing and roof point. The cabin's loose things (trolleys,
- * basketballs) live in the plot too while they are inside the hull, carried along with the airliner's blocks (see
- * {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is known to be
- * installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the world.
- * {@link #cabinVelocity} also serves the client, for entities that move the same on both sides (the paper plane).
+ * basketballs, paper planes) live in the plot too while they are inside the hull, carried along with the airliner's
+ * blocks (see {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is
+ * known to be installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the
+ * world.
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -112,13 +112,9 @@ public final class SableFlight {
         return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
     }
 
-    /**
-     * How fast the cabin around a point in the world moves, in blocks a second: the airliner's, where the point is
-     * inside the hull of an assembled one, and still anywhere else. Worked out from where that spot of the cabin was
-     * last tick and is now, so it is the same on the client as on the server, for what moves on both.
-     */
-    public static Vec3 cabinVelocity(Level level, Vec3 point) {
-        return SABLE ? Access.cabinVelocity(level, point) : Vec3.ZERO;
+    /** Whether the entity lives among an assembled airliner's blocks, in its plot, as the cabin's loose things do. */
+    public static boolean inPlot(Entity entity) {
+        return SABLE && Access.inPlot(entity);
     }
 
     /**
@@ -139,14 +135,14 @@ public final class SableFlight {
     }
 
     /**
-     * Keeps one of the cabin's loose things (a trolley, a basketball) in the air around it, on the server. Inside the
-     * hull of an assembled airliner the air moves with the airliner, so there the thing lives among the airliner's
-     * blocks, in its plot, where Sable carries it along with them as it does Create's seats (its type is in
-     * {@code #sable:retain_in_sub_level}, so Sable leaves it there): it rolls, bounces and is pushed relative to the
-     * cabin, and collides with the cabin's blocks as they are. Outside the hull it lives in the world. Crossing over, it
-     * keeps how it moves in the world: taken in, it moves relative to the cabin as fast as it moved past it; sent out,
-     * it moves as fast as the airliner carried it plus its own speed in the cabin (see {@link #sendOut}). The client
-     * follows the server.
+     * Keeps one of the cabin's loose things (a trolley, a basketball, a paper plane) in the air around it, on the
+     * server. Inside the hull of an assembled airliner the air moves with the airliner, so there the thing lives among
+     * the airliner's blocks, in its plot, where Sable carries it along with them as it does Create's seats (its type is
+     * in {@code #sable:retain_in_sub_level}, so Sable leaves it there): it rolls, bounces, glides and is pushed relative
+     * to the cabin, and collides with the cabin's blocks as they are. Outside the hull it lives in the world. Crossing
+     * over, it keeps how it moves in the world: taken in, it moves relative to the cabin as fast as it moved past it;
+     * sent out, it moves as fast as the airliner carried it plus its own speed in the cabin (see {@link #sendOut}). The
+     * client follows the server.
      */
     public static void keepWithCabin(Entity entity) {
         if (SABLE) {
@@ -279,13 +275,8 @@ public final class SableFlight {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
         }
 
-        static Vec3 cabinVelocity(Level level, Vec3 point) {
-            SubLevel airliner = hullAround(level, point);
-            if (airliner == null) {
-                return Vec3.ZERO;
-            }
-            Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
-            return point.subtract(airliner.lastPose().transformPosition(inPlot)).scale(SharedConstants.TICKS_PER_SECOND);
+        static boolean inPlot(Entity entity) {
+            return Sable.HELPER.getContaining(entity) != null;
         }
 
         /** The assembled airliner whose hull holds a point in the world; null for none. */

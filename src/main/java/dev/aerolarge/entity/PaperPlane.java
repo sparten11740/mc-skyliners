@@ -5,7 +5,6 @@ import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,12 +28,15 @@ import net.minecraft.world.phys.Vec3;
  * sinks, and the sinking carries it on forward, so it settles into a long gentle glide; it wavers from side to side
  * as it goes, and drifts one way or the other a little, as no two paper planes fold alike. Touching anything solid or
  * water, it lands and lies there as a paper plane to pick up; a player it flies into catches it, and so does one
- * using it in flight. It moves the same on both sides, so it glides smoothly between updates.
+ * using it in flight. It moves the same on both sides, so it glides smoothly between updates; only the server takes
+ * it aboard an airliner and sends it out again.
  *
- * <p>Inside an airliner in flight the cabin's air moves along with it, so the plane glides relative to the cabin, as
- * the basketball bounces: thrown in the lounge it flies down the lounge, not off to the back at the airliner's speed.
- * Out through a door it meets the still air outside at the airliner's speed, slows, and glides on from the height it
- * left at, a long way down: from an airliner in flight it can come down far from where it was thrown (Air Mail).
+ * <p>Inside an assembled airliner's hull it lives among the airliner's blocks, in Sable's plot, and Sable carries it
+ * along with them (see {@link SableFlight#keepWithCabin}), so it glides through the cabin's air as the basketball
+ * bounces: thrown in the lounge in flight it flies down the lounge, not off to the back at the airliner's speed. Out
+ * through a door it is sent into the world at the airliner's speed, meets the still air outside, slows, and glides on
+ * from the height it left at, a long way down: from an airliner in flight it can come down far from where it was
+ * thrown (Air Mail).
  */
 public class PaperPlane extends Entity {
     /** Speed a throw leaves the hand at, and a soft one, sneaking, in blocks a tick. */
@@ -76,29 +78,30 @@ public class PaperPlane extends Entity {
     @Nullable
     private UUID thrower;
     private int catchDelay;
-    /** Where in the world it was thrown from, and whether that was aboard an airliner in flight and it has left it since. */
+    /** Where in the world it was thrown from, and whether that was aboard an airliner in flight. */
     private Vec3 origin = Vec3.ZERO;
     private boolean thrownInFlight;
-    private boolean leftCabin;
 
     public PaperPlane(EntityType<? extends PaperPlane> type, Level level) {
         super(type, level);
     }
 
-    /** A plane thrown by the player, the way they look, from just in front of their eyes; softly if they sneak. */
+    /**
+     * A plane thrown by the player, the way they look, from just in front of their eyes; softly if they sneak. Thrown
+     * inside an assembled airliner's hull, it starts among the airliner's blocks, the throw relative to the cabin.
+     */
     public static PaperPlane thrown(Level level, Player player) {
         PaperPlane plane = new PaperPlane(AerolargeRegistry.PAPER_PLANE.get(), level);
         Vec3 look = player.getLookAngle();
         plane.setPos(player.getX() + look.x * 0.5, player.getEyeY() - 0.2 + look.y * 0.5, player.getZ() + look.z * 0.5);
         plane.setRot(player.getYRot(), player.getXRot());
-        Vec3 cabin = plane.cabin();
         Vec3 carried = player.getDeltaMovement();
-        plane.setDeltaMovement(look.scale(player.isShiftKeyDown() ? SOFT_THROW : THROW).add(carried.x, player.onGround() ? 0 : carried.y, carried.z)
-            .add(cabin));
+        plane.setDeltaMovement(look.scale(player.isShiftKeyDown() ? SOFT_THROW : THROW).add(carried.x, player.onGround() ? 0 : carried.y, carried.z));
         plane.thrower = player.getUUID();
         plane.catchDelay = CATCH_DELAY;
         plane.origin = player.position();
-        plane.thrownInFlight = cabin.length() * SharedConstants.TICKS_PER_SECOND >= IN_FLIGHT;
+        SableFlight.takeAboard(plane);
+        plane.thrownInFlight = SableFlight.velocity(level, plane.position()).length() >= IN_FLIGHT;
         return plane;
     }
 
@@ -109,20 +112,19 @@ public class PaperPlane extends Entity {
     @Override
     public void tick() {
         super.tick();
-        catchDelay = Math.max(0, catchDelay - 1);
-        Vec3 cabin = cabin();
-        if (thrownInFlight && cabin.lengthSqr() == 0) {
-            leftCabin = true;
+        if (!level().isClientSide) {
+            SableFlight.keepWithCabin(this);
         }
-        Vec3 velocity = cabin.add(glide(getDeltaMovement().subtract(cabin)));
+        catchDelay = Math.max(0, catchDelay - 1);
+        Vec3 velocity = glide(getDeltaMovement());
         Vec3 from = position();
         move(MoverType.SELF, velocity);
         Vec3 moved = position().subtract(from);
         boolean blocked = Math.abs(moved.x - velocity.x) > 1e-4 || Math.abs(moved.y - velocity.y) > 1e-4 || Math.abs(moved.z - velocity.z) > 1e-4;
         if (blocked || isInWater() || isInLava() || tickCount > LONGEST_FLIGHT) {
-            setDeltaMovement(cabin);
+            setDeltaMovement(Vec3.ZERO);
             if (!level().isClientSide) {
-                land(cabin);
+                land();
             }
             return;
         }
@@ -130,18 +132,18 @@ public class PaperPlane extends Entity {
     }
 
     /**
-     * One tick of gliding, through air moving at the given velocity relative to it, in blocks a tick: it wavers and
+     * One tick of gliding from the given velocity through the still air around it, in blocks a tick: it wavers and
      * drifts round, its weight pulls it down, its wings lift it the faster it flies and turn its sinking into speed
      * forward, and the air slows it. It points the way it flies.
      */
-    private Vec3 glide(Vec3 air) {
+    private Vec3 glide(Vec3 velocity) {
         double turn = Math.toRadians(turn(tickCount));
         double cos = Math.cos(turn);
         double sin = Math.sin(turn);
-        double x = air.x * cos - air.z * sin;
-        double z = air.x * sin + air.z * cos;
+        double x = velocity.x * cos - velocity.z * sin;
+        double z = velocity.x * sin + velocity.z * cos;
         double speed = Math.hypot(x, z);
-        double y = air.y - GRAVITY + Math.min(LIFT * speed * speed, MOST_LIFT);
+        double y = velocity.y - GRAVITY + Math.min(LIFT * speed * speed, MOST_LIFT);
         // Its heading: the way it flies, or the way it points when it hardly moves across at all.
         double yaw = speed > 1e-4 ? Math.atan2(-x, z) : Math.toRadians(getYRot()) + turn;
         if (y < 0) {
@@ -174,19 +176,22 @@ public class PaperPlane extends Entity {
     }
 
     /**
-     * Down: it lies where it came down as a paper plane to pick up, moving along with the cabin around it. Thrown
-     * aboard an airliner in flight and come down outside it far enough away, it is Air Mail for whoever threw it.
+     * Down: it lies where it came down as a paper plane to pick up. Sable keeps no dropped item among an airliner's
+     * blocks, so one come down in the cabin is put out into the world where it lies, moving along with the cabin.
+     * Thrown aboard an airliner in flight and come down outside it far enough away, it is Air Mail for whoever threw it.
      */
-    private void land(Vec3 cabin) {
+    private void land() {
         if (isRemoved()) {
             return;
         }
-        if (thrownInFlight && leftCabin && Math.hypot(getX() - origin.x, getZ() - origin.z) >= AIR_MAIL && thrower() instanceof ServerPlayer player) {
+        boolean outside = !SableFlight.inPlot(this);
+        if (thrownInFlight && outside && Math.hypot(getX() - origin.x, getZ() - origin.z) >= AIR_MAIL && thrower() instanceof ServerPlayer player) {
             FirstFlight.AIR_MAIL.award(player);
         }
         ItemEntity dropped = spawnAtLocation(getItem());
         if (dropped != null) {
-            dropped.setDeltaMovement(cabin);
+            dropped.setDeltaMovement(Vec3.ZERO);
+            SableFlight.sendOut(dropped);
         }
         discard();
     }
@@ -218,7 +223,7 @@ public class PaperPlane extends Entity {
         if (level().isClientSide || isRemoved() || !(source.getEntity() instanceof Player)) {
             return false;
         }
-        land(cabin());
+        land();
         return true;
     }
 
@@ -227,11 +232,6 @@ public class PaperPlane extends Entity {
             level().playSound(null, getX(), getY(), getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.3F, 1.6F);
             discard();
         }
-    }
-
-    /** How fast the air around the plane moves, in blocks a tick: an airliner's cabin's in flight, still anywhere else. */
-    private Vec3 cabin() {
-        return SableFlight.cabinVelocity(level(), position()).scale(1.0 / SharedConstants.TICKS_PER_SECOND);
     }
 
     @Override
@@ -258,7 +258,6 @@ public class PaperPlane extends Entity {
         tag.putDouble("OriginY", origin.y);
         tag.putDouble("OriginZ", origin.z);
         tag.putBoolean("ThrownInFlight", thrownInFlight);
-        tag.putBoolean("LeftCabin", leftCabin);
     }
 
     @Override
@@ -267,6 +266,5 @@ public class PaperPlane extends Entity {
         catchDelay = tag.getInt("CatchDelay");
         origin = new Vec3(tag.getDouble("OriginX"), tag.getDouble("OriginY"), tag.getDouble("OriginZ"));
         thrownInFlight = tag.getBoolean("ThrownInFlight");
-        leftCabin = tag.getBoolean("LeftCabin");
     }
 }
