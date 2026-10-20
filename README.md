@@ -925,10 +925,10 @@ gets too small to read;
 `EngineIntakeRenderer` draws the intakes round
 over the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
-into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
-from their `AirstairBlockEntity`; `SlideRenderer` draws an evacuation slide inflating and deflating, as
-`EvacuationSlide` lays it out for the ground and builds it, from its `SlideControlBlockEntity`, and `SlideRide` carries
-whoever slides down it; `TailCameraFeed` draws the fin camera's
+into, only the quads of it that face the camera; `AirstairRenderer` draws the airstairs coming out and going away, as
+`AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an evacuation slide
+inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
+`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
 at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`: `TailCameraFeed` and `VeilLights` are the only places Veil is touched;

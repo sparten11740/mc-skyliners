@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.joml.Vector3f;
 
 /**
  * A plug door's panel cut into quads, once for each way it hinges and each height, for {@link PlugDoorRenderer} to
@@ -88,6 +89,16 @@ final class PlugDoorMesh {
      * in, how much it is shaded, 0 to 1, and whether it is the window's glass, drawn see-through.
      */
     record Quad(Side side, float[] corners, float nx, float ny, float nz, int column, int row, float shade, boolean glass) {
+        /**
+         * Whether a point in the door's frame is in front of the quad. A quad is never seen from behind: behind every
+         * face and side of the relief is the panel itself, and the glass is drawn from its own side only.
+         */
+        boolean faces(Vector3f point) {
+            if (nz != 0) {
+                return (point.z - corners[2]) * nz > 0;
+            }
+            return nx != 0 ? (point.x - corners[0]) * nx > 0 : (point.y - corners[1]) * ny > 0;
+        }
     }
 
     private static final Map<PlugDoorBlock.Hinge, Map<Integer, List<Quad>>> CACHE = new EnumMap<>(PlugDoorBlock.Hinge.class);

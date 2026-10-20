@@ -23,6 +23,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import org.joml.Vector3f;
 
 /**
  * Draws a plug door's panel, shut in its doorway or wherever it is in its swing, from the block entity in its bottom
@@ -55,7 +56,9 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     private static final float ARM_TALL = 0.3F;
     /**
      * How far off the door is still drawn, in blocks: as far as the airliner itself is, or a shut door would leave a
-     * hole in the hull.
+     * hole in the hull. That is further than it might seem: a level's blocks are drawn as far as the player's render
+     * distance, and Sable by default sends an assembled airliner to players up to 320 blocks off and draws it all. From
+     * outside, little more than the door's skin faces the camera (see {@link #panel}), so a far door costs little.
      */
     private static final int VIEW_DISTANCE = 1024;
     private static final ResourceLocation ARM = texture("landing_gear");
@@ -162,15 +165,18 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     /**
      * The panel (see {@link PlugDoorMesh}): the door's picture across its outside and the lining's across its inside,
      * each block drawn with the light where it is, then the window's glass. Shut, its edges are left out: they stand
-     * hidden in the frame, where they would only fight with the frame's own faces.
+     * hidden in the frame, where they would only fight with the frame's own faces. Only the quads facing the camera
+     * are drawn, as the back of every one is never seen; that leaves out about half the panel from inside the cabin,
+     * and from outside most of it, every face of the lining turning away from the camera there.
      */
     private static void panel(Painter paint, PoseStack.Pose pose, int rows, PlugDoorBlock.Hinge hinge) {
         TextureAtlasSprite outside = paint.sprite(face(hinge, rows, ""));
         TextureAtlasSprite inside = paint.sprite(face(hinge, rows, "_inside"));
         TextureAtlasSprite glass = paint.sprite(GLASS_PICTURE);
         List<PlugDoorMesh.Quad> quads = PlugDoorMesh.of(hinge, rows);
+        Vector3f eye = Sight.eye(pose);
         for (PlugDoorMesh.Quad quad : quads) {
-            if (quad.glass() || quad.side() == PlugDoorMesh.Side.EDGE && !paint.moved()) {
+            if (quad.glass() || quad.side() == PlugDoorMesh.Side.EDGE && !paint.moved() || !quad.faces(eye)) {
                 continue;
             }
             boolean in = quad.side() == PlugDoorMesh.Side.INSIDE;
@@ -180,7 +186,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         // The glass last, in its own buffer: fetching that one draws what went into the panel's.
         VertexConsumer see = paint.glass();
         for (PlugDoorMesh.Quad quad : quads) {
-            if (quad.glass()) {
+            if (quad.glass() && quad.faces(eye)) {
                 boolean in = quad.side() == PlugDoorMesh.Side.INSIDE;
                 paint.quad(see, pose, glass, paint.light(quad.column(), quad.row(), !in), quad.shade(),
                     quad.nx(), quad.ny(), quad.nz(), quad.corners());
