@@ -6,6 +6,7 @@ import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.SuitcaseBlock;
+import dev.aerolarge.block.VacuumToiletBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -207,7 +208,8 @@ final class DuckHunt {
     /**
      * In the WC behind the flight deck, on the floor beside its basin, facing into the room: found from the basin, the
      * filled cauldron on the raised floor ahead of the forward doors (the cabin's other lavatories are on the main
-     * deck). Between the basin and the hull if there is room, else in front of the basin.
+     * deck). Between the basin and the hull if there is room, else in front of the basin, never where the toilet's user
+     * stands.
      */
     @Nullable
     private Spot washroom() {
@@ -221,11 +223,23 @@ final class DuckHunt {
         }
         int outboard = basin.getX() > 0 ? 1 : -1;
         for (BlockPos spot : new BlockPos[]{basin.east(outboard), basin.south(), basin.east(outboard).south()}) {
-            if (open(spot) && flatTop(layout.stateAt(spot.getX(), spot.getY() - 1, spot.getZ()))) {
+            if (open(spot) && flatTop(layout.stateAt(spot.getX(), spot.getY() - 1, spot.getZ())) && !beforeToilet(spot)) {
                 return new Spot(spot, Direction.SOUTH);
             }
         }
         return null;
+    }
+
+    /** Whether a toilet beside the spot faces it: a duck there would sit where its user stands. */
+    private boolean beforeToilet(BlockPos spot) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockPos next = spot.relative(side);
+            BlockState there = layout.stateAt(next.getX(), next.getY(), next.getZ());
+            if (there.is(AerolargeRegistry.VACUUM_TOILET.get()) && there.getValue(VacuumToiletBlock.FACING) == side.getOpposite()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

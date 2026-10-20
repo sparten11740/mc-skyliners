@@ -58,12 +58,13 @@ final class CrewRooms {
         int outer = narrowest(deck + 1, front, back - 1);
         int couch = narrowest(deck + 2, front, back - 2);
         int counter = layout.openHalfWidth(deck + 1, back - 1);
+        int toilet = Math.max(inner + 1, Math.min(outer, narrowest(deck + 2, front, front)));
         if (back - front < LEAST || outer - inner + 1 < LEAST) {
             return;
         }
         walls(-1, inner, outer);
         walls(1, inner, outer);
-        washroom(-1, inner, outer);
+        washroom(-1, inner, outer, toilet);
         crewRoom(1, inner, couch, counter);
     }
 
@@ -122,12 +123,20 @@ final class CrewRooms {
     /**
      * The WC: the vacuum toilet in the front corner, its back to the hull and facing into the room, as the hull curving
      * in over the corner leaves no room to stand in front of one facing aft (its back to the bulkhead where the hull is
-     * not right behind it); the basin in the front corner by the aisle, its tap on the bulkhead over it.
+     * not right behind it); at {@code toilet} out from the middle, where a sitter's head is clear of the hull's curve,
+     * the floor beyond it out to the hull walled in. The basin in the front corner by the aisle, its tap on the bulkhead
+     * over it.
      */
-    private void washroom(int side, int inner, int outer) {
+    private void washroom(int side, int inner, int outer, int toilet) {
         Direction intoRoom = side > 0 ? Direction.WEST : Direction.EAST;
-        layout.furnish(side * outer, deck + 1, front, AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState()
-            .setValue(VacuumToiletBlock.FACING, layout.isOpen(side * (outer + 1), deck + 1, front) ? Direction.SOUTH : intoRoom));
+        boolean againstHull = toilet == outer && !layout.isOpen(side * (outer + 1), deck + 1, front);
+        layout.furnish(side * toilet, deck + 1, front, AerolargeRegistry.VACUUM_TOILET.get().defaultBlockState()
+            .setValue(VacuumToiletBlock.FACING, toilet < outer || againstHull ? intoRoom : Direction.SOUTH));
+        for (int x = toilet + 1; x <= outer; x++) {
+            if (layout.isOpen(side * x, deck + 1, front)) {
+                layout.set(side * x, deck + 1, front, wall);
+            }
+        }
         int basin = side * inner;
         layout.furnish(basin, deck + 1, front,
             Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
