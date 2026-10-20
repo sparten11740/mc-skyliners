@@ -1,0 +1,100 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cabinet": "aerolarge:block/vacuum_toilet_panel",
+    "counter": "aerolarge:block/lavatory_basin_counter",
+    "bowl": "aerolarge:block/lavatory_basin_bowl",
+    "chrome": "aerolarge:block/lavatory_basin_chrome",
+    "mirror": "aerolarge:block/lavatory_basin_mirror",
+    "light": "aerolarge:block/lavatory_basin_light",
+    "particle": "aerolarge:block/lavatory_basin_counter"
+  },
+  "elements": [
+    {
+      "from": [
+        0.5,
+        0.5,
+        15.5
+      ],
+      "to": [
+        15.5,
+        15.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        1.5,
+        15.25
+      ],
+      "to": [
+        14.5,
+        13,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mirror"
+        },
+        "south": {
+          "texture": "#mirror"
+        },
+        "east": {
+          "texture": "#mirror"
+        },
+        "west": {
+          "texture": "#mirror"
+        },
+        "up": {
+          "texture": "#mirror"
+        },
+        "down": {
+          "texture": "#mirror"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        13.5,
+        15.25
+      ],
+      "to": [
+        14.5,
+        14.5,
+        15.5
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#light",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

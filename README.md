@@ -67,7 +67,7 @@ off with `cloudlessCabin` in the client config.
 ### Flight deck
 
 Steps at the front of the main deck lead up to a raised floor in the nose. From the top of the steps a short aisle
-runs forward to the cockpit door, between the WC to port (a toilet and a basin with its tap) and the crew room to
+runs forward to the cockpit door, between the WC to port (a toilet and a basin under its mirror) and the crew room to
 starboard (a row of crew seats and a galley counter with an oven, a cupboard and a coffee machine); every door opens by
 hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look
 straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right
@@ -320,8 +320,8 @@ Cabin Arch pieces, a round white arch over the curtain's rail on white jambs, an
 across; at the largest scales it is wider. Over each archway, on the side facing the doors, a picture in coloured
 wool shows what lies through it: a seat, a drop of water, a basketball, a cup. Business class has such a wall at its
 front as well, across the forward doors' aisle (where it has no room for one, a curtain on its own crosses the aisle
-there instead). The gym hall's front wall has a lavatory either side of its archway, each with a toilet, a basin and
-its tap, and a wooden door under a picture of a person.
+there instead). The gym hall's front wall has a lavatory either side of its archway, each with a toilet, a basin under
+its mirror, and a wooden door under a picture of a person.
 The hoops are mounted on the gym hall's end walls, out of the way of anyone coming through the archways, and a lime
 dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two courts. Over
 every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights set for the
@@ -367,6 +367,12 @@ see-through Blue Lav Ice that melts away after three or four minutes; anywhere e
 replaces a block and never hurts anyone: the worst it does is bonk whoever it lands on. A toilet with no airframe
 under it, away from an airliner, only flushes. Both blueprints have one in the WC behind the flight deck, and the
 furnished airliner one in each lavatory by the gym hall (at the smallest scale there is room for neither).
+
+Beside each toilet is a Lavatory Basin (craftable from a cauldron): a vanity in the toilet's laminate with a white
+counter, the basin set into it and a chrome tap arching over it from the back, a soap dispenser beside it, and over it
+a mirror on the wall with a strip of warm light along its top. It is two blocks tall, put down facing you with its
+back to the wall. Use it and the tap runs into the basin with a splash; hold a glass bottle under it and it comes away
+full of water.
 
 ### Rubber ducks
 

@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.GiantRubberDuckBlock;
+import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.SuitcaseBlock;
@@ -207,14 +208,14 @@ final class DuckHunt {
 
     /**
      * In the WC behind the flight deck, on the floor beside its basin, facing into the room: found from the basin, the
-     * filled cauldron on the raised floor ahead of the forward doors (the cabin's other lavatories are on the main
-     * deck). Between the basin and the hull if there is room, else in front of the basin, never where the toilet's user
-     * stands.
+     * lavatory basin's vanity on the raised floor ahead of the forward doors (the cabin's other lavatories are on the
+     * main deck). Between the basin and the hull if there is room, else in front of the basin, never where the
+     * toilet's user stands.
      */
     @Nullable
     private Spot washroom() {
         int doors = (int) Math.round(AirframeShape.PASSENGER_DOORS[0] * layout.scale());
-        BlockPos basin = where(state -> state.is(Blocks.WATER_CAULDRON)).stream()
+        BlockPos basin = where(LavatoryBasinBlock::isBasin).stream()
             .filter(pos -> pos.getY() > floor + 1 && pos.getZ() < doors)
             .min(Comparator.comparingInt(BlockPos::getZ))
             .orElse(null);

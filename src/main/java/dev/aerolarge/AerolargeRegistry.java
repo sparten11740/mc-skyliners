@@ -61,6 +61,7 @@ import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LavIceBlock;
+import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
@@ -662,6 +663,11 @@ public final class AerolargeRegistry {
         "vacuum_toilet", VacuumToiletBlock::new, metal(MapColor.SNOW).noOcclusion()
     );
     public static final DeferredItem<BlockItem> VACUUM_TOILET_ITEM = ITEMS.registerSimpleBlockItem(VACUUM_TOILET);
+    /** The lavatories' washbasin, with its mirror over it. */
+    public static final DeferredBlock<LavatoryBasinBlock> LAVATORY_BASIN = BLOCKS.registerBlock(
+        "lavatory_basin", LavatoryBasinBlock::new, metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> LAVATORY_BASIN_ITEM = ITEMS.registerSimpleBlockItem(LAVATORY_BASIN);
     public static final DeferredHolder<SoundEvent, SoundEvent> TOILET_FLUSH = sound("toilet_flush");
     public static final DeferredHolder<EntityType<?>, EntityType<BlueIceChunk>> BLUE_ICE_CHUNK = ENTITY_TYPES.register(
         "blue_ice_chunk", () -> EntityType.Builder.<BlueIceChunk>of(BlueIceChunk::new, MobCategory.MISC).sized(0.6F, 0.5F)
@@ -961,7 +967,7 @@ public final class AerolargeRegistry {
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
-            EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM,
+            EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(

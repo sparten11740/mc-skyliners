@@ -406,6 +406,7 @@
   "block.aerolarge.cabin_carpet": "Cabin Carpet",
   "block.aerolarge.aisle_carpet": "Aisle Carpet",
   "block.aerolarge.gym_floor": "Gym Floor",
+  "block.aerolarge.lavatory_basin": "Lavatory Basin",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

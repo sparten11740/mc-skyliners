@@ -15,7 +15,6 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
-import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
@@ -78,6 +77,7 @@ import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -361,16 +361,24 @@ public final class AirframeLayout {
      * it went in.
      */
     boolean seat(int x, int y, int z, BlockState seat) {
-        if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
-            return false;
-        }
         for (Direction side : Direction.Plane.HORIZONTAL) {
             if (CabinWindowBlock.isPane(stateAt(x + side.getStepX(), y + 1, z + side.getStepZ()))) {
                 return false;
             }
         }
-        set(x, y, z, seat);
-        set(x, y + 1, z, seat.setValue(CabinSeatBlock.HALF, DoubleBlockHalf.UPPER));
+        return tall(x, y, z, seat);
+    }
+
+    /**
+     * Puts a fitting two blocks tall into the cabin, a seat or a basin with its mirror: the lower half given at the
+     * spot and its upper half over it; only where both are open. Whether it went in.
+     */
+    boolean tall(int x, int y, int z, BlockState lower) {
+        if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
+            return false;
+        }
+        set(x, y, z, lower);
+        set(x, y + 1, z, lower.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER));
         return true;
     }
 

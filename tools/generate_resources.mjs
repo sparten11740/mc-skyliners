@@ -2239,6 +2239,93 @@ function gymFloorLang() {
   };
 }
 
+// The lavatory basin (see LavatoryBasinBlock), drawn facing north, its back against the south side of its block, in
+// two halves. The lower one: the vanity in the toilet's wall panel (its stainless kick strip along the foot) with a
+// chrome waste flap in its front, and the counter on it in four pieces round the basin set into it, its floor the
+// basin's bowl with the drain; the chrome tap rising at the back and arching out over the basin, its lever beside it,
+// and the soap dispenser in the back corner. The upper one: the mirror against the wall in a chrome frame, and along
+// its top a strip of warm light, glowing whatever the light around. In the hand both halves together, smaller. Only
+// the lower half drops the basin.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    cabinet: block("vacuum_toilet_panel"), counter: block("lavatory_basin_counter"), bowl: block("lavatory_basin_bowl"),
+    chrome: block("lavatory_basin_chrome"), mirror: block("lavatory_basin_mirror"), light: block("lavatory_basin_light"),
+    particle: block("lavatory_basin_counter"),
+  };
+  const lower = [
+    solid([1, 0, 4], [15, 10, 16], "#cabinet"),
+    solid([5, 5, 3.75], [11, 7.5, 4], "#chrome"),
+    solid([0, 10, 2], [16, 13, 4], "#counter"),
+    solid([0, 10, 12], [16, 13, 16], "#counter"),
+    solid([0, 10, 4], [4, 13, 12], "#counter"),
+    solid([12, 10, 4], [16, 13, 12], "#counter"),
+    { ...solid([4, 10, 4], [12, 10.5, 12], "#counter"), faces: { up: { texture: "#bowl" } } },
+    solid([7.5, 13, 12.5], [8.5, 16, 13.5], "#chrome"),
+    solid([7.5, 15, 9.5], [8.5, 16, 12.5], "#chrome"),
+    solid([7.5, 14.25, 9.5], [8.5, 15, 10.5], "#chrome"),
+    solid([8.5, 14.5, 12.75], [10.5, 15, 13.25], "#chrome"),
+    solid([2, 13, 13], [4, 15.5, 15], "#counter"),
+    solid([2.5, 14.5, 12], [3.5, 15, 13], "#chrome"),
+  ];
+  const upper = [
+    solid([0.5, 0.5, 15.5], [15.5, 15.5, 16], "#chrome"),
+    solid([1.5, 1.5, 15.25], [14.5, 13, 15.5], "#mirror"),
+    {
+      from: [1.5, 13.5, 15.25], to: [14.5, 14.5, 15.5], shade: false,
+      faces: { north: { texture: "#light", neoforge_data: { block_light: 15, sky_light: 15 } } },
+    },
+  ];
+  for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
+    write(`assets/${ID}/models/block/lavatory_basin_${half}.json`, { parent: "minecraft:block/block", textures, elements });
+  }
+  write(`assets/${ID}/blockstates/lavatory_basin.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].map((half) =>
+      [`facing=${facing},half=${half}`, { model: `${ID}:block/lavatory_basin_${half}`, ...(y ? { y } : {}) }]))),
+  });
+  const raised = upper.map((element) => ({ ...element, from: [element.from[0], element.from[1] + 16, element.from[2]], to: [element.to[0], element.to[1] + 16, element.to[2]] }));
+  write(`assets/${ID}/models/item/lavatory_basin.json`, {
+    parent: "minecraft:block/block",
+    textures,
+    elements: [...lower, ...raised],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
+      ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
+      fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+    },
+  });
+  write(`data/${ID}/loot_table/blocks/lavatory_basin.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:lavatory_basin` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:lavatory_basin`, properties: { half: "lower" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/lavatory_basin`,
+  });
+  cubes.lavatory_basin = null;
+}
+// The basin is fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function lavatoryBasinFittings() {
+  return ["lavatory_basin"];
+}
+// A cauldron for the basin, set into smooth quartz, under a pane of glass for the mirror.
+function lavatoryBasinRecipes() {
+  shaped("lavatory_basin", ["G", "C", "Q"], { G: "minecraft:glass_pane", C: "minecraft:cauldron", Q: "minecraft:smooth_quartz" }, 1);
+}
+function lavatoryBasinLang() {
+  return {
+    "block.aerolarge.lavatory_basin": "Lavatory Basin",
+  };
+}
+
 // The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
 // with its back against the south side of its block, as deep as the tail camera display's upright one (see
 // AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
@@ -2698,6 +2785,7 @@ FITTINGS.push(...crewLockerFittings());
 FITTINGS.push(...cabinSeatFittings());
 FITTINGS.push(...cabinCarpetFittings());
 FITTINGS.push(...gymFloorFittings());
+FITTINGS.push(...lavatoryBasinFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2806,6 +2894,7 @@ slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
 gymFloorRecipes();
+lavatoryBasinRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3148,6 +3237,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinSeatLang(),
   ...cabinCarpetLang(),
   ...gymFloorLang(),
+  ...lavatoryBasinLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

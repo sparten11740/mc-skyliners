@@ -3,10 +3,14 @@ package dev.aerolarge.block;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** A block's shape drawn facing north, turned to face each way, as its model is turned by the blockstate. */
+/**
+ * A block's shape, or a point of it, drawn facing north, turned to face each way, as its model is turned by the
+ * blockstate.
+ */
 final class TurnedShapes {
     private TurnedShapes() {
     }
@@ -30,5 +34,15 @@ final class TurnedShapes {
             shapes.put(facing, shape[0]);
         }
         return shapes;
+    }
+
+    /** A point given in pixels across and along the model drawn facing north, turned the given way: in blocks. */
+    static Vec3 point(Direction facing, double x, double z) {
+        return switch (facing) {
+            case SOUTH -> new Vec3(16 - x, 0, 16 - z).scale(1.0 / 16);
+            case EAST -> new Vec3(16 - z, 0, x).scale(1.0 / 16);
+            case WEST -> new Vec3(z, 0, 16 - x).scale(1.0 / 16);
+            default -> new Vec3(x, 0, z).scale(1.0 / 16);
+        };
     }
 }

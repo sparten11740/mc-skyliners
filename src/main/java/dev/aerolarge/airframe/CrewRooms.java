@@ -4,6 +4,7 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
+import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
@@ -11,8 +12,6 @@ import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.LayeredCauldronBlock;
-import net.minecraft.world.level.block.TripWireHookBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * Each is walled off from the aisle and the cabin with the hull's own panels, up to the crown, under a ceiling of
  * them at a room's height for a player with a cabin light set into it, kept on at night as a lavatory's is, and has a
  * door onto the aisle at its back.
- * The WC has a toilet and a basin with its tap; the crew room a row of seats along the hull and a small galley
+ * The WC has a toilet and a basin under its mirror; the crew room a row of seats along the hull and a small galley
  * counter: an oven, and a cupboard with a coffee machine on it. Walls and furniture only go into open space.
  */
 final class CrewRooms {
@@ -126,8 +125,8 @@ final class CrewRooms {
      * The WC: the vacuum toilet in the front corner, its back to the hull and facing into the room, as the hull curving
      * in over the corner leaves no room to stand in front of one facing aft (its back to the bulkhead where the hull is
      * not right behind it); at {@code toilet} out from the middle, where a sitter's head is clear of the hull's curve,
-     * the floor beyond it out to the hull walled in. The basin in the front corner by the aisle, its tap on the bulkhead
-     * over it.
+     * the floor beyond it out to the hull walled in. The basin in the front corner by the aisle, its back and its
+     * mirror against the bulkhead.
      */
     private void washroom(int side, int inner, int outer, int toilet) {
         Direction intoRoom = side > 0 ? Direction.WEST : Direction.EAST;
@@ -139,10 +138,7 @@ final class CrewRooms {
                 layout.set(side * x, deck + 1, front, wall);
             }
         }
-        int basin = side * inner;
-        layout.furnish(basin, deck + 1, front,
-            Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, LayeredCauldronBlock.MAX_FILL_LEVEL));
-        layout.furnish(basin, deck + 2, front, Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.SOUTH));
+        layout.tall(side * inner, deck + 1, front, AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, Direction.SOUTH));
     }
 
     /**

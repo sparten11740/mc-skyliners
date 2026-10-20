@@ -1638,6 +1638,25 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "vacuum_toilet_button", (x, y) => ((x + y) % 4 === 0 ? [0x3c, 0x7e, 0xe8] : [0x24, 0x62, 0xd0]), 2);
   texture(blockOutput, "vacuum_toilet_button_lit", (x, y) => ((x + y) % 4 === 0 ? [0xe8, 0xfa, 0xff] : [0xa0, 0xe4, 0xff]), 2);
 }
+// The lavatory basin (see LavatoryBasinBlock); its vanity is the toilet's wall panel. Its counter: white solid
+// surface with a faint fleck. The basin: white ceramic, a shade greyer toward its sides, round a chrome drain with its
+// dark plug hole. Its tap, the soap dispenser's nozzle and the mirror's frame: chrome, streaked bright. The mirror:
+// silvered glass with the cabin's blue in it, a few lighter streaks across it. Its light: warm white.
+{
+  texture(blockOutput, "lavatory_basin_counter", (x, y) => ((x * 7 + y * 3) % 13 === 0 ? [0xe0, 0xdf, 0xda] : [0xf2, 0xf1, 0xec]), 2);
+  texture(blockOutput, "lavatory_basin_bowl", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r < 0.8) return [0x3c, 0x40, 0x46];
+    if (r < 1.9) return [0xd0, 0xd6, 0xdc];
+    return r > 5.5 ? [0xd8, 0xd8, 0xd4] : [0xee, 0xee, 0xea];
+  }, 2);
+  texture(blockOutput, "lavatory_basin_chrome", (x, y) => ((x + 2 * y) % 5 === 0 ? [0xf4, 0xf8, 0xfc] : [0xc4, 0xcb, 0xd2]), 2);
+  texture(blockOutput, "lavatory_basin_mirror", (x, y) => {
+    const d = (x - y + 32) % 16;
+    return d === 3 || d === 4 || d === 10 ? [0xdc, 0xe6, 0xee] : [0xa8, 0xba, 0xc8];
+  }, 1);
+  texture(blockOutput, "lavatory_basin_light", () => [0xff, 0xf0, 0xd2], 0);
+}
 // Blue lav ice: the blue toilet water frozen, light blue and see-through, deeper blue in streaks where it froze in
 // layers, with a few white glints in it.
 {

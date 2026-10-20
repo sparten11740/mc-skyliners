@@ -163,7 +163,7 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
         level.setBlock(pos, state.setValue(FLUSHING, true), Block.UPDATE_ALL);
         level.scheduleTick(pos, this, RECHARGE);
         Direction facing = state.getValue(FACING);
-        Vec3 bowl = Vec3.atLowerCornerOf(pos).add(turned(facing, BOWL_X, BOWL_Z).add(0, BOWL_Y / 16, 0));
+        Vec3 bowl = Vec3.atLowerCornerOf(pos).add(TurnedShapes.point(facing, BOWL_X, BOWL_Z).add(0, BOWL_Y / 16, 0));
         level.playSound(null, bowl.x, bowl.y, bowl.z, AerolargeRegistry.TOILET_FLUSH.get(), SoundSource.BLOCKS, FLUSH_VOLUME, 1.0F);
         for (int i = 0; i < SWIRL; i++) {
             double angle = 2 * Math.PI * i / SWIRL;
@@ -218,16 +218,6 @@ public class VacuumToiletBlock extends HorizontalDirectionalBlock {
             }
         }
         return null;
-    }
-
-    /** A point given in pixels across and along the model drawn facing north, turned to face the given way: in blocks. */
-    private static Vec3 turned(Direction facing, double x, double z) {
-        return switch (facing) {
-            case SOUTH -> new Vec3(16 - x, 0, 16 - z).scale(1.0 / 16);
-            case EAST -> new Vec3(16 - z, 0, x).scale(1.0 / 16);
-            case WEST -> new Vec3(z, 0, 16 - x).scale(1.0 / 16);
-            default -> new Vec3(x, 0, z).scale(1.0 / 16);
-        };
     }
 
     /** A box given in pixels as drawn facing north, turned to face the given way about the block's middle. */
