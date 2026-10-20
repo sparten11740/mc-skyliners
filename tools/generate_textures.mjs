@@ -227,9 +227,13 @@ texture(blockOutput, "airliner_door_bottom", (x, y) => {
 // door hinged on top), the red flag that shows the door armed beside it. The inside is the same picture seen from
 // behind, the window in the middle and the handle by the same edge, on the off-white plastic of the cabin's lining
 // (the overhead bins'): the renderer bulges that lining out of the panel as a padded cushion, the window set deep into
-// it and the handle on it, so the window and the handle here are where PlugDoorMesh cuts and raises them.
+// it and the handle on it, so the window and the handle here are where PlugDoorMesh cuts and raises them. The window
+// is a hole right through the panel, so its glass is left clear in both pictures: the renderer glazes it with
+// plug_door_glass, laid on a pixel to a pixel of the door from the picture's ninth pixel across and five above the
+// window's straight sides, so the window takes its middle.
 const ARMED = [0xc8, 0x2c, 0x2c];
 const DOOR_LINING = [0xe6, 0xe4, 0xde];
+texture(blockOutput, "plug_door_glass", (x, y) => (x - y >= 0 && x - y <= 1 && y >= 4 && y <= 8 ? [0xf2, 0xfa, 0xff, 0x70] : [0xb8, 0xd6, 0xea, 0x40]), 0);
 for (const hinge of ["side", "top"]) {
   for (const rows of [2, 3]) {
     const width = 2 * SIZE;
@@ -249,10 +253,7 @@ for (const hinge of ["side", "top"]) {
         const dx = Math.max(Math.abs(x - 15.5) - 1.5, 0);
         const dy = Math.max(windowTop - y, y - windowTop - 5, 0);
         const corner = Math.hypot(dx, dy);
-        if (corner <= 1.9) {
-          const down = y - windowTop;
-          return x - down > 12 && x - down < 15 && down < 3 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
-        }
+        if (corner <= 1.9) return CLEAR;
         if (corner <= 2.6) return FRAME_DARK;
         if (Math.abs(y - handleY) <= 1) {
           if (x >= handleFrom && x <= handleTo) return y === handleY && x > handleFrom && x < handleTo ? STEEL : FRAME_DARK;

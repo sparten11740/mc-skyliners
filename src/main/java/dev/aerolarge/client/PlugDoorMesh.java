@@ -20,8 +20,8 @@ import java.util.Map;
  *   reads as a cushion under flat light; the handle a bar standing on it, the flag beside it flat on it.</li>
  * </ul>
  *
- * <p>The window is set deep in the lining, through a reveal that rounds down to it the way the lining's sides round
- * down to the panel.
+ * <p>The window is a hole right through the panel, glazed a pixel in from the hull's outer face, set in the lining
+ * through a reveal that rounds down into it the way the lining's sides round down to the panel.
  *
  * <p>Drawn in the door's own frame, as the renderer draws it: x across the doorway to the right as seen from outside,
  * y up from the sill, z out, the hull's outer face at z 1. The pictures are of a door hinged on the left, seen from
@@ -32,9 +32,10 @@ final class PlugDoorMesh {
     /** Pixels to a block, as the pictures are painted. */
     private static final int PX = 16;
     private static final int WIDE = PlugDoorBlock.COLUMNS * PX;
-    /** The panel's inner face and where its outside steps up to the skin, in pixels out from the cabin's side. */
+    /** The panel's inner face, where its outside steps up to the skin, and the glass, in pixels out from the cabin's side. */
     private static final int PANEL_IN = PX - PlugDoorBlock.THICKNESS;
     private static final int PANEL_OUT = PX - 2;
+    private static final int GLASS = PX - 1;
     /** The lining's foot: a rounded rectangle this many pixels in from the door's edge, its corners this round. */
     private static final int FOOT_INSET = 2;
     private static final double FOOT_CORNER = 12;
@@ -47,7 +48,8 @@ final class PlugDoorMesh {
     private static final int WINDOW_TOP = 8;
     private static final int WINDOW_DROP = 4;
     private static final int WINDOW_SIDES = 5;
-    /** How far round the window's middle, as the pictures measure it, its frame reaches. */
+    /** How far round the window's middle, as the pictures measure it, the opening reaches, and the frame round it. */
+    private static final double OPENING = 1.9;
     private static final double FRAME = 2.6;
     /** How many pixels below the top of the window's sides the handle of a door hinged at its side is. */
     private static final int HANDLE_BELOW_WINDOW = 13;
@@ -63,6 +65,12 @@ final class PlugDoorMesh {
     private static final float FACING_UP = 1;
     private static final float FACING_ACROSS = 0.88F;
     private static final float FACING_DOWN = 0.76F;
+    /**
+     * Where in the door's picture the glass's own picture starts, laid on a pixel of it to a pixel of the door: this
+     * many pixels across, and this many above the window's straight sides.
+     */
+    private static final int GLASS_X = 8;
+    private static final int GLASS_ABOVE = 5;
 
     /** Which picture a quad shows, and which light it is drawn in. */
     enum Side {
@@ -75,10 +83,11 @@ final class PlugDoorMesh {
     }
 
     /**
-     * One quad: its four corners, each (x, y, z, u, v) in blocks and across the picture 0 to 1, the way it faces, the
-     * block of the door (column, row) whose light it is drawn in, and how much it is shaded, 0 to 1.
+     * One quad: its four corners, each (x, y, z, u, v) in blocks and across the picture 0 to 1 (across the glass's
+     * picture for the window's glass), the way it faces, the block of the door (column, row) whose light it is drawn
+     * in, how much it is shaded, 0 to 1, and whether it is the window's glass, drawn see-through.
      */
-    record Quad(Side side, float[] corners, float nx, float ny, float nz, int column, int row, float shade) {
+    record Quad(Side side, float[] corners, float nx, float ny, float nz, int column, int row, float shade, boolean glass) {
     }
 
     private static final Map<PlugDoorBlock.Hinge, Map<Integer, List<Quad>>> CACHE = new EnumMap<>(PlugDoorBlock.Hinge.class);
@@ -133,13 +142,15 @@ final class PlugDoorMesh {
         return height == 0 ? PANEL_SHADE : FOOT_SHADE + (1 - FOOT_SHADE) * (height - 1) / (PlugDoorBlock.LINING - 1);
     }
 
-    /** Builds a door's quads from its relief: in the door's frame, each pixel's inner and outer face. */
+    /** Builds a door's quads from its relief: in the door's frame, each pixel's inner and outer face, or a hole. */
     private static final class Builder {
         private final boolean mirrored;
         private final int tall;
-        /** Each pixel's inner and outer face, in pixels out from the cabin's side. */
+        private final int windowTop;
+        /** Each pixel's inner and outer face, in pixels out from the cabin's side; the window's pixels are open. */
         private final int[][] inner;
         private final int[][] outer;
+        private final boolean[][] open;
         private final List<Quad> quads = new ArrayList<>();
 
         Builder(PlugDoorBlock.Hinge hinge, int rows) {
@@ -147,8 +158,9 @@ final class PlugDoorMesh {
             tall = rows * PX;
             inner = new int[WIDE][tall];
             outer = new int[WIDE][tall];
+            open = new boolean[WIDE][tall];
             boolean top = hinge == PlugDoorBlock.Hinge.TOP;
-            int windowTop = windowTop(rows);
+            windowTop = windowTop(rows);
             // The handle and the flag beside it that shows the door armed, in the picture's pixels, as the pictures paint
             // them: three pixels tall, below the window's reveal by the edge away from the hinge, or low down in the
             // middle of a door hinged on top.
@@ -175,6 +187,7 @@ final class PlugDoorMesh {
                     flag[x][y] = level && px >= flagFrom && px <= flagFrom + 1;
                     handleTop = handle[x][y] ? Math.max(handleTop, lining[x][y] + HANDLE) : handleTop;
                     flagTop = flag[x][y] ? Math.max(flagTop, lining[x][y]) : flagTop;
+                    open[x][y] = window <= OPENING;
                     int edge = Math.min(Math.min(px, WIDE - 1 - px), Math.min(py, tall - 1 - py));
                     outer[x][y] = edge == 0 ? PANEL_OUT : edge == 1 || handle[x][y] ? PANEL_OUT + 1 : PX;
                 }
@@ -195,17 +208,20 @@ final class PlugDoorMesh {
         }
 
         List<Quad> build() {
-            // The faces: the lining's steps and the panel round it inside, the skin and the seam outside.
-            faces((x, y) -> inner[x][y], Side.INSIDE, -1);
-            faces((x, y) -> outer[x][y], Side.OUTSIDE, 1);
-            // The sides of every step and of the seam, and the panel's edges.
+            // The faces: the lining's steps and the panel round it inside, the skin and the seam outside, and the glass
+            // both ways across the opening.
+            faces((x, y) -> open[x][y] ? -1 : inner[x][y], Side.INSIDE, -1, false);
+            faces((x, y) -> open[x][y] ? -1 : outer[x][y], Side.OUTSIDE, 1, false);
+            faces((x, y) -> open[x][y] ? GLASS : -1, Side.INSIDE, -1, true);
+            faces((x, y) -> open[x][y] ? GLASS : -1, Side.OUTSIDE, 1, true);
+            // The sides of every step, of the seam and of the opening, and the panel's edges.
             for (int[] way : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
                 walls(way[0], way[1]);
             }
             return List.copyOf(quads);
         }
 
-        /** Each pixel's face at some depth: the depth. */
+        /** Which face each pixel has at some depth, or -1 for none: the depth. */
         @FunctionalInterface
         private interface Depths {
             int at(int x, int y);
@@ -215,7 +231,7 @@ final class PlugDoorMesh {
          * Faces at the depths given, facing in (-1) or out (1), shaded by their depth: rectangles, none across a block's
          * edge, each running over pixels alike.
          */
-        private void faces(Depths depths, Side side, int facing) {
+        private void faces(Depths depths, Side side, int facing, boolean glass) {
             for (int column = 0; column < PlugDoorBlock.COLUMNS; column++) {
                 for (int row = 0; row < tall / PX; row++) {
                     // Runs along each pixel row of the block, carried up while the rows above run alike.
@@ -224,6 +240,9 @@ final class PlugDoorMesh {
                         Map<Long, Integer> next = new HashMap<>();
                         for (int x = column * PX; y < (row + 1) * PX && x < (column + 1) * PX; x++) {
                             int z = depths.at(x, y);
+                            if (z < 0) {
+                                continue;
+                            }
                             int from = x;
                             while (x + 1 < (column + 1) * PX && depths.at(x + 1, y) == z) {
                                 x++;
@@ -235,7 +254,7 @@ final class PlugDoorMesh {
                             if (!next.containsKey(run.getKey())) {
                                 long key = run.getKey();
                                 int z = (int) (key >> 40);
-                                face(side, (int) (key >> 20) & 0xFFFFF, run.getValue(), (int) key & 0xFFFFF, y, z, facing, column, row);
+                                face(side, (int) (key >> 20) & 0xFFFFF, run.getValue(), (int) key & 0xFFFFF, y, z, facing, column, row, glass);
                             }
                         }
                         runs = next;
@@ -244,21 +263,36 @@ final class PlugDoorMesh {
             }
         }
 
-        private void face(Side side, int x0, int y0, int x1, int y1, int z, int facing, int column, int row) {
-            float shade = facing > 0 ? (z == PANEL_OUT ? PANEL_SHADE : 1) : stepShade(PANEL_IN - z);
-            float[] corners = {
-                b(x0), b(y0), b(z), u(x0), v(y0),
-                b(x1), b(y0), b(z), u(x1), v(y0),
-                b(x1), b(y1), b(z), u(x1), v(y1),
-                b(x0), b(y1), b(z), u(x0), v(y1),
-            };
-            quads.add(new Quad(side, corners, 0, 0, facing, column, row, shade));
+        private void face(Side side, int x0, int y0, int x1, int y1, int z, int facing, int column, int row, boolean glass) {
+            float shade = glass ? 1 : facing > 0 ? (z == PANEL_OUT ? PANEL_SHADE : 1) : stepShade(PANEL_IN - z);
+            // Corners anticlockwise seen from the way it faces, so the glass, drawn one side only, shows from that side.
+            int[] xs = facing > 0 ? new int[]{x0, x1, x1, x0} : new int[]{x0, x0, x1, x1};
+            int[] ys = facing > 0 ? new int[]{y0, y0, y1, y1} : new int[]{y0, y1, y1, y0};
+            float[] corners = new float[20];
+            for (int i = 0; i < 4; i++) {
+                corners[i * 5] = b(xs[i]);
+                corners[i * 5 + 1] = b(ys[i]);
+                corners[i * 5 + 2] = b(z);
+                corners[i * 5 + 3] = glass ? glassU(xs[i]) : u(xs[i]);
+                corners[i * 5 + 4] = glass ? glassV(ys[i]) : v(ys[i]);
+            }
+            quads.add(new Quad(side, corners, 0, 0, facing, column, row, shade, glass));
+        }
+
+        /** How far across the glass's picture a point this many pixels from the frame's left edge is. */
+        private float glassU(int x) {
+            return ((mirrored ? WIDE - x : x) - GLASS_X) / (float) PX;
+        }
+
+        /** How far down the glass's picture a point this many pixels up from the sill is. */
+        private float glassV(int y) {
+            return (tall - y - windowTop + GLASS_ABOVE) / (float) PX;
         }
 
         /**
          * The sides of the relief facing one way (dx, dy): wherever a pixel stands further in or further out than the
-         * one beside it, or has the door's edge beside it, a strip along the edge in one block, showing the colour of the
-         * pixels it is the edge of. Each run of pixels alike along the edge is one quad.
+         * one beside it, or has an opening or the door's edge beside it, a strip along the edge in one block, showing the
+         * colour of the pixels it is the edge of. Each run of pixels alike along the edge is one quad.
          */
         private void walls(int dx, int dy) {
             boolean across = dx != 0;
@@ -290,6 +324,9 @@ final class PlugDoorMesh {
 
         /** The strips along one pixel's side facing (dx, dy). */
         private List<Wall> walls(int x, int y, int dx, int dy) {
+            if (open[x][y]) {
+                return List.of();
+            }
             int nx = x + dx;
             int ny = y + dy;
             int in = inner[x][y];
@@ -299,6 +336,10 @@ final class PlugDoorMesh {
             }
             float facing = dy > 0 ? FACING_UP : dy < 0 ? FACING_DOWN : FACING_ACROSS;
             float shade = stepShade(PANEL_IN - in) * facing;
+            if (open[nx][ny]) {
+                // The opening's sides: the lining's and the panel's in the cabin's light, past the seam outside.
+                return List.of(new Wall(Side.INSIDE, in, PANEL_OUT, shade), new Wall(Side.OUTSIDE, PANEL_OUT, out, 1));
+            }
             List<Wall> walls = new ArrayList<>(2);
             if (in < inner[nx][ny]) {
                 walls.add(new Wall(Side.INSIDE, in, inner[nx][ny], shade));
@@ -333,7 +374,7 @@ final class PlugDoorMesh {
             }
             int column = (dx != 0 ? line : from) / PX;
             int row = (dx != 0 ? from : line) / PX;
-            quads.add(new Quad(wall.side(), corners, dx, dy, 0, column, row, wall.shade()));
+            quads.add(new Quad(wall.side(), corners, dx, dy, 0, column, row, wall.shade(), false));
         }
 
         /** Pixels to blocks. */

@@ -513,16 +513,18 @@ skin flush with the hull, its seam a stepped gap right round it, with one window
 handle by the edge away from its hinge, two blocks wide and three tall (two at scale 1; the cargo door is two tall).
 Inside, a bulky padded lining in the cabin's off-white bulges out of the panel almost half a block, a big rounded
 cushion that curves up from its edge to its crown, with the window set deep into it through a rounded reveal and the
-handle on it. Use any part of a door, from inside or out, or give any part a redstone signal, and it opens with a
-hiss: the panel lifts a little and moves out of its frame, then swings forward on its arm and parks flat against the
-hull ahead of the doorway, standing just clear of it (further out where the hull there bulges out past the doorway),
-its outside still facing out. The cargo door swings up and out on its top edge instead, first moving out of its
-doorway where the hull above it stands proud of it. Open, the doorway is clear, and the panel outside is in nobody's
-way; use the empty doorway to shut it again. The panel comes back the same way and latches home with a clunk, but not
-on anyone: while someone stands where it goes back in, it waits, with a chime. The airstairs and a docked jet bridge
-open the door they serve, and shut it again as they fold. Villagers find their way through the doors as through
-wooden ones: while the airliner stands still, a door opens for a villager walking up to it and shuts again behind it;
-in flight no villager opens one. The cockpit door and the doors of the WC and the crew room are ordinary doors.
+handle on it. The window is glazed right through, faintly tinted: look out of it from the cabin, or in from outside;
+it lets no daylight in. Use any part of a door, from inside or out, or give any part a redstone signal, and it opens
+with a hiss: the panel lifts a little and moves out of its frame, then swings forward on its arm and parks flat
+against the hull ahead of the doorway, standing just clear of it (further out where the hull there bulges out past
+the doorway), its outside still facing out. The cargo door swings up and out on its top edge instead, first moving
+out of its doorway where the hull above it stands proud of it. Open, the doorway is clear, and the panel outside is
+in nobody's way; use the empty doorway to shut it again. The panel comes back the same way and latches home with a
+clunk, but not on anyone: while someone stands where it goes back in, it waits, with a chime. The airstairs and a
+docked jet bridge open the door they serve, and shut it again as they fold. Villagers find their way through the
+doors as through wooden ones: while the airliner stands still, a door opens for a villager walking up to it and shuts
+again behind it; in flight no villager opens one. The cockpit door and the doors of the WC and the crew room are
+ordinary doors.
 
 ### Airstairs
 

@@ -1,13 +1,17 @@
 package dev.aerolarge.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -25,12 +29,12 @@ import net.minecraft.world.phys.AABB;
  * left part. Shut, it is one panel flush with the hull, white skin like the plating round it with the door's seam
  * right round it as a stepped gap, one window in the middle of its top and a flush handle by the edge away from its
  * hinge; inside, a padded lining bulges out of it, a big rounded cushion in off-white plastic with the window set deep
- * into it and the handle on it (see {@link PlugDoorMesh}). Opening, a door hinged at the side lifts a little and moves
- * out of the frame, then is carried round on its arm, the way an airliner's is: the arm swings out and forward about a
- * hinge beside the doorway while the panel stays square to the hull, so it ends up flat against the hull beside the
- * doorway, lining and all just clear of it, its outside still facing out. A door hinged along its top, the cargo door,
- * swings up and out about its top edge instead, first moving out of a doorway the hull above it stands proud of.
- * Shutting runs the same way back.
+ * into it and the handle on it (see {@link PlugDoorMesh}). The window is glazed right through, so the world shows
+ * through it either way. Opening, a door hinged at the side lifts a little and moves out of the frame, then is carried
+ * round on its arm, the way an airliner's is: the arm swings out and forward about a hinge beside the doorway while
+ * the panel stays square to the hull, so it ends up flat against the hull beside the doorway, lining and all just
+ * clear of it, its outside still facing out. A door hinged along its top, the cargo door, swings up and out about its
+ * top edge instead, first moving out of a doorway the hull above it stands proud of. Shutting runs the same way back.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from outside, y up from the sill, z out,
  * the hull's outer face at z 1.
@@ -55,8 +59,22 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
      */
     private static final int VIEW_DISTANCE = 1024;
     private static final ResourceLocation ARM = texture("landing_gear");
+    private static final ResourceLocation GLASS_PICTURE = texture("plug_door_glass");
     /** The fewest rows a door's picture is drawn for: as short as the blueprints make a door. */
     private static final int FEWEST_ROWS = 2;
+    /**
+     * The window's glass: see-through, lit as the panel is and from its own side only, leaving the depth of what lies
+     * behind it alone, so whatever is drawn after the door (water, clouds, rain) still shows through it.
+     */
+    private static final RenderType GLASS = RenderType.create(Aerolarge.MOD_ID + "_plug_door_glass", DefaultVertexFormat.NEW_ENTITY,
+        VertexFormat.Mode.QUADS, RenderType.TRANSIENT_BUFFER_SIZE, false, true, RenderType.CompositeState.builder()
+            .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_TRANSLUCENT_CULL_SHADER)
+            .setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
+            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .setOverlayState(RenderStateShard.OVERLAY)
+            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+            .createCompositeState(false));
 
     private static ResourceLocation texture(String name) {
         return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "block/" + name);
@@ -143,19 +161,30 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
 
     /**
      * The panel (see {@link PlugDoorMesh}): the door's picture across its outside and the lining's across its inside,
-     * each block drawn with the light where it is. Shut, its edges are left out: they stand hidden in the frame, where
-     * they would only fight with the frame's own faces.
+     * each block drawn with the light where it is, then the window's glass. Shut, its edges are left out: they stand
+     * hidden in the frame, where they would only fight with the frame's own faces.
      */
     private static void panel(Painter paint, PoseStack.Pose pose, int rows, PlugDoorBlock.Hinge hinge) {
         TextureAtlasSprite outside = paint.sprite(face(hinge, rows, ""));
         TextureAtlasSprite inside = paint.sprite(face(hinge, rows, "_inside"));
-        for (PlugDoorMesh.Quad quad : PlugDoorMesh.of(hinge, rows)) {
-            if (quad.side() == PlugDoorMesh.Side.EDGE && !paint.moved()) {
+        TextureAtlasSprite glass = paint.sprite(GLASS_PICTURE);
+        List<PlugDoorMesh.Quad> quads = PlugDoorMesh.of(hinge, rows);
+        for (PlugDoorMesh.Quad quad : quads) {
+            if (quad.glass() || quad.side() == PlugDoorMesh.Side.EDGE && !paint.moved()) {
                 continue;
             }
             boolean in = quad.side() == PlugDoorMesh.Side.INSIDE;
-            paint.quad(pose, in ? inside : outside, paint.light(quad.column(), quad.row(), !in), quad.shade(),
+            paint.quad(paint.solid(), pose, in ? inside : outside, paint.light(quad.column(), quad.row(), !in), quad.shade(),
                 quad.nx(), quad.ny(), quad.nz(), quad.corners());
+        }
+        // The glass last, in its own buffer: fetching that one draws what went into the panel's.
+        VertexConsumer see = paint.glass();
+        for (PlugDoorMesh.Quad quad : quads) {
+            if (quad.glass()) {
+                boolean in = quad.side() == PlugDoorMesh.Side.INSIDE;
+                paint.quad(see, pose, glass, paint.light(quad.column(), quad.row(), !in), quad.shade(),
+                    quad.nx(), quad.ny(), quad.nz(), quad.corners());
+            }
         }
     }
 
@@ -183,11 +212,12 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     }
 
     /**
-     * Where the door's quads go, and the light each block of the panel is drawn with, looked up once a frame for each
-     * block and side ({@code lights}, outside after inside, block after block along each row). Shut, its outside is lit
-     * by the air outside the doorway and its inside by the cabin; out of its frame, all of it by the air outside.
+     * Where the door's quads go: the panel's buffer and the glass's, and the light each block of the panel is drawn
+     * with, looked up once a frame for each block and side ({@code lights}, outside after inside, block after block
+     * along each row). Shut, its outside is lit by the air outside the doorway and its inside by the cabin; out of its
+     * frame, all of it by the air outside.
      */
-    private record Painter(VertexConsumer consumer, int[] lights, boolean moved) {
+    private record Painter(MultiBufferSource buffers, VertexConsumer solid, int[] lights, boolean moved) {
         static Painter of(MultiBufferSource buffers, Level level, BlockPos door, Direction out, int rows, boolean moved) {
             int[] lights = new int[rows * PlugDoorBlock.COLUMNS * 2];
             for (int row = 0; row < rows; row++) {
@@ -198,11 +228,16 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
                     lights[at + 1] = SableClient.light(level, part.relative(out));
                 }
             }
-            return new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)), lights, moved);
+            return new Painter(buffers, buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)), lights, moved);
         }
 
         TextureAtlasSprite sprite(ResourceLocation texture) {
             return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
+        }
+
+        /** The glass's buffer: once it is fetched, nothing more goes into the panel's. */
+        VertexConsumer glass() {
+            return buffers.getBuffer(GLASS);
         }
 
         int light(int column, int row, boolean outside) {
@@ -213,7 +248,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
          * A quad facing (nx, ny, nz), shaded this much (0 to 1), its four corners each (x, y, z, u, v) with u and v
          * across the sprite, 0 to 1.
          */
-        void quad(PoseStack.Pose pose, TextureAtlasSprite sprite, int light, float shade, float nx, float ny, float nz, float... corners) {
+        void quad(VertexConsumer consumer, PoseStack.Pose pose, TextureAtlasSprite sprite, int light, float shade, float nx, float ny, float nz, float... corners) {
             for (int i = 0; i < 4; i++) {
                 int at = i * 5;
                 consumer.addVertex(pose, corners[at], corners[at + 1], corners[at + 2])
@@ -228,12 +263,12 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         /** A box from one corner to the other, every face showing the whole sprite, lit by the air outside the door. */
         void box(PoseStack.Pose pose, float x0, float y0, float z0, float x1, float y1, float z1, TextureAtlasSprite sprite) {
             int light = light(0, 0, true);
-            quad(pose, sprite, light, 1, 0, 0, 1, x0, y0, z1, 0, 1, x1, y0, z1, 1, 1, x1, y1, z1, 1, 0, x0, y1, z1, 0, 0);
-            quad(pose, sprite, light, 1, 0, 0, -1, x1, y0, z0, 0, 1, x0, y0, z0, 1, 1, x0, y1, z0, 1, 0, x1, y1, z0, 0, 0);
-            quad(pose, sprite, light, 1, 0, 1, 0, x0, y1, z1, 0, 1, x1, y1, z1, 1, 1, x1, y1, z0, 1, 0, x0, y1, z0, 0, 0);
-            quad(pose, sprite, light, 1, 0, -1, 0, x0, y0, z0, 0, 1, x1, y0, z0, 1, 1, x1, y0, z1, 1, 0, x0, y0, z1, 0, 0);
-            quad(pose, sprite, light, 1, 1, 0, 0, x1, y0, z1, 0, 1, x1, y0, z0, 1, 1, x1, y1, z0, 1, 0, x1, y1, z1, 0, 0);
-            quad(pose, sprite, light, 1, -1, 0, 0, x0, y0, z0, 0, 1, x0, y0, z1, 1, 1, x0, y1, z1, 1, 0, x0, y1, z0, 0, 0);
+            quad(solid, pose, sprite, light, 1, 0, 0, 1, x0, y0, z1, 0, 1, x1, y0, z1, 1, 1, x1, y1, z1, 1, 0, x0, y1, z1, 0, 0);
+            quad(solid, pose, sprite, light, 1, 0, 0, -1, x1, y0, z0, 0, 1, x0, y0, z0, 1, 1, x0, y1, z0, 1, 0, x1, y1, z0, 0, 0);
+            quad(solid, pose, sprite, light, 1, 0, 1, 0, x0, y1, z1, 0, 1, x1, y1, z1, 1, 1, x1, y1, z0, 1, 0, x0, y1, z0, 0, 0);
+            quad(solid, pose, sprite, light, 1, 0, -1, 0, x0, y0, z0, 0, 1, x1, y0, z0, 1, 1, x1, y0, z1, 1, 0, x0, y0, z1, 0, 0);
+            quad(solid, pose, sprite, light, 1, 1, 0, 0, x1, y0, z1, 0, 1, x1, y0, z0, 1, 1, x1, y1, z0, 1, 0, x1, y1, z1, 0, 0);
+            quad(solid, pose, sprite, light, 1, -1, 0, 0, x0, y0, z0, 0, 1, x0, y0, z1, 1, 1, x0, y1, z1, 1, 0, x0, y1, z0, 0, 0);
         }
     }
 }
