@@ -87,9 +87,12 @@ public final class PilotHud {
     /** How loud the beep of the HUD coming on is, as a share of full volume: about as loud as a button's click. */
     private static final float BEEP_VOLUME = 0.4F;
 
-    /** The least room the HUD needs on the screen, in its units: on a smaller one it is drawn smaller. */
+    /**
+     * The least room the HUD needs on the screen, in its units: on a smaller one it is drawn smaller, so that the
+     * horizon keeps clear of the hearts and the action bar under it.
+     */
     private static final float ROOM_WIDTH = 300;
-    private static final float ROOM_HEIGHT = 200;
+    private static final float ROOM_HEIGHT = 280;
     /** How far below a boss bar's top it ends, in GUI pixels. */
     private static final int BOSS_BAR_HEIGHT = 5;
     /**
@@ -155,19 +158,27 @@ public final class PilotHud {
     /** Units per degree of pitch on the ladder. */
     private static final float UNITS_PER_PITCH = 2;
     /** The horizon line: half its length, and the gap in its middle, clear of the crosshair. */
-    private static final float HORIZON_HALF = 70;
-    private static final float HORIZON_GAP = 12;
+    private static final float HORIZON_HALF = 40;
+    private static final float HORIZON_GAP = 10;
     /** Pitch ladder rungs every so many degrees, as far as this either way. */
     private static final int RUNG_STEP = 5;
     private static final int RUNG_LIMIT = 30;
     /** A rung's half length every 10 degrees and between, the gap in its middle, and the ticks at its ends. */
-    private static final float LONG_RUNG = 16;
-    private static final float SHORT_RUNG = 10;
-    private static final float RUNG_GAP = 6;
-    private static final float RUNG_TICK = 3;
-    /** The ladder only reaches this far from the middle, fading out over its last stretch, so it stays round the view. */
-    private static final float LADDER_REACH = 60;
-    private static final float LADDER_FADE = 12;
+    private static final float LONG_RUNG = 11;
+    private static final float SHORT_RUNG = 7;
+    private static final float RUNG_GAP = 4;
+    private static final float RUNG_TICK = 2;
+    /** How far beyond a rung's end the middle of its degrees is, and half their width, two figures. */
+    private static final float RUNG_LABEL = LABEL_GAP + 5;
+    private static final float RUNG_LABEL_HALF = 6;
+    /** How opaque the rungs are beside the horizon line, so the ladder stays faint round the crosshair. */
+    private static final float RUNG_SHARE = 0.6F;
+    /**
+     * The ladder only reaches this far from the middle, fading out over its last stretch, so it keeps close round the
+     * crosshair: about 15 degrees of pitch either way.
+     */
+    private static final float LADDER_REACH = 40;
+    private static final float LADDER_FADE = 10;
     /** The flight path marker: its ring's radius, its wings' and fin's length. */
     private static final float MARKER_RADIUS = 3;
     private static final float MARKER_WING = 4;
@@ -181,13 +192,14 @@ public final class PilotHud {
 
     /**
      * How far each part reaches round its origin, in units. The horizon round the middle of the screen, as far as its
-     * line reaches turned any way. The height round the middle of its tape's spine: the ground's hatching and the bug
-     * inside it, then its numbers, the climb bar, and the pictures with their figures; up to the height set over its
-     * numbers and down to a bug at the tape's end. The heading round the middle of its scale's line: the mode's picture
-     * left of it, the heading or radius set right of it, the heading's box over it and the bug under it. (The speed's,
-     * as wide as the names of what the autopilot does, is {@link #speedReach}.)
+     * line or the furthest rung's degrees reach, turned any way. The height round the middle of its tape's spine: the
+     * ground's hatching and the bug inside it, then its numbers, the climb bar, and the pictures with their figures; up
+     * to the height set over its numbers and down to a bug at the tape's end. The heading round the middle of its
+     * scale's line: the mode's picture left of it, the heading or radius set right of it, the heading's box over it and
+     * the bug under it. (The speed's, as wide as the names of what the autopilot does, is {@link #speedReach}.)
      */
-    private static final Box ATTITUDE_REACH = new Box(-HORIZON_HALF - 2, -HORIZON_HALF - 2, HORIZON_HALF + 2, HORIZON_HALF + 2);
+    private static final float ATTITUDE_RADIUS = Math.max(HORIZON_HALF, (float) Math.hypot(LADDER_REACH, LONG_RUNG + RUNG_LABEL) + RUNG_LABEL_HALF) + 1;
+    private static final Box ATTITUDE_REACH = new Box(-ATTITUDE_RADIUS, -ATTITUDE_RADIUS, ATTITUDE_RADIUS, ATTITUDE_RADIUS);
     private static final float TAPE_TOP = -(TAPE_HALF_HEIGHT + GAP + 2 * TEXT_MIDDLE + 2);
     private static final float TAPE_BOTTOM = TAPE_HALF_HEIGHT + BUG_HALF;
     private static final float CLIMB_BAR_X = TAPE_NUMBERS + CLIMB_BAR_GAP;
@@ -477,7 +489,8 @@ public final class PilotHud {
             float reach = degrees == 0 ? HORIZON_HALF : degrees % (2 * RUNG_STEP) == 0 ? LONG_RUNG : SHORT_RUNG;
             float gap = degrees == 0 ? HORIZON_GAP : RUNG_GAP;
             int colour = degrees == 0 && Math.abs(reading.roll()) > BANK_WARNING ? WARNING : HUD;
-            int faded = fade(colour, (LADDER_REACH - (float) Math.hypot(x, y)) / LADDER_FADE);
+            float shown = Mth.clamp((LADDER_REACH - (float) Math.hypot(x, y)) / LADDER_FADE, 0, 1);
+            int faded = fade(colour, degrees == 0 ? shown : shown * RUNG_SHARE);
             if (faded >>> 24 == 0) {
                 continue;
             }
@@ -499,8 +512,8 @@ public final class PilotHud {
                     // Ticks at its ends pointing toward the horizon, and its degrees beside them.
                     float toward = -Math.signum(degrees) * RUNG_TICK;
                     canvas.line(endX, endY, endX + upX * toward, endY + upY * toward, 1, faded);
-                    canvas.text(String.valueOf(Math.abs(degrees)), endX + side * alongX * (LABEL_GAP + 5), endY + side * alongY * (LABEL_GAP + 5),
-                        faded, Align.CENTRE);
+                    canvas.text(String.valueOf(Math.abs(degrees)), endX + side * alongX * RUNG_LABEL, endY + side * alongY * RUNG_LABEL, faded,
+                        Align.CENTRE);
                 }
             }
         }
