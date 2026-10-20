@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The airstairs' memory and motor. It knows the flight as a list of stages, from the landing at the door down to the
@@ -179,10 +181,35 @@ public class AirstairControllerBlockEntity extends BlockEntity {
 
     /** Whether anyone stands on, or is passing through, any part of the stairs that is out. */
     private boolean occupied(ServerLevel level) {
+        List<AABB> spots = new ArrayList<>();
         for (int i = 0; i < out; i++) {
             for (Step step : stages.get(i)) {
-                AABB above = new AABB(worldPosition.offset(step.offset())).expandTowards(0, 2, 0);
-                if (!level.getEntitiesOfClass(LivingEntity.class, above, LivingEntity::isAlive).isEmpty()) {
+                spots.add(new AABB(worldPosition.offset(step.offset())).expandTowards(0, 2, 0));
+            }
+        }
+        return anyoneIn(level, spots);
+    }
+
+    /**
+     * Whether anyone alive is in any of the boxes, given among the controller's own blocks: where it stands in the
+     * world, or aboard an assembled airliner, where everyone is seen in the airliner's frame.
+     */
+    protected boolean anyoneIn(ServerLevel level, List<AABB> spots) {
+        if (spots.isEmpty()) {
+            return false;
+        }
+        AABB all = spots.getFirst();
+        for (AABB spot : spots) {
+            all = all.minmax(spot);
+        }
+        // However the airliner is turned, the boxes lie within half their diagonal of their middle.
+        Vec3 middle = SableFlight.toWorld(level, all.getCenter());
+        double reach = Math.sqrt(all.getXsize() * all.getXsize() + all.getYsize() * all.getYsize() + all.getZsize() * all.getZsize()) / 2 + 2;
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(middle, middle).inflate(reach), LivingEntity::isAlive)) {
+            Vec3 centre = SableFlight.toPlot(level, worldPosition, entity.getBoundingBox().getCenter(), false);
+            AABB box = AABB.ofSize(centre, entity.getBbWidth(), entity.getBbHeight(), entity.getBbWidth());
+            for (AABB spot : spots) {
+                if (spot.intersects(box)) {
                     return true;
                 }
             }
