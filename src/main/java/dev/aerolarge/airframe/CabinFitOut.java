@@ -13,6 +13,7 @@ import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PoolCopingBlock;
 import dev.aerolarge.block.PoolMosaicBlock;
+import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,7 +26,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -300,8 +300,8 @@ final class CabinFitOut {
 
     /**
      * The gym hall (Turnhalle): the cabin's whole height over a sprung maple court with white lines, a basketball
-     * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and mats along the
-     * port wall, climbing ropes and seats along starboard facing the court, between its windows.
+     * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and gym mats along
+     * the port wall, climbing ropes and seats along starboard facing the court, between its windows.
      */
     private void gym(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -329,24 +329,27 @@ final class CabinFitOut {
         layout.furnish(-width, floor + 1, fromZ + 1, rack);
         layout.furnish(-width, floor + 1, toZ - 1, rack);
 
-        // Wall bars (Sprossenwand): ladders up the port wall, following its curve, with mats in front.
+        // Wall bars (Sprossenwand) up the port wall, following its curve, with gym mats in front of them.
+        BlockState bars = AerolargeRegistry.WALL_BARS.get().defaultBlockState().setValue(RungLadderBlock.FACING, Direction.EAST);
+        BlockState mat = AerolargeRegistry.GYM_MAT.get().defaultBlockState();
         for (int z = middle - 4; z <= middle + 4; z++) {
             for (int y = floor + 1; y <= floor + 5; y++) {
                 int x = layout.openHalfWidth(y, z);
                 if (x >= 0) {
-                    layout.furnish(-x, y, z, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.EAST));
+                    layout.furnish(-x, y, z, bars);
                 }
             }
             for (int x = -width + 1; x <= -width + 3; x++) {
-                layout.furnish(x, floor + 1, z, Blocks.BLUE_CARPET.defaultBlockState());
+                layout.furnish(x, floor + 1, z, mat);
             }
         }
 
-        // Climbing ropes hanging from the crown to just above the floor.
+        // Climbing ropes hanging from the crown, or the gallery over them, to just above the floor.
+        BlockState rope = AerolargeRegistry.CLIMBING_ROPE.get().defaultBlockState();
         for (int z = middle - 2; z <= middle + 2; z += 2) {
             int x = width - 3;
             for (int y = layout.ceiling(x, z); y >= floor + 2; y--) {
-                layout.furnish(x, y, z, Blocks.CHAIN.defaultBlockState());
+                layout.furnish(x, y, z, rope);
             }
         }
 

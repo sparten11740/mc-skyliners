@@ -26,8 +26,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
   with a diving tower on its front rim (a chrome pool ladder up to a small platform three metres up, the cabin's
   glass rails round it, and a springboard sticking out from it over the water), a
-  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, seats between the windows, roof
-  trusses with gymnastic rings and the teams' banners, and a lounge
+  full-height gym hall (Turnhalle) with a court, hoops, wall bars with gym mats in front of them, climbing ropes,
+  seats between the windows, roof trusses with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
   the bar a secret door into a den in the tail; the hold under the cabin is stowed with luggage (both below). Plants
