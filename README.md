@@ -552,7 +552,9 @@ a dark blue stripe down its middle. Pool Coping is the white stone kerb along th
 over the water above a band of dark blue tiles at the waterline: put down, its round faces the water you are looking
 at; sneaking, it is a corner piece, plain all over. Pool Steps are stairs tiled like the deck, a dark blue edge along
 the front of each tread, that turn corners and fill with water as any stairs do; steps side by side make one flight,
-with a chrome grab rail curving up over each end of it.
+with a chrome grab rail curving up over each end of it. A Pool Ladder is climbed as any ladder is: two chrome rails
+standing off the wall with a ribbed steel tread between them every half block, the rails of its top piece curling
+over into grab handles down onto the floor beyond its top, as a pool ladder's do over the coping.
 
 ### The high dive
 

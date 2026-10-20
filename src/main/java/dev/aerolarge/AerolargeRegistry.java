@@ -91,6 +91,7 @@ import dev.aerolarge.block.PoolStepsBlock;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
+import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
 import dev.aerolarge.block.SeatbeltSignBlock;
@@ -990,6 +991,12 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> POOL_MOSAIC_ITEM = ITEMS.registerSimpleBlockItem(POOL_MOSAIC);
     public static final DeferredItem<BlockItem> POOL_COPING_ITEM = ITEMS.registerSimpleBlockItem(POOL_COPING);
     public static final DeferredItem<BlockItem> POOL_STEPS_ITEM = ITEMS.registerSimpleBlockItem(POOL_STEPS);
+    /** The diving tower's chrome ladder, climbed as any ladder is. */
+    public static final DeferredBlock<RungLadderBlock> POOL_LADDER = BLOCKS.registerBlock(
+        "pool_ladder", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.POOL_LADDER),
+        metal(MapColor.METAL).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> POOL_LADDER_ITEM = ITEMS.registerSimpleBlockItem(POOL_LADDER);
 
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
@@ -1061,7 +1068,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM,
-            POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM
+            POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

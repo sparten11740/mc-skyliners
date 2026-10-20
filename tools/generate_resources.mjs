@@ -3233,12 +3233,12 @@ const cabinDecorLang = {};
   cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
 }
 
-// The moon pool's tiling: its models here, its fittings, recipes and names in the functions after them, which the
-// shared lists further down take in. The deck tile: the dotted tiles on top, plain tiles round its sides and white
+// The moon pool's tiling and ladder: their models here, their fittings, recipes and names in the functions after them,
+// which the shared lists further down take in. The deck tile: the dotted tiles on top, plain tiles round its sides and white
 // ceiling panels underneath, as the hold sees the cabin floor. The mosaic, plain or with its lane line. The coping
 // (see PoolCopingBlock), drawn facing north: a kerb whose top steps down a pixel along its front edge, so the edge
 // reads as rounded over, its front the coping's band over the mosaic; a corner piece the kerb's plain stone all over.
-const POOL_TILES = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps"];
+const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "pool_ladder"];
 {
   const block = (name) => `${ID}:block/${name}`;
   write(`assets/${ID}/models/block/pool_deck_tile.json`, {
@@ -3356,26 +3356,64 @@ const POOL_TILES = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps"
     parent: "minecraft:block/stairs", textures, elements: [...steps.pool_steps, ...rail(1), ...rail(13.5)],
   });
 }
-function poolTilesFittings() {
-  return POOL_TILES;
+// The pool ladder (see RungLadderBlock), drawn facing north, its wall to the south: two chrome rails standing off the
+// wall on a bracket each, a ribbed steel tread between them every half block. Its top piece's rails carry on up past
+// its top and curl over into grab handles, down onto the floor beyond the wall's top, as a pool ladder's over the
+// coping. In the hand, the top piece.
+{
+  const textures = { chrome: `${ID}:block/lavatory_basin_chrome`, tread: `${ID}:block/pool_ladder_tread`, particle: `${ID}:block/lavatory_basin_chrome` };
+  const piece = [];
+  const top = [];
+  for (const [x0, x1] of [[1.5, 3], [13, 14.5]]) {
+    piece.push(
+      [[x0, 0, 10.5], [x1, 16, 12], "#chrome"],
+      [[x0 + 0.25, 6, 12], [x1 - 0.25, 7, 16], "#chrome"],
+    );
+    top.push(
+      [[x0, 16, 10.5], [x1, 28, 12], "#chrome"],
+      [[x0, 26.5, 12], [x1, 28, 20], "#chrome"],
+      [[x0, 16, 18.5], [x1, 26.5, 20], "#chrome"],
+    );
+  }
+  for (const y of [3.5, 11.5]) {
+    piece.push([[3, y, 8], [13, y + 1, 13], { up: "#tread", down: "#tread", all: "#chrome" }]);
+  }
+  write(`assets/${ID}/models/block/pool_ladder.json`, boxes(textures, piece));
+  write(`assets/${ID}/models/block/pool_ladder_top.json`, boxes(textures, [...piece, ...top]));
+  write(`assets/${ID}/blockstates/pool_ladder.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
+      [`facing=${facing},top=${isTop}`, { model: `${ID}:block/pool_ladder${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/pool_ladder.json`, { parent: `${ID}:block/pool_ladder_top` });
+}
+// The pool's tiles and ladder are fitted into the cabin rather than built into the airliner: breakable, and no part of
+// the airframe.
+function poolFittings() {
+  return POOL;
+}
+// What of the pool climbs as a ladder does.
+function poolClimbable() {
+  return ["pool_ladder"];
 }
 // Smooth sandstone round gravel for the deck tile's grit; light blue glass round white concrete for the mosaic; a
-// kerb of smooth quartz over mosaic for the coping; steps of deck tiles as any stairs are made.
-function poolTilesRecipes() {
+// kerb of smooth quartz over mosaic for the coping; steps of deck tiles as any stairs are made; a ladder of iron.
+function poolRecipes() {
   shaped("pool_deck_tile", ["SSS", "SGS", "SSS"], { S: "minecraft:smooth_sandstone", G: "minecraft:gravel" }, 8);
   shaped("pool_mosaic", ["GGG", "GCG", "GGG"], { G: "minecraft:light_blue_stained_glass", C: "minecraft:white_concrete" }, 8);
   shaped("pool_coping", ["QQQ", "MMM"], { Q: "minecraft:smooth_quartz", M: `${ID}:pool_mosaic` }, 6);
   shaped("pool_steps", ["T  ", "TT ", "TTT"], { T: `${ID}:pool_deck_tile` }, 4);
+  shaped("pool_ladder", ["I I", "INI", "I I"], { I: "minecraft:iron_ingot", N: "minecraft:iron_nugget" }, 3);
 }
-function poolTilesLang() {
+function poolLang() {
   return {
     "block.aerolarge.pool_deck_tile": "Pool Deck Tile",
     "block.aerolarge.pool_mosaic": "Pool Mosaic",
     "block.aerolarge.pool_coping": "Pool Coping",
     "block.aerolarge.pool_steps": "Pool Steps",
+    "block.aerolarge.pool_ladder": "Pool Ladder",
   };
 }
-for (const name of POOL_TILES) {
+for (const name of POOL) {
   dropsItself(name);
   cubes[name] = null;
 }
@@ -3451,6 +3489,8 @@ write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
 write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airliner_door`]));
+// Climbed as a ladder is.
+write("data/minecraft/tags/block/climbable.json", tag(poolClimbable().map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
 const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
@@ -3473,7 +3513,7 @@ FITTINGS.push(...denFurnitureFittings());
 FITTINGS.push(...cargoNetFittings());
 FITTINGS.push(...cargoFloorFittings());
 FITTINGS.push(...uldContainerFittings());
-FITTINGS.push(...poolTilesFittings());
+FITTINGS.push(...poolFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3590,7 +3630,7 @@ airstairButtonRecipes();
 cargoNetRecipes();
 cargoFloorRecipes();
 uldContainerRecipes();
-poolTilesRecipes();
+poolRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3940,7 +3980,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cargoNetLang(),
   ...cargoFloorLang(),
   ...uldContainerLang(),
-  ...poolTilesLang(),
+  ...poolLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

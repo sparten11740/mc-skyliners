@@ -1631,6 +1631,8 @@ blueprint("furnished_airliner_blueprint", true);
     return mosaic(false)(x, y);
   }, 2);
   texture(blockOutput, "pool_steps_nosing", (x, y) => ((x + y) % 4 === 0 ? [0x24, 0x4a, 0x9c] : BAND), 2);
+  // The pool ladder's treads: stainless steel ribbed across for grip, each rib catching the light.
+  texture(blockOutput, "pool_ladder_tread", (x, y) => (y % 3 === 0 ? [0xe4, 0xe8, 0xec] : y % 3 === 1 ? [0x9a, 0xa2, 0xaa] : [0xb8, 0xbe, 0xc6]), 2);
 }
 // The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
 // layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most
