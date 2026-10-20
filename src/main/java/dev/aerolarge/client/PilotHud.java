@@ -9,10 +9,14 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.block.AutopilotBlockEntity.Phase;
+import dev.aerolarge.client.HudLayout.Box;
+import dev.aerolarge.client.HudLayout.Placement;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.ScreenDrawing.Align;
 import dev.aerolarge.item.PilotHelmetItem;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -20,6 +24,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
@@ -32,21 +37,24 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
 import org.joml.Matrix4f;
 
 /**
  * The pilots' head-up display, shown by the visor of a pilot helmet: while the local player wears one on the flight
  * deck of an assembled airliner, within reach of its autopilot (as from either pilot's seat), how it flies, drawn as a
- * real HUD is, in thin green lines and figures straight over the view round its middle, edged dark so they read
- * against bright sky, with what the autopilot is set to in magenta, and bent onto the visor's curve
- * ({@link HelmetVisor}). Round the crosshair a slim horizon line and the pitch ladder, which tilt against the bank and
- * drop as the nose comes up (the horizon amber once banked as far as the "bank angle" callout), and the flight path
- * marker, where the airliner is going. Left of them the speed on a narrow moving tape, the speed set as a magenta bug
- * and a trend arrow to the speed ten seconds on; under it a picture of what the autopilot is doing, and its name. Right
- * of them the height the autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the
- * ground as an amber line rising up it once near, and beyond it a bar that climbs green or sinks amber; under it the
- * wheels' height above the ground and the climb or sink with an arrow. Above them a heading scale, the heading in a box
- * over it and the heading set as a magenta bug, with the autopilot's mode (straight on or round a circle) beside it.
+ * real HUD is, in thin green lines and figures straight over the view, edged dark so they read against bright sky, with
+ * what the autopilot is set to in magenta, on the visor ({@link HelmetVisor}). It comes in parts, placed by
+ * {@link HudLayout} out of the way of the rest of the HUD and of the middle of the view. Round the crosshair a slim
+ * horizon line and the pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon amber once
+ * banked as far as the "bank angle" callout), and the flight path marker, where the airliner is going. Left of the
+ * hotbar the speed on a narrow moving tape, the speed set as a magenta bug and a trend arrow to the speed ten seconds
+ * on, and beside it a picture of what the autopilot is doing, with its name. Right of the hotbar the height the
+ * autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the ground as an amber line
+ * rising up it once near, a bar beyond it that climbs green or sinks amber, and beside that the wheels' height above
+ * the ground and the climb or sink with an arrow. At the top of the screen a heading scale, the heading in a box over
+ * it and the heading set as a magenta bug, with the autopilot's mode (straight on or round a circle) beside it. Where
+ * there is no room beside the hotbar, the speed and the height go out in the left and right parts of the screen.
  * Pictures and colours carry it, and numbers only where the number is the point, so that it works for players who
  * cannot read yet.
  *
@@ -79,9 +87,11 @@ public final class PilotHud {
     /** How loud the beep of the HUD coming on is, as a share of full volume: about as loud as a button's click. */
     private static final float BEEP_VOLUME = 0.4F;
 
-    /** Half the HUD's width and height round the middle of the screen, in its units. */
-    private static final float HALF_WIDTH = 150;
-    private static final float HALF_HEIGHT = 100;
+    /** The least room the HUD needs on the screen, in its units: on a smaller one it is drawn smaller. */
+    private static final float ROOM_WIDTH = 300;
+    private static final float ROOM_HEIGHT = 200;
+    /** How far below a boss bar's top it ends, in GUI pixels. */
+    private static final int BOSS_BAR_HEIGHT = 5;
     /**
      * Screen pixels per unit of the HUD for each step of the GUI scale, at a {@code pilotHudScale} of 1: half the GUI's
      * own size. Never fewer than the least, below which its text could not be read.
@@ -95,11 +105,12 @@ public final class PilotHud {
     private static final float OPACITY = 0.72F;
     private static final float OUTLINE = 0.4F;
 
-    /** The speed and height tapes: their spines' distance either side of the middle, and half their height. */
-    private static final float TAPE_X = 100;
-    private static final float TAPE_HALF_HEIGHT = 45;
+    /** Half the speed and height tapes' height, low enough for them to fit beside the hotbar under the chat. */
+    private static final float TAPE_HALF_HEIGHT = 28;
     /** The room for a tape's numbers, on the outer side of its spine; its marks are on the inner side. */
     private static final float TAPE_NUMBERS = 30;
+    /** The gap between a tape's numbers (or the climb bar) and the pictures beside them. */
+    private static final float COLUMN_GAP = 6;
     /** How far from a tape's or a scale's ends its marks and numbers fade out, so they slide in and out softly. */
     private static final float END_FADE = 8;
     /** Units per block a second on the speed tape and per block on the height tape. */
@@ -131,8 +142,7 @@ public final class PilotHud {
     private static final float GAP = 4;
     private static final float ICON_GAP = 3;
 
-    /** The heading scale: the line its marks stand on, half its width, and units per degree. */
-    private static final float HEADING_Y = -70;
+    /** The heading scale: half its width, and units per degree. */
     private static final float HEADING_HALF_WIDTH = 50;
     private static final float UNITS_PER_DEGREE = 1.6F;
     /** It is marked every 5 degrees and numbered every 10. */
@@ -166,6 +176,25 @@ public final class PilotHud {
     private static final int MARKER_SIDES = 12;
     /** Where the middle of a line of text is, in font pixels below its top: half its capitals' height. */
     private static final float TEXT_MIDDLE = 3.5F;
+    /** The widest figures the HUD shows beside a picture or a scale: four digits. */
+    private static final float FIGURES = 24;
+
+    /**
+     * How far each part reaches round its origin, in units. The horizon round the middle of the screen, as far as its
+     * line reaches turned any way. The height round the middle of its tape's spine: the ground's hatching and the bug
+     * inside it, then its numbers, the climb bar, and the pictures with their figures; up to the height set over its
+     * numbers and down to a bug at the tape's end. The heading round the middle of its scale's line: the mode's picture
+     * left of it, the heading or radius set right of it, the heading's box over it and the bug under it. (The speed's,
+     * as wide as the names of what the autopilot does, is {@link #speedReach}.)
+     */
+    private static final Box ATTITUDE_REACH = new Box(-HORIZON_HALF - 2, -HORIZON_HALF - 2, HORIZON_HALF + 2, HORIZON_HALF + 2);
+    private static final float TAPE_TOP = -(TAPE_HALF_HEIGHT + GAP + 2 * TEXT_MIDDLE + 2);
+    private static final float TAPE_BOTTOM = TAPE_HALF_HEIGHT + BUG_HALF;
+    private static final float CLIMB_BAR_X = TAPE_NUMBERS + CLIMB_BAR_GAP;
+    private static final float CLIMB_COLUMN_X = CLIMB_BAR_X + 2 * CLIMB_BAR_HALF + 1 + COLUMN_GAP;
+    private static final Box ALTITUDE_REACH = new Box(-GROUND_WIDTH - 1, TAPE_TOP, CLIMB_COLUMN_X + Icon.SIZE + ICON_GAP + FIGURES, TAPE_BOTTOM);
+    private static final Box HEADING_REACH = new Box(-HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, -HEADING_BOX_Y - BOX_HALF - 1,
+        HEADING_HALF_WIDTH + ICON_GAP + FIGURES, 1 + BUG_LENGTH + 1);
 
     /** The symbology's green, a HUD's, bright enough to read against the sky once laid on see-through. */
     private static final int HUD = 0xFF70FFA0;
@@ -199,6 +228,8 @@ public final class PilotHud {
     /** How the HUD came on, while it waits to be drawn for the first time since; and when it was. */
     private static Boot boot = Boot.NONE;
     private static long bootedAt;
+    /** Where the boss bars drawn this frame end, in GUI pixels; the top of the screen while there are none. */
+    private static int bossBarsBottom;
 
     private PilotHud() {
     }
@@ -350,8 +381,19 @@ public final class PilotHud {
         wearing = nowWearing;
     }
 
+    /**
+     * Takes in where each boss bar drawn this frame ends, so that the heading goes under them. They are drawn before
+     * the HUD, whose layer is over theirs.
+     */
+    public static void bossBar(CustomizeGuiOverlayEvent.BossEventProgress event) {
+        bossBarsBottom = Math.max(bossBarsBottom, event.getY() + BOSS_BAR_HEIGHT);
+    }
+
     /** Draws the HUD onto the visor, if it is on and nothing hides it. */
     public static void overlay(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        // Taken each frame, drawn or not, so that it is never left over from an earlier one.
+        int bossBars = bossBarsBottom;
+        bossBarsBottom = 0;
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         Cockpit held = cockpit;
@@ -372,15 +414,32 @@ public final class PilotHud {
         float fade = Math.min(1, (Util.getMillis() - bootedAt) / FADE_IN_MILLIS);
         AutopilotBlockEntity autopilot = held.autopilot;
         Targets targets = Targets.of(autopilot);
-        float pixelsPerUnit = pixelsPerUnit(minecraft.getWindow());
-        HelmetVisor.drawCurved(graphics, HALF_WIDTH, HALF_HEIGHT, pixelsPerUnit, OPACITY * fade, OUTLINE * fade, () -> {
-            Canvas canvas = new Canvas(graphics, minecraft.font, pixelsPerUnit);
-            attitude(canvas, reading);
-            speedTape(canvas, autopilot.phase(), reading, targets.speed());
-            altitudeTape(canvas, reading, targets.altitude());
-            headingScale(canvas, autopilot, reading, targets.heading());
+        Window window = minecraft.getWindow();
+        float pixelsPerUnit = pixelsPerUnit(window);
+        float unit = pixelsPerUnit / (float) window.getGuiScale();
+        Font font = minecraft.font;
+        Box speedReach = speedReach(font);
+        ChatComponent chat = minecraft.gui.getChat();
+        HudLayout layout = new HudLayout(graphics.guiWidth(), graphics.guiHeight(), chat.getWidth(), chat.getHeight(),
+            minecraft.options.showSubtitles().get(), bossBars);
+        Placement at = layout.place(speedReach.scaled(unit), ALTITUDE_REACH.scaled(unit), HEADING_REACH.scaled(unit), ATTITUDE_REACH.scaled(unit));
+        HelmetVisor.draw(graphics, pixelsPerUnit, OPACITY * fade, OUTLINE * fade, List.of(
+            new HelmetVisor.Part(at.attitude(), ATTITUDE_REACH, painter(graphics, font, pixelsPerUnit, canvas -> attitude(canvas, reading))),
+            new HelmetVisor.Part(at.speed(), speedReach,
+                painter(graphics, font, pixelsPerUnit, canvas -> speedTape(canvas, autopilot.phase(), reading, targets.speed(), speedReach.left()))),
+            new HelmetVisor.Part(at.altitude(), ALTITUDE_REACH,
+                painter(graphics, font, pixelsPerUnit, canvas -> altitudeTape(canvas, reading, targets.altitude()))),
+            new HelmetVisor.Part(at.heading(), HEADING_REACH,
+                painter(graphics, font, pixelsPerUnit, canvas -> headingScale(canvas, autopilot, reading, targets.heading())))));
+    }
+
+    /** A part's painter: drawing onto a canvas through the GUI's pose as the visor has set it up for the part. */
+    private static HelmetVisor.Painter painter(GuiGraphics graphics, Font font, float pixelsPerUnit, Consumer<Canvas> drawing) {
+        return () -> {
+            Canvas canvas = new Canvas(graphics, font, pixelsPerUnit);
+            drawing.accept(canvas);
             canvas.flush();
-        });
+        };
     }
 
     /**
@@ -396,7 +455,7 @@ public final class PilotHud {
     private static float pixelsPerUnit(Window window) {
         double size = window.getGuiScale() * PIXELS_PER_GUI_SCALE * AerolargeClientConfig.PILOT_HUD_SCALE.get();
         float wanted = Math.max(LEAST_PIXELS_PER_UNIT, (float) size);
-        return Math.min(wanted, Math.min(window.getWidth() / (2 * HALF_WIDTH), window.getHeight() / (2 * HALF_HEIGHT)));
+        return Math.min(wanted, Math.min(window.getWidth() / ROOM_WIDTH, window.getHeight() / ROOM_HEIGHT));
     }
 
     /**
@@ -455,11 +514,11 @@ public final class PilotHud {
     }
 
     /**
-     * Left of the middle: the speed tape, its bug and trend arrow, the speed set over it, and under it what the
-     * autopilot is doing.
+     * The speed, round the middle of its tape's spine: the tape, its bug and trend arrow, the speed set over its
+     * numbers, and out beyond them, as far as the given edge, a picture of what the autopilot is doing over its name.
      */
-    private static void speedTape(Canvas canvas, Phase phase, Reading reading, double target) {
-        Tape tape = new Tape(-TAPE_X, 1, reading.airspeed(), UNITS_PER_SPEED, 0);
+    private static void speedTape(Canvas canvas, Phase phase, Reading reading, double target, float left) {
+        Tape tape = new Tape(0, 1, reading.airspeed(), UNITS_PER_SPEED, 0);
         tape.draw(canvas, SPEED_TICK, SPEED_LABEL);
         if (Math.abs(reading.trend()) >= TREND_MIN) {
             float x = tape.spine() + 2;
@@ -472,16 +531,27 @@ public final class PilotHud {
         tape.readout(canvas, String.valueOf(Math.round(reading.airspeed())));
         tape.set(canvas, target);
 
-        float x = tape.spine() - TAPE_NUMBERS;
-        float y = TAPE_HALF_HEIGHT + GAP;
+        float middle = (left + tape.spine() - TAPE_NUMBERS - COLUMN_GAP) / 2;
         canvas.flush();
-        canvas.icon(phaseIcon(phase), x, y);
-        Component name = phase == Phase.OFF ? AP_OFF : phaseName(phase);
-        canvas.text(name, x + Icon.SIZE + ICON_GAP, y + Icon.SIZE / 2F, phase == Phase.OFF ? WARNING : HUD, Align.LEFT);
+        canvas.icon(phaseIcon(phase), middle - Icon.SIZE / 2F, -Icon.SIZE);
+        canvas.text(phaseName(phase), middle, ICON_GAP + TEXT_MIDDLE, phase == Phase.OFF ? WARNING : HUD, Align.CENTRE);
+    }
+
+    /**
+     * How far the speed's part reaches round the middle of its tape's spine: out to its bug and trend arrow on the
+     * inner side, and on the outer side past its numbers to a column as wide as the picture or the widest name of what
+     * the autopilot does.
+     */
+    private static Box speedReach(Font font) {
+        int widest = Icon.SIZE;
+        for (Phase phase : Phase.values()) {
+            widest = Math.max(widest, font.width(phaseName(phase)));
+        }
+        return new Box(-(TAPE_NUMBERS + COLUMN_GAP + widest), TAPE_TOP, 1 + BUG_LENGTH + 1, TAPE_BOTTOM);
     }
 
     private static Component phaseName(Phase phase) {
-        return Component.translatable(PHASE_KEY + phase.name().toLowerCase(Locale.ROOT));
+        return phase == Phase.OFF ? AP_OFF : Component.translatable(PHASE_KEY + phase.name().toLowerCase(Locale.ROOT));
     }
 
     /** The picture of what the autopilot is doing: the buttons' pictures where it has one, else the HUD's own. */
@@ -498,23 +568,24 @@ public final class PilotHud {
     }
 
     /**
-     * Right of the middle: the height tape with its bug and the ground, the climb bar beyond its numbers, the height set
-     * over it, and under it the wheels' height above the ground and the climb or sink.
+     * The height, round the middle of its tape's spine: the tape with its bug and the ground, the climb bar beyond its
+     * numbers, the height set over them, and out beyond the climb bar the wheels' height above the ground over the
+     * climb or sink.
      */
     private static void altitudeTape(Canvas canvas, Reading reading, double target) {
-        Tape tape = new Tape(TAPE_X, -1, reading.altitude(), UNITS_PER_BLOCK, Double.NEGATIVE_INFINITY);
+        Tape tape = new Tape(0, -1, reading.altitude(), UNITS_PER_BLOCK, Double.NEGATIVE_INFINITY);
         tape.draw(canvas, ALTITUDE_TICK, ALTITUDE_LABEL);
         if (!Double.isNaN(reading.radio())) {
             tape.ground(canvas, reading.altitude() - reading.radio());
         }
-        climbBar(canvas, tape.spine() + TAPE_NUMBERS + CLIMB_BAR_GAP, reading.climb());
+        climbBar(canvas, CLIMB_BAR_X, reading.climb());
         tape.bug(canvas, target);
         tape.readout(canvas, String.valueOf(Math.round(reading.altitude())));
         tape.set(canvas, target);
 
-        float x = tape.spine() + 1;
-        float radioY = TAPE_HALF_HEIGHT + GAP;
-        float climbY = radioY + Icon.SIZE;
+        float x = CLIMB_COLUMN_X;
+        float radioY = -Icon.SIZE;
+        float climbY = 0;
         float textX = x + Icon.SIZE + ICON_GAP;
         double climb = reading.climb();
         float arrowX = x + Icon.SIZE / 2F;
@@ -540,9 +611,9 @@ public final class PilotHud {
     }
 
     /**
-     * Above the middle: the heading scale, the heading now in a box over its middle and a caret under it, the heading
-     * set as a magenta bug, and beside it the autopilot's mode, straight on or round a circle, with the heading or the
-     * circle's radius set.
+     * The heading, round the middle of its scale's line: the scale, the heading now in a box over its middle and a
+     * caret under it, the heading set as a magenta bug, and beside it the autopilot's mode, straight on or round a
+     * circle, with the heading or the circle's radius set.
      */
     private static void headingScale(Canvas canvas, AutopilotBlockEntity autopilot, Reading reading, double target) {
         double heading = reading.heading();
@@ -551,21 +622,21 @@ public final class PilotHud {
             float x = (float) ((bearing - heading) * UNITS_PER_DEGREE);
             int colour = fade(HUD, (HEADING_HALF_WIDTH - Math.abs(x)) / END_FADE);
             boolean numbered = bearing % HEADING_LABEL == 0;
-            canvas.rect(x - 0.5F, HEADING_Y - (numbered ? LONG_TICK : SHORT_TICK), x + 0.5F, HEADING_Y, colour);
+            canvas.rect(x - 0.5F, -(numbered ? LONG_TICK : SHORT_TICK), x + 0.5F, 0, colour);
             if (numbered) {
-                canvas.text(headingLabel(Math.floorMod(bearing, 360)), x, HEADING_Y - LONG_TICK - LABEL_GAP - TEXT_MIDDLE, colour, Align.CENTRE);
+                canvas.text(headingLabel(Math.floorMod(bearing, 360)), x, -LONG_TICK - LABEL_GAP - TEXT_MIDDLE, colour, Align.CENTRE);
             }
         }
         if (!Double.isNaN(target)) {
             float x = (float) (Mth.clamp(Mth.wrapDegrees(target - heading), -span, span) * UNITS_PER_DEGREE);
-            canvas.triangle(x, HEADING_Y + 1, x - BUG_HALF, HEADING_Y + 1 + BUG_LENGTH, x + BUG_HALF, HEADING_Y + 1 + BUG_LENGTH, TARGET);
+            canvas.triangle(x, 1, x - BUG_HALF, 1 + BUG_LENGTH, x + BUG_HALF, 1 + BUG_LENGTH, TARGET);
         }
-        canvas.triangle(0, HEADING_Y + 1, -2, HEADING_Y + 4, 2, HEADING_Y + 4, HUD);
-        float boxY = HEADING_Y - HEADING_BOX_Y;
+        canvas.triangle(0, 1, -2, 4, 2, 4, HUD);
+        float boxY = -HEADING_BOX_Y;
         canvas.box(-HEADING_BOX_HALF, boxY - BOX_HALF, HEADING_BOX_HALF, boxY + BOX_HALF);
         canvas.text(String.format(Locale.ROOT, "%03d", Math.round(heading) % 360), 0, boxY, HUD, Align.CENTRE);
         if (autopilot.phase() != Phase.OFF) {
-            float middle = HEADING_Y - LONG_TICK;
+            float middle = -LONG_TICK;
             canvas.flush();
             canvas.icon(lateralIcon(autopilot.lateral()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
             String set = autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))
@@ -675,8 +746,8 @@ public final class PilotHud {
     }
 
     /**
-     * Drawing the HUD a batch at a time, in its own units round the middle of the screen (the GUI's pose is set up for
-     * them by {@link HelmetVisor}): shapes and text go into the GUI's shared buffer in the order they are drawn, each
+     * Drawing a part of the HUD a batch at a time, in its own units round the part's origin (the GUI's pose is set up
+     * for them by {@link HelmetVisor}): shapes and text go into the GUI's shared buffer in the order they are drawn, each
      * run of shapes or of text drawn in one go as the next begins. Pictures are drawn at once instead, so whatever they
      * go over is flushed first. Text lands on whole screen pixels, so it stays sharp.
      */

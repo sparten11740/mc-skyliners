@@ -11,8 +11,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import dev.aerolarge.client.HudLayout.Box;
+import dev.aerolarge.client.HudLayout.Point;
 import dev.aerolarge.item.PilotHelmetItem;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -21,7 +23,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -30,23 +31,14 @@ import org.lwjgl.opengl.GL11;
  * The pilot helmet's visor, seen from inside. While a pilot helmet is worn and the player looks out through their own
  * eyes, the visor tints the view a touch toward its gold, darkens it faintly toward the edges and catches a little
  * light along its top: kept light, so the world stays clear. And the pilots' head-up display ({@link PilotHud}) is
- * drawn onto its curve rather than flat on the screen: drawn first into a small picture of its own, then laid onto a
- * mesh that bends it as the visor bends round the face, its rows lifting toward the ends and its ends drawn in, so its
- * lines curve the way a visor's would; edged dark, so it reads against bright sky, and with a soft glow. That picture
- * is drawn anew each frame, a few hundred shapes and some text, and laid on in a handful of draws, so it costs next to
+ * shown on it, in parts round the screen: drawn first into a picture of their own, the size of the window, then each
+ * part laid over the view from it, edged dark, so it reads against bright sky, and with a soft glow. That picture is
+ * drawn anew each frame, a few hundred shapes and some text, and laid on in a handful of draws, so it costs next to
  * nothing.
  */
 public final class HelmetVisor {
-    /**
-     * The visor's curve, as shares of the HUD's half height and half width: how far its rows lift at its left and right
-     * ends, how much narrower its ends are drawn, and how much shorter, as the visor curves away round the face.
-     */
-    private static final float BEND = 0.2F;
-    private static final float SQUEEZE = 0.1F;
-    private static final float TAPER = 0.08F;
-    /** The mesh the HUD is bent onto: columns and rows, enough that its curve looks smooth. */
-    private static final int COLUMNS = 32;
-    private static final int ROWS = 16;
+    /** How far round each part of a HUD its picture is laid on, in GUI pixels, so that none of its edge is cut off. */
+    private static final float PADDING = 2;
     /**
      * The glow round the symbology: faint copies of the picture laid round it, each this far off in screen pixels and
      * this opaque as a share of the HUD's own opacity.
@@ -60,8 +52,6 @@ public final class HelmetVisor {
      */
     private static final float OUTLINE_OFFSET = 1;
     private static final float[][] OUTLINE_DIRECTIONS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    /** The GUI's nearest depth, as {@link GameRenderer} sets it, so the HUD's picture is drawn as the GUI is. */
-    private static final float GUI_NEAR = 1000;
 
     /** The visor's tint: its colour, and how much of it is laid over the whole view. */
     private static final int TINT = 0x3A2A10;
@@ -80,61 +70,65 @@ public final class HelmetVisor {
     private static final float GLINT_DEPTH = 0.16F;
     private static final int GLINT = 0x12FFF4DC;
 
-    /** The picture the HUD is drawn into before it is bent onto the visor; made when first needed. */
+    /** The picture the HUD is drawn into before it is laid onto the visor; made when first needed. */
     @Nullable
     private static TextureTarget picture;
 
     private HelmetVisor() {
     }
 
-    /** Draws a HUD flat, through the GUI's pose as set up for it: in its own units, its middle at the origin. */
+    /** Draws a part of a HUD flat, through the GUI's pose as set up for it: in its own units round its origin. */
     @FunctionalInterface
     interface Painter {
         void paint();
     }
 
     /**
-     * Draws a HUD onto the visor round the middle of the screen: the painter draws it flat in its own units, half the
-     * given width and height either side of the middle, each unit the given number of screen pixels; then it is bent
-     * onto the visor's curve and laid over the view this opaque, edged dark this opaque, and with its glow.
+     * A part of a HUD, laid onto the visor on its own: where its origin is on the screen, in GUI pixels; how far it
+     * reaches round its origin, in its units; and how it is drawn.
      */
-    static void drawCurved(GuiGraphics graphics, float halfWidth, float halfHeight, float pixelsPerUnit, float opacity, float outline,
-                           Painter painter) {
+    record Part(Point at, Box reach, Painter painter) {
+    }
+
+    /**
+     * Draws a HUD's parts onto the visor: each painter draws its part flat in the HUD's units, each the given number of
+     * screen pixels, round where its part goes; then the parts are laid over the view this opaque, edged dark this
+     * opaque, and with their glow.
+     */
+    static void draw(GuiGraphics graphics, float pixelsPerUnit, float opacity, float outline, List<Part> parts) {
         Minecraft minecraft = Minecraft.getInstance();
         Window window = minecraft.getWindow();
-        float guiScale = (float) window.getGuiScale();
-        // An even number of pixels across and down, so the middle falls between two and whole units on whole pixels.
-        int width = 2 * Math.round(halfWidth * pixelsPerUnit);
-        int height = 2 * Math.round(halfHeight * pixelsPerUnit);
-        if (width == 0 || height == 0) {
+        if (window.getWidth() == 0 || window.getHeight() == 0) {
             // A window with no room, as while minimised: a picture cannot be made that small.
             return;
         }
-        float middleX = window.getWidth() / guiScale / 2;
-        float middleY = window.getHeight() / guiScale / 2;
-        float spanX = width / 2F / guiScale;
-        float spanY = height / 2F / guiScale;
+        float guiScale = (float) window.getGuiScale();
+        float unit = pixelsPerUnit / guiScale;
+        Box[] areas = new Box[parts.size()];
 
         graphics.flush();
-        TextureTarget target = picture(width, height);
+        TextureTarget target = picture(window.getWidth(), window.getHeight());
         target.setClearColor(0, 0, 0, 0);
         target.clear(Minecraft.ON_OSX);
         target.bindWrite(true);
-        Matrix4f projection = new Matrix4f(RenderSystem.getProjectionMatrix());
-        VertexSorting sorting = RenderSystem.getVertexSorting();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(middleX - spanX, middleX + spanX, middleY + spanY, middleY - spanY, GUI_NEAR,
-            ClientHooks.getGuiFarPlane()), VertexSorting.ORTHOGRAPHIC_Z);
         PoseStack pose = graphics.pose();
-        pose.pushPose();
-        pose.translate(middleX, middleY, 0);
-        pose.scale(pixelsPerUnit / guiScale, pixelsPerUnit / guiScale, 1);
-        painter.paint();
-        graphics.flush();
-        pose.popPose();
-        RenderSystem.setProjectionMatrix(projection, sorting);
+        for (int i = 0; i < parts.size(); i++) {
+            Part part = parts.get(i);
+            // Its origin on a whole screen pixel, so that its lines and text land on whole pixels too.
+            Point at = new Point(Math.round(part.at().x() * guiScale) / guiScale, Math.round(part.at().y() * guiScale) / guiScale);
+            areas[i] = part.reach().scaled(unit).at(at).grown(PADDING);
+            pose.pushPose();
+            pose.translate(at.x(), at.y(), 0);
+            pose.scale(unit, unit, 1);
+            part.painter().paint();
+            graphics.flush();
+            pose.popPose();
+        }
         minecraft.getMainRenderTarget().bindWrite(true);
 
         Matrix4f matrix = graphics.pose().last().pose();
+        float width = window.getWidth() / guiScale;
+        float height = window.getHeight() / guiScale;
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, target.getColorTextureId());
         RenderSystem.enableBlend();
@@ -143,19 +137,19 @@ public final class HelmetVisor {
         RenderSystem.disableDepthTest();
         float outlineOffset = OUTLINE_OFFSET / guiScale;
         for (float[] direction : OUTLINE_DIRECTIONS) {
-            bend(matrix, middleX + direction[0] * outlineOffset, middleY + direction[1] * outlineOffset, spanX, spanY, 0, outline);
+            lay(matrix, areas, width, height, direction[0] * outlineOffset, direction[1] * outlineOffset, 0, outline);
         }
         float glowOffset = GLOW_OFFSET / guiScale;
         for (float[] direction : GLOW_DIRECTIONS) {
-            bend(matrix, middleX + direction[0] * glowOffset, middleY + direction[1] * glowOffset, spanX, spanY, 1, opacity * GLOW);
+            lay(matrix, areas, width, height, direction[0] * glowOffset, direction[1] * glowOffset, 1, opacity * GLOW);
         }
-        bend(matrix, middleX, middleY, spanX, spanY, 1, opacity);
+        lay(matrix, areas, width, height, 0, 0, 1, opacity);
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
     }
 
-    /** The picture to draw the HUD into, made or resized to the size wanted; its pixels blended as it is bent. */
+    /** The picture to draw the HUD into, made or resized to the size wanted; its pixels blended as it is laid on. */
     private static TextureTarget picture(int width, int height) {
         TextureTarget target = picture;
         if (target == null) {
@@ -169,39 +163,27 @@ public final class HelmetVisor {
     }
 
     /**
-     * Lays the picture onto the visor's curve round a middle, reaching the given spans either side of it before it is
-     * bent, this opaque: in its own colours at a light of 1, or only its shape in black at 0. The picture's bottom row
-     * is its first, as OpenGL keeps it.
+     * Lays the picture's areas over the view, moved this far, this opaque: in its own colours at a light of 1, or only
+     * their shape in black at 0. The picture is the size of the screen, its bottom row its first, as OpenGL keeps it.
      */
-    private static void bend(Matrix4f matrix, float middleX, float middleY, float spanX, float spanY, float light, float opacity) {
+    private static void lay(Matrix4f matrix, Box[] areas, float width, float height, float offsetX, float offsetY, float light, float opacity) {
         // The picture's colours are weighted by its alpha, so they are scaled by the opacity as well as its alpha.
         float shade = light * opacity;
         BufferBuilder mesh = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        for (int row = 0; row < ROWS; row++) {
-            float top = (float) row / ROWS;
-            float bottom = (float) (row + 1) / ROWS;
-            for (int column = 0; column < COLUMNS; column++) {
-                float left = (float) column / COLUMNS;
-                float right = (float) (column + 1) / COLUMNS;
-                // Round the way the GUI's own shapes go, as the other way is culled.
-                corner(mesh, matrix, left, top, middleX, middleY, spanX, spanY).setColor(shade, shade, shade, opacity);
-                corner(mesh, matrix, left, bottom, middleX, middleY, spanX, spanY).setColor(shade, shade, shade, opacity);
-                corner(mesh, matrix, right, bottom, middleX, middleY, spanX, spanY).setColor(shade, shade, shade, opacity);
-                corner(mesh, matrix, right, top, middleX, middleY, spanX, spanY).setColor(shade, shade, shade, opacity);
-            }
+        for (Box area : areas) {
+            // Round the way the GUI's own shapes go, as the other way is culled.
+            corner(mesh, matrix, area.left(), area.top(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
+            corner(mesh, matrix, area.left(), area.bottom(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
+            corner(mesh, matrix, area.right(), area.bottom(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
+            corner(mesh, matrix, area.right(), area.top(), width, height, offsetX, offsetY).setColor(shade, shade, shade, opacity);
         }
         BufferUploader.drawWithShader(mesh.buildOrThrow());
     }
 
-    /** A corner of the mesh, at a share of the way across and down the flat picture, moved onto the curve. */
-    private static VertexConsumer corner(BufferBuilder mesh, Matrix4f matrix, float across, float down, float middleX, float middleY,
-                                         float spanX, float spanY) {
-        float x = 2 * across - 1;
-        float y = 2 * down - 1;
-        float edge = x * x;
-        float bentX = x * (1 - SQUEEZE * edge);
-        float bentY = y * (1 - TAPER * edge) - BEND * edge;
-        return mesh.addVertex(matrix, middleX + bentX * spanX, middleY + bentY * spanY, 0).setUv(across, 1 - down);
+    /** A corner of an area, where it is on the screen and in the picture. */
+    private static VertexConsumer corner(BufferBuilder mesh, Matrix4f matrix, float x, float y, float width, float height, float offsetX,
+                                         float offsetY) {
+        return mesh.addVertex(matrix, x + offsetX, y + offsetY, 0).setUv(x / width, 1 - y / height);
     }
 
     /** Draws the visor over the view while a pilot helmet is worn and the player looks out through their own eyes. */

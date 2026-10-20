@@ -96,6 +96,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
+        NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);
         modEventBus.addListener(AerolargeClient::onRegisterGeometryLoaders);

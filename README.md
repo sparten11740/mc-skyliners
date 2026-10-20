@@ -248,21 +248,26 @@ flown or the heading being turned to, and north; touch the map to zoom it out, a
 back in.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
-either pilot's seat, or standing at the console), its visor shows a head-up display round the middle of the view:
-thin, see-through green lines and figures, as a real HUD's, edged with a thin dark line so they read against bright
-sky, with whatever the autopilot is set to fly in magenta, curving with the visor (its rows lift a little toward
-their ends); without the helmet there is none. Putting the helmet on there switches it on with a beep, and it fades
-in. Round the crosshair are a slim horizon line and the pitch ladder, tilting with the bank and dropping as the nose
-comes up (the horizon amber past 35 degrees of bank), and the flight path marker, a small ring with wings showing
-where the airliner is going. Left of them is the speed on a narrow moving tape, the speed set as a magenta mark
-beside it and an arrow to where the speed will be in ten seconds; under it a picture of what the autopilot is doing,
-and its name: taking off, climbing, cruising, descending, landing, braking to a stop after landing, or a red power
-symbol while it is off. Right of them is the height on a moving tape (the autopilot's own, as it holds it), the
-height set as a magenta mark and, once it is near, the ground rising up the tape as an amber line; beyond it a bar
-that climbs green or sinks amber, and under it the wheels' height above the ground and the climb or sink with an
-arrow. Above them is a heading scale with the heading in a box, the heading set as a magenta mark and the mode beside
-it (straight on, or circling left or right with the circle's radius). It is drawn about half the size of the rest of
-the HUD and grows with the GUI scale; `pilotHudScale` in the client config makes it bigger or smaller. Being on the
+either pilot's seat, or standing at the console), its visor shows a head-up display: thin, see-through green lines
+and figures, as a real HUD's, edged with a thin dark line so they read against bright sky, with whatever the
+autopilot is set to fly in magenta; without the helmet there is none. Putting the helmet on there switches it on with
+a beep, and it fades in. It comes in parts, kept clear of the rest of the HUD and of the middle of the view. Round the
+crosshair are a slim horizon line and the pitch ladder, tilting with the bank and dropping as the nose comes up (the
+horizon amber past 35 degrees of bank), and the flight path marker, a small ring with wings showing where the
+airliner is going. Left of the hotbar is the speed on a narrow moving tape, the speed set as a magenta mark beside it
+and an arrow to where the speed will be in ten seconds; beside that a picture of what the autopilot is doing over its
+name: taking off, climbing, cruising, descending, landing, braking to a stop after landing, or a red power symbol
+while it is off. Right of the hotbar is the height on a moving tape (the autopilot's own, as it holds it), the height
+set as a magenta mark and, once it is near, the ground rising up the tape as an amber line; beyond it a bar that
+climbs green or sinks amber, and beside that the wheels' height above the ground over the climb or sink with an
+arrow. At the top of the screen, under any boss bars, is a heading scale with the heading in a box, the heading set
+as a magenta mark and the mode beside it (straight on, or circling left or right with the circle's radius). The
+speed and the height sit beside the offhand slot and the attack indicator, under the chat or beside it, and clear of
+the subtitles; where there is no room for them there (a small window, or a big HUD for its size), they move out to
+the left and right parts of the screen, level with the crosshair, or higher to stay above the chat. On a short
+screen the chat can reach up past the crosshair; it is drawn over the horizon there. The head-up display is drawn
+about half the size of the rest of the HUD and grows with the GUI scale; `pilotHudScale` in the client config makes
+it bigger or smaller. Being on the
 visor, it shows only in first person. It hides with the rest of the HUD (F1), behind any screen, under the debug
 screen and while you look through an outside camera; turn it off with `pilotHud` in the client config. While you wear
 the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold, darkens it
