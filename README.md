@@ -117,7 +117,9 @@ how often and how sharp the picture is drawn. A Tail Camera Display can be craft
 against a wall it stands upright, and put up against the underside of a block it hangs from it tilted toward you. It
 reaches two blocks to the right of where it is put, as you face it, and needs the room there; it comes down whole. On
 an assembled airliner with an autopilot it shows that airliner's fin camera. Against the wall behind the captain's
-seat is the Physics Assembler.
+seat is the Physics Assembler, and across from it, against the wall behind the first officer's, the flight crew's
+locker, with a Pilot Helmet and a Pilot Cap in it for each pilot when the airliner is built (see Souvenirs): within
+reach of the first officer's seat at the default scale, a few steps from either seat on the larger flight decks.
 
 A Flight Crew Locker is a slim cabinet of brushed grey panels for the crew's things, its white door hinged on one side
 with a small chrome handle on the other, and on the door the pilot's helmet, white with its blue stripe and gold visor,
@@ -482,7 +484,8 @@ A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stri
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
 the same way as the cap, and protects as much as a leather cap. On the flight deck its visor shows the pilots'
 head-up display (see Autopilot). Craft it from five iron ingots round a black stained glass pane, with two black wool
-under them for the ear cups, or buy it at a duty-free counter for 10 emeralds.
+under them for the ear cups, or buy it at a duty-free counter for 10 emeralds. Every airliner with pilots' seats is
+built with two helmets and two caps in the flight crew's locker on its flight deck (see Flight deck).
 
 ### Skydiving
 

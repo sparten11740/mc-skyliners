@@ -18,6 +18,8 @@ import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.CrewLockerBlock;
+import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
@@ -270,6 +272,7 @@ public final class AirframeLayout {
         layout.trimTail();
         layout.boardingStairs();
         layout.assembler();
+        layout.crewLocker();
         layout.cabinControls();
         return layout.lifted();
     }
@@ -2369,6 +2372,35 @@ public final class AirframeLayout {
                 if (isOpen(0, floorY + 1, z) && isCabinFloor(0, floorY, z)) {
                     set(0, floorY + 1, z, state);
                     return;
+                }
+            }
+        });
+    }
+
+    /**
+     * The flight crew's locker on the flight deck, across from the Physics Assembler: its back to the wall behind the
+     * first officer's seat and its door facing in, stocked when the airliner is built with a pilot helmet and a pilot
+     * cap for each pilot. It goes in once the skin is cut, against the wall as the cut left it, so the skin and the
+     * glass round it are cut to the curve as they are without it; only on the flight deck's floor.
+     */
+    private void crewLocker() {
+        if (assemblerSpot == null) {
+            return;
+        }
+        int y = assemblerSpot.getY();
+        int z = assemblerSpot.getZ();
+        int x = openHalfWidth(y, z);
+        if (x <= 0 || !isCabinFloor(x, y - 1, z)) {
+            return;
+        }
+        BlockPos spot = new BlockPos(x, y, z);
+        set(x, y, z, AerolargeRegistry.CREW_LOCKER.get().defaultBlockState().setValue(CrewLockerBlock.FACING, Direction.WEST));
+        fittings.put(spot, (blockEntity, rotation) -> {
+            if (blockEntity instanceof CrewLockerBlockEntity locker) {
+                List<Item> kit = List.of(AerolargeRegistry.PILOT_HELMET.get(), AerolargeRegistry.PILOT_HELMET.get(),
+                    AerolargeRegistry.PILOT_CAP.get(), AerolargeRegistry.PILOT_CAP.get());
+                for (int slot = 0; slot < kit.size(); slot++) {
+                    locker.setItem(slot, new ItemStack(kit.get(slot)));
                 }
             }
         });
