@@ -9,6 +9,7 @@ import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GlassBackboardBlock;
+import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -117,10 +118,23 @@ final class CabinFitOut {
 
     /**
      * Puts a cabin seat on the main deck floor, where there is room for it and the top of its back, and remembers it
-     * for the passenger screens.
+     * for the passenger screens. Whether it went in.
      */
-    private void seat(int x, int z, BlockState seat) {
-        if (layout.seat(x, floor + 1, z, seat)) {
+    private boolean seat(int x, int z, BlockState seat) {
+        if (!layout.seat(x, floor + 1, z, seat)) {
+            return false;
+        }
+        seats.add(new BlockPos(x, floor + 1, z));
+        return true;
+    }
+
+    /**
+     * Puts a gym bench on the main deck floor where it is open and the bench stands beside no window, and remembers it
+     * with the seats: one block tall, it fits under a window a seat's back would cover.
+     */
+    private void bench(int x, int z, BlockState bench) {
+        if (layout.isOpen(x, floor + 1, z) && !layout.besideWindow(x, floor + 1, z)) {
+            layout.set(x, floor + 1, z, bench);
             seats.add(new BlockPos(x, floor + 1, z));
         }
     }
@@ -302,7 +316,8 @@ final class CabinFitOut {
     /**
      * The gym hall (Turnhalle): the cabin's whole height over a sprung maple court with white lines, a basketball
      * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and gym mats along
-     * the port wall, climbing ropes and seats along starboard facing the court, between its windows.
+     * the port wall, climbing ropes along starboard and seats facing the court between its windows, gym benches under
+     * them.
      */
     private void gym(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -354,10 +369,12 @@ final class CabinFitOut {
             }
         }
 
-        BlockState bench = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.BLUE, Direction.WEST);
+        // Seats along the starboard wall, and gym benches under the windows, where a seat's back would cover one.
+        BlockState wallSeat = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.BLUE, Direction.WEST);
+        BlockState bench = AerolargeRegistry.GYM_BENCH.get().defaultBlockState().setValue(GymBenchBlock.FACING, Direction.WEST);
         for (int z = fromZ + 3; z <= toZ - 3; z++) {
-            if (Math.abs(z - middle) > 4) {
-                seat(width, z, bench);
+            if (Math.abs(z - middle) > 4 && !seat(width, z, wallSeat)) {
+                bench(width, z, bench);
             }
         }
 

@@ -363,12 +363,17 @@ public final class AirframeLayout {
      * it went in.
      */
     boolean seat(int x, int y, int z, BlockState seat) {
+        return !besideWindow(x, y + 1, z) && tall(x, y, z, seat);
+    }
+
+    /** Whether a window's pane is right beside this block, which anything standing in it against the wall would cover. */
+    boolean besideWindow(int x, int y, int z) {
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            if (CabinWindowBlock.isPane(stateAt(x + side.getStepX(), y + 1, z + side.getStepZ()))) {
-                return false;
+            if (CabinWindowBlock.isPane(stateAt(x + side.getStepX(), y, z + side.getStepZ()))) {
+                return true;
             }
         }
-        return tall(x, y, z, seat);
+        return false;
     }
 
     /**
