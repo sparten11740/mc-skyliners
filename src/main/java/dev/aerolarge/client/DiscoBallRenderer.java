@@ -132,6 +132,10 @@ public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEnti
         for (Tile tile : TILES) {
             turned.pose().transformPosition(tile.middle(), toCamera).negate().normalize();
             turned.normal().transform(tile.normal(), facing);
+            if (facing.dot(toCamera) <= 0) {
+                // Round the back of the ball, out of sight.
+                continue;
+            }
             float glint = 0;
             int brightest = 0;
             for (int i = 0; i < lights.length; i++) {
