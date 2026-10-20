@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -25,7 +26,17 @@ public final class EngineSounds {
     /** Height in the world above which running engines leave contrails, at any thrust: even idling, they run hot. */
     private static final double CONTRAIL_HEIGHT = 120;
     private static final float CONTRAIL_SPOOL = 0.05F;
-    /** Contrail puffs laid per tick, spread along the way the engine came since the last one. */
+    /**
+     * How far apart, at most, an engine's contrail puffs are laid along the way it came since the tick before, in
+     * blocks: a little less than a new puff is wide, so they touch. At the autopilot's default cruising speed (50
+     * blocks a second) that is two a tick.
+     */
+    private static final double CONTRAIL_SPACING = 1.4;
+    /**
+     * The most contrail puffs an engine lays a tick, and how many each stands for (see {@link ContrailParticle}): an
+     * engine going slower lays fewer, each as opaque as that many over one another, so its trail is as thick and white
+     * with fewer puffs to tick and draw. Going faster than this many spacings a tick, they are laid further apart.
+     */
     private static final int CONTRAIL_PUFFS = 4;
     /** How far behind the engine's middle the contrail starts, in blocks. */
     private static final double EXHAUST_BEHIND = 2.5;
@@ -59,9 +70,11 @@ public final class EngineSounds {
         if (last == null || engine.spool() < CONTRAIL_SPOOL || exhaust.y < CONTRAIL_HEIGHT) {
             return;
         }
-        for (int i = 0; i < CONTRAIL_PUFFS; i++) {
-            Vec3 at = last.lerp(exhaust, (i + 1) / (double) CONTRAIL_PUFFS);
-            engine.getLevel().addParticle(AerolargeRegistry.CONTRAIL.get(), at.x, at.y, at.z, 0, 0, 0);
+        int puffs = Mth.clamp(Mth.ceil(exhaust.distanceTo(last) / CONTRAIL_SPACING), 1, CONTRAIL_PUFFS);
+        double standsFor = CONTRAIL_PUFFS / (double) puffs;
+        for (int i = 0; i < puffs; i++) {
+            Vec3 at = last.lerp(exhaust, (i + 1) / (double) puffs);
+            engine.getLevel().addParticle(AerolargeRegistry.CONTRAIL.get(), at.x, at.y, at.z, standsFor, 0, 0);
         }
     }
 
