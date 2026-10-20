@@ -8,6 +8,7 @@ import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GlassBackboardBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -367,16 +368,17 @@ final class CabinFitOut {
     }
 
     /**
-     * A basketball hoop at the end of the court, scoring for the given side: a pole, a white backboard with the ring
-     * on it facing the court, and the scoreboard above.
+     * A basketball hoop at the end of the court, scoring for the given side: a pole, a glass backboard three wide and
+     * two high, its shooter's square over the ring on it facing the court, and the scoreboard above.
      */
     private void hoop(int z, Direction toward, HoopBlock.Team team) {
         for (int y = floor + 1; y <= floor + 4; y++) {
             layout.furnish(0, y, z, Blocks.IRON_BARS.defaultBlockState());
         }
+        BlockState board = AerolargeRegistry.GLASS_BACKBOARD.get().defaultBlockState().setValue(GlassBackboardBlock.FACING, toward);
         for (int x = -1; x <= 1; x++) {
-            layout.furnish(x, floor + 5, z, Blocks.WHITE_CONCRETE.defaultBlockState());
-            layout.furnish(x, floor + 6, z, Blocks.WHITE_CONCRETE.defaultBlockState());
+            layout.furnish(x, floor + 5, z, board);
+            layout.furnish(x, floor + 6, z, board);
         }
         layout.furnish(0, floor + 5, z + toward.getStepZ(),
             AerolargeRegistry.HOOP.get().defaultBlockState().setValue(HoopBlock.FACING, toward.getOpposite()).setValue(HoopBlock.TEAM, team));
