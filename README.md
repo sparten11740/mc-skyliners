@@ -39,8 +39,9 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
   the rooms off from the doors' aisles, each with a curtained white archway and a backlit sign over it of what lies
-  through it, with lavatories by the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and
-  signs). Over all of it runs the upper deck, galleries round the tall rooms (see The upper deck).
+  through it, with lavatories by the gym hall's entrance, lit WC signs pointing the way to the WCs and showing whether
+  they are free, and an exit sign over every door (see Curtains, bulkheads and signs). Over all of it runs the upper
+  deck, galleries round the tall rooms (see The upper deck).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
@@ -76,12 +77,13 @@ off with `cloudlessCabin` in the client config.
 ### Flight deck
 
 Steps at the front of the main deck lead up to a raised floor in the nose. From the top of the steps a short aisle
-runs forward to the cockpit door, between the WC to port (a toilet and a basin under its mirror) and the crew room to
-starboard (a row of crew seats and a galley counter: a galley oven, and a galley worktop with a coffee machine on it);
-every door opens by hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the
-pilots look straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one
-wide pane right across the front from the panel up over the crown, running back into side windows past the pilots'
-shoulders, framed by posts round the sides only.
+runs forward to the cockpit door, between the WC to port (a toilet and a basin under its mirror, and a WC sign over
+its door, see Curtains, bulkheads and signs) and the crew room to starboard (a row of crew seats and a galley
+counter: a galley oven, and a galley worktop with a coffee machine on it); every door opens by hand from either side.
+Behind the cockpit door the flight deck is a room of its own, raised so the pilots look straight out through the
+windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right across the front from
+the panel up over the crown, running back into side windows past the pilots' shoulders, framed by posts round the
+sides only.
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
 either side, on a column between floor rails. Each is two blocks tall, and using either half sits you down in it. It
@@ -178,8 +180,9 @@ at the larger ones), each with a passenger screen on its back for the seat behin
 onto the galleries and a walkway along the windows; business class's pendant lights hang from its underside. Where
 the floor behind the flight deck is deep enough for the forward staircase (from scale 3), it is whole too, with the
 upper deck's own galley (its trolley bay, galley stowage and a galley oven) against the starboard wall across from the
-stairs' top. An exit sign glows over the top of each staircase, the way down to the doors. At scale 1 the airliner is
-too small for an upper deck.
+stairs' top. An exit sign glows over the top of each staircase, the way down to the doors, and beside it an overhead
+WC sign points down the stairs, as the upper deck has no WC of its own. At scale 1 the airliner is too small for an
+upper deck.
 
 The staircases are built of blocks that can be crafted for building stairs anywhere. Cabin Stairs climb in two half
 steps to a block, as any stairs do, the way you face as you put them down (against the underside of a block they go
@@ -418,11 +421,20 @@ doors (the pool's side of the wall between it and business class), a Bulkhead Si
 a drop of water, a basketball, a cup. Business class has such a wall at its front as well, across the forward doors'
 aisle (where it has no room for one, a curtain on its own crosses the aisle there instead). The gym hall's front wall
 has a lavatory either side of its archway, each with a toilet, a basin under its mirror, and a wooden door under a
-lavatory sign, a man and a woman.
+WC sign.
 The hoops are mounted on the gym hall's end walls, out of the way of anyone coming through the archways, and a lime
 dividing curtain (Trennvorhang) hangs right across the middle of the court, to split the hall into two courts. Over
 every passenger door glows an exit sign, lit a little so the doors can be found with the cabin lights set for the
 night.
+
+Every WC aboard has a WC sign over its door, the WC behind the flight deck in both blueprints too, and in the
+furnished airliner overhead WC signs point the way to the nearest, high up where an airliner has them, each green
+while one of the WCs it points to is free and red while all of them are taken: on a bulkhead facing into its room
+wherever the nearest WC lies through the archway (business class's front wall, straight on to the WC behind the
+flight deck; the pool's back wall and the lounge's front wall, straight on to the lavatories), over the archway or
+beside it; on the back of each lavatory, facing into the gym hall; beside the top of the steps up to the flight deck,
+facing down them into the cabin; and on the upper deck over its rows and beside the top of each staircase (see The
+upper deck). Each is out of the doors' aisles and above everyone's head.
 
 ### The den
 
@@ -879,8 +891,9 @@ The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save
 The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`,
 with the upper deck laid round the rooms under it by `UpperDeck` and its staircases, step by step and landing by
 landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
-`HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
-shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
+`HoldFitOut`, the WC signs put up by `WcSigns`, the overhead ones once every room stands (each WC sign's block entity
+looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
+`ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and

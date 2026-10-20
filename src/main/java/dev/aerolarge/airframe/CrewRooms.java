@@ -8,6 +8,7 @@ import dev.aerolarge.block.GalleyOvenBlock;
 import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.DoorBlock;
@@ -21,9 +22,9 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * Each is walled off from the aisle and the cabin with the hull's own panels, up to the crown, under a ceiling of
  * them at a room's height for a player with a cabin light set into it, kept on at night as a lavatory's is, and has a
  * door onto the aisle at its back.
- * The WC has a toilet and a basin under its mirror; the crew room a row of seats along the hull and a small galley
- * counter: a galley oven, and a galley worktop with a coffee machine on it. Walls and furniture only go into open
- * space.
+ * The WC has a toilet and a basin under its mirror, and its WC sign over the door; the crew room a row of seats along
+ * the hull and a small galley counter: a galley oven, and a galley worktop with a coffee machine on it. Walls and
+ * furniture only go into open space.
  */
 final class CrewRooms {
     /** The aisle reaches this far either side of the middle; the rooms' inner walls stand just beyond it. */
@@ -126,7 +127,8 @@ final class CrewRooms {
      * in over the corner leaves no room to stand in front of one facing aft (its back to the bulkhead where the hull is
      * not right behind it); at {@code toilet} out from the middle, where a sitter's head is clear of the hull's curve,
      * the floor beyond it out to the hull walled in. The basin in the front corner by the aisle, its back and its
-     * mirror against the bulkhead.
+     * mirror against the bulkhead. Over the door, set into the wall, the WC's sign (see {@link WcSigns}), lit for
+     * whether anyone is in the room.
      */
     private void washroom(int side, int inner, int outer, int toilet) {
         Direction intoRoom = side > 0 ? Direction.WEST : Direction.EAST;
@@ -139,6 +141,12 @@ final class CrewRooms {
             }
         }
         layout.tall(side * inner, deck + 1, front, AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, Direction.SOUTH));
+        int aisleWall = side * (AISLE + 1);
+        boolean door = layout.stateAt(aisleWall, deck + 1, back - 1).getBlock() instanceof DoorBlock;
+        if (door && layout.stateAt(aisleWall, deck + HEADROOM, back - 1).is(wall.getBlock())) {
+            WcSigns.overDoor(layout, new BlockPos(aisleWall, deck + HEADROOM, back - 1), side > 0 ? Direction.WEST : Direction.EAST,
+                new BlockPos(side * inner, deck + 1, front), new BlockPos(side * outer, deck + HEADROOM, back - 1));
+        }
     }
 
     /**

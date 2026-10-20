@@ -192,6 +192,11 @@ final class UpperDeck {
         }
     }
 
+    /** The tops of the staircases, as (station, side): where the way down from the deck is. */
+    List<int[]> stairHeads() {
+        return stairHeads;
+    }
+
     /**
      * Whether a gallery's walkway (or the whole floor) beside the wall on this side reaches the station: where the
      * upper deck's own seatbelt signs can go.

@@ -449,8 +449,9 @@ final class CabinDividers {
      * are into the monuments by its doors: each a cubicle from the archway's side out to the hull, between the wall and
      * the gym hall, under a ceiling at a room's height with a cabin light in it, kept on at night. A toilet stands
      * against the hull and a basin under its mirror on the archway's side, the door between them opening onto the
-     * doors' aisle under a lavatory sign, a man and a woman. The door is a wooden one, as no hull door is: one opened in
-     * flight does not let the air out. Only on a side with room for all of it.
+     * doors' aisle under the WC's sign, lit for whether anyone is in the cubicle (see {@link WcSigns}). The door is a
+     * wooden one, as no hull door is: one opened in flight does not let the air out. Only on a side with room for all
+     * of it.
      */
     private void lavatories(Section wall, int gym) {
         int front = wall.z();
@@ -499,7 +500,10 @@ final class CabinDividers {
                 .setValue(DoorBlock.HINGE, side > 0 ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT);
             layout.set(side * door, floor + 1, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
             layout.set(side * door, floor + 2, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
-            sign(front, side * door, floor + 3, BulkheadSignBlock.Picture.LAVATORY, true);
+            if (layout.stateAt(side * door, floor + 3, front).is(partition.getBlock())) {
+                WcSigns.overDoor(layout, new BlockPos(side * door, floor + 3, front), Direction.NORTH,
+                    new BlockPos(side * basin, floor + 1, front + 1), new BlockPos(side * outer, ceiling - 1, gym - 1));
+            }
         }
     }
 

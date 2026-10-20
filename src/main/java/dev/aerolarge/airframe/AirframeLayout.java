@@ -172,6 +172,8 @@ public final class AirframeLayout {
     private final Map<BlockPos, BlockState> cells = new HashMap<>();
     /** Block entities to set up once placed, by layout position. */
     private final Map<BlockPos, Fitting> fittings = new HashMap<>();
+    /** The WCs built into the cabin, which the overhead WC signs show the way to. */
+    private final List<WcSigns.Wc> wcs = new ArrayList<>();
     /** Each engine's thrust relays, by the engine's span station (negative to port). */
     private final Map<Double, List<BlockPos>> engineRelays = new HashMap<>();
     /** The control jets' relays, by what they do. */
@@ -262,6 +264,10 @@ public final class AirframeLayout {
                 layout.upperDeck.furnish();
             }
         }
+        // Once every room stands, the overhead WC signs go up where they are seen on the way to the WCs.
+        if (furnished) {
+            new WcSigns(layout).apply();
+        }
         layout.skydiving();
         layout.slideControls();
         layout.seatbeltSigns();
@@ -311,6 +317,12 @@ public final class AirframeLayout {
     /** The station of the flight deck's raised floor's back edge, where the steps down to the main deck start. */
     int flightDeckBack() {
         return flightDeckBack;
+    }
+
+    /** The upper deck, once its floor is laid; null where the airliner is too small for one. */
+    @Nullable
+    UpperDeck upperDeck() {
+        return upperDeck;
     }
 
     /**
@@ -2303,6 +2315,16 @@ public final class AirframeLayout {
 
     public Map<BlockPos, Fitting> fittings() {
         return fittings;
+    }
+
+    /** Sets up the block entity at a layout position once it stands, as the fitting says. */
+    void fit(BlockPos at, Fitting fitting) {
+        fittings.put(at, fitting);
+    }
+
+    /** The WCs built into the cabin so far, with the signs over their doors, in the order they were built. */
+    List<WcSigns.Wc> wcs() {
+        return wcs;
     }
 
     /**
