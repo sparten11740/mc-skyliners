@@ -34,10 +34,11 @@ import org.slf4j.Logger;
  * Their colours go round the rainbow, each spot its own colour, red, green, blue and every colour between. They fade
  * in as a ball spins up and out as it slows to a stop.
  *
- * <p>Veil's lights shine through blocks, so each spot reaches only a little past what it falls on: every frame each is
+ * <p>Veil's lights shine through blocks, so each spot reaches only a little past what it falls on: once a tick each is
  * looked along, among the ball's own blocks, for the first thing in its way, and it is made brighter the further that
  * is, so a spot is as bright on a far wall as on a near one, up to {@link #MOST_GAIN} times. Next to none of its light
- * gets through the wall to the hull's skin outside or to the room next door.
+ * gets through the wall to the hull's skin outside or to the room next door. In the frames between two ticks a spot
+ * reaches part of the way from where it fell at the one to where it falls at the other (see {@link #look}).
  *
  * <p>A ball is seen by its client ticks (see {@link DiscoBallBlockEntity#clientTicker}): only the
  * {@link #MOST_BALLS} nearest within {@link #REACH} of the camera cast their spots, and a ball that stops ticking
@@ -82,8 +83,8 @@ public final class DiscoLights {
     private static final float HUE_STEP = 5 / 12F;
     /** The balls near the player, each by when it last ticked, in game ticks: one unloaded and forgotten goes by itself. */
     private static final Map<DiscoBallBlockEntity, Long> TICKED = new WeakHashMap<>();
-    /** The balls whose spots are drawn, and their spots, as Veil's lights. */
-    private static final Map<DiscoBallBlockEntity, Object[]> LIT = new HashMap<>();
+    /** The balls whose spots are drawn, and their spots. */
+    private static final Map<DiscoBallBlockEntity, Lit> LIT = new HashMap<>();
     /** Veil's buffers, kept on while the spots are near. */
     private static final VeilLights.Buffers BUFFERS = new VeilLights.Buffers("disco_lights");
     /** Where a spot goes in the world, a way square to it, and the way it shines: reused, as spots move every frame. */
@@ -98,6 +99,18 @@ public final class DiscoLights {
 
     /** A spot's way out of the ball as it hangs unturned, in radians: round from south toward east, and up from level. */
     private record Spot(float round, float up) {
+    }
+
+    /**
+     * A ball's spots, as Veil's lights, and how far each falls from the ball's surface as the ball lay at the tick before
+     * and as it lies at this one (see {@link #look}).
+     */
+    private static final class Lit {
+        final Object[] lights = new Object[SPOTS.length];
+        final double[] before = new double[SPOTS.length];
+        final double[] now = new double[SPOTS.length];
+        /** The game tick the spots were last looked along at. */
+        long lookedAt = Long.MIN_VALUE;
     }
 
     /** A spot from its way out in degrees. */
@@ -123,9 +136,9 @@ public final class DiscoLights {
             // The partial tick the balls are drawn with, and Sable the airliners.
             float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
             List<DiscoBallBlockEntity> near = near(minecraft.level, minecraft.gameRenderer.getMainCamera().getPosition(), partialTick);
-            Iterator<Map.Entry<DiscoBallBlockEntity, Object[]>> lit = LIT.entrySet().iterator();
+            Iterator<Map.Entry<DiscoBallBlockEntity, Lit>> lit = LIT.entrySet().iterator();
             while (lit.hasNext()) {
-                Map.Entry<DiscoBallBlockEntity, Object[]> ball = lit.next();
+                Map.Entry<DiscoBallBlockEntity, Lit> ball = lit.next();
                 if (!near.contains(ball.getKey())) {
                     remove(ball.getValue());
                     lit.remove();
@@ -174,38 +187,39 @@ public final class DiscoLights {
             .toList();
     }
 
-    /** A ball's spots, dark until shone. */
-    private static Object[] add() {
-        Object[] spots = new Object[SPOTS.length];
-        for (int i = 0; i < spots.length; i++) {
-            spots[i] = VeilLights.add(MIRROR, MIRROR, SPREAD);
+    /** A ball's spots, dark until shone and not yet looked along. */
+    private static Lit add() {
+        Lit lit = new Lit();
+        for (int i = 0; i < SPOTS.length; i++) {
+            lit.lights[i] = VeilLights.add(MIRROR, MIRROR, SPREAD);
         }
-        return spots;
+        return lit;
     }
 
-    private static void remove(Object[] spots) {
-        for (Object spot : spots) {
-            VeilLights.remove(spot);
+    private static void remove(Lit lit) {
+        for (Object light : lit.lights) {
+            VeilLights.remove(light);
         }
     }
 
     /**
      * Shines and places a ball's spots as it has turned at this partial tick: out of its surface, each as far as what it
-     * falls on, in its colour now and as bright as the ball's speed has it; among an assembled airliner's blocks, as
-     * Sable draws the airliner.
+     * falls on (see {@link #look}), in its colour now and as bright as the ball's speed has it; among an assembled
+     * airliner's blocks, as Sable draws the airliner.
      */
-    private static void shine(Level level, DiscoBallBlockEntity ball, Object[] spots, float partialTick) {
+    private static void shine(Level level, DiscoBallBlockEntity ball, Lit lit, float partialTick) {
         Vec3 middle = DiscoBallBlock.middle(ball.getBlockPos());
+        look(level, ball, lit, middle);
         SableClient.Placing placing = SableClient.placing(middle, partialTick);
         float turned = ball.turned(partialTick);
         float power = ball.power(partialTick);
         float ticks = level.getGameTime() + partialTick;
         for (int i = 0; i < SPOTS.length; i++) {
             Vec3 out = out(SPOTS[i], turned);
-            double reach = falls(level, ball.getBlockPos(), middle, out) + BEYOND;
+            double reach = Mth.lerp(partialTick, lit.before[i], lit.now[i]) + BEYOND;
             double gain = Math.min(MOST_GAIN, Math.pow(reach / BEYOND, 3));
             int colour = colour(i, ticks);
-            VeilLights.shine(spots[i], (float) reach, (colour >> 16 & 0xFF) / 255F, (colour >> 8 & 0xFF) / 255F, (colour & 0xFF) / 255F,
+            VeilLights.shine(lit.lights[i], (float) reach, (colour >> 16 & 0xFF) / 255F, (colour >> 8 & 0xFF) / 255F, (colour & 0xFF) / 255F,
                 (float) (BRIGHTNESS * gain * power));
             set(MIRROR_AT, middle.add(out.scale(DiscoBallBlock.RADIUS)));
             set(ACROSS, new Vec3(-out.z, 0, out.x).normalize());
@@ -215,8 +229,31 @@ public final class DiscoLights {
                 placing.turn().transform(ACROSS);
                 placing.turn().transform(OUT);
             }
-            VeilLights.place(spots[i], MIRROR_AT, ACROSS, OUT);
+            VeilLights.place(lit.lights[i], MIRROR_AT, ACROSS, OUT);
         }
+    }
+
+    /**
+     * Looks along a ball's spots once a game tick, for how far each falls with the ball turned as it lies at this tick,
+     * and keeps how far they fell at the tick before, so the frames in between draw each spot part of the way from the
+     * one to the other. A ball turns a degree and a half a tick: on the furthest wall a spot moves about a quarter of a
+     * block in between, and where it runs off an edge onto a wall further off, it stretches out to it over that tick
+     * instead of in one frame.
+     */
+    private static void look(Level level, DiscoBallBlockEntity ball, Lit lit, Vec3 middle) {
+        long tick = level.getGameTime();
+        if (lit.lookedAt == tick) {
+            return;
+        }
+        // Looked along at the tick before, the ball lay then as it did at the start of this one.
+        boolean next = lit.lookedAt == tick - 1;
+        float before = ball.turned(0);
+        float now = ball.turned(1);
+        for (int i = 0; i < SPOTS.length; i++) {
+            lit.before[i] = next ? lit.now[i] : falls(level, ball.getBlockPos(), middle, out(SPOTS[i], before));
+            lit.now[i] = falls(level, ball.getBlockPos(), middle, out(SPOTS[i], now));
+        }
+        lit.lookedAt = tick;
     }
 
     /** The way a spot shines out of the ball, among its blocks, once the ball has turned so far about its rod. */
