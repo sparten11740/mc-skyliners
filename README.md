@@ -921,7 +921,8 @@ when the Physics Assembler sets the airliner down on another heading, and mends 
 Sable draws an assembled airliner's block entities every frame wherever the camera looks, so the busiest renderers
 leave out what the camera cannot see themselves, as `Sight` tells them where it stands: `PassengerScreenRenderer` draws
 a screen only from in front of it, its text laid out once a tick for all of an airliner's screens and faded out as it
-gets too small to read; `EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where each
+gets too small to read, as `FlightDisplayRenderer` and `AutopilotScreenRenderer` draw theirs only from in front too;
+`EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where each
 engine's core was told they are, what lies inside the duct only from in front of them; `PlugDoorRenderer` draws the
 hull's doors shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel
 and its lining into, only the quads of it that face the camera; `AirstairRenderer` draws the airstairs coming out and

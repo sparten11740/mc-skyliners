@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -26,7 +27,7 @@ import org.joml.Matrix4f;
  * is turning to, a ring at half the map's reach, north marked, and the airliner in the middle of the lower part. Over
  * the map the autopilot's mode and targets; under it, how the airliner is flying now. On the right the buttons, the
  * ones for what the autopilot is doing lit. The airliner's place and heading come from its pose as the client draws
- * it, so the map turns as smoothly as the airliner does.
+ * it, so the map turns as smoothly as the airliner does. It is only drawn with the camera in front of it.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
     /**
@@ -57,6 +58,21 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     static final int BUTTON_LIT = 0xFF1F5A34;
     static final int BUTTON_EDGE = 0xFF4A525E;
 
+    /**
+     * Only with the camera in front of the screen, which is drawn from the front only, and as far off as ever. The game
+     * asks this whenever the screen is in view and in reach, from either side, so the track for the map is kept here.
+     */
+    @Override
+    public boolean shouldRender(AutopilotScreenBlockEntity screen, Vec3 camera) {
+        Level level = screen.getLevel();
+        if (level == null || !BlockEntityRenderer.super.shouldRender(screen, camera)) {
+            return false;
+        }
+        screen.record(SableClient.toWorld(level, Vec3.atCenterOf(screen.getBlockPos())), level.getGameTime());
+        Direction facing = screen.getBlockState().getValue(AutopilotScreenBlock.FACING);
+        return Sight.facing(screen.getBlockPos(), facing, SURFACE, camera, getViewDistance());
+    }
+
     @Override
     public void render(AutopilotScreenBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Direction facing = screen.getBlockState().getValue(AutopilotScreenBlock.FACING);
@@ -64,9 +80,6 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         SableClient.Attitude attitude = SableClient.attitude(screen, facing.getOpposite(), partialTick);
         Vec3 here = SableClient.toWorld(screen.getLevel(), Vec3.atCenterOf(screen.getBlockPos()));
         double heading = attitude != null ? attitude.heading() : Math.floorMod((int) facing.getOpposite().toYRot() + 180, 360);
-        if (screen.getLevel() != null) {
-            screen.record(here, screen.getLevel().getGameTime());
-        }
 
         pose.pushPose();
         // Onto the screen face, x to the viewer's right and y up, from the bottom left corner of the whole screen.

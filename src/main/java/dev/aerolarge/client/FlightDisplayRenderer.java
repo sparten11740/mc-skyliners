@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
@@ -21,7 +22,7 @@ import org.joml.Matrix4f;
  * ground, the horizon tilted against the bank and moved with the pitch, a pitch ladder, the yellow aircraft symbol)
  * with airspeed on the left, altitude on the right, vertical speed under it and the heading at the bottom. The values
  * come from the airliner's pose as the client draws it, so the display moves as smoothly as the airliner does. On an
- * airliner that is not assembled it shows a standby screen.
+ * airliner that is not assembled it shows a standby screen. It is only drawn with the camera in front of it.
  */
 public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayBlockEntity> {
     /** The screen's half width and half height on the block face, in blocks. */
@@ -43,6 +44,13 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final int WHITE = 0xFFF2F2F2;
     private static final int YELLOW = 0xFFF2CF30;
     private static final int GREEN = 0xFF46E070;
+
+    /** Only with the camera in front of the screen, which is drawn from the front only, and as far off as ever. */
+    @Override
+    public boolean shouldRender(FlightDisplayBlockEntity display, Vec3 camera) {
+        Direction screen = display.getBlockState().getValue(FlightDisplayBlock.FACING);
+        return Sight.facing(display.getBlockPos(), screen, SURFACE, camera, getViewDistance());
+    }
 
     @Override
     public void render(FlightDisplayBlockEntity display, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
