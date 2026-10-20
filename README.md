@@ -24,8 +24,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   wooden consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, tiled in a blue mosaic
   inside a white coping (see The moon pool), its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
-  with a diving tower on its front rim (a ladder up to a small platform three metres up, glass rails round it, and
-  a springboard sticking out from it over the water), a
+  with a diving tower on its front rim (a chrome pool ladder up to a small platform three metres up, the cabin's
+  glass rails round it, and a springboard sticking out from it over the water), a
   full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, seats between the windows, roof
   trusses with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
@@ -561,8 +561,9 @@ over into grab handles down onto the floor beyond its top, as a pool ladder's do
 The springboard sticking out from the moon pool's diving tower, a slim blue-gripped board on a coiled spring, throws
 whoever lands or stands on it straight back up, with a boing and a puff of cloud, about two and a half blocks every
 time, never high enough to hurt coming down, and landing on it never hurts; sneak to stand on it without bouncing.
-The tower's platform is railed along its sides and back; off the springboard or the front of the platform there is
-only water below, and the pool's water takes the fall. A dive (off the springboard, or any fall of three blocks or
+The tower is climbed by a chrome pool ladder, and its platform is railed with the cabin's glass rails along its sides
+and back; off the springboard or the front of the platform there is only water below, and the pool's water takes the
+fall. A dive (off the springboard, or any fall of three blocks or
 more into water) goes in with a big splash. A Springboard can be crafted; placed, it sticks out the way you look, and
 it is a little trampoline wherever it is put.
 

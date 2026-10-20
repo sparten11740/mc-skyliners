@@ -1,11 +1,13 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymRingsBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.LightStripBlock;
+import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -161,13 +162,13 @@ final class CabinDecor {
 
     /**
      * The diving tower (Sprungturm) on the pool's front rim: a column tiled like the deck standing on the pool's bottom
-     * at the head of the basin, a ladder up its front from the rim, and on top a platform of non-slip deck tiles
-     * reaching back over the rim, with room for two side by side and two deep, railed with glass along its sides and
-     * its back but for the ladder's top. From the platform's front edge a springboard sticks out over the water, and
-     * off it or off the front of the platform there is only water below. A pendant light hanging where the platform
-     * goes moves a block further out. The platform closes off the middle of the cabin under the crown, which the
-     * cabin's lining takes for a station too low to line, so the walls beside it are lined here. Left out where the
-     * pool is too shallow or too narrow, or the crown too low to bounce under.
+     * at the head of the basin, a chrome pool ladder up its front from the rim, and on top a platform of non-slip deck
+     * tiles reaching back over the rim, with headroom for two side by side and two deep, the cabin's glass rails along
+     * its sides and its back but for the ladder's top. From the platform's front edge a springboard sticks out over
+     * the water, and off it or off the front of the platform there is only water below. A pendant light hanging where
+     * the platform goes moves a block further out. The platform closes off the middle of the cabin under the crown,
+     * which the cabin's lining takes for a station too low to line, so the walls beside it are lined here. Left out
+     * where the pool is too shallow or too narrow, or the crown too low to bounce under.
      */
     private void highDive() {
         Basin basin = basin();
@@ -191,20 +192,24 @@ final class CabinDecor {
         for (int y = bottom; y < tower.top(); y++) {
             layout.set(tower.x(), y, tower.first(), tile);
         }
+        BlockState ladder = AerolargeRegistry.POOL_LADDER.get().defaultBlockState().setValue(RungLadderBlock.FACING, Direction.NORTH);
         for (int y = floor + 1; y < tower.top(); y++) {
-            layout.furnish(tower.x(), y, tower.rim(), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
+            layout.furnish(tower.x(), y, tower.rim(), ladder);
         }
+        for (int y = floor + 1; y < tower.top(); y++) {
+            layout.join(tower.x(), y, tower.rim());
+        }
+        BlockState rail = AerolargeRegistry.CABIN_RAIL.get().defaultBlockState();
         for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
             for (int z = tower.rim(); z <= tower.first() + 1; z++) {
                 if (tower.isDeck(x, z)) {
                     layout.furnish(x, tower.top() - 1, z, tile);
-                    if (!tower.isStanding(x, z)) {
-                        layout.furnish(x, tower.top(), z, Blocks.GLASS_PANE.defaultBlockState());
+                    for (Direction edge : tower.railedEdges(x, z)) {
+                        railAlong(x, tower.top(), z, edge, rail);
                     }
                 }
             }
         }
-        joinRails(tower);
         layout.furnish(tower.x(), tower.top() - 1, tower.board(),
             AerolargeRegistry.SPRINGBOARD.get().defaultBlockState().setValue(SpringboardBlock.FACING, Direction.SOUTH));
         CabinLining lining = new CabinLining(layout);
@@ -217,7 +222,8 @@ final class CabinDecor {
      * Where the diving tower stands: its column across (the ladder's, the column's and the springboard's), the first
      * station of the basin, where the column stands, and the row its platform is stood on. The platform reaches from
      * the rim, a station ahead, over the first two of the basin, from a block to port of the column to two to
-     * starboard; its middle two by two is where one stands, with rails on the rest but for the ladder's top.
+     * starboard, but for the ladder's top; its middle two by two is where one stands, with headroom over it, and its
+     * sides and back are railed along their outer edges.
      */
     private record Tower(int x, int first, int top) {
         int rim() {
@@ -234,6 +240,21 @@ final class CabinDecor {
 
         boolean isStanding(int atX, int atZ) {
             return atX >= x && atX <= x + 1 && atZ >= first && atZ < board();
+        }
+
+        /** The edges of the platform's block here that its rails run along: the platform's sides and its back. */
+        List<Direction> railedEdges(int atX, int atZ) {
+            List<Direction> edges = new ArrayList<>();
+            if (atX == x - 1) {
+                edges.add(Direction.WEST);
+            }
+            if (atX == x + 2) {
+                edges.add(Direction.EAST);
+            }
+            if (atZ == rim()) {
+                edges.add(Direction.NORTH);
+            }
+            return edges;
         }
     }
 
@@ -333,24 +354,12 @@ final class CabinDecor {
         layout.set(out, moved, z, light);
     }
 
-    /** Joins each of the tower's rails to the rails beside it, so they run on as one balustrade. */
-    private void joinRails(Tower tower) {
-        for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
-            for (int z = tower.rim(); z < tower.board(); z++) {
-                BlockState rail = layout.stateAt(x, tower.top(), z);
-                if (rail.is(Blocks.GLASS_PANE)) {
-                    layout.set(x, tower.top(), z, rail
-                        .setValue(IronBarsBlock.NORTH, isRail(x, tower.top(), z - 1))
-                        .setValue(IronBarsBlock.SOUTH, isRail(x, tower.top(), z + 1))
-                        .setValue(IronBarsBlock.EAST, isRail(x + 1, tower.top(), z))
-                        .setValue(IronBarsBlock.WEST, isRail(x - 1, tower.top(), z)));
-                }
-            }
+    /** A glass rail along an edge of the block, added to a rail already standing there, or into open space. */
+    private void railAlong(int x, int y, int z, Direction edge, BlockState rail) {
+        BlockState there = layout.stateAt(x, y, z);
+        if (layout.isOpen(x, y, z) || there.is(rail.getBlock())) {
+            layout.set(x, y, z, CabinRailBlock.along(there, edge, layout.stateAt(x, y - 1, z), rail));
         }
-    }
-
-    private boolean isRail(int x, int y, int z) {
-        return layout.stateAt(x, y, z).is(Blocks.GLASS_PANE);
     }
 
     /**
