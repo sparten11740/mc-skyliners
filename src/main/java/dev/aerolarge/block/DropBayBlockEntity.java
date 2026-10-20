@@ -26,13 +26,20 @@ import net.minecraft.world.phys.Vec3;
 /**
  * What waits in the drop bay: anything, in a dispenser's nine slots, loaded from the hold through its screen (see
  * {@link DropBayMenu}). Each time the flight deck releases it, one item leaves from the first slot that holds any,
- * just under the belly at the airliner's own speed, the way its kind leaves (see {@link BayDrops}).
+ * under the airliner at its own speed (under its wheels, once it is assembled), the way its kind leaves (see
+ * {@link BayDrops}).
  */
 public class DropBayBlockEntity extends BaseContainerBlockEntity {
     /** How many slots the bay has: a dispenser's three by three. */
     public static final int SLOTS = 9;
-    /** How far under the bay's middle a load leaves, in blocks. */
+    /** How far under the bay's middle a load leaves, in blocks, standing as blocks in the world. */
     private static final double DROP_BELOW = 1.2;
+    /**
+     * How far under the bottom of an assembled airliner's wheels a load leaves, in blocks: clear of the whole airliner,
+     * a load as tall as a crate and all. Leaving at the airliner's speed, a load sweeps forward a few blocks a tick, and
+     * just under the belly that swept a falling bomb through the main gear ahead of the bay, where it went off.
+     */
+    private static final double CLEARANCE = 1.5;
     /**
      * The key a bay saved before it had slots kept its loads under: a list, one item each, the last of them dropped
      * first.
@@ -77,7 +84,9 @@ public class DropBayBlockEntity extends BaseContainerBlockEntity {
             return Component.translatable("message.aerolarge.drop_bay.empty");
         }
         Vec3 middle = Vec3.atCenterOf(worldPosition);
-        Vec3 at = SableFlight.toWorld(level, middle.add(0, -DROP_BELOW, 0));
+        double wheels = SableFlight.underside(level, middle);
+        double release = Double.isNaN(wheels) ? middle.y - DROP_BELOW : wheels - CLEARANCE;
+        Vec3 at = SableFlight.toWorld(level, new Vec3(middle.x, release, middle.z));
         Vec3 velocity = SableFlight.velocity(level, middle).scale(1 / 20.0);
         Component refusal = BayDrops.drop(server, at, velocity, next.copyWithCount(1), by);
         if (refusal != null) {

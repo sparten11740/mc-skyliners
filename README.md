@@ -772,7 +772,8 @@ the belly with a care package dropping out, and the package floating down under 
 them, a stack to a slot; shift-click moves a stack in or out. Broken, the bay spills what it holds. The drop release
 on the centre console, beside the first officer's seat, opens the bay doors on the first use and on each use after
 that drops one item from the first slot that holds any; sneak and use it to close them. A load leaves at the
-airliner's speed: a care package falls and floats down as above, TNT leaves lit, and anything else falls as itself,
+airliner's speed, from under its wheels once it is assembled so it falls clear of the whole airliner: a care package
+falls and floats down as above, TNT leaves lit, and anything else falls as itself,
 to be picked up where it lands. With Ultrasplosive installed its nuke (the regular Fat Man, not Sundial) leaves the
 bay as Ultrasplosive's flying nuke and goes off where it hits. Its blast reaches 160 blocks, so the release only drops
 one from 200 blocks or more above the ground.

@@ -4,6 +4,8 @@ import dev.aerolarge.Aboard;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.BoundingBox3i;
+import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
@@ -113,6 +115,14 @@ public final class SableFlight {
     /** How fast a point among an assembled airliner's blocks moves, in blocks a second; still anywhere else. */
     public static Vec3 velocity(Level level, Vec3 point) {
         return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
+    }
+
+    /**
+     * The bottom of the lowest block of the assembled airliner a point among its blocks is part of, in its plot (its
+     * wheels'); NaN when the point is not among an assembled airliner's blocks.
+     */
+    public static double underside(Level level, Vec3 point) {
+        return SABLE ? Access.underside(level, point) : Double.NaN;
     }
 
     /** Whether the entity lives among an assembled airliner's blocks, in its plot, as the cabin's loose things do. */
@@ -284,6 +294,15 @@ public final class SableFlight {
 
         static Vec3 velocity(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        static double underside(Level level, Vec3 point) {
+            SubLevel airliner = Sable.HELPER.getContaining(level, point);
+            if (airliner == null) {
+                return Double.NaN;
+            }
+            BoundingBox3ic blocks = airliner.getPlot().getBoundingBox();
+            return blocks == BoundingBox3i.EMPTY ? Double.NaN : blocks.minY();
         }
 
         static boolean inPlot(Entity entity) {
