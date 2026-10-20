@@ -126,11 +126,11 @@ public final class NightLights {
      */
     private enum Lamp {
         /** An LED strip along the top of a wall, washing the wall, the lockers and the ceiling in front of it. */
-        STRIP(1.2F, 9, 80, 0.1, -0.3125, 0.34375),
+        STRIP(3.5F, 12, 80, 0.1, -0.3125, 0.34375),
         /** A cabin light set into the crown, a wall, the hold's belly or the upper deck's floor, shining from a face. */
-        PANEL(1.0F, 9, 70, 0.5, 0.5, 0),
+        PANEL(3.0F, 12, 70, 0.5, 0.5, 0),
         /** A pendant light, glowing down from under its shade. */
-        PENDANT(0.8F, 6, 75, 0.3, 0.25, 0);
+        PENDANT(2.5F, 9, 75, 0.3, 0.25, 0);
 
         final float brightness;
         final float distance;
