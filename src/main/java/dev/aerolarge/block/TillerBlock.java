@@ -19,13 +19,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The nose wheel tiller, a handwheel on the flight deck's centre console between the pilots' seats. Use it to turn a
- * notch to the right, sneak and use it to turn a notch to the left; the nose gear's wheel mounts steer by a redstone
- * signal at their sides, which the tiller's relays give. FACING is the way the nose points.
+ * The nose wheel tiller, a handwheel on the flight deck's centre console between the pilots' seats. Use its right half
+ * to turn it a notch to the right, its left half to turn it a notch to the left, as the pilots sit facing the nose: no
+ * sneaking, which with anything in hand would not use the block at all, so the wheel could not be turned back. The nose
+ * gear's wheel mounts steer by a redstone signal at their sides, which the tiller's relays give. FACING is the way the
+ * nose points.
  */
 public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlock, LinkedControlBlockEntity.Driver {
     private static final MapCodec<TillerBlock> CODEC = simpleCodec(TillerBlock::new);
@@ -67,7 +70,10 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        int steer = Math.clamp(state.getValue(STEER) + (player.isShiftKeyDown() ? -1 : 1), 0, 4);
+        Direction right = state.getValue(FACING).getClockWise();
+        Vec3 touch = hit.getLocation().subtract(Vec3.atCenterOf(pos));
+        boolean rightHalf = touch.x * right.getStepX() + touch.z * right.getStepZ() > 0;
+        int steer = Math.clamp(state.getValue(STEER) + (rightHalf ? 1 : -1), 0, 4);
         if (!level.isClientSide && steer != state.getValue(STEER)) {
             level.setBlock(pos, state.setValue(STEER, steer), Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4F, 0.9F);

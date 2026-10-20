@@ -97,7 +97,7 @@ the jump light switch (see Skydiving). In front of the seats is the throttle qua
 engines 1 to 4 from left to right, with the parking brake in the middle. The levers move together: use any of them to
 push all four a notch forward, sneak and use it to pull them back. Each drives its engine's thrusters through relays
 hidden in the nacelle. The parking brake is set when the airliner is built. Between the seats is the nose wheel
-tiller, a small handwheel (use it to steer right a notch, sneak and use to steer left), with the cabin lights' dimmer
+tiller, a small handwheel (use its right half to steer right a notch, the left half left), with the cabin lights' dimmer
 on the captain's side of it and the captain's handset on the first officer's; right beside the captain is the window
 shades' control, and beside the first officer the drop release. The dimmer steps every light in the cabin from bright
 to dimmed (as for take-off and landing) to a blue night glow and back, the change running down the cabin front to
