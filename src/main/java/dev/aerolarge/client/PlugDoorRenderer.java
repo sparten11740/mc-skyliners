@@ -24,19 +24,19 @@ import net.minecraft.world.phys.AABB;
  * Draws a plug door's panel, shut in its doorway or wherever it is in its swing, from the block entity in its bottom
  * left part. Shut, it is one panel flush with the hull, white skin like the plating round it with the door's seam
  * right round it as a stepped gap, one window in the middle of its top and a flush handle by the edge away from its
- * hinge; inside, a padded lining stands proud of it, an oval in off-white plastic with the window set deep into it and
- * the handle on it (see {@link PlugDoorMesh}). Opening, a door hinged at the side lifts a little and moves out of the
- * frame, then is carried round on its arm, the way an airliner's is: the arm swings out and forward about a hinge
- * beside the doorway while the panel stays square to the hull, so it ends up flat against the hull beside the doorway,
- * lining and all just clear of it, its outside still facing out. A door hinged along its top, the cargo door, swings up
- * and out about its top edge instead, first moving out of a doorway the hull above it stands proud of. Shutting runs
- * the same way back.
+ * hinge; inside, a padded lining bulges out of it, a big rounded cushion in off-white plastic with the window set deep
+ * into it and the handle on it (see {@link PlugDoorMesh}). Opening, a door hinged at the side lifts a little and moves
+ * out of the frame, then is carried round on its arm, the way an airliner's is: the arm swings out and forward about a
+ * hinge beside the doorway while the panel stays square to the hull, so it ends up flat against the hull beside the
+ * doorway, lining and all just clear of it, its outside still facing out. A door hinged along its top, the cargo door,
+ * swings up and out about its top edge instead, first moving out of a doorway the hull above it stands proud of.
+ * Shutting runs the same way back.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from outside, y up from the sill, z out,
  * the hull's outer face at z 1.
  */
 public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity> {
-    /** How deep the door is, panel and lining, in blocks: the arm holds it by the lining's face. */
+    /** How deep the door is, panel and lining, in blocks: the arm runs along the lining's crown. */
     private static final float DEPTH = PlugDoorBlock.DEPTH / 16F;
     /** How far the panel lifts as it comes out of the frame, in blocks: off the stops it rests on shut. */
     private static final float LIFT = 1 / 16F;
@@ -46,7 +46,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     private static final float PLUG_SHARE = 0.25F;
     /** How far a door hinged along its top swings up, in degrees: past level, as a cargo door does. */
     private static final float TOP_SWING = 110;
-    /** The arm's thickness and height, in blocks: thinner than two of the lining's steps, so its faces clear them. */
+    /** The arm's thickness and height, in blocks. */
     private static final float ARM_THICK = 0.1F;
     private static final float ARM_TALL = 0.3F;
     /**
@@ -73,8 +73,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         float progress = door.progress(partialTick);
         Direction out = state.getValue(PlugDoorBlock.FACING);
         PlugDoorBlock.Hinge hinge = state.getValue(PlugDoorBlock.HINGE);
-        VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
-        Painter paint = new Painter(consumer, level, door.getBlockPos(), out, progress > 0);
+        Painter paint = Painter.of(buffers, level, door.getBlockPos(), out, rows, progress > 0);
 
         pose.pushPose();
         pose.translate(0.5, 0, 0.5);
@@ -106,7 +105,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
 
     /**
      * A door hinged at its side, this far through its swing: out of the frame, then round on its arm, which reaches from
-     * a hinge just past the doorway's edge to the middle of the lining's face. A parallel arm turning half a circle
+     * a hinge just past the doorway's edge to the middle of the lining's crown. A parallel arm turning half a circle
      * carries the panel round with it square to the hull, from the doorway to beside it, as far again as the arm is
      * long.
      */
@@ -120,9 +119,10 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         float dy = LIFT * plug;
         float dz = standoff * plug + arm * (float) Math.sin(turn);
         if (turn > 0) {
-            // The arm's hinge stands as far out past the hull as the lining's face is once out of the frame.
+            // The arm lies on the crown, its hinge as far out past the hull as the crown is once out of the frame.
+            float crown = 1 - DEPTH - ARM_THICK / 2;
             float hingeX = PlugDoorBlock.COLUMNS / 2F + side * arm;
-            arm(paint, pose, hingeX, rows / 2F + dy, 1 - DEPTH + standoff, PlugDoorBlock.COLUMNS / 2F + dx, 1 - DEPTH + dz);
+            arm(paint, pose, hingeX, rows / 2F + dy, crown + standoff, PlugDoorBlock.COLUMNS / 2F + dx, crown + dz);
         }
         pose.pushPose();
         pose.translate(dx, dy, dz);
@@ -141,9 +141,9 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     }
 
     /**
-     * The panel, layer on layer (see {@link PlugDoorMesh}): the door's picture across its outside and the lining's
-     * across its inside, each block drawn with the light where it is. Shut, its edges are left out: they stand hidden
-     * in the frame, where they would only fight with the frame's own faces.
+     * The panel (see {@link PlugDoorMesh}): the door's picture across its outside and the lining's across its inside,
+     * each block drawn with the light where it is. Shut, its edges are left out: they stand hidden in the frame, where
+     * they would only fight with the frame's own faces.
      */
     private static void panel(Painter paint, PoseStack.Pose pose, int rows, PlugDoorBlock.Hinge hinge) {
         TextureAtlasSprite outside = paint.sprite(face(hinge, rows, ""));
@@ -182,17 +182,30 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     }
 
     /**
-     * Where the door's quads go: the buffer, and the light each block of the panel is drawn with. Shut, its outside is
-     * lit by the air outside the doorway and its inside by the cabin; out of its frame, all of it by the air outside.
+     * Where the door's quads go, and the light each block of the panel is drawn with, looked up once a frame for each
+     * block and side ({@code lights}, outside after inside, block after block along each row). Shut, its outside is lit
+     * by the air outside the doorway and its inside by the cabin; out of its frame, all of it by the air outside.
      */
-    private record Painter(VertexConsumer consumer, Level level, BlockPos door, Direction out, boolean moved) {
+    private record Painter(VertexConsumer consumer, int[] lights, boolean moved) {
+        static Painter of(MultiBufferSource buffers, Level level, BlockPos door, Direction out, int rows, boolean moved) {
+            int[] lights = new int[rows * PlugDoorBlock.COLUMNS * 2];
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < PlugDoorBlock.COLUMNS; column++) {
+                    BlockPos part = door.relative(out.getCounterClockWise(), column).above(row);
+                    int at = (row * PlugDoorBlock.COLUMNS + column) * 2;
+                    lights[at] = SableClient.light(level, part.relative(moved ? out : out.getOpposite()));
+                    lights[at + 1] = SableClient.light(level, part.relative(out));
+                }
+            }
+            return new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)), lights, moved);
+        }
+
         TextureAtlasSprite sprite(ResourceLocation texture) {
             return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
         }
 
         int light(int column, int row, boolean outside) {
-            BlockPos part = door.relative(out.getCounterClockWise(), column).above(row);
-            return SableClient.light(level, part.relative(outside || moved ? out : out.getOpposite()));
+            return lights[(row * PlugDoorBlock.COLUMNS + column) * 2 + (outside ? 1 : 0)];
         }
 
         /**

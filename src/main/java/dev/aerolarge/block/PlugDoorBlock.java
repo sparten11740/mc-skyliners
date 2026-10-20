@@ -66,9 +66,15 @@ public class PlugDoorBlock extends BaseEntityBlock {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     /** How thick the panel is, in sixteenths of a block: it fills the outer quarter of the doorway, flush with the hull. */
     public static final int THICKNESS = 4;
-    /** How far the padded lining on its inside stands proud of the panel into the doorway, in sixteenths. */
-    public static final int LINING = 3;
-    /** How thick the door is shut, panel and lining, in sixteenths: what stops anyone and keeps the daylight out. */
+    /**
+     * How far the padded lining on its inside bulges out of the panel into the doorway at its crown, in sixteenths: as
+     * far as anything on the door reaches, its handle too.
+     */
+    public static final int LINING = 7;
+    /**
+     * How thick the door is shut, panel and lining, in sixteenths: what stops anyone and keeps the daylight out, and how
+     * far it reaches into the doorway, which leaves the doorway's inner quarter free.
+     */
     public static final int DEPTH = THICKNESS + LINING;
     /** How thick the open doorway is to aim at and use, in sixteenths: a sliver across its outer face. */
     private static final int OPEN_FACE = 1;

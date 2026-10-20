@@ -511,18 +511,18 @@ airliner apart on purpose, or to take back a panel put in the wrong spot.
 The six passenger doors and the cargo door are plug doors, one panel over each doorway as on the real airliner: white
 skin flush with the hull, its seam a stepped gap right round it, with one window in the middle of its top and a flush
 handle by the edge away from its hinge, two blocks wide and three tall (two at scale 1; the cargo door is two tall).
-Inside, a padded lining in the cabin's off-white stands a few pixels proud of the panel, a rounded oval with the
-window set deep into it and the handle on it. Use any part of a door, from inside or out, or give any part a redstone
-signal, and it opens with a hiss: the panel lifts a little and moves out of its frame, then swings forward on its arm
-and parks flat against the hull ahead of the doorway, standing just clear of it (further out where the hull there
-bulges out past the doorway), its outside still facing out. The cargo door swings up and out on its top edge instead,
-first moving out of its doorway where the hull above it stands proud of it. Open, the doorway is clear, and the panel
-outside is in nobody's way; use the empty doorway to shut it again. The panel comes back the same way and latches
-home with a clunk, but not on anyone: while someone stands where it goes back in, it waits, with a chime. The
-airstairs and a docked jet bridge open the door they serve, and shut it again as they fold. Villagers find their way
-through the doors as through wooden ones: while the airliner stands still, a door opens for a villager walking up to
-it and shuts again behind it; in flight no villager opens one. The cockpit door and the doors of the WC and the crew
-room are ordinary doors.
+Inside, a bulky padded lining in the cabin's off-white bulges out of the panel almost half a block, a big rounded
+cushion that curves up from its edge to its crown, with the window set deep into it through a rounded reveal and the
+handle on it. Use any part of a door, from inside or out, or give any part a redstone signal, and it opens with a
+hiss: the panel lifts a little and moves out of its frame, then swings forward on its arm and parks flat against the
+hull ahead of the doorway, standing just clear of it (further out where the hull there bulges out past the doorway),
+its outside still facing out. The cargo door swings up and out on its top edge instead, first moving out of its
+doorway where the hull above it stands proud of it. Open, the doorway is clear, and the panel outside is in nobody's
+way; use the empty doorway to shut it again. The panel comes back the same way and latches home with a clunk, but not
+on anyone: while someone stands where it goes back in, it waits, with a chime. The airstairs and a docked jet bridge
+open the door they serve, and shut it again as they fold. Villagers find their way through the doors as through
+wooden ones: while the airliner stands still, a door opens for a villager walking up to it and shuts again behind it;
+in flight no villager opens one. The cockpit door and the doors of the WC and the crew room are ordinary doors.
 
 ### Airstairs
 
@@ -599,7 +599,7 @@ with the upper deck laid round the rooms under it by `UpperDeck`, and fitted out
 shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
-shut, swinging and open, from their `PlugDoorBlockEntity`, in the layers `PlugDoorMesh` cuts the panel and its lining
+shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,
 from their `AirstairBlockEntity`; `TailCameraFeed` draws the fin camera's
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light

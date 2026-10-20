@@ -226,16 +226,19 @@ texture(blockOutput, "airliner_door_bottom", (x, y) => {
 // top framed like the cabin windows, and one flush handle on the edge away from the hinge (low down in the middle of a
 // door hinged on top), the red flag that shows the door armed beside it. The inside is the same picture seen from
 // behind, the window in the middle and the handle by the same edge, on the off-white plastic of the cabin's lining
-// (the overhead bins'): the renderer stands that lining proud of the panel as a padded oval, the window set into it
-// and the handle on it, so the window and the handle here are where PlugDoorMesh cuts and raises them.
+// (the overhead bins'): the renderer bulges that lining out of the panel as a padded cushion, the window set deep into
+// it and the handle on it, so the window and the handle here are where PlugDoorMesh cuts and raises them.
 const ARMED = [0xc8, 0x2c, 0x2c];
 const DOOR_LINING = [0xe6, 0xe4, 0xde];
 for (const hinge of ["side", "top"]) {
   for (const rows of [2, 3]) {
     const width = 2 * SIZE;
     const height = rows * SIZE;
-    // The handle's row and its first and last pixel across, and the flag's first pixel across.
-    const handleY = hinge === "side" ? Math.round(height * 0.55) : height - 6;
+    // The window's straight sides run down from this row for five more: lower in a three-row door, in the lining's
+    // crown. Then the handle's row (below the window's reveal on a door hinged at its side), its first and last pixel
+    // across, and the flag's first pixel across.
+    const windowTop = 8 + 4 * (rows - 2);
+    const handleY = hinge === "side" ? windowTop + 13 : height - 6;
     const [handleFrom, handleTo] = hinge === "side" ? [21, 27] : [12, 19];
     const flagX = hinge === "side" ? handleFrom - 4 : handleTo + 2;
     for (const [side, skin] of [["", WHITE], ["_inside", DOOR_LINING]]) {
@@ -244,9 +247,12 @@ for (const hinge of ["side", "top"]) {
         if (fromEdge === 0) return STEEL_DARK;
         if (fromEdge === 1) return SEAM;
         const dx = Math.max(Math.abs(x - 15.5) - 1.5, 0);
-        const dy = Math.max(8 - y, y - 13, 0);
+        const dy = Math.max(windowTop - y, y - windowTop - 5, 0);
         const corner = Math.hypot(dx, dy);
-        if (corner <= 1.9) return x - y > 4 && x - y < 7 && y < 11 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
+        if (corner <= 1.9) {
+          const down = y - windowTop;
+          return x - down > 12 && x - down < 15 && down < 3 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
+        }
         if (corner <= 2.6) return FRAME_DARK;
         if (Math.abs(y - handleY) <= 1) {
           if (x >= handleFrom && x <= handleTo) return y === handleY && x > handleFrom && x < handleTo ? STEEL : FRAME_DARK;
