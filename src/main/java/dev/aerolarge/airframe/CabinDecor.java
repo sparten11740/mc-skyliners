@@ -291,32 +291,45 @@ final class CabinDecor {
 
     /** Whether a pendant light hangs in this column and has room to hang a block further out from the middle. */
     private boolean canMoveLightOut(int x, int z) {
+        return x != 0 && pendantShade(x, z) >= 0 && movedShade(x, z) >= 0;
+    }
+
+    /**
+     * The row the pendant light hanging in this column hangs at once moved a block further out: the same, or, where the
+     * upper deck's gallery runs there, right under its floor; -1 where there is no room for it.
+     */
+    private int movedShade(int x, int z) {
         int shade = pendantShade(x, z);
-        return shade >= 0 && x != 0 && layout.isOpen(x + Integer.signum(x), shade, z);
+        int out = x + Integer.signum(x);
+        if (layout.isOpen(out, shade, z)) {
+            return shade;
+        }
+        return layout.onDeck(out, shade, z) && layout.isOpen(out, shade - 1, z) ? shade - 1 : -1;
     }
 
     /**
      * Moves a pendant light hanging in this column, its cable and all, a block further out from the middle: hung from
-     * the crown there at the same height, where there is room for it.
+     * the crown there at the same height, where there is room for it, or from the upper deck's gallery over it.
      */
     private void moveLightOut(int x, int z) {
         if (!canMoveLightOut(x, z)) {
             return;
         }
         int shade = pendantShade(x, z);
+        int moved = movedShade(x, z);
         int out = x + Integer.signum(x);
         BlockState light = layout.stateAt(x, shade, z);
         for (int y = shade; y == shade || isCable(x, y, z); y++) {
             layout.set(x, y, z, Blocks.AIR.defaultBlockState());
         }
-        int top = shade;
+        int top = moved;
         while (layout.isOpen(out, top + 1, z)) {
             top++;
         }
-        for (int y = shade + 1; y <= top; y++) {
+        for (int y = moved + 1; y <= top; y++) {
             layout.set(out, y, z, AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState());
         }
-        layout.set(out, shade, z, light);
+        layout.set(out, moved, z, light);
     }
 
     /** Joins each of the tower's rails to the rails beside it, so they run on as one balustrade. */
@@ -644,7 +657,8 @@ final class CabinDecor {
 
     /**
      * Gymnastic rings on chains from the truss at this station, over the port side of the court just inside its side
-     * line; none over a court line, or where it is not the truss overhead.
+     * line, or from the upper deck's gallery where that runs over them; none over a court line, or where it is neither
+     * overhead.
      */
     private void rings(int z) {
         int x = layout.besideWall(-1, floor + 1, z) + RINGS_FROM_WALL;
@@ -657,10 +671,13 @@ final class CabinDecor {
             top++;
         }
         BlockState beam = layout.stateAt(x, top + 1, z);
-        if (!beam.is(Blocks.IRON_BARS) && AirframePalette.girder().filter(girder -> beam.is(girder.getBlock())).isEmpty()) {
+        boolean gallery = layout.onDeck(x, top + 1, z);
+        if (!gallery && !beam.is(Blocks.IRON_BARS) && AirframePalette.girder().filter(girder -> beam.is(girder.getBlock())).isEmpty()) {
             return;
         }
-        layout.set(x, top + 1, z, AirframePalette.with(beam, "bottom", "true"));
+        if (!gallery) {
+            layout.set(x, top + 1, z, AirframePalette.with(beam, "bottom", "true"));
+        }
         for (int link = y + 1; link <= top; link++) {
             layout.set(x, link, z, Blocks.CHAIN.defaultBlockState());
         }

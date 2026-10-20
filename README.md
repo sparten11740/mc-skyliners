@@ -2,8 +2,9 @@
 
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
 wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
-a cabin floor over a cargo hold with a hatch down to it, six passenger doors and a cargo door, a flight deck behind
-a wrap-around windscreen, swept wings with four engines, the tail, landing gear and folding airstairs.
+a main deck and an upper deck over a cargo hold with a hatch down to it, six passenger doors and a cargo door, a
+flight deck behind a wrap-around windscreen, swept wings with four engines, the tail, landing gear and folding
+airstairs.
 
 ## Requirements
 
@@ -17,7 +18,7 @@ airliner is a building.
 Both blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
 banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops, and the airport.
 
-- **Airliner Blueprint**: the airframe with an empty cabin.
+- **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
   class just behind the forward doors (rows of big seats, two side by side left and right of the aisle, each with a
   high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
@@ -36,18 +37,19 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
   the rooms off from the doors' aisles, each with a curtained white archway and a picture over it of what lies
   through it, with lavatories by the gym hall's entrance and an exit sign over every door (see Curtains, bulkheads and
-  signs).
+  signs). Over all of it runs the upper deck, galleries round the tall rooms (see The upper deck).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
 face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
 `/aerolarge build <pos> <north|east|south|west> [furnished]`.
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
-and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the floor. Its hull is skinned in
+and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the main deck's floor, 5 of them
+under the upper deck. Its hull is skinned in
 blocks cut to the fuselage's curve (`shellStyle` in the server config: by default `SNAPPED`, which cuts every block
 through its corners and edge middles only, in slopes that run into each other without a step, and rounds off the inside
 of the nose too; `FITTED` cuts each block as close to the curve as one cut can), and two rows of tall cabin windows run
-its length down each side, cut to the curve with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the
+its length down each side, one for each deck, cut to the curve with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the
 cabin walls keep it bright, and nothing spawns inside it on its own. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
@@ -120,6 +122,20 @@ announcements (see below).
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
 
+### The upper deck
+
+Like an A380, the airliner has two decks. The upper deck's floor runs three metres over the main deck's, under the
+upper row of windows, from just behind the flight deck back to the lounge. A spiral staircase winds up to it round a
+newel at the front, to port beside the steps up to the flight deck; at the back a straight flight climbs to it up the
+starboard wall, a metre short of the gym hall's end. Glass rails run round the floor's open edges and round the
+stairwells, and cabin lights set into the floor down its middle light both decks at once; the dimmer and the seatbelt
+switch work the upper deck's lights and signs with the rest. In the Airliner Blueprint the upper deck is one floor the
+whole way, to build on like the main deck. In the furnished airliner the rooms keep their height: over the moon pool
+and its diving tower, the gym hall and the doors' aisles, whose bulkheads carry the archways' pictures, the upper deck
+is a gallery along each wall, railed round an open well to look down into the rooms through, with doorways through
+the bulkheads; the gym hall's rings and climbing ropes and the pendant lights by the walls hang from the galleries
+where they run over them. At scale 1 the airliner is too small for an upper deck.
+
 ### Announcements and the radio
 
 Use the captain's handset and your next chat message is a cabin announcement: everyone aboard hears the two-tone
@@ -139,7 +155,7 @@ buttons are pressed.
 
 ### Seatbelts and turbulence
 
-The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls, with a ding, and opens every curtain
+The seatbelt switch lights the "fasten seatbelts" signs along both cabin walls on both decks, with a ding, and opens every curtain
 aboard, front to back, as cabin crew do for take-off and landing. While the signs are on, anyone seated aboard stays
 in their seat when they sneak to get up. The autopilot works the switch too, with its announcements (see above).
 In flight the airliner runs into rough air now
@@ -553,8 +569,9 @@ playing in single player; they are kept in `config/aerolarge-server.toml`, on a 
 The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save>` loads straight into
 `run/saves/<save>`; drop Create, Sable, Create Aeronautics and Create Propulsion into `run/mods` to run with them.
 
-The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`
-and fitted out by `CabinFitOut`, `TailDen` and `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
+The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`,
+with the upper deck laid round the rooms under it by `UpperDeck`, and fitted out by `CabinFitOut`, `TailDen` and
+`HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
 shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over
 the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors

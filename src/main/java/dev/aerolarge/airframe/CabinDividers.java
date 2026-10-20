@@ -267,12 +267,13 @@ final class CabinDividers {
 
     /**
      * The gym hall's dividing curtain (Trennvorhang): right across the cabin from the floor to the crown, so the hall
-     * can be split into two courts, hung over the mats and round whatever is fixed to the walls.
+     * can be split into two courts, hung over the mats and round whatever is fixed to the walls, and under the upper
+     * deck's galleries, not over them.
      */
     private void across(Section section, DyeColor color) {
         for (int y = section.bottom(); y <= section.top(); y++) {
             for (int x = section.reach().get(y - section.bottom())[0]; x <= section.reach().get(y - section.bottom())[1]; x++) {
-                if (fillable(x, y, section.z())) {
+                if (fillable(x, y, section.z()) && !layout.onDeck(x, y, section.z())) {
                     hang(x, y, section.z(), color);
                 }
             }
@@ -281,8 +282,8 @@ final class CabinDividers {
 
     /**
      * Whether a curtain fits right across the section: clear of the doors' aisles, the seatbelt signs and the lights in
-     * the walls, and nothing in its way but carpet and what stands against the walls (wall bars, a bench), so no rope
-     * or light hangs in it. Its ends may stand against windows, which it meets edge on.
+     * the walls, and nothing in its way but carpet and what stands against the walls (wall bars, a bench, the upper
+     * deck's galleries), so no rope or light hangs in it. Its ends may stand against windows, which it meets edge on.
      */
     private boolean acrossFits(Section section) {
         int z = section.z();
@@ -295,7 +296,7 @@ final class CabinDividers {
                 return false;
             }
             for (int x = reach[0] + 1; x < reach[1]; x++) {
-                if (!fillable(x, y, z)) {
+                if (!fillable(x, y, z) && !layout.onDeck(x, y, z)) {
                     return false;
                 }
             }
@@ -318,12 +319,13 @@ final class CabinDividers {
         return null;
     }
 
+    /** The section from the floor up to the crown, or to the upper deck's floor where that closes it over. */
     private Section section(int z) {
         List<int[]> reach = new ArrayList<>();
         for (int y = floor + 1; ; y++) {
             int port = layout.besideWall(-1, y, z);
             int starboard = layout.besideWall(1, y, z);
-            if (port == 0 && starboard == 0 && !layout.isOpen(0, y, z)) {
+            if (port == 0 && starboard == 0 && !layout.isOpen(0, y, z) || layout.onDeck(0, y, z)) {
                 return new Section(z, floor + 1, reach);
             }
             reach.add(new int[]{port, starboard});
@@ -365,7 +367,7 @@ final class CabinDividers {
         }
         for (int y = section.bottom(); y <= section.top(); y++) {
             for (int x = -AISLE; x <= AISLE; x++) {
-                if (section.contains(x, y) && (!fillable(x, y, z) || !section.contains(x, y + 1) && !layout.isPlainHull(x, y + 1, z))) {
+                if (section.contains(x, y) && (!fillable(x, y, z) || !section.contains(x, y + 1) && !closedOver(x, y + 1, z))) {
                     return false;
                 }
             }
@@ -378,15 +380,23 @@ final class CabinDividers {
         return !layout.doorAt(z) && !layout.doorAt(z + 1) && !layout.seatbeltSignAt(z);
     }
 
-    /** Whether every block of hull beside, over or under this block of the section, but the floor, is plain skin. */
+    /**
+     * Whether every block of hull beside, over or under this block of the section, but the floor, is plain skin, or
+     * the upper deck's floor over it.
+     */
     private boolean plainAround(Section section, int x, int y) {
         int[][] around = {{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}};
         for (int[] at : around) {
-            if (at[1] > floor && !section.contains(at[0], at[1]) && !layout.isPlainHull(at[0], at[1], section.z())) {
+            if (at[1] > floor && !section.contains(at[0], at[1]) && !closedOver(at[0], at[1], section.z())) {
                 return false;
             }
         }
         return true;
+    }
+
+    /** Whether the block closes the cabin off, as a divider meets it: plain skin, or the upper deck's floor. */
+    private boolean closedOver(int x, int y, int z) {
+        return layout.isPlainHull(x, y, z) || layout.onDeck(x, y, z);
     }
 
     private boolean isLight(int x, int y, int z) {

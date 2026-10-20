@@ -22,6 +22,8 @@ final class AirframeShape {
     private static final double SECTION_EXPONENT = 2.4;
     /** The main deck floor, as a share of the fuselage height; the cargo hold is underneath. */
     static final double FLOOR = 0.30;
+    /** How far the upper deck's floor lies over the main deck's, in metres: the A380's decks are three metres apart. */
+    static final double UPPER_DECK = 3.0;
 
     static final double WING_ROOT_LEADING_EDGE = 27.0;
     static final double WING_SWEEP = 0.70;

@@ -83,7 +83,7 @@ import net.minecraft.world.phys.Vec2;
  */
 public final class AirframeLayout {
     /** Stations between cabin lights along the fuselage. */
-    private static final int LIGHT_SPACING = 6;
+    static final int LIGHT_SPACING = 6;
     /** How many blocks tall a cabin window is. */
     private static final int WINDOW_HEIGHT = 2;
     /** How square to the side the hull has to face for a window there: the sideways share of its outward direction. */
@@ -184,6 +184,11 @@ public final class AirframeLayout {
     private final Set<BlockPos> doorwayFloors = new HashSet<>();
     /** The cabin floor's block row, in the layout's own y before it is lifted onto its wheels. */
     private final int floorY;
+    /** The station of the flight deck's raised floor's back edge, where the steps down to the main deck start. */
+    private int flightDeckBack = -1;
+    /** The upper deck, once its floor is laid; null where the airliner is too small for one. */
+    @Nullable
+    private UpperDeck upperDeck;
     private int minY = Integer.MAX_VALUE;
     /** The row the tires stand on, once the landing gear is down. */
     private int ground;
@@ -226,11 +231,17 @@ public final class AirframeLayout {
         layout.fairings();
         layout.navLights();
         layout.flightDeck();
+        // The upper deck's floor is structure, in both blueprints; the rooms under it are fitted out round it.
+        layout.upperDeck = UpperDeck.lay(layout, furnished);
         // Furnished before the gear goes on: the gear stands under the centre of mass, pool and all.
         if (furnished) {
             new CabinFitOut(layout).apply();
         }
         new CabinLining(layout).apply(furnished ? CabinFitOut::lockersFit : metres -> true, 0, (int) Math.ceil(LENGTH * layout.scale));
+        // The stairs up to it go in once the rooms below stand and are lined.
+        if (layout.upperDeck != null) {
+            layout.upperDeck.finish();
+        }
         layout.skydiving();
         layout.seatbeltSigns();
         layout.dropBay();
@@ -264,6 +275,29 @@ public final class AirframeLayout {
 
     int floorY() {
         return floorY;
+    }
+
+    /** The upper deck floor's row, UPPER_DECK over the main deck's, whether the airliner has room for it or not. */
+    int upperDeckY() {
+        return floorY + (int) Math.round(UPPER_DECK * scale);
+    }
+
+    /** The station of the flight deck's raised floor's back edge, where the steps down to the main deck start. */
+    int flightDeckBack() {
+        return flightDeckBack;
+    }
+
+    /**
+     * Whether the block is the upper deck's floor, the cabin lights set into it included, or over it: the floor closes
+     * off the main deck under it as the hull's crown does, and nothing hung from the main deck's ceiling reaches
+     * through it.
+     */
+    boolean onDeck(int x, int y, int z) {
+        if (upperDeck == null || z <= flightDeckBack || y < upperDeckY()) {
+            return false;
+        }
+        BlockState deck = stateAt(x, upperDeckY(), z);
+        return deck.is(palette.floor().getBlock()) || deck.is(palette.light().getBlock());
     }
 
     AirframePalette palette() {
@@ -445,13 +479,14 @@ public final class AirframeLayout {
 
     /**
      * Two rows of cabin windows down each side, each window two blocks tall, taller than wide like an airliner's: one
-     * row from eye level over the main deck up past the eyes of someone seated, the other where the upper deck's
-     * would be. They stand on every other station, never one a wall light or a door takes, wherever the hull faces
-     * out sideways, flat or curved: the skin pass cuts them to the curve along with the skin around them.
+     * row from eye level over the main deck up past the eyes of someone seated, the other the same over the upper
+     * deck's floor (see {@link UpperDeck}), as an A380's two window lines are. They stand on every other station,
+     * never one a wall light or a door takes, wherever the hull faces out sideways, flat or curved: the skin pass cuts
+     * them to the curve along with the skin around them.
      */
     private void windows() {
         int mainRow = floorY + 2;
-        int upperRow = floorY + (int) Math.round(3.0 * scale) + 2;
+        int upperRow = upperDeckY() + 2;
         int first = (int) Math.ceil((NOSE_LENGTH + 1) * scale);
         int last = (int) Math.floor((TAIL_START + 8) * scale);
         // The wall lights all stand on stations of one parity (see lights()): the windows take the other.
@@ -904,7 +939,7 @@ public final class AirframeLayout {
     }
 
     /** Whether station z is in one of the passenger doors' aisles. */
-    private boolean inDoorAisle(int z) {
+    boolean inDoorAisle(int z) {
         for (double station : PASSENGER_DOORS) {
             int fore = (int) Math.round(station * scale);
             if (z >= fore - DOOR_AISLE && z <= fore + DOOR_AISLE) {
@@ -957,17 +992,26 @@ public final class AirframeLayout {
     }
 
     /**
-     * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, each lit
-     * through a relay beside it; the seatbelt switch in the panel is wired to them all, and to every curtain the
-     * fit-out has hung, which it opens front to back as the signs come on.
+     * "Fasten seatbelts" signs in both cabin walls along the cabin, at head height under the overhead lockers, and over
+     * the upper deck's walkways beside them, each lit through a relay beside it; the seatbelt switch in the panel is
+     * wired to them all, and to every curtain the fit-out has hung, which it opens front to back as the signs come on.
      */
     private void seatbeltSigns() {
         List<BlockPos> relays = new ArrayList<>();
         int head = floorY + 4;
+        // Over the upper deck at the height of its windows, between two of them: a station on or back where one takes
+        // the wall, or a banner hangs there.
+        int[] upperRows = {upperDeckY() + 2};
+        BlockState sign = AerolargeRegistry.SEATBELT_SIGN.get().defaultBlockState();
         for (double station : SEATBELT_SIGN_STATIONS) {
             int z = (int) Math.round(station * scale);
             for (int side : new int[]{1, -1}) {
-                wallLamp(side, z, new int[]{head, head + 1, head - 1}, AerolargeRegistry.SEATBELT_SIGN.get().defaultBlockState(), relays);
+                wallLamp(side, z, new int[]{head, head + 1, head - 1}, sign, relays);
+                for (int at : new int[]{z, z + 1, z - 1}) {
+                    if (upperDeck != null && upperDeck.walkwayBeside(side, at) && wallLamp(side, at, upperRows, sign, relays) != null) {
+                        break;
+                    }
+                }
             }
         }
         if (seatbeltSwitch == null || relays.isEmpty()) {
@@ -1152,6 +1196,7 @@ public final class AirframeLayout {
         // The raised floor reaches back as far as the steps down from it, one row for each row it is raised, leave the
         // forward doors' aisle clear.
         int deckEnd = (int) Math.round(PASSENGER_DOORS[0] * scale) - 1 - STEPS_CLEARANCE - (deck - floorY);
+        flightDeckBack = deckEnd;
         for (int z = 0; z <= deckEnd; z++) {
             int width = openHalfWidth(deck, z);
             for (int x = -width; x <= width; x++) {
