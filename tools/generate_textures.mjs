@@ -861,20 +861,21 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
-// Cabin service. The galley: brushed steel cupboards, an oven door with a dark window on the front and a coffee
-// machine's spout. The trolley: aluminium with a red stripe and drawer lines, its ends a grid of drawers with
-// handles, its top a grey tray. The meals on their trays, a bag of pretzels and a paper cup of coffee.
+// Cabin service. The galley, its trolley bay (see the galley units below): brushed steel; over the bay its control
+// panel, a dark strip of buttons, green and white, and an amber readout of the trolleys stocked. The trolley:
+// aluminium with a red stripe and drawer lines, its ends a grid of drawers with handles, its top a grey tray. The
+// meals on their trays, a bag of pretzels and a paper cup of coffee.
 {
   const ALU = [0xc4, 0xc9, 0xcf];
   const ALU_DARK = [0x8e, 0x94, 0x9b];
   texture(blockOutput, "galley_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? ALU_DARK : (x + y * 3) % 7 === 0 ? [0xb4, 0xb9, 0xbf] : ALU));
   texture(blockOutput, "galley_front", (x, y) => {
-    if (x === 0 || x === 15 || y === 0 || y === 15 || y === 7) return ALU_DARK;
-    if (y > 7 && x >= 3 && x <= 12 && y >= 9 && y <= 13) return x === 3 || x === 12 || y === 9 || y === 13 ? [0x30, 0x32, 0x36] : [0x40, 0x26, 0x18];
-    if (y < 7 && x >= 9 && x <= 12 && y >= 2 && y <= 5) return [0x26, 0x28, 0x2c];
-    if (y < 7 && x >= 3 && x <= 5 && y >= 2 && y <= 4) return [0x60, 0x40, 0x28];
-    return ALU;
-  });
+    if (y === 0 || y === 3) return ALU_DARK;
+    if (y > 3) return ALU;
+    if (x === 3 || x === 5) return y === 1 ? (x === 3 ? [0x46, 0xe0, 0x70] : [0xf0, 0xf0, 0xea]) : [0x26, 0x29, 0x2e];
+    if (x >= 9 && x <= 12) return (x + y) % 2 === 0 ? [0xf2, 0xb8, 0x30] : [0x60, 0x44, 0x10];
+    return [0x26, 0x29, 0x2e];
+  }, 2);
   texture(itemOutput, "trolley_side", (x, y) => {
     if (y >= 3 && y <= 4) return [0xc8, 0x20, 0x24];
     if (x === 0 || x === 15 || y === 0 || y === 15) return ALU_DARK;
@@ -2224,6 +2225,49 @@ blueprint("furnished_airliner_blueprint", true);
     return (x + y) % 6 === 0 ? [0x30, 0x32, 0x37] : [0x26, 0x28, 0x2c];
   }, 2);
   texture(blockOutput, "seat_console_lamp", () => [0xff, 0xec, 0xc4], 0);
+}
+
+// The galley units (see GalleyOvenBlock and GalleyUnitBlock), in the galley's brushed steel, a darker seam round each
+// panel. The oven's front: a dark strip of controls along its top, a green light on and an amber one off and a small
+// cyan readout, over the door, a steel panel round a dark glass window catching a streak of light; its window lit
+// while it cooks, a warm orange with the rack across it. The stowage: two by two standard containers, each with a
+// white label card, held shut by red latches. The worktop: three drawers with dark seams between them, and its top
+// brushed steel streaked along it. The trolley bay's back wall: dark, louvred for the chiller's air.
+{
+  const STEEL = [0xc4, 0xc9, 0xcf];
+  const STEEL_SEAM = [0x8e, 0x94, 0x9b];
+  const STEEL_SHADE = [0xb0, 0xb5, 0xbb];
+  const CONTROLS = [0x26, 0x29, 0x2e];
+  const LATCH = [0xd0, 0x24, 0x22];
+  texture(blockOutput, "galley_oven_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return STEEL_SEAM;
+    if (y >= 1 && y <= 3) {
+      if (y === 2 && x === 3) return [0x46, 0xe0, 0x70];
+      if (y === 2 && x === 5) return [0x6a, 0x4c, 0x14];
+      if (y === 2 && x >= 9 && x <= 12) return x % 2 === 0 ? [0x46, 0xc8, 0xf0] : [0x18, 0x50, 0x64];
+      return CONTROLS;
+    }
+    if (y === 4) return STEEL;
+    if (x === 1 || x === 14 || y === 5 || y === 14) return STEEL_SEAM;
+    if (x >= 3 && x <= 12 && y >= 7 && y <= 13) return x + y === 17 || x + y === 18 ? [0x3a, 0x3e, 0x46] : [0x1c, 0x1e, 0x22];
+    return STEEL;
+  });
+  texture(blockOutput, "galley_oven_glow", (x, y) => (y % 4 === 2 ? [0x8a, 0x40, 0x18] : (x + y) % 5 === 0 ? [0xff, 0xc0, 0x60] : [0xf0, 0x90, 0x30]), 2);
+  texture(blockOutput, "galley_stowage_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || x === 7 || x === 8 || y === 7 || y === 8) return STEEL_SEAM;
+    const panelY = y % 8;
+    const panelX = x % 8;
+    if (panelY === 1 && panelX >= 3 && panelX <= 4) return LATCH;
+    if (panelY >= 4 && panelY <= 5 && panelX >= 2 && panelX <= 5) return panelY === 4 ? [0xf2, 0xf2, 0xec] : [0xd8, 0xda, 0xd6];
+    return panelY === 6 ? STEEL_SHADE : STEEL;
+  });
+  texture(blockOutput, "galley_latch", (x, y) => (y === 0 ? [0xf0, 0x50, 0x48] : LATCH), 2);
+  texture(blockOutput, "galley_worktop_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 15 || y === 0 || y === 5 || y === 10) return STEEL_SEAM;
+    return y === 4 || y === 9 || y === 14 ? STEEL_SHADE : STEEL;
+  });
+  texture(blockOutput, "galley_worktop_top", (x, y) => (y % 3 === 0 ? [0xd4, 0xd8, 0xdd] : (x * 5 + y) % 9 === 0 ? STEEL_SHADE : [0xc8, 0xcc, 0xd2]), 3);
+  texture(blockOutput, "galley_bay", (x, y) => (y % 3 === 0 ? [0x1a, 0x1b, 0x1e] : [0x30, 0x32, 0x37]), 2);
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

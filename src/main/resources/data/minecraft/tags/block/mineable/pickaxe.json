@@ -105,6 +105,9 @@
     "aerolarge:vacuum_toilet",
     "aerolarge:seat_console",
     "aerolarge:lounge_table",
+    "aerolarge:galley_oven",
+    "aerolarge:galley_stowage",
+    "aerolarge:galley_worktop",
     "aerolarge:airliner_door"
   ]
 }

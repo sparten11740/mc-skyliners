@@ -298,10 +298,17 @@ fling it off faster than the world can be generated around it.
 
 ### Cabin service
 
-At the head of the lounge's bar is the galley. Use it to roll out a full trolley, or to restock the trolleys standing
-by it. Push a trolley down the aisle by walking into it (it squeaks); use it to be served the next of its meals: a
-chicken meal, airline coffee (a minute of Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it
-to fold it up and carry it. Galley, trolley and food can all be crafted.
+At the head of the lounge's bar is the galley, a stainless trolley bay with a trolley parked in it under its control
+panel. Use it to roll out a full trolley, or to restock the trolleys standing by it. Push a trolley down the aisle by
+walking into it (it squeaks); use it to be served the next of its meals: a chicken meal, airline coffee (a minute of
+Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it to fold it up and carry it. Galley, trolley
+and food can all be crafted.
+
+The galley's other units are as stainless, each put down facing you: a Galley Oven, a dark glass door under a strip of
+controls and status lights, which cooks food as a smoker does, twice as fast as a furnace, its window glowing orange
+while it cooks; Galley Stowage, two by two standard containers each held shut by a red latch; and a Galley Worktop,
+drawers under a brushed steel top for a coffee machine to stand on. The stowage and the worktop are cupboards, a
+chest's worth each, their latches clacking as they open. All three can be crafted.
 
 A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
 top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, three big buttons

@@ -54,6 +54,10 @@ import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GalleyOvenBlock;
+import dev.aerolarge.block.GalleyOvenBlockEntity;
+import dev.aerolarge.block.GalleyUnitBlock;
+import dev.aerolarge.block.GalleyUnitBlockEntity;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GlassBackboardBlock;
@@ -904,7 +908,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> GIANT_RUBBER_DUCK_SQUEAK = sound("giant_rubber_duck_squeak");
 
     /** Cabin service: the galley, the crew's trolley, and the meals, pretzels and coffee it serves. */
-    public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL));
+    public static final DeferredBlock<GalleyBlock> GALLEY = BLOCKS.registerBlock("galley", GalleyBlock::new, metal(MapColor.METAL).noOcclusion());
     public static final DeferredItem<BlockItem> GALLEY_ITEM = ITEMS.registerSimpleBlockItem(GALLEY);
     public static final DeferredHolder<EntityType<?>, EntityType<Trolley>> TROLLEY = ENTITY_TYPES.register(
         "trolley", () -> EntityType.Builder.<Trolley>of(Trolley::new, MobCategory.MISC).sized(0.8F, 1.1F)
@@ -1079,6 +1083,28 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> SEAT_CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(SEAT_CONSOLE);
     public static final DeferredItem<BlockItem> LOUNGE_TABLE_ITEM = ITEMS.registerSimpleBlockItem(LOUNGE_TABLE);
+    /** How brightly a galley oven's window glows while it cooks, in light levels: a dim warm glow, not a fire's. */
+    private static final int OVEN_GLOW = 7;
+    /**
+     * The galleys' stainless units round the galley's trolley bay: the oven, which cooks as a smoker does and glows
+     * while it does, and the cupboards, stowage behind red latches and a worktop over drawers, a chest's worth each.
+     */
+    public static final DeferredBlock<GalleyOvenBlock> GALLEY_OVEN = BLOCKS.registerBlock(
+        "galley_oven", GalleyOvenBlock::new, metal(MapColor.METAL).noOcclusion().lightLevel(state -> state.getValue(GalleyOvenBlock.LIT) ? OVEN_GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GalleyOvenBlockEntity>> GALLEY_OVEN_ENTITY =
+        BLOCK_ENTITIES.register("galley_oven", () -> BlockEntityType.Builder.of(GalleyOvenBlockEntity::new, GALLEY_OVEN.get()).build(null));
+    public static final DeferredBlock<GalleyUnitBlock> GALLEY_STOWAGE = BLOCKS.registerBlock(
+        "galley_stowage", properties -> new GalleyUnitBlock(properties, GalleyUnitBlock.Kind.STOWAGE), metal(MapColor.METAL).noOcclusion()
+    );
+    public static final DeferredBlock<GalleyUnitBlock> GALLEY_WORKTOP = BLOCKS.registerBlock(
+        "galley_worktop", properties -> new GalleyUnitBlock(properties, GalleyUnitBlock.Kind.WORKTOP), metal(MapColor.METAL).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GalleyUnitBlockEntity>> GALLEY_UNIT_ENTITY =
+        BLOCK_ENTITIES.register("galley_unit", () -> BlockEntityType.Builder.of(GalleyUnitBlockEntity::new, GALLEY_STOWAGE.get(), GALLEY_WORKTOP.get()).build(null));
+    public static final DeferredItem<BlockItem> GALLEY_OVEN_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_OVEN);
+    public static final DeferredItem<BlockItem> GALLEY_STOWAGE_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_STOWAGE);
+    public static final DeferredItem<BlockItem> GALLEY_WORKTOP_ITEM = ITEMS.registerSimpleBlockItem(GALLEY_WORKTOP);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -1112,7 +1138,7 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
-            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
+            GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,

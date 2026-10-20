@@ -825,16 +825,9 @@ dropsItself("check_in_desk");
 cubes.check_in_desk = null;
 write(`assets/${ID}/models/item/boarding_pass.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/boarding_pass` } });
 
-// Cabin service. The galley: stainless cupboards with an oven and a coffee machine. The trolley, drawn as its item's
-// model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark wheels.
-// The meals, pretzels and coffee: flat icons.
-write(`assets/${ID}/models/block/galley.json`, {
-  parent: "minecraft:block/orientable",
-  textures: { front: `${ID}:block/galley_front`, side: `${ID}:block/galley_side`, top: `${ID}:block/galley_side` },
-});
-facing("galley");
-write(`assets/${ID}/models/item/galley.json`, { parent: `${ID}:block/galley` });
-dropsItself("galley");
+// Cabin service. The galley is drawn with the galley units below, as their trolley bay. The trolley, drawn as its
+// item's model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark
+// wheels. The meals, pretzels and coffee: flat icons.
 cubes.galley = null;
 write(`assets/${ID}/models/item/trolley.json`, boxes(
   { side: `${ID}:item/trolley_side`, end: `${ID}:item/trolley_end`, top: `${ID}:item/trolley_top`, wheel: `${ID}:block/light_cable`,
@@ -3760,6 +3753,95 @@ function seatConsoleLang() {
   };
 }
 
+// The galley units (see GalleyOvenBlock and GalleyUnitBlock) and the galley itself, their trolley bay (see
+// GalleyBlock), each drawn facing north, the front a pixel back from the block's edge so the handles and latches on it
+// stay inside the block, and topped with the galley's brushed steel worktop. The oven: its door's chrome handle over
+// the window on two standoffs; cooking, its window lit over. The stowage: a red latch proud of each container. The
+// worktop: a chrome handle on each drawer, under a steel top over the front's edge. The trolley bay: steel posts
+// either side and the control panel over the bay, its back wall dark, a trolley parked in it end on with its wheels
+// down on a steel threshold plate and a red latch across the bay holding it in.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const steel = { side: block("galley_side"), top: block("galley_worktop_top"), chrome: block("lavatory_basin_chrome"), particle: block("galley_side") };
+  const body = (front, height = 16) => furniture([0, 0, 1], [16, height, 16], "#side", { north: front, up: "#top" });
+  const ovenParts = [
+    body("#front"),
+    furniture([3, 9.25, 0], [13, 10, 0.5], "#chrome"),
+    furniture([3.5, 9.25, 0.5], [4.5, 10, 1], "#chrome"),
+    furniture([11.5, 9.25, 0.5], [12.5, 10, 1], "#chrome"),
+  ];
+  const oven = { ...steel, front: block("galley_oven_front"), glow: block("galley_oven_glow") };
+  write(`assets/${ID}/models/block/galley_oven.json`, { parent: "minecraft:block/block", textures: oven, elements: ovenParts });
+  write(`assets/${ID}/models/block/galley_oven_on.json`, {
+    parent: "minecraft:block/block",
+    textures: oven,
+    elements: [...ovenParts, furniture([3, 2, 0.9], [13, 9, 0.9], "#glow", { south: null, east: null, west: null, up: null, down: null }, true)],
+  });
+  write(`assets/${ID}/blockstates/galley_oven.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((lit) =>
+      [`facing=${facing},lit=${lit}`, { model: `${ID}:block/galley_oven${lit ? "_on" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/block/galley_stowage.json`, {
+    parent: "minecraft:block/block",
+    textures: { ...steel, front: block("galley_stowage_front"), latch: block("galley_latch") },
+    elements: [
+      body("#front"),
+      ...[[3, 14], [11, 14], [3, 6], [11, 6]].map(([x, y]) => furniture([x, y, 0.25], [x + 2, y + 1, 1], "#latch")),
+    ],
+  });
+  write(`assets/${ID}/models/block/galley_worktop.json`, {
+    parent: "minecraft:block/block",
+    textures: { ...steel, front: block("galley_worktop_front") },
+    elements: [
+      body("#front", 15),
+      furniture([0, 15, 0], [16, 16, 16], "#top"),
+      ...[13, 8, 3].map((y) => furniture([5, y, 0.25], [11, y + 0.75, 1], "#chrome")),
+    ],
+  });
+  write(`assets/${ID}/models/block/galley.json`, {
+    parent: "minecraft:block/block",
+    textures: {
+      ...steel, panel: block("galley_front"), bay: block("galley_bay"), latch: block("galley_latch"), wheel: block("light_cable"),
+      end: `${ID}:item/trolley_end`, trolley: `${ID}:item/trolley_side`, tray: `${ID}:item/trolley_top`,
+    },
+    elements: [
+      furniture([0, 0, 0], [1.5, 16, 16], "#side", { up: "#top" }),
+      furniture([14.5, 0, 0], [16, 16, 16], "#side", { up: "#top" }),
+      furniture([1.5, 13, 0], [14.5, 16, 16], "#side", { north: "#panel", up: "#top" }),
+      furniture([1.5, 0, 14], [14.5, 13, 16], "#side", { north: "#bay" }),
+      furniture([1.5, 0, 0], [14.5, 0.25, 14], "#top"),
+      furniture([2.5, 1.5, 1.5], [13.5, 12.5, 13.5], "#trolley", { north: "#end", south: "#end", up: "#tray", down: "#tray" }),
+      ...[[3, 2], [11, 2], [3, 11], [11, 11]].map(([x, z]) => furniture([x, 0.25, z], [x + 2, 1.5, z + 2], "#wheel")),
+      furniture([12.5, 6, 0.25], [14.5, 7, 1], "#latch"),
+    ],
+  });
+  for (const name of ["galley_oven", "galley_stowage", "galley_worktop", "galley"]) {
+    if (name !== "galley_oven") {
+      facing(name);
+    }
+    write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// The units are fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function galleyUnitFittings() {
+  return ["galley_oven", "galley_stowage", "galley_worktop"];
+}
+// In steel round what each stands in for: a smoker, and a barrel with a red latch, or under a steel top.
+function galleyUnitRecipes() {
+  shaped("galley_oven", ["III", "ISI"], { I: "minecraft:iron_ingot", S: "minecraft:smoker" }, 1);
+  shaped("galley_stowage", ["IRI", "IBI"], { I: "minecraft:iron_ingot", R: "minecraft:red_dye", B: "minecraft:barrel" }, 1);
+  shaped("galley_worktop", ["III", "IBI"], { I: "minecraft:iron_ingot", B: "minecraft:barrel" }, 1);
+}
+function galleyUnitLang() {
+  return {
+    "block.aerolarge.galley_oven": "Galley Oven",
+    "block.aerolarge.galley_stowage": "Galley Stowage",
+    "block.aerolarge.galley_worktop": "Galley Worktop",
+  };
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -3796,6 +3878,7 @@ FITTINGS.push(...uldContainerFittings());
 FITTINGS.push(...poolFittings());
 FITTINGS.push(...gymHallFittings());
 FITTINGS.push(...seatConsoleFittings());
+FITTINGS.push(...galleyUnitFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3915,6 +3998,7 @@ uldContainerRecipes();
 poolRecipes();
 gymHallRecipes();
 seatConsoleRecipes();
+galleyUnitRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4268,6 +4352,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...poolLang(),
   ...gymHallLang(),
   ...seatConsoleLang(),
+  ...galleyUnitLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

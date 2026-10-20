@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/galley_stowage",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/galley_stowage",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/galley_stowage",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/galley_stowage",
+      "y": 270
+    }
+  }
+}
