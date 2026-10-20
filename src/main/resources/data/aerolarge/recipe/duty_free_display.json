@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GGG",
+    "BCB",
+    "PPP"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "B": {
+      "item": "minecraft:glass_bottle"
+    },
+    "C": {
+      "item": "minecraft:cocoa_beans"
+    },
+    "P": {
+      "item": "minecraft:blue_concrete"
+    }
+  },
+  "result": {
+    "id": "aerolarge:duty_free_display",
+    "count": 2
+  }
+}

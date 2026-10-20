@@ -2328,4 +2328,33 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// The duty-free kiosk (see DisplayShelfBlock and AwningBlock). The display's cabinet: the counters' blue under a gold
+// line, two drawers with gold handles; its showcase's back softly lit warm white; the perfumes, pink, violet and amber
+// glass with a highlight down one side, under gold caps; and the chocolates, boxes in brown and in red, each tied with a
+// gold ribbon. The awning: lime and white stripes eight pixels wide with a fine weave, its valance the same with a white
+// piping along its top and scalloped along its foot.
+{
+  texture(blockOutput, "duty_free_display_drawers", (x, y) => {
+    if (y === 0 || y === 15 || x === 0 || x === 15) return BLUE_SEAM;
+    if (y === 7 || y === 8) return y === 7 ? GOLD : BLUE_SEAM;
+    if ((y === 3 || y === 11) && x >= 6 && x <= 9) return GOLD;
+    return BLUE;
+  }, 2);
+  texture(blockOutput, "duty_free_display_back", (x, y) => (y <= 1 ? [0xff, 0xfa, 0xec] : [0xf2, 0xea, 0xdc]), 1);
+  for (const [colour, glass] of [["pink", [0xf0, 0x70, 0xb0]], ["violet", [0x8a, 0x4c, 0xd0]], ["amber", [0xe0, 0x98, 0x30]]]) {
+    texture(blockOutput, `perfume_${colour}`, (x, y) => (x % 4 === 1 ? glass.map((c) => Math.min(255, c + 0x40)) : glass), 1);
+  }
+  texture(blockOutput, "perfume_cap", (x, y) => ((x + y) % 4 === 0 ? [0xfc, 0xe8, 0x90] : GOLD), 2);
+  for (const [colour, box] of [["brown", [0x5a, 0x34, 0x1e]], ["red", [0xb0, 0x1c, 0x28]]]) {
+    texture(blockOutput, `chocolate_box_${colour}`, (x, y) => (x === 7 || x === 8 || y === 7 || y === 8 ? GOLD : box), 2);
+  }
+  const STRIPE = (x) => (x % 16 < 8 ? [0x7c, 0xd0, 0x2c] : [0xf6, 0xf6, 0xf0]);
+  texture(blockOutput, "awning_fabric", (x, y) => STRIPE(x).map((c) => c - ((x + y) % 3 === 0 ? 0x10 : 0)), 2);
+  texture(blockOutput, "awning_valance", (x, y) => {
+    if (y <= 1) return [0xfc, 0xfc, 0xf8];
+    if (y >= 5 && Math.abs((x % 4) - 1.5) > (y === 5 ? 1.5 : 0.5) || y >= 7) return CLEAR;
+    return STRIPE(x);
+  }, 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "LWL",
+    "I I"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lime_wool"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "I": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "id": "aerolarge:awning",
+    "count": 4
+  }
+}

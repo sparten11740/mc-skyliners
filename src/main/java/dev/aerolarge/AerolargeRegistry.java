@@ -12,6 +12,7 @@ import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
+import dev.aerolarge.block.AwningBlock;
 import dev.aerolarge.block.BallMatBlock;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
@@ -1138,6 +1139,19 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BAR_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(BAR_COUNTER);
     public static final DeferredItem<BlockItem> BAR_STOOL_ITEM = ITEMS.registerSimpleBlockItem(BAR_STOOL);
     public static final DeferredItem<BlockItem> BACK_BAR_ITEM = ITEMS.registerSimpleBlockItem(BACK_BAR);
+    /**
+     * The duty-free kiosk's display, a cabinet with a lit glass showcase of perfumes and chocolates on it, and its
+     * striped awning on a steel frame, hung on steel rods.
+     */
+    public static final DeferredBlock<DisplayShelfBlock> DUTY_FREE_DISPLAY = BLOCKS.registerBlock(
+        "duty_free_display", DisplayShelfBlock::new,
+        metal(MapColor.COLOR_BLUE).noOcclusion().lightLevel(state -> state.getValue(DisplayShelfBlock.TIER) == DisplayShelfBlock.Tier.SHELVES ? SHELF_GLOW : 0)
+    );
+    public static final DeferredBlock<AwningBlock> AWNING = BLOCKS.registerBlock(
+        "awning", AwningBlock::new, metal(MapColor.COLOR_LIGHT_GREEN).sound(SoundType.WOOL).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> DUTY_FREE_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(DUTY_FREE_DISPLAY);
+    public static final DeferredItem<BlockItem> AWNING_ITEM = ITEMS.registerSimpleBlockItem(AWNING);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -1173,7 +1187,8 @@ public final class AerolargeRegistry {
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
-            PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
+            PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,

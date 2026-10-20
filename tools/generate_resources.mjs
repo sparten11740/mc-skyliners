@@ -4034,6 +4034,103 @@ function barLang() {
   };
 }
 
+// The duty-free kiosk (see DisplayShelfBlock and AwningBlock), drawn facing north. The display's cabinet: the
+// counters' blue with two drawers. Its showcase, against the south side of the block: a white base, back and top, the
+// back lit, glass sides and front, a glass shelf across it, perfumes standing on the base under gold caps and boxes of
+// chocolates on the shelf, one stacked on another; seen through glass, so drawn translucent. The awning's canopy: the
+// striped fabric over the top of the block on a steel rib along either side; with its valance, a steel tube along its
+// front edge and the scalloped valance hanging from it. Its rod: a slim steel tube right through the block.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const display = {
+    drawers: block("duty_free_display_drawers"), side: block("duty_free_counter_side"), white: block("planter_box"),
+    back: block("duty_free_display_back"), glass: block("duty_free_glass"), shelf: block("back_bar_glass"), gold: block("perfume_cap"),
+    pink: block("perfume_pink"), violet: block("perfume_violet"), amber: block("perfume_amber"),
+    brown: block("chocolate_box_brown"), red: block("chocolate_box_red"), particle: block("duty_free_counter_side"),
+  };
+  write(`assets/${ID}/models/block/duty_free_display_cabinet.json`, {
+    parent: "minecraft:block/block",
+    textures: display,
+    elements: [furniture([0, 0, 0], [16, 16, 16], "#side", { north: "#drawers", up: "#white" })],
+  });
+  const glassOnly = { south: null, east: null, west: null, up: null, down: null };
+  const showcase = {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:translucent",
+    textures: display,
+    elements: [
+      furniture([0, 0, 7], [16, 1, 16], "#white"),
+      furniture([0, 1, 15], [16, 15, 16], "#white", { north: null }),
+      furniture([0.5, 1, 14.9], [15.5, 15, 14.9], "#back", glassOnly, true),
+      furniture([0, 15, 7], [16, 16, 16], "#white"),
+      ...[[2, "#pink"], [5, "#violet"], [8.5, "#amber"], [12, "#pink"]].flatMap(([x, perfume]) => [
+        furniture([x, 1, 10], [x + 2, 4, 12], perfume),
+        furniture([x + 0.5, 4, 10.5], [x + 1.5, 5, 11.5], "#gold"),
+      ]),
+      furniture([0.5, 7.5, 8], [15.5, 8, 15], "#shelf"),
+      furniture([2, 8, 9], [7, 10, 13], "#brown"),
+      furniture([9, 8, 9.5], [14, 9.5, 13.5], "#red"),
+      furniture([10, 9.5, 10], [13, 10.5, 13], "#brown"),
+      furniture([0, 1, 7], [0.5, 15, 15], "#glass"),
+      furniture([15.5, 1, 7], [16, 15, 15], "#glass"),
+      furniture([0.5, 1, 7], [15.5, 15, 7.5], "#glass", { east: null, west: null, up: null, down: null }),
+    ],
+  };
+  write(`assets/${ID}/models/block/duty_free_display_shelves.json`, showcase);
+  write(`assets/${ID}/blockstates/duty_free_display.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["cabinet", "shelves"].map((tier) =>
+      [`facing=${facing},tier=${tier}`, { model: `${ID}:block/duty_free_display_${tier}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/duty_free_display.json`, { parent: `${ID}:block/duty_free_display_shelves` });
+  dropsItself("duty_free_display");
+  cubes.duty_free_display = null;
+
+  const awning = { fabric: block("awning_fabric"), valance: block("awning_valance"), steel: block("cabin_seat_frame"), particle: block("awning_fabric") };
+  const canopy = [
+    furniture([0, 15, 0], [16, 16, 16], "#fabric"),
+    furniture([0, 14.5, 0], [0.5, 15, 16], "#steel"),
+    furniture([15.5, 14.5, 0], [16, 15, 16], "#steel"),
+  ];
+  write(`assets/${ID}/models/block/awning_canopy.json`, { parent: "minecraft:block/block", textures: awning, elements: canopy });
+  write(`assets/${ID}/models/block/awning_valance.json`, {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:cutout",
+    textures: awning,
+    elements: [
+      ...canopy,
+      furniture([0, 14.5, 0], [16, 15.25, 0.75], "#steel"),
+      furniture([0, 9, 0.25], [16, 14.5, 0.75], "#valance", { up: null, down: null }),
+    ],
+  });
+  write(`assets/${ID}/models/block/awning_rod.json`, {
+    parent: "minecraft:block/block", textures: awning, elements: [furniture([7.5, 0, 7.5], [8.5, 16, 8.5], "#steel")],
+  });
+  write(`assets/${ID}/blockstates/awning.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["canopy", "rod"].flatMap((part) => [false, true].map((valance) => {
+      const model = part === "rod" ? "awning_rod" : valance ? "awning_valance" : "awning_canopy";
+      return [`facing=${facing},part=${part},valance=${valance}`, { model: `${ID}:block/${model}`, ...(y && part !== "rod" ? { y } : {}) }];
+    })))),
+  });
+  write(`assets/${ID}/models/item/awning.json`, { parent: `${ID}:block/awning_valance` });
+  dropsItself("awning");
+  cubes.awning = null;
+}
+// The kiosk is fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function dutyFreeKioskFittings() {
+  return ["duty_free_display", "awning"];
+}
+// A blue cabinet under glass, with a bottle and a box of cocoa; lime and white wool on iron.
+function dutyFreeKioskRecipes() {
+  shaped("duty_free_display", ["GGG", "BCB", "PPP"], { G: "minecraft:glass_pane", B: "minecraft:glass_bottle", C: "minecraft:cocoa_beans", P: "minecraft:blue_concrete" }, 2);
+  shaped("awning", ["LWL", "I I"], { L: "minecraft:lime_wool", W: "minecraft:white_wool", I: "minecraft:iron_nugget" }, 4);
+}
+function dutyFreeKioskLang() {
+  return {
+    "block.aerolarge.duty_free_display": "Duty-Free Display",
+    "block.aerolarge.awning": "Awning",
+  };
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -4073,6 +4170,7 @@ FITTINGS.push(...seatConsoleFittings());
 FITTINGS.push(...galleyUnitFittings());
 FITTINGS.push(...planterFittings());
 FITTINGS.push(...barFittings());
+FITTINGS.push(...dutyFreeKioskFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -4195,6 +4293,7 @@ seatConsoleRecipes();
 galleyUnitRecipes();
 planterRecipes();
 barRecipes();
+dutyFreeKioskRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4551,6 +4650,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...galleyUnitLang(),
   ...planterLang(),
   ...barLang(),
+  ...dutyFreeKioskLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

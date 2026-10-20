@@ -554,6 +554,13 @@ aisle under a lime and white striped awning, a shelf of flowers and candles behi
 aft doors that a shopper is out of reach of the air rushing out of one opened in flight. (At the smallest scales the
 lounge is too narrow for it.)
 
+A Duty-Free Display is a cabinet in the counters' blue with gold-handled drawers; put another on top of it and that
+one is a lit glass showcase of perfumes under gold caps and boxes of chocolates tied with gold ribbon (a showcase left
+with nothing under it comes down). An Awning is a lime and white striped canopy on a slim steel frame, put up facing
+you: canopies side by side and one behind the other make one awning, with a scalloped valance along its front edge.
+Put up against the underside of a block, or under another rod, it is a steel rod to hang the awning by. Both can be
+crafted.
+
 ### Basketball
 
 The gym hall's hoops are real: take a ball from the rack in the corner by either hoop and use it to throw it the way you

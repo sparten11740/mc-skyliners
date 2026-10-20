@@ -23,8 +23,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Goods on show against a wall, in two tiers, TIER: a cabinet standing on the floor, and lit shelves standing on a
  * cabinet (or on more shelves), the goods on them catching the light. Put down on one of its own kind it is the shelves,
- * anywhere else the cabinet; shelves taken from under them go too. The lounge's back bar is one, its cabinet behind the
- * bar's counter and its shelves of bottles over it. FACING is the way its front faces, its back to the wall.
+ * anywhere else the cabinet; shelves with nothing of their kind under them come down. It is registered twice: the
+ * lounge's back bar, its shelves of bottles, and the duty-free display, its showcase of perfumes and chocolates. FACING
+ * is the way its front faces, its back to the wall.
  */
 public class DisplayShelfBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<DisplayShelfBlock> CODEC = simpleCodec(DisplayShelfBlock::new);
