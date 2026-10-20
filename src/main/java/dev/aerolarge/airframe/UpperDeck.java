@@ -5,27 +5,23 @@ import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Half;
 
 /**
  * The upper deck, as an A380's: a second floor {@link AirframeShape#UPPER_DECK} over the main deck, under the upper
- * row of windows, from just behind the flight deck back to where the tail starts closing in over the lounge. A spiral
- * staircase winds up to it at the front, to port just behind the flight deck, and a straight one climbs to it at the
- * back, up the starboard wall where the gym hall ends.
+ * row of windows, from just behind the flight deck back to where the tail starts closing in over the lounge. A
+ * carpeted staircase winds up to it round a newel at the front, to port just behind the flight deck, on a landing at
+ * every turn, and a straight one climbs to it at the back, up the starboard wall where the gym hall ends (see
+ * {@link DeckStairs}).
  *
  * <p>In the empty airliner it is one floor the whole way, left for building in like the main deck. In the furnished
  * one it is a whole floor only where the rooms under it do not need the cabin's height: over business class, where it
@@ -50,15 +46,17 @@ final class UpperDeck {
      * are five wide.
      */
     private static final int WELL = 2;
-    /** Where across the forward staircase's newel stands, in metres to port of the middle. */
-    private static final double SPIRAL_X = 2.0;
     /**
-     * The forward staircase's steps round its newel, in the order they climb, as (x, z) offsets from it: from
-     * starboard of it, climbing forward, then round to port and back, a row up each.
+     * How big the forward staircase is, in metres across and along, the walk round its newel a block wide: three blocks
+     * square at the default scale, where it goes round one and a half times; at the larger scales longer and wider, so
+     * it goes round less often, but never more than four blocks across, so its newel stays two blocks thick at most and
+     * shows all round.
      */
-    private static final int[][] SPIRAL = {{1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}};
-    /** How many stations deep the forward staircase is, round its newel. */
-    private static final int SPIRAL_DEPTH = 3;
+    private static final double STAIRWELL_ACROSS = 1.25;
+    private static final double STAIRWELL_ALONG = 1.5;
+    private static final int STAIRWELL_MOST_ACROSS = 4;
+    /** The smallest a staircase winding round a newel can be, a block of newel inside it. */
+    private static final int STAIRWELL_LEAST = 3;
     /** How far a bulkhead may stand from where it is meant to, in stations (see {@link CabinDividers}). */
     private static final int WALL_SNAP = 2;
     /** Where the aft staircase's top step is, in metres from the nose: a metre short of the gym hall's back end. */
@@ -80,6 +78,9 @@ final class UpperDeck {
     private int end;
     /** The first station of the forward doors' aisle, behind which the furnished deck's floor is whole. */
     private final int firstAisle;
+    /** How many blocks across and along the forward staircase is. */
+    private final int stairwellAcross;
+    private final int stairwellAlong;
     /** In the furnished airliner, the stretch over business class where the floor is whole, between its bulkheads. */
     private int businessFrom = 0;
     private int businessTo = -1;
@@ -104,6 +105,8 @@ final class UpperDeck {
             aisle++;
         }
         this.firstAisle = aisle;
+        this.stairwellAcross = Math.clamp(Math.round(STAIRWELL_ACROSS * layout.scale()), STAIRWELL_LEAST, STAIRWELL_MOST_ACROSS);
+        this.stairwellAlong = Math.max(STAIRWELL_LEAST, (int) Math.round(STAIRWELL_ALONG * layout.scale()));
     }
 
     /**
@@ -147,7 +150,7 @@ final class UpperDeck {
      * where that is as deep as the forward staircase, and over business class.
      */
     private boolean whole(int z) {
-        return !furnished || z < firstAisle && firstAisle - start >= SPIRAL_DEPTH || z >= businessFrom && z <= businessTo;
+        return !furnished || z < firstAisle && firstAisle - start >= stairwellAlong || z >= businessFrom && z <= businessTo;
     }
 
     /**
@@ -201,8 +204,8 @@ final class UpperDeck {
         if (furnished) {
             business();
         }
-        spiral();
-        straight();
+        forward();
+        aft();
         doorways();
         lights();
         rails();
@@ -281,104 +284,58 @@ final class UpperDeck {
     }
 
     /**
-     * The forward staircase: a spiral round a newel, three blocks square, to port of the steps up to the flight deck,
-     * from the main deck's floor up to the deck's, a row a step, and as many turns as that takes; the top step stands
-     * in the deck's floor, level with it. Over the steps high enough for a head to reach the deck, its floor is open.
-     * Left out where anything stands in its way.
+     * The forward staircase, winding up round a newel just to port of the steps up to the flight deck (see
+     * {@link DeckStairs#round}): in at its corner nearest the forward doors, it climbs forward beside the steps, turns
+     * outboard across the front, comes back aft along the hull's side and turns inboard again, round and round on a
+     * landing in every corner, until it comes out on the deck. Three blocks square if its full size does not fit; left
+     * out where that does not either.
      */
-    private void spiral() {
-        int cx = -(int) Math.round(SPIRAL_X * layout.scale());
-        int cz = start + 1;
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                if (!clear(cx + dx, cz + dz, floor + 1, deck - 1) || !layout.isCabinFloor(cx + dx, deck, cz + dz) || !headroom(cx + dx, cz + dz, deck + 1)) {
-                    return;
-                }
-            }
+    private void forward() {
+        int east = -(AirframeLayout.STEPS_HALF_WIDTH + 1);
+        DeckStairs stairs = DeckStairs.round(layout, east, start, stairwellAcross, stairwellAlong);
+        if (!stairs.fits()) {
+            stairs = DeckStairs.round(layout, east, start, STAIRWELL_LEAST, STAIRWELL_LEAST);
         }
-        BlockState newel = Blocks.POLISHED_ANDESITE.defaultBlockState();
-        for (int y = floor + 1; y < deck; y++) {
-            layout.set(cx, y, cz, newel);
+        if (stairs.fits()) {
+            stairs.lay();
+            stairHeads.add(new int[]{stairs.exitStation(), -1});
         }
-        int steps = deck - floor;
-        for (int k = 0; k < steps; k++) {
-            int[] at = SPIRAL[k % SPIRAL.length];
-            int[] next = SPIRAL[(k + 1) % SPIRAL.length];
-            step(cx + at[0], floor + 1 + k, cz + at[1], Direction.fromDelta(next[0] - at[0], 0, next[1] - at[1]));
-        }
-        stairHeads.add(new int[]{cz + SPIRAL[steps % SPIRAL.length][1], -1});
     }
 
     /**
-     * The aft staircase: a straight flight up the starboard wall, climbing aft to its top step a metre short of the
-     * gym hall's back end, along the gallery's walkway as far out as it fits.
+     * The aft staircase: a straight flight up the starboard wall (see {@link DeckStairs#straight}), climbing aft to its
+     * top stair a metre short of the gym hall's back end, under the gallery's walkway as far out as it fits.
      */
-    private void straight() {
-        int steps = deck - floor;
+    private void aft() {
         int top = (int) Math.floor(AFT_STAIRS_TOP * layout.scale());
-        int first = top - steps + 1;
+        int first = top - (deck - floor) + 1;
         if (top + 1 > end || first - 1 < start) {
             return;
         }
         int outer = layout.openHalfWidth(deck + STANDING_ROOM, top);
         for (int x = outer; x >= outer - 1 && x > WELL; x--) {
-            if (!straightFits(x, first, top)) {
-                continue;
+            DeckStairs stairs = DeckStairs.straight(layout, x, first, Direction.SOUTH);
+            if (underWalkway(x, first, top + 1) && stairs.fits()) {
+                stairs.lay();
+                stairHeads.add(new int[]{top, 1});
+                return;
             }
-            for (int k = 0; k < steps; k++) {
-                step(x, floor + 1 + k, first + k, Direction.SOUTH);
-            }
-            stairHeads.add(new int[]{top, 1});
-            return;
         }
     }
 
-    /**
-     * Whether the aft staircase fits up the wall at x: room to step onto its foot, the cabin open over its whole
-     * length up to under the deck's floor, the deck's floor over it, and its top landing onto the deck.
-     */
-    private boolean straightFits(int x, int first, int top) {
-        if (!clear(x, first - 1, floor + 1, floor + STANDING_ROOM)) {
-            return false;
-        }
-        for (int z = first; z <= top + 1; z++) {
-            if (z <= top && !clear(x, z, floor + 1, deck - 1) || !layout.isCabinFloor(x, deck, z) || !headroom(x, z, deck + 1)) {
+    /** Whether the deck's floor runs over a column from one station to another, with a head's room over it. */
+    private boolean underWalkway(int x, int from, int to) {
+        for (int z = from; z <= to; z++) {
+            for (int y = deck + 1; y <= deck + STANDING_ROOM; y++) {
+                if (!layout.isOpen(x, y, z)) {
+                    return false;
+                }
+            }
+            if (!layout.isCabinFloor(x, deck, z)) {
                 return false;
             }
         }
         return true;
-    }
-
-    /** Whether the cabin is open at this column from one row up to another. */
-    private boolean clear(int x, int z, int from, int to) {
-        for (int y = from; y <= to; y++) {
-            if (!layout.isOpen(x, y, z)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Whether a player can stand at this column on the given row. */
-    private boolean headroom(int x, int z, int row) {
-        return clear(x, z, row, row + STANDING_ROOM - 1);
-    }
-
-    /**
-     * A step climbing the given way, under it the same stair turned over, so the flight's underside slopes with it,
-     * and the deck's floor over it opened for a head's room where it reaches that high; the top step stands in the
-     * floor's own row, in place of it.
-     */
-    private void step(int x, int y, int z, Direction up) {
-        BlockState stair = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, up);
-        layout.set(x, y, z, stair);
-        if (layout.isOpen(x, y - 1, z)) {
-            layout.set(x, y - 1, z, stair.setValue(StairBlock.FACING, up.getOpposite()).setValue(StairBlock.HALF, Half.TOP));
-        }
-        // Stepping up off it takes a row more than standing on it.
-        if (y < deck && y + STANDING_ROOM + 1 >= deck) {
-            layout.set(x, deck, z, Blocks.AIR.defaultBlockState());
-        }
     }
 
     /**
@@ -426,74 +383,23 @@ final class UpperDeck {
     }
 
     /**
-     * Glass rails along every edge of the floor someone could fall from: round the galleries' well and the open ends of
-     * the floor, a block in from the edge; and round the stairwells, where the floor beyond the rail goes on, so a
-     * walkway beside a stairwell is left clear.
+     * Glass rails along every edge of the floor someone could step off (see {@link DeckStairs#dropsAway}): round the
+     * galleries' well, the open ends of the floor and the stairwells, each standing along the edge of the floor.
      */
     private void rails() {
         int half = (int) Math.ceil(AirframeShape.WIDTH / 2 * layout.scale()) + 1;
-        Set<BlockPos> rails = new LinkedHashSet<>();
-        for (boolean deep : new boolean[]{true, false}) {
-            for (int z = start; z <= end; z++) {
-                for (int x = -half; x <= half; x++) {
-                    if (!layout.isCabinFloor(x, deck, z) || !layout.isOpen(x, deck + 1, z) || rails.contains(new BlockPos(x, deck + 1, z))) {
-                        continue;
-                    }
-                    for (Direction toward : Direction.Plane.HORIZONTAL) {
-                        int nx = x + toward.getStepX();
-                        int nz = z + toward.getStepZ();
-                        if (!drop(nx, deck, nz) || deep(nx, nz) != deep) {
-                            continue;
-                        }
-                        int fx = x - toward.getStepX();
-                        int fz = z - toward.getStepZ();
-                        if (deep || layout.isCabinFloor(fx, deck, fz) && layout.isOpen(fx, deck + 1, fz) && !rails.contains(new BlockPos(fx, deck + 1, fz))) {
-                            rails.add(new BlockPos(x, deck + 1, z));
-                            break;
-                        }
+        for (int z = start; z <= end; z++) {
+            for (int x = -half; x <= half; x++) {
+                if (!layout.isCabinFloor(x, deck, z)) {
+                    continue;
+                }
+                for (Direction side : Direction.Plane.HORIZONTAL) {
+                    if (DeckStairs.dropsAway(layout, x + side.getStepX(), deck, z + side.getStepZ())) {
+                        DeckStairs.rail(layout, x, deck + 1, z, side);
                     }
                 }
             }
         }
-        BlockState pane = Blocks.GLASS_PANE.defaultBlockState();
-        rails.forEach(pos -> layout.set(pos.getX(), pos.getY(), pos.getZ(), pane));
-        for (BlockPos pos : rails) {
-            layout.set(pos.getX(), pos.getY(), pos.getZ(), pane
-                .setValue(CrossCollisionBlock.NORTH, joins(pos.north()))
-                .setValue(CrossCollisionBlock.SOUTH, joins(pos.south()))
-                .setValue(CrossCollisionBlock.EAST, joins(pos.east()))
-                .setValue(CrossCollisionBlock.WEST, joins(pos.west())));
-        }
-    }
-
-    /**
-     * Whether the deck's floor has an edge here: inside the cabin, neither the floor nor a wall nor a step up onto it,
-     * but open, or something hanging or standing in the well at the floor's height that one could step out onto.
-     */
-    private boolean drop(int x, int y, int z) {
-        BlockState state = layout.stateAt(x, y, z);
-        return layout.inFuselage(x, y, z) && !layout.isCabinFloor(x, y, z) && !state.is(layout.palette().light().getBlock())
-            && !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) && !(state.getBlock() instanceof StairBlock);
-    }
-
-    /** Whether a drop here goes on down further than a stair climbs off it: a well, not a stairwell. */
-    private boolean deep(int x, int z) {
-        for (int y = deck - 1; y >= deck - STANDING_ROOM - 1; y--) {
-            if (!passable(x, y, z)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean passable(int x, int y, int z) {
-        return layout.stateAt(x, y, z).getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty();
-    }
-
-    /** Whether a rail joins on to what is beside it: another rail, or a wall. */
-    private boolean joins(BlockPos pos) {
-        BlockState state = layout.stateAt(pos.getX(), pos.getY(), pos.getZ());
-        return state.is(Blocks.GLASS_PANE) || state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
     }
 
     /**
@@ -523,7 +429,7 @@ final class UpperDeck {
      * flight deck is whole.
      */
     private void galley() {
-        if (firstAisle - start < SPIRAL_DEPTH) {
+        if (firstAisle - start < stairwellAlong) {
             return;
         }
         int x = room(start);

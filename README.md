@@ -129,11 +129,16 @@ off with `cameraShake` in the client config.
 ### The upper deck
 
 Like an A380, the airliner has two decks. The upper deck's floor runs three metres over the main deck's, under the
-upper row of windows, from just behind the flight deck back to the lounge. A spiral staircase winds up to it round a
-newel at the front, to port beside the steps up to the flight deck; at the back a straight flight climbs to it up the
-starboard wall, a metre short of the gym hall's end. Glass rails run round the floor's open edges and round the
-stairwells, and cabin lights set into the floor down its middle light both decks at once; the dimmer and the seatbelt
-switch work the upper deck's lights and signs with the rest. In the Airliner Blueprint the upper deck is one floor the
+upper row of windows, from just behind the flight deck back to the lounge. A carpeted staircase winds up to it at the
+front, to port beside the steps up to the flight deck: in at its corner by the forward doors, it climbs forward beside
+the steps, turns outboard, comes back aft along the hull's side and turns inboard again, round a white newel, one and
+a half times round at the default scale (wider and less often round at the larger ones). It only ever turns on a
+landing, level with the step before it, and keeps two blocks of headroom all the way, so it is walked up and down
+without a jump. At the back a straight flight climbs to the deck up the starboard wall, a metre short of the gym
+hall's end. Glass rails, frameless glass on slim brushed steel posts under a steel handrail, run along the stairs' open
+sides, sloping with the flights, and round the floor's open edges and the stairwells, and cabin lights set into the
+floor down its middle light both decks at once; the dimmer and the seatbelt switch work the upper deck's lights and
+signs with the rest. In the Airliner Blueprint the upper deck is one floor the
 whole way, to build on like the main deck. In the furnished airliner the rooms keep their height: over the moon pool
 and its diving tower, the gym hall and the doors' aisles, whose bulkheads carry the archways' pictures, the upper deck
 is a gallery along each wall, railed round an open well to look down into the rooms through, with doorways through
@@ -605,7 +610,8 @@ The jar is written to `build/libs/`. `./gradlew runClient -PquickPlayWorld=<save
 `run/saves/<save>`; drop Create, Sable, Create Aeronautics and Create Propulsion into `run/mods` to run with them.
 
 The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut into blocks by `AirframeLayout`,
-with the upper deck laid round the rooms under it by `UpperDeck`, and fitted out by `CabinFitOut`, `TailDen` and
+with the upper deck laid round the rooms under it by `UpperDeck` and its staircases, step by step and landing by
+landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`; the skin follows the curve in `ShellGeometry`'s
 shapes, which `ShellModel` bakes, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies, reading the airliner from Sable through `SableFlight`; `EngineIntakeRenderer` draws the intakes round over

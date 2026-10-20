@@ -128,6 +128,8 @@ public final class AirframeLayout {
     private static final int TAIL_CAMERA_DISPLAY_HEADROOM = 2;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
+    /** How far either side of the middle the steps up to the flight deck reach. */
+    static final int STEPS_HALF_WIDTH = 1;
     /** Where along the cabin the seatbelt signs are, in metres from the nose: in every room and clear of the doors. */
     private static final double[] SEATBELT_SIGN_STATIONS = {16, 21, 30, 38, 45, 55};
     /** Where along the belly the drop bay is, in metres from the nose: behind the main gear, ahead of the cargo door. */
@@ -1227,7 +1229,7 @@ public final class AirframeLayout {
         // with the deck, so its high side runs flush onto the deck's floor.
         BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
         for (int k = 1; deck + 1 - k > floorY; k++) {
-            for (int x = -1; x <= 1; x++) {
+            for (int x = -STEPS_HALF_WIDTH; x <= STEPS_HALF_WIDTH; x++) {
                 furnish(x, deck + 1 - k, deckEnd + k, step);
             }
         }
