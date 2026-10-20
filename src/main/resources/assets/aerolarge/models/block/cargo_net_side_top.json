@@ -1,0 +1,44 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "net": "aerolarge:block/cargo_net",
+    "strap": "aerolarge:block/cargo_net_strap",
+    "steel": "aerolarge:block/cargo_net_steel",
+    "particle": "aerolarge:block/cargo_net"
+  },
+  "elements": [
+    {
+      "from": [
+        7.25,
+        15,
+        0
+      ],
+      "to": [
+        8.75,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    }
+  ]
+}

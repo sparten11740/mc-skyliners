@@ -1767,6 +1767,35 @@ blueprint("furnished_airliner_blueprint", true);
   }, 1);
 }
 
+// The hold's cargo net (see CargoNetBlock): charcoal webbing two pixels wide in a diamond lattice, one diamond to a
+// block with its corners at the middles of the block's edges, a shade lighter along one edge of each strap, sewn where
+// the straps cross with a pale bar tack, and clear between; the lattice is the same mirrored either way across the
+// block, so the net's arms and the nets joined to it run on into each other. Its edge strap: the same webbing stitched
+// down both sides. Its fittings: steel, with a bright streak here and there.
+{
+  const WEBBING = [0x2c, 0x2e, 0x33];
+  const WEBBING_LIGHT = [0x40, 0x44, 0x4a];
+  const TACK = [0x9a, 0xa0, 0xa8];
+  const rising = (x, y) => (x + y) % 16;
+  const falling = (x, y) => (x - y + 16) % 16;
+  texture(blockOutput, "cargo_net", (x, y) => {
+    const up = rising(x, y) === 7 || rising(x, y) === 8;
+    const down = falling(x, y) === 7 || falling(x, y) === 8;
+    if (up && down) return TACK;
+    if (up) return rising(x, y) === 7 ? WEBBING_LIGHT : WEBBING;
+    if (down) return falling(x, y) === 7 ? WEBBING_LIGHT : WEBBING;
+    return CLEAR;
+  }, 3);
+  texture(blockOutput, "cargo_net_strap", (x, y) => {
+    if (x === 4 || x === 11) return y % 2 === 0 ? TACK : WEBBING;
+    return x % 3 === 0 ? WEBBING_LIGHT : WEBBING;
+  }, 3);
+  texture(blockOutput, "cargo_net_steel", (x, y) => {
+    if ((x + 2 * y) % 7 === 0) return [0xd8, 0xdd, 0xe2];
+    return y % 4 === 1 ? [0xa4, 0xab, 0xb2] : [0x84, 0x8b, 0x92];
+  }, 2);
+}
+
 // The vacuum toilet. Its shroud: white plastic, a touch greyer toward the foot. The rim and the bowl's sides: brushed
 // stainless, streaked along. The bowl's floor, where its model shows it (the middle six pixels square, a pixel below
 // the middle): stainless round a pool of the blue rinse water, the drain dark in the middle of it. The seat: a little

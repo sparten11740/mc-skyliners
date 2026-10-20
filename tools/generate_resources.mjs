@@ -1251,6 +1251,59 @@ function holdAndTailLang() {
   };
 }
 
+// The cargo net (see CargoNetBlock), each part drawn for the arm toward the north and turned for the others, as a
+// pane's are: the webbing, a sheet half a pixel thick down the middle of the block from its middle to its edge, seen
+// through between its straps; along the arm's top the steel track the net hangs from, and along its foot a steel bar
+// with a double-stud fitting locked into the floor, each only where no net is joined above or below. Wherever the net
+// does not run on through the block (a free end, a corner, a net on its own), an edge strap down the middle with a
+// steel fitting at its top and its foot. In the hand, the webbing.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { net: block("cargo_net"), strap: block("cargo_net_strap"), steel: block("cargo_net_steel"), particle: block("cargo_net") };
+  const model = (name, elements) => write(`assets/${ID}/models/block/${name}.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:cutout", textures, elements,
+  });
+  model("cargo_net_side", [{ from: [7.75, 0, 0], to: [8.25, 16, 8], faces: { east: { texture: "#net" }, west: { texture: "#net" } } }]);
+  model("cargo_net_side_top", [solid([7.25, 15, 0], [8.75, 16, 8], "#steel")]);
+  model("cargo_net_side_foot", [solid([7, 0, 0], [9, 1, 8], "#steel"), solid([6.5, 0, 2.5], [9.5, 1.5, 5.5], "#steel")]);
+  model("cargo_net_strap", [solid([7.25, 0, 7.25], [8.75, 16, 8.75], "#strap")]);
+  model("cargo_net_strap_top", [solid([6.75, 14.5, 6.75], [9.25, 16, 9.25], "#steel")]);
+  model("cargo_net_strap_foot", [solid([6.75, 0, 6.75], [9.25, 1.5, 9.25], "#steel")]);
+  const turned = (side) => (yRot[side] ? { y: yRot[side] } : {});
+  // The edge strap: wherever neither the north and south arms nor the east and west ones are both joined.
+  const strap = (extra) => ({
+    OR: [["north", "east"], ["north", "west"], ["south", "east"], ["south", "west"]].map(([a, b]) => ({ [a]: "false", [b]: "false", ...extra })),
+  });
+  write(`assets/${ID}/blockstates/cargo_net.json`, {
+    multipart: [
+      ...Object.keys(yRot).flatMap((side) => [
+        { when: { [side]: "true" }, apply: { model: block("cargo_net_side"), ...turned(side) } },
+        { when: { [side]: "true", up: "false" }, apply: { model: block("cargo_net_side_top"), ...turned(side) } },
+        { when: { [side]: "true", down: "false" }, apply: { model: block("cargo_net_side_foot"), ...turned(side) } },
+      ]),
+      { when: strap({}), apply: { model: block("cargo_net_strap") } },
+      { when: strap({ up: "false" }), apply: { model: block("cargo_net_strap_top") } },
+      { when: strap({ down: "false" }), apply: { model: block("cargo_net_strap_foot") } },
+    ],
+  });
+  write(`assets/${ID}/models/item/cargo_net.json`, { parent: "minecraft:item/generated", textures: { layer0: block("cargo_net") } });
+  dropsItself("cargo_net");
+  cubes.cargo_net = null;
+}
+// The net is fitted into the hold rather than built into the airliner: breakable, and no part of the airframe.
+function cargoNetFittings() {
+  return ["cargo_net"];
+}
+// String webbing on iron nugget fittings.
+function cargoNetRecipes() {
+  shaped("cargo_net", ["N N", "SSS", "SSS"], { N: "minecraft:iron_nugget", S: "minecraft:string" }, 6);
+}
+function cargoNetLang() {
+  return {
+    "block.aerolarge.cargo_net": "Cargo Net",
+  };
+}
+
 // Rubber ducks: their fittings, sound, recipes and names are in the functions below, which the shared lists further
 // down take in. The duck, drawn facing north from RubberDuckBlock.BOXES: a yellow body with its head on the front, an
 // eye either side of the head, an orange beak and a cocked tail. Its renderer draws it, sitting or afloat, so one model
@@ -3077,6 +3130,7 @@ FITTINGS.push(...gymFloorFittings());
 FITTINGS.push(...lavatoryBasinFittings());
 FITTINGS.push(...bulkheadSignFittings());
 FITTINGS.push(...denFurnitureFittings());
+FITTINGS.push(...cargoNetFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3190,6 +3244,7 @@ lavatoryBasinRecipes();
 bulkheadSignRecipes();
 denFurnitureRecipes();
 airstairButtonRecipes();
+cargoNetRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3536,6 +3591,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...bulkheadSignLang(),
   ...denFurnitureLang(),
   ...airstairButtonLang(),
+  ...cargoNetLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

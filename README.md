@@ -380,6 +380,14 @@ supplies, ready to load into the drop bay. Three golden suitcases are hidden abo
 and chime softly when someone comes near. Opening one counts toward Lost and Found in the First Flight advancements,
 with a fanfare the first time; find all three to earn it. Suitcases can be crafted; golden ones can only be found.
 
+A Cargo Net is the hold's webbing: charcoal straps in a diamond lattice, sewn together where they cross, hanging from a
+steel track along its top and locked into the floor by steel fittings along its foot. Nets put up beside one another
+join into one net, as glass panes do, and a net's end against a wall hooks onto it; stacked, they join into one tall
+net with the track only along its top and the fittings only along its foot, and wherever a net ends, an edge strap
+runs down it. Nothing gets through a net, but it is a mesh to reach through: pointing at one, you point at whatever is
+behind it, unless at its steel track, its fittings or an edge strap; sneak, or hold a net, to take hold of the webbing
+itself. Cargo nets can be crafted.
+
 ### Vacuum toilets
 
 A Vacuum Toilet (craftable from iron and a bucket) is an airliner's toilet: a stainless steel bowl in a white shroud,

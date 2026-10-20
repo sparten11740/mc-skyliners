@@ -30,6 +30,7 @@ import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CabinWindowShellBlock;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
+import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.CoffeeMachineBlockEntity;
@@ -738,6 +739,14 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> FLOOR_HATCH_ITEM = ITEMS.registerSimpleBlockItem(FLOOR_HATCH);
 
+    /** The hold's fit-out. Cargo nets: webbing on steel fittings, to see and reach through; nothing spawns on them. */
+    public static final DeferredBlock<CargoNetBlock> CARGO_NET = BLOCKS.registerBlock(
+        "cargo_net", CargoNetBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
+            .isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> CARGO_NET_ITEM = ITEMS.registerSimpleBlockItem(CARGO_NET);
+
     /**
      * The secret bookshelf door's creak, opening and shutting: a wooden door's, played deep and slow (see the sounds
      * file). Made here, not by the registry, because the door's block set takes them before the registry has run.
@@ -1014,7 +1023,8 @@ public final class AerolargeRegistry {
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
-            SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
+            SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
+            CARGO_NET_ITEM
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
