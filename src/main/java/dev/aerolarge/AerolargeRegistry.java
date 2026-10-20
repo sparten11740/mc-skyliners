@@ -296,6 +296,9 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairControllerBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairControllerBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
+    /** The airstairs' hydraulic motor running, and the clunk of their latches and their hatch's. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_MOTOR = sound("airstair_motor");
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIRSTAIR_LATCH = sound("airstair_latch");
 
     /**
      * The skin cut to the curve of the hull, and below it the glass cut alike; placed only by the blueprints, so they

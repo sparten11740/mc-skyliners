@@ -111,6 +111,17 @@ function plugDoorLang() {
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
+// The airstairs' hydraulic motor and the clunk of their latches (see tools/generate_sounds.mjs).
+function airstairSounds() {
+  return Object.fromEntries(["airstair_motor", "airstair_latch"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function airstairLang() {
+  return {
+    "subtitles.aerolarge.airstair_motor": "Airstairs whirr",
+    "subtitles.aerolarge.airstair_latch": "Airstairs latch",
+  };
+}
 // The skin, the windscreen and the moon pool's clear glass cut to the hull's curve: one model each for every shape,
 // baked by the mod's own "shell" loader from the block's corners. They give back the part they are cut from (the
 // clear glass, plain glass). The relay hidden in the
@@ -221,6 +232,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   Object.assign(sounds, plugDoorSounds());
+  Object.assign(sounds, airstairSounds());
   Object.assign(sounds, rubberDuckSounds());
   Object.assign(sounds, coffeeMachineSounds());
   write(`assets/${ID}/sounds.json`, sounds);
@@ -2491,6 +2503,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...holdAndTailLang(),
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
+  ...airstairLang(),
   ...flightDeckLang(),
   ...rubberDuckLang(),
   ...coffeeMachineLang(),

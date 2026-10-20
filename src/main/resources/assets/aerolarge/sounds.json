@@ -315,6 +315,22 @@
       }
     ]
   },
+  "airstair_motor": {
+    "subtitle": "subtitles.aerolarge.airstair_motor",
+    "sounds": [
+      {
+        "name": "aerolarge:airstair_motor"
+      }
+    ]
+  },
+  "airstair_latch": {
+    "subtitle": "subtitles.aerolarge.airstair_latch",
+    "sounds": [
+      {
+        "name": "aerolarge:airstair_latch"
+      }
+    ]
+  },
   "rubber_duck_squeak": {
     "subtitle": "subtitles.aerolarge.rubber_duck_squeak",
     "sounds": [

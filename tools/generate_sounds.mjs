@@ -516,6 +516,60 @@ const coffeeNoise = (() => {
   writeSound("coffee_ready", samples);
 }
 
+// The integral airstairs, with their own noise, so they never shift the sounds above. Their hydraulic power unit, as
+// each move starts: the electric motor's hum spinning up and running, the gear pump's whine riding on it at nine times
+// its speed, and the hiss of the oil through the valves; it spins down again at the end.
+const stairNoise = (() => {
+  let stairSeed = 0x73746169;
+  return () => {
+    stairSeed = (Math.imul(stairSeed, 1664525) + 1013904223) | 0;
+    return (stairSeed >>> 0) / 4294967296;
+  };
+})();
+{
+  const length = 1.3;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const speed = Math.min(1, t / 0.15) * Math.min(1, (length - t) / 0.35);
+    const hz = 95 + 70 * speed;
+    phase += (2 * Math.PI * hz) / RATE;
+    const hum = 2 * ((phase / (2 * Math.PI)) % 1) - 1;
+    const whine = Math.sin(9 * phase) * (0.6 + 0.4 * Math.sin(phase));
+    const white = stairNoise() * 2 - 1;
+    low += 0.12 * (white - low);
+    band += 0.5 * (white - band);
+    samples[i] = speed * (0.45 * hum + 0.18 * whine + 0.35 * (band - low)) + 0.15 * speed * Math.sin(2 * phase);
+  }
+  writeSound("airstair_motor", samples);
+}
+// Their latches, as the hatch comes free and shuts and the stairs lock down: the spring-loaded bolt's sharp click, then
+// the heavier clunk of the part it holds coming against its stop, ringing a little.
+{
+  const samples = new Float64Array(Math.round(0.45 * RATE));
+  let previous = 0;
+  let thump = 0;
+  const clunk = 0.045;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = stairNoise() * 2 - 1;
+    const high = white - previous;
+    previous = white;
+    samples[i] = t < 0.008 ? 1.4 * high * (1 - t / 0.008) : 0;
+    if (t >= clunk) {
+      const k = t - clunk;
+      thump += (2 * Math.PI * (62 + 90 * Math.exp(-k / 0.025))) / RATE;
+      samples[i] += Math.exp(-k / 0.07) * Math.sin(thump) + (k < 0.005 ? 0.8 * white * (1 - k / 0.005) : 0);
+    }
+  }
+  bell(samples, 0.047, 1420, 0.06);
+  bell(samples, 0.047, 2310, 0.04);
+  writeSound("airstair_latch", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
