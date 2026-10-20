@@ -21,7 +21,7 @@ public final class AerolargeClientConfig {
             .define("cameraShake", true);
         PILOT_HUD = builder
             .comment("Show the pilot's head-up display in a pilot helmet's visor on the flight deck of an assembled airliner: the",
-                "horizon and the flight path round the crosshair, the speed left of the hotbar, the height right of it and the",
+                "horizon and the flight path round the crosshair, the speed by the left edge, the height by the right edge and the",
                 "heading at the top, with what the autopilot does and the speed, height and heading it is set to.")
             .define("pilotHud", true);
         PILOT_HUD_SCALE = builder

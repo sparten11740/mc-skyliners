@@ -47,14 +47,14 @@ import org.joml.Matrix4f;
  * what the autopilot is set to in magenta, bent onto the visor's curve ({@link HelmetVisor}). It comes in parts,
  * placed by {@link HudLayout} out of the way of the rest of the HUD and of the middle of the view. Round the crosshair
  * a slim horizon line and the pitch ladder, which tilt against the bank and drop as the nose comes up (the horizon
- * amber once banked as far as the "bank angle" callout), and the flight path marker, where the airliner is going. Left
- * of the hotbar the speed on a narrow moving tape, the speed set as a magenta bug and a trend arrow to the speed ten
- * seconds on, and beside it a picture of what the autopilot is doing, with its name. Right of the hotbar the height the
- * autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the ground as an amber line
- * rising up it once near, a bar beyond it that climbs green or sinks amber, and beside that the wheels' height above
- * the ground and the climb or sink with an arrow. At the top of the screen a heading scale, the heading in a box over
- * it and the heading set as a magenta bug, with the autopilot's mode (straight on or round a circle) beside it. Where
- * there is no room beside the hotbar, the speed and the height go out in the left and right parts of the screen.
+ * amber once banked as far as the "bank angle" callout), and the flight path marker, where the airliner is going. By
+ * the screen's left edge the speed on a narrow moving tape, the speed set as a magenta bug and a trend arrow to the
+ * speed ten seconds on, and beside it a picture of what the autopilot is doing, with its name. By its right edge the
+ * height the autopilot holds (its own block's) on a moving tape, the height set as a magenta bug, the ground as an
+ * amber line rising up it once near, a bar beyond it that climbs green or sinks amber, and beside that the wheels'
+ * height above the ground and the climb or sink with an arrow. At the top of the screen a heading scale, the heading
+ * in a box over it and the heading set as a magenta bug, with the autopilot's mode (straight on or round a circle)
+ * beside it.
  * Pictures and colours carry it, and numbers only where the number is the point, so that it works for players who
  * cannot read yet.
  *
@@ -95,6 +95,8 @@ public final class PilotHud {
     private static final float ROOM_HEIGHT = 280;
     /** How far below a boss bar's top it ends, in GUI pixels. */
     private static final int BOSS_BAR_HEIGHT = 5;
+    /** How far in from the screen's left and right edges the speed and the height stand, in screen pixels. */
+    private static final float EDGE_PADDING = 40;
     /**
      * Screen pixels per unit of the HUD for each step of the GUI scale, at a {@code pilotHudScale} of 1: half the GUI's
      * own size. Never fewer than the least, below which its text could not be read.
@@ -108,7 +110,7 @@ public final class PilotHud {
     private static final float OPACITY = 0.72F;
     private static final float OUTLINE = 0.4F;
 
-    /** Half the speed and height tapes' height, low enough for them to fit beside the hotbar under the chat. */
+    /** Half the speed and height tapes' height: slim, so they keep clear of the chat and the subtitles on a short screen. */
     private static final float TAPE_HALF_HEIGHT = 28;
     /** The room for a tape's numbers, on the outer side of its spine; its marks are on the inner side. */
     private static final float TAPE_NUMBERS = 30;
@@ -433,7 +435,8 @@ public final class PilotHud {
         Box speedReach = speedReach(font);
         ChatComponent chat = minecraft.gui.getChat();
         VisorCurve curve = new VisorCurve(graphics.guiWidth(), graphics.guiHeight(), unit);
-        HudLayout layout = new HudLayout(curve, chat.getWidth(), chat.getHeight(), minecraft.options.showSubtitles().get(), bossBars);
+        HudLayout layout = new HudLayout(curve, chat.getWidth(), chat.getHeight(), minecraft.options.showSubtitles().get(), bossBars,
+            EDGE_PADDING / (float) window.getGuiScale());
         Placement at = layout.place(speedReach.scaled(unit), ALTITUDE_REACH.scaled(unit), HEADING_REACH.scaled(unit), ATTITUDE_REACH.scaled(unit));
         HelmetVisor.draw(graphics, curve, OPACITY * fade, OUTLINE * fade, List.of(
             new HelmetVisor.Part(at.attitude(), ATTITUDE_REACH, painter(graphics, font, pixelsPerUnit, canvas -> attitude(canvas, reading))),

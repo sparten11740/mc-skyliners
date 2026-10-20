@@ -262,15 +262,13 @@ tape (the autopilot's own, as it holds it), the height set as a magenta mark and
 up the tape as an amber line; beyond it a bar that climbs green or sinks amber, and beside that the wheels' height
 above the ground over the climb or sink with an arrow. At the top of the screen, under any boss bars, is a heading
 scale with the heading in a box, the heading set as a magenta mark and the mode beside it (straight on, or circling
-left or right with the circle's radius). The speed and the height sit beside the offhand slot and the attack
-indicator, under the chat or beside it, and clear of the subtitles; where there is no room for them there (a small
-window, or a big HUD for its size), they move out to the left and right parts of the screen, level with the
-crosshair, or higher to stay above the chat. On a short screen the chat can reach up past the crosshair; it is drawn
-over the horizon there. Each part curves with the visor where it sits: the visor bulges out in front of the eyes, so
-what is on it is drawn in toward the middle of the view, the more the further out it is. The heading at the top
-arches, its ends curving down and away; the speed and the height at the bottom sag a little, their outer ends lifting
-like the visor's lower rim; out at the sides the tapes bow outward; everything narrows a little toward the edges; and
-the horizon in the middle stays straight. The head-up display is drawn about half the size of the rest of the HUD and grows with the
+left or right with the circle's radius). The speed and the height stand out against the screen's left and right
+edges, 40 pixels in from them, level with the crosshair, or both higher to keep the speed above the chat and the
+height above the subtitles. On a short screen the chat can reach up past the crosshair; it is drawn over the horizon
+there. Each part curves with the visor where it sits: the visor bulges out in front of the eyes, so what is on it is
+drawn in toward the middle of the view, the more the further out it is. The heading at the top arches, its ends
+curving down and away; out at the sides the tapes bow outward; everything narrows a little toward the edges; and the
+horizon in the middle stays straight. The head-up display is drawn about half the size of the rest of the HUD and grows with the
 GUI scale; `pilotHudScale` in the client config makes it bigger or smaller (smaller again on a small screen). Being on
 the visor, it shows only in first person. It hides with the rest of the HUD (F1), behind any screen, under the debug
 screen and while you look through an outside camera; turn it off with `pilotHud` in the client config. While you wear
