@@ -85,6 +85,9 @@ import dev.aerolarge.block.PendantLightBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
+import dev.aerolarge.block.PoolCopingBlock;
+import dev.aerolarge.block.PoolMosaicBlock;
+import dev.aerolarge.block.PoolStepsBlock;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
@@ -971,6 +974,23 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> HIDE_AND_SEEK_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(HIDE_AND_SEEK_BUTTON);
 
+    /**
+     * The moon pool's tiling: the non-slip deck tile round it, the glass mosaic lining its basin, the coping along its
+     * edge and the tiled steps out of it. As tough as stone, and nothing spawns on any of them.
+     */
+    public static final DeferredBlock<Block> POOL_DECK_TILE = BLOCKS.registerSimpleBlock("pool_deck_tile", poolTile(MapColor.SAND));
+    public static final DeferredBlock<PoolMosaicBlock> POOL_MOSAIC = BLOCKS.registerBlock(
+        "pool_mosaic", PoolMosaicBlock::new, poolTile(MapColor.COLOR_LIGHT_BLUE).sound(SoundType.GLASS)
+    );
+    public static final DeferredBlock<PoolCopingBlock> POOL_COPING = BLOCKS.registerBlock("pool_coping", PoolCopingBlock::new, poolTile(MapColor.SNOW));
+    public static final DeferredBlock<PoolStepsBlock> POOL_STEPS = BLOCKS.registerBlock(
+        "pool_steps", properties -> new PoolStepsBlock(POOL_DECK_TILE.get().defaultBlockState(), properties), poolTile(MapColor.SAND)
+    );
+    public static final DeferredItem<BlockItem> POOL_DECK_TILE_ITEM = ITEMS.registerSimpleBlockItem(POOL_DECK_TILE);
+    public static final DeferredItem<BlockItem> POOL_MOSAIC_ITEM = ITEMS.registerSimpleBlockItem(POOL_MOSAIC);
+    public static final DeferredItem<BlockItem> POOL_COPING_ITEM = ITEMS.registerSimpleBlockItem(POOL_COPING);
+    public static final DeferredItem<BlockItem> POOL_STEPS_ITEM = ITEMS.registerSimpleBlockItem(POOL_STEPS);
+
     /** A paper plane to throw and watch glide, down the cabin or out of a door in flight, and its whoosh off the hand. */
     public static final DeferredHolder<EntityType<?>, EntityType<PaperPlane>> PAPER_PLANE = ENTITY_TYPES.register(
         "paper_plane", () -> EntityType.Builder.<PaperPlane>of(PaperPlane::new, MobCategory.MISC).sized(0.4F, 0.15F)
@@ -1040,7 +1060,8 @@ public final class AerolargeRegistry {
             CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM, ULD_CONTAINER_ITEM
         )),
         new TabSection("gym", List.of(
-            GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM
+            GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM,
+            POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM
         )),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
@@ -1069,6 +1090,11 @@ public final class AerolargeRegistry {
     private static BlockBehaviour.Properties luggage(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
             .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never);
+    }
+
+    /** A pool's tile: as tough as stone and as hard underfoot, and nothing spawns on it. */
+    private static BlockBehaviour.Properties poolTile(MapColor color) {
+        return BlockBehaviour.Properties.of().mapColor(color).strength(1.5F, 6.0F).sound(SoundType.STONE).isValidSpawn(AerolargeRegistry::never);
     }
 
     private static boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> type) {

@@ -1,0 +1,117 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "tread": "aerolarge:block/pool_deck_tile",
+    "side": "aerolarge:block/pool_deck_tile_side",
+    "nosing": "aerolarge:block/pool_steps_nosing",
+    "chrome": "aerolarge:block/lavatory_basin_chrome",
+    "particle": "aerolarge:block/pool_deck_tile_side"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        8,
+        13.5
+      ],
+      "to": [
+        3.5,
+        20,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        16,
+        13.5
+      ],
+      "to": [
+        14,
+        31,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        2.75,
+        19.25,
+        13.5
+      ],
+      "to": [
+        17.599242404917497,
+        20.75,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      },
+      "rotation": {
+        "origin": [
+          2.75,
+          20,
+          14.25
+        ],
+        "axis": "z",
+        "angle": 45
+      }
+    }
+  ]
+}

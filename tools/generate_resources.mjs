@@ -3233,6 +3233,153 @@ const cabinDecorLang = {};
   cabinDecorLang["block.aerolarge.hide_and_seek_button"] = "Hide and Seek Button";
 }
 
+// The moon pool's tiling: its models here, its fittings, recipes and names in the functions after them, which the
+// shared lists further down take in. The deck tile: the dotted tiles on top, plain tiles round its sides and white
+// ceiling panels underneath, as the hold sees the cabin floor. The mosaic, plain or with its lane line. The coping
+// (see PoolCopingBlock), drawn facing north: a kerb whose top steps down a pixel along its front edge, so the edge
+// reads as rounded over, its front the coping's band over the mosaic; a corner piece the kerb's plain stone all over.
+const POOL_TILES = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps"];
+{
+  const block = (name) => `${ID}:block/${name}`;
+  write(`assets/${ID}/models/block/pool_deck_tile.json`, {
+    parent: "minecraft:block/cube_bottom_top",
+    textures: { top: block("pool_deck_tile"), bottom: block("cabin_floor_under"), side: block("pool_deck_tile_side") },
+  });
+  write(`assets/${ID}/blockstates/pool_deck_tile.json`, { variants: { "": { model: block("pool_deck_tile") } } });
+  for (const name of ["pool_mosaic", "pool_mosaic_line"]) {
+    write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/cube_all", textures: { all: block(name) } });
+  }
+  write(`assets/${ID}/blockstates/pool_mosaic.json`, {
+    variants: { "line=false": { model: block("pool_mosaic") }, "line=true": { model: block("pool_mosaic_line") } },
+  });
+  const face = (texture, cullface, uv) => ({ texture, ...(uv ? { uv } : {}), ...(cullface ? { cullface } : {}) });
+  write(`assets/${ID}/models/block/pool_coping.json`, {
+    parent: "minecraft:block/block",
+    textures: { top: block("pool_coping_top"), front: block("pool_coping_front"), side: block("pool_coping"), particle: block("pool_coping") },
+    elements: [
+      { from: [0, 0, 1], to: [16, 16, 16], faces: {
+        up: face("#top", "up", [0, 1, 16, 16]), north: face("#front"), south: face("#side", "south"),
+        east: face("#side", "east", [0, 0, 15, 16]), west: face("#side", "west", [1, 0, 16, 16]), down: face("#side", "down", [0, 1, 16, 16]),
+      } },
+      { from: [0, 0, 0], to: [16, 15, 1], faces: {
+        up: face("#top", null, [0, 0, 16, 1]), north: face("#front", "north", [0, 1, 16, 16]),
+        east: face("#side", "east", [15, 1, 16, 16]), west: face("#side", "west", [0, 1, 1, 16]), down: face("#side", "down", [0, 0, 16, 1]),
+      } },
+    ],
+  });
+  write(`assets/${ID}/models/block/pool_coping_corner.json`, { parent: "minecraft:block/cube_all", textures: { all: block("pool_coping") } });
+  write(`assets/${ID}/blockstates/pool_coping.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [
+      [`corner=false,facing=${facing}`, { model: block("pool_coping"), ...(y ? { y } : {}) }],
+      [`corner=true,facing=${facing}`, { model: block("pool_coping_corner") }],
+    ])),
+  });
+  for (const name of ["pool_deck_tile", "pool_mosaic", "pool_coping"]) {
+    write(`assets/${ID}/models/item/${name}.json`, { parent: block(name) });
+  }
+}
+// The pool steps (see PoolStepsBlock), drawn climbing east as vanilla's stairs are, so they take vanilla's turns for
+// every way they face and corner: the dotted deck tile on the treads, plain tiles on the risers and sides and
+// underneath, and along each tread's front edge a dark blue nosing a quarter of a pixel proud of the tread and the
+// riser; a straight flight's grab rail at its left (north) or right (south) end, a chrome tube up from the lower tread
+// and down from over the upper one, joined by a handrail sloping up with the flight. In the hand, a step with both.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    tread: block("pool_deck_tile"), side: block("pool_deck_tile_side"), nosing: block("pool_steps_nosing"),
+    chrome: block("lavatory_basin_chrome"), particle: block("pool_deck_tile_side"),
+  };
+  const sides = (from, to) => ({
+    from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, { texture: side === "up" ? "#tread" : "#side" }])),
+  });
+  // A nosing along a tread's front edge, from one end to the other of the edge, at the tread's height.
+  const nosing = (top, [x0, z0], [x1, z1]) => x0 === x1
+    ? solid([x0 - 0.25, top - 1, Math.min(z0, z1)], [x0 + 1.75, top + 0.25, Math.max(z0, z1)], "#nosing")
+    : solid([Math.min(x0, x1), top - 1, z0 - 0.25], [Math.max(x0, x1), top + 0.25, z0 + 1.75], "#nosing");
+  const steps = {
+    pool_steps: [sides([0, 0, 0], [16, 8, 16]), sides([8, 8, 0], [16, 16, 16]),
+      nosing(8, [0, 0], [0, 16]), nosing(16, [8, 0], [8, 16])],
+    pool_steps_inner: [sides([0, 0, 0], [16, 8, 16]), sides([8, 8, 0], [16, 16, 16]), sides([0, 8, 8], [8, 16, 16]),
+      nosing(8, [0, 0], [0, 8]), nosing(8, [0, 0], [8, 0]), nosing(16, [8, 0], [8, 8]), nosing(16, [0, 8], [8, 8])],
+    pool_steps_outer: [sides([0, 0, 0], [16, 8, 16]), sides([8, 8, 8], [16, 16, 16]),
+      nosing(8, [0, 0], [0, 16]), nosing(8, [0, 0], [16, 0]), nosing(16, [8, 8], [8, 16]), nosing(16, [8, 8], [16, 8])],
+  };
+  for (const [name, elements] of Object.entries(steps)) {
+    write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/stairs", textures, elements });
+  }
+  // A grab rail at one end of the step, its tubes this far in from the north side: the lower post on the lower
+  // tread's front, the upper one on the upper tread's back, and the handrail between their tops at 45 degrees.
+  const rail = (z) => [
+    solid([2, 8, z], [3.5, 20, z + 1.5], "#chrome"),
+    solid([12.5, 16, z], [14, 31, z + 1.5], "#chrome"),
+    solid([2.75, 19.25, z], [2.75 + 10.5 * Math.SQRT2, 20.75, z + 1.5], "#chrome", { origin: [2.75, 20, z + 0.75], axis: "z", angle: 45 }),
+  ];
+  write(`assets/${ID}/models/block/pool_steps_rail_left.json`, { parent: "minecraft:block/block", textures, elements: rail(1) });
+  write(`assets/${ID}/models/block/pool_steps_rail_right.json`, { parent: "minecraft:block/block", textures, elements: rail(13.5) });
+  // Vanilla's turns of its stair models, for each way a stair faces, which half it is and the shape its neighbours give it.
+  const turns = {
+    bottom: {
+      east: { straight: 0, outer_right: 0, outer_left: 270, inner_right: 0, inner_left: 270 },
+      west: { straight: 180, outer_right: 180, outer_left: 90, inner_right: 180, inner_left: 90 },
+      south: { straight: 90, outer_right: 90, outer_left: 0, inner_right: 90, inner_left: 0 },
+      north: { straight: 270, outer_right: 270, outer_left: 180, inner_right: 270, inner_left: 180 },
+    },
+    top: {
+      east: { straight: 0, outer_right: 90, outer_left: 0, inner_right: 90, inner_left: 0 },
+      west: { straight: 180, outer_right: 270, outer_left: 180, inner_right: 270, inner_left: 180 },
+      south: { straight: 90, outer_right: 180, outer_left: 90, inner_right: 180, inner_left: 90 },
+      north: { straight: 270, outer_right: 0, outer_left: 270, inner_right: 0, inner_left: 270 },
+    },
+  };
+  const multipart = [];
+  for (const [half, facings] of Object.entries(turns)) {
+    for (const [facing, shapes] of Object.entries(facings)) {
+      for (const [shape, y] of Object.entries(shapes)) {
+        const model = shape === "straight" ? "pool_steps" : shape.startsWith("inner") ? "pool_steps_inner" : "pool_steps_outer";
+        multipart.push({
+          when: { facing, half, shape },
+          apply: { model: block(model), ...(half === "top" ? { x: 180 } : {}), ...(y ? { y } : {}), uvlock: true },
+        });
+      }
+    }
+  }
+  for (const [facing, y] of Object.entries(turns.bottom).map(([facing, shapes]) => [facing, shapes.straight])) {
+    for (const side of ["left", "right"]) {
+      multipart.push({
+        when: { facing, half: "bottom", shape: "straight", [`rail_${side}`]: "true" },
+        apply: { model: block(`pool_steps_rail_${side}`), ...(y ? { y } : {}) },
+      });
+    }
+  }
+  write(`assets/${ID}/blockstates/pool_steps.json`, { multipart });
+  write(`assets/${ID}/models/item/pool_steps.json`, {
+    parent: "minecraft:block/stairs", textures, elements: [...steps.pool_steps, ...rail(1), ...rail(13.5)],
+  });
+}
+function poolTilesFittings() {
+  return POOL_TILES;
+}
+// Smooth sandstone round gravel for the deck tile's grit; light blue glass round white concrete for the mosaic; a
+// kerb of smooth quartz over mosaic for the coping; steps of deck tiles as any stairs are made.
+function poolTilesRecipes() {
+  shaped("pool_deck_tile", ["SSS", "SGS", "SSS"], { S: "minecraft:smooth_sandstone", G: "minecraft:gravel" }, 8);
+  shaped("pool_mosaic", ["GGG", "GCG", "GGG"], { G: "minecraft:light_blue_stained_glass", C: "minecraft:white_concrete" }, 8);
+  shaped("pool_coping", ["QQQ", "MMM"], { Q: "minecraft:smooth_quartz", M: `${ID}:pool_mosaic` }, 6);
+  shaped("pool_steps", ["T  ", "TT ", "TTT"], { T: `${ID}:pool_deck_tile` }, 4);
+}
+function poolTilesLang() {
+  return {
+    "block.aerolarge.pool_deck_tile": "Pool Deck Tile",
+    "block.aerolarge.pool_mosaic": "Pool Mosaic",
+    "block.aerolarge.pool_coping": "Pool Coping",
+    "block.aerolarge.pool_steps": "Pool Steps",
+  };
+}
+for (const name of POOL_TILES) {
+  dropsItself(name);
+  cubes[name] = null;
+}
+
 // Vacuum toilets (see VacuumToiletBlock) and the blue ice they drop (see BlueIceChunk and LavIceBlock), and what they
 // add to the lang file.
 const VACUUM_TOILET_LANG = {
@@ -3326,6 +3473,7 @@ FITTINGS.push(...denFurnitureFittings());
 FITTINGS.push(...cargoNetFittings());
 FITTINGS.push(...cargoFloorFittings());
 FITTINGS.push(...uldContainerFittings());
+FITTINGS.push(...poolTilesFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3442,6 +3590,7 @@ airstairButtonRecipes();
 cargoNetRecipes();
 cargoFloorRecipes();
 uldContainerRecipes();
+poolTilesRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3791,6 +3940,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cargoNetLang(),
   ...cargoFloorLang(),
   ...uldContainerLang(),
+  ...poolTilesLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -539,6 +539,17 @@ with a beep each second, and at nought the buzzer goes and the nought turns gree
 button stays down, its eye shut and glowing, until then; press it again to start over. Hide and Seek Buttons can be
 crafted.
 
+### The moon pool
+
+A pool of your own can be tiled the way the airliner's is, with blocks that can all be crafted. A Pool Deck Tile is a
+sand-coloured non-slip tile with a grid of raised dots, for the floor round a pool, its underside a white ceiling.
+Pool Mosaic lines the basin in small glass tiles in the pool's blues; use blue dye on one to lay a lane line into it,
+a dark blue stripe down its middle. Pool Coping is the white stone kerb along the pool's edge, its front edge rounded
+over the water above a band of dark blue tiles at the waterline: put down, its round faces the water you are looking
+at; sneaking, it is a corner piece, plain all over. Pool Steps are stairs tiled like the deck, a dark blue edge along
+the front of each tread, that turn corners and fill with water as any stairs do; steps side by side make one flight,
+with a chrome grab rail curving up over each end of it.
+
 ### The high dive
 
 The springboard sticking out from the moon pool's diving tower, a slim blue-gripped board on a coiled spring, throws

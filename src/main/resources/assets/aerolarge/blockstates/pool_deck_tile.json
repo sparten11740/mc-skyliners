@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aerolarge:block/pool_deck_tile"
+    }
+  }
+}

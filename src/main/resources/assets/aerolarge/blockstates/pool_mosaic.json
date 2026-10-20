@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "line=false": {
+      "model": "aerolarge:block/pool_mosaic"
+    },
+    "line=true": {
+      "model": "aerolarge:block/pool_mosaic_line"
+    }
+  }
+}

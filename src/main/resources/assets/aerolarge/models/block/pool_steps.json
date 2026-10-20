@@ -1,0 +1,140 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "tread": "aerolarge:block/pool_deck_tile",
+    "side": "aerolarge:block/pool_deck_tile_side",
+    "nosing": "aerolarge:block/pool_steps_nosing",
+    "chrome": "aerolarge:block/lavatory_basin_chrome",
+    "particle": "aerolarge:block/pool_deck_tile_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#tread"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#tread"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.25,
+        7,
+        0
+      ],
+      "to": [
+        1.75,
+        8.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#nosing"
+        },
+        "south": {
+          "texture": "#nosing"
+        },
+        "east": {
+          "texture": "#nosing"
+        },
+        "west": {
+          "texture": "#nosing"
+        },
+        "up": {
+          "texture": "#nosing"
+        },
+        "down": {
+          "texture": "#nosing"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        15,
+        0
+      ],
+      "to": [
+        9.75,
+        16.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#nosing"
+        },
+        "south": {
+          "texture": "#nosing"
+        },
+        "east": {
+          "texture": "#nosing"
+        },
+        "west": {
+          "texture": "#nosing"
+        },
+        "up": {
+          "texture": "#nosing"
+        },
+        "down": {
+          "texture": "#nosing"
+        }
+      }
+    }
+  ]
+}

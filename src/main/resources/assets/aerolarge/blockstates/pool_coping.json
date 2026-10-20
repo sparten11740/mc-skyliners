@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "corner=false,facing=north": {
+      "model": "aerolarge:block/pool_coping"
+    },
+    "corner=true,facing=north": {
+      "model": "aerolarge:block/pool_coping_corner"
+    },
+    "corner=false,facing=east": {
+      "model": "aerolarge:block/pool_coping",
+      "y": 90
+    },
+    "corner=true,facing=east": {
+      "model": "aerolarge:block/pool_coping_corner"
+    },
+    "corner=false,facing=south": {
+      "model": "aerolarge:block/pool_coping",
+      "y": 180
+    },
+    "corner=true,facing=south": {
+      "model": "aerolarge:block/pool_coping_corner"
+    },
+    "corner=false,facing=west": {
+      "model": "aerolarge:block/pool_coping",
+      "y": 270
+    },
+    "corner=true,facing=west": {
+      "model": "aerolarge:block/pool_coping_corner"
+    }
+  }
+}

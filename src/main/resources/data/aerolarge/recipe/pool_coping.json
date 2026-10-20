@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "QQQ",
+    "MMM"
+  ],
+  "key": {
+    "Q": {
+      "item": "minecraft:smooth_quartz"
+    },
+    "M": {
+      "item": "aerolarge:pool_mosaic"
+    }
+  },
+  "result": {
+    "id": "aerolarge:pool_coping",
+    "count": 6
+  }
+}

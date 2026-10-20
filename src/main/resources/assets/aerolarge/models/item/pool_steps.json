@@ -1,0 +1,350 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "tread": "aerolarge:block/pool_deck_tile",
+    "side": "aerolarge:block/pool_deck_tile_side",
+    "nosing": "aerolarge:block/pool_steps_nosing",
+    "chrome": "aerolarge:block/lavatory_basin_chrome",
+    "particle": "aerolarge:block/pool_deck_tile_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#tread"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#tread"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.25,
+        7,
+        0
+      ],
+      "to": [
+        1.75,
+        8.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#nosing"
+        },
+        "south": {
+          "texture": "#nosing"
+        },
+        "east": {
+          "texture": "#nosing"
+        },
+        "west": {
+          "texture": "#nosing"
+        },
+        "up": {
+          "texture": "#nosing"
+        },
+        "down": {
+          "texture": "#nosing"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        15,
+        0
+      ],
+      "to": [
+        9.75,
+        16.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#nosing"
+        },
+        "south": {
+          "texture": "#nosing"
+        },
+        "east": {
+          "texture": "#nosing"
+        },
+        "west": {
+          "texture": "#nosing"
+        },
+        "up": {
+          "texture": "#nosing"
+        },
+        "down": {
+          "texture": "#nosing"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        8,
+        1
+      ],
+      "to": [
+        3.5,
+        20,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        16,
+        1
+      ],
+      "to": [
+        14,
+        31,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        2.75,
+        19.25,
+        1
+      ],
+      "to": [
+        17.599242404917497,
+        20.75,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      },
+      "rotation": {
+        "origin": [
+          2.75,
+          20,
+          1.75
+        ],
+        "axis": "z",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        2,
+        8,
+        13.5
+      ],
+      "to": [
+        3.5,
+        20,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        16,
+        13.5
+      ],
+      "to": [
+        14,
+        31,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        2.75,
+        19.25,
+        13.5
+      ],
+      "to": [
+        17.599242404917497,
+        20.75,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      },
+      "rotation": {
+        "origin": [
+          2.75,
+          20,
+          14.25
+        ],
+        "axis": "z",
+        "angle": 45
+      }
+    }
+  ]
+}

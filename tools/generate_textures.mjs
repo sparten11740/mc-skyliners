@@ -1582,6 +1582,56 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "springboard_board", () => [0xf2, 0xf4, 0xf6], 2);
   texture(blockOutput, "springboard_spring", (x, y) => (y % 2 === 0 ? STEEL_DARK : CHROME), 2);
 }
+// The moon pool's tiling (see CabinFitOut.pool). The deck tile: sand-coloured tiles a half block square in pale grout,
+// each a shade of its own, with a grid of raised dots on top for grip, each dot catching the light on its top left
+// and casting a shadow on its bottom right; its sides the same tiles without the dots. The mosaic: small square tiles
+// of glass in the pool's blues, each its own shade with a glint in its corner, in pale grout; with a lane line, the
+// middle two columns of tiles a deep navy. The coping: white stone with a faint fleck, a highlight along the front
+// edge of its top where it rounds over; its front the round's highlight and shadow over a band of dark blue tiles at
+// the waterline, over the mosaic. The steps' nosing: the band's dark blue.
+{
+  const GROUT = [0xd8, 0xd2, 0xc4];
+  const SAND = [0xdc, 0xca, 0xa2];
+  const sandTone = (x, y) => [0, 6, -5, 3][(Math.floor(x / 8) + 2 * Math.floor(y / 8)) % 4];
+  const sandTile = (x, y) => {
+    if (x % 8 === 0 || y % 8 === 0) return GROUT;
+    return SAND.map((v) => v + sandTone(x, y));
+  };
+  texture(blockOutput, "pool_deck_tile", (x, y) => {
+    const dot = (x % 8) % 3 === 2 && (y % 8) % 3 === 2;
+    const shadow = (x % 8) % 3 === 0 && (y % 8) % 3 === 0 && x % 8 !== 0 && y % 8 !== 0;
+    if (dot) return SAND.map((v) => v + 22 + sandTone(x, y));
+    if (shadow) return SAND.map((v) => v - 26 + sandTone(x, y));
+    return sandTile(x, y);
+  }, 3);
+  texture(blockOutput, "pool_deck_tile_side", sandTile, 3);
+  const POOL_BLUES = [[0x3a, 0x9c, 0xd8], [0x48, 0xae, 0xe2], [0x2c, 0x88, 0xc8], [0x5c, 0xbc, 0xe8], [0x34, 0x94, 0xcc]];
+  const NAVY = [[0x14, 0x2c, 0x64], [0x1a, 0x34, 0x70], [0x10, 0x26, 0x5a]];
+  const MOSAIC_GROUT = [0xd6, 0xe6, 0xee];
+  const mosaic = (line) => (x, y) => {
+    if (x % 4 === 3 || y % 4 === 3) return MOSAIC_GROUT;
+    const column = Math.floor(x / 4);
+    const tile = column * 7 + Math.floor(y / 4) * 3;
+    const colours = line && (column === 1 || column === 2) ? NAVY : POOL_BLUES;
+    const colour = colours[tile % colours.length];
+    return x % 4 === 0 && y % 4 === 0 ? colour.map((v) => v + 40) : colour;
+  };
+  texture(blockOutput, "pool_mosaic", mosaic(false), 3);
+  texture(blockOutput, "pool_mosaic_line", mosaic(true), 3);
+  const STONE = [0xf2, 0xf1, 0xec];
+  const fleck = (x, y) => ((x * 37 + y * 91 + x * y * 7) % 23 === 0 ? [0xdc, 0xdb, 0xd4] : STONE);
+  const BAND = [0x18, 0x3c, 0x8c];
+  texture(blockOutput, "pool_coping", fleck, 2);
+  texture(blockOutput, "pool_coping_top", (x, y) => (y === 0 ? [0xfc, 0xfc, 0xf8] : y === 1 ? [0xe6, 0xe5, 0xe0] : fleck(x, y)), 2);
+  texture(blockOutput, "pool_coping_front", (x, y) => {
+    if (y === 0) return [0xfc, 0xfc, 0xf8];
+    if (y === 1) return STONE;
+    if (y === 2) return [0xd2, 0xd1, 0xcc];
+    if (y <= 5) return x % 4 === 3 ? [0x2c, 0x4c, 0x90] : BAND;
+    return mosaic(false)(x, y);
+  }, 2);
+  texture(blockOutput, "pool_steps_nosing", (x, y) => ((x + y) % 4 === 0 ? [0x24, 0x4a, 0x9c] : BAND), 2);
+}
 // The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
 // layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most
 // are white, a few warm yellow or pale blue, and two are bigger, with a cross of light round them. The stars keep
