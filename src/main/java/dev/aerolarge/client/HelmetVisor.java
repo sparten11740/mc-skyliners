@@ -5,16 +5,17 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.aerolarge.client.HudLayout.Box;
 import dev.aerolarge.client.HudLayout.Point;
 import dev.aerolarge.item.PilotHelmetItem;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -34,7 +35,9 @@ import org.lwjgl.opengl.GL11;
  * shown on it, in parts round the screen: drawn first into a picture of their own, the size of the window, then each
  * part laid over the view from it, bent onto the visor's curve ({@link VisorCurve}) as it lies at its place on the
  * screen, edged dark, so it reads against bright sky, and with a soft glow. That picture is drawn anew each frame, a
- * few hundred shapes and some text, and laid on in a handful of draws, so it costs next to nothing.
+ * few hundred shapes and some text, and laid on in a handful of draws, so it costs next to nothing; the mesh it is
+ * laid on through, of many small bent cells, is kept on the graphics card and only cut anew when the screen, the HUD's
+ * size or where its parts go changes.
  */
 public final class HelmetVisor {
     /** How far round each part of a HUD its picture is laid on, in GUI pixels, so that none of its edge is cut off. */
@@ -75,6 +78,14 @@ public final class HelmetVisor {
     /** The picture the HUD is drawn into before it is laid onto the visor; made when first needed. */
     @Nullable
     private static TextureTarget picture;
+    /** What the mesh the picture is laid on through was last cut from, and that mesh (see {@link #recut}). */
+    @Nullable
+    private static Cut cut;
+    private static float[] mesh = new float[0];
+    /** The mesh on the graphics card in the colours of the picture's dark edge, its glow and the picture itself. */
+    private static final Coat OUTLINE_COAT = new Coat();
+    private static final Coat GLOW_COAT = new Coat();
+    private static final Coat FACE_COAT = new Coat();
 
     private HelmetVisor() {
     }
@@ -90,6 +101,14 @@ public final class HelmetVisor {
      * reaches round its origin, in its units; and how it is drawn.
      */
     record Part(Point at, Box reach, Painter painter) {
+    }
+
+    /**
+     * What the mesh is cut from: the parts' areas on the screen, the curve they are bent onto, and the size of the
+     * picture in GUI pixels. They change only with the window's size, the GUI scale, the HUD's size or where its parts
+     * go (moved for the chat, the subtitles or a boss bar), so the mesh is kept from one frame to the next.
+     */
+    private record Cut(List<Box> areas, VisorCurve curve, float width, float height) {
     }
 
     /**
@@ -128,26 +147,42 @@ public final class HelmetVisor {
         }
         minecraft.getMainRenderTarget().bindWrite(true);
 
+        Cut current = recut(new Cut(List.of(areas), curve, window.getWidth() / guiScale, window.getHeight() / guiScale));
         Matrix4f matrix = graphics.pose().last().pose();
-        float[] mesh = mesh(areas, curve, window.getWidth() / guiScale, window.getHeight() / guiScale);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, target.getColorTextureId());
         RenderSystem.enableBlend();
         // The picture's colours are already weighted by their alpha, as drawn over a clear picture.
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.disableDepthTest();
+        OUTLINE_COAT.colour(current, 0, outline);
         float outlineOffset = OUTLINE_OFFSET / guiScale;
         for (float[] direction : OUTLINE_DIRECTIONS) {
-            lay(matrix, mesh, direction[0] * outlineOffset, direction[1] * outlineOffset, 0, outline);
+            OUTLINE_COAT.lay(matrix, direction[0] * outlineOffset, direction[1] * outlineOffset);
         }
+        GLOW_COAT.colour(current, 1, opacity * GLOW);
         float glowOffset = GLOW_OFFSET / guiScale;
         for (float[] direction : GLOW_DIRECTIONS) {
-            lay(matrix, mesh, direction[0] * glowOffset, direction[1] * glowOffset, 1, opacity * GLOW);
+            GLOW_COAT.lay(matrix, direction[0] * glowOffset, direction[1] * glowOffset);
         }
-        lay(matrix, mesh, 0, 0, 1, opacity);
+        FACE_COAT.colour(current, 1, opacity);
+        FACE_COAT.lay(matrix, 0, 0);
+        VertexBuffer.unbind();
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
+    }
+
+    /**
+     * Cuts the mesh from what is wanted, unless it already is: gives what the mesh is now cut from, the same one for as
+     * long as nothing it is cut from changes.
+     */
+    private static Cut recut(Cut wanted) {
+        if (!wanted.equals(cut)) {
+            mesh = mesh(wanted.areas(), wanted.curve(), wanted.width(), wanted.height());
+            cut = wanted;
+        }
+        return cut;
     }
 
     /** The picture to draw the HUD into, made or resized to the size wanted; its pixels blended as it is laid on. */
@@ -169,20 +204,21 @@ public final class HelmetVisor {
      * figures a corner. The picture is the size of the screen, given in GUI pixels, its bottom row its first, as OpenGL
      * keeps it.
      */
-    private static float[] mesh(Box[] areas, VisorCurve curve, float width, float height) {
-        int[] columns = new int[areas.length];
-        int[] rows = new int[areas.length];
+    private static float[] mesh(List<Box> areas, VisorCurve curve, float width, float height) {
+        int[] columns = new int[areas.size()];
+        int[] rows = new int[areas.size()];
         int cells = 0;
-        for (int i = 0; i < areas.length; i++) {
-            columns[i] = Math.max(1, Mth.ceil((areas[i].right() - areas[i].left()) / CELL));
-            rows[i] = Math.max(1, Mth.ceil((areas[i].bottom() - areas[i].top()) / CELL));
+        for (int i = 0; i < areas.size(); i++) {
+            Box area = areas.get(i);
+            columns[i] = Math.max(1, Mth.ceil((area.right() - area.left()) / CELL));
+            rows[i] = Math.max(1, Mth.ceil((area.bottom() - area.top()) / CELL));
             cells += columns[i] * rows[i];
         }
         float[] mesh = new float[cells * 16];
         float[] point = new float[2];
         int at = 0;
-        for (int i = 0; i < areas.length; i++) {
-            Box area = areas[i];
+        for (int i = 0; i < areas.size(); i++) {
+            Box area = areas.get(i);
             float cellWidth = (area.right() - area.left()) / columns[i];
             float cellHeight = (area.bottom() - area.top()) / rows[i];
             for (int row = 0; row < rows[i]; row++) {
@@ -210,18 +246,64 @@ public final class HelmetVisor {
     }
 
     /**
-     * Lays the picture over the view through the mesh, moved this far, this opaque: in its own colours at a light of 1,
-     * or only its shape in black at 0.
+     * The mesh held on the graphics card in the colour of one of the ways the picture is laid on: its dark edge, its
+     * glow or itself. It is made again only when the mesh is cut anew or the colour changes, as it does while the HUD
+     * fades in; the edge's and the glow's copies of the picture, laid on a little off each way, are this one moved.
+     * The colour goes with each corner of the mesh rather than being set over the whole draw, since the shader drops
+     * what comes out less than a tenth opaque from the picture times the corners' colour before it applies a colour set
+     * over the whole: a faint copy coloured that way would show parts of the picture its corners' colour leaves out.
      */
-    private static void lay(Matrix4f matrix, float[] mesh, float offsetX, float offsetY, float light, float opacity) {
-        // The picture's colours are weighted by its alpha, so they are scaled by the opacity as well as its alpha.
-        float shade = light * opacity;
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        for (int at = 0; at < mesh.length; at += 4) {
-            buffer.addVertex(matrix, mesh[at] + offsetX, mesh[at + 1] + offsetY, 0).setUv(mesh[at + 2], mesh[at + 3])
-                .setColor(shade, shade, shade, opacity);
+    private static final class Coat {
+        /** Where a copy is laid, moved as wanted: one matrix set anew for each copy rather than a new one each time. */
+        private static final Matrix4f MOVED = new Matrix4f();
+
+        @Nullable
+        private VertexBuffer buffer;
+        /** What the mesh was cut from and the colour it was made in, for as long as it has been made. */
+        @Nullable
+        private Cut cut;
+        private float light;
+        private float opacity;
+
+        /**
+         * Readies the mesh as cut in the colour of the picture laid on this opaque: in its own colours at a light of 1,
+         * or only its shape in black at 0.
+         */
+        void colour(Cut cut, float light, float opacity) {
+            if (buffer != null && cut == this.cut && light == this.light && opacity == this.opacity) {
+                return;
+            }
+            // The picture's colours are weighted by its alpha, so they are scaled by the opacity as well as its alpha.
+            float shade = light * opacity;
+            BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            for (int at = 0; at < mesh.length; at += 4) {
+                builder.addVertex(mesh[at], mesh[at + 1], 0).setUv(mesh[at + 2], mesh[at + 3]).setColor(shade, shade, shade, opacity);
+            }
+            if (buffer == null) {
+                buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            }
+            buffer.bind();
+            buffer.upload(builder.buildOrThrow());
+            this.cut = cut;
+            this.light = light;
+            this.opacity = opacity;
         }
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+
+        /** Lays the picture over the view through the mesh as readied, through the GUI's pose and moved this far. */
+        void lay(Matrix4f pose, float offsetX, float offsetY) {
+            VertexBuffer ready = Objects.requireNonNull(buffer);
+            ready.bind();
+            MOVED.set(RenderSystem.getModelViewMatrix()).mul(pose).translate(offsetX, offsetY, 0);
+            ready.drawWithShader(MOVED, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+        }
+
+        void close() {
+            if (buffer != null) {
+                buffer.close();
+                buffer = null;
+            }
+            cut = null;
+        }
     }
 
     /** Draws the visor over the view while a pilot helmet is worn and the player looks out through their own eyes. */
@@ -258,11 +340,16 @@ public final class HelmetVisor {
         shade.addVertex(matrix, x * width, y * height, 0).setColor(Math.round(alpha * 255) << 24 | TINT);
     }
 
-    /** Lets go of the HUD's picture on leaving a world. */
+    /** Lets go of the HUD's picture and its mesh on leaving a world. */
     public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         if (picture != null) {
             picture.destroyBuffers();
             picture = null;
         }
+        OUTLINE_COAT.close();
+        GLOW_COAT.close();
+        FACE_COAT.close();
+        cut = null;
+        mesh = new float[0];
     }
 }
