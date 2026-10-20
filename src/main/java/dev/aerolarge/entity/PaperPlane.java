@@ -177,8 +177,10 @@ public class PaperPlane extends Entity {
 
     /**
      * Down: it lies where it came down as a paper plane to pick up. Sable keeps no dropped item among an airliner's
-     * blocks, so one come down in the cabin is put out into the world where it lies, moving along with the cabin.
-     * Thrown aboard an airliner in flight and come down outside it far enough away, it is Air Mail for whoever threw it.
+     * blocks, so one come down in the cabin is put out into the world where it lies, moving along with the cabin; before
+     * it is added, as Sable puts out what is added among them itself, without the airliner's speed, and in flight it
+     * would stop dead in the air. Thrown aboard an airliner in flight and come down outside it far enough away, it is Air
+     * Mail for whoever threw it.
      */
     private void land() {
         if (isRemoved()) {
@@ -188,11 +190,10 @@ public class PaperPlane extends Entity {
         if (thrownInFlight && outside && Math.hypot(getX() - origin.x, getZ() - origin.z) >= AIR_MAIL && thrower() instanceof ServerPlayer player) {
             FirstFlight.AIR_MAIL.award(player);
         }
-        ItemEntity dropped = spawnAtLocation(getItem());
-        if (dropped != null) {
-            dropped.setDeltaMovement(Vec3.ZERO);
-            SableFlight.sendOut(dropped);
-        }
+        ItemEntity dropped = new ItemEntity(level(), getX(), getY(), getZ(), getItem(), 0, 0, 0);
+        dropped.setDefaultPickUpDelay();
+        SableFlight.sendOut(dropped);
+        level().addFreshEntity(dropped);
         discard();
     }
 
