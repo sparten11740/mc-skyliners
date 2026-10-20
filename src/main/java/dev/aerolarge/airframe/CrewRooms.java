@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinLightBlock;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
@@ -22,7 +23,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * Each is walled off from the aisle and the cabin with the hull's own panels, up to the crown, under a ceiling of
  * them at a room's height for a player with a cabin light set into it, kept on at night as a lavatory's is, and has a
  * door onto the aisle at its back.
- * The WC has a toilet and a basin with its tap; the crew room a couch of seats along the hull and a small galley
+ * The WC has a toilet and a basin with its tap; the crew room a row of seats along the hull and a small galley
  * counter: an oven, and a cupboard with a coffee machine on it. Walls and furniture only go into open space.
  */
 final class CrewRooms {
@@ -145,15 +146,15 @@ final class CrewRooms {
     }
 
     /**
-     * The crew room: a couch of seats along the hull, at {@code couch} out from the middle so a sitter's head is
-     * clear of its curve, and the galley counter across the room's back beside it, reaching in from the hull at
-     * {@code counter}: the oven against the hull, its door facing into the room, and inboard of it the cupboard with
-     * the coffee machine on top, also facing into the room, both clear of the door.
+     * The crew room: a row of seats along the hull facing into the room, the crew's rest, at {@code couch} out from the
+     * middle so a sitter's head is clear of its curve, and the galley counter across the room's back beside it,
+     * reaching in from the hull at {@code counter}: the oven against the hull, its door facing into the room, and
+     * inboard of it the cupboard with the coffee machine on top, also facing into the room, both clear of the door.
      */
     private void crewRoom(int side, int inner, int couch, int counter) {
-        BlockState seat = AirframePalette.seat(DyeColor.LIGHT_GRAY).orElse(Blocks.LIGHT_GRAY_WOOL.defaultBlockState());
+        BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.LIGHT_GRAY, side > 0 ? Direction.WEST : Direction.EAST);
         for (int z = front; couch >= inner && z < back - 1; z++) {
-            layout.furnish(side * couch, deck + 1, z, seat);
+            layout.seat(side * couch, deck + 1, z, seat);
         }
         if (counter > inner) {
             layout.furnish(side * counter, deck + 1, back - 1,

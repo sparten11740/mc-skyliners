@@ -18,6 +18,7 @@ import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.CabinRailBlock;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CabinWindowShellBlock;
@@ -624,6 +625,20 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> CABIN_LANDING_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LANDING);
     public static final DeferredItem<BlockItem> CABIN_RAIL_ITEM = ITEMS.registerSimpleBlockItem(CABIN_RAIL);
     /**
+     * The passengers' seats, economy and business: two blocks tall like the pilots', one of Create's seats underneath,
+     * upholstered in any dye's colour, and as soft to sit on as they sound. Nothing spawns on them.
+     */
+    public static final DeferredBlock<CabinSeatBlock> ECONOMY_SEAT = BLOCKS.registerBlock(
+        "economy_seat", properties -> new CabinSeatBlock(properties, CabinSeatBlock.Cut.ECONOMY),
+        metal(MapColor.COLOR_BLUE).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredBlock<CabinSeatBlock> BUSINESS_SEAT = BLOCKS.registerBlock(
+        "business_seat", properties -> new CabinSeatBlock(properties, CabinSeatBlock.Cut.BUSINESS),
+        metal(MapColor.SNOW).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> ECONOMY_SEAT_ITEM = ITEMS.registerSimpleBlockItem(ECONOMY_SEAT);
+    public static final DeferredItem<BlockItem> BUSINESS_SEAT_ITEM = ITEMS.registerSimpleBlockItem(BUSINESS_SEAT);
+    /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
      * away. Only a falling chunk leaves a lump, so it has no item and gives nothing back; nothing bumps into it, so it
@@ -928,7 +943,8 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM,

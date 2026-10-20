@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -13,7 +14,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -61,7 +61,7 @@ final class UpperDeck {
     private static final int WALL_SNAP = 2;
     /** Where the aft staircase's top step is, in metres from the nose: a metre short of the gym hall's back end. */
     private static final double AFT_STAIRS_TOP = CabinFitOut.GYM[1] - 1.0;
-    /** How far apart the upper deck's rows are, seat to seat, in blocks: a seat, its back and legroom in front. */
+    /** How far apart the upper deck's rows are, seat to seat, in blocks: a seat and two blocks of legroom in front. */
     private static final int PITCH = 3;
     /** How many seats stand side by side either side of the aisle, a metre and a half's worth. */
     private static final double SEATS_ACROSS = 1.5;
@@ -441,15 +441,13 @@ final class UpperDeck {
     }
 
     /**
-     * Rows of seats over business class, facing forward, either side of a three-wide aisle, each with a back as high as
-     * a seated passenger's head behind it; clear of the walls, where a walkway runs along the windows, and of either
-     * end, where a cross aisle runs between the galleries' doorways. Then a screen on the back of each seat that has
-     * another right behind it, facing it.
+     * Rows of economy seats over business class, facing forward, either side of a three-wide aisle, each with its back
+     * as high as a seated passenger's head; clear of the walls, where a walkway runs along the windows, and of either
+     * end, where a cross aisle runs between the galleries' doorways, with legroom in front of each. Then a screen on
+     * the back of each seat that has another right behind it, facing it.
      */
     private void rows() {
-        BlockState seat = AirframePalette.seat(DyeColor.LIGHT_BLUE)
-            .orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
-        BlockState back = Blocks.LIGHT_BLUE_WOOL.defaultBlockState();
+        BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.LIGHT_BLUE, Direction.NORTH);
         int across = Math.max(1, (int) Math.round(SEATS_ACROSS * layout.scale()));
         TreeMap<Integer, Set<Integer>> rows = new TreeMap<>();
         // A cross aisle at either end, onto the galleries' doorways through the bulkheads.
@@ -458,14 +456,13 @@ final class UpperDeck {
             for (int x = 2; x < 2 + across && x < outer; x++) {
                 for (int side : new int[]{1, -1}) {
                     int at = side * x;
-                    if (!layout.isCabinFloor(at, deck, z) || !layout.isCabinFloor(at, deck, z + 1)
-                        || !layout.isOpen(at, deck + 1, z) || !layout.isOpen(at, deck + 1, z + 1) || !layout.isOpen(at, deck + EYES, z + 1)) {
+                    // On the floor, with its legroom behind it open for the screen on its back.
+                    if (!layout.isCabinFloor(at, deck, z) || !layout.isCabinFloor(at, deck, z + 1) || !layout.isOpen(at, deck + 1, z + 1)) {
                         continue;
                     }
-                    layout.set(at, deck + 1, z, seat);
-                    layout.set(at, deck + 1, z + 1, back);
-                    layout.set(at, deck + EYES, z + 1, back);
-                    rows.computeIfAbsent(z, ignored -> new TreeSet<>()).add(at);
+                    if (layout.seat(at, deck + 1, z, seat)) {
+                        rows.computeIfAbsent(z, ignored -> new TreeSet<>()).add(at);
+                    }
                 }
             }
         }
@@ -474,7 +471,7 @@ final class UpperDeck {
             Set<Integer> behind = rows.get(z + PITCH);
             for (int x : seats) {
                 if (behind != null && behind.contains(x)) {
-                    layout.furnish(x, deck + EYES, z + 2, screen);
+                    layout.furnish(x, deck + EYES, z + 1, screen);
                 }
             }
         });

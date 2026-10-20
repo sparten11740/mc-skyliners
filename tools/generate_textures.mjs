@@ -1006,6 +1006,41 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "cabin_rail_glass", (x) => (x === 3 || x === 4 || x === 11 ? [0xe8, 0xf6, 0xfa, 0x5c] : [0xd2, 0xea, 0xf0, 0x42]), 0);
 }
 
+// The passengers' seats (see CabinSeatBlock). The upholstery is drawn in greys, light, and tinted on the client to
+// the seat's colour: economy's a woven moquette, a fine check with a darker diagonal twill through it; business's
+// leather, padded in channels between two seams with a row of stitches beside each. The headrest's cover: white linen
+// with the livery's blue band along its top. Economy's shell is graphite plastic, its edges catching the light; on its
+// back the tray table folded up, light grey with a rim round it and its latch at the top, over the seat pocket, dark
+// fabric under an elastic band with the safety card's corner showing; its legs brushed aluminium. Business's shell is
+// warm white, a faint line round each panel, and its armrest consoles dark walnut veneer, the grain along them.
+{
+  const grey = (v) => [v, v, v];
+  texture(blockOutput, "cabin_seat_fabric", (x, y) => grey(((x + y) % 2 === 0 ? 0xe6 : 0xd8) - ((x - y + 16) % 5 === 0 ? 0x18 : 0)), 3);
+  texture(blockOutput, "cabin_seat_leather", (x, y) => {
+    if (x === 4 || x === 11) return grey(0xa6);
+    if ((x === 3 || x === 12) && y % 2 === 0) return grey(0xf4);
+    return grey(y % 5 === 4 ? 0xcc : 0xe2);
+  }, 2);
+  texture(blockOutput, "cabin_seat_cover", (x, y) => (y === 1 || y === 2 ? BLUE : y === 3 ? [0xd8, 0xdd, 0xe6] : [0xf6, 0xf6, 0xf2]), 2);
+  texture(blockOutput, "economy_seat_shell", (x, y) => (x === 0 || y === 0 ? [0x5e, 0x63, 0x6b] : [0x46, 0x4a, 0x51]), 2);
+  texture(blockOutput, "economy_seat_tray", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0x76, 0x7c, 0x84];
+    if (y === 1 && x >= 6 && x <= 9) return [0x30, 0x33, 0x38];
+    return x === 1 || y === 1 ? [0xb2, 0xb8, 0xbf] : [0x9c, 0xa2, 0xaa];
+  }, 2);
+  texture(blockOutput, "economy_seat_pocket", (x, y) => {
+    if (y <= 1) return [0x1c, 0x1e, 0x22];
+    if (y <= 4 && x >= 10 && x <= 13) return y === 2 ? [0xf2, 0xc4, 0x3a] : [0xf0, 0xf0, 0xea];
+    return (x + y) % 3 === 0 ? [0x36, 0x3a, 0x40] : [0x2c, 0x2f, 0x35];
+  }, 2);
+  texture(blockOutput, "cabin_seat_frame", (x, y) => (y % 4 === 0 ? [0xc6, 0xcc, 0xd2] : (x + 3 * y) % 7 === 0 ? [0x8a, 0x91, 0x98] : [0xa4, 0xab, 0xb2]), 2);
+  texture(blockOutput, "business_seat_shell", (x, y) => (x === 0 || y === 15 ? [0xd6, 0xd3, 0xcc] : [0xec, 0xea, 0xe4]), 2);
+  texture(blockOutput, "business_seat_veneer", (x, y) => {
+    const grain = Math.round(6 * Math.sin(y * 1.7 + Math.sin(x * 0.4) * 1.5));
+    return [0x5c + grain, 0x3e + grain, 0x2a + grain];
+  }, 2);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {

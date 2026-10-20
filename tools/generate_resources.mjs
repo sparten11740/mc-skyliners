@@ -1983,6 +1983,154 @@ function cabinStairsLang() {
   };
 }
 
+// The passengers' seats (see CabinSeatBlock): their models here, their recipes and names in the functions after them,
+// which the shared lists further down take in. Each is drawn facing north, the sitter's back to the south, in two
+// halves, the upholstery tinted to the seat's colour (tintindex 0) and the rest in its own colours; the back's shell
+// is flush with the south side of the block, where a passenger screen goes on the upper half. The economy seat: the
+// cushion on a pair of aluminium legs on floor rails with a cross tube and the life vest's pouch under it, slim
+// graphite armrests along the block's sides on a post at their front, so a row of seats shares them, and the back's
+// shell with the tray table folded up over the seat pocket on it; over that the top of the back and the headrest,
+// under its white cover. The business seat: the cushion on a pedestal, its leg rest folded down at its front, in a
+// white shell that wraps its sides up to wide walnut armrest consoles and rises behind the back up over a padded,
+// winged headrest under its cover. In the hand both halves together, smaller. Only the lower half drops the seat, in
+// its colour.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  // A box, every face showing the texture over the part of it the box covers, tinted if upholstered; a face given its
+  // own texture in faces, or left out where faces gives it null.
+  const part = (from, to, texture, tinted = false, faces = {}) => ({
+    from, to,
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].filter((side) => faces[side] !== null).map((side) => [side, {
+      texture: faces[side] ?? texture, ...(tinted && !faces[side] ? { tintindex: 0 } : {}),
+    }])),
+  });
+  const seats = {
+    economy_seat: {
+      textures: {
+        fabric: block("cabin_seat_fabric"), cover: block("cabin_seat_cover"), shell: block("economy_seat_shell"), tray: block("economy_seat_tray"),
+        pocket: block("economy_seat_pocket"), frame: block("cabin_seat_frame"), particle: block("economy_seat_shell"),
+      },
+      lower: [
+        part([2, 0, 1.5], [3.5, 1, 14.5], "#frame"),
+        part([12.5, 0, 1.5], [14, 1, 14.5], "#frame"),
+        part([2, 1, 3], [3.5, 4.5, 4.5], "#frame"),
+        part([12.5, 1, 3], [14, 4.5, 4.5], "#frame"),
+        part([2, 1, 11], [3.5, 4.5, 12.5], "#frame"),
+        part([12.5, 1, 11], [14, 4.5, 12.5], "#frame"),
+        part([3.5, 3, 6.5], [12.5, 4, 7.5], "#frame"),
+        part([5, 2, 8], [11, 4, 11], "#pocket"),
+        part([1.5, 4.5, 1.5], [14.5, 5.5, 13.5], "#shell"),
+        part([1.5, 5.5, 1], [14.5, 8, 11.5], "#fabric", true),
+        part([1.5, 5.5, 11], [14.5, 16, 13.5], "#fabric", true),
+        part([1, 4.5, 13.5], [15, 16, 15.5], "#shell"),
+        part([2.5, 9.5, 15.5], [13.5, 15.5, 16], "#shell", false, { south: "#tray" }),
+        part([2.5, 5, 15.5], [13.5, 9, 16], "#shell", false, { south: "#pocket" }),
+        part([0, 10, 2], [1.75, 11.5, 13.5], "#shell"),
+        part([14.25, 10, 2], [16, 11.5, 13.5], "#shell"),
+        part([0.25, 4.5, 2.5], [1.5, 10, 3.75], "#frame"),
+        part([14.5, 4.5, 2.5], [15.75, 10, 3.75], "#frame"),
+      ],
+      upper: [
+        part([1.5, 0, 11], [14.5, 9, 13.5], "#fabric", true, { down: null }),
+        part([1, 0, 13.5], [15, 10, 16], "#shell", false, { down: null }),
+        part([2.5, 9, 11.5], [13.5, 14.5, 14], "#fabric", true),
+        part([2, 10, 14], [14, 15, 16], "#shell"),
+        part([3.5, 10, 11.25], [12.5, 14, 11.5], "#cover"),
+      ],
+    },
+    business_seat: {
+      textures: {
+        leather: block("cabin_seat_leather"), cover: block("cabin_seat_cover"), shell: block("business_seat_shell"),
+        veneer: block("business_seat_veneer"), frame: block("cabin_seat_frame"), particle: block("business_seat_shell"),
+      },
+      lower: [
+        part([4, 0, 3], [12, 1, 13], "#frame"),
+        part([6, 1, 6], [10, 3, 10], "#frame"),
+        part([2, 3, 2], [14, 4, 12], "#shell"),
+        part([2, 4, 1.5], [14, 8, 11], "#leather", true),
+        part([3, 1, 1], [13, 4, 2], "#leather", true),
+        part([2, 4, 10.5], [14, 16, 13.5], "#leather", true),
+        part([1, 1, 13.5], [15, 16, 16], "#shell"),
+        part([0, 1, 1.5], [2, 10.5, 16], "#shell"),
+        part([14, 1, 1.5], [16, 10.5, 16], "#shell"),
+        part([0, 10.5, 1.5], [2.5, 11.5, 13.5], "#veneer"),
+        part([13.5, 10.5, 1.5], [16, 11.5, 13.5], "#veneer"),
+      ],
+      upper: [
+        part([2, 0, 10.5], [14, 9, 13.5], "#leather", true, { down: null }),
+        part([1, 0, 13.5], [15, 15.5, 16], "#shell", false, { down: null }),
+        part([1, 0, 12], [2, 13, 13.5], "#shell", false, { down: null }),
+        part([14, 0, 12], [15, 13, 13.5], "#shell", false, { down: null }),
+        part([3, 9, 11], [13, 14.5, 13.5], "#leather", true),
+        part([2, 9.5, 10.5], [3.5, 14, 12], "#leather", true),
+        part([12.5, 9.5, 10.5], [14, 14, 12], "#leather", true),
+        part([4, 10, 10.75], [12, 14, 11], "#cover"),
+      ],
+    },
+  };
+  for (const [name, { textures, lower, upper }] of Object.entries(seats)) {
+    for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
+      write(`assets/${ID}/models/block/${name}_${half}.json`, { parent: "minecraft:block/block", textures, elements });
+    }
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].map((half) =>
+        [`facing=${facing},half=${half}`, { model: `${ID}:block/${name}_${half}`, ...(y ? { y } : {}) }]))),
+    });
+    const raised = upper.map((element) => ({ ...element, from: [element.from[0], element.from[1] + 16, element.from[2]], to: [element.to[0], element.to[1] + 16, element.to[2]] }));
+    write(`assets/${ID}/models/item/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures,
+      elements: [...lower, ...raised],
+      display: {
+        gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
+        ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
+        fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
+        thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
+        firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+        firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+      },
+    });
+    const seat = `${ID}:${name}`;
+    const own = name === "economy_seat" ? "blue" : "gray";
+    write(`data/${ID}/loot_table/blocks/${name}.json`, {
+      type: "minecraft:block",
+      pools: [{
+        rolls: 1.0,
+        bonus_rolls: 0.0,
+        entries: [{
+          type: "minecraft:item",
+          name: seat,
+          functions: [{
+            function: "minecraft:copy_state", block: seat, properties: ["color"],
+            conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: seat, properties: { color: own } } }],
+          }],
+        }],
+        conditions: [
+          { condition: "minecraft:block_state_property", block: seat, properties: { half: "lower" } },
+          { condition: "minecraft:survives_explosion" },
+        ],
+      }],
+      random_sequence: `${ID}:blocks/${name}`,
+    });
+    cubes[name] = null;
+  }
+}
+// The seats are fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function cabinSeatFittings() {
+  return ["economy_seat", "business_seat"];
+}
+// Wool padding on an iron frame, as the pilot seat is: economy's in blue, business's in grey in a white concrete shell.
+function cabinSeatRecipes() {
+  shaped("economy_seat", ["W  ", "WWW", "I I"], { W: "minecraft:blue_wool", I: "minecraft:iron_ingot" }, 1);
+  shaped("business_seat", ["W  ", "WWW", "CIC"], { W: "minecraft:gray_wool", C: "minecraft:white_concrete", I: "minecraft:iron_ingot" }, 1);
+}
+function cabinSeatLang() {
+  return {
+    "block.aerolarge.economy_seat": "Economy Seat",
+    "block.aerolarge.business_seat": "Business Seat",
+  };
+}
+
 // The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
 // with its back against the south side of its block, as deep as the tail camera display's upright one (see
 // AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
@@ -2439,6 +2587,7 @@ FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
 FITTINGS.push(...cabinStairsFittings());
 FITTINGS.push(...crewLockerFittings());
+FITTINGS.push(...cabinSeatFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2544,6 +2693,7 @@ coffeeMachineRecipes();
 cabinStairsRecipes();
 crewLockerRecipes();
 slideRecipes();
+cabinSeatRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2883,6 +3033,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...coffeeMachineLang(),
   ...cabinStairsLang(),
   ...crewLockerLang(),
+  ...cabinSeatLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

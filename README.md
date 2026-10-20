@@ -20,19 +20,19 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
 
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
-  class just behind the forward doors (rows of big seats, two side by side left and right of the aisle, each with a
-  high back and wooden consoles beside it, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
+  class just behind the forward doors (rows of business seats, two side by side left and right of the aisle, with
+  wooden consoles beside them, on a blue carpet), an indoor moon pool sunk into the hold, its bottom and
   the belly under it glass, so swimmers look straight down through the airliner at the ground or the clouds below,
   with a diving tower on its front rim (a ladder up to a small platform three metres up, glass rails round it, and
   a springboard sticking out from it over the water), a
-  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, a row of seats, roof trusses
-  with gymnastic rings and the teams' banners, and a lounge
+  full-height gym hall (Turnhalle) with a court, hoops, wall bars, climbing ropes, seats between the windows, roof
+  trusses with gymnastic rings and the teams' banners, and a lounge
   with a bar and seats in the tail and a duty-free kiosk at its front (see below), under a starlit ceiling (navy
   Starlight Panels whose stars gently twinkle, LED strips along its edges), all lit by pendant lights, and behind
   the bar a secret door into a den in the tail; the hold under the cabin is stowed with luggage (both below). Plants
   line the walls: potted flowers on the bar's back shelf, spore blossoms drifting their spores down from the starlit
   ceiling over the bar and from under the diving tower's platform over the pool's rim, potted azaleas in moss along
-  the pool's sides and potted bamboo by the doors. The seats are Create's, so they can be sat in.
+  the pool's sides and potted bamboo by the doors. The seats are cabin seats (see Cabin seats), to sit in.
   Passenger screens (see below) hang on the cabin walls between the windows, one in every fourth gap, and wherever
   seats stand in rows across the cabin, they hang on the back of each row, facing the one behind. Cream bulkheads wall
   the rooms off from the doors' aisles, each with a curtained white archway and a picture over it of what lies
@@ -68,7 +68,7 @@ off with `cloudlessCabin` in the client config.
 
 Steps at the front of the main deck lead up to a raised floor in the nose. From the top of the steps a short aisle
 runs forward to the cockpit door, between the WC to port (a toilet and a basin with its tap) and the crew room to
-starboard (a couch of seats and a galley counter with an oven, a cupboard and a coffee machine); every door opens by
+starboard (a row of crew seats and a galley counter with an oven, a cupboard and a coffee machine); every door opens by
 hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look
 straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right
 across the front from the panel up over the crown, running back into side windows past the pilots' shoulders, framed
@@ -158,8 +158,8 @@ and its diving tower, the gym hall and the doors' aisles, whose bulkheads carry 
 is a gallery along each wall, railed round an open well to look down into the rooms through, with doorways through
 the bulkheads; the gym hall's rings and climbing ropes and the pendant lights by the walls hang from the galleries
 where they run over them. Over business class it is a whole floor between business class's bulkheads, on a grey
-carpet: rows of seats facing forward (three side by side either side of the aisle at the default scale, more at the
-larger ones), each with a high back and a passenger screen on it for the seat behind, a cross aisle at either end
+carpet: rows of economy seats facing forward (three side by side either side of the aisle at the default scale, more
+at the larger ones), each with a passenger screen on its back for the seat behind, a cross aisle at either end
 onto the galleries and a walkway along the windows; business class's pendant lights hang from its underside. Where
 the floor behind the flight deck is deep enough for the forward staircase (from scale 3), it is whole too, with the
 upper deck's own galley and a cupboard against the starboard wall across from the stairs' top. An exit sign glows
@@ -393,6 +393,20 @@ solid: jump onto its back or its head and it bounces you straight back up with a
 the airliner is built again: like a hidden duck it stays put when hit, and only comes apart for a player who sneaks,
 breaking any part of it taking the whole duck away. A second player finding all five makes it squeak again.
 
+### Cabin seats
+
+The cabin is seated in airliner seats, in two cuts. An Economy Seat is slim: a cushion on a pair of aluminium legs on
+floor rails, the life vest's pouch under it, a slim armrest along either side (a row of them shares its armrests) and
+a high back with a headrest under a white cover, its graphite shell carrying a tray table folded up over a seat pocket
+for whoever sits behind. A Business Seat is roomier: a leather cushion on a pedestal with its leg rest folded down at
+the front, in a white shell that wraps its sides up to wide walnut armrest consoles and rises behind the back over a
+winged headrest. Each is two blocks tall, put down facing the way you face, and using either half sits you down in it:
+underneath it is one of Create's seats, so the seatbelts, the outside cameras and villager passengers treat it as one.
+Its upholstery takes any dye's colour: use a dye on it to recolour it, and taken up it keeps its colour. A passenger
+screen put against the back of a seat's upper half sits on the seat's back. Both can be crafted. In the furnished
+airliner business class and the lounge's armchairs are business seats (grey and red), and the upper deck's rows, the
+gym hall's seats between its windows and the crew room's seats economy seats (light blue, blue and light grey).
+
 ### Passenger screens
 
 A Passenger Screen (craftable) is a slim seat-back screen for the cabin. Put against the back of a seat or a wall it
@@ -413,12 +427,12 @@ an airliner without one has none.
 
 Off by default: turn on Villager Passengers (`villagerPassengers`) in the server settings (see Settings). A Check-in
 Desk at the terminal then prints a Boarding Pass for whoever uses it. Hand the pass to a villager and it makes for
-the nearest free Create seat inside an airliner within about 24 blocks (never a pilot's seat), up the airstairs or
-through the jet bridge and the doors (which open for it, see Doors), and sits down; unseated aboard, as it is when the
-airliner is assembled around it, it sits straight back down. Fly it at least 200 blocks: once the airliner stands
-still with the seatbelt signs off it gets up and pays its fare, an emerald for every 200 blocks flown, up to 32, to
-whoever handed it the pass (or, with them gone from that world, dropped by its seat). A villager that finds no seat
-within three minutes gives the pass back. The fares are spent at a duty-free counter.
+the nearest free seat inside an airliner (a cabin seat, or one of Create's) within about 24 blocks (never a pilot's
+seat), up the airstairs or through the jet bridge and the doors (which open for it, see Doors), and sits down;
+unseated aboard, as it is when the airliner is assembled around it, it sits straight back down. Fly it at least 200
+blocks: once the airliner stands still with the seatbelt signs off it gets up and pays its fare, an emerald for every
+200 blocks flown, up to 32, to whoever handed it the pass (or, with them gone from that world, dropped by its seat).
+A villager that finds no seat within three minutes gives the pass back. The fares are spent at a duty-free counter.
 
 ### Duty free
 

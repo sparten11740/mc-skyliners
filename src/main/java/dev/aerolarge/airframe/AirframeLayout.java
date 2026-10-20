@@ -15,6 +15,7 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
@@ -352,6 +353,25 @@ public final class AirframeLayout {
         if (isOpen(x, y, z)) {
             set(x, y, z, state);
         }
+    }
+
+    /**
+     * Puts a cabin seat into the cabin, the seat (the lower half given) at the spot and the top of its back over it;
+     * only where both are open, and where the top of the back would not stand against a window and cover it. Whether
+     * it went in.
+     */
+    boolean seat(int x, int y, int z, BlockState seat) {
+        if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
+            return false;
+        }
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (CabinWindowBlock.isPane(stateAt(x + side.getStepX(), y + 1, z + side.getStepZ()))) {
+                return false;
+            }
+        }
+        set(x, y, z, seat);
+        set(x, y + 1, z, seat.setValue(CabinSeatBlock.HALF, DoubleBlockHalf.UPPER));
+        return true;
     }
 
     /** Swaps a stretch of cabin floor (and only cabin floor) for another surface: tiles, parquet, water. */

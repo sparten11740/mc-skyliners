@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.GalleyBlock;
@@ -31,9 +32,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
  * lies flush with the floor; a full-height gym hall (Turnhalle) over the wing box; and a lounge with a bar in the
  * tail, all lit by pendant lights, with the kids' den behind it (see {@link TailDen}); and passenger screens on the
  * seat backs and the walls. Everything is vanilla blocks but the lights, the pool's glass, the screens, the den's
- * secret door and ball pit, and the seats, which are Create's so they can be sat in. It only ever
- * goes into open cabin space or replaces cabin floor, so the doors and the space in front of them stay as they were,
- * and so does the hull, but for the belly under the pool, which is glazed.
+ * secret door and ball pit, and the seats, cabin seats that are Create's underneath so they can be sat in. It only
+ * ever goes into open cabin space or replaces cabin floor, so the doors and the space in front of them stay as they
+ * were, and so does the hull, but for the belly under the pool, which is glazed.
  */
 final class CabinFitOut {
     /** Where each room starts and ends, in metres from the nose; {@link CabinDividers} walls them off. */
@@ -104,10 +105,12 @@ final class CabinFitOut {
         return (int) Math.floor(zone[1] * layout.scale());
     }
 
-    /** Puts a seat on the main deck floor, where there is room for it, and remembers it for the passenger screens. */
+    /**
+     * Puts a cabin seat on the main deck floor, where there is room for it and the top of its back, and remembers it
+     * for the passenger screens.
+     */
     private void seat(int x, int z, BlockState seat) {
-        if (layout.isOpen(x, floor + 1, z)) {
-            layout.set(x, floor + 1, z, seat);
+        if (layout.seat(x, floor + 1, z, seat)) {
             seats.add(new BlockPos(x, floor + 1, z));
         }
     }
@@ -122,10 +125,10 @@ final class CabinFitOut {
     }
 
     /**
-     * The business class: rows of big seats facing forward, as many as fit side by side either side of the aisle up
-     * to two, each a Create seat with an upholstered back behind it and a wooden console at armrest height either
-     * side, shared between neighbours; a blue carpet throughout, and pendant lights over the aisle hung high enough
-     * to clear the overhead lockers and the light strips along the walls.
+     * The business class: rows of business seats facing forward, as many as fit side by side either side of the aisle
+     * up to two, each with a wooden console at armrest height either side, shared between neighbours; a blue carpet
+     * throughout, and pendant lights over the aisle hung high enough to clear the overhead lockers and the light strips
+     * along the walls.
      */
     private void businessClass(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -133,18 +136,15 @@ final class CabinFitOut {
         if (width < 3 || toZ - fromZ + 1 < pitch) {
             return;
         }
-        BlockState seat = AirframePalette.seat(DyeColor.GRAY).orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
-        BlockState back = Blocks.GRAY_WOOL.defaultBlockState();
+        BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), DyeColor.GRAY, Direction.NORTH);
         BlockState console = Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
-        // Each row is legroom, then the seats, then their backs; the first row's legroom is toward the door aisle.
+        // Each row is legroom, then the seats, their backs as high as a seated passenger's head, with the screen for
+        // the row behind set onto them; the first row's legroom is toward the door aisle.
         for (int z = fromZ + pitch - 2; z + 1 <= toZ; z += pitch) {
             for (int side : new int[]{1, -1}) {
                 // From the wall in: a console, a seat, a console and so on, leaving the aisle down the middle clear.
                 for (int k = 0, x = width - 1; k < BUSINESS_SEATS && x - 1 >= 1; k++, x -= 2) {
                     seat(side * x, z, seat);
-                    // The high back reaches a seated passenger's head, and the screen for the row behind is set into it.
-                    layout.furnish(side * x, floor + 1, z + 1, back);
-                    layout.furnish(side * x, floor + EYES, z + 1, back);
                     layout.furnish(side * (x + 1), floor + 1, z, console);
                     layout.furnish(side * (x - 1), floor + 1, z, console);
                 }
@@ -253,7 +253,7 @@ final class CabinFitOut {
     /**
      * The gym hall (Turnhalle): the cabin's whole height over a birch parquet court with white lines, a basketball
      * hoop at each end with its scoreboard above and a rack of balls in the corner by it, wall bars and mats along the
-     * port wall, climbing ropes and a row of seats along starboard.
+     * port wall, climbing ropes and seats along starboard facing the court, between its windows.
      */
     private void gym(int fromZ, int toZ) {
         int width = narrowest(fromZ, toZ);
@@ -302,7 +302,7 @@ final class CabinFitOut {
             }
         }
 
-        BlockState bench = AirframePalette.seat(DyeColor.BLUE).orElse(Blocks.SPRUCE_SLAB.defaultBlockState());
+        BlockState bench = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.BLUE, Direction.WEST);
         for (int z = fromZ + 3; z <= toZ - 3; z++) {
             if (Math.abs(z - middle) > 4) {
                 seat(width, z, bench);
@@ -335,14 +335,14 @@ final class CabinFitOut {
     /**
      * The lounge: carpet throughout, a dark oak bar along the starboard wall with barrels behind and stools in front,
      * the galley that stocks the cabin crew's trolley at its head and a coffee machine on the bar just behind it, a row
-     * of red seats and low tables along the port wall, and a plant in the other corner.
+     * of red armchairs (business seats) and low tables along the port wall, and a plant in the other corner.
      */
     private void lounge(int fromZ, int toZ) {
         if (toZ - fromZ < 4) {
             return;
         }
         int frontWidth = layout.openHalfWidth(floor + 1, fromZ);
-        BlockState sofa = AirframePalette.seat(DyeColor.RED).orElse(Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
+        BlockState armchair = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), DyeColor.RED, Direction.EAST);
         BlockState coffee = AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, Direction.WEST);
         // The tail cone narrows through the lounge, so it is fitted station by station, following the walls in.
         for (int z = fromZ; z <= toZ; z++) {
@@ -360,7 +360,7 @@ final class CabinFitOut {
                 if (z - fromZ == BAR_COFFEE) {
                     layout.furnish(width - 1, floor + 2, z, coffee);
                 }
-                seat(-width, z, sofa);
+                seat(-width, z, armchair);
                 if (Math.floorMod(z - fromZ, 4) == 1 || Math.floorMod(z - fromZ, 4) == 2) {
                     layout.furnish(-width + 2, floor + 1, z, Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
                 }
@@ -383,7 +383,7 @@ final class CabinFitOut {
      * Where there are rows of seats, one on the back of each seat that has another right behind it in the next row,
      * facing that passenger. Along the walls away from the rows, one between a pair of main deck windows every
      * {@link #WALL_SPACING} stations at seated eye height, facing into the cabin: never over a window, never by a
-     * door, which has no windows beside it, and never right over a seat along the wall (a gym bench, a lounge sofa),
+     * door, which has no windows beside it, and never right over a seat along the wall (in the gym hall, the lounge),
      * where it would be in the head of whoever sits there.
      */
     private void screens() {
@@ -421,23 +421,29 @@ final class CabinFitOut {
 
     /**
      * The screen on the back of the seat at this station for the seat behind it at that one: at seated eye height
-     * just behind whatever stands at the seat's back (its high back, if it has one), so the screen is set into the
-     * back's rear face; none if that leaves no legroom in front of the seat behind, or if the back does not reach up
-     * to eye height to hold it.
+     * just behind whatever stands at the seat's back (a cabin seat's own back is flush with the back of its block), so
+     * the screen is set onto the back's rear face; none if that leaves no legroom in front of the seat behind, or if
+     * the back does not reach up to eye height to hold it.
      */
     private void seatBack(int x, int z, int behind, BlockState screen) {
         int at = z + 1;
         while (at < behind && solid(x, floor + 1, at)) {
             at++;
         }
-        if (at < behind && solid(x, floor + EYES, at - 1)) {
+        if (at < behind && holdsScreen(x, floor + EYES, at - 1)) {
             layout.furnish(x, floor + EYES, at, screen);
         }
     }
 
-    /** Whether the block at this position fills it whole, like a seat's back, unlike a carpet or a slab. */
+    /** Whether the block at this position fills it whole, unlike a carpet or a slab. */
     private boolean solid(int x, int y, int z) {
         return layout.stateAt(x, y, z).isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+    }
+
+    /** Whether a screen facing aft can go onto the back of what is here: a whole block, or a seat facing forward. */
+    private boolean holdsScreen(int x, int y, int z) {
+        BlockState state = layout.stateAt(x, y, z);
+        return solid(x, y, z) || CabinSeatBlock.isBack(state) && state.getValue(CabinSeatBlock.FACING) == Direction.NORTH;
     }
 
     /** Whether a main deck window is in the wall on this side at this station, at seated eye height. */

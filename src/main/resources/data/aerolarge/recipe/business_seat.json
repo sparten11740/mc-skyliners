@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "W  ",
+    "WWW",
+    "CIC"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:gray_wool"
+    },
+    "C": {
+      "item": "minecraft:white_concrete"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "aerolarge:business_seat",
+    "count": 1
+  }
+}

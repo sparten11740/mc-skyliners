@@ -8,6 +8,7 @@ import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Optional;
@@ -31,17 +32,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
  * Villagers flying as passengers, when the server settings allow it. Handed a boarding pass, a villager notes where
- * it boarded and who checked it in, then makes for the nearest free seat inside an airliner (one of Create's, in an
- * airliner standing as blocks or assembled) and sits down once it gets there. Unseated aboard, as it is when the
- * airliner is assembled around it, it sits straight back down. Once the airliner has flown it far enough and stands
- * still with the seatbelt signs off, it gets up and pays its fare in emeralds to whoever checked it in. With no seat
- * to be had for a few minutes it gives the pass back.
+ * it boarded and who checked it in, then makes for the nearest free seat inside an airliner (a cabin seat or one of
+ * Create's, in an airliner standing as blocks or assembled) and sits down once it gets there. Unseated aboard, as it
+ * is when the airliner is assembled around it, it sits straight back down. Once the airliner has flown it far enough
+ * and stands still with the seatbelt signs off, it gets up and pays its fare in emeralds to whoever checked it in.
+ * With no seat to be had for a few minutes it gives the pass back.
  */
 public final class Passengers {
     /** How often a passenger looks about, in ticks. */
@@ -185,11 +187,13 @@ public final class Passengers {
 
     /**
      * Whether there is one of Create's seats at the spot, inside an airliner's hull, with nobody in it; not a pilot's
-     * seat, though it is one of Create's underneath.
+     * seat, though it is one of Create's underneath, nor the top of a cabin seat's back, which is no seat to sit in.
      */
     private static boolean freeSeat(Level level, BlockPos at) {
-        Block seat = level.getBlockState(at).getBlock();
-        return seat instanceof SeatBlock && !(seat instanceof PilotSeatBlock) && Aboard.insideHull(level, at.above()) && !SeatBlock.isSeatOccupied(level, at);
+        BlockState state = level.getBlockState(at);
+        Block seat = state.getBlock();
+        return seat instanceof SeatBlock && !(seat instanceof PilotSeatBlock) && !CabinSeatBlock.isBack(state) && Aboard.insideHull(level, at.above())
+            && !SeatBlock.isSeatOccupied(level, at);
     }
 
     /** A villager's sound and a puff of green sparkles where it is in the world, to show what it makes of things. */
