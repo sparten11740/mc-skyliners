@@ -45,9 +45,7 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 /**
  * The autopilot: flies the assembled airliner by setting its thrusters. The four engines push it along and, split
  * left against right, help turn it; jets on the tailplane pitch it, standing in for elevators, and jets at the wingtips
- * bank it, standing in for ailerons. It reads where the airliner is and how it moves from Sable each tick, and sets
- * the thrusters' relays in whole steps of signal, each held through small wobbles in what it asks for (see
- * {@link SteadySignal}).
+ * bank it, standing in for ailerons. It reads where the airliner is and how it moves from Sable each tick.
  *
  * <p>Engaged on the ground it takes off: the roll at full thrust up to rotation speed, holding the runway heading with
  * the nose wheel, then the nose raised until the airliner lifts off. In the air it holds a height and a speed, and
@@ -133,12 +131,6 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double PROTECT_CLIMB = 25;
     private static final double PROTECT_DIVE = 20;
     private static final double PROTECT_BANK = 35;
-    /**
-     * How far past the safe attitude, in degrees, the jets follow exactly what it asks for, righting the airliner from
-     * an extreme attitude; nearer, as when the engines at full thrust hold the nose up against the limit, they push it
-     * back steadily (see {@link SteadySignal}).
-     */
-    private static final double PROTECT_EXTREME = 10;
     /**
      * The fastest it lets the airliner go on the thrust levers, in blocks a second, and how far below that it must
      * slow before the levers have the engines again.
@@ -330,14 +322,6 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Hop hop = new Hop();
     /** Whether the settings screen offers to hop the airliner free: found on the server each tick, sent to the clients. */
     private boolean stuck;
-    /**
-     * The signals it sends the control jets, up and to the right, and the engines, their thrust and how far those on
-     * one side are throttled back to turn: held steady through small wobbles in what it asks for.
-     */
-    private final SteadySignal pitchJets = SteadySignal.jets();
-    private final SteadySignal rollJets = SteadySignal.jets();
-    private final SteadySignal engineThrust = SteadySignal.thrust();
-    private final SteadySignal engineSplit = SteadySignal.split();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -696,20 +680,16 @@ public class AutopilotBlockEntity extends BlockEntity {
         double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         lastPitch = pitch;
         lastRoll = roll;
-        double pitchCommand = 0;
-        double rollCommand = 0;
-        double pitchBack = 0;
-        double rollBack = 0;
+        int pitchCommand = 0;
+        int rollCommand = 0;
         if (radioAltitude(level, state) > AIRBORNE) {
             double climbLimit = state.apex() > ceiling(level) ? 0 : PROTECT_CLIMB;
-            pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
-            rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
-            pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
-            rollCommand = ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate;
+            double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
+            double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
+            pitchCommand = (int) Math.round(PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate);
+            rollCommand = (int) Math.round(ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate);
         }
-        long now = level.getGameTime();
-        driveJets(level, state, pitchJets.follow(pitchCommand, now, protecting(pitchBack)),
-            rollJets.follow(rollCommand, now, protecting(rollBack)));
+        driveJets(level, state, pitchCommand, rollCommand);
 
         double speed = state.airspeed();
         double apex = state.apex();
@@ -727,18 +707,6 @@ public class AutopilotBlockEntity extends BlockEntity {
             resyncControls(level);
             setChanged();
         }
-    }
-
-    /**
-     * How closely the protection's jets follow what it asks for, pushing the airliner back this far toward the safe
-     * attitude, in degrees: inside it they only damp, and a slow sway is let be; just past it they push back steadily;
-     * far past it, righting the airliner, exactly.
-     */
-    private static SteadySignal.Mode protecting(double back) {
-        if (back == 0) {
-            return SteadySignal.Mode.DAMPING;
-        }
-        return Math.abs(back) > PROTECT_EXTREME ? SteadySignal.Mode.EXACT : SteadySignal.Mode.STEADY;
     }
 
     /** The highest the airliner is let go: some way below the top of the world. */
@@ -777,7 +745,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
         double radio = radioAltitude(level, state);
         double targetPitch;
-        double thrust;
+        int thrust;
         boolean takingOff = phase == Phase.TAKEOFF;
         boolean rollingOut = phase == Phase.ROLLOUT;
         boolean onGround = takingOff || rollingOut;
@@ -854,15 +822,10 @@ public class AutopilotBlockEntity extends BlockEntity {
             bank = Mth.clamp(bank + BANK_GAIN * Mth.wrapDegrees(wanted - state.heading()) - TURN_DAMPING * (turn - wantedTurn), -maxBank, maxBank);
         }
 
-        // On the runway, flaring, and as it lifts off or touches down, the jets and the engines follow exactly what it
-        // asks for; the rest of the time steadily, so that their relays are not rewritten for every slight wobble.
-        SteadySignal.Mode follow = onGround || phase != was || phase == Phase.LAND && radio < FLARE_HEIGHT
-            ? SteadySignal.Mode.EXACT : SteadySignal.Mode.STEADY;
-        long now = level.getGameTime();
-        double pitchCommand = PITCH_GAIN * (targetPitch - pitch) - PITCH_DAMPING * pitchRate;
-        double rollCommand = ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate;
+        int pitchCommand = (int) Math.round(PITCH_GAIN * (targetPitch - pitch) - PITCH_DAMPING * pitchRate);
+        int rollCommand = (int) Math.round(ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate);
         boolean rolls = !onGround || radio > 0.5;
-        driveJets(level, state, pitchJets.follow(pitchCommand, now, follow), rollJets.follow(rolls ? rollCommand : 0, now, follow));
+        driveJets(level, state, pitchCommand, rolls ? rollCommand : 0);
 
         // The brakes are off while it flies and on while it holds for the take-off clearance and once it has landed; on
         // the ground it also steers the nose wheel to hold the heading.
@@ -872,14 +835,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         drive(level, Channel.STEER_RIGHT, Math.max(0, steer));
         drive(level, Channel.STEER_LEFT, Math.max(0, -steer));
 
-        // Turning right means more thrust on the left engines; the heading grows turning right. The thrust and the split
-        // are held apart, so the engines stay alike while it flies straight.
-        int power = engineThrust.follow(thrust, now, follow);
-        int split = engineSplit.follow(Mth.clamp(YAW_GAIN * headingError, -YAW_SPLIT, YAW_SPLIT), now, follow);
-        drive(level, Channel.ENGINE_1, power - Math.max(0, -split));
-        drive(level, Channel.ENGINE_2, power - Math.max(0, -split));
-        drive(level, Channel.ENGINE_3, power - Math.max(0, split));
-        drive(level, Channel.ENGINE_4, power - Math.max(0, split));
+        // Turning right means more thrust on the left engines; the heading grows turning right.
+        int split = Mth.clamp((int) Math.round(YAW_GAIN * headingError), -YAW_SPLIT, YAW_SPLIT);
+        drive(level, Channel.ENGINE_1, thrust - Math.max(0, -split));
+        drive(level, Channel.ENGINE_2, thrust - Math.max(0, -split));
+        drive(level, Channel.ENGINE_3, thrust - Math.max(0, split));
+        drive(level, Channel.ENGINE_4, thrust - Math.max(0, split));
 
         lastPitch = pitch;
         lastRoll = roll;
@@ -934,17 +895,17 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The engines' signal to hold a speed, not yet rounded: down to idle when too fast, full when too slow, about the
-     * signal learnt to hold it. That is learnt only while the engines can still give what it asks; past idle or full,
-     * learning would only wind it up.
+     * The engines' signal to hold a speed: down to idle when too fast, full when too slow, about the signal learnt to
+     * hold it. That is learnt only while the engines can still give what it asks; past idle or full, learning would
+     * only wind it up.
      */
-    private double holdSpeed(double speed, double target) {
+    private int holdSpeed(double speed, double target) {
         double error = target - speed;
         double signal = thrustTrim + SPEED_GAIN * error;
         if (signal > 0 && signal < 15) {
             thrustTrim = Mth.clamp(thrustTrim + THRUST_TRIM_RATE * Mth.clamp(error, -THRUST_TRIM_LIMIT, THRUST_TRIM_LIMIT), 0, 15);
         }
-        return Mth.clamp(signal, 0, 15);
+        return Mth.clamp((int) Math.round(signal), 0, 15);
     }
 
     /** How high the bottom of the wheels is above the ground below the autopilot. */
@@ -1076,7 +1037,6 @@ public class AutopilotBlockEntity extends BlockEntity {
         for (Channel channel : Channel.values()) {
             drive(serverLevel, channel, 0);
         }
-        Stream.of(pitchJets, rollJets, engineThrust, engineSplit).forEach(SteadySignal::reset);
         resyncControls(serverLevel);
         serverLevel.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
     }

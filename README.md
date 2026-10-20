@@ -333,18 +333,14 @@ control jets on top of and under the outer tailplane (to pitch it) and the outer
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
 hard along the nose, so it learns the pitch that holds the height at its speed as it flies. Part of the tailplane
 pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It needs
-Sable (Create Aeronautics) to read where the airliner is. It sets the jets and the engines a whole step of signal at a
-time and holds each step until what it wants has gone more than halfway to the next, a tenth of a second at least for
-the jets and half a second for the engines (a big change goes at once), so their relays are not rewritten many times a
-second for no difference in how it flies; on the runway, flaring to land and as it lifts off or touches down, it sets
-them exactly.
+Sable (Create Aeronautics) to read where the airliner is.
 
 Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
-control jets damp quick pitching and rolling (faster than two or three degrees a second) and push it back once the
-nose goes more than 25 degrees up or 20 down, or the wings more than 35 either way, righting it even from upside down.
-Past 90 blocks a second, or climbing fast enough to coast past the top of the world, it cuts the engines itself, and
-hands them back to the levers once the airliner has slowed to 75 and is well below the top again. Without that, full
-thrust would loop the airliner or fling it off faster than the world can be generated around it.
+control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,
+or the wings more than 35 either way, righting it even from upside down. Past 90 blocks a second, or climbing fast
+enough to coast past the top of the world, it cuts the engines itself, and hands them back to the levers once the
+airliner has slowed to 75 and is well below the top again. Without that, full thrust would loop the airliner or
+fling it off faster than the world can be generated around it.
 
 ### Cabin service
 
@@ -916,9 +912,8 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
 `ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies (holding the signals it sends its thrusters through small wobbles with `SteadySignal`, and not sending the
-clients the control jets' relays, which nothing there reads), reading the airliner from Sable through `SableFlight`,
-which also keeps the cabin's trolleys, basketballs and
+flies (not sending the clients the control jets' relays, which nothing there reads), reading the airliner from Sable
+through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other
 blocks that work blocks round them keep where those are as offsets from themselves, which `Turning` turns with them
