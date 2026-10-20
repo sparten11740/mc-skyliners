@@ -97,6 +97,8 @@ final class CabinFitOut {
         new CabinDecor(layout).apply();
         // Last: the screens go where the rest has left room, and on the backs of its seats.
         screens();
+        // Once everything stands: the steps' rails, the ladders' tops, the mats' piping and the like.
+        layout.joinAll();
     }
 
     /** Whether overhead lockers go along the walls at this station, in metres from the nose: everywhere but the gym hall. */
@@ -261,9 +263,6 @@ final class CabinFitOut {
             if (isWater(x, floor, toZ - 2)) {
                 layout.set(x, floor, toZ - 2, step);
             }
-        }
-        for (int x = -1; x <= 1; x++) {
-            layout.join(x, floor, toZ - 2);
         }
         for (int x : new int[]{-width, width}) {
             layout.furnish(x, floor + 1, fromZ, Blocks.POTTED_FERN.defaultBlockState());

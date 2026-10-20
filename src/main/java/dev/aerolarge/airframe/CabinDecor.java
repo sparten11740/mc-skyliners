@@ -196,9 +196,6 @@ final class CabinDecor {
         for (int y = floor + 1; y < tower.top(); y++) {
             layout.furnish(tower.x(), y, tower.rim(), ladder);
         }
-        for (int y = floor + 1; y < tower.top(); y++) {
-            layout.join(tower.x(), y, tower.rim());
-        }
         BlockState rail = AerolargeRegistry.CABIN_RAIL.get().defaultBlockState();
         for (int x = tower.x() - 1; x <= tower.x() + 2; x++) {
             for (int z = tower.rim(); z <= tower.first() + 1; z++) {

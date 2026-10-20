@@ -446,13 +446,14 @@ public final class AirframeLayout {
     }
 
     /**
-     * Joins the block at this position on to what the layout holds round it, if it is one that joins (see
-     * {@link Joining}): nothing in the layout updates its neighbours as it goes in, so it is joined once they stand.
+     * Joins every block of the layout that joins (see {@link Joining}) on to what the layout holds round it: nothing in
+     * the layout updates its neighbours as it goes in, so they are joined once everything round them stands.
      */
-    void join(int x, int y, int z) {
-        BlockState state = stateAt(x, y, z);
-        if (state.getBlock() instanceof Joining joining) {
-            set(x, y, z, joining.joined(state, way -> stateAt(x + way.getStepX(), y + way.getStepY(), z + way.getStepZ())));
+    void joinAll() {
+        List<BlockPos> joining = cells.entrySet().stream().filter(cell -> cell.getValue().getBlock() instanceof Joining).map(Map.Entry::getKey).toList();
+        for (BlockPos pos : joining) {
+            BlockState state = cells.get(pos);
+            cells.put(pos, ((Joining) state.getBlock()).joined(state, way -> cells.getOrDefault(pos.relative(way), Blocks.AIR.defaultBlockState())));
         }
     }
 
