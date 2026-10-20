@@ -13,6 +13,7 @@ import java.util.WeakHashMap;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -35,8 +36,8 @@ import org.slf4j.Logger;
  *
  * <p>Veil's lights shine through blocks, so each spot reaches only a little past what it falls on: every frame each is
  * looked along, among the ball's own blocks, for the first thing in its way, and it is made brighter the further that
- * is, so a spot is as bright on a far wall as on a near one, up to {@link #MOST_GAIN} times. Its light does not get
- * through the wall to the hull's skin outside or the room next door.
+ * is, so a spot is as bright on a far wall as on a near one, up to {@link #MOST_GAIN} times. Next to none of its light
+ * gets through the wall to the hull's skin outside or to the room next door.
  *
  * <p>A ball is seen by its client ticks (see {@link DiscoBallBlockEntity#clientTicker}): only the
  * {@link #MOST_BALLS} nearest within {@link #REACH} of the camera cast their spots, and a ball that stops ticking
@@ -230,13 +231,13 @@ public final class DiscoLights {
      * block (whose shape it starts inside), or {@link #THROW} if nothing is.
      */
     private static double falls(Level level, BlockPos own, Vec3 middle, Vec3 out) {
+        // How far along it the spot leaves the ball's own block, through the first of its faces it reaches.
         double leave = Double.MAX_VALUE;
-        for (int axis = 0; axis < 3; axis++) {
-            double way = axis == 0 ? out.x : axis == 1 ? out.y : out.z;
-            double from = axis == 0 ? middle.x : axis == 1 ? middle.y : middle.z;
-            int block = axis == 0 ? own.getX() : axis == 1 ? own.getY() : own.getZ();
+        for (Direction.Axis axis : Direction.Axis.values()) {
+            double way = out.get(axis);
             if (Math.abs(way) > Mth.EPSILON) {
-                leave = Math.min(leave, ((way > 0 ? block + 1 : block) - from) / way);
+                int face = own.get(axis) + (way > 0 ? 1 : 0);
+                leave = Math.min(leave, (face - middle.get(axis)) / way);
             }
         }
         Vec3 end = middle.add(out.scale(DiscoBallBlock.RADIUS + THROW));
