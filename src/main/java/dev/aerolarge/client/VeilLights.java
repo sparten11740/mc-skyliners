@@ -3,11 +3,16 @@ package dev.aerolarge.client;
 import dev.aerolarge.Aerolarge;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.dynamicbuffer.DynamicBufferType;
+import foundry.veil.api.client.render.framebuffer.FramebufferAttachmentDefinition;
+import foundry.veil.api.client.render.framebuffer.FramebufferDefinition;
+import foundry.veil.api.client.render.framebuffer.FramebufferManager;
+import foundry.veil.api.client.render.framebuffer.VeilFramebuffers;
 import foundry.veil.api.client.render.light.data.AreaLightData;
 import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import org.joml.Matrix3f;
 import org.joml.Vector3dc;
 import org.joml.Vector3f;
@@ -22,7 +27,7 @@ import org.joml.Vector3f;
  * <p>Veil's own classes are only touched in {@link Veil}, and only once Veil is known to be installed: callers check
  * {@link #USABLE} first.
  */
-final class VeilLights {
+public final class VeilLights {
     /**
      * Whether Veil's lights can be drawn at all: Veil installed, and no Iris (or Oculus), with or without a shader pack,
      * for Veil then cannot add its buffers, and its lights would be drawn from garbage.
@@ -42,6 +47,19 @@ final class VeilLights {
     /** Whether the player has been in the world long enough for lights to be drawn (see {@link #SETTLE_TICKS}). */
     static boolean settled(Minecraft minecraft) {
         return minecraft.player != null && minecraft.player.tickCount >= SETTLE_TICKS;
+    }
+
+    /**
+     * Keeps the depth of Veil's light framebuffer in the window's own format, each frame. Once any mod asks for a
+     * stencil (Supplementaries does), NeoForge gives the window's depth one, which is a format of its own, while Veil's
+     * light framebuffer keeps plain depth. Veil copies the world's depth across before it draws its lights, and between
+     * two formats the copy fails: every frame lights are drawn, each failure logged as a GL error, hundreds a second.
+     */
+    public static void frame(RenderFrameEvent.Pre event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (USABLE && minecraft.level != null && minecraft.getMainRenderTarget().isStencilEnabled()) {
+            Veil.matchLightDepth();
+        }
     }
 
     /**
@@ -124,8 +142,26 @@ final class VeilLights {
         private static final Vector3f Y = new Vector3f();
         private static final Vector3f Z = new Vector3f();
         private static final Matrix3f TURN = new Matrix3f();
+        /** The format NeoForge gives the window's depth once it has a stencil. */
+        private static final FramebufferAttachmentDefinition.Format STENCIL_DEPTH = FramebufferAttachmentDefinition.Format.DEPTH32F_STENCIL8;
 
         private Veil() {
+        }
+
+        /**
+         * Gives Veil's light framebuffer the depth format of a window's depth with a stencil, unless it has it already:
+         * after each resource reload, which sets it back to Veil's own.
+         */
+        static void matchLightDepth() {
+            FramebufferManager framebuffers = VeilRenderSystem.renderer().getFramebufferManager();
+            FramebufferDefinition light = framebuffers.getFramebufferDefinition(VeilFramebuffers.LIGHT);
+            FramebufferAttachmentDefinition depth = light == null ? null : light.depthBuffer();
+            if (depth != null && depth.format() != STENCIL_DEPTH) {
+                FramebufferAttachmentDefinition matched = new FramebufferAttachmentDefinition(depth.type(), STENCIL_DEPTH, true, depth.filter(),
+                    depth.levels(), depth.name());
+                framebuffers.setDefinition(VeilFramebuffers.LIGHT,
+                    new FramebufferDefinition(light.width(), light.height(), light.colorBuffers(), matched, light.autoClear()));
+            }
         }
 
         static Object add(double halfLength, double halfWidth, float angle) {

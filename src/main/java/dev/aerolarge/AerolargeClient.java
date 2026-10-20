@@ -46,6 +46,7 @@ import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
 import dev.aerolarge.client.TrolleyRenderer;
+import dev.aerolarge.client.VeilLights;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -102,6 +103,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(NightLights::loggingOut);
         NeoForge.EVENT_BUS.addListener(DiscoLights::frame);
         NeoForge.EVENT_BUS.addListener(DiscoLights::loggingOut);
+        NeoForge.EVENT_BUS.addListener(VeilLights::frame);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);

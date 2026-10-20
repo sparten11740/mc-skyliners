@@ -27,9 +27,12 @@ repositories {
     maven("https://maven.ryanhcode.dev/releases") {
         content { includeGroupByRegex("dev\\.ryanhcode.*") }
     }
-    // Veil, the rendering library Sable ships inside its jar.
+    // Veil, the rendering library Sable ships inside its jar, and the Molang library Veil ships inside its own.
     maven("https://maven.blamejared.com") {
-        content { includeGroup("foundry.veil") }
+        content {
+            includeGroup("foundry.veil")
+            includeGroup("gg.moonflower")
+        }
     }
 }
 
@@ -48,6 +51,8 @@ dependencies {
     compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:1.6.0") { isTransitive = false }
     // The version Sable 2.0.5 bundles.
     compileOnly("foundry.veil:veil-neoforge-1.21.1:4.3.2") { isTransitive = false }
+    // The one Veil 4.3.2 bundles: Veil sizes its framebuffers with Molang expressions.
+    compileOnly("gg.moonflower:molang-compiler:3.1.1.19") { isTransitive = false }
 }
 
 neoForge {
