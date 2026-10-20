@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
@@ -316,9 +317,13 @@ final class DuckHunt {
             .orElse(null);
     }
 
-    /** Whether a spot to one side of the hold's walkway has open space between it and the walkway. */
+    /**
+     * Whether a spot to one side of the hold's walkway has open space between it and the walkway, or a cargo net,
+     * which is seen and reached through (see {@link CargoNetBlock}).
+     */
     private boolean seenFromWalkway(BlockPos pos) {
-        return pos.getX() != 0 && open(pos.east(pos.getX() > 0 ? -1 : 1));
+        BlockPos toward = pos.east(pos.getX() > 0 ? -1 : 1);
+        return pos.getX() != 0 && (open(toward) || CargoNetBlock.isNet(layout.stateAt(toward.getX(), toward.getY(), toward.getZ())));
     }
 
     /** Whether this many rows over the spot are open. */

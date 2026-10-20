@@ -372,7 +372,8 @@ away from you; use a dye on it to dye it, orange until dyed, and taken down it k
 ### The hold
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
-behind cargo nets of chain, with yellow and black stripes along the walkway down the middle, which stays clear from
+in bays, each behind a cargo net from the floor to the ceiling (see below) with a gap to step into between them,
+with yellow and black stripes along the walkway down the middle, which stays clear from
 the pool to the drop bay and on to the hatch and the cargo door. Along its forward half the belly under the walkway is
 a sky window of clear glass, like the pool's: lie on it and look straight down at the ground, or the clouds, below.
 The suitcases, in four colours, each hold a few things a traveller packs; among them are care packages packed with

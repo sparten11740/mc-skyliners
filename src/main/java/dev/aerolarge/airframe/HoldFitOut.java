@@ -3,29 +3,35 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CargoCrateBlock;
+import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 /**
- * The furnished airliner's hold, between the moon pool and the drop bay: luggage piled up both sides behind cargo
- * nets of chain, suitcases in four colours with care packages packed with supplies among them, and yellow and black
- * hazard stripes along the walkway down the middle, which stays clear all the way from the pool to the bay, and on
- * from the bay to the hatch and the cargo door. Three golden suitcases are hidden about the hold: one in each pile and
- * one at the far end of the hold aft of the cargo door. Under the walkway, a stretch of the belly is a sky window. It
- * only goes into open hold space, bar the window, which glazes the belly as under the moon pool, and is left out where
- * the hold is too low to walk in.
+ * The furnished airliner's hold, between the moon pool and the drop bay: luggage piled up both sides in bays, each
+ * behind a cargo net from the floor to the ceiling, suitcases in four colours with care packages packed with supplies
+ * among them, and yellow and black hazard stripes along the walkway down the middle, which stays clear all the way from
+ * the pool to the bay, and on from the bay to the hatch and the cargo door. Three golden suitcases are hidden about the
+ * hold: one in each pile and one at the far end of the hold aft of the cargo door. Under the walkway, a stretch of the
+ * belly is a sky window. It only goes into open hold space, bar the window, which glazes the belly as under the moon
+ * pool, and is left out where the hold is too low to walk in.
  */
 final class HoldFitOut {
     /** Kept clear of luggage forward of the drop bay, in metres, so it can be loaded from all round. */
@@ -36,8 +42,6 @@ final class HoldFitOut {
     private static final int BAY_LENGTH = 4;
     /** The hold has to be at least this many rows tall to stow luggage in: at the smallest scales it is a crawlspace. */
     private static final int LEAST_HEIGHT = 3;
-    /** How many stations apart the chains of the cargo nets hang. */
-    private static final int NET_SPACING = 2;
     /** A player's height in blocks: the last golden suitcase is hidden as far aft as there is room to stand. */
     private static final int STANDING_ROOM = 2;
     /**
@@ -85,9 +89,11 @@ final class HoldFitOut {
         skyWindow(bottom, from, to);
         List<BlockPos> starboard = new ArrayList<>();
         List<BlockPos> port = new ArrayList<>();
+        List<BlockPos> nets = new ArrayList<>();
         for (int z = from; z <= to; z++) {
-            stow(z, z - from, bottom, starboard, port);
+            stow(z, z - from, bottom, starboard, port, nets);
         }
+        lace(nets);
         // One golden suitcase a third of the way along the port pile, halfway up it, and one two thirds of the way
         // along the starboard pile, on top; the last at the far end of the hold.
         hide(port, from + (to - from) / 3, bottom + (PILE_ROWS + 1) / 2, 1);
@@ -141,11 +147,11 @@ final class HoldFitOut {
     }
 
     /**
-     * One station of the hold: on each side, the net along the edge of the floor, a hazard stripe inside it, and
-     * unless the station is a gap between bays, the luggage piled behind the net up the hull's curve, whose suitcases
-     * go on the side's list.
+     * One station of the hold: on each side, a hazard stripe along the walkway, and unless the station is a gap between
+     * bays, the bay's cargo net along the edge of the floor, from the floor to the ceiling, and the luggage piled
+     * behind it up the hull's curve; the net goes on the list of nets, and the suitcases on the side's.
      */
-    private void stow(int z, int along, int bottom, List<BlockPos> starboard, List<BlockPos> port) {
+    private void stow(int z, int along, int bottom, List<BlockPos> starboard, List<BlockPos> port, List<BlockPos> nets) {
         boolean gap = along % (BAY_LENGTH + 1) == BAY_LENGTH;
         boolean crates = along / (BAY_LENGTH + 1) % 2 == 0;
         for (int side : new int[]{1, -1}) {
@@ -153,16 +159,17 @@ final class HoldFitOut {
             while (layout.isOpen(side * (edge + 1), bottom, z)) {
                 edge++;
             }
-            if (along % NET_SPACING == 0) {
-                for (int y = bottom; y < floor; y++) {
-                    layout.furnish(side * edge, y, z, Blocks.CHAIN.defaultBlockState());
-                }
-            }
             if (edge > 1) {
                 layout.furnish(side * (edge - 1), bottom, z, (Math.floorMod(z, 2) == 0 ? Blocks.YELLOW_CARPET : Blocks.BLACK_CARPET).defaultBlockState());
             }
             if (gap) {
                 continue;
+            }
+            for (int y = bottom; y < floor; y++) {
+                if (layout.isOpen(side * edge, y, z)) {
+                    layout.set(side * edge, y, z, AerolargeRegistry.CARGO_NET.get().defaultBlockState());
+                    nets.add(new BlockPos(side * edge, y, z));
+                }
             }
             Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
             for (int y = bottom + 1; y <= Math.min(floor - 1, bottom + PILE_ROWS); y++) {
@@ -175,6 +182,49 @@ final class HoldFitOut {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Joins the bays' nets as each would join what is round it put up by hand (see {@link CargoNetBlock}): along the
+     * bay and from the floor to the ceiling, each bay's net one net, its track along the top and its foot along the
+     * floor, an edge strap down either end. The build sets the blocks as they are laid, so this is what stands.
+     */
+    private void lace(List<BlockPos> nets) {
+        CargoNetBlock net = AerolargeRegistry.CARGO_NET.get();
+        BlockGetter reader = new LayoutReader();
+        for (BlockPos at : nets) {
+            layout.set(at.getX(), at.getY(), at.getZ(), net.joined(layout.stateAt(at.getX(), at.getY(), at.getZ()), reader, at));
+        }
+    }
+
+    /** The layout read as a level, for a block to work out how it joins what is round it. */
+    private final class LayoutReader implements BlockGetter {
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            return layout.stateAt(pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            return getBlockState(pos).getFluidState();
+        }
+
+        @Nullable
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            return null;
+        }
+
+        /** The layout has no build limits: every row of it is in. */
+        @Override
+        public int getHeight() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getMinBuildHeight() {
+            return Integer.MIN_VALUE / 2;
         }
     }
 
