@@ -6,6 +6,8 @@ import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GalleyOvenBlock;
+import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
 import java.util.ArrayList;
 import java.util.List;
@@ -432,9 +434,9 @@ final class UpperDeck {
     }
 
     /**
-     * The upper deck's galley, against the starboard wall across from the top of the forward staircase: the galley
-     * that stocks the cabin crew's trolley, facing the aisle, and a cupboard beside it; where the floor behind the
-     * flight deck is whole.
+     * The upper deck's galley, against the starboard wall across from the top of the forward staircase, all of it
+     * facing the aisle: the galley's trolley bay that stocks the cabin crew's trolley, galley stowage beside it and a
+     * galley oven beyond where the floor runs on; where the floor behind the flight deck is whole.
      */
     private void galley() {
         if (firstAisle - start < stairwellAlong) {
@@ -445,7 +447,10 @@ final class UpperDeck {
             return;
         }
         layout.furnish(x, deck + 1, start, AerolargeRegistry.GALLEY.get().defaultBlockState().setValue(GalleyBlock.FACING, Direction.WEST));
-        layout.furnish(x, deck + 1, start + 1, Blocks.BARREL.defaultBlockState());
+        layout.furnish(x, deck + 1, start + 1, AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, Direction.WEST));
+        if (layout.isCabinFloor(x, deck, start + 2)) {
+            layout.furnish(x, deck + 1, start + 2, AerolargeRegistry.GALLEY_OVEN.get().defaultBlockState().setValue(GalleyOvenBlock.FACING, Direction.WEST));
+        }
     }
 
     /**

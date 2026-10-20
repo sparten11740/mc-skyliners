@@ -4,13 +4,12 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
+import dev.aerolarge.block.GalleyOvenBlock;
+import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.AbstractFurnaceBlock;
-import net.minecraft.world.level.block.BarrelBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
@@ -23,7 +22,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * them at a room's height for a player with a cabin light set into it, kept on at night as a lavatory's is, and has a
  * door onto the aisle at its back.
  * The WC has a toilet and a basin under its mirror; the crew room a row of seats along the hull and a small galley
- * counter: an oven, and a cupboard with a coffee machine on it. Walls and furniture only go into open space.
+ * counter: a galley oven, and a galley worktop with a coffee machine on it. Walls and furniture only go into open
+ * space.
  */
 final class CrewRooms {
     /** The aisle reaches this far either side of the middle; the rooms' inner walls stand just beyond it. */
@@ -144,8 +144,9 @@ final class CrewRooms {
     /**
      * The crew room: a row of seats along the hull facing into the room, the crew's rest, at {@code couch} out from the
      * middle so a sitter's head is clear of its curve, and the galley counter across the room's back beside it,
-     * reaching in from the hull at {@code counter}: the oven against the hull, its door facing into the room, and
-     * inboard of it the cupboard with the coffee machine on top, also facing into the room, both clear of the door.
+     * reaching in from the hull at {@code counter}: the galley oven against the hull, its door facing into the room,
+     * and inboard of it a galley worktop with the coffee machine on top, also facing into the room, both clear of the
+     * door.
      */
     private void crewRoom(int side, int inner, int couch, int counter) {
         BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.ECONOMY_SEAT.get(), DyeColor.LIGHT_GRAY, side > 0 ? Direction.WEST : Direction.EAST);
@@ -154,10 +155,11 @@ final class CrewRooms {
         }
         if (counter > inner) {
             layout.furnish(side * counter, deck + 1, back - 1,
-                Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.NORTH));
+                AerolargeRegistry.GALLEY_OVEN.get().defaultBlockState().setValue(GalleyOvenBlock.FACING, Direction.NORTH));
         }
         if (counter - 1 > inner) {
-            layout.furnish(side * (counter - 1), deck + 1, back - 1, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
+            layout.furnish(side * (counter - 1), deck + 1, back - 1,
+                AerolargeRegistry.GALLEY_WORKTOP.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, Direction.NORTH));
             layout.furnish(side * (counter - 1), deck + 2, back - 1,
                 AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, Direction.NORTH));
         }

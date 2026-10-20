@@ -75,11 +75,11 @@ off with `cloudlessCabin` in the client config.
 
 Steps at the front of the main deck lead up to a raised floor in the nose. From the top of the steps a short aisle
 runs forward to the cockpit door, between the WC to port (a toilet and a basin under its mirror) and the crew room to
-starboard (a row of crew seats and a galley counter with an oven, a cupboard and a coffee machine); every door opens by
-hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look
-straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right
-across the front from the panel up over the crown, running back into side windows past the pilots' shoulders, framed
-by posts round the sides only.
+starboard (a row of crew seats and a galley counter: a galley oven, and a galley worktop with a coffee machine on it);
+every door opens by hand from either side. Behind the cockpit door the flight deck is a room of its own, raised so the
+pilots look straight out through the windscreen: tinted glass cut to the nose's curve like the skin around it, one
+wide pane right across the front from the panel up over the crown, running back into side windows past the pilots'
+shoulders, framed by posts round the sides only.
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
 either side, on a column between floor rails. Each is two blocks tall, and using either half sits you down in it. It
@@ -171,8 +171,9 @@ carpet: rows of economy seats facing forward (three side by side either side of 
 at the larger ones), each with a passenger screen on its back for the seat behind, a cross aisle at either end
 onto the galleries and a walkway along the windows; business class's pendant lights hang from its underside. Where
 the floor behind the flight deck is deep enough for the forward staircase (from scale 3), it is whole too, with the
-upper deck's own galley and a cupboard against the starboard wall across from the stairs' top. An exit sign glows
-over the top of each staircase, the way down to the doors. At scale 1 the airliner is too small for an upper deck.
+upper deck's own galley (its trolley bay, galley stowage and a galley oven) against the starboard wall across from the
+stairs' top. An exit sign glows over the top of each staircase, the way down to the doors. At scale 1 the airliner is
+too small for an upper deck.
 
 The staircases are built of blocks that can be crafted for building stairs anywhere. Cabin Stairs climb in two half
 steps to a block, as any stairs do, the way you face as you put them down (against the underside of a block they go
@@ -319,8 +320,8 @@ a cappuccino or a mocha, froths the milk with a hiss of steam from its wand; its
 again to take the drink out; while it brews it only beeps. An espresso gives 45 seconds of Haste, a cappuccino 45
 seconds of Speed, and a mocha, sweet with chocolate, half a minute of Speed and a few seconds of Regeneration, each a
 little more filling than the one before; the cup goes with the drink. The machine can be crafted, the drinks only
-brewed. Both blueprints have one on the cupboard in the crew room behind the flight deck, and the furnished airliner
-another on the lounge's bar, just behind the galley.
+brewed. Both blueprints have one on the galley worktop in the crew room behind the flight deck, and the furnished
+airliner another on the lounge's bar, just behind the galley.
 
 ### Curtains, bulkheads and signs
 
