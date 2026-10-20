@@ -473,7 +473,8 @@ of the door (3 per unit of `scale`), and anything loose (mobs, villagers out of 
 basketball, a trolley), is dragged to it, the harder the closer, and flung out into the sky, wherever the air has a
 clear way to the door (not up through the floor from the hold, or round a wall). Anyone seated is belted in and stays
 put. With a parachute on, being sucked out is just the start of a skydive; close the door from a few steps back to
-stop it. Turn it off with `decompression` in the server config.
+stop it, or wait: ten seconds after it opened, the door shuts by itself (waiting, as ever, for anyone in its way).
+Turn it off with `decompression` in the server config.
 
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
 everyone nearby with its distance from the middle, and using the target shows the best landing so far.

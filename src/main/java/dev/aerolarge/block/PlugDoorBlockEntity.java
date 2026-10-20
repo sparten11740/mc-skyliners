@@ -39,7 +39,8 @@ import net.minecraft.world.phys.Vec3;
  * assembled at all), it opens for a villager that walks up to it from either side, and shuts again behind it once no
  * villager has been at it for a moment, or as soon as the airliner moves off. So passengers board and leave by whatever
  * door they come to; in flight no villager opens it, and a door a villager opened shuts by itself. A door opened by
- * hand, by redstone, by the airstairs or by a jet bridge stays as it was put.
+ * hand, by redstone, by the airstairs or by a jet bridge stays as it was put, but in flight, where the cabin
+ * decompresses through it and shuts it again after a while (see {@code Decompression}).
  */
 public class PlugDoorBlockEntity extends BlockEntity {
     /** How long the door takes to open or shut, in ticks: a second and a quarter. */

@@ -4,6 +4,7 @@ import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.PlugDoorBlock;
+import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.PaperPlane;
@@ -46,6 +47,7 @@ import net.minecraft.world.phys.Vec3;
  * trolley, a paper plane), is pulled toward it, the harder the closer, and flung out through it into the open sky;
  * anyone seated is belted in and stays put. With a parachute on, being sucked out is only the start of a skydive.
  * While it blows, the wind roars at the door and streams out of it as fog, and everyone aboard is warned as it starts.
+ * Ten seconds after it opened, a plug door shuts by itself again.
  *
  * <p>One per assembled airliner, worked by its autopilot, which reads the airliner each tick anyway. The airliner's
  * doors are found once, a slice of the fuselage a tick from the flight deck back, so after that only those few blocks
@@ -103,6 +105,8 @@ public final class Decompression {
      */
     private static final float WIND_VOLUME = 3;
     private static final int WIND_TICKS = 200;
+    /** How long a plug door stands open in flight before it shuts by itself, in ticks: ten seconds. */
+    private static final int SHUT_AFTER = 10 * SharedConstants.TICKS_PER_SECOND;
     /** The bang as a door gives way in flight: a wind charge's burst, loud and deep. */
     private static final float BANG_VOLUME = 2;
     private static final float BANG_PITCH = 0.5F;
@@ -121,9 +125,13 @@ public final class Decompression {
      */
     private final List<BlockPos> doors = new ArrayList<>();
     private int searched;
-    /** Whether the air is rushing out; and, by the foot of each open door, the tick its wind runs out. */
+    /**
+     * Whether the air is rushing out; and, by the foot of each open door, the tick its wind runs out and the tick it shuts
+     * by itself.
+     */
     private boolean blowing;
     private final Map<BlockPos, Long> wind = new HashMap<>();
+    private final Map<BlockPos, Long> shutAt = new HashMap<>();
 
     /**
      * One tick of the assembled airliner the autopilot is part of, its nose pointing the given way in the plot, with how
@@ -153,7 +161,10 @@ public final class Decompression {
                 player.displayClientMessage(warning, false);
             }
         }
-        wind.keySet().retainAll(open.stream().map(Doorway::foot).toList());
+        List<BlockPos> feet = open.stream().map(Doorway::foot).toList();
+        wind.keySet().retainAll(feet);
+        shutAt.keySet().retainAll(feet);
+        shutInTime(level, feet);
         double reach = REACH_PER_SCALE * AerolargeConfig.SCALE.get();
         AABB around = null;
         for (Doorway doorway : open) {
@@ -195,6 +206,23 @@ public final class Decompression {
                 if (PlugDoorBlock.isController(state) || leaf) {
                     doors.add(at);
                 }
+            }
+        }
+    }
+
+    /**
+     * Shuts each plug door that has stood open in flight for {@link #SHUT_AFTER}, as an airliner's door would be pulled
+     * shut again: it still waits for anyone in its way. An older airliner's leaves stay as they are.
+     */
+    private void shutInTime(ServerLevel level, List<BlockPos> feet) {
+        long now = level.getGameTime();
+        for (BlockPos foot : feet) {
+            if (now >= shutAt.computeIfAbsent(foot, ignored -> now + SHUT_AFTER)) {
+                PlugDoorBlockEntity door = PlugDoorBlockEntity.of(level, foot);
+                if (door != null) {
+                    door.set(false);
+                }
+                shutAt.remove(foot);
             }
         }
     }
@@ -249,6 +277,7 @@ public final class Decompression {
         }
         blowing = false;
         wind.clear();
+        shutAt.clear();
         ClientboundStopSoundPacket stop = new ClientboundStopSoundPacket(SoundEvents.ELYTRA_FLYING.getLocation(), SoundSource.AMBIENT);
         for (ServerPlayer player : Aboard.players(autopilot)) {
             player.connection.send(stop);
