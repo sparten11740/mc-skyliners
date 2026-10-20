@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "C",
+    "W"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:blue_carpet"
+    },
+    "W": {
+      "item": "minecraft:white_concrete"
+    }
+  },
+  "result": {
+    "id": "aerolarge:cabin_landing",
+    "count": 1
+  }
+}

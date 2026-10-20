@@ -17,6 +17,8 @@ import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CabinLightsBlock;
+import dev.aerolarge.block.CabinRailBlock;
+import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CabinWindowShellBlock;
 import dev.aerolarge.block.CargoCrateBlock;
@@ -566,6 +568,21 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> EXIT_SIGN_ITEM = ITEMS.registerSimpleBlockItem(EXIT_SIGN);
     /**
+     * The staircases between the decks: carpeted stairs and landings, which sound like the carpet they are, and the glass
+     * rails along their open sides and round the upper deck's wells. Nothing spawns on any of them.
+     */
+    public static final DeferredBlock<CabinStairsBlock> CABIN_STAIRS = BLOCKS.registerBlock(
+        "cabin_stairs", CabinStairsBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.5F).sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredBlock<Block> CABIN_LANDING = BLOCKS.registerSimpleBlock(
+        "cabin_landing", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.5F).sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredBlock<CabinRailBlock> CABIN_RAIL = BLOCKS.registerBlock("cabin_rail", CabinRailBlock::new, glass());
+    public static final DeferredItem<BlockItem> CABIN_STAIRS_ITEM = ITEMS.registerSimpleBlockItem(CABIN_STAIRS);
+    public static final DeferredItem<BlockItem> CABIN_LANDING_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LANDING);
+    public static final DeferredItem<BlockItem> CABIN_RAIL_ITEM = ITEMS.registerSimpleBlockItem(CABIN_RAIL);
+    /**
      * The lavatories' vacuum toilets and their flush, and the blue ice each flush drops out of the belly: the chunk
      * falling, the crack as it lands or the bonk on whoever it lands on, and the lump of it on the ground that melts
      * away. Only a falling chunk leaves a lump, so it has no item and gives nothing back; nothing bumps into it, so it
@@ -873,7 +890,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
             GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
-            EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
+            EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(

@@ -862,6 +862,37 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "exit_sign", (x, y) => colours[SIGN[y - 4]?.[x - 1]] ?? [0x16, 0x9c, 0x4a], 2);
 }
 
+// The staircases between the decks (see CabinStairsBlock). A tread: the cabin's blue carpet, in the cabin floor's
+// small diamond pattern, between the white tops of the stringers down either side; a landing: the same carpet edge to
+// edge. The risers, the stringers and everything under the stairs: smooth white panelling, a riser shaded a little
+// just under the nosing that overhangs it. The nosing along each tread's edge: brushed steel, streaked along its
+// length, catching the light along its top. The glass rails (see CabinRailBlock): clear glass with a faint cool tint,
+// a little brighter in a few streaks running up it, on brushed steel posts under a brushed steel handrail.
+{
+  const CARPET_BLUE = [0x2e, 0x3f, 0x8c];
+  const CARPET_BLUE_DARK = [0x26, 0x34, 0x75];
+  const CARPET_BLUE_LIGHT = [0x3d, 0x52, 0xa6];
+  const PANELLING = [0xee, 0xf0, 0xf2];
+  const carpet = (x, y) => {
+    const d = Math.abs((x % 8) - 4) + Math.abs((y % 8) - 4);
+    if (d === 4) return CARPET_BLUE_LIGHT;
+    if ((x + y) % 2 === 0 && d < 2) return CARPET_BLUE_DARK;
+    return CARPET_BLUE;
+  };
+  const brushed = (base) => (x, y) => {
+    if (y === 0) return [0xe2, 0xe7, 0xeb];
+    const streak = Math.round(5 * Math.sin(y * 2.3) + 3 * Math.sin(y * 5.1 + x * 0.15));
+    return base.map((v) => v + streak);
+  };
+  texture(blockOutput, "cabin_stairs_tread", (x, y) => (x === 0 || x === 15 ? PANELLING : carpet(x, y)), 5);
+  texture(blockOutput, "cabin_landing", carpet, 5);
+  texture(blockOutput, "cabin_stairs_panel", () => PANELLING, 2);
+  texture(blockOutput, "cabin_stairs_riser", (x, y) => (y % 8 === 1 ? [0xd8, 0xdc, 0xe1] : PANELLING), 2);
+  texture(blockOutput, "cabin_stairs_nosing", brushed([0xb4, 0xbc, 0xc4]), 2);
+  texture(blockOutput, "cabin_rail_steel", brushed([0xa8, 0xb0, 0xb8]), 2);
+  texture(blockOutput, "cabin_rail_glass", (x) => (x === 3 || x === 4 || x === 11 ? [0xe8, 0xf6, 0xfa, 0x5c] : [0xd2, 0xea, 0xf0, 0x42]), 0);
+}
+
 // The jet bridge: a steel tread plate in a yellow-and-black hazard border, a white arrow pointing north (the way
 // it reaches out); its sides steel with a hazard band along the top.
 {

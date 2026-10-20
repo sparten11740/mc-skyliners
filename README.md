@@ -146,6 +146,14 @@ the floor behind the flight deck is deep enough for the forward staircase (from 
 upper deck's own galley and a cupboard against the starboard wall across from the stairs' top. An exit sign glows
 over the top of each staircase, the way down to the doors. At scale 1 the airliner is too small for an upper deck.
 
+The staircases are built of blocks that can be crafted for building stairs anywhere. Cabin Stairs climb in two half
+steps to a block, as any stairs do, the way you face as you put them down (against the underside of a block they go
+in upside down, all white, for a flight's underside): each tread carpeted in the cabin's blue between white stringers,
+with a slim brushed steel nosing along its edge, over white risers. A Cabin Landing is the flat carpeted block between
+flights. A Cabin Rail is the glass rail: it stands along an edge of its block, the one you face as you put it down, so
+the block itself can still be walked through; put another into it to add an edge, round a corner. Over a stair it
+slopes with the flight, its glass down to the treads.
+
 ### Announcements and the radio
 
 Use the captain's handset and your next chat message is a cabin announcement: everyone aboard hears the two-tone

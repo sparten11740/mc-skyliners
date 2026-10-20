@@ -1720,6 +1720,196 @@ write(`assets/${ID}/models/block/exit_sign.json`, boxes(
 facing("exit_sign");
 write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
 
+// The staircases between the decks: their fittings, recipes and names are in the functions below, which the shared
+// lists further down take in. The stair (see CabinStairsBlock), drawn climbing north: its two steps as its outline is,
+// each a carpeted tread over a white riser and white sides, and along each tread's front edge a brushed steel nosing
+// standing a quarter of a pixel proud of the tread and the riser. Turned over it is all white, a slab over the north
+// half. The landing: carpet on top, white panelling round it and under it. In the hand, the stair as vanilla's is held.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    tread: block("cabin_stairs_tread"), riser: block("cabin_stairs_riser"), panel: block("cabin_stairs_panel"),
+    nosing: block("cabin_stairs_nosing"), particle: block("cabin_stairs_tread"),
+  };
+  const face = (texture, cullface, uv) => ({ texture, ...(uv ? { uv } : {}), ...(cullface ? { cullface } : {}) });
+  // A tread's nosing, along the front edge of a tread this high over a riser this far forward.
+  const nosing = (top, front) => ({
+    from: [1, top - 1, front - 1.75], to: [15, top + 0.25, front + 0.25],
+    faces: {
+      up: face("#nosing", null, [1, 0, 15, 2]), down: face("#nosing", null, [1, 0, 15, 2]),
+      north: face("#nosing", null, [1, 0, 15, 1.25]), south: face("#nosing", null, [1, 0, 15, 1.25]),
+      east: face("#nosing", null, [0, 0, 2, 1.25]), west: face("#nosing", null, [0, 0, 2, 1.25]),
+    },
+  });
+  write(`assets/${ID}/models/block/cabin_stairs.json`, {
+    parent: "minecraft:block/block", textures,
+    elements: [
+      { from: [0, 0, 8], to: [16, 8, 16], faces: {
+        up: face("#tread"), south: face("#riser", "south"), east: face("#panel", "east"), west: face("#panel", "west"), down: face("#panel", "down"),
+      } },
+      { from: [0, 0, 0], to: [16, 8, 8], faces: {
+        north: face("#panel", "north"), east: face("#panel", "east"), west: face("#panel", "west"), down: face("#panel", "down"),
+      } },
+      { from: [0, 8, 0], to: [16, 16, 8], faces: {
+        up: face("#tread", "up"), south: face("#riser"), north: face("#panel", "north"), east: face("#panel", "east"), west: face("#panel", "west"),
+      } },
+      nosing(8, 16),
+      nosing(16, 8),
+    ],
+  });
+  // White all over: the faces on the block's sides culled against whatever covers them, those inside it left out.
+  const white = (cull, inside) => Object.fromEntries(["north", "south", "east", "west", "up", "down"].filter((side) => side !== inside)
+    .map((side) => [side, face("#panel", cull.includes(side) && side)]));
+  write(`assets/${ID}/models/block/cabin_stairs_soffit.json`, {
+    parent: "minecraft:block/block", textures: { panel: block("cabin_stairs_panel"), particle: block("cabin_stairs_panel") },
+    elements: [
+      { from: [0, 0, 0], to: [16, 16, 8], faces: white(["north", "east", "west", "up", "down"]) },
+      { from: [0, 8, 8], to: [16, 16, 16], faces: white(["south", "east", "west", "up"], "north") },
+    ],
+  });
+  write(`assets/${ID}/blockstates/cabin_stairs.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [["bottom", "cabin_stairs"], ["top", "cabin_stairs_soffit"]]
+      .map(([half, model]) => [`facing=${facing},half=${half}`, { model: `${ID}:block/${model}`, ...(y ? { y } : {}) }]))),
+  });
+  // Held as vanilla's stairs are, whose model climbs east where this one climbs north: every view turned a quarter back.
+  write(`assets/${ID}/models/item/cabin_stairs.json`, {
+    parent: `${ID}:block/cabin_stairs`,
+    display: {
+      gui: { rotation: [30, 45, 0], translation: [0, 0, 0], scale: [0.625, 0.625, 0.625] },
+      head: { rotation: [0, -180, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
+      ground: { rotation: [0, -90, 0], translation: [0, 3, 0], scale: [0.25, 0.25, 0.25] },
+      fixed: { rotation: [0, -90, 0], translation: [0, 0, 0], scale: [0.5, 0.5, 0.5] },
+      thirdperson_righthand: { rotation: [75, -45, 0], translation: [0, 2.5, 0], scale: [0.375, 0.375, 0.375] },
+      thirdperson_lefthand: { rotation: [75, -225, 0], translation: [0, 2.5, 0], scale: [0.375, 0.375, 0.375] },
+      firstperson_righthand: { rotation: [0, -45, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+      firstperson_lefthand: { rotation: [0, 135, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+    },
+  });
+  write(`assets/${ID}/blockstates/cabin_landing.json`, { variants: { "": { model: `${ID}:block/cabin_landing` } } });
+  write(`assets/${ID}/models/block/cabin_landing.json`, {
+    parent: "minecraft:block/cube_bottom_top",
+    textures: { top: block("cabin_landing"), bottom: block("cabin_stairs_panel"), side: block("cabin_stairs_panel") },
+  });
+  write(`assets/${ID}/models/item/cabin_landing.json`, { parent: `${ID}:block/cabin_landing` });
+  dropsItself("cabin_stairs");
+  dropsItself("cabin_landing");
+  cubes.cabin_stairs = null;
+  cubes.cabin_landing = null;
+}
+// The glass rail (see CabinRailBlock), each edge drawn along the north side of its block, seen from inside (from the
+// south) with its left end west: clear glass half a pixel thick from the floor up to a brushed steel handrail two
+// pixels wide whose top is a block and a quarter up, and a post in the middle of the edge. Level, the handrail stops
+// two pixels short of either corner, where a corner piece joins it to the next edge's, so rails meeting at a corner
+// share one corner and none of them overlap; raked, over a stair climbing along the edge to the right, the handrail
+// is one bar sloping with the flight, from the height of the level rail on the landing below at its left end to that
+// of the one on the landing above at its right, and the glass, in strips two pixels wide, reaches from each tread up
+// into the handrail, where its stepped top is hidden. Raked to the left it is the same mirrored.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { glass: block("cabin_rail_glass"), steel: block("cabin_rail_steel"), particle: block("cabin_rail_steel") };
+  // The handrail's top (CabinRailBlock.HANDRAIL), how thick it is (straight up when level, across the bar when raked)
+  // and where the glass is.
+  const TOP = 20;
+  const BAR = 1.5;
+  const GLASS = [0.75, 1.25];
+  // Steel, its brushed streaks along each face's length.
+  const steel = (from, to) => ({
+    from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, { texture: "#steel", uv: [0, 4, 16, 6] }])),
+  });
+  const pane = (x0, x1, bottom, top) => ({
+    from: [x0, bottom, GLASS[0]], to: [x1, top, GLASS[1]],
+    faces: { north: { texture: "#glass", uv: [16 - x1, 0, 16 - x0, 16] }, south: { texture: "#glass", uv: [x0, 0, x1, 16] } },
+  });
+  const post = (bottom, top) => steel([7.25, bottom, 0.25], [8.75, top, 1.75]);
+  const model = (name, elements) => write(`assets/${ID}/models/block/${name}.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", textures, elements,
+  });
+  model("cabin_rail_level", [pane(0, 16, 0, TOP - BAR), steel([2, TOP - BAR, 0], [14, TOP, 2]), post(0, TOP - BAR)]);
+  model("cabin_rail_corner", [steel([0, TOP - BAR, 0], [2, TOP, 2])]);
+  // Raked: the handrail's top runs from TOP - 16 at the left end to TOP at the right, the treads under it from half a
+  // block down on the left half to the rail's own floor on the right.
+  // How deep the sloping handrail is, straight down.
+  const depth = BAR * Math.SQRT2;
+  const raked = (mirror) => {
+    const x = (from, to) => (mirror ? [16 - to, 16 - from] : [from, to]);
+    const top = (at) => at + TOP - 16;
+    const elements = [];
+    for (let u = 0; u < 16; u += 2) {
+      const [x0, x1] = x(u, u + 2);
+      elements.push(pane(x0, x1, u < 8 ? -8 : 0, top(u + 2) - depth));
+    }
+    const [p0, p1] = x(7.25, 8.75);
+    elements.push(steel([p0, -8, 0.25], [p1, top(8.75) - depth, 1.75]));
+    const middle = top(8) - depth / 2;
+    const half = 8 * Math.SQRT2;
+    const bar = steel([8 - half, middle - BAR / 2, 0], [8 + half, middle + BAR / 2, 2]);
+    bar.rotation = { origin: [8, middle, 1], axis: "z", angle: mirror ? -45 : 45 };
+    elements.push(bar);
+    return elements;
+  };
+  model("cabin_rail_raked_right", raked(false));
+  model("cabin_rail_raked_left", raked(true));
+  // Which way the stair under it climbs (its rake) leaves each edge level, or raked to its right or left.
+  const turns = ["north", "east", "south", "west"];
+  const right = (edge) => turns[(turns.indexOf(edge) + 1) % 4];
+  const left = (edge) => turns[(turns.indexOf(edge) + 3) % 4];
+  const level = (edge) => ["level", edge, turns[(turns.indexOf(edge) + 2) % 4]].join("|");
+  write(`assets/${ID}/blockstates/cabin_rail.json`, {
+    multipart: [
+      ...turns.flatMap((edge) => [
+        { when: { [edge]: "true", rake: level(edge) }, apply: { model: `${ID}:block/cabin_rail_level`, y: yRot[edge] } },
+        { when: { [edge]: "true", rake: right(edge) }, apply: { model: `${ID}:block/cabin_rail_raked_right`, y: yRot[edge] } },
+        { when: { [edge]: "true", rake: left(edge) }, apply: { model: `${ID}:block/cabin_rail_raked_left`, y: yRot[edge] } },
+      ]),
+      // A corner, between an edge and the one to its left, wherever either has a level rail.
+      ...turns.map((edge) => ({
+        when: { OR: [{ [edge]: "true", rake: level(edge) }, { [left(edge)]: "true", rake: level(left(edge)) }] },
+        apply: { model: `${ID}:block/cabin_rail_corner`, y: yRot[edge] },
+      })),
+    ].map((part) => (part.apply.y ? part : { ...part, apply: { model: part.apply.model } })),
+  });
+  // In the hand, one level stretch across the middle of the block, a block high.
+  write(`assets/${ID}/models/item/cabin_rail.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", textures,
+    elements: [
+      { ...pane(0, 16, 0, 14.5), from: [0, 0, 7.75], to: [16, 14.5, 8.25] },
+      steel([0, 14.5, 7], [16, 16, 9]),
+      steel([7.25, 0, 7.25], [8.75, 14.5, 8.75]),
+    ],
+  });
+  // One rail back for each edge it stands along.
+  write(`data/${ID}/loot_table/blocks/cabin_rail.json`, {
+    type: "minecraft:block",
+    pools: turns.map((edge) => ({
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:cabin_rail` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:cabin_rail`, properties: { [edge]: "true" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    })),
+    random_sequence: `${ID}:blocks/cabin_rail`,
+  });
+  cubes.cabin_rail = null;
+}
+// What of the staircases is fitted rather than built in: breakable, and no part of the airframe.
+function cabinStairsFittings() {
+  return ["cabin_stairs", "cabin_landing", "cabin_rail"];
+}
+// Carpet on white concrete; the rail, glass panes under a row of iron nuggets for its handrail.
+function cabinStairsRecipes() {
+  shaped("cabin_stairs", ["C  ", "WC ", "WWC"], { C: "minecraft:blue_carpet", W: "minecraft:white_concrete" }, 4);
+  shaped("cabin_landing", ["C", "W"], { C: "minecraft:blue_carpet", W: "minecraft:white_concrete" }, 1);
+  shaped("cabin_rail", ["NNN", "PPP"], { N: "minecraft:iron_nugget", P: "minecraft:glass_pane" }, 3);
+}
+function cabinStairsLang() {
+  return {
+    "block.aerolarge.cabin_stairs": "Cabin Stairs",
+    "block.aerolarge.cabin_landing": "Cabin Landing",
+    "block.aerolarge.cabin_rail": "Cabin Rail",
+  };
+}
+
 // The autopilot screen, drawn over live by its renderer from the block holding it: drawn facing north, a slim screen
 // with its back against the south side of its block, as deep as the tail camera display's upright one (see
 // AutopilotScreenBlock.DEPTH) and in the same dark casing, so the camera display stood on it makes one sheet of
@@ -2105,6 +2295,7 @@ FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
+FITTINGS.push(...cabinStairsFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2207,6 +2398,7 @@ shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecra
 flightDeckRecipes();
 rubberDuckRecipes();
 coffeeMachineRecipes();
+cabinStairsRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2542,6 +2734,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...flightDeckLang(),
   ...rubberDuckLang(),
   ...coffeeMachineLang(),
+  ...cabinStairsLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
