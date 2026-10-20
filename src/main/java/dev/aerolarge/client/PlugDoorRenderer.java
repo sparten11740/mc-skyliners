@@ -199,6 +199,15 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         return t * t * (3 - 2 * t);
     }
 
+    /**
+     * Drawn whether or not the section the doorway is in is: swung out, the panel stands in the open air beside the
+     * hull, where it is in plain view from close by while the doorway's own section is hidden behind the hull.
+     */
+    @Override
+    public boolean shouldRenderOffScreen(PlugDoorBlockEntity door) {
+        return true;
+    }
+
     @Override
     public int getViewDistance() {
         return VIEW_DISTANCE;

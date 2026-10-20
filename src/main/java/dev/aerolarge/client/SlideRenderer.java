@@ -123,6 +123,15 @@ public class SlideRenderer implements BlockEntityRenderer<SlideControlBlockEntit
         return quads;
     }
 
+    /**
+     * Drawn whether or not the section its control stands in is: the control is inside the hull, and seen from close by
+     * outside the hull hides that section, while the slide out on the apron is in plain view.
+     */
+    @Override
+    public boolean shouldRenderOffScreen(SlideControlBlockEntity slide) {
+        return true;
+    }
+
     @Override
     public int getViewDistance() {
         return VIEW_DISTANCE;

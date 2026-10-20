@@ -74,6 +74,15 @@ public class AirstairRenderer implements BlockEntityRenderer<AirstairBlockEntity
         pose.popPose();
     }
 
+    /**
+     * Drawn whether or not the section its controller stands in is: the controller is in the hull's jamb, and seen from
+     * close by outside the hull hides that section, while the stairs out on the apron are in plain view.
+     */
+    @Override
+    public boolean shouldRenderOffScreen(AirstairBlockEntity airstairs) {
+        return true;
+    }
+
     @Override
     public int getViewDistance() {
         return VIEW_DISTANCE;
