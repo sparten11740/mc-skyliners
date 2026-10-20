@@ -115,7 +115,7 @@ public final class DiscoLights {
     /** Before each frame: lights the nearest balls' spots, and places them as the balls have turned. */
     public static void frame(RenderFrameEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !available()) {
+        if (minecraft.level == null || !available() || !VeilLights.settled(minecraft)) {
             forget();
             return;
         }

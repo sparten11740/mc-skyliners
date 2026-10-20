@@ -5,6 +5,7 @@ import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.dynamicbuffer.DynamicBufferType;
 import foundry.veil.api.client.render.light.data.AreaLightData;
 import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModList;
 import org.joml.Matrix3f;
@@ -27,8 +28,20 @@ final class VeilLights {
      * for Veil then cannot add its buffers, and its lights would be drawn from garbage.
      */
     static final boolean USABLE = ModList.get().isLoaded("veil") && !ModList.get().isLoaded("iris") && !ModList.get().isLoaded("oculus");
+    /**
+     * How long the player has to have been in the world, in ticks, before any light is drawn (again after a respawn):
+     * joining aboard an airliner in flight with its night lights lit crashed the game outright, about three seconds in,
+     * most times, it seems as Veil's buffers went on while Sable was still setting the airliner up; held off this long,
+     * it never did.
+     */
+    private static final int SETTLE_TICKS = 200;
 
     private VeilLights() {
+    }
+
+    /** Whether the player has been in the world long enough for lights to be drawn (see {@link #SETTLE_TICKS}). */
+    static boolean settled(Minecraft minecraft) {
+        return minecraft.player != null && minecraft.player.tickCount >= SETTLE_TICKS;
     }
 
     /**

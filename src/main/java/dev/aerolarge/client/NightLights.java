@@ -162,7 +162,7 @@ public final class NightLights {
     /** Before each frame: looks for lamps now and then, and places the lights of the airliners flying. */
     public static void frame(RenderFrameEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !available()) {
+        if (minecraft.level == null || !available() || !VeilLights.settled(minecraft)) {
             forget();
             return;
         }
