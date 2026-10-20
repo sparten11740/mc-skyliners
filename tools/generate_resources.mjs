@@ -222,6 +222,7 @@ const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name
   }
   Object.assign(sounds, plugDoorSounds());
   Object.assign(sounds, rubberDuckSounds());
+  Object.assign(sounds, coffeeMachineSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -998,6 +999,118 @@ function rubberDuckLang() {
     "subtitles.aerolarge.giant_rubber_duck_squeak": "Giant rubber duck squeaks",
     "advancements.aerolarge.first_flight.duck_hunt.title": "Duck Hunt",
     "advancements.aerolarge.first_flight.duck_hunt.description": "Find the five rubber ducks hidden aboard an airliner",
+  };
+}
+
+// The coffee machine: its fittings, sounds, recipe and names are in the functions below, which the shared lists
+// further down take in. Drawn facing north, its back against the south side of its block: steel sides either side of
+// a gloss black body, its head over the cup bay with the display lit on its front, the spout under the head, a drip
+// tray sticking out in front, the steam wand beside the bay and the bean hopper on top. From grinding on, the drink's
+// cup stands on the tray under the spout: the small espresso cup on its saucer, the wider cappuccino cup with its
+// foam, or the mocha's tall glass; while it pours, a stream of coffee runs down into it. One model for each step and
+// drink (one for ready, with no cup), turned for each facing.
+const COFFEE_STEPS = ["ready", "grinding", "pouring", "steaming", "done"];
+const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    steel: block("coffee_machine_steel"), black: block("coffee_machine_black"), front: block("coffee_machine_front"),
+    top: block("coffee_machine_top"), bay: block("coffee_machine_bay"), tray: block("coffee_machine_tray"),
+    chrome: block("coffee_machine_chrome"), hopper: block("coffee_machine_hopper"), lid: block("coffee_machine_lid"),
+    cup: block("coffee_cup"), crema: block("coffee_crema"), foam: block("coffee_foam"), glass: block("mocha_glass"),
+    cream: block("mocha_cream"), stream: block("coffee_stream"), particle: block("coffee_machine_steel"),
+  };
+  // Each drink's cup, and the height its top reaches, where the stream from the spout meets it.
+  const cups = {
+    espresso: [3.5, [
+      [[6.5, 1, 3.5], [9.5, 1.5, 6.5], "#cup"],
+      [[7, 1.5, 4], [9, 3.5, 6], { up: "#crema", all: "#cup" }],
+      [[9, 2, 4.75], [9.75, 3, 5.25], "#cup"],
+    ]],
+    cappuccino: [4.5, [
+      [[6, 1, 3], [10, 1.5, 7], "#cup"],
+      [[6.5, 1.5, 3.5], [9.5, 4.5, 6.5], { up: "#foam", all: "#cup" }],
+      [[9.5, 2.5, 4.75], [10.25, 4, 5.25], "#cup"],
+    ]],
+    mocha: [5.5, [
+      [[6.5, 1, 3.5], [9.5, 5.5, 6.5], { up: "#cream", down: "#cup", all: "#glass" }],
+    ]],
+  };
+  const body = [
+    [[2, 0, 3], [4, 14, 15], "#steel"],
+    [[12, 0, 3], [14, 14, 15], "#steel"],
+    [[4, 0, 7], [12, 7, 15], { north: "#bay", all: "#black" }],
+    [[4, 7, 3], [12, 14, 15], { north: "#front", up: "#top", all: "#black" }],
+    [[4, 0, 1], [12, 1, 7], { up: "#tray", all: "#steel" }],
+    [[6.5, 6, 4], [9.5, 7, 6], "#chrome"],
+    [[12.5, 3, 2], [13.5, 7, 3], "#chrome"],
+    [[5, 14, 9], [10, 16, 14], { up: "#lid", down: "#black", all: "#hopper" }],
+  ];
+  for (const step of COFFEE_STEPS) {
+    for (const drink of step === "ready" ? [null] : COFFEE_DRINKS) {
+      const [top, cup] = drink ? cups[drink] : [0, []];
+      const stream = step === "pouring" ? [[[7.75, top, 4.75], [8.25, 6, 5.25], "#stream"]] : [];
+      // The display, a hair proud of the head's front, glowing whatever the light around.
+      const display = [[[4, 8, 2.9], [12, 13, 3], "#display", true]];
+      write(`assets/${ID}/models/block/coffee_machine_${drink ? `${step}_${drink}` : step}.json`, boxes(
+        { ...textures, display: block(`coffee_machine_display_${step}`) },
+        [...body, ...display, ...cup, ...stream],
+      ));
+    }
+  }
+  write(`assets/${ID}/blockstates/coffee_machine.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => COFFEE_STEPS.flatMap((step) => COFFEE_DRINKS.map((drink) =>
+      [`brew=${step},drink=${drink},facing=${facing}`, { model: `${ID}:block/coffee_machine_${step === "ready" ? step : `${step}_${drink}`}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/coffee_machine.json`, { parent: `${ID}:block/coffee_machine_ready` });
+  dropsItself("coffee_machine");
+  cubes.coffee_machine = null;
+  for (const drink of COFFEE_DRINKS) {
+    write(`assets/${ID}/models/item/${drink}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${drink}` } });
+  }
+}
+// Barista, in the First Flight tab: one criterion for each of the coffee machine's drinks, granted as each is first
+// taken from under its spout (see CoffeeMachineBlock); it is done once all three have been.
+write(`data/${ID}/advancement/first_flight/barista.json`, {
+  parent: `${ID}:first_flight/root`,
+  display: {
+    icon: { id: `${ID}:cappuccino` },
+    title: { translate: `advancements.${ID}.first_flight.barista.title` },
+    description: { translate: `advancements.${ID}.first_flight.barista.description` },
+    frame: "task",
+  },
+  criteria: Object.fromEntries(COFFEE_DRINKS.map((drink) => [drink, { trigger: "minecraft:impossible" }])),
+});
+// What of the coffee machine is fitted rather than built in: breakable, and no part of the airframe.
+function coffeeMachineFittings() {
+  return ["coffee_machine"];
+}
+// The grinder, the pump pouring, the steam frothing the milk and the chime of a drink ready (see
+// tools/generate_sounds.mjs).
+function coffeeMachineSounds() {
+  return Object.fromEntries(["coffee_grind", "coffee_pour", "coffee_steam", "coffee_ready"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+// Steel round a display of black glass, a bucket for the water tank and cocoa beans for the hopper.
+function coffeeMachineRecipes() {
+  shaped("coffee_machine", [" C ", "IGI", "IBI"], {
+    C: "minecraft:cocoa_beans", I: "minecraft:iron_ingot", G: "minecraft:black_stained_glass_pane", B: "minecraft:bucket",
+  }, 1);
+}
+function coffeeMachineLang() {
+  return {
+    "block.aerolarge.coffee_machine": "Coffee Machine",
+    "item.aerolarge.espresso": "Espresso",
+    "item.aerolarge.cappuccino": "Cappuccino",
+    "item.aerolarge.mocha": "Mocha",
+    "screen.aerolarge.coffee_machine.title": "Coffee Machine",
+    "screen.aerolarge.coffee_machine.ready": "Ready",
+    "subtitles.aerolarge.coffee_grind": "Coffee grinder whirs",
+    "subtitles.aerolarge.coffee_pour": "Coffee machine pours",
+    "subtitles.aerolarge.coffee_steam": "Milk frother hisses",
+    "subtitles.aerolarge.coffee_ready": "Coffee machine chimes",
+    "advancements.aerolarge.first_flight.barista.title": "Barista",
+    "advancements.aerolarge.first_flight.barista.description": "Brew an espresso, a cappuccino and a mocha at a coffee machine",
   };
 }
 
@@ -1779,6 +1892,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...rubberDuckFittings());
+FITTINGS.push(...coffeeMachineFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -1878,6 +1992,7 @@ holdAndTailRecipes();
 shaped("vacuum_toilet", ["IBI", " I "], { I: "minecraft:iron_ingot", B: "minecraft:bucket" }, 1);
 flightDeckRecipes();
 rubberDuckRecipes();
+coffeeMachineRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -2210,6 +2325,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...plugDoorLang(),
   ...flightDeckLang(),
   ...rubberDuckLang(),
+  ...coffeeMachineLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

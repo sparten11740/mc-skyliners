@@ -1378,4 +1378,141 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "rubber_duck_beak", () => [0xf5, 0x8a, 0x1a], 3);
 }
 
+// The coffee machine, a bean-to-cup machine. Its sides: brushed steel, streaked along. Its body: gloss black, a faint
+// shine running across it; the front of its head with a chrome trim along its foot, its top with vent slots. The cup
+// bay behind the spout: matte charcoal with drip stains. The drip tray: a steel grille. Chrome for the spout and the
+// steam wand. The bean hopper: smoked glass full of roasted beans, its lid gloss black. Its display (the part of the
+// texture its model shows, eight pixels by five): a picture of what it is doing on black glass, over a progress bar
+// along its foot: a green cup when ready, an amber bean grinding, an amber stream pouring into a cup, cyan steam
+// frothing the milk, and a green tick when done, the bar full.
+{
+  const STEEL_LIGHT = [0xc4, 0xca, 0xd0];
+  const STEEL_MID = [0xa8, 0xae, 0xb5];
+  const BLACK = [0x1c, 0x1d, 0x21];
+  const BLACK_SHINE = [0x2c, 0x2e, 0x33];
+  const CHARCOAL = [0x2c, 0x2e, 0x32];
+  const BEAN = [0x5a, 0x34, 0x1a];
+  const BEAN_LIGHT = [0x7a, 0x4a, 0x24];
+  const BEAN_DARK = [0x30, 0x1c, 0x10];
+  texture(blockOutput, "coffee_machine_steel", (x, y) => (y % 4 === 0 ? STEEL_LIGHT : (x * 3 + y * 7) % 11 === 0 ? STEEL_MID : [0xb6, 0xbc, 0xc2]), 3);
+  const gloss = (x, y) => (x + y === 12 || x + y === 13 ? BLACK_SHINE : BLACK);
+  texture(blockOutput, "coffee_machine_black", gloss, 2);
+  texture(blockOutput, "coffee_machine_front", (x, y) => (y === 8 ? CHROME : y === 9 ? STEEL_DARK : gloss(x, y)), 2);
+  texture(blockOutput, "coffee_machine_top", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 1 || y >= 14) return BLACK_SHINE;
+    return y % 3 === 0 && x >= 4 && x <= 11 ? [0x08, 0x08, 0x0a] : BLACK;
+  }, 2);
+  texture(blockOutput, "coffee_machine_bay", (x, y) => ((x * 5 + 3) % 7 === 0 && y > 4 + (x % 3) ? [0x3a, 0x2a, 0x20] : CHARCOAL), 3);
+  texture(blockOutput, "coffee_machine_tray", (x, y) => (x % 2 === 1 && y >= 2 && y <= 13 ? [0x30, 0x32, 0x36] : STEEL_LIGHT), 2);
+  texture(blockOutput, "coffee_machine_chrome", (x, y) => ((x + y) % 5 === 0 ? [0xf0, 0xf4, 0xf8] : CHROME), 3);
+  texture(blockOutput, "coffee_machine_hopper", (x, y) => {
+    if ((x + 2 * y) % 9 === 0) return [0x8c, 0x9a, 0xa6];
+    const bean = (x + 3 * (y % 2)) % 4;
+    return bean === 0 ? BEAN_DARK : bean === 1 ? BEAN_LIGHT : BEAN;
+  }, 4);
+  texture(blockOutput, "coffee_machine_lid", (x, y) => (y === 1 ? BLACK_SHINE : BLACK), 2);
+
+  const GREEN = [0x46, 0xe0, 0x70];
+  const AMBER = [0xf2, 0xb8, 0x30];
+  const CYAN = [0x46, 0xc8, 0xf0];
+  const GLASS_BLACK = [0x08, 0x0c, 0x10];
+  const BAR_OFF = [0x1c, 0x24, 0x2c];
+  // Each step's picture, four rows of eight, its colour, and how much of the eight-pixel bar under it is lit.
+  const DISPLAYS = {
+    ready: [["..#.#...", ".#####..", ".####.#.", "..####.."], GREEN, 0],
+    grinding: [["...##...", "..#.##..", "..##.#..", "...##..."], AMBER, 2],
+    pouring: [["...#....", "...#....", ".#...#..", "..###..."], AMBER, 4],
+    steaming: [["#..#..#.", ".#..#..#", "#..#..#.", ".#..#..#"], CYAN, 6],
+    done: [["......#.", ".....#..", "..#.#...", "...#...."], GREEN, 8],
+  };
+  for (const [step, [rows, colour, bar]] of Object.entries(DISPLAYS)) {
+    texture(blockOutput, `coffee_machine_display_${step}`, (x, y) => {
+      // The model shows columns 4 to 11 and rows 3 to 7 of it.
+      const u = x - 4;
+      const v = y - 3;
+      if (u < 0 || u > 7 || v < 0 || v > 4) return GLASS_BLACK;
+      if (v === 4) return u < bar ? colour : BAR_OFF;
+      return rows[v][u] === "#" ? colour : GLASS_BLACK;
+    }, 0);
+  }
+}
+// The coffee machine's cups, as its model shows them standing under the spout: white porcelain and its saucer, the
+// espresso's golden crema, the cappuccino's milk foam with a dot of cocoa in the middle, the mocha's tall glass with
+// chocolate at the bottom, coffee over it and cream on top, its whipped cream drizzled with chocolate, and the stream
+// of coffee pouring. Their icons: a small espresso cup on its saucer, a wide cappuccino cup with its foam heaped over
+// the rim and a heart of cocoa in it, and the mocha's tall glass under a dome of cream, each with steam rising and
+// outlined dark, so they read on any background. The coffee machine's panel's title: a steaming cup, in white.
+{
+  const PORCELAIN = [0xf4, 0xf4, 0xf0];
+  const PORCELAIN_SHADE = [0xd8, 0xd8, 0xd4];
+  const CREMA = [0xb0, 0x6a, 0x30];
+  const FOAM = [0xf2, 0xe6, 0xcc];
+  const COCOA = [0x6a, 0x3a, 0x1a];
+  const COFFEE = [0x7a, 0x46, 0x22];
+  const CHOCOLATE = [0x4a, 0x26, 0x12];
+  const CREAM = [0xfa, 0xf6, 0xee];
+  const GLASS_EDGE = [0xc8, 0xd8, 0xe4];
+  const OUTLINE = [0x24, 0x1a, 0x14];
+  const STEAM = [0xe8, 0xec, 0xf0, 0xb0];
+  texture(blockOutput, "coffee_cup", (x, y) => (y >= 14 ? PORCELAIN_SHADE : PORCELAIN), 2);
+  texture(blockOutput, "coffee_crema", (x, y) => ((x + y) % 3 === 0 ? [0xc8, 0x84, 0x44] : CREMA), 4);
+  texture(blockOutput, "coffee_foam", (x, y) => (Math.hypot(x - 7.5, y - 4.5) < 1 ? COCOA : FOAM), 2);
+  // The glass's sides show rows 10 to 15 of it.
+  texture(blockOutput, "mocha_glass", (x, y) => {
+    if (y <= 11) return CREAM;
+    return y <= 13 ? COFFEE : CHOCOLATE;
+  }, 3);
+  texture(blockOutput, "mocha_cream", (x, y) => ((x * 3 + y * 5) % 7 === 0 ? COCOA : CREAM), 2);
+  texture(blockOutput, "coffee_stream", (x) => (x % 2 === 0 ? [0x5a, 0x30, 0x14] : [0x74, 0x40, 0x1c]), 2);
+
+  // A drink's icon: what paint gives inside, a dark line round it, steam (not outlined) where steam gives it.
+  const drink = (name, paint, steam) => texture(itemOutput, name, (x, y) => {
+    const inside = paint(x, y);
+    if (inside) return inside;
+    const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => paint(x + dx, y + dy));
+    if (near) return OUTLINE;
+    return steam(x, y) ? STEAM : CLEAR;
+  }, 0);
+  // Two thin wisps rising, wavering, over columns a and b, between two rows.
+  const wisps = (a, b, from, to) => (x, y) => y >= from && y <= to && (x === a + Math.round(Math.sin(y * 1.3)) || x === b + Math.round(Math.sin(y * 1.3 + 2)));
+  drink("espresso", (x, y) => {
+    if (y === 13 && x >= 3 && x <= 12) return PORCELAIN_SHADE;
+    if (y >= 9 && y <= 12 && x >= 5 && x <= 9) return y === 9 ? CREMA : x === 9 ? PORCELAIN_SHADE : PORCELAIN;
+    if (x === 11 && y >= 10 && y <= 11) return PORCELAIN;
+    if (x === 10 && (y === 10 || y === 11)) return PORCELAIN_SHADE;
+    return null;
+  }, wisps(6, 8, 3, 7));
+  drink("cappuccino", (x, y) => {
+    if (y === 14 && x >= 1 && x <= 14) return PORCELAIN_SHADE;
+    const half = y >= 12 ? 3.5 : 4.5;
+    if (y >= 7 && y <= 13 && Math.abs(x - 6.5) <= half) return x - 6.5 > half - 1 ? PORCELAIN_SHADE : PORCELAIN;
+    if (y >= 5 && y <= 6 && Math.abs(x - 6.5) <= 4.5 - (y === 5 ? 1 : 0)) {
+      const heart = (y === 6 && (x === 5 || x === 7 || x === 6)) || (y === 5 && (x === 5 || x === 7));
+      return heart ? COCOA : FOAM;
+    }
+    if ((x === 12 || x === 13) && y >= 8 && y <= 11 && !(x === 12 && (y === 9 || y === 10))) return PORCELAIN;
+    return null;
+  }, wisps(4, 9, 0, 3));
+  drink("mocha", (x, y) => {
+    if (y === 15 && x >= 4 && x <= 11) return GLASS_EDGE;
+    if (y >= 6 && y <= 14 && x >= 4 && x <= 11) {
+      if (x === 4 || x === 11) return GLASS_EDGE;
+      return y >= 12 ? CHOCOLATE : y >= 8 ? COFFEE : FOAM;
+    }
+    const dome = Math.hypot((x - 7.5) / 4, (y - 5.5) / 3.2) <= 1 && y <= 5;
+    if (dome) return (x + 2 * y) % 5 === 0 ? COCOA : CREAM;
+    return null;
+  }, () => false);
+
+  const coffeeGui = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/coffee_machine");
+  mkdirSync(coffeeGui, { recursive: true });
+  texture(coffeeGui, "steaming_cup", (x, y) => {
+    const cup = y >= 8 && y <= 12 && x >= 3 && x <= 10 && !(y === 12 && (x === 3 || x === 10));
+    const handle = (x === 12 && y >= 9 && y <= 10) || (x === 11 && (y === 8 || y === 11));
+    const saucer = y === 14 && x >= 1 && x <= 13;
+    const steam = wisps(5, 8, 2, 6)(x, y);
+    return cup || handle || saucer || steam ? INK : CLEAR;
+  }, 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -1,0 +1,26 @@
+{
+  "parent": "aerolarge:first_flight/root",
+  "display": {
+    "icon": {
+      "id": "aerolarge:cappuccino"
+    },
+    "title": {
+      "translate": "advancements.aerolarge.first_flight.barista.title"
+    },
+    "description": {
+      "translate": "advancements.aerolarge.first_flight.barista.description"
+    },
+    "frame": "task"
+  },
+  "criteria": {
+    "espresso": {
+      "trigger": "minecraft:impossible"
+    },
+    "cappuccino": {
+      "trigger": "minecraft:impossible"
+    },
+    "mocha": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -20,6 +20,8 @@ import dev.aerolarge.block.CabinWindowShellBlock;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.CargoCrateBlockEntity;
 import dev.aerolarge.block.CheckInDeskBlock;
+import dev.aerolarge.block.CoffeeMachineBlock;
+import dev.aerolarge.block.CoffeeMachineBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DropBayBlock;
@@ -721,6 +723,35 @@ public final class AerolargeRegistry {
         new FoodProperties.Builder().nutrition(1).saturationModifier(0.2F).alwaysEdible()
             .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 60 * 20, 0), 1.0F).build()
     )));
+    /**
+     * The coffee machine, a bean-to-cup machine for the galley, the sounds of its brew (the grinder, the pump, the
+     * steam frothing the milk and the chime when the drink is ready), and what it brews: an espresso for a short burst
+     * of Haste, a cappuccino for a little Speed and a mocha, sweet with chocolate, for Speed and a moment's
+     * Regeneration. Each is drunk from its cup, which is gone with the drink.
+     */
+    public static final DeferredBlock<CoffeeMachineBlock> COFFEE_MACHINE = BLOCKS.registerBlock(
+        "coffee_machine", CoffeeMachineBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CoffeeMachineBlockEntity>> COFFEE_MACHINE_ENTITY =
+        BLOCK_ENTITIES.register("coffee_machine", () -> BlockEntityType.Builder.of(CoffeeMachineBlockEntity::new, COFFEE_MACHINE.get()).build(null));
+    public static final DeferredItem<BlockItem> COFFEE_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(COFFEE_MACHINE);
+    public static final DeferredHolder<SoundEvent, SoundEvent> COFFEE_GRIND = sound("coffee_grind");
+    public static final DeferredHolder<SoundEvent, SoundEvent> COFFEE_POUR = sound("coffee_pour");
+    public static final DeferredHolder<SoundEvent, SoundEvent> COFFEE_STEAM = sound("coffee_steam");
+    public static final DeferredHolder<SoundEvent, SoundEvent> COFFEE_READY = sound("coffee_ready");
+    public static final DeferredItem<CoffeeItem> ESPRESSO = ITEMS.register("espresso", () -> new CoffeeItem(new Item.Properties().stacksTo(16).food(
+        new FoodProperties.Builder().nutrition(1).saturationModifier(0.2F).alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.DIG_SPEED, 45 * 20, 0), 1.0F).build()
+    )));
+    public static final DeferredItem<CoffeeItem> CAPPUCCINO = ITEMS.register("cappuccino", () -> new CoffeeItem(new Item.Properties().stacksTo(16).food(
+        new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45 * 20, 0), 1.0F).build()
+    )));
+    public static final DeferredItem<CoffeeItem> MOCHA = ITEMS.register("mocha", () -> new CoffeeItem(new Item.Properties().stacksTo(16).food(
+        new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 30 * 20, 0), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 5 * 20, 0), 1.0F).build()
+    )));
 
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
     public static final DeferredHolder<EntityType<?>, EntityType<Basketball>> BASKETBALL = ENTITY_TYPES.register(
@@ -819,8 +850,8 @@ public final class AerolargeRegistry {
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM, PASSENGER_SCREEN_ITEM,
-            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP,
-            MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
+            GALLEY_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
+            DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, EXIT_SIGN_ITEM, VACUUM_TOILET_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(

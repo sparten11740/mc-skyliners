@@ -233,6 +233,17 @@ by it. Push a trolley down the aisle by walking into it (it squeaks); use it to 
 chicken meal, airline coffee (a minute of Speed), a pasta meal or pretzels, two dozen to a trolley. Sneak and hit it
 to fold it up and carry it. Galley, trolley and food can all be crafted.
 
+A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
+top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, three big buttons
+each showing its drink, so it needs no reading: an espresso in a small cup, a cappuccino with its foam, or a mocha in a
+tall glass under its cream. It grinds the beans, then pours the coffee into a cup that stands under the spout and, for
+a cappuccino or a mocha, froths the milk with a hiss of steam from its wand; its display shows each step in a picture
+(a green cup when ready, a bean, a pour, steam, a green tick when done), and it chimes when the drink is ready. Use it
+again to take the drink out; while it brews it only beeps. An espresso gives 45 seconds of Haste, a cappuccino 45
+seconds of Speed, and a mocha, sweet with chocolate, half a minute of Speed and a few seconds of Regeneration, each a
+little more filling than the one before; the cup goes with the drink. The machine can be crafted, the drinks only
+brewed.
+
 ### Curtains, bulkheads and signs
 
 A Cabin Curtain hangs in pleats across the way you face; curtains put up beside, under or over one another join
@@ -516,7 +527,8 @@ villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counte
 out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into the moon pool off its springboard
 or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), the three golden suitcases
 hidden in the hold (Lost and Found), a vacuum toilet flushed in flight, its blue ice let go 15 metres or more above
-the ground (Blue Ice), and the five rubber ducks hidden aboard (Duck Hunt).
+the ground (Blue Ice), the five rubber ducks hidden aboard (Duck Hunt), and an espresso, a cappuccino and a mocha
+taken from a coffee machine (Barista).
 
 ### Settings
 

@@ -330,5 +330,37 @@
         "name": "aerolarge:giant_rubber_duck_squeak"
       }
     ]
+  },
+  "coffee_grind": {
+    "subtitle": "subtitles.aerolarge.coffee_grind",
+    "sounds": [
+      {
+        "name": "aerolarge:coffee_grind"
+      }
+    ]
+  },
+  "coffee_pour": {
+    "subtitle": "subtitles.aerolarge.coffee_pour",
+    "sounds": [
+      {
+        "name": "aerolarge:coffee_pour"
+      }
+    ]
+  },
+  "coffee_steam": {
+    "subtitle": "subtitles.aerolarge.coffee_steam",
+    "sounds": [
+      {
+        "name": "aerolarge:coffee_steam"
+      }
+    ]
+  },
+  "coffee_ready": {
+    "subtitle": "subtitles.aerolarge.coffee_ready",
+    "sounds": [
+      {
+        "name": "aerolarge:coffee_ready"
+      }
+    ]
   }
 }

@@ -6,7 +6,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
-/** Airline coffee: drunk, not eaten, and it puts a spring in your step (see its food properties). */
+/**
+ * A hot drink: airline coffee from the trolley, or a coffee machine's espresso, cappuccino or mocha. Drunk, not eaten,
+ * and each gives a little lift (see its food properties).
+ */
 public class CoffeeItem extends Item {
     public CoffeeItem(Properties properties) {
         super(properties);

@@ -8,9 +8,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * The First Flight advancements: milestones of flying the airliner, from climbing away from the runway to a gentle
- * touchdown. Most have one criterion, "done"; Lost and Found has one for each golden suitcase in the hold, and Duck
- * Hunt one for each rubber duck hidden aboard. Nothing in the game triggers them: the mod grants them where the moment
- * happens. The advancements themselves are data, under {@code first_flight/}.
+ * touchdown. Most have one criterion, "done"; Lost and Found has one for each golden suitcase in the hold, Duck
+ * Hunt one for each rubber duck hidden aboard, and Barista one for each of the coffee machine's drinks. Nothing in
+ * the game triggers them: the mod grants them where the moment happens. The advancements themselves are data, under
+ * {@code first_flight/}.
  */
 public enum FirstFlight {
     /** Tried to get up while the seatbelt signs were on. */
@@ -38,7 +39,9 @@ public enum FirstFlight {
     /** Flushed a vacuum toilet aboard an airliner in flight, dropping its blue ice from high over the ground. */
     BLUE_ICE,
     /** Found the rubber ducks hidden aboard a furnished airliner: "duck_1" and on, one criterion each. */
-    DUCK_HUNT;
+    DUCK_HUNT,
+    /** Took each of a coffee machine's drinks from under its spout: one criterion each, named as the drink. */
+    BARISTA;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

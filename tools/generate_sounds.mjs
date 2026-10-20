@@ -404,6 +404,118 @@ function squeak(samples, start, length, pitch, swoop) {
   writeSound("giant_rubber_duck_squeak", samples);
 }
 
+// The coffee machine, with its own noise, so it never shifts the sounds above. Each sound lasts as long as its step of
+// the brew (CoffeeMachineBlock.Brew): 1.5 s grinding, 2.5 s pouring, 2.5 s steaming.
+const coffeeNoise = (() => {
+  let coffeeSeed = 0x63616665;
+  return () => {
+    coffeeSeed = (Math.imul(coffeeSeed, 1664525) + 1013904223) | 0;
+    return ((coffeeSeed >>> 0) / 4294967296) * 2 - 1;
+  };
+})();
+// The grinder: its motor spinning up to a buzzing whirr, a gear whine over it, and the crunch of the beans cracking,
+// thick at first and thinning out as they are ground, the motor running a little faster as its load goes; then it
+// spins down.
+{
+  const length = 1.5;
+  const stop = 1.25;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  let crunch = 0;
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const spinUp = Math.min(1, t / 0.08);
+    const spinDown = t < stop ? 1 : Math.exp(-(t - stop) / 0.07);
+    const frequency = (95 + 15 * Math.min(1, t / stop)) * (0.4 + 0.6 * spinUp * spinDown);
+    phase += (2 * Math.PI * frequency) / RATE;
+    let motor = 0;
+    for (let n = 1; n <= 8; n++) motor += Math.sin(n * phase) / n;
+    const whine = 0.12 * Math.sin(14 * phase);
+    const white = coffeeNoise();
+    const high = white - previous;
+    previous = white;
+    if (t < stop && coffeeNoise() < (2 * 600 * (1 - 0.7 * t / stop)) / RATE - 1) crunch = 0.6 + 0.4 * Math.abs(coffeeNoise());
+    crunch *= Math.exp(-1 / (0.003 * RATE));
+    samples[i] = spinUp * spinDown * (0.45 * motor + whine) + 1.4 * crunch * high;
+  }
+  writeSound("coffee_grind", samples);
+}
+// The pump pouring: a vibratory pump's rattling 50 Hz buzz, hard at first as it primes and settling as the pressure
+// builds; the coffee trickling into the cup over it, gurgling, from a little way in; then the pump stops and a last
+// drop plinks into the cup.
+{
+  const length = 2.5;
+  const stop = 2.2;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let buzz = 0;
+  let low = 0;
+  let band = 0;
+  let gurgle = 0;
+  let rattle = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = coffeeNoise();
+    const pulse = Math.sin(2 * Math.PI * 50 * t);
+    buzz += 0.15 * (Math.sign(pulse) - buzz);
+    // The pump's rattle: noise kept low, rattling with each stroke.
+    rattle += 0.12 * (white - rattle);
+    const running = Math.min(1, t / 0.02) * (t < stop ? 1 : Math.exp(-(t - stop) / 0.02));
+    const prime = 1 + 0.5 * Math.exp(-t / 0.3);
+    const pump = running * prime * (0.5 * buzz + 1.2 * rattle * Math.abs(pulse));
+    // The trickle: noise through a band round 1.8 kHz, its loudness wandering as it gurgles.
+    const f = 2 * Math.sin((Math.PI * 1800) / RATE);
+    const high = white - low - 0.5 * band;
+    band += f * high;
+    low += f * band;
+    gurgle += 0.0015 * (coffeeNoise() - gurgle);
+    const trickle = t > 0.5 && t < stop + 0.05 ? Math.min(1, (t - 0.5) / 0.3) * (0.5 + 12 * Math.abs(gurgle)) : 0;
+    samples[i] = pump + 0.5 * trickle * band;
+  }
+  bell(samples, stop + 0.12, 1250, 0.04);
+  writeSound("coffee_pour", samples);
+}
+// The steam wand frothing the milk: a burst of steam, then a steady hiss with the milk's screech and chirp in it as air
+// is drawn in, and low bubbling under it; then the valve shuts and the hiss dies.
+{
+  const length = 2.5;
+  const stop = 2.3;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let previous = 0;
+  let low = 0;
+  let band = 0;
+  let chirp = 0;
+  let bubble = 0;
+  let bubblePhase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = coffeeNoise();
+    const hiss = white - previous;
+    previous = white;
+    const centre = 1600 + 600 * Math.sin(2 * Math.PI * 3.1 * t) + 300 * Math.sin(2 * Math.PI * 7.3 * t);
+    const f = 2 * Math.sin((Math.PI * centre) / RATE);
+    const high = white - low - 0.15 * band;
+    band += f * high;
+    low += f * band;
+    chirp += 0.0008 * (coffeeNoise() - chirp);
+    if (coffeeNoise() > 1 - (2 * 30) / RATE) bubble = 0.8;
+    bubble *= Math.exp(-1 / (0.02 * RATE));
+    bubblePhase += (2 * Math.PI * (180 + 120 * bubble)) / RATE;
+    const valve = Math.min(1, t / 0.02) * (t < stop ? 1 : Math.exp(-(t - stop) / 0.05));
+    const burst = 1 + 0.8 * Math.exp(-t / 0.15);
+    samples[i] = valve * (burst * 0.6 * hiss + 0.25 * Math.min(1, t / 0.4) * Math.abs(chirp) * 20 * band + 0.5 * bubble * Math.sin(bubblePhase));
+  }
+  writeSound("coffee_steam", samples);
+}
+// A drink ready: three soft rising chimes.
+{
+  const samples = new Float64Array(Math.round(0.9 * RATE));
+  bell(samples, 0, 1046.5, 0.15);
+  bell(samples, 0.14, 1318.5, 0.15);
+  bell(samples, 0.28, 1568, 0.3);
+  writeSound("coffee_ready", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
