@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.BulkheadSignBlock;
 import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.CurtainBlock;
@@ -9,7 +10,6 @@ import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -28,9 +28,9 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * bulkhead right across the cabin at each end of a room that faces a door's aisle, and between business class and the
  * pool, its archway over the middle aisle hung with a curtain in the room's colour (navy for business class, cyan for
  * the pool, lime for the gym hall, red for the lounge), drawn open. Each archway is a round white arch over the aisle
- * on white jambs (see {@link CabinArchBlock}), a head's height clear right across it; over it, on the side facing the
- * doors, a picture in coloured wool of what lies through it (a seat, a drop of water, a basketball, a cup), for
- * passengers who cannot read yet.
+ * on white jambs (see {@link CabinArchBlock}), a head's height clear right across it; set into the wall right over its
+ * crown, on the side facing the doors, a backlit sign with a picture of what lies through it (a seat, a drop of water,
+ * a basketball, a cup; see {@link BulkheadSignBlock}), for passengers who cannot read yet.
  * Business class is walled off at its front too, or, where no wall fits there, a curtain on its own crosses the aisle;
  * then lavatories either side of the archway into the gym hall, built onto its bulkhead as an airliner's are into the
  * monuments by its doors, the gym hall's hoops mounted on its end walls, its own dividing curtain (Trennvorhang) right
@@ -60,24 +60,6 @@ final class CabinDividers {
     private static final int SNAP = 2;
     /** How many blocks of headroom the lavatories have under their ceilings, as the WC behind the flight deck has. */
     private static final int HEADROOM = 3;
-    /**
-     * The pictures, each row from the top as seen from the doors' side of its wall, '.' the wall itself and each letter
-     * a colour of wool (see WOOL): a business class seat seen from the side, a drop of water, a basketball, a cup with
-     * its steam, and a person for the lavatories.
-     */
-    private static final String[] SEAT = {"B....", "B....", "BBBB.", "BBBB.", "B..B."};
-    private static final String[] DROP = {"..B..", ".BBB.", "BBLBB", "BBBBB", ".BBB."};
-    private static final String[] BALL = {".OKO.", "OOKOO", "KKKKK", "OOKOO", ".OKO."};
-    private static final String[] CUP = {"G.G..", "RRRR.", "RRRRR", "RRRR.", ".RR.."};
-    private static final String[] PERSON = {".B.", "BBB", "B.B"};
-    private static final Map<Character, BlockState> WOOL = Map.of(
-        'B', Blocks.BLUE_WOOL.defaultBlockState(),
-        'L', Blocks.LIGHT_BLUE_WOOL.defaultBlockState(),
-        'O', Blocks.ORANGE_WOOL.defaultBlockState(),
-        'K', Blocks.BLACK_WOOL.defaultBlockState(),
-        'R', Blocks.RED_WOOL.defaultBlockState(),
-        'G', Blocks.LIGHT_GRAY_WOOL.defaultBlockState()
-    );
 
     private final AirframeLayout layout;
     private final int floor;
@@ -128,28 +110,28 @@ final class CabinDividers {
         if (furnished(CabinFitOut.BUSINESS)) {
             // Ahead of business class its wall to the doors' aisle, or the curtain alone where no wall fits; behind,
             // its wall to the pool.
-            if (divide(CabinFitOut.BUSINESS[0] - 0.5, DyeColor.BLUE, SEAT, true) == null) {
+            if (divide(CabinFitOut.BUSINESS[0] - 0.5, DyeColor.BLUE, BulkheadSignBlock.Picture.SEAT, true) == null) {
                 Section front = near(CabinFitOut.BUSINESS[0] - 0.5, this::curtainFits);
                 if (front != null) {
                     aisleCurtain(front, DyeColor.BLUE);
                 }
             }
-            divide((CabinFitOut.BUSINESS[1] + CabinFitOut.POOL[0]) / 2, DyeColor.BLUE, SEAT, false);
+            divide((CabinFitOut.BUSINESS[1] + CabinFitOut.POOL[0]) / 2, DyeColor.BLUE, BulkheadSignBlock.Picture.SEAT, false);
         }
         if (furnished(CabinFitOut.POOL)) {
-            divide(CabinFitOut.POOL[1] + 0.5, DyeColor.CYAN, DROP, false);
+            divide(CabinFitOut.POOL[1] + 0.5, DyeColor.CYAN, BulkheadSignBlock.Picture.DROP, false);
         }
         if (furnished(CabinFitOut.GYM)) {
             // A metre out from either end of the court, so the walls stop the balls missing the hoops; the room in
             // front of the court is the lavatories'.
             int first = (int) Math.ceil(CabinFitOut.GYM[0] * layout.scale());
             int last = (int) Math.floor(CabinFitOut.GYM[1] * layout.scale());
-            Section entrance = divide(CabinFitOut.GYM[0] - 1, DyeColor.LIME, BALL, true);
+            Section entrance = divide(CabinFitOut.GYM[0] - 1, DyeColor.LIME, BulkheadSignBlock.Picture.BALL, true);
             if (entrance != null) {
                 lavatories(entrance, first);
                 mountHoop(entrance.z(), first);
             }
-            Section exit = divide(CabinFitOut.GYM[1] + 1, DyeColor.LIME, BALL, false);
+            Section exit = divide(CabinFitOut.GYM[1] + 1, DyeColor.LIME, BulkheadSignBlock.Picture.BALL, false);
             if (exit != null) {
                 mountHoop(exit.z(), last);
             }
@@ -159,7 +141,7 @@ final class CabinDividers {
             }
         }
         if (furnished(CabinFitOut.LOUNGE)) {
-            divide(CabinFitOut.LOUNGE[0] - 0.5, DyeColor.RED, CUP, true);
+            divide(CabinFitOut.LOUNGE[0] - 0.5, DyeColor.RED, BulkheadSignBlock.Picture.CUP, true);
         }
         joinCurtains();
         exitSigns();
@@ -231,11 +213,11 @@ final class CabinDividers {
     }
 
     /**
-     * A wall across the cabin near the station so many metres from the nose, with its curtained archway and the
-     * picture over it, seen from ahead of the wall or from behind it; the wall's section, or null if none fits.
+     * A wall across the cabin near the station so many metres from the nose, with its curtained archway and the sign
+     * over it, its face ahead of the wall or behind it; the wall's section, or null if none fits.
      */
     @Nullable
-    private Section divide(double metres, DyeColor color, String[] picture, boolean seenFromAhead) {
+    private Section divide(double metres, DyeColor color, BulkheadSignBlock.Picture picture, boolean seenFromAhead) {
         Section wall = near(metres, this::wallFits);
         if (wall == null) {
             return null;
@@ -249,7 +231,7 @@ final class CabinDividers {
                 }
             }
         }
-        picture(wall.z(), 0, archTop() + picture.length, picture, seenFromAhead);
+        sign(wall.z(), 0, archTop() + 1, picture, seenFromAhead);
         return wall;
     }
 
@@ -407,7 +389,7 @@ final class CabinDividers {
         return Math.abs(x) <= span && y <= floor + arch;
     }
 
-    /** The archway's top row: its arch's crown and the white band round it, the picture right over it. */
+    /** The archway's top row: its arch's crown and the white band round it, the sign right over it. */
     private int archTop() {
         return floor + arch + CabinArchBlock.rows(span);
     }
@@ -451,27 +433,14 @@ final class CabinDividers {
     }
 
     /**
-     * A picture set into a wall, its middle column at x and its top row at y, the right way round from ahead of the
-     * wall or from behind it; only where every block of it is the wall, so it is left out where the cabin is too small.
+     * A backlit sign set into a wall in place of a block of it, its picture facing ahead of the wall (north) or behind
+     * it; only where that block is the wall, so it is left out where the cabin is too small.
      */
-    private void picture(int z, int middle, int top, String[] rows, boolean seenFromAhead) {
-        int half = rows[0].length() / 2;
-        for (int row = 0; row < rows.length; row++) {
-            for (int column = 0; column < rows[row].length(); column++) {
-                if (!layout.stateAt(middle + column - half, top - row, z).is(partition.getBlock())) {
-                    return;
-                }
-            }
-        }
-        for (int row = 0; row < rows.length; row++) {
-            for (int column = 0; column < rows[row].length(); column++) {
-                BlockState wool = WOOL.get(rows[row].charAt(column));
-                // Looking aft from ahead of the wall, the viewer's left is to starboard.
-                int x = middle + (seenFromAhead ? half - column : column - half);
-                if (wool != null) {
-                    layout.set(x, top - row, z, wool);
-                }
-            }
+    private void sign(int z, int x, int y, BulkheadSignBlock.Picture picture, boolean seenFromAhead) {
+        if (layout.stateAt(x, y, z).is(partition.getBlock())) {
+            layout.set(x, y, z, AerolargeRegistry.BULKHEAD_SIGN.get().defaultBlockState()
+                .setValue(BulkheadSignBlock.FACING, seenFromAhead ? Direction.NORTH : Direction.SOUTH)
+                .setValue(BulkheadSignBlock.PICTURE, picture));
         }
     }
 
@@ -480,8 +449,8 @@ final class CabinDividers {
      * are into the monuments by its doors: each a cubicle from the archway's side out to the hull, between the wall and
      * the gym hall, under a ceiling at a room's height with a cabin light in it, kept on at night. A toilet stands
      * against the hull and a basin under its mirror on the archway's side, the door between them opening onto the
-     * doors' aisle under a picture of a person. The door is a wooden one, as no hull door is: one opened in flight does
-     * not let the air out. Only on a side with room for all of it.
+     * doors' aisle under a lavatory sign, a man and a woman. The door is a wooden one, as no hull door is: one opened in
+     * flight does not let the air out. Only on a side with room for all of it.
      */
     private void lavatories(Section wall, int gym) {
         int front = wall.z();
@@ -530,7 +499,7 @@ final class CabinDividers {
                 .setValue(DoorBlock.HINGE, side > 0 ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT);
             layout.set(side * door, floor + 1, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
             layout.set(side * door, floor + 2, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
-            picture(front, side * door, floor + 2 + PERSON.length, PERSON, true);
+            sign(front, side * door, floor + 3, BulkheadSignBlock.Picture.LAVATORY, true);
         }
     }
 

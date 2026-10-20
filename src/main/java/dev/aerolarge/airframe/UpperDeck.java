@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * one it is a whole floor only where the rooms under it do not need the cabin's height: over business class, where it
  * has rows of seats of its own, and behind the flight deck where that is as deep as the forward staircase, with the
  * upper deck's galley across from it. Over the tall rooms (the moon pool and its diving tower, the gym hall with its
- * hoops, ropes and rings) and the doors' aisles, whose bulkheads carry the archways' pictures, it is a gallery along
+ * hoops, ropes and rings) and the doors' aisles, whose bulkheads carry the archways' signs, it is a gallery along
  * each wall instead, railed with glass round an open well, through doorways in the bulkheads, so the rooms keep their
  * height and can be looked down into.
  *
@@ -44,8 +44,8 @@ final class UpperDeck {
     private static final double WALKWAY = 1.0;
     private static final int LEAST_WALKWAY = 2;
     /**
-     * How many blocks either side of the middle a gallery's well keeps open at least: the archways' pictures over it
-     * are five wide.
+     * How many blocks either side of the middle a gallery's well keeps open at least: as wide as the widest archway
+     * under it, so an archway and the sign over its crown are seen whole from the deck below.
      */
     private static final int WELL = 2;
     /**
@@ -218,7 +218,7 @@ final class UpperDeck {
     /**
      * The whole floor over business class in the furnished airliner, across the well between its galleries from the
      * bulkhead ahead of it to the one behind it, wherever they ended up standing, so neither is closed over and both
-     * keep their pictures over their archways. What hung from the crown there now hangs from the floor: a light's
+     * keep their signs over their archways. What hung from the crown there now hangs from the floor: a light's
      * cable stops at it, a light that hung at its row or over it moves down under it, and what was above is taken
      * down. Not where it would leave too little room for a row of seats.
      */
@@ -344,7 +344,7 @@ final class UpperDeck {
 
     /**
      * Doorways along the galleries through the bulkheads the rooms under them are walled off with, which reach up to
-     * the crown: the walkway's width and a head's height, the wall left whole over the well, where its picture is.
+     * the crown: the walkway's width and a head's height, the wall left whole over the well, where its sign is.
      */
     private void doorways() {
         for (int z = start; z <= end; z++) {
