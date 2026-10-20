@@ -536,7 +536,14 @@ Gymnastic Rings can be crafted too.
 
 Wall Bars (Sprossenwand) can be crafted for a gym of your own: pale ash uprights against the wall with four round
 rungs between them to every block, climbed as a ladder is. Bars side by side make one wall of them, and stacked up,
-the top rung of the topmost stands out from the wall on brackets, to hang from.
+the top rung of the topmost stands out from the wall on brackets, to hang from. So can the rest of a gym's fittings.
+A Gym Mat is a thick blue padded mat a quarter of a block high, piped in grey round its edges; mats side by side make
+one big mat, piped only round its outside, and a fall onto one hurts a fifth as much. A Climbing Rope is a braided
+hemp rope hung from a ceiling on a steel eye, ending in a knot: jump up into it and keep climbing, as up a ladder;
+nothing bumps into it, and it comes down if what it hangs from is taken away. A Glass Backboard is a pane of
+toughened glass in an aluminium frame, put up facing you; pieces side by side and one over another make one board,
+framed round its outside, and a board three wide and two high shows the red shooter's square over its middle, where
+a hoop put up against it goes.
 
 For hide and seek, press the big yellow button with the eye on it beside either hoop (or sneak and use a
 scoreboard): every scoreboard in the hall counts down from ten in huge numbers, amber, then red for the last three,

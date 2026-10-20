@@ -1,0 +1,75 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "top": "aerolarge:block/gym_mat",
+    "side": "aerolarge:block/gym_mat_side",
+    "piping": "aerolarge:block/gym_mat_piping",
+    "particle": "aerolarge:block/gym_mat"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        4.5,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#piping"
+        },
+        "south": {
+          "texture": "#piping"
+        },
+        "east": {
+          "texture": "#piping"
+        },
+        "west": {
+          "texture": "#piping"
+        },
+        "up": {
+          "texture": "#piping"
+        },
+        "down": {
+          "texture": "#piping"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#piping"
+        },
+        "south": {
+          "texture": "#piping"
+        },
+        "east": {
+          "texture": "#piping"
+        },
+        "west": {
+          "texture": "#piping"
+        },
+        "up": {
+          "texture": "#piping"
+        },
+        "down": {
+          "texture": "#piping"
+        }
+      }
+    }
+  ]
+}

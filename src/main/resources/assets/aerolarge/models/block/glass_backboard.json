@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "glass": "aerolarge:block/glass_backboard",
+    "frame": "aerolarge:block/cabin_rail_steel",
+    "red": "aerolarge:block/backboard_red",
+    "particle": "aerolarge:block/glass_backboard"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "down=true,up=true": {
+      "model": "aerolarge:block/climbing_rope"
+    },
+    "down=true,up=false": {
+      "model": "aerolarge:block/climbing_rope_top"
+    },
+    "down=false,up=true": {
+      "model": "aerolarge:block/climbing_rope_bottom"
+    },
+    "down=false,up=false": {
+      "model": "aerolarge:block/climbing_rope_single"
+    }
+  }
+}

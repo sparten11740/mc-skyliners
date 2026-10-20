@@ -1635,13 +1635,28 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "pool_ladder_tread", (x, y) => (y % 3 === 0 ? [0xe4, 0xe8, 0xec] : y % 3 === 1 ? [0x9a, 0xa2, 0xaa] : [0xb8, 0xbe, 0xc6]), 2);
 }
 // The gym hall's fittings. The wall bars: pale lacquered ash, a fine grain along it and a glint of lacquer here and
-// there.
+// there. The gym mat: blue vinyl with a fine pebbled grain; its sides the same with a seam along their middle; its
+// piping a twisted grey cord. The climbing rope: natural hemp, three strands twisting down it. The glass backboard:
+// toughened glass, faintly tinted and nearly clear, two streaks of glare across it; its shooter's square in red.
 {
   texture(blockOutput, "wall_bars_wood", (x, y) => {
     if ((x * 3 + y * 7) % 19 === 0) return [0xf4, 0xe4, 0xc4];
     const grain = Math.round(5 * Math.sin(x * 1.9 + Math.sin(y * 0.5) * 2));
     return [0xde + grain, 0xc2 + grain, 0x8e + grain];
   }, 2);
+  const VINYL = [0x24, 0x52, 0xb0];
+  texture(blockOutput, "gym_mat", (x, y) => ((x * 7 + y * 5) % 9 === 0 ? VINYL.map((v) => v + 14) : VINYL), 4);
+  texture(blockOutput, "gym_mat_side", (x, y) => (y === 8 ? VINYL.map((v) => v - 22) : VINYL), 3);
+  texture(blockOutput, "gym_mat_piping", (x, y) => ((x + y) % 3 === 0 ? [0xa8, 0xae, 0xb6] : [0xd2, 0xd6, 0xdc]), 2);
+  texture(blockOutput, "climbing_rope", (x, y) => {
+    const strand = (x + y) % 6;
+    return strand === 0 ? [0x8c, 0x6c, 0x40] : strand < 3 ? [0xd2, 0xb4, 0x7c] : [0xbc, 0x9c, 0x66];
+  }, 3);
+  texture(blockOutput, "glass_backboard", (x, y) => {
+    const glare = x + y;
+    return glare === 9 || glare === 10 || glare === 14 ? [0xf8, 0xfc, 0xff, 0x70] : [0xd8, 0xec, 0xf4, 0x38];
+  }, 0);
+  texture(blockOutput, "backboard_red", () => [0xd4, 0x22, 0x1e], 3);
 }
 // The starlight panel: a deep navy night sky with a faint haze across it; and its stars, on their own see-through
 // layer, as an animation in which each star swells and fades on its own beat, so the ceiling gently twinkles. Most

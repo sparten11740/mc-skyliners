@@ -96,6 +96,9 @@
     "aerolarge:pool_steps",
     "aerolarge:pool_ladder",
     "aerolarge:wall_bars",
+    "aerolarge:gym_mat",
+    "aerolarge:climbing_rope",
+    "aerolarge:glass_backboard",
     "aerolarge:vacuum_toilet",
     "aerolarge:airliner_door"
   ]

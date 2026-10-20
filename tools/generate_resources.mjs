@@ -3422,7 +3422,7 @@ for (const name of POOL) {
 // the shared lists further down take in. The wall bars (see RungLadderBlock), drawn facing north, their wall to the
 // south: an ash upright down either side against the wall, so bars side by side share a pair of uprights between
 // them, and four round rungs across; the top piece's top rung hangs out from the wall on a bracket at either end.
-const GYM_HALL = ["wall_bars"];
+const GYM_HALL = ["wall_bars", "gym_mat", "climbing_rope", "glass_backboard"];
 {
   const textures = { wood: `${ID}:block/wall_bars_wood`, particle: `${ID}:block/wall_bars_wood` };
   const uprights = [[[0, 0, 11], [1.5, 16, 16], "#wood"], [[14.5, 0, 11], [16, 16, 16], "#wood"]];
@@ -3440,6 +3440,99 @@ const GYM_HALL = ["wall_bars"];
   });
   write(`assets/${ID}/models/item/wall_bars.json`, { parent: `${ID}:block/wall_bars_top` });
 }
+// The gym mat (see GymMatBlock): a pad a quarter of a block high, blue vinyl on top and seamed round its sides, and
+// along each edge that does not run on into another mat a grey cord of piping round its top and its foot, drawn along
+// the north edge and turned for the others. In the hand, a mat piped all round.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { top: block("gym_mat"), side: block("gym_mat_side"), piping: block("gym_mat_piping"), particle: block("gym_mat") };
+  const pad = [[0, 0, 0], [16, 4, 16], { up: "#top", all: "#side" }];
+  const piping = ([x0, z0], [x1, z1]) => [[[x0, 3, z0], [x1, 4.5, z1], "#piping"], [[x0, 0, z0], [x1, 1, z1], "#piping"]];
+  write(`assets/${ID}/models/block/gym_mat.json`, boxes(textures, [pad]));
+  write(`assets/${ID}/models/block/gym_mat_piping.json`, boxes(textures, piping([0, 0], [16, 1])));
+  write(`assets/${ID}/blockstates/gym_mat.json`, {
+    multipart: [
+      { apply: { model: block("gym_mat") } },
+      ...Object.entries(yRot).map(([side, y]) => ({ when: { [side]: "false" }, apply: { model: block("gym_mat_piping"), ...(y ? { y } : {}) } })),
+    ],
+  });
+  write(`assets/${ID}/models/item/gym_mat.json`, boxes(textures, [
+    pad, ...piping([0, 0], [16, 1]), ...piping([0, 15], [16, 16]), ...piping([0, 0], [1, 16]), ...piping([15, 0], [16, 16]),
+  ]));
+}
+// The climbing rope (see ClimbingRopeBlock): braided hemp down the middle of its block; where nothing of it is above, it
+// hangs on a steel eye from a plate against the ceiling, and where nothing of it is below it ends in a knot over its
+// whipped end. In the hand, a short rope with both.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { rope: block("climbing_rope"), steel: block("cabin_rail_steel"), particle: block("climbing_rope") };
+  const strand = (y0, y1) => [[6.75, y0, 6.75], [9.25, y1, 9.25], "#rope"];
+  const eye = [[[7.25, 13.5, 7.25], [8.75, 15, 8.75], "#steel"], [[5.5, 15, 5.5], [10.5, 16, 10.5], "#steel"]];
+  const knot = [[[6, 2, 6], [10, 5, 10], "#rope"], [[7, 0.5, 7], [9, 2, 9], "#rope"]];
+  const pieces = {
+    climbing_rope: [strand(0, 16)],
+    climbing_rope_top: [strand(0, 13.5), ...eye],
+    climbing_rope_bottom: [strand(5, 16), ...knot],
+    climbing_rope_single: [strand(5, 13.5), ...eye, ...knot],
+  };
+  for (const [name, parts] of Object.entries(pieces)) {
+    write(`assets/${ID}/models/block/${name}.json`, boxes(textures, parts));
+  }
+  write(`assets/${ID}/blockstates/climbing_rope.json`, {
+    variants: {
+      "down=true,up=true": { model: block("climbing_rope") },
+      "down=true,up=false": { model: block("climbing_rope_top") },
+      "down=false,up=true": { model: block("climbing_rope_bottom") },
+      "down=false,up=false": { model: block("climbing_rope_single") },
+    },
+  });
+  write(`assets/${ID}/models/item/climbing_rope.json`, { parent: block("climbing_rope_single") });
+}
+// The glass backboard (see GlassBackboardBlock), drawn facing north, its front to the north: a pane of faintly tinted
+// glass along the north side of its block, seen through; along each edge that does not run on into the board a
+// brushed aluminium frame standing a little proud of the glass; and on a piece with the board running on either side
+// and over it the lower half of the red shooter's square, its bottom edge just over the hoop's ring, or with the
+// board either side and under it the upper half. In the hand, a pane framed all round with the whole square on it.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = { glass: block("glass_backboard"), frame: block("cabin_rail_steel"), red: block("backboard_red"), particle: block("glass_backboard") };
+  const glass = { from: [0, 0, 0], to: [16, 16, 1.5], faces: { north: { texture: "#glass" }, south: { texture: "#glass" } } };
+  const frames = {
+    top: [[0, 14.5, -0.5], [16, 16, 2], "#frame"],
+    bottom: [[0, 0, -0.5], [16, 1.5, 2], "#frame"],
+    left: [[14.5, 0, -0.5], [16, 16, 2], "#frame"],
+    right: [[0, 0, -0.5], [1.5, 16, 2], "#frame"],
+  };
+  const square = {
+    bottom: [[[3, 11, -0.25], [13, 12, 0], "#red"], [[3, 12, -0.25], [4, 16, 0], "#red"], [[12, 12, -0.25], [13, 16, 0], "#red"]],
+    top: [[[3, 6, -0.25], [13, 7, 0], "#red"], [[3, 0, -0.25], [4, 6, 0], "#red"], [[12, 0, -0.25], [13, 6, 0], "#red"]],
+  };
+  write(`assets/${ID}/models/block/glass_backboard.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", textures, elements: [glass],
+  });
+  for (const [edge, part] of Object.entries(frames)) {
+    write(`assets/${ID}/models/block/glass_backboard_frame_${edge}.json`, boxes(textures, [part]));
+  }
+  for (const [half, parts] of Object.entries(square)) {
+    write(`assets/${ID}/models/block/glass_backboard_square_${half}.json`, boxes(textures, parts));
+  }
+  const multipart = [];
+  for (const [facing, y] of Object.entries(yRot)) {
+    const turned = (model) => ({ model: block(model), ...(y ? { y } : {}) });
+    multipart.push({ when: { facing }, apply: turned("glass_backboard") });
+    for (const [edge, property] of [["top", "up"], ["bottom", "down"], ["left", "left"], ["right", "right"]]) {
+      multipart.push({ when: { facing, [property]: "false" }, apply: turned(`glass_backboard_frame_${edge}`) });
+    }
+    multipart.push({ when: { facing, left: "true", right: "true", up: "true", down: "false" }, apply: turned("glass_backboard_square_bottom") });
+    multipart.push({ when: { facing, left: "true", right: "true", up: "false", down: "true" }, apply: turned("glass_backboard_square_top") });
+  }
+  write(`assets/${ID}/blockstates/glass_backboard.json`, { multipart });
+  const item = boxes(textures, [
+    ...Object.values(frames),
+    [[4, 4, -0.25], [12, 5, 0], "#red"], [[4, 11, -0.25], [12, 12, 0], "#red"], [[4, 5, -0.25], [5, 11, 0], "#red"], [[11, 5, -0.25], [12, 11, 0], "#red"],
+  ]);
+  write(`assets/${ID}/models/item/glass_backboard.json`, { ...item, render_type: "minecraft:translucent", elements: [...item.elements, glass] });
+}
 // The gym hall's fittings are fitted into the cabin rather than built into the airliner: breakable, and no part of
 // the airframe.
 function gymHallFittings() {
@@ -3447,15 +3540,22 @@ function gymHallFittings() {
 }
 // What of the gym hall climbs as a ladder does.
 function gymHallClimbable() {
-  return ["wall_bars"];
+  return ["wall_bars", "climbing_rope"];
 }
-// Wall bars of birch, its uprights planks and its rungs sticks.
+// Wall bars of birch, its uprights planks and its rungs sticks; a mat of blue wool padded with feathers; a rope of
+// string; a backboard of glass panes in an iron frame round a red square.
 function gymHallRecipes() {
   shaped("wall_bars", ["PSP", "PSP", "PSP"], { P: "minecraft:birch_planks", S: "minecraft:stick" }, 3);
+  shaped("gym_mat", ["WWW", "FFF"], { W: "minecraft:blue_wool", F: "minecraft:feather" }, 3);
+  shaped("climbing_rope", ["SS", "SS", "SS"], { S: "minecraft:string" }, 3);
+  shaped("glass_backboard", ["GGG", "IRI"], { G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:red_dye" }, 3);
 }
 function gymHallLang() {
   return {
     "block.aerolarge.wall_bars": "Wall Bars",
+    "block.aerolarge.gym_mat": "Gym Mat",
+    "block.aerolarge.climbing_rope": "Climbing Rope",
+    "block.aerolarge.glass_backboard": "Glass Backboard",
   };
 }
 for (const name of GYM_HALL) {
