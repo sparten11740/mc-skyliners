@@ -110,6 +110,7 @@ import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
+import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
@@ -753,6 +754,11 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<BallMatBlock> BALL_MAT = BLOCKS.registerBlock("ball_mat", BallMatBlock::new, metal(MapColor.COLOR_GRAY));
     public static final DeferredItem<BlockItem> CARGO_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(CARGO_FLOOR);
     public static final DeferredItem<BlockItem> BALL_MAT_ITEM = ITEMS.registerSimpleBlockItem(BALL_MAT);
+    /** The hold's ULD containers, eight blocks to an LD3, of aluminium. */
+    public static final DeferredBlock<UldContainerBlock> ULD_CONTAINER = BLOCKS.registerBlock(
+        "uld_container", UldContainerBlock::new, metal(MapColor.METAL).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> ULD_CONTAINER_ITEM = ITEMS.registerSimpleBlockItem(ULD_CONTAINER);
 
     /**
      * The secret bookshelf door's creak, opening and shutting: a wooden door's, played deep and slow (see the sounds
@@ -1031,7 +1037,7 @@ public final class AerolargeRegistry {
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
-            CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM
+            CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM, ULD_CONTAINER_ITEM
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM

@@ -396,6 +396,13 @@ track nets and straps lock into; the rollers run along the rail, and panels laid
 Ball Mat is a panel of polished steel ball-transfer units, each in its socket, on which a load turns any way. Both can
 be crafted.
 
+A ULD Container is the aluminium container an airliner's baggage is loaded in, an LD3, two blocks wide, deep and tall:
+ribbed sheet in an extruded frame, the lower half of one side slanting in to its base (the contour that fits it to a
+hold's curved floor), a net door over its front with the bags packed behind it, and its id stencilled on the other
+side, AKE and the airline's code over one of a few serial numbers. Put down, its door faces you and it reaches up, away
+from you and to your right, the contour on your right; it needs the room for all of it, and comes down whole. It can
+be crafted from iron round a cargo net.
+
 ### Vacuum toilets
 
 A Vacuum Toilet (craftable from iron and a bucket) is an airliner's toilet: a stainless steel bowl in a white shroud,

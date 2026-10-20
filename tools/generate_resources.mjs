@@ -1370,6 +1370,133 @@ function cargoFloorLang() {
   };
 }
 
+// The ULD container (see UldContainerBlock), an LD3 of eight blocks, one for each corner, each drawn facing north and
+// worked out in the container's own frame, thirty-two pixels each way: its door at the north, its contour along the
+// west. Each corner is its part of the container's box, and shows only the container's outside: the door, the back
+// and the flat east side each one picture over the whole face (see the textures), the top and the contour's upright
+// part the ribbed sheet. At the lower corners on the contour side the box steps in toward the base, under a plate
+// turned 22.5 degrees about the container's length, the contour's slant: from 5.8 pixels in at the base out to the
+// full width 14 pixels up. The upper corners on the flat side carry the stencilled id, one model for each serial. In
+// the hand, the whole container; only the corner at the door's foot on the flat side drops it.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const SLANT_FOOT = 5.8;
+  const SLANT_TOP = 14;
+  const STEP = 2;
+  const slantIn = (y) => SLANT_FOOT * (1 - y / SLANT_TOP);
+  // A face's uv on a picture spread over the container's whole face, as seen from outside, for a box's corners.
+  const spread = (face, [x0, y0, z0], [x1, y1, z1]) => ({
+    north: [(32 - x1) / 2, (32 - y1) / 2, (32 - x0) / 2, (32 - y0) / 2],
+    south: [x0 / 2, (32 - y1) / 2, x1 / 2, (32 - y0) / 2],
+    east: [(32 - z1) / 2, (32 - y1) / 2, (32 - z0) / 2, (32 - y0) / 2],
+  })[face];
+  // A box of the container, in its frame, with the faces of it on the container's outside.
+  const box = (from, to) => {
+    const faces = {};
+    if (from[2] === 0) faces.north = { texture: "#door", uv: spread("north", from, to) };
+    if (to[2] === 32) faces.south = { texture: "#back", uv: spread("south", from, to) };
+    if (to[0] === 32) faces.east = { texture: "#side", uv: spread("east", from, to) };
+    if (from[0] === 0) faces.west = { texture: "#sheet" };
+    if (to[1] === 32) faces.up = { texture: "#sheet" };
+    if (from[1] === 0) faces.down = { texture: "#sheet" };
+    return { from, to, faces };
+  };
+  // A corner's boxes in the container's frame: its whole block, or at the foot of the contour the steps in to the base
+  // and the slant over them, whose ends show the frame at the door and the back.
+  const corner = (upper, front, contour) => {
+    const [x, y, z] = [contour ? 0 : 16, upper ? 16 : 0, front ? 0 : 16];
+    if (upper || !contour) return [box([x, y, z], [x + 16, y + 16, z + 16])];
+    const elements = [];
+    for (let step = 0; step < SLANT_TOP; step += STEP) elements.push(box([slantIn(step), step, z], [16, step + STEP, z + 16]));
+    elements.push(box([0, SLANT_TOP, z], [16, 16, z + 16]));
+    const middle = [SLANT_FOOT / 2, SLANT_TOP / 2];
+    const half = Math.hypot(SLANT_FOOT, SLANT_TOP) / 2;
+    const ends = { texture: "#frame", uv: [0, 0, 1, 15] };
+    elements.push({
+      from: [middle[0], middle[1] - half, z], to: [middle[0] + 1, middle[1] + half, z + 16],
+      rotation: { origin: [middle[0], middle[1], z + 8], axis: "z", angle: 22.5 },
+      faces: { west: { texture: "#sheet", uv: [0, 0, 16, 16] }, ...(front ? { north: ends } : { south: ends }) },
+    });
+    return elements;
+  };
+  // The elements moved by an offset, from the container's frame into a block's or the hand's.
+  const moved = (elements, [dx, dy, dz]) => elements.map((element) => ({
+    ...element,
+    from: [element.from[0] + dx, element.from[1] + dy, element.from[2] + dz],
+    to: [element.to[0] + dx, element.to[1] + dy, element.to[2] + dz],
+    ...(element.rotation ? { rotation: { ...element.rotation, origin: element.rotation.origin.map((v, i) => v + [dx, dy, dz][i]) } } : {}),
+  }));
+  const textures = (side) => ({
+    door: block("uld_container_door"), back: block("uld_container_back"), side: block(side), sheet: block("uld_container_skin"),
+    frame: block("uld_container_frame"), particle: block("uld_container_skin"),
+  });
+  const NUMBERS = [0, 1, 2, 3];
+  const name = (upper, front, contour, number) => `uld_container_${upper ? "upper" : "lower"}_${front ? "front" : "back"}_${contour ? "contour" : "flat"}`
+    + (upper && !contour ? `_${number}` : "");
+  for (const upper of [false, true]) {
+    for (const front of [true, false]) {
+      for (const contour of [false, true]) {
+        for (const number of upper && !contour ? NUMBERS : [0]) {
+          write(`assets/${ID}/models/block/${name(upper, front, contour, number)}.json`, {
+            parent: "minecraft:block/block",
+            textures: textures(upper ? `uld_container_side_${number}` : "uld_container_side"),
+            elements: moved(corner(upper, front, contour), [contour ? 0 : -16, upper ? -16 : 0, front ? 0 : -16]),
+          });
+        }
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/uld_container.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((contour) => [false, true].flatMap((front) =>
+      ["lower", "upper"].flatMap((half) => NUMBERS.map((number) => [
+        `contour=${contour},facing=${facing},front=${front},half=${half},number=${number}`,
+        { model: block(name(half === "upper", front, contour, number)), ...(y ? { y } : {}) },
+      ])))))),
+  });
+  // In the hand the whole container, its middle at the middle of the block, so it turns about it.
+  const whole = [false, true].flatMap((upper) => [true, false].flatMap((front) => [false, true].flatMap((contour) => corner(upper, front, contour))));
+  write(`assets/${ID}/models/item/uld_container.json`, {
+    parent: "minecraft:block/block",
+    textures: textures("uld_container_side_0"),
+    elements: moved(whole, [-8, -8, -8]),
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.32, 0.32, 0.32] },
+      ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.15, 0.15, 0.15] },
+      fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.2, 0.2, 0.2] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.25, 0.25, 0.25] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.25, 0.25, 0.25] },
+    },
+  });
+  write(`data/${ID}/loot_table/blocks/uld_container.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:uld_container` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:uld_container`, properties: { half: "lower", front: "true", contour: "false" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/uld_container`,
+  });
+  cubes.uld_container = null;
+}
+// The container is loaded into the hold rather than built into the airliner: breakable, and no part of the airframe.
+function uldContainerFittings() {
+  return ["uld_container"];
+}
+// Aluminium (iron) round a cargo net for its door.
+function uldContainerRecipes() {
+  shaped("uld_container", ["III", "INI", "III"], { I: "minecraft:iron_ingot", N: `${ID}:cargo_net` }, 1);
+}
+function uldContainerLang() {
+  return {
+    "block.aerolarge.uld_container": "ULD Container",
+  };
+}
+
 // Rubber ducks: their fittings, sound, recipes and names are in the functions below, which the shared lists further
 // down take in. The duck, drawn facing north from RubberDuckBlock.BOXES: a yellow body with its head on the front, an
 // eye either side of the head, an orange beak and a cocked tail. Its renderer draws it, sitting or afloat, so one model
@@ -3198,6 +3325,7 @@ FITTINGS.push(...bulkheadSignFittings());
 FITTINGS.push(...denFurnitureFittings());
 FITTINGS.push(...cargoNetFittings());
 FITTINGS.push(...cargoFloorFittings());
+FITTINGS.push(...uldContainerFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -3313,6 +3441,7 @@ denFurnitureRecipes();
 airstairButtonRecipes();
 cargoNetRecipes();
 cargoFloorRecipes();
+uldContainerRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3661,6 +3790,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...airstairButtonLang(),
   ...cargoNetLang(),
   ...cargoFloorLang(),
+  ...uldContainerLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

@@ -1830,6 +1830,69 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "ball_mat_ball", (x, y) => (x % 4 === 1 && y % 4 === 1 ? [0xfa, 0xfc, 0xff] : CHROME), 2);
 }
 
+// The ULD container (see UldContainerBlock), an LD3: ribbed aluminium sheet in an extruded frame. Its door, its back
+// and its flat side are each one picture over the container's whole face, thirty-two pixels each way (two blocks), as
+// seen from outside; its top and contour tile a block's sixteen. The door: a frame round the profile, slanting in at
+// the bottom right with the contour, sheet round the opening, a bar across its top, and in the opening the bags packed
+// inside behind a black net. The flat side: its id stencilled in black near the top, AKE and the airline's code AL
+// over the serial number, one picture for each serial (UldContainerBlock.NUMBER), and one without for its lower blocks.
+{
+  const FRAME = [0x8a, 0x90, 0x98];
+  const FRAME_EDGE = [0x6c, 0x72, 0x7a];
+  const SHEET = [0xc2, 0xc7, 0xcd];
+  const STENCIL_PAINT = [0x1c, 0x1e, 0x22];
+  const BAGS = [[0x9a, 0x2a, 0x2a], [0x2a, 0x4a, 0x9a], [0x2a, 0x7a, 0x40], [0x6a, 0x34, 0x8a], [0x8a, 0x6a, 0x40]];
+  const SERIALS = ["23805", "40117", "61932", "08446"];
+  // The stencil's letters, three pixels wide and five tall.
+  const LETTERS = {
+    A: ["###", "#.#", "###", "#.#", "#.#"], K: ["#.#", "#.#", "##.", "#.#", "#.#"], E: ["###", "#..", "##.", "#..", "###"],
+    L: ["#..", "#..", "#..", "#..", "###"], 0: ["###", "#.#", "#.#", "#.#", "###"], 1: [".#.", "##.", ".#.", ".#.", "###"],
+    2: ["##.", "..#", ".#.", "#..", "###"], 3: ["##.", "..#", ".#.", "..#", "##."], 4: ["#.#", "#.#", "###", "..#", "..#"],
+    5: ["###", "#..", "##.", "..#", "##."], 6: [".##", "#..", "###", "#.#", "###"], 7: ["###", "..#", ".#.", ".#.", ".#."],
+    8: ["###", "#.#", "###", "#.#", "###"], 9: ["###", "#.#", "###", "..#", "##."],
+  };
+  // Whether the pixel is painted, for text whose first letter's top left pixel is at (u0, v0).
+  const stencil = (text, u0, v0) => (u, v) => {
+    const glyph = LETTERS[text[Math.floor((u - u0) / 4)]];
+    return u >= u0 && v >= v0 && v < v0 + 5 && (u - u0) % 4 < 3 && glyph !== undefined && glyph[v - v0][(u - u0) % 4] === "#";
+  };
+  // Sheet ribbed every four pixels, a shadow and a highlight down each rib.
+  const ribbed = (u) => (u % 4 === 1 ? [0xa8, 0xae, 0xb5] : u % 4 === 2 ? [0xd8, 0xdc, 0xe0] : SHEET);
+  const framed = (u, v, inside) => {
+    if (u === 0 || v === 0 || u === 31 || v === 31) return FRAME_EDGE;
+    if (u === 1 || v === 1 || u === 30 || v === 30) return FRAME;
+    return inside(u, v);
+  };
+  const side = (painted) => (u, v) => framed(u, v, (x, y) => (painted(x, y) ? STENCIL_PAINT : ribbed(x)));
+  texture(blockOutput, "uld_container_side", side(() => false), 3, 32, 32);
+  SERIALS.forEach((serial, n) => {
+    const type = stencil("AKE", 4, 4);
+    const airline = stencil("AL", 21, 4);
+    const number = stencil(serial, 4, 11);
+    texture(blockOutput, `uld_container_side_${n}`, side((u, v) => type(u, v) || airline(u, v) || number(u, v)), 3, 32, 32);
+  });
+  texture(blockOutput, "uld_container_back", (u, v) => framed(u, v, ribbed), 3, 32, 32);
+  // The door, seen from the north: the container's x runs right to left, the contour on the right; how far in from the
+  // contour's slant a pixel is (the slant runs from 5.8 pixels in at the base to the full width 14 pixels up).
+  const fromSlant = (u, v) => {
+    const x = 31.5 - u;
+    const y = 31.5 - v;
+    return y >= 14 ? x : x - 5.8 * (1 - y / 14);
+  };
+  texture(blockOutput, "uld_container_door", (u, v) => {
+    const inward = fromSlant(u, v);
+    if (u === 0 || v === 0 || v === 31 || inward < 1) return FRAME_EDGE;
+    if (u === 1 || v === 1 || v === 30 || inward < 2) return FRAME;
+    if (u < 4 || v < 4 || v > 27 || inward < 5) return SHEET;
+    if (v === 4) return FRAME;
+    if ((u + v) % 8 === 0 || (u - v + 32) % 8 === 0) return STENCIL_PAINT;
+    if ((u - 4) % 6 === 5 || (v - 5) % 5 === 4) return [0x24, 0x22, 0x20];
+    return BAGS[(Math.floor((u - 4) / 6) * 2 + Math.floor((v - 5) / 5) * 3) % BAGS.length];
+  }, 3, 32, 32);
+  texture(blockOutput, "uld_container_skin", (x, y) => (y === 0 ? FRAME : ribbed(x)), 3);
+  texture(blockOutput, "uld_container_frame", () => FRAME, 3);
+}
+
 // The vacuum toilet. Its shroud: white plastic, a touch greyer toward the foot. The rim and the bowl's sides: brushed
 // stainless, streaked along. The bowl's floor, where its model shows it (the middle six pixels square, a pixel below
 // the middle): stainless round a pool of the blue rinse water, the drain dark in the middle of it. The seat: a little
