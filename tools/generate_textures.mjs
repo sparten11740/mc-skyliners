@@ -1483,6 +1483,19 @@ blueprint("furnished_airliner_blueprint", true);
     if (y === 13) return GREEN;
     return y >= 14 ? [0x7a, 0x4e, 0x26] : null;
   });
+
+  // Air traffic control talking (see AtcHeadset): a pilot's headset, its band over the top, a white ear cup either side
+  // and the microphone on its boom round to the mouth, with the radio's green lamp lit in the corner.
+  icon(autopilotOutput, "radio", (x, y) => {
+    const lamp = Math.hypot(x - 14, y - 1.5);
+    if (lamp <= 1.6) return lamp <= 0.8 ? GREEN : GREEN_DARK;
+    const cup = y >= 8 && y <= 13 && (x <= 2 || x >= 13) && !((x === 0 || x === 15) && (y === 8 || y === 13));
+    if (cup) return x === 2 || x === 13 ? RUNWAY : INK;
+    const r = Math.hypot(x - 7.5, y - 8.5);
+    if (y <= 8 && r >= 5.6 && r <= 7) return PALE;
+    if (onSegment(x, y, [2, 13], [6, 14.5], 1.2)) return PALE;
+    return Math.hypot(x - 7.5, y - 14.5) <= 1.1 ? RUNWAY : null;
+  });
 }
 
 // Duty free and the paper plane. The paper plane's icon: a white plane flying up to the right, its far wing and keel

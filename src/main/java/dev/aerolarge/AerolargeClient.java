@@ -9,6 +9,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AirstairRenderer;
+import dev.aerolarge.client.AtcHeadset;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
@@ -65,7 +66,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * airstairs, its engines' sound and contrails, the camera shake aboard, the passenger screens' outside cameras and the
  * tail camera display's live picture, the cabin's blue light at night, the clouds kept out of the cabin, parachutes:
  * opening them by jumping, and the canopy over their wearers; the pilot helmet's visor and the pilots' head-up display
- * on it; the creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
+ * on it; the radio's headset on screen while air traffic control talks; the creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -99,6 +100,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
+        NeoForge.EVENT_BUS.addListener(AtcHeadset::heard);
+        NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);
         modEventBus.addListener(AerolargeClient::onRegisterGeometryLoaders);
@@ -128,6 +131,7 @@ public final class AerolargeClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "pilot_hud"), PilotHud::overlay);
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "atc_headset"), AtcHeadset::overlay);
         // Over the view as a carved pumpkin's is, under the crosshair and the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "helmet_visor"), HelmetVisor::overlay);
     }

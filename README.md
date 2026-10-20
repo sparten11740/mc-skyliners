@@ -216,8 +216,10 @@ says nothing. Everyone on the flight deck hears it (within 24 blocks of the auto
 deck what it does), and so does whoever wears a pilot helmet anywhere aboard: its ear cups are a headset. It never
 talks over a callout or an announcement: it waits for them to end, and keeps clear of a callout about to be made.
 What has waited too long, or no longer fits what the airliner is doing, is left unsaid. Each transmission has its own
-subtitle ("ATC: Cleared for take-off"). Turn it off with `atcChatter` in the server config, or make it quieter with
-`atcVolume`; each player's Voice/Speech slider turns it down too.
+subtitle ("ATC: Cleared for take-off"), and while it talks a little radio panel shows in the top left corner of the
+screen of whoever hears it: a pilot's headset with the radio's green lamp lit, gently pulsing, so that those who
+cannot read yet know the radio is talking too. Turn it off with `atcChatter` in the server config, or make it quieter
+with `atcVolume`; each player's Voice/Speech slider turns it down too.
 
 ### Seatbelts and turbulence
 
