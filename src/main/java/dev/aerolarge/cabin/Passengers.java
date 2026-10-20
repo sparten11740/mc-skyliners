@@ -48,16 +48,20 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  * With no seat to be had for a few minutes it gives the pass back.
  */
 public final class Passengers {
-    /** How often a passenger looks about, in ticks. */
+    /**
+     * How often a passenger looks about, in ticks: each on a tick of its own, set by its entity id, so that a cabin
+     * full of them does not all look on the same one.
+     */
     private static final int CHECK_TICKS = 10;
     /** How far across, and up and down, a passenger looks for a seat, in blocks. */
     private static final int SEEK_ACROSS = 24;
     private static final int SEEK_UP_DOWN = 6;
     /**
-     * How often a passenger without a seat searches round it for one, in ticks; between searches it only makes sure
-     * the seat it is making for is still free.
+     * How often a passenger without a seat searches round it for one, in ticks, on one of its looks set by its entity
+     * id (so a whole number of looks); between searches it only makes sure the seat it is making for is still free.
+     * Just left without a seat, it searches at once.
      */
-    private static final int SEARCH_TICKS = 40;
+    private static final int SEARCH_TICKS = 4 * CHECK_TICKS;
     /** How near a seat a passenger has to be to sit down in it, in blocks. */
     private static final double SIT_REACH = 2.0;
     /** How fast a passenger walks to its seat, as a share of its full speed. */
@@ -71,13 +75,13 @@ public final class Passengers {
     private static final double STILL = 0.5;
     private static final int STILL_LOOKS = 6;
 
-    /** The seat each passenger without one is making for, if any, and when it next searches; forgotten with it. */
+    /** The seat each passenger without one is making for, if any, once it has searched; forgotten with it. */
     private static final Map<Villager, Sought> SOUGHT = new WeakHashMap<>();
 
     private Passengers() {
     }
 
-    private record Sought(@Nullable BlockPos seat, long searchAt) {
+    private record Sought(@Nullable BlockPos seat) {
     }
 
     /**
@@ -130,8 +134,8 @@ public final class Passengers {
     }
 
     public static void onTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof Villager villager) || villager.tickCount % CHECK_TICKS != 0
-            || !(villager.level() instanceof ServerLevel level) || !allowed()) {
+        if (!(event.getEntity() instanceof Villager villager) || !(villager.level() instanceof ServerLevel level)
+            || !due(level, villager, CHECK_TICKS) || !allowed()) {
             return;
         }
         Trip trip = villager.getExistingDataOrNull(AerolargeRegistry.TRIP);
@@ -172,18 +176,23 @@ public final class Passengers {
 
     /**
      * The seat a passenger makes for: the one it is already making for while that is still free, and between searches
-     * nothing else; when a search is due, the nearest free one round it.
+     * nothing else; when a search is due, the nearest free one round it (aboard an assembled airliner, the nearest in
+     * that airliner while it has one).
      */
     @Nullable
     private static BlockPos seat(ServerLevel level, Villager villager) {
-        long now = level.getGameTime();
         Sought sought = SOUGHT.get(villager);
-        if (sought != null && now < sought.searchAt()) {
+        if (sought != null && !due(level, villager, SEARCH_TICKS)) {
             return sought.seat() != null && freeSeat(level, sought.seat()) ? sought.seat() : null;
         }
-        BlockPos seat = SableFlight.nearest(level, villager.position(), SEEK_ACROSS, SEEK_UP_DOWN, Passengers::seatToSitIn, at -> freeSeat(level, at));
-        SOUGHT.put(villager, new Sought(seat, now + SEARCH_TICKS));
+        BlockPos seat = SableFlight.nearest(villager, SEEK_ACROSS, SEEK_UP_DOWN, Passengers::seatToSitIn, at -> freeSeat(level, at));
+        SOUGHT.put(villager, new Sought(seat));
         return seat;
+    }
+
+    /** Whether this is one of a villager's ticks, every so many: which ones is set by its entity id, to spread them. */
+    private static boolean due(ServerLevel level, Villager villager, int every) {
+        return Math.floorMod(level.getGameTime() + villager.getId(), every) == 0;
     }
 
     /**

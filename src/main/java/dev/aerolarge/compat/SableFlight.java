@@ -198,21 +198,17 @@ public final class SableFlight {
     }
 
     /**
-     * The nearest block to a point in the world that the test accepts, within the ranges across and up and down,
+     * The nearest block to an entity that the test accepts, within the ranges across and up and down of where it is,
      * looking into any assembled airliner there as well as the world: its position in the world, or in the airliner's
-     * plot; null if neither has one. Only blocks in a candidate state are tested, and a section of the level holding
-     * none is passed over whole by its palette, so a wide search over open country or an airliner's empty spaces costs
-     * next to nothing.
+     * plot; null if neither has one. For an entity riding an assembled airliner, that airliner's blocks are looked
+     * through first, and the world and any other airliner only when none of those will do: what it looks for aboard is
+     * at hand there, and the search round it stays among them. Only blocks in a candidate state are tested, and a
+     * section of the level holding none is passed over whole by its palette, so a wide search over open country or an
+     * airliner's empty spaces costs next to nothing.
      */
     @Nullable
-    public static BlockPos nearest(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
-        BlockPos inWorld = closest(level, point, across, upDown, candidate, test);
-        BlockPos aboard = SABLE ? Access.nearestAboard(level, point, across, upDown, candidate, test) : null;
-        if (inWorld == null || aboard == null) {
-            return inWorld == null ? aboard : inWorld;
-        }
-        // Distances in a plot are the same as in the world: an airliner only moves and turns.
-        return inWorld.distToCenterSqr(point) <= aboard.distToCenterSqr(toPlot(level, aboard, point, false)) ? inWorld : aboard;
+    public static BlockPos nearest(Entity entity, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
+        return SABLE ? Access.nearest(entity, across, upDown, candidate, test) : closest(entity.level(), entity.position(), across, upDown, candidate, test);
     }
 
     /**
@@ -403,11 +399,26 @@ public final class SableFlight {
         }
 
         @Nullable
-        static BlockPos nearestAboard(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
+        static BlockPos nearest(Entity entity, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
+            Level level = entity.level();
+            Vec3 point = entity.position();
+            SubLevel ridden = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            if (ridden != null) {
+                BlockPos aboard = closest(level, ridden.logicalPose().transformPositionInverse(point), across, upDown, candidate, test);
+                if (aboard != null) {
+                    return aboard;
+                }
+            }
+            // The world's nearest wins a tie with an airliner's. Distances in a plot are the same as in the world: an
+            // airliner only moves and turns.
+            BlockPos nearest = closest(level, point, across, upDown, candidate, test);
+            double distance = nearest == null ? Double.MAX_VALUE : nearest.distToCenterSqr(point);
             BoundingBox3d around = new BoundingBox3d(point.x - across, point.y - upDown, point.z - across, point.x + across, point.y + upDown, point.z + across);
-            BlockPos nearest = null;
-            double distance = Double.MAX_VALUE;
             for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, around)) {
+                if (airliner == ridden) {
+                    // Looked through already, with nothing found.
+                    continue;
+                }
                 Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
                 BlockPos found = closest(level, inPlot, across, upDown, candidate, test);
                 if (found != null && found.distToCenterSqr(inPlot) < distance) {
