@@ -860,7 +860,8 @@ flies, reading the airliner from Sable through `SableFlight`, which also keeps t
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other
 blocks that work blocks round them keep where those are as offsets from themselves, which `Turning` turns with them
-when the Physics Assembler sets the airliner down on another heading; `EngineIntakeRenderer` draws the intakes round
+when the Physics Assembler sets the airliner down on another heading, and mends those an older version left unturned;
+`EngineIntakeRenderer` draws the intakes round
 over the nacelles' faces, from where each engine's core was told they are; `PlugDoorRenderer` draws the hull's doors
 shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining
 into; `AirstairRenderer` draws the airstairs coming out and going away, as `AirstairFlight` builds and moves them,

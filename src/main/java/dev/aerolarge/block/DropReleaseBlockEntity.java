@@ -1,11 +1,13 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -13,6 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class DropReleaseBlockEntity extends BlockEntity {
     @Nullable
     private BlockPos bay;
+    /** Whether its link to the bay has been looked at since it was loaded, to mend it (see {@link Turning#mend}). */
+    private boolean linkChecked;
 
     public DropReleaseBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.DROP_RELEASE_ENTITY.get(), pos, state);
@@ -20,13 +24,32 @@ public class DropReleaseBlockEntity extends BlockEntity {
 
     public void configure(BlockPos bay) {
         this.bay = bay;
+        linkChecked = true;
         setChanged();
     }
 
     /** The bay it works, if it is still there. */
     @Nullable
     DropBayBlockEntity bay() {
-        return bay != null && level != null && level.getBlockEntity(worldPosition.offset(bay)) instanceof DropBayBlockEntity found ? found : null;
+        if (bay == null || level == null) {
+            return null;
+        }
+        mendLink();
+        return level.getBlockEntity(worldPosition.offset(bay)) instanceof DropBayBlockEntity found ? found : null;
+    }
+
+    /** Once after loading, as the release is first worked, mends its link to the bay if it leads nowhere. */
+    private void mendLink() {
+        if (!linkChecked && level != null && bay != null) {
+            linkChecked = true;
+            Turning.mend(level, worldPosition, List.of(bay), state -> state.getBlock() instanceof DropBayBlock, this::turnLink);
+        }
+    }
+
+    /** Turns the link to the bay, mending it. */
+    private void turnLink(Rotation turn) {
+        bay = Turning.turn(bay, turn);
+        setChanged();
     }
 
     @Override

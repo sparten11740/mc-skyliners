@@ -41,6 +41,9 @@ public abstract class CabinControlBlock extends HorizontalDirectionalBlock imple
     /** What the control says when set, for the one who set it. */
     protected abstract Component describe(BlockState control);
 
+    /** Whether the control works the target: whether its setting sets anything of it. */
+    public abstract boolean works(BlockState target);
+
     /** The target as the control's setting has it; the target itself if the control does not work it. */
     public abstract BlockState applyTo(BlockState control, BlockState target);
 

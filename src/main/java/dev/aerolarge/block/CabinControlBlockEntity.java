@@ -9,6 +9,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -25,6 +26,8 @@ public class CabinControlBlockEntity extends BlockEntity {
     private List<BlockPos> targets = List.of();
     /** The next target a sweep sets; past the end when none is under way. */
     private int next = Integer.MAX_VALUE;
+    /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
+    private boolean linksChecked;
 
     public CabinControlBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.CABIN_CONTROL_ENTITY.get(), pos, state);
@@ -33,12 +36,28 @@ public class CabinControlBlockEntity extends BlockEntity {
     /** Hands the control the blocks it works, front to back. */
     public void configure(List<BlockPos> targets) {
         this.targets = List.copyOf(targets);
+        linksChecked = true;
         setChanged();
     }
 
     /** Starts the control's setting on its way through the cabin. */
     public void sweep() {
+        mendLinks();
         next = 0;
+        setChanged();
+    }
+
+    /** Once after loading, as the control is first worked, mends its links to what it works if they lead nowhere. */
+    private void mendLinks() {
+        if (!linksChecked && level != null && getBlockState().getBlock() instanceof CabinControlBlock control) {
+            linksChecked = true;
+            Turning.mend(level, worldPosition, targets, control::works, this::turnLinks);
+        }
+    }
+
+    /** Turns the links to what it works, mending them. */
+    private void turnLinks(Rotation turn) {
+        targets = Turning.turn(targets, turn);
         setChanged();
     }
 

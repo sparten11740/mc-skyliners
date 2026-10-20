@@ -1,10 +1,14 @@
 package dev.aerolarge.block;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -20,6 +24,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  * ({@link #save}), and loaded into a block facing another way turns them by the difference ({@link #since}): in
  * Sable's move, as in any other that turns blocks and carries their data, such as a structure placed turned. Nothing
  * of Sable is needed for it, so it works with Sable or without.
+ *
+ * <p>Links saved before this, by an airliner already set down turned, lead nowhere. Each block entity with links mends
+ * them where it first uses them after loading ({@link #mend}), once; links it was just handed need no mending.
  */
 public final class Turning {
     /** The facing the links are saved with: the horizontal one every block with links has. */
@@ -67,5 +74,47 @@ public final class Turning {
     /** Offsets turned. */
     public static List<BlockPos> turn(List<BlockPos> offsets, Rotation turn) {
         return turn == Rotation.NONE ? offsets : offsets.stream().map(offset -> offset.rotate(turn)).toList();
+    }
+
+    /**
+     * Mends links saved before they were turned with their block, by an airliner already set down turned; on the server.
+     * Looks where the offsets from {@code origin} lead as they are and at each other quarter turn of them, counting those
+     * that lead to a block the test accepts; if one turn leads more of them there than every other, none included, it is
+     * handed to {@code turn}, to turn all of the block entity's links by and save them. Nothing is guessed: where the
+     * links lead right as they are, or two turns lead as many right, they stay as they are. A place in a chunk that is
+     * not loaded leads nowhere, and is never loaded to be looked at.
+     */
+    public static void mend(Level level, BlockPos origin, Collection<BlockPos> offsets, Predicate<BlockState> right, Consumer<Rotation> turn) {
+        if (level.isClientSide) {
+            return;
+        }
+        int[] leading = new int[TURNS.length];
+        for (int i = 0; i < TURNS.length; i++) {
+            for (BlockPos offset : offsets) {
+                BlockPos at = origin.offset(offset.rotate(TURNS[i]));
+                if (level.isLoaded(at) && right.test(level.getBlockState(at))) {
+                    leading[i]++;
+                }
+            }
+            if (i == 0 && leading[0] == offsets.size()) {
+                // All lead right as they are, as they almost always do: no need to look further.
+                return;
+            }
+        }
+        int best = 0;
+        for (int i = 1; i < TURNS.length; i++) {
+            if (leading[i] > leading[best]) {
+                best = i;
+            }
+        }
+        if (best == 0) {
+            return;
+        }
+        for (int i = 1; i < TURNS.length; i++) {
+            if (i != best && leading[i] == leading[best]) {
+                return;
+            }
+        }
+        turn.accept(TURNS[best]);
     }
 }

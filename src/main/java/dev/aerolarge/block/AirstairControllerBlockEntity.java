@@ -80,6 +80,15 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    /**
+     * Turns its links, the flight's stages and the door, mending them (see {@link Turning#mend}); saving them is up to
+     * the caller.
+     */
+    protected void turnLinks(Rotation turn) {
+        stages = stages.stream().map(stage -> stage.stream().map(step -> step.turned(turn)).toList()).toList();
+        door = Turning.turn(door, turn);
+    }
+
     /** Lays out a new flight to unfold, in place of the old one, which must be all folded away. */
     protected void replan(List<List<Step>> stages) {
         this.stages = stages;

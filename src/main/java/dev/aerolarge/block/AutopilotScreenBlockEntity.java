@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -88,6 +90,8 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
     /** Where the autopilot it works is, from this block; null until the airliner is built. */
     @Nullable
     private BlockPos autopilot;
+    /** Whether its link to the autopilot has been looked at since it was loaded, to mend it (see {@link Turning#mend}). */
+    private boolean linkChecked;
     private int range = DEFAULT_RANGE;
     /** Where the airliner has been, in world blocks (x, z), oldest first; only on the client. */
     private final Deque<double[]> track = new ArrayDeque<>();
@@ -100,6 +104,7 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
     /** Links the screen to its autopilot. */
     public void configure(BlockPos offset) {
         autopilot = offset;
+        linkChecked = true;
         setChanged();
     }
 
@@ -109,7 +114,25 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
         if (level == null || autopilot == null) {
             return null;
         }
+        mendLink();
         return level.getBlockEntity(worldPosition.offset(autopilot)) instanceof AutopilotBlockEntity found ? found : null;
+    }
+
+    /** Once after loading, as the screen is first used, mends its link to the autopilot if it leads nowhere. */
+    private void mendLink() {
+        if (!linkChecked && level != null && autopilot != null) {
+            linkChecked = true;
+            Turning.mend(level, worldPosition, List.of(autopilot), state -> state.getBlock() instanceof AutopilotBlock, this::turnLink);
+        }
+    }
+
+    /** Turns the link to the autopilot, mending it, and tells the clients, which draw what it flies on the screen. */
+    private void turnLink(Rotation turn) {
+        autopilot = Turning.turn(autopilot, turn);
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     /** The map's width in world blocks. */
@@ -119,6 +142,7 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
 
     /** A touch at this point of the screen, on the server: zooms the map, or anywhere else opens the settings. */
     void touch(double across, double up, ServerPlayer player) {
+        mendLink();
         if (MAP.contains(across, up)) {
             range = (range + 1) % RANGES.length;
             setChanged();

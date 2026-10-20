@@ -28,10 +28,15 @@ public final class Relays {
         for (BlockPos offset : offsets) {
             BlockPos pos = origin.offset(offset);
             BlockState state = level.getBlockState(pos);
-            if (state.getBlock() instanceof ThrustRelayBlock && state.getValue(ThrustRelayBlock.POWER) != signal) {
+            if (isRelay(state) && state.getValue(ThrustRelayBlock.POWER) != signal) {
                 level.setBlock(pos, state.setValue(ThrustRelayBlock.POWER, signal), Block.UPDATE_ALL);
             }
         }
+    }
+
+    /** Whether the block is a relay, what a control's links lead to. */
+    public static boolean isRelay(BlockState state) {
+        return state.getBlock() instanceof ThrustRelayBlock;
     }
 
     public static ListTag write(List<BlockPos> offsets) {

@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -10,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -94,6 +96,23 @@ public class SeatbeltSwitchBlockEntity extends LinkedControlBlockEntity {
 
     private static boolean isShut(BlockState state) {
         return CurtainBlock.isCurtain(state) && !state.getValue(CurtainBlock.OPEN);
+    }
+
+    /** The signs' relays, and the curtains. */
+    @Override
+    protected List<BlockPos> links() {
+        return Stream.concat(super.links().stream(), curtains.stream()).toList();
+    }
+
+    @Override
+    protected boolean leadsTo(BlockState state) {
+        return super.leadsTo(state) || CurtainBlock.isCurtain(state);
+    }
+
+    @Override
+    protected void turnLinks(Rotation turn) {
+        curtains = Turning.turn(curtains, turn);
+        super.turnLinks(turn);
     }
 
     @Override

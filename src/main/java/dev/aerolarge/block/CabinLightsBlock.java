@@ -41,7 +41,12 @@ public class CabinLightsBlock extends CabinControlBlock {
     }
 
     @Override
+    public boolean works(BlockState target) {
+        return target.hasProperty(Brightness.PROPERTY);
+    }
+
+    @Override
     public BlockState applyTo(BlockState control, BlockState target) {
-        return target.hasProperty(Brightness.PROPERTY) ? target.setValue(Brightness.PROPERTY, control.getValue(Brightness.PROPERTY)) : target;
+        return works(target) ? target.setValue(Brightness.PROPERTY, control.getValue(Brightness.PROPERTY)) : target;
     }
 }

@@ -29,6 +29,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -93,6 +94,8 @@ public class SlideControlBlockEntity extends BlockEntity {
     private int cooldown;
     /** How far open the door was a tick ago, while the slide waits for it: shutting again, it calls the slide off. */
     private float doorWas;
+    /** Whether its link to the door has been looked at since it was loaded, to mend it (see {@link Turning#mend}). */
+    private boolean linkChecked;
 
     public SlideControlBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.SLIDE_CONTROL_ENTITY.get(), pos, state);
@@ -101,6 +104,7 @@ public class SlideControlBlockEntity extends BlockEntity {
     /** Hands the control the door it serves, where it is from it: its bottom left part. Built packed. */
     public void configure(BlockPos door) {
         this.door = door;
+        linkChecked = true;
         deployed = false;
         ticks = 0;
         lastTicks = 0;
@@ -133,8 +137,23 @@ public class SlideControlBlockEntity extends BlockEntity {
         if (level == null || door == null) {
             return null;
         }
+        mendLink();
         BlockPos at = worldPosition.offset(door);
         return PlugDoorBlock.isController(level.getBlockState(at)) ? at : null;
+    }
+
+    /** Once after loading, as the door is first looked for, mends the link to it if it leads nowhere. */
+    private void mendLink() {
+        if (!linkChecked && level != null && door != null) {
+            linkChecked = true;
+            Turning.mend(level, worldPosition, List.of(door), PlugDoorBlock::isController, this::turnLink);
+        }
+    }
+
+    /** Turns the link to the door, mending it, and tells the clients, which find the door by it to draw the slide. */
+    private void turnLink(Rotation turn) {
+        door = Turning.turn(door, turn);
+        sync();
     }
 
     @Nullable

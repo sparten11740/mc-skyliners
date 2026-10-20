@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -15,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class ThrustLeverBlockEntity extends BlockEntity implements Control {
     private List<BlockPos> relays = List.of();
+    /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
+    private boolean linksChecked;
 
     public ThrustLeverBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.THRUST_LEVER_ENTITY.get(), pos, state);
@@ -22,6 +25,7 @@ public class ThrustLeverBlockEntity extends BlockEntity implements Control {
 
     public void configure(List<BlockPos> relays) {
         this.relays = List.copyOf(relays);
+        linksChecked = true;
         setChanged();
     }
 
@@ -33,8 +37,23 @@ public class ThrustLeverBlockEntity extends BlockEntity implements Control {
     /** Sets every relay of this lever's engine to the signal, which the thrusters next to them pick up. */
     void drive(int power) {
         if (level != null) {
+            mendLinks();
             Relays.drive(level, worldPosition, relays, power);
         }
+    }
+
+    /** Once after loading, as the lever is first worked, mends its links to the relays if they lead nowhere. */
+    private void mendLinks() {
+        if (!linksChecked && level != null) {
+            linksChecked = true;
+            Turning.mend(level, worldPosition, relays, Relays::isRelay, this::turnLinks);
+        }
+    }
+
+    /** Turns the links to the relays, mending them. */
+    private void turnLinks(Rotation turn) {
+        relays = Turning.turn(relays, turn);
+        setChanged();
     }
 
     @Override

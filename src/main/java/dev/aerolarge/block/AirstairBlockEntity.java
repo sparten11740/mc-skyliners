@@ -89,6 +89,8 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
      * mouth, out of the way of the panel swinging back past the top of the stairs.
      */
     private boolean doorToShut;
+    /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
+    private boolean linksChecked;
 
     public AirstairBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), pos, state);
@@ -113,6 +115,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         laid = deploying;
         hatchOpen = deploying;
         doorToShut = false;
+        linksChecked = true;
         setChanged();
     }
 
@@ -124,12 +127,33 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     /** The served door's bottom left part, where it is; null when the controller serves no plug door. */
     @Nullable
     public BlockPos served() {
+        mendLinks();
         BlockPos door = door();
         if (level == null || door == null) {
             return null;
         }
         BlockPos at = worldPosition.offset(door);
         return PlugDoorBlock.isController(level.getBlockState(at)) ? at : null;
+    }
+
+    /**
+     * Once after loading, as the door is first looked for, mends the links if the one to the door leads nowhere: the
+     * door, the hatch and any old stairs turn together.
+     */
+    private void mendLinks() {
+        BlockPos door = door();
+        if (!linksChecked && level != null && door != null) {
+            linksChecked = true;
+            Turning.mend(level, worldPosition, List.of(door), PlugDoorBlock::isController, this::turnLinks);
+        }
+    }
+
+    /** Turns the hatch's skin with the rest, and tells the clients, which draw the stairs from the door and the hatch. */
+    @Override
+    protected void turnLinks(Rotation turn) {
+        super.turnLinks(turn);
+        hatch = hatch.stream().map(part -> part.turned(turn)).toList();
+        sync();
     }
 
     @Override

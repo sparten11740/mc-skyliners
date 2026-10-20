@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -250,6 +251,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
+    /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
+    private boolean linksChecked;
     private Phase phase = Phase.OFF;
     private Lateral lateral = Lateral.HEADING;
     /** The heading to hold, as Minecraft yaw; the height to hold, in world blocks; the speed, in blocks a second. */
@@ -306,6 +309,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.relays = new EnumMap<>(Channel.class);
         this.relays.putAll(relays);
         this.controls = List.copyOf(controls);
+        linksChecked = true;
         setChanged();
     }
 
@@ -854,6 +858,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * back: the thrust levers at idle, the tiller straight and the parking brake set.
      */
     private void park(ServerLevel level) {
+        mendLinks(level);
         for (BlockPos offset : controls) {
             BlockPos at = worldPosition.offset(offset);
             BlockState control = level.getBlockState(at);
@@ -888,6 +893,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /** The engines, the nose wheel and the brakes follow their controls again. */
     private void resyncControls(ServerLevel level) {
+        mendLinks(level);
         for (BlockPos offset : controls) {
             if (level.getBlockEntity(worldPosition.offset(offset)) instanceof Control control) {
                 control.resync();
@@ -896,7 +902,30 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     private void drive(ServerLevel level, Channel channel, int power) {
+        mendLinks(level);
         Relays.drive(level, worldPosition, relays.getOrDefault(channel, List.of()), power);
+    }
+
+    /** Once after loading, as it first works its relays or the controls, mends its links to them if they lead nowhere. */
+    private void mendLinks(ServerLevel level) {
+        if (!linksChecked) {
+            linksChecked = true;
+            List<BlockPos> links = Stream.concat(relays.values().stream().flatMap(List::stream), controls.stream()).toList();
+            Turning.mend(level, worldPosition, links, AutopilotBlockEntity::linked, this::turnLinks);
+        }
+    }
+
+    /** Whether a link leads where it should: to a relay by the thrusters, or to one of the controls it hands back to. */
+    private static boolean linked(BlockState state) {
+        Block block = state.getBlock();
+        return Relays.isRelay(state) || block instanceof ThrustLeverBlock || block instanceof TillerBlock || block instanceof ParkingBrakeBlock;
+    }
+
+    /** Turns its links to the relays and the controls, mending them. */
+    private void turnLinks(Rotation turn) {
+        relays.replaceAll((channel, offsets) -> Turning.turn(offsets, turn));
+        controls = Turning.turn(controls, turn);
+        setChanged();
     }
 
     /** Saves, and sends what the screen shows to the clients. */
