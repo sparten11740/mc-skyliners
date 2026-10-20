@@ -128,7 +128,7 @@ public final class AerolargeConfig {
                 "Whether villagers fly as passengers: handed a boarding pass from a check-in desk, a villager walks aboard and takes a seat,",
                 "and pays its fare in emeralds when the airliner has flown it somewhere and stands still with the seatbelt signs off."
             )
-            .define("villagerPassengers", false);
+            .define("villagerPassengers", true);
         builder.pop();
 
         SPEC = builder.build();

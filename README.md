@@ -609,7 +609,7 @@ an airliner without one has none.
 
 ### Villager passengers
 
-Off by default: turn on Villager Passengers (`villagerPassengers`) in the server settings (see Settings). A Check-in
+On by default (turn off Villager Passengers, `villagerPassengers`, in the server settings, see Settings). A Check-in
 Desk at the terminal then prints a Boarding Pass for whoever uses it. Hand the pass to a villager and it makes for
 the nearest free seat inside an airliner (a cabin seat, or one of Create's) within about 24 blocks (never a pilot's
 seat), up the airstairs or through the jet bridge and the doors (which open for it, see Doors), and sits down;
