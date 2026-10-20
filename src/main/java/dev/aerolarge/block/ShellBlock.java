@@ -17,16 +17,33 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Airframe skin cut to the curve of the hull: the airliner's outer skin, where it curves, is made of these instead
- * of whole panels, so the fuselage and the nose read as one smooth shell. SHAPE says where the hull's surface cuts
+ * of whole panels, so the fuselage and the nose read as one smooth shell. Its shape says where the hull's surface cuts
  * through the block (see {@link ShellGeometry}); its model draws the part below the cut and its collision follows it
  * in quarter-block steps. It stops light at the sides its cut leaves whole, the inside of the skin, so the daylight
  * that lights its cut face goes no further into the cabin than through a panel. Only the blueprints place it; broken,
  * it gives back the part it is cut from.
+ * <p>
+ * Its shape is kept in two properties, a high and a low part of about the square root of the shapes each, rather than
+ * one of all of them: the game keeps a table of every state's neighbours as large as all of its property values
+ * together, which for every shape in one property is some 75 MB for each block cut to the curve, and several times
+ * that for a block with states of its own besides; split, it is a few.
  */
 public class ShellBlock extends Block {
     /** Any of {@link ShellGeometry}'s shapes. */
-    public static final IntegerProperty SHAPE = IntegerProperty.create("shape", 0, ShellGeometry.COUNT - 1);
+    public static final Cuts CUTS = Cuts.of(ShellGeometry.COUNT);
     private final Supplier<? extends ItemLike> part;
+
+    /**
+     * The shapes a block can take, the first {@code count} of {@link ShellGeometry}'s, kept split in two properties:
+     * shape {@code high * split + low}. The split leaves a few values past the last shape, which no block is cut to.
+     */
+    public record Cuts(int count, int split, IntegerProperty high, IntegerProperty low) {
+        public static Cuts of(int count) {
+            int split = (int) Math.ceil(Math.sqrt(count));
+            return new Cuts(count, split, IntegerProperty.create("shape_high", 0, (count - 1) / split),
+                IntegerProperty.create("shape_low", 0, split - 1));
+        }
+    }
 
     public ShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
         super(properties);
@@ -35,26 +52,29 @@ public class ShellBlock extends Block {
     }
 
     /**
-     * The property the block keeps its shape in: every shape, unless the block can only take some of them. It is
-     * asked for while the block is being made, so it must be a constant.
+     * The shapes the block can take: every one, unless it can only take some of them. It is asked for while the block
+     * is being made, so it must be a constant.
      */
-    protected IntegerProperty shapeProperty() {
-        return SHAPE;
+    protected Cuts cuts() {
+        return CUTS;
     }
 
-    /** The shape this block's state is cut to; a block keeping its shape some other way than one property says how. */
+    /** The shape this block's state is cut to. */
     protected int shapeOf(BlockState state) {
-        return state.getValue(shapeProperty());
+        Cuts cuts = cuts();
+        int shape = state.getValue(cuts.high()) * cuts.split() + state.getValue(cuts.low());
+        return shape < cuts.count() ? shape : ShellGeometry.WHOLE;
     }
 
-    /** This block's state cut to a shape it can take. Asked for while the block is being made, like the property. */
+    /** This block's state cut to a shape it can take. */
     protected BlockState cut(BlockState state, int shape) {
-        return state.setValue(shapeProperty(), shape);
+        Cuts cuts = cuts();
+        return state.setValue(cuts.high(), shape / cuts.split()).setValue(cuts.low(), shape % cuts.split());
     }
 
     /** Whether this block can be cut to the shape. */
     protected boolean canTake(int shape) {
-        return shapeProperty().getPossibleValues().contains(shape);
+        return shape >= 0 && shape < cuts().count();
     }
 
     /** A block's shape: its own if it is cut to the curve, the whole block otherwise. */
@@ -74,7 +94,7 @@ public class ShellBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(shapeProperty());
+        builder.add(cuts().high(), cuts().low());
     }
 
     @Override

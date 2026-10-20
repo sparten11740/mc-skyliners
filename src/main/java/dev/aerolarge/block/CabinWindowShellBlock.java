@@ -12,7 +12,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -30,7 +29,7 @@ public class CabinWindowShellBlock extends ShellBlock {
      * eight states of its own for each shape, and the game keeps a table of every state's neighbours as large as all
      * of its property values together, which every further shape would make that much larger again.
      */
-    public static final IntegerProperty PANE_SHAPE = IntegerProperty.create("shape", 0, ShellGeometry.WINDOW_COUNT - 1);
+    public static final Cuts PANE_CUTS = Cuts.of(ShellGeometry.WINDOW_COUNT);
 
     public CabinWindowShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
         super(properties, part);
@@ -39,8 +38,8 @@ public class CabinWindowShellBlock extends ShellBlock {
     }
 
     @Override
-    protected IntegerProperty shapeProperty() {
-        return PANE_SHAPE;
+    protected Cuts cuts() {
+        return PANE_CUTS;
     }
 
     @Override

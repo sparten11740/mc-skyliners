@@ -1892,7 +1892,7 @@ public final class AirframeLayout {
                         : shape > ShellGeometry.WHOLE && !has(xb, y, z)
                             && (inNacelle(x, centreY, front, xb - 1, y, z) || inNacelle(x, centreY, front, xb + 1, y, z));
                     if (surface) {
-                        shaped.put(pos, shell.setValue(ShellBlock.SHAPE, Math.max(shape, ShellGeometry.WHOLE)));
+                        shaped.put(pos, ShellBlock.withShape(shell, Math.max(shape, ShellGeometry.WHOLE)));
                     }
                 }
             }

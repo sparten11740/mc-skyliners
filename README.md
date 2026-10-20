@@ -51,7 +51,8 @@ and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall abov
 under the upper deck. Its hull is skinned in
 blocks cut to the fuselage's curve (`shellStyle` in the server config: by default `SNAPPED`, which cuts every block
 through its corners and edge middles only, in slopes that run into each other without a step, and rounds off the inside
-of the nose too; `FITTED` cuts each block as close to the curve as one cut can), and two rows of tall cabin windows run
+of the nose too; `FITTED` cuts each block as close to the curve as one cut can; an airliner built before
+0.1.0-alpha.30 loads with its curved skin as whole blocks and has to be built again), and two rows of tall cabin windows run
 its length down each side, one for each deck, cut to the curve with it; cabin lights in the crown, the walls and the hold and LED strips along the tops of the
 cabin walls keep it bright, and nothing spawns inside it on its own. Outside, the skin is white riveted plating; inside,
 wherever it is seen from the cabin, the flight deck, the crew rooms, the den or the hold, it is lined like an
