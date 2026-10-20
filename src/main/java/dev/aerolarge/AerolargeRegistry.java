@@ -15,6 +15,7 @@ import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.BulkheadSignBlock;
+import dev.aerolarge.block.BunkBlock;
 import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
@@ -156,6 +157,7 @@ import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.MapColor;
@@ -786,6 +788,19 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> BALL_PIT_ITEM = ITEMS.registerSimpleBlockItem(BALL_PIT);
     public static final DeferredItem<BlockItem> FAIRY_LIGHTS_ITEM = ITEMS.registerSimpleBlockItem(FAIRY_LIGHTS);
+    /** The light a bunk's reading light gives while it is on, in light levels: enough to read by on the pillow. */
+    private static final int READING_GLOW = 7;
+    /**
+     * The den's bunks: padded, a reading light at the head, soft to fall on as a bed and as quick to take down; nothing
+     * spawns on them.
+     */
+    public static final DeferredBlock<BunkBlock> BUNK = BLOCKS.registerBlock(
+        "bunk", BunkBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+            .lightLevel(state -> state.getValue(BunkBlock.LIT) && state.getValue(BunkBlock.PART) == BedPart.HEAD ? READING_GLOW : 0)
+    );
+    public static final DeferredItem<BlockItem> BUNK_ITEM = ITEMS.registerSimpleBlockItem(BUNK);
     /**
      * Luggage in the hold: suitcases in four colours, and the golden suitcases hidden among them, giving a faint glow
      * to be found by in the dark; each a small container.
@@ -979,7 +994,8 @@ public final class AerolargeRegistry {
             DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
-            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
+            SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM,
+            SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM
         )),
         new TabSection("gym", List.of(
             GYM_FLOOR_ITEM, BASKETBALL_ITEM, HOOP_ITEM, SCOREBOARD_ITEM, BALL_RACK_ITEM, HIDE_AND_SEEK_BUTTON_ITEM, GYM_RINGS_ITEM, SPRINGBOARD_ITEM

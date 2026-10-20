@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import dev.aerolarge.block.BunkBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CurtainBlock;
@@ -113,6 +114,8 @@ public final class AerolargeClient {
             AerolargeRegistry.CABIN_CARPET.get(), AerolargeRegistry.AISLE_CARPET.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CabinCarpetBlock::itemTint,
             AerolargeRegistry.CABIN_CARPET_ITEM.get(), AerolargeRegistry.AISLE_CARPET_ITEM.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(BunkBlock::tint, AerolargeRegistry.BUNK.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(BunkBlock::itemTint, AerolargeRegistry.BUNK_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;

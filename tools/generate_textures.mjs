@@ -1725,6 +1725,27 @@ blueprint("furnished_airliner_blueprint", true);
   }
 }
 
+// The den's bunk (see BunkBlock). Its frame: smooth white laminate. The mattress: white, quilted in
+// diamonds stitched in pale blue. The blanket and the rail's padding are tinted to the bunk's colour, so they are
+// drawn in light greys: the blanket a soft knit in ribs, the padding vinyl with a row of stitches across it every few
+// pixels. The pillow: white, shaded at its edges. The reading light's shade: a dark diffuser while off, warm white and
+// brightest in the middle while on.
+{
+  texture(blockOutput, "bunk_frame", () => [0xf3, 0xf1, 0xeb], 2);
+  texture(blockOutput, "bunk_mattress", (x, y) => ((x + y) % 8 === 0 || (x - y + 16) % 8 === 0 ? [0xb8, 0xcc, 0xe4] : [0xf2, 0xf5, 0xf8]), 2);
+  texture(blockOutput, "bunk_blanket", (x, y) => {
+    const v = 236 - (x % 4 === 0 ? 30 : 0) - ((x + 2 * y) % 4 === 1 ? 12 : 0);
+    return [v, v, v];
+  }, 3);
+  texture(blockOutput, "bunk_rail", (x, y) => (y % 4 === 0 && x % 2 === 0 ? [0xb0, 0xb0, 0xb0] : [0xe4, 0xe4, 0xe4]), 3);
+  texture(blockOutput, "bunk_pillow", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? [0xde, 0xde, 0xda] : [0xf8, 0xf8, 0xf4]), 2);
+  texture(blockOutput, "bunk_lamp", () => [0x5c, 0x60, 0x66], 2);
+  texture(blockOutput, "bunk_lamp_lit", (x, y) => {
+    const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
+    return [0xff, clamp(Math.round(232 + 20 * glow)), clamp(Math.round(184 + 50 * glow))];
+  }, 1);
+}
+
 // The vacuum toilet. Its shroud: white plastic, a touch greyer toward the foot. The rim and the bowl's sides: brushed
 // stainless, streaked along. The bowl's floor, where its model shows it (the middle six pixels square, a pixel below
 // the middle): stainless round a pool of the blue rinse water, the drain dark in the middle of it. The seat: a little

@@ -889,6 +889,117 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   dropsItself("fairy_lights");
   cubes.fairy_lights = null;
 }
+// The den's bunk (see BunkBlock), drawn facing north, its open side to the north and its back to the south, in two
+// halves, the head's end to the east and the foot's to the west. Both: a white frame, the mattress on it, quilted, and
+// the blanket over it, tinted to the bunk's colour (tintindex 0). The head: the blanket folded back under a white
+// cuff short of the pillow, the headboard at its end, and along its open side the rail, its padding tinted like the
+// blanket under a white top bar on a post; on the headboard's inside a chrome arm holding the reading light over the
+// pillow, its shade lit at full brightness while it is on. The foot: the blanket drawn right over it and hanging down
+// its front, and the footboard at its end. In the hand both halves side by side, smaller. Only the head drops the bunk,
+// in its colour.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  // A box, every face showing the texture over the part of it the box covers, tinted if the blanket's colour; a face
+  // given its own texture in faces.
+  const part = (from, to, texture, tinted = false, faces = {}) => ({
+    from, to,
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, {
+      texture: faces[side] ?? texture, ...(tinted && !faces[side] ? { tintindex: 0 } : {}),
+    }])),
+  });
+  const textures = (lit) => ({
+    frame: block("bunk_frame"), mattress: block("bunk_mattress"), blanket: block("bunk_blanket"), pillow: block("bunk_pillow"),
+    rail: block("bunk_rail"), chrome: block("lavatory_basin_chrome"), lamp: block(lit ? "bunk_lamp_lit" : "bunk_lamp"), particle: block("bunk_blanket"),
+  });
+  // The reading light's head: chrome, its shade's underside and its side toward the foot the light, glowing while lit.
+  const lamp = (lit) => {
+    const element = part([11.5, 10.5, 11], [14, 12.5, 14], "#chrome", false, { down: "#lamp", west: "#lamp" });
+    if (lit) {
+      element.shade = false;
+      for (const side of ["down", "west"]) element.faces[side].neoforge_data = { block_light: 15, sky_light: 15 };
+    }
+    return element;
+  };
+  const head = (lit) => [
+    part([0, 0, 1], [15, 3, 16], "#frame"),
+    part([0, 3, 1.5], [15, 7, 15.5], "#mattress"),
+    part([0, 7, 1.25], [8.5, 7.75, 15.75], "#blanket", true),
+    part([8.5, 7, 1.25], [9.5, 8, 15.75], "#pillow"),
+    part([10, 7, 3], [14.5, 9.5, 13], "#pillow"),
+    part([15, 0, 1], [16, 14, 16], "#frame"),
+    part([1.5, 4, 0.5], [15, 11, 1.5], "#rail", true),
+    part([0.5, 11, 0.25], [15, 12, 1.75], "#frame"),
+    part([0.5, 3, 0.25], [1.5, 11, 1.75], "#frame"),
+    part([13, 12.5, 12.5], [15, 13.25, 13.25], "#chrome"),
+    lamp(lit),
+  ];
+  const foot = [
+    part([1, 0, 1], [16, 3, 16], "#frame"),
+    part([1, 3, 1.5], [16, 7, 15.5], "#mattress"),
+    part([1, 7, 1.25], [16, 7.75, 15.75], "#blanket", true),
+    part([1, 4, 1], [16, 7.75, 1.5], "#blanket", true),
+    part([0, 0, 1], [1, 10, 16], "#frame"),
+  ];
+  for (const lit of [false, true]) {
+    write(`assets/${ID}/models/block/bunk_head${lit ? "_lit" : ""}.json`, { parent: "minecraft:block/block", textures: textures(lit), elements: head(lit) });
+  }
+  write(`assets/${ID}/models/block/bunk_foot.json`, { parent: "minecraft:block/block", textures: textures(false), elements: foot });
+  write(`assets/${ID}/blockstates/bunk.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => ["head", "foot"].map((half) =>
+      [`facing=${facing},lit=${lit},part=${half}`, { model: `${ID}:block/bunk_${half === "head" && lit ? "head_lit" : half}`, ...(y ? { y } : {}) }])))),
+  });
+  // In the hand the halves side by side, the foot to the west of the head, both moved east half a block so the bunk is
+  // held by its middle.
+  const shifted = (elements, dx) => elements.map((element) => ({ ...element, from: [element.from[0] + dx, element.from[1], element.from[2]], to: [element.to[0] + dx, element.to[1], element.to[2]] }));
+  write(`assets/${ID}/models/item/bunk.json`, {
+    parent: "minecraft:block/block",
+    textures: textures(false),
+    elements: [...shifted(head(false), 8), ...shifted(foot, -8)],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.45, 0.45, 0.45] },
+      ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.2, 0.2, 0.2] },
+      fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.25, 0.25, 0.25] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3] },
+    },
+  });
+  const bunk = `${ID}:bunk`;
+  write(`data/${ID}/loot_table/blocks/bunk.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: bunk,
+        functions: [{
+          function: "minecraft:copy_state", block: bunk, properties: ["color"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: bunk, properties: { color: "light_blue" } } }],
+        }],
+      }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: bunk, properties: { part: "head" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/bunk`,
+  });
+  cubes.bunk = null;
+}
+// The bunk is fitted into the den rather than built into the airliner: breakable, and no part of the airframe.
+function denFurnitureFittings() {
+  return ["bunk"];
+}
+// Light blue wool on birch planks, with glowstone for the reading light.
+function denFurnitureRecipes() {
+  shaped("bunk", ["G  ", "WWW", "PPP"], { G: "minecraft:glowstone_dust", W: "minecraft:light_blue_wool", P: "minecraft:birch_planks" }, 1);
+}
+function denFurnitureLang() {
+  return {
+    "block.aerolarge.bunk": "Bunk",
+  };
+}
 // The den's treasure chest: cookies, a golden apple, a signal flare, a basketball and three twinkling star rockets.
 write(`data/${ID}/loot_table/chests/den_treasure.json`, {
   type: "minecraft:chest",
@@ -2865,6 +2976,7 @@ FITTINGS.push(...cabinCarpetFittings());
 FITTINGS.push(...gymFloorFittings());
 FITTINGS.push(...lavatoryBasinFittings());
 FITTINGS.push(...bulkheadSignFittings());
+FITTINGS.push(...denFurnitureFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground.
@@ -2975,6 +3087,7 @@ cabinCarpetRecipes();
 gymFloorRecipes();
 lavatoryBasinRecipes();
 bulkheadSignRecipes();
+denFurnitureRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -3319,6 +3432,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...gymFloorLang(),
   ...lavatoryBasinLang(),
   ...bulkheadSignLang(),
+  ...denFurnitureLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

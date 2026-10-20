@@ -357,6 +357,13 @@ basketball and star rockets. The ball pit swallows whatever walks or falls in wi
 wade through it a little slower, a fall into it never hurts, nobody under the balls is smothered, and a jump always
 gets you out. The secret door, the ball pit and the fairy lights can be crafted.
 
+A Bunk is a padded bed for a den, two blocks long: a quilted mattress on a white frame under a blanket, a pillow at
+its head under a little reading light on the headboard, and a padded rail along its open side at the head end, the
+foot end left open to climb in. Put it down against a wall: it faces you, its head where you put it and its foot to
+your right. Use it with an empty hand to switch the reading light on or off; use a dye on it to dye its blanket and
+the rail's padding, and taken down it keeps its colour. It is for lying about on, not for sleeping in. It can be
+crafted.
+
 ### The hold
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
