@@ -63,7 +63,9 @@ import org.slf4j.Logger;
  * builder sorts new sections for, entity outlines (which would draw into the window-sized outline buffer), and the
  * size of Sable's water occlusion buffers (see {@link SableClient#withoutWaterOcclusion}). The camera is a
  * {@link Lens}, so nothing the player suffers (blindness, darkness) colours the picture, and the player is drawn in
- * it. Drawing the world does not tick it: no particle, sound or entity moves on for the picture.
+ * it. Drawing the world does not tick it: no particle, sound or entity moves on for the picture. All the world's own
+ * drawing draws is in it, block entities and particles too: Veil cannot leave them out without reaching into the game's
+ * drawing, and the camera sees some of them (the engines' intakes, the navigation lights, the contrails).
  *
  * <p>It is never drawn with a shader pack in use (Iris or Oculus; where their API cannot be asked, whenever either is
  * installed), with Fabulous graphics (whose transparency pass draws into the main framebuffer whatever the target),
