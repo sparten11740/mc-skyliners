@@ -225,8 +225,11 @@ texture(blockOutput, "airliner_door_bottom", (x, y) => {
 // the door's seam (a grey gap, a pale edge inside it) right round the panel, one rounded window in the middle of its
 // top framed like the cabin windows, and one flush handle on the edge away from the hinge (low down in the middle of a
 // door hinged on top), the red flag that shows the door armed beside it. The inside is the same picture seen from
-// behind, the window in the middle and the handle by the same edge.
+// behind, the window in the middle and the handle by the same edge, on the off-white plastic of the cabin's lining
+// (the overhead bins'): the renderer stands that lining proud of the panel as a padded oval, the window set into it
+// and the handle on it, so the window and the handle here are where PlugDoorMesh cuts and raises them.
 const ARMED = [0xc8, 0x2c, 0x2c];
+const DOOR_LINING = [0xe6, 0xe4, 0xde];
 for (const hinge of ["side", "top"]) {
   for (const rows of [2, 3]) {
     const width = 2 * SIZE;
@@ -235,21 +238,23 @@ for (const hinge of ["side", "top"]) {
     const handleY = hinge === "side" ? Math.round(height * 0.55) : height - 6;
     const [handleFrom, handleTo] = hinge === "side" ? [21, 27] : [12, 19];
     const flagX = hinge === "side" ? handleFrom - 4 : handleTo + 2;
-    texture(blockOutput, `plug_door_${hinge}_${rows}`, (x, y) => {
-      const fromEdge = Math.min(x, width - 1 - x, y, height - 1 - y);
-      if (fromEdge === 0) return STEEL_DARK;
-      if (fromEdge === 1) return SEAM;
-      const dx = Math.max(Math.abs(x - 15.5) - 1.5, 0);
-      const dy = Math.max(5 - y, y - 10, 0);
-      const corner = Math.hypot(dx, dy);
-      if (corner <= 1.9) return x - y > 7 && x - y < 10 && y < 8 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
-      if (corner <= 2.6) return FRAME_DARK;
-      if (Math.abs(y - handleY) <= 1) {
-        if (x >= handleFrom && x <= handleTo) return y === handleY && x > handleFrom && x < handleTo ? STEEL : FRAME_DARK;
-        if (x >= flagX && x <= flagX + 1) return ARMED;
-      }
-      return WHITE;
-    }, 2, width, height);
+    for (const [side, skin] of [["", WHITE], ["_inside", DOOR_LINING]]) {
+      texture(blockOutput, `plug_door_${hinge}_${rows}${side}`, (x, y) => {
+        const fromEdge = Math.min(x, width - 1 - x, y, height - 1 - y);
+        if (fromEdge === 0) return STEEL_DARK;
+        if (fromEdge === 1) return SEAM;
+        const dx = Math.max(Math.abs(x - 15.5) - 1.5, 0);
+        const dy = Math.max(8 - y, y - 13, 0);
+        const corner = Math.hypot(dx, dy);
+        if (corner <= 1.9) return x - y > 4 && x - y < 7 && y < 11 ? GLASS_SHINE.slice(0, 3) : GLASS.slice(0, 3);
+        if (corner <= 2.6) return FRAME_DARK;
+        if (Math.abs(y - handleY) <= 1) {
+          if (x >= handleFrom && x <= handleTo) return y === handleY && x > handleFrom && x < handleTo ? STEEL : FRAME_DARK;
+          if (x >= flagX && x <= flagX + 1) return ARMED;
+        }
+        return skin;
+      }, 2, width, height);
+    }
   }
 }
 texture(itemOutput, "airliner_door", (x, y) => {

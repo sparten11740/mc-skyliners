@@ -23,18 +23,20 @@ import net.minecraft.world.phys.AABB;
 /**
  * Draws a plug door's panel, shut in its doorway or wherever it is in its swing, from the block entity in its bottom
  * left part. Shut, it is one panel flush with the hull, white skin like the plating round it with the door's seam
- * right round it, one window in the middle of its top and a flush handle by the edge away from its hinge, inside and
- * out alike. Opening, a door hinged at the side lifts a little and moves out of the frame, then is carried round on its
- * arm, the way an airliner's is: the arm swings out and forward about a hinge beside the doorway while the panel stays
- * square to the hull, so it ends up flat against the hull beside the doorway, its outside still facing out. A door
- * hinged along its top, the cargo door, swings up and out about its top edge instead. Shutting runs the same way back.
+ * right round it as a stepped gap, one window in the middle of its top and a flush handle by the edge away from its
+ * hinge; inside, a padded lining stands proud of it, an oval in off-white plastic with the window set deep into it and
+ * the handle on it (see {@link PlugDoorMesh}). Opening, a door hinged at the side lifts a little and moves out of the
+ * frame, then is carried round on its arm, the way an airliner's is: the arm swings out and forward about a hinge
+ * beside the doorway while the panel stays square to the hull, so it ends up flat against the hull beside the doorway,
+ * lining and all just clear of it, its outside still facing out. A door hinged along its top, the cargo door, swings up
+ * and out about its top edge instead. Shutting runs the same way back.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from outside, y up from the sill, z out,
  * the hull's outer face at z 1.
  */
 public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity> {
-    /** The panel's thickness, in blocks. */
-    private static final float THICK = PlugDoorBlock.THICKNESS / 16F;
+    /** How deep the door is, panel and lining, in blocks: the arm holds it by the lining's face. */
+    private static final float DEPTH = PlugDoorBlock.DEPTH / 16F;
     /** How far the panel lifts as it comes out of the frame, in blocks: off the stops it rests on shut. */
     private static final float LIFT = 1 / 16F;
     /** How far from the doorway's edge the open panel stands, in blocks. */
@@ -43,15 +45,14 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     private static final float PLUG_SHARE = 0.25F;
     /** How far a door hinged along its top swings up, in degrees: past level, as a cargo door does. */
     private static final float TOP_SWING = 110;
-    /** The arm's thickness and height, in blocks. */
-    private static final float ARM_THICK = 0.12F;
+    /** The arm's thickness and height, in blocks: thinner than two of the lining's steps, so its faces clear them. */
+    private static final float ARM_THICK = 0.1F;
     private static final float ARM_TALL = 0.3F;
     /**
      * How far off the door is still drawn, in blocks: as far as the airliner itself is, or a shut door would leave a
      * hole in the hull.
      */
     private static final int VIEW_DISTANCE = 1024;
-    private static final ResourceLocation SKIN = texture("airframe_panel");
     private static final ResourceLocation ARM = texture("landing_gear");
     /** The fewest rows a door's picture is drawn for: as short as the blueprints make a door. */
     private static final int FEWEST_ROWS = 2;
@@ -93,7 +94,7 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
 
     /**
      * A door hinged at its side, this far through its swing: out of the frame, then round on its arm, which reaches from
-     * a hinge just past the doorway's edge to the middle of the panel's inner face. A parallel arm turning half a circle
+     * a hinge just past the doorway's edge to the middle of the lining's face. A parallel arm turning half a circle
      * carries the panel round with it square to the hull, from the doorway to beside it, as far again as the arm is
      * long.
      */
@@ -108,8 +109,8 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         float dz = PlugDoorBlockEntity.PLUG * plug + arm * (float) Math.sin(turn);
         if (turn > 0) {
             float hingeX = PlugDoorBlock.COLUMNS / 2F + side * arm;
-            float inner = 1 - THICK + PlugDoorBlockEntity.PLUG;
-            arm(paint, pose, hingeX, rows / 2F + dy, inner, PlugDoorBlock.COLUMNS / 2F + dx, 1 - THICK + dz);
+            float inner = 1 - DEPTH + PlugDoorBlockEntity.PLUG;
+            arm(paint, pose, hingeX, rows / 2F + dy, inner, PlugDoorBlock.COLUMNS / 2F + dx, 1 - DEPTH + dz);
         }
         pose.pushPose();
         pose.translate(dx, dy, dz);
@@ -128,64 +129,27 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
     }
 
     /**
-     * The panel shut in its doorway: its outside and inside faces, one picture of the whole door laid across its blocks,
-     * each block drawn with the light where it is, and its edges. The picture is of a door hinged on the left, seen from
-     * outside, so a door hinged on the right shows it mirrored, its handle on the edge away from the hinge; the inside
-     * is the same picture seen from behind, the window still in the middle and the handle by the same edge.
+     * The panel, layer on layer (see {@link PlugDoorMesh}): the door's picture across its outside and the lining's
+     * across its inside, each block drawn with the light where it is. Shut, its edges are left out: they stand hidden
+     * in the frame, where they would only fight with the frame's own faces.
      */
     private static void panel(Painter paint, PoseStack.Pose pose, int rows, PlugDoorBlock.Hinge hinge) {
-        float inner = 1 - THICK;
-        TextureAtlasSprite skin = paint.sprite(SKIN);
-        TextureAtlasSprite face = paint.sprite(face(hinge, rows));
-        boolean mirrored = hinge == PlugDoorBlock.Hinge.RIGHT;
-        for (int column = 0; column < PlugDoorBlock.COLUMNS; column++) {
-            float left = across(column, mirrored);
-            float right = across(column + 1, mirrored);
-            for (int row = 0; row < rows; row++) {
-                // The picture runs down from the door's top.
-                float top = (float) (rows - row - 1) / rows;
-                float bottom = (float) (rows - row) / rows;
-                int outside = paint.light(column, row, true);
-                paint.quad(pose, face, outside, 0, 0, 1,
-                    column, row, 1, left, bottom, column + 1, row, 1, right, bottom,
-                    column + 1, row + 1, 1, right, top, column, row + 1, 1, left, top);
-                paint.quad(pose, face, paint.light(column, row, false), 0, 0, -1,
-                    column + 1, row, inner, right, bottom, column, row, inner, left, bottom,
-                    column, row + 1, inner, left, top, column + 1, row + 1, inner, right, top);
-                if (row == 0) {
-                    paint.quad(pose, skin, outside, 0, -1, 0,
-                        column, 0, inner, 0, 0, column + 1, 0, inner, 1, 0, column + 1, 0, 1, 1, THICK, column, 0, 1, 0, THICK);
-                }
-                if (row == rows - 1) {
-                    paint.quad(pose, skin, outside, 0, 1, 0,
-                        column, rows, 1, 0, 0, column + 1, rows, 1, 1, 0, column + 1, rows, inner, 1, THICK, column, rows, inner, 0, THICK);
-                }
-                if (column == 0) {
-                    paint.quad(pose, skin, outside, -1, 0, 0,
-                        0, row, inner, 0, 1, 0, row, 1, THICK, 1, 0, row + 1, 1, THICK, 0, 0, row + 1, inner, 0, 0);
-                }
-                if (column == PlugDoorBlock.COLUMNS - 1) {
-                    float x = PlugDoorBlock.COLUMNS;
-                    paint.quad(pose, skin, outside, 1, 0, 0,
-                        x, row, 1, 0, 1, x, row, inner, THICK, 1, x, row + 1, inner, THICK, 0, x, row + 1, 1, 0, 0);
-                }
+        TextureAtlasSprite outside = paint.sprite(face(hinge, rows, ""));
+        TextureAtlasSprite inside = paint.sprite(face(hinge, rows, "_inside"));
+        for (PlugDoorMesh.Quad quad : PlugDoorMesh.of(hinge, rows)) {
+            if (quad.side() == PlugDoorMesh.Side.EDGE && !paint.moved()) {
+                continue;
             }
+            boolean in = quad.side() == PlugDoorMesh.Side.INSIDE;
+            paint.quad(pose, in ? inside : outside, paint.light(quad.column(), quad.row(), !in), quad.shade(),
+                quad.nx(), quad.ny(), quad.nz(), quad.corners());
         }
     }
 
-    /**
-     * How far across the door's picture, 0 to 1, the panel's edge this many blocks from its left (seen from outside)
-     * is: mirrored for a door hinged on the right.
-     */
-    private static float across(int x, boolean mirrored) {
-        float share = (float) x / PlugDoorBlock.COLUMNS;
-        return mirrored ? 1 - share : share;
-    }
-
-    /** The picture of a door hinged this way and this many rows tall. */
-    private static ResourceLocation face(PlugDoorBlock.Hinge hinge, int rows) {
+    /** The picture of a door hinged this way and this many rows tall: its outside, or with "_inside", its lining. */
+    private static ResourceLocation face(PlugDoorBlock.Hinge hinge, int rows, String side) {
         String kind = hinge == PlugDoorBlock.Hinge.TOP ? "top" : "side";
-        return texture("plug_door_" + kind + "_" + Math.clamp(rows, FEWEST_ROWS, PlugDoorBlock.MOST_ROWS));
+        return texture("plug_door_" + kind + "_" + Math.clamp(rows, FEWEST_ROWS, PlugDoorBlock.MOST_ROWS) + side);
     }
 
     /** Eased in and out, so the panel starts and stops gently. */
@@ -219,12 +183,15 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
             return SableClient.light(level, part.relative(outside || moved ? out : out.getOpposite()));
         }
 
-        /** A quad facing (nx, ny, nz), its four corners each (x, y, z, u, v) with u and v across the sprite, 0 to 1. */
-        void quad(PoseStack.Pose pose, TextureAtlasSprite sprite, int light, float nx, float ny, float nz, float... corners) {
+        /**
+         * A quad facing (nx, ny, nz), shaded this much (0 to 1), its four corners each (x, y, z, u, v) with u and v
+         * across the sprite, 0 to 1.
+         */
+        void quad(PoseStack.Pose pose, TextureAtlasSprite sprite, int light, float shade, float nx, float ny, float nz, float... corners) {
             for (int i = 0; i < 4; i++) {
                 int at = i * 5;
                 consumer.addVertex(pose, corners[at], corners[at + 1], corners[at + 2])
-                    .setColor(255, 255, 255, 255)
+                    .setColor(shade, shade, shade, 1)
                     .setUv(sprite.getU(corners[at + 3]), sprite.getV(corners[at + 4]))
                     .setOverlay(OverlayTexture.NO_OVERLAY)
                     .setLight(light)
@@ -235,12 +202,12 @@ public class PlugDoorRenderer implements BlockEntityRenderer<PlugDoorBlockEntity
         /** A box from one corner to the other, every face showing the whole sprite, lit by the air outside the door. */
         void box(PoseStack.Pose pose, float x0, float y0, float z0, float x1, float y1, float z1, TextureAtlasSprite sprite) {
             int light = light(0, 0, true);
-            quad(pose, sprite, light, 0, 0, 1, x0, y0, z1, 0, 1, x1, y0, z1, 1, 1, x1, y1, z1, 1, 0, x0, y1, z1, 0, 0);
-            quad(pose, sprite, light, 0, 0, -1, x1, y0, z0, 0, 1, x0, y0, z0, 1, 1, x0, y1, z0, 1, 0, x1, y1, z0, 0, 0);
-            quad(pose, sprite, light, 0, 1, 0, x0, y1, z1, 0, 1, x1, y1, z1, 1, 1, x1, y1, z0, 1, 0, x0, y1, z0, 0, 0);
-            quad(pose, sprite, light, 0, -1, 0, x0, y0, z0, 0, 1, x1, y0, z0, 1, 1, x1, y0, z1, 1, 0, x0, y0, z1, 0, 0);
-            quad(pose, sprite, light, 1, 0, 0, x1, y0, z1, 0, 1, x1, y0, z0, 1, 1, x1, y1, z0, 1, 0, x1, y1, z1, 0, 0);
-            quad(pose, sprite, light, -1, 0, 0, x0, y0, z0, 0, 1, x0, y0, z1, 1, 1, x0, y1, z1, 1, 0, x0, y1, z0, 0, 0);
+            quad(pose, sprite, light, 1, 0, 0, 1, x0, y0, z1, 0, 1, x1, y0, z1, 1, 1, x1, y1, z1, 1, 0, x0, y1, z1, 0, 0);
+            quad(pose, sprite, light, 1, 0, 0, -1, x1, y0, z0, 0, 1, x0, y0, z0, 1, 1, x0, y1, z0, 1, 0, x1, y1, z0, 0, 0);
+            quad(pose, sprite, light, 1, 0, 1, 0, x0, y1, z1, 0, 1, x1, y1, z1, 1, 1, x1, y1, z0, 1, 0, x0, y1, z0, 0, 0);
+            quad(pose, sprite, light, 1, 0, -1, 0, x0, y0, z0, 0, 1, x1, y0, z0, 1, 1, x1, y0, z1, 1, 0, x0, y0, z1, 0, 0);
+            quad(pose, sprite, light, 1, 1, 0, 0, x1, y0, z1, 0, 1, x1, y0, z0, 1, 1, x1, y1, z0, 1, 0, x1, y1, z1, 0, 0);
+            quad(pose, sprite, light, 1, -1, 0, 0, x0, y0, z0, 0, 1, x0, y0, z1, 1, 1, x0, y1, z1, 1, 0, x0, y1, z0, 0, 0);
         }
     }
 }

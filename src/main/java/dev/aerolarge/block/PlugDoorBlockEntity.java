@@ -56,10 +56,10 @@ public class PlugDoorBlockEntity extends BlockEntity {
      */
     private static final double MOVING = 0.5;
     /**
-     * How far out of the frame the panel moves before it swings away, in blocks: clear of the hull by a little more
-     * than the panel is thick.
+     * How far out of the frame the panel moves before it swings away, in blocks: a little further than the door is
+     * deep, lining and handle and all, so swung round it stands just clear of the hull.
      */
-    public static final float PLUG = 0.3F;
+    public static final float PLUG = 0.55F;
     private static final float HISS_VOLUME = 0.8F;
     private static final float LATCH_VOLUME = 0.9F;
     /** The latches clunk higher coming free than going home. */
@@ -268,7 +268,7 @@ public class PlugDoorBlockEntity extends BlockEntity {
 
     /** Whether anyone stands where the panel goes back into its frame: in it, or just outside, where it comes in from. */
     private boolean inTheWay(ServerLevel level) {
-        AABB panel = across(-PlugDoorBlock.THICKNESS / 16.0, PLUG);
+        AABB panel = across(-PlugDoorBlock.DEPTH / 16.0, PLUG);
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, around(level, 1), LivingEntity::isAlive)) {
             if (panel.intersects(inPlot(level, entity))) {
                 return true;
