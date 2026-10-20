@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "aerolarge:overhead_wc_sign",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "aerolarge:overhead_wc_sign",
+              "properties": [
+                "arrow"
+              ],
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "condition": "minecraft:block_state_property",
+                    "block": "aerolarge:overhead_wc_sign",
+                    "properties": {
+                      "arrow": "ahead"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "aerolarge:blocks/overhead_wc_sign"
+}

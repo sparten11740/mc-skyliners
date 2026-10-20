@@ -440,6 +440,8 @@
   "block.aerolarge.gym_floor": "Gym Floor",
   "block.aerolarge.lavatory_basin": "Lavatory Basin",
   "block.aerolarge.bulkhead_sign": "Bulkhead Sign",
+  "block.aerolarge.wc_sign": "WC Sign",
+  "block.aerolarge.overhead_wc_sign": "Overhead WC Sign",
   "block.aerolarge.bunk": "Bunk",
   "block.aerolarge.bean_bag": "Bean Bag",
   "block.aerolarge.airstair_button": "Airstair Button",

@@ -1,0 +1,304 @@
+{
+  "variants": {
+    "arrow=ahead,facing=north,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead"
+    },
+    "arrow=ahead,facing=north,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied"
+    },
+    "arrow=ahead,facing=north,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_hanging"
+    },
+    "arrow=ahead,facing=north,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied_hanging"
+    },
+    "arrow=left,facing=north,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left"
+    },
+    "arrow=left,facing=north,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied"
+    },
+    "arrow=left,facing=north,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left_hanging"
+    },
+    "arrow=left,facing=north,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied_hanging"
+    },
+    "arrow=right,facing=north,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right"
+    },
+    "arrow=right,facing=north,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied"
+    },
+    "arrow=right,facing=north,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right_hanging"
+    },
+    "arrow=right,facing=north,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied_hanging"
+    },
+    "arrow=down,facing=north,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down"
+    },
+    "arrow=down,facing=north,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied"
+    },
+    "arrow=down,facing=north,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down_hanging"
+    },
+    "arrow=down,facing=north,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied_hanging"
+    },
+    "arrow=none,facing=north,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none"
+    },
+    "arrow=none,facing=north,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied"
+    },
+    "arrow=none,facing=north,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none_hanging"
+    },
+    "arrow=none,facing=north,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied_hanging"
+    },
+    "arrow=ahead,facing=east,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead",
+      "y": 90
+    },
+    "arrow=ahead,facing=east,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied",
+      "y": 90
+    },
+    "arrow=ahead,facing=east,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_hanging",
+      "y": 90
+    },
+    "arrow=ahead,facing=east,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied_hanging",
+      "y": 90
+    },
+    "arrow=left,facing=east,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left",
+      "y": 90
+    },
+    "arrow=left,facing=east,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied",
+      "y": 90
+    },
+    "arrow=left,facing=east,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left_hanging",
+      "y": 90
+    },
+    "arrow=left,facing=east,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied_hanging",
+      "y": 90
+    },
+    "arrow=right,facing=east,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right",
+      "y": 90
+    },
+    "arrow=right,facing=east,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied",
+      "y": 90
+    },
+    "arrow=right,facing=east,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right_hanging",
+      "y": 90
+    },
+    "arrow=right,facing=east,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied_hanging",
+      "y": 90
+    },
+    "arrow=down,facing=east,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down",
+      "y": 90
+    },
+    "arrow=down,facing=east,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied",
+      "y": 90
+    },
+    "arrow=down,facing=east,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down_hanging",
+      "y": 90
+    },
+    "arrow=down,facing=east,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied_hanging",
+      "y": 90
+    },
+    "arrow=none,facing=east,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none",
+      "y": 90
+    },
+    "arrow=none,facing=east,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied",
+      "y": 90
+    },
+    "arrow=none,facing=east,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none_hanging",
+      "y": 90
+    },
+    "arrow=none,facing=east,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied_hanging",
+      "y": 90
+    },
+    "arrow=ahead,facing=south,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead",
+      "y": 180
+    },
+    "arrow=ahead,facing=south,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied",
+      "y": 180
+    },
+    "arrow=ahead,facing=south,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_hanging",
+      "y": 180
+    },
+    "arrow=ahead,facing=south,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied_hanging",
+      "y": 180
+    },
+    "arrow=left,facing=south,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left",
+      "y": 180
+    },
+    "arrow=left,facing=south,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied",
+      "y": 180
+    },
+    "arrow=left,facing=south,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left_hanging",
+      "y": 180
+    },
+    "arrow=left,facing=south,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied_hanging",
+      "y": 180
+    },
+    "arrow=right,facing=south,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right",
+      "y": 180
+    },
+    "arrow=right,facing=south,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied",
+      "y": 180
+    },
+    "arrow=right,facing=south,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right_hanging",
+      "y": 180
+    },
+    "arrow=right,facing=south,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied_hanging",
+      "y": 180
+    },
+    "arrow=down,facing=south,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down",
+      "y": 180
+    },
+    "arrow=down,facing=south,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied",
+      "y": 180
+    },
+    "arrow=down,facing=south,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down_hanging",
+      "y": 180
+    },
+    "arrow=down,facing=south,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied_hanging",
+      "y": 180
+    },
+    "arrow=none,facing=south,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none",
+      "y": 180
+    },
+    "arrow=none,facing=south,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied",
+      "y": 180
+    },
+    "arrow=none,facing=south,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none_hanging",
+      "y": 180
+    },
+    "arrow=none,facing=south,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied_hanging",
+      "y": 180
+    },
+    "arrow=ahead,facing=west,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead",
+      "y": 270
+    },
+    "arrow=ahead,facing=west,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied",
+      "y": 270
+    },
+    "arrow=ahead,facing=west,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_hanging",
+      "y": 270
+    },
+    "arrow=ahead,facing=west,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_ahead_occupied_hanging",
+      "y": 270
+    },
+    "arrow=left,facing=west,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left",
+      "y": 270
+    },
+    "arrow=left,facing=west,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied",
+      "y": 270
+    },
+    "arrow=left,facing=west,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_left_hanging",
+      "y": 270
+    },
+    "arrow=left,facing=west,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_left_occupied_hanging",
+      "y": 270
+    },
+    "arrow=right,facing=west,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right",
+      "y": 270
+    },
+    "arrow=right,facing=west,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied",
+      "y": 270
+    },
+    "arrow=right,facing=west,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_right_hanging",
+      "y": 270
+    },
+    "arrow=right,facing=west,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_right_occupied_hanging",
+      "y": 270
+    },
+    "arrow=down,facing=west,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down",
+      "y": 270
+    },
+    "arrow=down,facing=west,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied",
+      "y": 270
+    },
+    "arrow=down,facing=west,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_down_hanging",
+      "y": 270
+    },
+    "arrow=down,facing=west,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_down_occupied_hanging",
+      "y": 270
+    },
+    "arrow=none,facing=west,hanging=false,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none",
+      "y": 270
+    },
+    "arrow=none,facing=west,hanging=false,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied",
+      "y": 270
+    },
+    "arrow=none,facing=west,hanging=true,occupied=false": {
+      "model": "aerolarge:block/overhead_wc_sign_none_hanging",
+      "y": 270
+    },
+    "arrow=none,facing=west,hanging=true,occupied=true": {
+      "model": "aerolarge:block/overhead_wc_sign_none_occupied_hanging",
+      "y": 270
+    }
+  }
+}

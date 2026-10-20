@@ -395,6 +395,20 @@ drop of water over the waves, a basketball, a steaming cup, or a man and a woman
 faces you; use it with an empty hand for the next picture, sneaking for the one before. Taken down, or picked, it
 keeps its picture.
 
+The WC signs say whether a WC is free, in pictures. A WC Sign is the one over a WC's door: a block of the partition's
+cream panelling with the bulkhead sign's lightbox in its face, showing a toilet on a dark face, lit green while
+nobody is in the WC and red while anyone is, a player or a villager, with someone sitting on the toilet then too, so
+it says so without the colour. It looks into the WC a couple of times a second, aboard an assembled airliner in flight
+as well; put down by hand, it faces you and watches the room behind the wall it is set into (three blocks deep, three
+across, from two rows under it up to its own, as behind a door under it). An Overhead WC Sign is the lit sign high up
+in an airliner's cabin that shows the way to the WCs: a slim off-white lightbox with a dark face, a white arrow on it
+(straight on, left, right, down the stairs, or none) beside the same toilet, lit green while one of the WCs it shows
+is free and red, someone sitting on it, while all of them are taken. Against the side of a block it stands out from
+it; against the underside of one it hangs from it on two short rods. Put up by hand, it shows every WC whose sign is
+within 16 blocks of it (8 up or down); use it with an empty hand for the next arrow, sneaking for the one before (one
+put up before any WC sign round it looks for them again then). Taken down, or picked, it keeps its arrow. Both can be
+crafted.
+
 In the furnished airliner a partition wall stands between each room and the doors' aisle beside it, and between
 business class and the pool, with an archway over the aisle hung with a curtain in the room's colour (navy for
 business class, cyan for the pool, lime for the gym hall, red for the lounge), drawn open. Each archway is built of

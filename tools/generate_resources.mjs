@@ -2330,28 +2330,33 @@ write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sig
 // three quarters of a pixel proud, and inside it, half a pixel back from the bezel's lip, the printed picture, glowing
 // whatever the light around. In the hand, the first picture. Taken down, a sign keeps its picture, the first left off.
 const BULKHEAD_SIGN_PICTURES = ["seat", "drop", "ball", "cup", "lavatory"];
-{
-  const block = (name) => `${ID}:block/${name}`;
+// A lightbox set into the bulkhead, its picture the texture given, drawn facing north: the bulkhead signs' and the WC
+// sign's.
+function bulkheadLightbox(name, picture) {
+  const block = (texture) => `${ID}:block/${texture}`;
   const bezel = (from, to) => solid(from, to, "#bezel");
+  write(`assets/${ID}/models/block/${name}.json`, {
+    parent: "minecraft:block/block",
+    textures: { wall: block("cabin_partition"), bezel: block("bulkhead_sign_bezel"), picture: block(picture), particle: block("cabin_partition") },
+    elements: [
+      {
+        from: [0, 0, 0], to: [16, 16, 16],
+        faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#wall", cullface: face }])),
+      },
+      bezel([0, 15, -0.75], [16, 16, 0]),
+      bezel([0, 0, -0.75], [16, 1, 0]),
+      bezel([0, 1, -0.75], [1, 15, 0]),
+      bezel([15, 1, -0.75], [16, 15, 0]),
+      {
+        from: [1, 1, -0.25], to: [15, 15, 0], shade: false,
+        faces: { north: { texture: "#picture", uv: [1, 1, 15, 15], neoforge_data: { block_light: 15, sky_light: 15 } } },
+      },
+    ],
+  });
+}
+{
   for (const picture of BULKHEAD_SIGN_PICTURES) {
-    write(`assets/${ID}/models/block/bulkhead_sign_${picture}.json`, {
-      parent: "minecraft:block/block",
-      textures: { wall: block("cabin_partition"), bezel: block("bulkhead_sign_bezel"), picture: block(`bulkhead_sign_${picture}`), particle: block("cabin_partition") },
-      elements: [
-        {
-          from: [0, 0, 0], to: [16, 16, 16],
-          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#wall", cullface: face }])),
-        },
-        bezel([0, 15, -0.75], [16, 16, 0]),
-        bezel([0, 0, -0.75], [16, 1, 0]),
-        bezel([0, 1, -0.75], [1, 15, 0]),
-        bezel([15, 1, -0.75], [16, 15, 0]),
-        {
-          from: [1, 1, -0.25], to: [15, 15, 0], shade: false,
-          faces: { north: { texture: "#picture", uv: [1, 1, 15, 15], neoforge_data: { block_light: 15, sky_light: 15 } } },
-        },
-      ],
-    });
+    bulkheadLightbox(`bulkhead_sign_${picture}`, `bulkhead_sign_${picture}`);
   }
   write(`assets/${ID}/blockstates/bulkhead_sign.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => BULKHEAD_SIGN_PICTURES.map((picture) =>
@@ -2387,6 +2392,98 @@ function bulkheadSignRecipes() {
 function bulkheadSignLang() {
   return {
     "block.aerolarge.bulkhead_sign": "Bulkhead Sign",
+  };
+}
+
+// The WC signs (see WcSignBlock and OverheadWcSignBlock). The one over a WC's door: the bulkhead's lightbox, its toilet
+// lit green while the WC is free and red while it is taken. The overhead one, drawn facing north: a slim off-white
+// lightbox three pixels deep, its back against the south side of the block, or hung in the block's middle on two
+// brushed steel rods from the block over it; on its face, inside a pixel of the housing all round, the arrow and the
+// toilet glowing whatever the light around, a quarter of a pixel proud. In the hand, each as it is when its WC is free,
+// the overhead one pointing straight on. Taken down, the overhead sign keeps its arrow, the first left off.
+const WC_SIGN_ARROWS = ["ahead", "left", "right", "down", "none"];
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  for (const taken of [false, true]) {
+    const state = taken ? "_occupied" : "";
+    bulkheadLightbox(`wc_sign${state}`, `wc_sign${state}`);
+    for (const arrow of WC_SIGN_ARROWS) {
+      for (const hanging of [false, true]) {
+        // The lightbox's front face, and its depth either side of it.
+        const front = hanging ? 6.5 : 13;
+        const back = front + 3;
+        const housing = {
+          from: [0, 2, front], to: [16, 14, back],
+          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
+            [face, { texture: "#housing", ...(face === "south" && !hanging ? { cullface: "south" } : {}) }])),
+        };
+        const face = {
+          from: [1, 3, front - 0.25], to: [15, 13, front], shade: false,
+          faces: { north: { texture: "#face", uv: [1, 3, 15, 13], ...lit } },
+        };
+        const rods = hanging ? [solid([2.5, 14, 7.5], [3.5, 16, 8.5], "#rod"), solid([12.5, 14, 7.5], [13.5, 16, 8.5], "#rod")] : [];
+        write(`assets/${ID}/models/block/overhead_wc_sign_${arrow}${state}${hanging ? "_hanging" : ""}.json`, {
+          parent: "minecraft:block/block",
+          textures: {
+            housing: block("overhead_wc_sign"), face: block(`overhead_wc_sign_${arrow}${state}`), rod: block("bulkhead_sign_bezel"),
+            particle: block("overhead_wc_sign"),
+          },
+          elements: [housing, face, ...rods],
+        });
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/wc_sign.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((taken) =>
+      [`facing=${facing},occupied=${taken}`, { model: `${ID}:block/wc_sign${taken ? "_occupied" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/blockstates/overhead_wc_sign.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => WC_SIGN_ARROWS.flatMap((arrow) =>
+      [false, true].flatMap((hanging) => [false, true].map((taken) => [
+        `arrow=${arrow},facing=${facing},hanging=${hanging},occupied=${taken}`,
+        { model: `${ID}:block/overhead_wc_sign_${arrow}${taken ? "_occupied" : ""}${hanging ? "_hanging" : ""}`, ...(y ? { y } : {}) },
+      ]))))),
+  });
+  write(`assets/${ID}/models/item/wc_sign.json`, { parent: `${ID}:block/wc_sign` });
+  write(`assets/${ID}/models/item/overhead_wc_sign.json`, { parent: `${ID}:block/overhead_wc_sign_${WC_SIGN_ARROWS[0]}` });
+  dropsItself("wc_sign");
+  const sign = `${ID}:overhead_wc_sign`;
+  write(`data/${ID}/loot_table/blocks/overhead_wc_sign.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item", name: sign,
+        functions: [{
+          function: "minecraft:copy_state", block: sign, properties: ["arrow"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: sign, properties: { arrow: WC_SIGN_ARROWS[0] } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/overhead_wc_sign`,
+  });
+  cubes.wc_sign = null;
+  cubes.overhead_wc_sign = null;
+}
+// The WC signs are fitted into the cabin as the bulkhead signs are: breakable, and no part of the airframe.
+function wcSignFittings() {
+  return ["wc_sign", "overhead_wc_sign"];
+}
+// The bulkhead sign's lightbox with a green and a red lamp in it; the overhead one a smaller lightbox on iron.
+function wcSignRecipes() {
+  shaped("wc_sign", ["LGR", " D ", " P "], {
+    L: "minecraft:lime_dye", G: "minecraft:glass_pane", R: "minecraft:red_dye", D: "minecraft:glowstone_dust", P: `${ID}:cabin_partition`,
+  }, 1);
+  shaped("overhead_wc_sign", ["LGR", "IDI"], {
+    L: "minecraft:lime_dye", G: "minecraft:glass_pane", R: "minecraft:red_dye", I: "minecraft:iron_nugget", D: "minecraft:glowstone_dust",
+  }, 2);
+}
+function wcSignLang() {
+  return {
+    "block.aerolarge.wc_sign": "WC Sign",
+    "block.aerolarge.overhead_wc_sign": "Overhead WC Sign",
   };
 }
 
@@ -4201,6 +4298,7 @@ FITTINGS.push(...cabinCarpetFittings());
 FITTINGS.push(...gymFloorFittings());
 FITTINGS.push(...lavatoryBasinFittings());
 FITTINGS.push(...bulkheadSignFittings());
+FITTINGS.push(...wcSignFittings());
 FITTINGS.push(...denFurnitureFittings());
 FITTINGS.push(...cargoNetFittings());
 FITTINGS.push(...cargoFloorFittings());
@@ -4326,6 +4424,7 @@ cabinCarpetRecipes();
 gymFloorRecipes();
 lavatoryBasinRecipes();
 bulkheadSignRecipes();
+wcSignRecipes();
 denFurnitureRecipes();
 airstairButtonRecipes();
 cargoNetRecipes();
@@ -4696,6 +4795,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...gymFloorLang(),
   ...lavatoryBasinLang(),
   ...bulkheadSignLang(),
+  ...wcSignLang(),
   ...denFurnitureLang(),
   ...airstairButtonLang(),
   ...cargoNetLang(),

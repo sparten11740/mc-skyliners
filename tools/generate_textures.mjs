@@ -1147,6 +1147,105 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "bulkhead_sign_bezel", (x, y) => (y % 3 === 0 ? [0xc8, 0xcd, 0xd3] : [0xa6, 0xac, 0xb3]), 3);
 }
 
+// The WC signs (see WcSignBlock and OverheadWcSignBlock): a toilet seen from the side, its cistern at the back, lit on a
+// dark face, green while the WC is free and red while it is taken, when someone sits on it too, in white, so the
+// picture says it without the colour. The sign over a WC's door shows it big, the fourteen pixels inside the bulkhead
+// bezel. The overhead sign's face is fourteen pixels across and ten up, in the middle of its texture: a white arrow
+// the way to the WC (straight on, left, right or down the stairs, or none), and the toilet beside it, smaller. Its
+// lightbox's housing: the cabin's off-white plastic, as the overhead lockers'.
+{
+  const FACE = [0x1a, 0x1d, 0x22];
+  const WHITE = [0xf4, 0xf6, 0xf8];
+  const FREE = [0x3c, 0xe0, 0x6e];
+  const TAKEN = [0xff, 0x3d, 0x2e];
+  // T is the toilet, P whoever sits on it, over the toilet.
+  const toilet = {
+    big: [
+      "..............",
+      ".TTT..........",
+      ".TTT..........",
+      ".TTT..........",
+      ".TTT..........",
+      ".TTT..........",
+      ".TTTTTTTTTT...",
+      ".TTTTTTTTTT...",
+      "..TTTTTTTT....",
+      "...TTTTTT.....",
+      "....TTTT......",
+      ".....TT.......",
+      "....TTTT......",
+      "..............",
+    ],
+    bigSitter: [
+      "..............",
+      "......PP......",
+      "......PP......",
+      ".....PPP......",
+      ".....PPP......",
+      ".....PPPPPP...",
+      "..........P...",
+      "..........P...",
+      "..........P...",
+      "..........P...",
+      "..........PP..",
+      "..............",
+      "..............",
+      "..............",
+    ],
+    small: [
+      "........",
+      "........",
+      "TT......",
+      "TT......",
+      "TT......",
+      "TTTTTTT.",
+      ".TTTTTT.",
+      "..TTTT..",
+      "...TT...",
+      "..TTTT..",
+    ],
+    smallSitter: [
+      "....PP..",
+      "....PP..",
+      "...PPP..",
+      "...PPP..",
+      "...PPPPP",
+      ".......P",
+      ".......P",
+      ".......P",
+      ".......P",
+      "........",
+    ],
+  };
+  const ARROWS = {
+    ahead: [".....", "..A..", ".AAA.", "A.A.A", "..A..", "..A..", "..A..", "..A..", "..A..", "....."],
+    left: [".....", ".....", "..A..", ".A...", "AAAAA", ".A...", "..A..", ".....", ".....", "....."],
+    right: [".....", ".....", "..A..", "...A.", "AAAAA", "...A.", "..A..", ".....", ".....", "....."],
+    down: [".....", "..A..", "..A..", "..A..", "..A..", "..A..", "A.A.A", ".AAA.", "..A..", "....."],
+    none: Array(10).fill("....."),
+  };
+  // Whoever sits on the toilet in front of it, the toilet in the state's colour, the rest the dark face.
+  const lit = (bowl, sitter, taken) => (col, row) => {
+    if (taken && sitter[row]?.[col] === "P") return WHITE;
+    return bowl[row]?.[col] === "T" ? (taken ? TAKEN : FREE) : FACE;
+  };
+  for (const taken of [false, true]) {
+    const suffix = taken ? "_occupied" : "";
+    const big = lit(toilet.big, toilet.bigSitter, taken);
+    texture(blockOutput, `wc_sign${suffix}`, (x, y) => big(x - 1, y - 1), 1);
+    const small = lit(toilet.small, toilet.smallSitter, taken);
+    for (const [arrow, rows] of Object.entries(ARROWS)) {
+      texture(blockOutput, `overhead_wc_sign_${arrow}${suffix}`, (x, y) => {
+        const col = x - 1;
+        const row = y - 3;
+        if (rows[row]?.[col] === "A") return WHITE;
+        return col >= 6 ? small(col - 6, row) : FACE;
+      }, 1);
+    }
+  }
+  texture(blockOutput, "overhead_wc_sign", (x, y) => (y === 2 || y === 13 ? [0xd2, 0xd0, 0xc9] : [0xe6, 0xe4, 0xde]), 2);
+}
+
 // The staircases between the decks (see CabinStairsBlock). A tread: the cabin's blue carpet, in the cabin floor's
 // small diamond pattern, between the white tops of the stringers down either side; a landing: the same carpet edge to
 // edge. The risers, the stringers and everything under the stairs: smooth white panelling, a riser shaded a little

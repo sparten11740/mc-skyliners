@@ -92,6 +92,8 @@ import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.OverheadBinBlock;
 import dev.aerolarge.block.OverheadBinBlockEntity;
+import dev.aerolarge.block.OverheadWcSignBlock;
+import dev.aerolarge.block.OverheadWcSignBlockEntity;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -133,6 +135,8 @@ import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TowerRadioBlock;
 import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
+import dev.aerolarge.block.WcSignBlock;
+import dev.aerolarge.block.WcSignBlockEntity;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
@@ -695,6 +699,26 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> BULKHEAD_SIGN_ITEM = ITEMS.registerSimpleBlockItem(BULKHEAD_SIGN);
     /**
+     * The WC signs, lit green while a WC is free and red while it is taken: the one over a WC's door, a block of the
+     * bulkhead as tough as the partition, and the slim lightboxes high up in the cabin that point the way to the WCs,
+     * which nothing bumps into. Their faces glow but light nothing, and nothing spawns on either.
+     */
+    public static final DeferredBlock<WcSignBlock> WC_SIGN = BLOCKS.registerBlock(
+        "wc_sign", WcSignBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(1.5F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WcSignBlockEntity>> WC_SIGN_ENTITY =
+        BLOCK_ENTITIES.register("wc_sign", () -> BlockEntityType.Builder.of(WcSignBlockEntity::new, WC_SIGN.get()).build(null));
+    public static final DeferredItem<BlockItem> WC_SIGN_ITEM = ITEMS.registerSimpleBlockItem(WC_SIGN);
+    public static final DeferredBlock<OverheadWcSignBlock> OVERHEAD_WC_SIGN = BLOCKS.registerBlock(
+        "overhead_wc_sign", OverheadWcSignBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noCollission().noOcclusion()
+            .isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OverheadWcSignBlockEntity>> OVERHEAD_WC_SIGN_ENTITY =
+        BLOCK_ENTITIES.register("overhead_wc_sign", () -> BlockEntityType.Builder.of(OverheadWcSignBlockEntity::new, OVERHEAD_WC_SIGN.get()).build(null));
+    public static final DeferredItem<BlockItem> OVERHEAD_WC_SIGN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_WC_SIGN);
+    /**
      * The staircases between the decks: carpeted stairs and landings, which sound like the carpet they are, and the glass
      * rails along their open sides and round the upper deck's wells. Nothing spawns on any of them.
      */
@@ -1214,7 +1238,7 @@ public final class AerolargeRegistry {
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
-            BULKHEAD_SIGN_ITEM,
+            BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
