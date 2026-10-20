@@ -15,6 +15,7 @@ import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BasketballRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
+import dev.aerolarge.client.CarriedAboard;
 import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.DiscoBallRenderer;
@@ -106,6 +107,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::heard);
+        NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);
         modEventBus.addListener(AerolargeClient::onAddLayers);

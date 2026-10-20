@@ -1,5 +1,6 @@
 package dev.aerolarge.client;
 
+import dev.aerolarge.Aboard;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
@@ -7,6 +8,7 @@ import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
+import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.EntityMovementExtension;
 import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +30,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.CommonHooks;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -36,18 +40,44 @@ import org.joml.Vector3dc;
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
  * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, which ones come
- * near a point or hold it and how they lie as they are drawn; and holding Sable's water occlusion off while a camera's
- * picture is drawn. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
+ * near a point or hold it and how they lie as they are drawn; holding Sable's water occlusion off while a camera's
+ * picture is drawn; and keeping the player in step with the airliner whose cabin they fly, fall or climb in. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
  * once it is known to be installed.
  */
 public final class SableClient {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
+    /**
+     * How fast an airliner has to move where a player is, in blocks a second, for a player inside its hull to be
+     * carried along by it whatever they touch: below it, flying or falling there needs no help.
+     */
+    private static final double CARRIED_SPEED = 1;
+    /**
+     * The game's climb: the speed a ladder lifts a climber at and the fastest they slide down one, in blocks a tick,
+     * and the share of their speed the air leaves them each tick.
+     */
+    private static final double CLIMB_SPEED = 0.2;
+    private static final double SLIDE_SPEED = 0.15;
+    private static final double AIR_DRAG = 0.98;
 
     private SableClient() {
     }
 
     /** How an airliner is flying, as its instruments show it. Speeds in blocks a second, angles in degrees. */
     public record Attitude(double pitch, double roll, double heading, double airspeed, double verticalSpeed, double altitude) {
+    }
+
+    /**
+     * Keeps the player in step with the airliner whose cabin they are in, after their tick. Sable carries a player
+     * only while some block of the airliner is right round them: flying, falling or jumping through the open cabin of
+     * an airliner in flight, it lets go, and the airliner flies on and the back wall hits them. Inside its hull the air
+     * moves with the airliner, so there they are carried again. And Sable looks for the ladder they climb where their
+     * not yet carried position lands in the airliner as it lies now, a few blocks aft of the ladder in flight, so the
+     * climb is done again here against the airliner as it lies, as the game would do it.
+     */
+    static void keepAboard(LocalPlayer player) {
+        if (SABLE) {
+            Access.keepAboard(player);
+        }
     }
 
     /** Where a position in an airliner's blocks is in the world; the position itself when it is not in one. */
@@ -219,6 +249,65 @@ public final class SableClient {
         static boolean isAboard(Entity player, BlockEntity blockEntity) {
             SubLevel own = Sable.HELPER.getContainingClient(blockEntity);
             return own != null && own == Sable.HELPER.getTrackingOrVehicleSubLevel(player);
+        }
+
+        static void keepAboard(LocalPlayer player) {
+            if (player.isPassenger() || player.isSpectator() || player.isSleeping() || player.isFallFlying()) {
+                return;
+            }
+            Level level = player.level();
+            SubLevel airliner = Sable.HELPER.getTrackingSubLevel(player);
+            if (airliner == null) {
+                airliner = cabinAround(level, player.getBoundingBox().getCenter());
+                if (airliner == null) {
+                    return;
+                }
+                ((EntityMovementExtension) player).sable$setTrackingSubLevel(airliner);
+            }
+            if (!player.getAbilities().flying) {
+                climb(player, airliner);
+            }
+        }
+
+        /**
+         * The assembled airliner in flight whose hull holds a point in the world, null for none: parked, losing hold of
+         * a player costs nothing, and a fall there is a fall as anywhere.
+         */
+        @Nullable
+        private static SubLevel cabinAround(Level level, Vec3 point) {
+            for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(point, point))) {
+                Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
+                if (Sable.HELPER.getVelocity(level, airliner, inPlot).lengthSqr() >= CARRIED_SPEED * CARRIED_SPEED
+                    && Aboard.insideHull(level, BlockPos.containing(inPlot))) {
+                    return airliner;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * The game's own climb, against a ladder of the airliner as it lies now: on a ladder (or an open hatch over
+         * one) the player falls no faster than a slide down it, holds on while sneaking, and goes up pushing against
+         * it or jumping, as fast as the game's climb would leave them moving once its gravity and drag have had their
+         * tick.
+         */
+        private static void climb(LocalPlayer player, SubLevel airliner) {
+            Level level = player.level();
+            BlockPos at = BlockPos.containing(airliner.logicalPose().transformPositionInverse(player.position()));
+            if (CommonHooks.isLivingOnLadder(level.getBlockState(at), level, at, player).isEmpty()) {
+                return;
+            }
+            player.resetFallDistance();
+            Vec3 motion = player.getDeltaMovement();
+            double up;
+            if (player.horizontalCollision || player.input.jumping) {
+                up = (CLIMB_SPEED - player.getGravity()) * AIR_DRAG;
+            } else if (player.isSuppressingSlidingDownLadder()) {
+                up = Math.max(motion.y, 0);
+            } else {
+                up = Math.max(motion.y, -SLIDE_SPEED);
+            }
+            player.setDeltaMovement(motion.x, up, motion.z);
         }
 
         @Nullable
