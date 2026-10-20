@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
  * sill, swings down and runs out to the ground; once it is down, the controller lays the steps it is walked on (see
  * {@link AirstairStepBlock}). How far down it reaches is settled as it sets out: the first block of the way the
  * ground, or anything else, takes ends it there. Going away it waits, with a chime, until nobody is on it, takes the
- * steps up and runs it all back, shutting the door once the handrails are down. It only comes out with the airliner
+ * steps up and runs it all back, shutting the door once the flight is off the sill. It only comes out with the airliner
  * standing still, and goes away of its own accord once the airliner moves. The server runs it and tells every client
  * where it is going; each client runs the same clock to draw it in between.
  *
@@ -57,7 +57,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     private static final double MOVING = 1.0;
     /** For an airliner built before the bay: how far in from the door's face the skin below it lies, near enough. */
     private static final float OLD_HATCH_INSET = 0.5F;
-    /** In an airliner built before: how far in from the door's face the hull below it is looked through for the hold. */
+    /** In an airliner built before: how far in from the door's face the hull below it is searched for the hold. */
     private static final int OLD_MOUTH_SEARCH = 4;
     private static final float MOTOR_VOLUME = 0.9F;
     private static final float LATCH_VOLUME = 1.0F;
@@ -83,7 +83,10 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     /** Whether the steps are laid, and the hatch's skin is off. */
     private boolean laid;
     private boolean hatchOpen;
-    /** Going away, the door is still to be shut, once the handrails are down and out of its way. */
+    /**
+     * Going away, the door is still to be shut: once the flight has swung up off the sill and dropped to the bay's
+     * mouth, out of the way of the panel swinging back past the top of the stairs.
+     */
     private boolean doorToShut;
 
     public AirstairBlockEntity(BlockPos pos, BlockState state) {
@@ -240,7 +243,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
             setChanged();
         } else if (!deploying && (ticks > 0 || hatchOpen)) {
             ticks = Math.max(0, ticks - 1);
-            if (doorToShut && ticks <= AirstairFlight.EXTEND) {
+            if (doorToShut && ticks <= AirstairFlight.SLIDE) {
                 door(level, false);
                 doorToShut = false;
             }
