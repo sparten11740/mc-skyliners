@@ -3918,6 +3918,122 @@ function planterLang() {
   };
 }
 
+// The lounge's bar (see BarCounterBlock, BarStoolBlock and DisplayShelfBlock), drawn facing north. The counter: a dark
+// plinth set back under the front, which curves out over it in steps up to the dark stone top, overhanging, its LED
+// strip glowing along the foot of the curve; white at its sides and back too. The stool: a round foot, a chrome
+// column with a footrest ring round it, and the round leather seat on a chrome plate. The back bar's cabinet: walnut
+// round its glass doors under a stone top, an LED strip under the top's edge; its shelves: walnut sides and cornice
+// round a lit smoked mirror at the back, a glass shelf across the middle, and bottles of every colour standing on the
+// cabinet's top and on the shelf, tall and short in turn, their necks capped in chrome.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const counter = {
+    front: block("bar_front"), top: block("bar_top"), plinth: block("bar_plinth"), led: block("bar_led"), particle: block("bar_front"),
+  };
+  write(`assets/${ID}/models/block/bar_counter.json`, {
+    parent: "minecraft:block/block",
+    textures: counter,
+    elements: [
+      furniture([0, 0, 3], [16, 2, 16], "#plinth"),
+      furniture([0, 2, 2], [16, 4, 16], "#front"),
+      furniture([0, 4, 1], [16, 7, 16], "#front"),
+      furniture([0, 7, 0.5], [16, 12, 16], "#front"),
+      furniture([0, 12, 1], [16, 14, 16], "#front"),
+      furniture([0, 14, 0], [16, 16, 16], "#top"),
+      furniture([0, 2, 1.75], [16, 2.75, 2], "#led", { south: null, east: null, west: null, up: null }, true),
+    ],
+  });
+  const chrome = block("lavatory_basin_chrome");
+  write(`assets/${ID}/models/block/bar_stool.json`, {
+    parent: "minecraft:block/block",
+    textures: { chrome, foot: block("cabin_seat_frame"), leather: block("bar_stool_leather"), particle: block("bar_stool_leather") },
+    elements: [
+      furniture([4, 0, 5], [12, 1, 11], "#foot"),
+      furniture([5, 0, 4], [11, 1, 12], "#foot"),
+      furniture([7, 1, 7], [9, 8.5, 9], "#chrome"),
+      furniture([4.5, 4, 4.5], [11.5, 4.75, 5.25], "#chrome"),
+      furniture([4.5, 4, 10.75], [11.5, 4.75, 11.5], "#chrome"),
+      furniture([4.5, 4, 5.25], [5.25, 4.75, 10.75], "#chrome"),
+      furniture([10.75, 4, 5.25], [11.5, 4.75, 10.75], "#chrome"),
+      furniture([5, 8.5, 5], [11, 9, 11], "#chrome"),
+      furniture([3.5, 9, 4.5], [12.5, 10.5, 11.5], "#leather"),
+      furniture([4.5, 9, 3.5], [11.5, 10.5, 12.5], "#leather"),
+    ],
+  });
+  const bottles = ["green", "amber", "clear", "blue"];
+  const bottleTextures = Object.fromEntries(bottles.map((colour) => [colour, block(`bar_bottle_${colour}`)]));
+  // A row of bottles standing on the row given, tall and short in turn, the colours in turn from the one given.
+  const bottleRow = (y, first) => [2, 4.5, 7, 9.5, 12].flatMap((x, i) => {
+    const colour = `#${bottles[(first + i) % bottles.length]}`;
+    const top = y + (i % 2 === 0 ? 4.5 : 3.5);
+    return [
+      furniture([x, y, 10], [x + 1.5, top, 11.5], colour),
+      furniture([x + 0.5, top, 10.5], [x + 1, top + 1.5, 11], colour),
+      furniture([x + 0.4, top + 1.5, 10.4], [x + 1.1, top + 2, 11.1], "#chrome"),
+    ];
+  });
+  const backBar = {
+    ...bottleTextures, chrome, veneer: block("business_seat_veneer"), doors: block("back_bar_doors"), top: block("bar_top"),
+    mirror: block("back_bar_mirror"), glass: block("back_bar_glass"), led: block("bar_led"), particle: block("business_seat_veneer"),
+  };
+  write(`assets/${ID}/models/block/back_bar_cabinet.json`, {
+    parent: "minecraft:block/block",
+    textures: backBar,
+    elements: [
+      furniture([0, 0, 1], [16, 14, 16], "#veneer", { north: "#doors" }),
+      furniture([0, 14, 0], [16, 16, 16], "#top"),
+      furniture([0, 13.5, 0.75], [16, 14, 1], "#led", { south: null, east: null, west: null, up: null }, true),
+    ],
+  });
+  write(`assets/${ID}/models/block/back_bar_shelves.json`, {
+    parent: "minecraft:block/block",
+    textures: backBar,
+    elements: [
+      furniture([0, 0, 15], [16, 16, 16], "#veneer", { north: null }),
+      furniture([1, 0, 14.9], [15, 15, 14.9], "#mirror", { south: null, east: null, west: null, up: null, down: null }, true),
+      furniture([0, 0, 7], [1, 16, 15], "#veneer"),
+      furniture([15, 0, 7], [16, 16, 15], "#veneer"),
+      furniture([1, 15, 7], [15, 16, 15], "#veneer"),
+      furniture([1, 7.5, 8], [15, 8, 15], "#glass"),
+      ...bottleRow(0, 0),
+      ...bottleRow(8, 2),
+    ],
+  });
+  write(`assets/${ID}/blockstates/back_bar.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["cabinet", "shelves"].map((tier) =>
+      [`facing=${facing},tier=${tier}`, { model: `${ID}:block/back_bar_${tier}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/blockstates/bar_stool.json`, {
+    variants: Object.fromEntries([false, true].map((waterlogged) => [`waterlogged=${waterlogged}`, { model: `${ID}:block/bar_stool` }])),
+  });
+  facing("bar_counter");
+  write(`assets/${ID}/models/item/back_bar.json`, { parent: `${ID}:block/back_bar_cabinet` });
+  for (const name of ["bar_counter", "bar_stool", "back_bar"]) {
+    if (name !== "back_bar") {
+      write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}` });
+    }
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// The bar is fitted into the cabin rather than built into the airliner: breakable, and no part of the airframe.
+function barFittings() {
+  return ["bar_counter", "bar_stool", "back_bar"];
+}
+// A white front under a dark stone top; a leather seat on an iron column; and a cabinet under shelves of bottles.
+function barRecipes() {
+  shaped("bar_counter", ["BBB", "QQQ"], { B: "minecraft:polished_blackstone_slab", Q: "minecraft:quartz_block" }, 3);
+  shaped("bar_stool", ["L", "I", "I"], { L: "minecraft:leather", I: "minecraft:iron_ingot" }, 2);
+  shaped("back_bar", ["GBG", "PPP"], { G: "minecraft:glass_pane", B: "minecraft:glass_bottle", P: "minecraft:dark_oak_planks" }, 2);
+}
+function barLang() {
+  return {
+    "block.aerolarge.bar_counter": "Bar Counter",
+    "block.aerolarge.bar_stool": "Bar Stool",
+    "block.aerolarge.back_bar": "Back Bar",
+  };
+}
+
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
@@ -3956,6 +4072,7 @@ FITTINGS.push(...gymHallFittings());
 FITTINGS.push(...seatConsoleFittings());
 FITTINGS.push(...galleyUnitFittings());
 FITTINGS.push(...planterFittings());
+FITTINGS.push(...barFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -4077,6 +4194,7 @@ gymHallRecipes();
 seatConsoleRecipes();
 galleyUnitRecipes();
 planterRecipes();
+barRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4432,6 +4550,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...seatConsoleLang(),
   ...galleyUnitLang(),
   ...planterLang(),
+  ...barLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

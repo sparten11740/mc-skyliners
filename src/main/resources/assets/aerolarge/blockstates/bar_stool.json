@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=false": {
+      "model": "aerolarge:block/bar_stool"
+    },
+    "waterlogged=true": {
+      "model": "aerolarge:block/bar_stool"
+    }
+  }
+}

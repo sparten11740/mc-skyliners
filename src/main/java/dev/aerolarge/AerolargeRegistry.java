@@ -15,6 +15,8 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.BallMatBlock;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.BarCounterBlock;
+import dev.aerolarge.block.BarStoolBlock;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.BulkheadSignBlock;
@@ -41,6 +43,7 @@ import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
+import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
 import dev.aerolarge.block.DropReleaseBlock;
@@ -1116,6 +1119,25 @@ public final class AerolargeRegistry {
         "planter", PlanterBlock::new, metal(MapColor.PLANT).strength(PLANTER_STRENGTH).sound(SoundType.AZALEA).noOcclusion()
     );
     public static final DeferredItem<BlockItem> PLANTER_ITEM = ITEMS.registerSimpleBlockItem(PLANTER);
+    /** How brightly a display's lit shelves glow, in light levels: enough to show off what is on them. */
+    private static final int SHELF_GLOW = 6;
+    /**
+     * The lounge's bar: its counter, its stools, Create's seats underneath and as soft as they sound, and its back bar,
+     * a cabinet with lit shelves of bottles on it.
+     */
+    public static final DeferredBlock<BarCounterBlock> BAR_COUNTER = BLOCKS.registerBlock(
+        "bar_counter", BarCounterBlock::new, metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredBlock<BarStoolBlock> BAR_STOOL = BLOCKS.registerBlock(
+        "bar_stool", BarStoolBlock::new, metal(MapColor.COLOR_RED).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredBlock<DisplayShelfBlock> BACK_BAR = BLOCKS.registerBlock(
+        "back_bar", DisplayShelfBlock::new,
+        metal(MapColor.COLOR_BROWN).noOcclusion().lightLevel(state -> state.getValue(DisplayShelfBlock.TIER) == DisplayShelfBlock.Tier.SHELVES ? SHELF_GLOW : 0)
+    );
+    public static final DeferredItem<BlockItem> BAR_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(BAR_COUNTER);
+    public static final DeferredItem<BlockItem> BAR_STOOL_ITEM = ITEMS.registerSimpleBlockItem(BAR_STOOL);
+    public static final DeferredItem<BlockItem> BACK_BAR_ITEM = ITEMS.registerSimpleBlockItem(BACK_BAR);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -1149,7 +1171,8 @@ public final class AerolargeRegistry {
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
-            GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
+            GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
+            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,

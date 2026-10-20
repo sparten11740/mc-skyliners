@@ -2287,4 +2287,45 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "planter_cane", (x, y) => (y % 5 === 0 ? [0xb8, 0xc8, 0x6a] : x % 2 === 0 ? [0x6a, 0x9c, 0x3a] : [0x58, 0x88, 0x30]), 3);
 }
 
+// The lounge's bar (see BarCounterBlock, BarStoolBlock and DisplayShelfBlock). The counter's front: glossy white, a
+// faint sheen every few rows; its top dark stone with grey and pale flecks; its plinth near black; and the LED strip
+// along its foot cool blue, brightest down its middle. The stool's seat: oxblood leather, a lighter ring of stitching
+// round its top. The back bar's cabinet: walnut round two smoked glass doors, bottles dimly behind them; its shelves'
+// back a smoked mirror, lit warm from above; the shelves' glass edges pale; and the bottles, green, amber, clear and
+// blue glass, each with a pale label and a highlight down one side.
+{
+  texture(blockOutput, "bar_front", (x, y) => (y % 5 === 1 ? [0xfe, 0xfe, 0xfa] : y === 15 ? [0xd8, 0xd6, 0xd0] : [0xf2, 0xf1, 0xec]), 2);
+  texture(blockOutput, "bar_top", (x, y) => {
+    const fleck = (x * 7 + y * 13) % 17;
+    return fleck === 0 ? [0x8a, 0x8c, 0x90] : fleck === 5 || fleck === 11 ? [0x4c, 0x4e, 0x52] : [0x2a, 0x2b, 0x2e];
+  }, 3);
+  texture(blockOutput, "bar_plinth", (x, y) => (y % 2 === 0 ? [0x22, 0x23, 0x26] : [0x2a, 0x2c, 0x30]), 2);
+  texture(blockOutput, "bar_led", (x, y) => (y >= 6 && y <= 9 ? [0xd6, 0xec, 0xff] : [0x8c, 0xc8, 0xff]), 0);
+  texture(blockOutput, "bar_stool_leather", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (Math.abs(r - 4.5) < 0.5) return (x + y) % 2 === 0 ? [0xb0, 0x4a, 0x48] : [0x7a, 0x1e, 0x22];
+    return r < 3 ? [0x84, 0x26, 0x2a] : [0x6a, 0x16, 0x1a];
+  }, 2);
+  const WALNUT = [0x5c, 0x3e, 0x2a];
+  texture(blockOutput, "back_bar_doors", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || x === 7 || x === 8) return WALNUT;
+    if (y === 7 && (x === 6 || x === 9)) return [0xd3, 0xd8, 0xdd];
+    const bottle = (x % 3 === 1 || x % 3 === 2) && y >= 5;
+    if (bottle) return x % 6 < 3 ? [0x3a, 0x2c, 0x1a] : [0x1e, 0x32, 0x22];
+    return [0x1a, 0x1c, 0x20];
+  }, 2);
+  texture(blockOutput, "back_bar_mirror", (x, y) => {
+    const v = Math.max(0, 0x70 - y * 5);
+    const half = Math.round(v / 2);
+    return (x + y) % 9 === 0 ? [0x6a + half, 0x5c + half, 0x48 + half] : [0x3a + v, 0x30 + v, 0x24 + half];
+  }, 1);
+  texture(blockOutput, "back_bar_glass", (x, y) => (y % 4 === 0 ? [0xe8, 0xf6, 0xfc] : [0xb4, 0xd4, 0xe0]), 1);
+  for (const [colour, glass] of [["green", [0x22, 0x6a, 0x30]], ["amber", [0xa0, 0x58, 0x16]], ["clear", [0xc8, 0xdc, 0xe2]], ["blue", [0x2a, 0x52, 0xb0]]]) {
+    texture(blockOutput, `bar_bottle_${colour}`, (x, y) => {
+      if (y % 8 >= 4 && y % 8 <= 5) return [0xf0, 0xe8, 0xd4];
+      return x % 4 === 0 ? glass.map((c) => Math.min(255, c + 0x50)) : glass;
+    }, 1);
+  }
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

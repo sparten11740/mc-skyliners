@@ -312,6 +312,13 @@ while it cooks; Galley Stowage, two by two standard containers each held shut by
 drawers under a brushed steel top for a coffee machine to stand on. The stowage and the worktop are cupboards, a
 chest's worth each, their latches clacking as they open. All three can be crafted.
 
+A Bar Counter is a piece of a lounge bar: a white front curving out from a dark plinth up under a dark stone top, a
+strip of blue LED light glowing along its foot; side by side the pieces run on into one bar, and things stand on it.
+A Bar Stool is a chrome stool with a round oxblood leather seat and a footrest ring, to sit on: it is one of Create's
+seats underneath, as the cabin seats are. A Back Bar is a walnut cabinet with smoked glass doors under a stone top;
+put another on top of it and that one is lit shelves of bottles in front of a smoked mirror (shelves left with nothing
+under them come down). All three can be crafted.
+
 A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
 top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, three big buttons
 each showing its drink, so it needs no reading: an espresso in a small cup, a cappuccino with its foam, or a mocha in a
