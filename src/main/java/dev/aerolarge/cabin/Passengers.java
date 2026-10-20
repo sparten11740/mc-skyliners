@@ -11,8 +11,10 @@ import dev.aerolarge.FirstFlight;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.compat.SableFlight;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -51,6 +53,11 @@ public final class Passengers {
     /** How far across, and up and down, a passenger looks for a seat, in blocks. */
     private static final int SEEK_ACROSS = 24;
     private static final int SEEK_UP_DOWN = 6;
+    /**
+     * How often a passenger without a seat searches round it for one, in ticks; between searches it only makes sure
+     * the seat it is making for is still free.
+     */
+    private static final int SEARCH_TICKS = 40;
     /** How near a seat a passenger has to be to sit down in it, in blocks. */
     private static final double SIT_REACH = 2.0;
     /** How fast a passenger walks to its seat, as a share of its full speed. */
@@ -64,7 +71,13 @@ public final class Passengers {
     private static final double STILL = 0.5;
     private static final int STILL_LOOKS = 6;
 
+    /** The seat each passenger without one is making for, if any, and when it next searches; forgotten with it. */
+    private static final Map<Villager, Sought> SOUGHT = new WeakHashMap<>();
+
     private Passengers() {
+    }
+
+    private record Sought(@Nullable BlockPos seat, long searchAt) {
     }
 
     /**
@@ -138,14 +151,16 @@ public final class Passengers {
     private static Trip seek(ServerLevel level, Villager villager, Trip trip) {
         Vec3 here = SableFlight.toWorld(level, villager.position());
         if (trip.unseated() >= GIVE_UP_TICKS) {
+            SOUGHT.remove(villager);
             villager.spawnAtLocation(new ItemStack(AerolargeRegistry.BOARDING_PASS.get()));
             cheer(level, here, SoundEvents.VILLAGER_NO);
             return null;
         }
-        BlockPos seat = SableFlight.nearest(level, villager.position(), SEEK_ACROSS, SEEK_UP_DOWN, at -> freeSeat(level, at));
+        BlockPos seat = seat(level, villager);
         if (seat != null) {
             Vec3 seatInWorld = SableFlight.toWorld(level, Vec3.atBottomCenterOf(seat));
             if (seatInWorld.distanceTo(here) <= SIT_REACH) {
+                SOUGHT.remove(villager);
                 SeatBlock.sitDown(level, seat, villager);
                 return new Trip(trip.origin(), trip.agent(), 0, 0);
             }
@@ -153,6 +168,22 @@ public final class Passengers {
             villager.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(seatInWorld, WALK_SPEED, 1));
         }
         return new Trip(trip.origin(), trip.agent(), trip.unseated() + CHECK_TICKS, 0);
+    }
+
+    /**
+     * The seat a passenger makes for: the one it is already making for while that is still free, and between searches
+     * nothing else; when a search is due, the nearest free one round it.
+     */
+    @Nullable
+    private static BlockPos seat(ServerLevel level, Villager villager) {
+        long now = level.getGameTime();
+        Sought sought = SOUGHT.get(villager);
+        if (sought != null && now < sought.searchAt()) {
+            return sought.seat() != null && freeSeat(level, sought.seat()) ? sought.seat() : null;
+        }
+        BlockPos seat = SableFlight.nearest(level, villager.position(), SEEK_ACROSS, SEEK_UP_DOWN, Passengers::seatToSitIn, at -> freeSeat(level, at));
+        SOUGHT.put(villager, new Sought(seat, now + SEARCH_TICKS));
+        return seat;
     }
 
     /**
@@ -190,10 +221,13 @@ public final class Passengers {
      * seat, though it is one of Create's underneath, nor the top of a cabin seat's back, which is no seat to sit in.
      */
     private static boolean freeSeat(Level level, BlockPos at) {
-        BlockState state = level.getBlockState(at);
+        return seatToSitIn(level.getBlockState(at)) && Aboard.insideHull(level, at.above()) && !SeatBlock.isSeatOccupied(level, at);
+    }
+
+    /** Whether a block is a seat a passenger can sit in, wherever it stands and whoever is in it. */
+    private static boolean seatToSitIn(BlockState state) {
         Block seat = state.getBlock();
-        return seat instanceof SeatBlock && !(seat instanceof PilotSeatBlock) && !CabinSeatBlock.isBack(state) && Aboard.insideHull(level, at.above())
-            && !SeatBlock.isSeatOccupied(level, at);
+        return seat instanceof SeatBlock && !(seat instanceof PilotSeatBlock) && !CabinSeatBlock.isBack(state);
     }
 
     /** A villager's sound and a puff of green sparkles where it is in the world, to show what it makes of things. */

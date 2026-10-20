@@ -14,6 +14,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import org.joml.Vector3d;
@@ -139,17 +141,71 @@ public final class SableFlight {
     /**
      * The nearest block to a point in the world that the test accepts, within the ranges across and up and down,
      * looking into any assembled airliner there as well as the world: its position in the world, or in the airliner's
-     * plot; null if neither has one.
+     * plot; null if neither has one. Only blocks in a candidate state are tested, and a section of the level holding
+     * none is passed over whole by its palette, so a wide search over open country or an airliner's empty spaces costs
+     * next to nothing.
      */
     @Nullable
-    public static BlockPos nearest(Level level, Vec3 point, int across, int upDown, Predicate<BlockPos> test) {
-        BlockPos inWorld = BlockPos.findClosestMatch(BlockPos.containing(point), across, upDown, test).orElse(null);
-        BlockPos aboard = SABLE ? Access.nearestAboard(level, point, across, upDown, test) : null;
+    public static BlockPos nearest(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
+        BlockPos inWorld = closest(level, point, across, upDown, candidate, test);
+        BlockPos aboard = SABLE ? Access.nearestAboard(level, point, across, upDown, candidate, test) : null;
         if (inWorld == null || aboard == null) {
             return inWorld == null ? aboard : inWorld;
         }
         // Distances in a plot are the same as in the world: an airliner only moves and turns.
         return inWorld.distToCenterSqr(point) <= aboard.distToCenterSqr(toPlot(level, aboard, point, false)) ? inWorld : aboard;
+    }
+
+    /**
+     * The nearest block to a point among the level's own blocks, within the ranges across and up and down of the block
+     * the point is in, that is in a candidate state and the test accepts; null for none.
+     */
+    @Nullable
+    private static BlockPos closest(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
+        BlockPos centre = BlockPos.containing(point);
+        int minX = centre.getX() - across;
+        int maxX = centre.getX() + across;
+        int minY = centre.getY() - upDown;
+        int maxY = centre.getY() + upDown;
+        int minZ = centre.getZ() - across;
+        int maxZ = centre.getZ() + across;
+        BlockPos closest = null;
+        double distance = Double.MAX_VALUE;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
+            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
+                // Never load a chunk just to look into it.
+                LevelChunk chunk = level.getChunkSource().getChunk(chunkX, chunkZ, false);
+                if (chunk == null) {
+                    continue;
+                }
+                for (int sectionY = minY >> 4; sectionY <= maxY >> 4; sectionY++) {
+                    int index = chunk.getSectionIndexFromSectionY(sectionY);
+                    if (index < 0 || index >= chunk.getSectionsCount()) {
+                        continue;
+                    }
+                    LevelChunkSection section = chunk.getSection(index);
+                    if (section.hasOnlyAir() || !section.maybeHas(candidate)) {
+                        continue;
+                    }
+                    for (int x = Math.max(minX, chunkX << 4); x <= Math.min(maxX, (chunkX << 4) + 15); x++) {
+                        for (int y = Math.max(minY, sectionY << 4); y <= Math.min(maxY, (sectionY << 4) + 15); y++) {
+                            for (int z = Math.max(minZ, chunkZ << 4); z <= Math.min(maxZ, (chunkZ << 4) + 15); z++) {
+                                if (!candidate.test(section.getBlockState(x & 15, y & 15, z & 15))) {
+                                    continue;
+                                }
+                                double away = pos.set(x, y, z).distToCenterSqr(point);
+                                if (away < distance && test.test(pos)) {
+                                    closest = pos.immutable();
+                                    distance = away;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return closest;
     }
 
     /** Kept apart so its Sable references are only loaded when Sable is there. */
@@ -202,13 +258,13 @@ public final class SableFlight {
         }
 
         @Nullable
-        static BlockPos nearestAboard(Level level, Vec3 point, int across, int upDown, Predicate<BlockPos> test) {
+        static BlockPos nearestAboard(Level level, Vec3 point, int across, int upDown, Predicate<BlockState> candidate, Predicate<BlockPos> test) {
             BoundingBox3d around = new BoundingBox3d(point.x - across, point.y - upDown, point.z - across, point.x + across, point.y + upDown, point.z + across);
             BlockPos nearest = null;
             double distance = Double.MAX_VALUE;
             for (SubLevel airliner : Sable.HELPER.getAllIntersecting(level, around)) {
                 Vec3 inPlot = airliner.logicalPose().transformPositionInverse(point);
-                BlockPos found = BlockPos.findClosestMatch(BlockPos.containing(inPlot), across, upDown, test).orElse(null);
+                BlockPos found = closest(level, inPlot, across, upDown, candidate, test);
                 if (found != null && found.distToCenterSqr(inPlot) < distance) {
                     nearest = found;
                     distance = found.distToCenterSqr(inPlot);
