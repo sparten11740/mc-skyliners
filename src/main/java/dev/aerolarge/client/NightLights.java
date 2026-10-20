@@ -6,8 +6,10 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.LightStripBlock;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,7 +47,9 @@ import org.slf4j.Logger;
  * standing as blocks in the world, and those of each assembled airliner within reach, among its own blocks. Lamps of a
  * kind in a row, shining the same way, become one of Veil's area lights, a glowing strip as long as the row (up to
  * {@link #MAX_RUN} blocks); of all those, only the {@link #MAX_LIGHTS} nearest are drawn. An assembled airliner's
- * lights are placed anew every frame, as Sable draws the airliner at that partial tick, so they fly with it.
+ * lights are placed anew every frame, as Sable draws the airliner at that partial tick, so they fly with it. A look
+ * goes through the blocks a section at a time, a little in each frame (see {@link #LOOK_PER_FRAME}), so no one frame
+ * waits for all of it.
  *
  * <p>While its lights are near, this class keeps Veil's buffers on (see {@link VeilLights.Buffers}), so the cabin does
  * not cause a hitch each time the player turns round.
@@ -59,8 +63,13 @@ public final class NightLights {
     /** How far from the camera lamps are looked for, in blocks: either way along and across, and up and down. */
     private static final int REACH = 24;
     private static final int REACH_UP = 12;
-    /** How often the blocks round the camera are looked through, in milliseconds. */
+    /** How often a look through the blocks round the camera starts, in milliseconds, once the one before is done. */
     private static final long LOOK_EVERY = 500;
+    /**
+     * How long each frame goes on with a look, in nanoseconds: it looks through a section at a time, at least one a
+     * frame, until this is up.
+     */
+    private static final long LOOK_PER_FRAME = 250_000;
     /** The most lights drawn at once, the nearest. */
     private static final int MAX_LIGHTS = 32;
     /** Lamps in a row at most this many blocks apart shine as one light: the crown's stand six apart. */
@@ -84,6 +93,8 @@ public final class NightLights {
     private static final Predicate<BlockState> MAYBE_LAMP = state -> lamp(state) != null;
     /** The key the world's own lights are kept under, among the assembled airliners' own. */
     private static final UUID WORLD = new UUID(0, 0);
+    /** The six ways out of a block, by their ordinals, to look round a cabin light. */
+    private static final Direction[] DIRECTIONS = Direction.values();
 
     /** The lights now drawn, by the frame their lamps are in: the world's, or an assembled airliner's. */
     private static final Map<UUID, Cabin> CABINS = new HashMap<>();
@@ -92,6 +103,9 @@ public final class NightLights {
     private static final Vector3d ALONG = new Vector3d();
     private static final Vector3d OUT = new Vector3d();
     private static long lookDue;
+    /** The look through the blocks round the camera under way, if one is. */
+    @Nullable
+    private static Look looking;
     /** Whether drawing the lights has failed; then none are drawn until the game is restarted. */
     private static boolean failed;
 
@@ -159,7 +173,7 @@ public final class NightLights {
         Vec3 anchor;
     }
 
-    /** Before each frame: looks for lamps now and then, and places the lights of the airliners flying. */
+    /** Before each frame: looks on for lamps now and then, and places the lights of the airliners flying. */
     public static void frame(RenderFrameEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || !available() || !VeilLights.settled(minecraft)) {
@@ -168,9 +182,16 @@ public final class NightLights {
         }
         long now = Util.getMillis();
         try {
-            if (now - lookDue >= 0) {
+            if (looking != null && looking.level != minecraft.level) {
+                looking = null;
+            }
+            if (looking == null && now - lookDue >= 0) {
                 lookDue = now + LOOK_EVERY;
-                look(minecraft.level, minecraft.gameRenderer.getMainCamera().getPosition());
+                looking = new Look(minecraft.level, minecraft.gameRenderer.getMainCamera().getPosition());
+            }
+            if (looking != null && looking.lookOn()) {
+                light(looking.candidates);
+                looking = null;
             }
             // The partial tick Sable draws the airliners with.
             place(event.getPartialTick().getGameTimeDeltaPartialTick(false));
@@ -191,22 +212,133 @@ public final class NightLights {
         return VeilLights.USABLE && !failed && AerolargeClientConfig.NIGHT_LIGHTS.get();
     }
 
+    /** A row of lamps found, as a light, with the frame its blocks are in and how far it is from the camera. */
+    private record Candidate(UUID frame, Glow glow, double distance) {
+    }
+
     /**
-     * Looks through the blocks round the camera, in the world and among each assembled airliner's within reach, for
-     * lamps set for the night; keeps the nearest rows, and adds and drops lights to match.
+     * A look through the blocks round the camera for lamps set for the night, in the world and among each assembled
+     * airliner's within reach, a section at a time over as many frames as it takes.
      */
-    private static void look(Level level, Vec3 camera) {
-        record Candidate(UUID frame, Glow glow, double distance) {
-        }
-        List<Candidate> candidates = new ArrayList<>();
-        for (Glow glow : rows(lamps(level, camera))) {
-            candidates.add(new Candidate(WORLD, glow, glow.distance(camera)));
-        }
-        for (SableClient.Near airliner : SableClient.near(level, camera, REACH)) {
-            for (Glow glow : rows(lamps(level, airliner.point()))) {
-                candidates.add(new Candidate(airliner.airliner(), glow, glow.distance(airliner.point())));
+    private static final class Look {
+        final Level level;
+        /** The boxes of blocks still to look through, the one under way first. */
+        final Deque<Box> boxes = new ArrayDeque<>();
+        /** The rows of lamps found in the boxes looked through. */
+        final List<Candidate> candidates = new ArrayList<>();
+
+        Look(Level level, Vec3 camera) {
+            this.level = level;
+            boxes.add(new Box(WORLD, camera));
+            for (SableClient.Near airliner : SableClient.near(level, camera, REACH)) {
+                boxes.add(new Box(airliner.airliner(), airliner.point()));
             }
         }
+
+        /** Looks on through the boxes, a section at a time, until this frame's time is up; whether the look is done. */
+        boolean lookOn() {
+            long until = Util.getNanos() + LOOK_PER_FRAME;
+            do {
+                Box box = boxes.peek();
+                if (box == null) {
+                    return true;
+                }
+                if (!box.next(level)) {
+                    boxes.remove();
+                    for (Glow glow : rows(box.found)) {
+                        candidates.add(new Candidate(box.frame, glow, glow.distance(box.centre)));
+                    }
+                }
+            } while (Util.getNanos() - until < 0);
+            return boxes.isEmpty();
+        }
+    }
+
+    /**
+     * The blocks round a point in one frame (the world, or an assembled airliner's blocks), {@link #REACH} either way
+     * along and across and {@link #REACH_UP} up and down, looked through for lamps a section at a time: up each chunk's
+     * sections, chunk by chunk.
+     */
+    private static final class Box {
+        final UUID frame;
+        final Vec3 centre;
+        final int minX;
+        final int maxX;
+        final int minY;
+        final int maxY;
+        final int minZ;
+        final int maxZ;
+        /** The lamps found so far, each once for every way it shines. */
+        final List<Found> found = new ArrayList<>();
+        /** The section to look through next. */
+        int chunkX;
+        int chunkZ;
+        int sectionY;
+
+        Box(UUID frame, Vec3 centre) {
+            this.frame = frame;
+            this.centre = centre;
+            minX = Mth.floor(centre.x) - REACH;
+            maxX = Mth.floor(centre.x) + REACH;
+            minY = Mth.floor(centre.y) - REACH_UP;
+            maxY = Mth.floor(centre.y) + REACH_UP;
+            minZ = Mth.floor(centre.z) - REACH;
+            maxZ = Mth.floor(centre.z) + REACH;
+            chunkX = minX >> 4;
+            chunkZ = minZ >> 4;
+            sectionY = minY >> 4;
+        }
+
+        /** Looks through the next section for lamps; false once all have been. */
+        boolean next(Level level) {
+            if (chunkX > maxX >> 4) {
+                return false;
+            }
+            lamps(level);
+            if (++sectionY > maxY >> 4) {
+                sectionY = minY >> 4;
+                if (++chunkZ > maxZ >> 4) {
+                    chunkZ = minZ >> 4;
+                    chunkX++;
+                }
+            }
+            return true;
+        }
+
+        /** The lamps set for the night in the section to look through next, as far as it lies in the box. */
+        private void lamps(Level level) {
+            LevelChunk chunk = level.getChunkSource().getChunk(chunkX, chunkZ, false);
+            if (chunk == null) {
+                return;
+            }
+            int index = chunk.getSectionIndexFromSectionY(sectionY);
+            if (index < 0 || index >= chunk.getSectionsCount()) {
+                return;
+            }
+            LevelChunkSection section = chunk.getSection(index);
+            if (section.hasOnlyAir() || !section.maybeHas(MAYBE_LAMP)) {
+                return;
+            }
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int x = Math.max(minX, chunkX << 4); x <= Math.min(maxX, (chunkX << 4) + 15); x++) {
+                for (int y = Math.max(minY, sectionY << 4); y <= Math.min(maxY, (sectionY << 4) + 15); y++) {
+                    for (int z = Math.max(minZ, chunkZ << 4); z <= Math.min(maxZ, (chunkZ << 4) + 15); z++) {
+                        BlockState state = section.getBlockState(x & 15, y & 15, z & 15);
+                        Lamp lamp = lamp(state);
+                        if (lamp != null) {
+                            BlockPos at = pos.set(x, y, z).immutable();
+                            for (Direction out : shining(level, at, lamp, state)) {
+                                found.add(new Found(lamp, at, out));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Keeps the nearest rows of lamps a look found, and adds and drops lights to match. */
+    private static void light(List<Candidate> candidates) {
         candidates.sort(Comparator.comparingDouble(Candidate::distance));
         Map<UUID, Set<Glow>> wanted = new HashMap<>();
         for (Candidate candidate : candidates.subList(0, Math.min(MAX_LIGHTS, candidates.size()))) {
@@ -262,8 +394,9 @@ public final class NightLights {
         }
     }
 
-    /** Drops every light and lets Veil's buffers go. */
+    /** Drops every light, and the look under way, and lets Veil's buffers go. */
     private static void forget() {
+        looking = null;
         if (CABINS.isEmpty() && !BUFFERS.held()) {
             return;
         }
@@ -295,51 +428,6 @@ public final class NightLights {
         return state.is(AerolargeRegistry.PENDANT_LIGHT.get()) ? Lamp.PENDANT : null;
     }
 
-    /** The lamps set for the night round a point, among the level's blocks there, each once for every way it shines. */
-    private static List<Found> lamps(Level level, Vec3 centre) {
-        List<Found> found = new ArrayList<>();
-        int minX = Mth.floor(centre.x) - REACH;
-        int maxX = Mth.floor(centre.x) + REACH;
-        int minY = Mth.floor(centre.y) - REACH_UP;
-        int maxY = Mth.floor(centre.y) + REACH_UP;
-        int minZ = Mth.floor(centre.z) - REACH;
-        int maxZ = Mth.floor(centre.z) + REACH;
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
-            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
-                LevelChunk chunk = level.getChunkSource().getChunk(chunkX, chunkZ, false);
-                if (chunk == null) {
-                    continue;
-                }
-                for (int sectionY = minY >> 4; sectionY <= maxY >> 4; sectionY++) {
-                    int index = chunk.getSectionIndexFromSectionY(sectionY);
-                    if (index < 0 || index >= chunk.getSectionsCount()) {
-                        continue;
-                    }
-                    LevelChunkSection section = chunk.getSection(index);
-                    if (section.hasOnlyAir() || !section.maybeHas(MAYBE_LAMP)) {
-                        continue;
-                    }
-                    for (int x = Math.max(minX, chunkX << 4); x <= Math.min(maxX, (chunkX << 4) + 15); x++) {
-                        for (int y = Math.max(minY, sectionY << 4); y <= Math.min(maxY, (sectionY << 4) + 15); y++) {
-                            for (int z = Math.max(minZ, chunkZ << 4); z <= Math.min(maxZ, (chunkZ << 4) + 15); z++) {
-                                BlockState state = section.getBlockState(x & 15, y & 15, z & 15);
-                                Lamp lamp = lamp(state);
-                                if (lamp != null) {
-                                    BlockPos at = pos.set(x, y, z).immutable();
-                                    for (Direction out : shining(level, at, lamp, state)) {
-                                        found.add(new Found(lamp, at, out));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return found;
-    }
-
     /** The ways a lamp shines: a strip out from its wall, a pendant down, a cabin light as {@link #panel} finds. */
     private static List<Direction> shining(Level level, BlockPos pos, Lamp lamp, BlockState state) {
         return switch (lamp) {
@@ -357,10 +445,14 @@ public final class NightLights {
      * both up and down.
      */
     private static List<Direction> panel(Level level, BlockPos pos) {
+        int[] daylight = new int[DIRECTIONS.length];
+        for (Direction way : DIRECTIONS) {
+            daylight[way.ordinal()] = daylight(level, pos.relative(way));
+        }
         List<Direction> ways = new ArrayList<>(2);
-        for (Direction way : Direction.values()) {
-            int sky = daylight(level, pos.relative(way));
-            int across = daylight(level, pos.relative(way.getOpposite()));
+        for (Direction way : DIRECTIONS) {
+            int sky = daylight[way.ordinal()];
+            int across = daylight[way.getOpposite().ordinal()];
             if (sky >= 0 && sky < OPEN_SKY && (across < 0 || sky <= across + SKY_MARGIN)) {
                 ways.add(way);
             }
