@@ -15,6 +15,7 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinControlBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
+import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CurtainBlock;
@@ -68,7 +69,6 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -1227,7 +1227,7 @@ public final class AirframeLayout {
         }
         // Steps from the main deck up to the flight deck's back edge, rising toward the nose; the top one stands level
         // with the deck, so its high side runs flush onto the deck's floor.
-        BlockState step = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+        BlockState step = AerolargeRegistry.CABIN_STAIRS.get().defaultBlockState().setValue(CabinStairsBlock.FACING, Direction.NORTH);
         for (int k = 1; deck + 1 - k > floorY; k++) {
             for (int x = -STEPS_HALF_WIDTH; x <= STEPS_HALF_WIDTH; x++) {
                 furnish(x, deck + 1 - k, deckEnd + k, step);
