@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CargoCrateBlock;
+import dev.aerolarge.block.CargoFloorBlock;
 import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
@@ -17,7 +18,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,11 +27,12 @@ import net.minecraft.world.level.storage.loot.LootTable;
 /**
  * The furnished airliner's hold, between the moon pool and the drop bay: luggage piled up both sides in bays, each
  * behind a cargo net from the floor to the ceiling, suitcases in four colours with care packages packed with supplies
- * among them, and yellow and black hazard stripes along the walkway down the middle, which stays clear all the way from
- * the pool to the bay, and on from the bay to the hatch and the cargo door. Three golden suitcases are hidden about the
- * hold: one in each pile and one at the far end of the hold aft of the cargo door. Under the walkway, a stretch of the
- * belly is a sky window. It only goes into open hold space, bar the window, which glazes the belly as under the moon
- * pool, and is left out where the hold is too low to walk in.
+ * among them, cargo floor along both edges of the walkway down the middle, its tie-down rails along the nets, and ball
+ * mats round the drop bay; the walkway stays clear all the way from the pool to the bay, and on from the bay to the
+ * hatch and the cargo door. Three golden suitcases are hidden about the hold: one in each pile and one at the far end
+ * of the hold aft of the cargo door. Under the walkway, a stretch of the belly is a sky window. It only goes into open
+ * hold space, bar the window, which glazes the belly as under the moon pool, and is left out where the hold is too low
+ * to walk in.
  */
 final class HoldFitOut {
     /** Kept clear of luggage forward of the drop bay, in metres, so it can be loaded from all round. */
@@ -50,7 +51,7 @@ final class HoldFitOut {
      * cargo door behind that.
      */
     private static final double[] SKY_WINDOW = {25, AirframeShape.BEACON_STATION - 2};
-    /** How many columns in from the hazard stripes the sky window's edge is. */
+    /** How many columns in from the cargo floor along the walkway's edges the sky window's edge is. */
     private static final int WINDOW_INSET = 1;
     private static final DyeColor[] COLOURS = SuitcaseBlock.COLOR.getPossibleValues().toArray(DyeColor[]::new);
     private static final ResourceKey<LootTable> SUITCASE = loot("suitcase");
@@ -85,7 +86,7 @@ final class HoldFitOut {
         if (to - from < BAY_LENGTH) {
             return;
         }
-        // Measured while the hold is still empty, before the stripes narrow the walkway.
+        // Measured while the hold is still empty, before the cargo floor narrows the walkway.
         skyWindow(bottom, from, to);
         List<BlockPos> starboard = new ArrayList<>();
         List<BlockPos> port = new ArrayList<>();
@@ -102,10 +103,24 @@ final class HoldFitOut {
         if (end.getZ() > bay.getZ()) {
             golden(end, Direction.NORTH, 3);
         }
+        // Last, as the far end is found along the bare floor down the middle.
+        apron(bay);
+    }
+
+    /** Ball mats round the drop bay, where loads are turned onto it, wherever the hold's floor there is plain. */
+    private void apron(BlockPos bay) {
+        int y = bay.getY() + 1;
+        for (int x = -1; x <= 1; x++) {
+            for (int z = bay.getZ() - 1; z <= bay.getZ() + 1; z++) {
+                if ((x != 0 || z != bay.getZ()) && layout.isPlainHull(x, y - 1, z)) {
+                    layout.furnish(x, y, z, AerolargeRegistry.BALL_MAT.get().defaultBlockState());
+                }
+            }
+        }
     }
 
     /**
-     * The sky window: a stretch of the belly under the walkway, inside its hazard stripes, glazed with clear hull
+     * The sky window: a stretch of the belly under the walkway, inside its cargo floor, glazed with clear hull
      * glass, as under the moon pool, to lie on and look straight down through at the ground or the clouds. The hold's
      * lights set into the belly stay, between its panes. Glazed before the shell pass, which cuts it to the curve.
      */
@@ -147,7 +162,7 @@ final class HoldFitOut {
     }
 
     /**
-     * One station of the hold: on each side, a hazard stripe along the walkway, and unless the station is a gap between
+     * One station of the hold: on each side, cargo floor along the walkway, and unless the station is a gap between
      * bays, the bay's cargo net along the edge of the floor, from the floor to the ceiling, and the luggage piled
      * behind it up the hull's curve; the net goes on the list of nets, and the suitcases on the side's.
      */
@@ -160,7 +175,8 @@ final class HoldFitOut {
                 edge++;
             }
             if (edge > 1) {
-                layout.furnish(side * (edge - 1), bottom, z, (Math.floorMod(z, 2) == 0 ? Blocks.YELLOW_CARPET : Blocks.BLACK_CARPET).defaultBlockState());
+                layout.furnish(side * (edge - 1), bottom, z, AerolargeRegistry.CARGO_FLOOR.get().defaultBlockState()
+                    .setValue(CargoFloorBlock.FACING, side > 0 ? Direction.EAST : Direction.WEST));
             }
             if (gap) {
                 continue;

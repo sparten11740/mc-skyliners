@@ -372,10 +372,11 @@ away from you; use a dye on it to dye it, orange until dyed, and taken down it k
 ### The hold
 
 In the furnished airliner the hold between the moon pool and the drop bay is stowed with luggage, piled up both sides
-in bays, each behind a cargo net from the floor to the ceiling (see below) with a gap to step into between them,
-with yellow and black stripes along the walkway down the middle, which stays clear from
-the pool to the drop bay and on to the hatch and the cargo door. Along its forward half the belly under the walkway is
-a sky window of clear glass, like the pool's: lie on it and look straight down at the ground, or the clouds, below.
+in bays, each behind a cargo net from the floor to the ceiling (see below) with a gap to step into between them. Cargo
+floor runs along both edges of the walkway down the middle, its yellow tie-down rails along the nets, and ball mats lie
+round the drop bay; the walkway stays clear from the pool to the drop bay and on to the hatch and the cargo door.
+Along its forward half the belly under the walkway is a sky window of clear glass, like the pool's: lie on it and look
+straight down at the ground, or the clouds, below.
 The suitcases, in four colours, each hold a few things a traveller packs; among them are care packages packed with
 supplies, ready to load into the drop bay. Three golden suitcases are hidden about the hold: they glint, glow faintly
 and chime softly when someone comes near. Opening one counts toward Lost and Found in the First Flight advancements,
