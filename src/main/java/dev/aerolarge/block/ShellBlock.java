@@ -31,7 +31,7 @@ public class ShellBlock extends Block {
     public ShellBlock(Properties properties, Supplier<? extends ItemLike> part) {
         super(properties);
         this.part = part;
-        registerDefaultState(stateDefinition.any().setValue(shapeProperty(), ShellGeometry.WHOLE));
+        registerDefaultState(cut(stateDefinition.any(), ShellGeometry.WHOLE));
     }
 
     /**
@@ -42,19 +42,34 @@ public class ShellBlock extends Block {
         return SHAPE;
     }
 
+    /** The shape this block's state is cut to; a block keeping its shape some other way than one property says how. */
+    protected int shapeOf(BlockState state) {
+        return state.getValue(shapeProperty());
+    }
+
+    /** This block's state cut to a shape it can take. Asked for while the block is being made, like the property. */
+    protected BlockState cut(BlockState state, int shape) {
+        return state.setValue(shapeProperty(), shape);
+    }
+
+    /** Whether this block can be cut to the shape. */
+    protected boolean canTake(int shape) {
+        return shapeProperty().getPossibleValues().contains(shape);
+    }
+
     /** A block's shape: its own if it is cut to the curve, the whole block otherwise. */
     public static int shape(BlockState state) {
-        return state.getBlock() instanceof ShellBlock shell ? state.getValue(shell.shapeProperty()) : ShellGeometry.WHOLE;
+        return state.getBlock() instanceof ShellBlock shell ? shell.shapeOf(state) : ShellGeometry.WHOLE;
     }
 
     /** Whether the block can take the shape. */
     public static boolean takes(BlockState state, int shape) {
-        return state.getBlock() instanceof ShellBlock shell && shell.shapeProperty().getPossibleValues().contains(shape);
+        return state.getBlock() instanceof ShellBlock shell && shell.canTake(shape);
     }
 
     /** The block cut to the shape, which it must be able to take. */
     public static BlockState withShape(BlockState state, int shape) {
-        return state.setValue(((ShellBlock) state.getBlock()).shapeProperty(), shape);
+        return ((ShellBlock) state.getBlock()).cut(state, shape);
     }
 
     @Override
