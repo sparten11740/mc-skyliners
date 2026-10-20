@@ -32,6 +32,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -913,6 +914,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         relays.forEach((channel, offsets) -> channels.put(channel.name(), Relays.write(offsets)));
         tag.put("Relays", channels);
         tag.put("Controls", Relays.write(controls));
+        Turning.save(tag, getBlockState());
         saveTargets(tag);
         tag.putDouble("Trim", trim);
         tag.putDouble("ThrustTrim", thrustTrim);
@@ -941,13 +943,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         // The update sent to clients carries only the targets; the full save also has the wiring.
         if (tag.contains("Relays")) {
+            Rotation turn = Turning.since(tag, getBlockState());
             relays = new EnumMap<>(Channel.class);
             CompoundTag channels = tag.getCompound("Relays");
             for (Channel channel : Channel.values()) {
-                relays.put(channel, Relays.read(channels.getList(channel.name(), Tag.TAG_INT_ARRAY)));
+                relays.put(channel, Turning.turn(Relays.read(channels.getList(channel.name(), Tag.TAG_INT_ARRAY)), turn));
             }
             // Saved as "Levers" before the tiller and the parking brake joined them.
-            controls = Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY));
+            controls = Turning.turn(Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY)), turn);
             trim = tag.getDouble("Trim");
             // Saved before the signal that holds the speed was learnt.
             thrustTrim = tag.contains("ThrustTrim") ? tag.getDouble("ThrustTrim") : CRUISE_THRUST;

@@ -4,12 +4,15 @@ import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -17,20 +20,24 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * The airstairs' control panel, set into the hull beside the forward door. Using it, pressing a button on either
  * face of it, or any redstone signal switching on folds the stairs away or brings them out again; see
- * {@link AirstairBlockEntity}. Broken, it takes the stairs away with it.
+ * {@link AirstairBlockEntity}. Broken, it takes the stairs away with it. FACING only gives it a way round, the way the
+ * airliner's nose pointed as it was built: nothing of it shows, but it turns with the block, and so the stairs, kept
+ * relative to the controller, turn with it (see {@link Turning}).
  */
 public class AirstairControllerBlock extends BaseEntityBlock {
     private static final MapCodec<AirstairControllerBlock> CODEC = simpleCodec(AirstairControllerBlock::new);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public AirstairControllerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(POWERED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, false));
     }
 
     @Override
@@ -40,12 +47,22 @@ public class AirstairControllerBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(POWERED);
+        builder.add(FACING, POWERED);
     }
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override

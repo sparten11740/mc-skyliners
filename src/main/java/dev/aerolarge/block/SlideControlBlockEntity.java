@@ -549,6 +549,7 @@ public class SlideControlBlockEntity extends BlockEntity {
         if (door != null) {
             tag.put("Door", NbtUtils.writeBlockPos(door));
         }
+        Turning.save(tag, getBlockState());
         tag.putBoolean("Deployed", deployed);
         tag.putInt("Ticks", ticks);
         tag.putBoolean("Laid", laid);
@@ -563,7 +564,7 @@ public class SlideControlBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        door = NbtUtils.readBlockPos(tag, "Door").orElse(null);
+        door = Turning.turn(NbtUtils.readBlockPos(tag, "Door").orElse(null), Turning.since(tag, getBlockState()));
         deployed = tag.getBoolean("Deployed");
         ticks = Mth.clamp(tag.getInt("Ticks"), 0, EvacuationSlide.INFLATE);
         lastTicks = ticks;

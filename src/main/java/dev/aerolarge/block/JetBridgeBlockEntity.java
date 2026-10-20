@@ -293,7 +293,7 @@ public class JetBridgeBlockEntity extends AirstairControllerBlockEntity {
 
     /** The cell d blocks ahead of the controller, s to its left and h above it, as an offset from it. */
     private BlockPos offset(int d, int s, int h) {
-        Direction ahead = getBlockState().getValue(JetBridgeBlock.FACING);
+        Direction ahead = getBlockState().getValue(AirstairControllerBlock.FACING);
         return BlockPos.ZERO.relative(ahead, d).relative(ahead.getCounterClockWise(), s).above(h);
     }
 

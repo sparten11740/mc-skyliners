@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,15 +55,17 @@ public class LinkedControlBlockEntity extends BlockEntity implements Control {
         CompoundTag saved = new CompoundTag();
         groups.forEach((group, offsets) -> saved.put(group, Relays.write(offsets)));
         tag.put("Groups", saved);
+        Turning.save(tag, getBlockState());
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         CompoundTag saved = tag.getCompound("Groups");
+        Rotation turn = Turning.since(tag, getBlockState());
         Map<String, List<BlockPos>> loaded = new HashMap<>();
         for (String group : saved.getAllKeys()) {
-            loaded.put(group, Relays.read(saved.getList(group, Tag.TAG_INT_ARRAY)));
+            loaded.put(group, Turning.turn(Relays.read(saved.getList(group, Tag.TAG_INT_ARRAY)), turn));
         }
         groups = Map.copyOf(loaded);
     }

@@ -19,6 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,10 +30,11 @@ import net.minecraft.world.phys.Vec3;
  * A flight of blocks laid out and taken away stage by stage: the jet bridge's tunnel (see
  * {@link JetBridgeBlockEntity}), and the airstairs of airliners built before they folded into the hull (see
  * {@link AirstairBlockEntity}, which folds those away the first time). It knows the flight as a list of stages, from
- * the door outward, each a few blocks placed relative to itself, so the mechanism keeps working wherever the airliner
- * stands or flies. Folding takes the stages away from the far end back; unfolding lays them out again from the door
- * out, one every few ticks, and stops early where a stage meets the ground. It also works the door the flight serves,
- * opening it as it unfolds and shutting it as it folds.
+ * the door outward, each a few blocks placed relative to itself and turned with it (see {@link Turning}), so the
+ * mechanism keeps working wherever the airliner stands or flies, whichever way it is set down. Folding takes the
+ * stages away from the far end back; unfolding lays them out again from the door out, one every few ticks, and stops
+ * early where a stage meets the ground. It also works the door the flight serves, opening it as it unfolds and shutting
+ * it as it folds.
  */
 public abstract class AirstairControllerBlockEntity extends BlockEntity {
     /** Ticks between stages: quick enough to watch, slow enough to see each step fold. */
@@ -42,6 +44,14 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
 
     /** One block of the stairs: where it goes relative to the controller, and what it is. */
     public record Step(BlockPos offset, BlockState state) {
+        /**
+         * The block turned with the controller (see {@link Turning}): where it goes, and the way it faces, turned as Sable
+         * turns the blocks it moves; while loading there is no level to turn it in.
+         */
+        @SuppressWarnings("deprecation")
+        Step turned(Rotation turn) {
+            return turn == Rotation.NONE ? this : new Step(offset.rotate(turn), state.rotate(turn));
+        }
     }
 
     private List<List<Step>> stages = List.of();
@@ -259,11 +269,13 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
         if (door != null) {
             tag.put("Door", NbtUtils.writeBlockPos(door));
         }
+        Turning.save(tag, getBlockState());
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        Rotation turn = Turning.since(tag, getBlockState());
         List<List<Step>> loaded = new ArrayList<>();
         for (Tag stageTag : tag.getList("Stages", Tag.TAG_LIST)) {
             List<Step> stage = new ArrayList<>();
@@ -271,7 +283,7 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
                 CompoundTag entry = (CompoundTag) stepTag;
                 BlockPos offset = NbtUtils.readBlockPos(entry, "Offset").orElse(BlockPos.ZERO);
                 BlockState state = NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), entry.getCompound("State"));
-                stage.add(new Step(offset, state));
+                stage.add(new Step(offset, state).turned(turn));
             }
             loaded.add(List.copyOf(stage));
         }
@@ -279,6 +291,6 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
         out = Math.min(tag.getInt("Out"), stages.size());
         extending = tag.getBoolean("Extending");
         grounded = tag.getBoolean("Grounded");
-        door = NbtUtils.readBlockPos(tag, "Door").orElse(null);
+        door = Turning.turn(NbtUtils.readBlockPos(tag, "Door").orElse(null), turn);
     }
 }

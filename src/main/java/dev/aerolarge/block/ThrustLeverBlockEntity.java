@@ -10,8 +10,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Where the relays of a thrust lever's engine are, relative to the lever, so the link holds wherever the airliner
- * stands or flies.
+ * Where the relays of a thrust lever's engine are, relative to the lever and turned with it (see {@link Turning}), so
+ * the link holds wherever the airliner stands or flies, whichever way it is set down.
  */
 public class ThrustLeverBlockEntity extends BlockEntity implements Control {
     private List<BlockPos> relays = List.of();
@@ -41,11 +41,12 @@ public class ThrustLeverBlockEntity extends BlockEntity implements Control {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Relays", Relays.write(relays));
+        Turning.save(tag, getBlockState());
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        relays = Relays.read(tag.getList("Relays", Tag.TAG_INT_ARRAY));
+        relays = Turning.turn(Relays.read(tag.getList("Relays", Tag.TAG_INT_ARRAY)), Turning.since(tag, getBlockState()));
     }
 }

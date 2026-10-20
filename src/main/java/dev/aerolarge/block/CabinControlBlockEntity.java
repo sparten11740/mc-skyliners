@@ -65,13 +65,14 @@ public class CabinControlBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Targets", Relays.write(targets));
+        Turning.save(tag, getBlockState());
         tag.putInt("Next", Math.min(next, targets.size()));
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        targets = Relays.read(tag.getList("Targets", Tag.TAG_INT_ARRAY));
+        targets = Turning.turn(Relays.read(tag.getList("Targets", Tag.TAG_INT_ARRAY)), Turning.since(tag, getBlockState()));
         next = tag.getInt("Next");
     }
 }

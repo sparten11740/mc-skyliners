@@ -35,11 +35,12 @@ public class DropReleaseBlockEntity extends BlockEntity {
         if (bay != null) {
             tag.put("Bay", NbtUtils.writeBlockPos(bay));
         }
+        Turning.save(tag, getBlockState());
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        bay = NbtUtils.readBlockPos(tag, "Bay").orElse(null);
+        bay = Turning.turn(NbtUtils.readBlockPos(tag, "Bay").orElse(null), Turning.since(tag, getBlockState()));
     }
 }

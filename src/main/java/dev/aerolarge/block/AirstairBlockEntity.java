@@ -26,6 +26,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -541,11 +542,12 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         rise = tag.getInt("Rise");
         sections = Math.clamp(tag.getInt("Sections"), 1, AirstairFlight.MOST_SECTIONS);
         hatchInset = tag.getFloat("HatchInset");
+        Rotation turn = Turning.since(tag, getBlockState());
         List<Step> skin = new ArrayList<>();
         for (Tag entry : tag.getList("Hatch", Tag.TAG_COMPOUND)) {
             CompoundTag part = (CompoundTag) entry;
             skin.add(new Step(NbtUtils.readBlockPos(part, "Offset").orElse(BlockPos.ZERO),
-                NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), part.getCompound("State"))));
+                NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), part.getCompound("State"))).turned(turn));
         }
         hatch = List.copyOf(skin);
         deploying = tag.getBoolean("Deploying");

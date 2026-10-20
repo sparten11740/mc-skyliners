@@ -21,11 +21,11 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The autopilot screen's workings: where everything is drawn on it, what a touch there does, which autopilot it
- * works (as an offset, so the link holds wherever the airliner is), and how far its map reaches. The left of the
- * screen is a moving map; touching it zooms out a step, round to the closest again. The right is a column of the
- * autopilot's buttons, lit for what it is doing; touching anywhere off the map opens the autopilot's settings screen,
- * where they are worked. Sizes are in blocks, from the screen's bottom left corner as the viewer sees it. The client
- * also keeps the track the airliner has flown here, for the map.
+ * works (as an offset turned with the screen, so the link holds wherever the airliner is; see {@link Turning}), and
+ * how far its map reaches. The left of the screen is a moving map; touching it zooms out a step, round to the closest
+ * again. The right is a column of the autopilot's buttons, lit for what it is doing; touching anywhere off the map
+ * opens the autopilot's settings screen, where they are worked. Sizes are in blocks, from the screen's bottom left
+ * corner as the viewer sees it. The client also keeps the track the airliner has flown here, for the map.
  */
 public class AutopilotScreenBlockEntity extends BlockEntity {
     /** The screen's size, and the margin around and between what is drawn on it. */
@@ -157,13 +157,14 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
         if (autopilot != null) {
             tag.put("Autopilot", NbtUtils.writeBlockPos(autopilot));
         }
+        Turning.save(tag, getBlockState());
         tag.putInt("Range", range);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        autopilot = NbtUtils.readBlockPos(tag, "Autopilot").orElse(null);
+        autopilot = Turning.turn(NbtUtils.readBlockPos(tag, "Autopilot").orElse(null), Turning.since(tag, getBlockState()));
         range = Math.floorMod(tag.contains("Range") ? tag.getInt("Range") : DEFAULT_RANGE, RANGES.length);
     }
 

@@ -124,7 +124,7 @@ public class SeatbeltSwitchBlockEntity extends LinkedControlBlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        curtains = Relays.read(tag.getList("Curtains", Tag.TAG_INT_ARRAY));
+        curtains = Turning.turn(Relays.read(tag.getList("Curtains", Tag.TAG_INT_ARRAY)), Turning.since(tag, getBlockState()));
         nextCurtain = tag.getInt("NextCurtain");
     }
 }
