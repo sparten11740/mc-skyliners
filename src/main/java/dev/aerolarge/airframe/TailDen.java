@@ -2,13 +2,14 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.BeanBagBlock;
+import dev.aerolarge.block.BunkBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.LightStripBlock;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -26,13 +28,13 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * The kids' den in the tail of the furnished airliner, behind a secret door. The lounge ends behind its bar at a wall
  * of bookshelves across the cabin, hull panels above them up to the crown; one of the bookshelves is a door, its
  * glowing book the hint. Behind it the tail room and the tail cone over it are the den, all the way up to where the
- * tail closes in: a landing with two cushions, a pit of coloured balls to sink into, then the cone's steps up, each
- * carpeted its own colour of the rainbow, wool mattresses for bunks along the walls where a step is wide enough and a
- * cushion where it is not, fairy lights along both walls (on the dimmer, like every light aboard) and a treasure chest
- * at the very top. Bar the bookcase it is all wool, carpet and light fittings, kept light because it sits far aft of
- * the centre of mass; the gear and the tailplane's trim go on after the fit-out, so they balance it. It only ever goes
- * into open cabin space, but for taking down a lounge pendant light hanging over it, and is left out where the tail
- * is too small to hold it.
+ * tail closes in: a landing with two bean bags, a pit of coloured balls to sink into, then the cone's steps up, each
+ * carpeted its own colour of the rainbow, padded bunks (see {@link BunkBlock}) along the walls where a step is wide
+ * enough and a bean bag (see {@link BeanBagBlock}) where it is not, fairy lights along both walls (on the dimmer, like
+ * every light aboard) and a treasure chest at the very top. Bar the bookcase it is all soft furnishings, carpet and
+ * light fittings, kept light because it sits far aft of the centre of mass; the gear and the tailplane's trim go on
+ * after the fit-out, so they balance it. It only ever goes into open cabin space, but for taking down a lounge pendant
+ * light hanging over it, and is left out where the tail is too small to hold it.
  */
 final class TailDen {
     /** How many rows of shelves the bookcase has; above them the wall is the hull's panels, a quarter the weight. */
@@ -51,7 +53,7 @@ final class TailDen {
     private static final DyeColor[] RAINBOW = {
         DyeColor.RED, DyeColor.ORANGE, DyeColor.YELLOW, DyeColor.LIME, DyeColor.LIGHT_BLUE, DyeColor.PURPLE, DyeColor.MAGENTA
     };
-    /** The cushions' and the bunks' blankets' colours. */
+    /** The bean bags' and the bunks' blankets' colours. */
     private static final DyeColor[] SOFT_COLOURS = {DyeColor.PINK, DyeColor.CYAN, DyeColor.YELLOW, DyeColor.LIME};
     /** The treasure chest's loot: cookies, a golden apple, a signal flare, a basketball and fireworks. */
     private static final ResourceKey<LootTable> TREASURE =
@@ -97,7 +99,7 @@ final class TailDen {
         }
         Station landing = den.getFirst();
         for (int side : new int[]{1, -1}) {
-            cushion(layout.besideWall(side, landing.y(), landing.z()), landing);
+            beanBag(side, landing);
         }
         carpet(landing, RAINBOW[0]);
         for (int i = 1; i <= pitEnd; i++) {
@@ -190,16 +192,16 @@ final class TailDen {
     }
 
     /**
-     * Bunks along one wall of the steps: a wool mattress the length of each run of stations, at one level, wide enough
-     * for one along the wall with a way up beside it, a blanket on it and a pillow at its aft end; a run too short for
-     * a bunk gets a cushion instead.
+     * Bunks along one wall of the steps, in each run of stations at one level wide enough for one along the wall with
+     * a way up beside it: a bunk on each two stations side by side, from the run's forward end, where both have the
+     * wall in the same column; a station left over gets a bean bag instead.
      */
     private void bunks(int side, List<Station> steps) {
         List<Station> run = new ArrayList<>();
         for (Station station : steps) {
             boolean roomy = Math.abs(layout.besideWall(side, station.y(), station.z())) >= BUNK_ROOM;
             if (!run.isEmpty() && (!roomy || station.y() != run.getFirst().y())) {
-                bunk(side, run);
+                furnishRun(side, run);
                 run.clear();
             }
             if (roomy) {
@@ -207,35 +209,65 @@ final class TailDen {
             }
         }
         if (!run.isEmpty()) {
-            bunk(side, run);
+            furnishRun(side, run);
         }
     }
 
-    private void bunk(int side, List<Station> run) {
-        if (run.size() == 1) {
-            Station station = run.getFirst();
-            cushion(layout.besideWall(side, station.y(), station.z()), station);
-            return;
-        }
-        BlockState blanket = blanket(softColour());
-        for (Station station : run) {
-            int x = layout.besideWall(side, station.y(), station.z());
-            if (layout.isOpen(x, station.y(), station.z()) && layout.isOpen(x, station.y() + 1, station.z()) && layout.isOpen(x, station.y() + 2, station.z())) {
-                layout.furnish(x, station.y(), station.z(), Blocks.LIGHT_BLUE_WOOL.defaultBlockState());
-                layout.furnish(x, station.y() + 1, station.z(), station == run.getLast() ? Blocks.WHITE_CARPET.defaultBlockState() : blanket);
+    /** A run of stations at one level along the wall: bunks two stations at a time, a bean bag where none goes in. */
+    private void furnishRun(int side, List<Station> run) {
+        int y = run.getFirst().y();
+        int i = 0;
+        while (i < run.size()) {
+            if (i + 1 < run.size() && bunk(side, y, run.get(i).z(), run.get(i + 1).z())) {
+                i += 2;
+            } else {
+                beanBag(side, run.get(i));
+                i++;
             }
         }
     }
 
-    /** One of Create's seats in the next soft colour, to sit on, against the wall at x (none where the wall closes in). */
-    private void cushion(int x, Station station) {
+    /**
+     * A bunk along the wall on the stations fore and aft, its open side to the middle and its reading light on, in the
+     * next soft colour; only where both stations have the wall in the same column and room over the bunk to sit up in.
+     * Whether it went in.
+     */
+    private boolean bunk(int side, int y, int fore, int aft) {
+        int x = layout.besideWall(side, y, fore);
+        if (x != layout.besideWall(side, y, aft)) {
+            return false;
+        }
+        for (int z : new int[]{fore, aft}) {
+            for (int dy = 0; dy <= HEADROOM; dy++) {
+                if (!layout.isOpen(x, y + dy, z)) {
+                    return false;
+                }
+            }
+        }
+        Direction facing = side > 0 ? Direction.WEST : Direction.EAST;
+        // The foot lies to the bunk's left as it looks out: aft of the head on the starboard wall, forward on the port.
+        boolean footAft = BunkBlock.footward(facing) == Direction.SOUTH;
+        BlockState head = AerolargeRegistry.BUNK.get().defaultBlockState()
+            .setValue(BunkBlock.FACING, facing).setValue(BunkBlock.COLOR, softColour()).setValue(BunkBlock.LIT, true);
+        layout.set(x, y, footAft ? fore : aft, head);
+        layout.set(x, y, footAft ? aft : fore, head.setValue(BunkBlock.PART, BedPart.FOOT));
+        return true;
+    }
+
+    /**
+     * A bean bag in the next soft colour against the wall beside the station, facing into the den (none where the wall
+     * closes in).
+     */
+    private void beanBag(int side, Station station) {
         DyeColor colour = softColour();
+        int x = layout.besideWall(side, station.y(), station.z());
         if (x != 0) {
-            AirframePalette.seat(colour).ifPresent(seat -> layout.furnish(x, station.y(), station.z(), seat));
+            layout.furnish(x, station.y(), station.z(), AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
+                .setValue(BeanBagBlock.FACING, side > 0 ? Direction.WEST : Direction.EAST).setValue(BeanBagBlock.COLOR, colour));
         }
     }
 
-    /** The cushions' and blankets' colours, taken in turn. */
+    /** The bean bags' and blankets' colours, taken in turn. */
     private DyeColor softColour() {
         return SOFT_COLOURS[softColours++ % SOFT_COLOURS.length];
     }
@@ -265,10 +297,5 @@ final class TailDen {
                 chest.setLootTable(TREASURE, 0);
             }
         });
-    }
-
-    /** A bunk's blanket: vanilla's carpet in the colour, a soft throw over the mattress. */
-    private static BlockState blanket(DyeColor colour) {
-        return BuiltInRegistries.BLOCK.get(ResourceLocation.withDefaultNamespace(colour.getSerializedName() + "_carpet")).defaultBlockState();
     }
 }

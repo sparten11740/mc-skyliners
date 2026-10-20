@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,11 +53,6 @@ record AirframePalette(
     /** The lifting surface turned so its face is square to the given direction, or the fallback without one. */
     BlockState lift(Direction normal, BlockState fallback) {
         return lift.map(state -> with(state, "facing", normal.getSerializedName())).orElse(fallback);
-    }
-
-    /** One of Create's seats, in the colour. */
-    static Optional<BlockState> seat(DyeColor colour) {
-        return block("create:" + colour.getSerializedName() + "_seat");
     }
 
     /** Create's metal girder, for the gym hall's roof trusses. */

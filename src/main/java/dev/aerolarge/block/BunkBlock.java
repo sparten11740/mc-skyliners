@@ -94,7 +94,7 @@ public class BunkBlock extends HorizontalDirectionalBlock {
     }
 
     /** Which way the foot lies from the head of a bunk whose open side looks this way: to its left. */
-    private static Direction footward(Direction facing) {
+    public static Direction footward(Direction facing) {
         return facing.getCounterClockWise();
     }
 

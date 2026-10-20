@@ -349,13 +349,13 @@ night.
 Behind the lounge's bar a wall of bookshelves closes off the tail. One of its books glows: that bookshelf is a secret
 door, and while someone is near, sparks drift into the book with a faint shimmer. Use it and it swings open with a
 deep creak; it swings shut by itself after ten seconds, once nobody stands in the doorway, or when used again. Behind
-it the tail is a den for children: a landing with two cushions, a ball pit, then the tail cone's steps climbing to
-the top of the tail, each carpeted in the next colour of the rainbow, with bunks (wool mattresses, each with a blanket
-and a pillow) along the walls where a step is wide enough and cushions where it is not, fairy lights along both walls
-that dim with the cabin lights, and at the very top a treasure chest with cookies, a golden apple, a signal flare, a
-basketball and star rockets. The ball pit swallows whatever walks or falls in with a plop and a spray of balls: you
-wade through it a little slower, a fall into it never hurts, nobody under the balls is smothered, and a jump always
-gets you out. The secret door, the ball pit and the fairy lights can be crafted.
+it the tail is a den for children: a landing with two bean bags, a ball pit, then the tail cone's steps climbing to
+the top of the tail, each carpeted in the next colour of the rainbow, with bunks (see below, their reading lights on)
+along the walls where a step is wide enough and bean bags where it is not, all in soft colours, fairy lights along
+both walls that dim with the cabin lights, and at the very top a treasure chest with cookies, a golden apple, a signal
+flare, a basketball and star rockets. The ball pit swallows whatever walks or falls in with a plop and a spray of
+balls: you wade through it a little slower, a fall into it never hurts, nobody under the balls is smothered, and a
+jump always gets you out. The secret door, the ball pit and the fairy lights can be crafted.
 
 A Bunk is a padded bed for a den, two blocks long: a quilted mattress on a white frame under a blanket, a pillow at
 its head under a little reading light on the headboard, and a padded rail along its open side at the head end, the
