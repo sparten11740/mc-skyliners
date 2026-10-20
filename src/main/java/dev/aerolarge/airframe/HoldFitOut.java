@@ -7,9 +7,11 @@ import dev.aerolarge.block.CargoFloorBlock;
 import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
+import dev.aerolarge.block.UldContainerBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,10 +31,10 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * behind a cargo net from the floor to the ceiling, suitcases in four colours with care packages packed with supplies
  * among them, cargo floor along both edges of the walkway down the middle, its tie-down rails along the nets, and ball
  * mats round the drop bay; the walkway stays clear all the way from the pool to the bay, and on from the bay to the
- * hatch and the cargo door. Three golden suitcases are hidden about the hold: one in each pile and one at the far end
- * of the hold aft of the cargo door. Under the walkway, a stretch of the belly is a sky window. It only goes into open
- * hold space, bar the window, which glazes the belly as under the moon pool, and is left out where the hold is too low
- * to walk in.
+ * hatch and the cargo door, ULD containers waiting along both sides of it there. Three golden suitcases are hidden about
+ * the hold: one in each pile and one at the far end of the hold aft of the cargo door. Under the walkway, a stretch of
+ * the belly is a sky window. It only goes into open hold space, bar the window, which glazes the belly as under the
+ * moon pool, and is left out where the hold is too low to walk in.
  */
 final class HoldFitOut {
     /** Kept clear of luggage forward of the drop bay, in metres, so it can be loaded from all round. */
@@ -53,6 +55,14 @@ final class HoldFitOut {
     private static final double[] SKY_WINDOW = {25, AirframeShape.BEACON_STATION - 2};
     /** How many columns in from the cargo floor along the walkway's edges the sky window's edge is. */
     private static final int WINDOW_INSET = 1;
+    /** Kept clear aft of the drop bay before the containers, in metres, so it can be loaded from all round. */
+    private static final double CONTAINER_CLEARANCE = 1;
+    /** How many stations short of the hatch's ladder and of the cargo door the containers stop, to keep the way clear. */
+    private static final int CONTAINER_MARGIN = 2;
+    /** How many stations are left between containers, so each one's door shows from the walkway. */
+    private static final int CONTAINER_GAP = 1;
+    /** The walkway between the containers keeps at least this many columns, as it does between the nets. */
+    private static final int CONTAINER_WALKWAY = 3;
     private static final DyeColor[] COLOURS = SuitcaseBlock.COLOR.getPossibleValues().toArray(DyeColor[]::new);
     private static final ResourceKey<LootTable> SUITCASE = loot("suitcase");
     private static final ResourceKey<LootTable> GOLDEN_SUITCASE = loot("golden_suitcase");
@@ -95,6 +105,7 @@ final class HoldFitOut {
             stow(z, z - from, bottom, starboard, port, nets);
         }
         lace(nets);
+        containers(bay, bottom);
         // One golden suitcase a third of the way along the port pile, halfway up it, and one two thirds of the way
         // along the starboard pile, on top; the last at the far end of the hold.
         hide(port, from + (to - from) / 3, bottom + (PILE_ROWS + 1) / 2, 1);
@@ -105,6 +116,75 @@ final class HoldFitOut {
         }
         // Last, as the far end is found along the bare floor down the middle.
         apron(bay);
+    }
+
+    /**
+     * ULD containers aft of the drop bay along both sides of the walkway, waiting by the cargo door to be loaded: each on
+     * the floor at the walkway's edge, its contour against the hull's curve, so its door faces forward on the port side
+     * and aft on the starboard, a station between one and the next. The side the hatch is on stops short of its
+     * ladder, both short of the cargo door; wherever one does not fit, the floor stays open.
+     */
+    private void containers(BlockPos bay, int bottom) {
+        int first = bay.getZ() + 1 + (int) Math.ceil(CONTAINER_CLEARANCE * layout.scale());
+        int door = (int) Math.round(AirframeShape.CARGO_DOOR * layout.scale());
+        BlockPos hatch = hatch(bay.getZ(), door);
+        int number = 0;
+        for (int side : new int[]{1, -1}) {
+            int last = door - CONTAINER_MARGIN;
+            if (hatch != null && Integer.signum(hatch.getX()) == side) {
+                last = Math.min(last, hatch.getZ() - CONTAINER_MARGIN);
+            }
+            int z = first;
+            while (z + 1 <= last) {
+                if (container(side, bottom, z, number % UldContainerBlock.NUMBER.getPossibleValues().size())) {
+                    number++;
+                    z += 2 + CONTAINER_GAP;
+                } else {
+                    z++;
+                }
+            }
+        }
+    }
+
+    /**
+     * A container on one side over stations z and z + 1, if it fits there: all eight blocks open, the four lower ones on
+     * the plain hull, and the walkway left wide enough beside it. Whether it went in.
+     */
+    private boolean container(int side, int bottom, int z, int number) {
+        int edge = 0;
+        while (layout.isOpen(side * (edge + 1), bottom, z)) {
+            edge++;
+        }
+        if (2 * (edge - 2) + 1 < CONTAINER_WALKWAY) {
+            return false;
+        }
+        Direction facing = side > 0 ? Direction.SOUTH : Direction.NORTH;
+        BlockPos origin = new BlockPos(side * (edge - 1), bottom, facing == Direction.NORTH ? z : z + 1);
+        BlockState state = AerolargeRegistry.ULD_CONTAINER.get().defaultBlockState().setValue(UldContainerBlock.FACING, facing)
+            .setValue(UldContainerBlock.NUMBER, number);
+        Map<BlockPos, BlockState> corners = UldContainerBlock.corners(origin, state);
+        for (BlockPos at : corners.keySet()) {
+            boolean grounded = at.getY() > bottom || layout.isPlainHull(at.getX(), bottom - 1, at.getZ());
+            if (!layout.isOpen(at.getX(), at.getY(), at.getZ()) || !grounded) {
+                return false;
+            }
+        }
+        corners.forEach((at, corner) -> layout.set(at.getX(), at.getY(), at.getZ(), corner));
+        return true;
+    }
+
+    /** The hatch down to the hold in the cabin floor, between the two stations; null where there is none. */
+    @Nullable
+    private BlockPos hatch(int from, int to) {
+        int half = (int) Math.ceil(AirframeShape.WIDTH / 2 * layout.scale());
+        for (int z = from; z <= to; z++) {
+            for (int x = -half; x <= half; x++) {
+                if (layout.stateAt(x, floor, z).is(AerolargeRegistry.FLOOR_HATCH.get())) {
+                    return new BlockPos(x, floor, z);
+                }
+            }
+        }
+        return null;
     }
 
     /** Ball mats round the drop bay, where loads are turned onto it, wherever the hold's floor there is plain. */
