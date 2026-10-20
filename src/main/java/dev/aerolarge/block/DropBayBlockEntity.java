@@ -2,11 +2,10 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -14,70 +13,86 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * What waits in the drop bay: anything, loaded one at a time from the hold, dropped one at a time when the flight deck
- * releases it, last in first out. A drop leaves just under the belly at the airliner's own speed, the way its kind
- * leaves (see {@link BayDrops}).
+ * What waits in the drop bay: anything, in a dispenser's nine slots, loaded from the hold through its screen (see
+ * {@link DropBayMenu}). Each time the flight deck releases it, one item leaves from the first slot that holds any,
+ * just under the belly at the airliner's own speed, the way its kind leaves (see {@link BayDrops}).
  */
-public class DropBayBlockEntity extends BlockEntity {
-    /** How many loads the bay holds. */
-    public static final int CAPACITY = 6;
+public class DropBayBlockEntity extends BaseContainerBlockEntity {
+    /** How many slots the bay has: a dispenser's three by three. */
+    public static final int SLOTS = 9;
     /** How far under the bay's middle a load leaves, in blocks. */
     private static final double DROP_BELOW = 1.2;
+    /**
+     * The key a bay saved before it had slots kept its loads under: a list, one item each, the last of them dropped
+     * first.
+     */
+    private static final String OLD_LOADS = "Loads";
 
-    private final List<ItemStack> loads = new ArrayList<>();
+    private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
 
     public DropBayBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.DROP_BAY_ENTITY.get(), pos, state);
     }
 
-    public int count() {
-        return loads.size();
+    @Override
+    public int getContainerSize() {
+        return items.size();
     }
 
-    /** Takes one of the stack aboard if there is room; whether it did. */
-    public boolean load(ItemStack stack) {
-        if (loads.size() >= CAPACITY || stack.isEmpty()) {
-            return false;
-        }
-        loads.add(stack.copyWithCount(1));
-        setChanged();
-        return true;
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return items;
     }
 
-    /** Hands back the last load taken aboard; empty if there is none. */
-    public ItemStack unload() {
-        if (loads.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        setChanged();
-        return loads.removeLast();
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        this.items = items;
     }
 
-    /** Drops the next load, if any, and says what happened. */
+    @Override
+    protected Component getDefaultName() {
+        return Component.translatable("container.aerolarge.drop_bay");
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
+        return new DropBayMenu(containerId, inventory, this);
+    }
+
+    /** Drops one item from the first slot that holds any, if one does, and says what happened. */
     public Component release(@Nullable Player by) {
-        if (!(level instanceof ServerLevel server) || loads.isEmpty()) {
+        ItemStack next = items.stream().filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+        if (!(level instanceof ServerLevel server) || next.isEmpty()) {
             return Component.translatable("message.aerolarge.drop_bay.empty");
         }
         Vec3 middle = Vec3.atCenterOf(worldPosition);
         Vec3 at = SableFlight.toWorld(level, middle.add(0, -DROP_BELOW, 0));
         Vec3 velocity = SableFlight.velocity(level, middle).scale(1 / 20.0);
-        ItemStack load = loads.getLast();
-        Component refusal = BayDrops.drop(server, at, velocity, load, by);
+        Component refusal = BayDrops.drop(server, at, velocity, next.copyWithCount(1), by);
         if (refusal != null) {
             return refusal;
         }
-        loads.removeLast();
+        Component name = next.getHoverName();
+        next.shrink(1);
         level.playSound(null, at.x, at.y, at.z, SoundEvents.DISPENSER_LAUNCH, SoundSource.BLOCKS, 1.0F, 0.6F);
         setChanged();
-        return Component.translatable("message.aerolarge.drop_bay.away", load.getHoverName(), loads.size());
+        return Component.translatable("message.aerolarge.drop_bay.away", name, left());
+    }
+
+    /** How many items are left in the bay, all its slots together. */
+    private int left() {
+        return items.stream().mapToInt(ItemStack::getCount).sum();
     }
 
     /** Opens or closes the bay doors. */
@@ -92,19 +107,26 @@ public class DropBayBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        ListTag list = new ListTag();
-        for (ItemStack load : loads) {
-            list.add(load.save(registries));
-        }
-        tag.put("Loads", list);
+        ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        loads.clear();
-        for (Tag load : tag.getList("Loads", Tag.TAG_COMPOUND)) {
-            ItemStack.parse(registries, load).ifPresent(loads::add);
+        items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, items, registries);
+        loadOldLoads(tag, registries);
+    }
+
+    /**
+     * Takes in the loads of a bay saved before it had slots, from the first slot on in the order they would have
+     * dropped, so the one that was to go next still does. There were never more than fit.
+     */
+    private void loadOldLoads(CompoundTag tag, HolderLookup.Provider registries) {
+        ListTag loads = tag.getList(OLD_LOADS, Tag.TAG_COMPOUND);
+        for (int slot = 0; slot < loads.size() && slot < items.size(); slot++) {
+            int into = slot;
+            ItemStack.parse(registries, loads.getCompound(loads.size() - 1 - slot)).ifPresent(load -> items.set(into, load));
         }
     }
 }

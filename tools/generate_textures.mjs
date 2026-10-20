@@ -859,6 +859,139 @@ blueprint("furnished_airliner_blueprint", true);
       return [0x16, 0x18, 0x1c];
     }, 1);
   }
+
+  // The bay's screen (see DropBayScreen): vanilla's dispenser panel, light grey under a bevelled edge, the bay's three
+  // by three slots in the middle and the player's inventory under them. Either side of the bay's slots a picture is
+  // sunk into the panel, of what the bay does, for players who cannot read yet: on the left the airliner's belly
+  // overhead, its bay doors swung open in their hazard stripes and a care package dropping out, an arrow pointing on
+  // down; on the right the package floating down under its parachute to the grass.
+  const guiContainer = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/container");
+  mkdirSync(guiContainer, { recursive: true });
+  const WIDTH = 176;
+  const HEIGHT = 166;
+  const SLOT_SIZE = 18;
+  const PANEL = [0xc6, 0xc6, 0xc6];
+  const LIT = [0xff, 0xff, 0xff];
+  const SHADED = [0x55, 0x55, 0x55];
+  const OUTLINE = [0x00, 0x00, 0x00];
+  const SUNK = [0x8b, 0x8b, 0x8b];
+  const SUNK_SHADOW = [0x37, 0x37, 0x37];
+  const SKY_HIGH = [0x5a, 0xa6, 0xe8];
+  const SKY_LOW = [0xb8, 0xdc, 0xf8];
+  const BELLY_SHADE = [0xa8, 0xb0, 0xba];
+  const SHAFT = [0x0c, 0x0d, 0x0f];
+  const STREAK = [0xf4, 0xfa, 0xff];
+  const ARROW = [0xf0, 0xc0, 0x20];
+  const ARROW_EDGE = [0x6a, 0x4a, 0x08];
+  // The care package's oak (see its crate below), and the parachute's red and white panels and dark cords.
+  const OAK = [0xa8, 0x82, 0x4e];
+  const OAK_DARK = [0x7a, 0x5a, 0x32];
+  const OAK_SLAT = [0x8a, 0x66, 0x3a];
+  const CANOPY_RED = [0xe0, 0x30, 0x28];
+  const CANOPY_WHITE = [0xf2, 0xf2, 0xf2];
+  const CORD = [0x30, 0x30, 0x30];
+  const GRASS = [0x5c, 0xa0, 0x3c];
+  const GRASS_LIGHT = [0x7c, 0xc0, 0x50];
+  const DIRT = [0x86, 0x60, 0x3a];
+  const DIRT_DARK = [0x6a, 0x4c, 0x28];
+  const mix = (from, to, t) => from.map((c, i) => Math.round(c + (to[i] - c) * t));
+  // Whether a point is within reach of the segment from one point to another.
+  const nearSegment = (u, v, [x0, y0], [x1, y1], reach) => {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const t = Math.max(0, Math.min(1, ((u - x0) * dx + (v - y0) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(u - x0 - t * dx, v - y0 - t * dy) <= reach;
+  };
+  // The panel's edge: an outline round its rounded corners, lit along its top and left, shaded along its bottom and
+  // right; null inside it.
+  const edge = (x, y) => {
+    const right = WIDTH - 1 - x;
+    const bottom = HEIGHT - 1 - y;
+    if (x + y < 2 || right + bottom < 2 || right + y < 3 || x + bottom < 3) return CLEAR;
+    if (x === 0 || y === 0 || right === 0 || bottom === 0 || x + y === 2 || right + bottom === 2 || right + y === 3 || x + bottom === 3) {
+      return OUTLINE;
+    }
+    if ((x <= 2 || y <= 2 || (x === 3 && y === 3)) && right >= 3 && bottom >= 3) return LIT;
+    if ((right <= 2 || bottom <= 2 || (right === 3 && bottom === 3)) && x >= 3 && y >= 3) return SHADED;
+    return null;
+  };
+  // A box sunk into the panel at (left, top), across by down: shadowed along its top and left, lit along its bottom
+  // and right, a corner of each where they meet; inside, what paint gives, from the box's inner corner. Null outside it.
+  const sunk = (left, top, across, down, paint) => (x, y) => {
+    const u = x - left;
+    const v = y - top;
+    if (u < 0 || v < 0 || u >= across || v >= down) return null;
+    if ((u === across - 1 && v === 0) || (u === 0 && v === down - 1)) return SUNK;
+    if (u === 0 || v === 0) return SUNK_SHADOW;
+    if (u === across - 1 || v === down - 1) return LIT;
+    return paint(u - 1, v - 1);
+  };
+  const slot = (left, top) => sunk(left, top, SLOT_SIZE, SLOT_SIZE, () => SUNK);
+  // The pictures' sky, darker overhead; and the care package's crate, its corner at (left, top): slats in a frame.
+  const PICTURE_ACROSS = 50;
+  const PICTURE_DOWN = 54;
+  const sky = (v) => mix(SKY_HIGH, SKY_LOW, v / (PICTURE_DOWN - 3));
+  const crate = (u, v, left, top) => {
+    const a = u - left;
+    const b = v - top;
+    if (a < 0 || b < 0 || a > 9 || b > 8) return null;
+    if (a === 0 || b === 0 || a === 9 || b === 8) return OAK_DARK;
+    return a % 3 === 0 ? OAK_SLAT : OAK;
+  };
+  // The arrow under the falling package, pointing down: a shaft, then a head narrowing to its tip.
+  const inArrow = (u, v) => v >= 38 && v <= 49 && Math.abs(u - 23.5) <= (v <= 42 ? 2 : 49.5 - v);
+  const dropping = (u, v) => {
+    // The belly, side on: white skin with its windows over the blue cheatline, shaded underneath, the bay open in it.
+    if (v <= 11) {
+      if (v >= 10 && u >= 14 && u <= 33) return SHAFT;
+      if (v === 11) return BELLY_SHADE;
+      if (v === 10) return SEAM;
+      if (v === 7) return BLUE;
+      return v >= 3 && v <= 5 && u % 6 >= 2 && u % 6 <= 3 ? GLASS.slice(0, 3) : WHITE;
+    }
+    // The doors, hanging open from either side of the bay.
+    if (nearSegment(u, v, [14, 12], [11, 21], 1) || nearSegment(u, v, [33, 12], [36, 21], 1)) return HAZARD(u, v);
+    // Streaks of its fall between the doors, the package under them, and an arrow on down.
+    if ((u === 20 || u === 24 || u === 27) && v >= 17 + (u % 3) && v <= 24) return STREAK;
+    const box = crate(u, v, 19, 26);
+    if (box) return box;
+    if (inArrow(u, v)) return ARROW;
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([du, dv]) => inArrow(u + du, v + dv))) return ARROW_EDGE;
+    return sky(v);
+  };
+  const floating = (u, v) => {
+    // The canopy, red and white panels, its rim shaded; its cords down to the package; the grass it comes down to.
+    const inCanopy = v <= 15 && Math.hypot((u - 23.5) / 16, (v - 15.5) / 11) <= 1;
+    if (inCanopy) {
+      const panel = Math.floor((u - 7.5) / 4) % 2 === 0 ? CANOPY_RED : CANOPY_WHITE;
+      return v === 15 ? mix(panel, OUTLINE, 0.25) : panel;
+    }
+    const cords = [[[9, 16], [19, 29]], [[17, 16], [21, 29]], [[30, 16], [26, 29]], [[38, 16], [28, 29]]];
+    if (v < 29 && cords.some(([from, to]) => nearSegment(u, v, from, to, 0.5))) return CORD;
+    const box = crate(u, v, 19, 29);
+    if (box) return box;
+    if (v >= 46) return v <= 47 ? ((u * 7) % 5 === 0 ? GRASS_LIGHT : GRASS) : (u * 3 + v) % 7 === 0 ? DIRT_DARK : DIRT;
+    if (v === 45 && u % 5 === 2) return GRASS_LIGHT;
+    return sky(v);
+  };
+  const GRID = { left: 61, top: 16 };
+  const INVENTORY = { left: 7, top: 83, hotbar: 141 };
+  const parts = [
+    sunk(7, 16, PICTURE_ACROSS, PICTURE_DOWN, dropping),
+    sunk(WIDTH - 7 - PICTURE_ACROSS, 16, PICTURE_ACROSS, PICTURE_DOWN, floating),
+    ...Array.from({ length: 9 }, (_, i) => slot(GRID.left + (i % 3) * SLOT_SIZE, GRID.top + Math.floor(i / 3) * SLOT_SIZE)),
+    ...Array.from({ length: 27 }, (_, i) => slot(INVENTORY.left + (i % 9) * SLOT_SIZE, INVENTORY.top + Math.floor(i / 9) * SLOT_SIZE)),
+    ...Array.from({ length: 9 }, (_, i) => slot(INVENTORY.left + i * SLOT_SIZE, INVENTORY.hotbar)),
+  ];
+  texture(guiContainer, "drop_bay", (x, y) => {
+    const rim = edge(x, y);
+    if (rim) return rim;
+    for (const part of parts) {
+      const colour = part(x, y);
+      if (colour) return colour;
+    }
+    return PANEL;
+  }, 0, WIDTH, HEIGHT);
 }
 
 // Cabin service. The galley, its trolley bay (see the galley units below): brushed steel; over the bay its control

@@ -47,6 +47,7 @@ import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
+import dev.aerolarge.block.DropBayMenu;
 import dev.aerolarge.block.DropReleaseBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.DutyFreeCounterBlock;
@@ -173,6 +174,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -216,6 +219,7 @@ public final class AerolargeRegistry {
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Aerolarge.MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Aerolarge.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, Aerolarge.MOD_ID);
     /** How brightly a starlight panel glows full on, in light levels: softly, the lounge's pendants doing the rest. */
     private static final int STARLIGHT_GLOW = 10;
     /** How brightly the hide and seek button glows while pressed, in light levels. */
@@ -805,6 +809,8 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<DropBayBlock> DROP_BAY = BLOCKS.registerBlock("drop_bay", DropBayBlock::new, metal(MapColor.COLOR_YELLOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DropBayBlockEntity>> DROP_BAY_ENTITY =
         BLOCK_ENTITIES.register("drop_bay", () -> BlockEntityType.Builder.of(DropBayBlockEntity::new, DROP_BAY.get()).build(null));
+    public static final DeferredHolder<MenuType<?>, MenuType<DropBayMenu>> DROP_BAY_MENU =
+        MENU_TYPES.register("drop_bay", () -> new MenuType<>(DropBayMenu::new, FeatureFlags.VANILLA_SET));
     public static final DeferredBlock<DropReleaseBlock> DROP_RELEASE = BLOCKS.registerBlock(
         "drop_release", DropReleaseBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
     );
@@ -1328,5 +1334,6 @@ public final class AerolargeRegistry {
         DATA_COMPONENTS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
+        MENU_TYPES.register(modEventBus);
     }
 }

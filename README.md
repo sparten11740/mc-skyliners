@@ -754,14 +754,16 @@ like a shulker box.
 Or drop it through the drop bay: hatch doors in the belly, behind the main gear, loaded from the hold. Besides the
 cargo door from outside, the hold is reached through the hatch in the cabin floor a few steps aft of the bay, to port
 just behind the gym hall: a yellow and black border marks it and its lid shows a ladder. Open it by hand and climb
-down the ladder under it, so the bay can be reloaded in flight. From the hold, use anything on the bay to load one of
-it (six at most; use it empty-handed to count them, sneaking to take the last one back out). The drop release on the
-centre console, beside the first officer's seat, opens the bay doors on the first use and drops the next load on
-each use after that; sneak and use it to close them. A load leaves at the airliner's speed: a care package falls and
-floats down as above, TNT leaves lit, and anything else falls as itself, to be picked up where it lands. With
-Ultrasplosive installed its nuke (the regular Fat Man, not Sundial) leaves the bay as Ultrasplosive's flying nuke and
-goes off where it hits. Its blast reaches 160 blocks, so the release only drops one from 200 blocks or more above the
-ground.
+down the ladder under it, so the bay can be reloaded in flight. From the hold, use the bay, holding anything or
+nothing, to open it: nine slots, like a dispenser's, between two pictures of what the bay does (its doors open under
+the belly with a care package dropping out, and the package floating down under its parachute). Put anything in
+them, a stack to a slot; shift-click moves a stack in or out. Broken, the bay spills what it holds. The drop release
+on the centre console, beside the first officer's seat, opens the bay doors on the first use and on each use after
+that drops one item from the first slot that holds any; sneak and use it to close them. A load leaves at the
+airliner's speed: a care package falls and floats down as above, TNT leaves lit, and anything else falls as itself,
+to be picked up where it lands. With Ultrasplosive installed its nuke (the regular Fat Man, not Sundial) leaves the
+bay as Ultrasplosive's flying nuke and goes off where it hits. Its blast reaches 160 blocks, so the release only drops
+one from 200 blocks or more above the ground.
 
 ### A sturdy frame
 

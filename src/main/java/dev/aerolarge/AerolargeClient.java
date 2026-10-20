@@ -16,6 +16,7 @@ import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.GiantRubberDuckRenderer;
@@ -54,6 +55,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -105,6 +107,7 @@ public final class AerolargeClient {
         modEventBus.addListener(AerolargeClient::onRegisterRenderers);
         modEventBus.addListener(AerolargeClient::onRegisterParticles);
         modEventBus.addListener(AerolargeClient::onRegisterGuiLayers);
+        modEventBus.addListener((RegisterMenuScreensEvent event) -> event.register(AerolargeRegistry.DROP_BAY_MENU.get(), DropBayScreen::new));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, AerolargeRegistry.CABIN_CURTAIN.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
