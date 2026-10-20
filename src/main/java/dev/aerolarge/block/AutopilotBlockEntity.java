@@ -296,6 +296,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean governing;
     /** Whether, set to take off, it still holds the brakes for the tower's clearance (see {@link AtcRadio#clearing}). */
     private boolean awaitingClearance;
+    /**
+     * Whether it has been in the air since it last arrived: come down and stopped after that, however it was flown, it
+     * has arrived (see {@link #watchArrival}).
+     */
+    private boolean flown;
     private final Airtime airtime = new Airtime();
     private final Callouts callouts = new Callouts(airtime);
     private final CabinAnnouncements announcements = new CabinAnnouncements(airtime);
@@ -627,7 +632,26 @@ public class AutopilotBlockEntity extends BlockEntity {
         } else {
             autopilot.protect(serverLevel, flight);
         }
+        autopilot.watchArrival(flight, clear);
         autopilot.atc.tick(serverLevel, autopilot, flight, radio, autopilot.phase);
+    }
+
+    /**
+     * Notes the airliner in the air, and once it is down again and stopped, however it was flown (the autopilot's own
+     * landing says so itself as it parks), welcomes everyone to their destination and switches the seatbelt signs off.
+     */
+    private void watchArrival(SableFlight.State flight, boolean airborne) {
+        if (airborne) {
+            flown = true;
+        } else if (flown && flight.velocity().length() < STOPPED) {
+            arrive();
+        }
+    }
+
+    /** Arrived: the arrival announcement, which switches the seatbelt signs off, and nothing more until it flies again. */
+    private void arrive() {
+        flown = false;
+        announcements.announce(CabinAnnouncements.Announcement.ARRIVAL, this);
     }
 
     /**
@@ -818,7 +842,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             park(level);
             disengage();
             tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"));
-            announcements.announce(CabinAnnouncements.Announcement.ARRIVAL, this);
+            arrive();
             return;
         }
         if (phase != was) {
@@ -1068,6 +1092,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
         tag.putBoolean("AwaitingClearance", awaitingClearance);
+        tag.putBoolean("Flown", flown);
     }
 
     /** What the screen shows: the phase, the modes and the targets. */
@@ -1106,6 +1131,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             climbingOut = tag.getBoolean("ClimbingOut");
             // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.
             awaitingClearance = tag.getBoolean("AwaitingClearance");
+            flown = tag.getBoolean("Flown");
         }
         phase = parse(Phase.class, tag.getString("Phase"), Phase.OFF);
         lateral = parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING);

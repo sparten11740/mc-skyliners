@@ -203,9 +203,10 @@ included. Either way the message is left out of ordinary chat; use the handset o
 The autopilot makes announcements of its own, in the flight deck's voice after the same chime, and everyone aboard
 hears them wherever they are in the cabin. Set to take off (Take Off, on the ground), it welcomes everyone aboard and
 asks the cabin crew to be seated for take-off; set to land (Land), it asks everyone back to their seats and the crew to
-be seated for landing; and once it has landed and stopped, it welcomes everyone to their destination and lets them
-go. As crews do, it switches the seatbelt signs on with the take-off and landing announcements (which opens the
-curtains), and off again once stopped, so everyone can get up. Announcements never talk over each other: one asked
+be seated for landing; and once the airliner has landed and stopped, however it was flown (on the autopilot or on the
+thrust levers), it welcomes everyone to their destination and lets them go. As crews do, it switches the seatbelt signs
+on with the take-off and landing announcements (which opens the curtains), and off again once stopped after landing,
+so everyone can get up. Announcements never talk over each other: one asked
 for while another plays waits for it to end, and the same one is not made again within a minute, however often the
 buttons are pressed.
 
