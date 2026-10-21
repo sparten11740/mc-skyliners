@@ -645,6 +645,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double radio = autopilot.radioAltitude(serverLevel, flight);
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
         Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, radio);
+        VillageSpotter.tick(serverLevel, autopilot, flight.position());
         boolean clear = radio + flight.apex() - flight.position().y > AIRBORNE;
         // Before the jets are set: a burst ending now hands them back this tick.
         autopilot.hop.tick(flight, serverLevel.getGameTime());

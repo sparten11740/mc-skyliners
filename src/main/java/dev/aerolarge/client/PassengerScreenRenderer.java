@@ -7,6 +7,7 @@ import dev.aerolarge.block.PassengerScreenBlock;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -21,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 /**
@@ -28,7 +30,9 @@ import org.joml.Vector3d;
  * saying how the airliner is flying (on the ground, climbing, cruising or descending), six tiles under it with its
  * altitude above sea level, its speed over the ground, how fast it climbs or sinks, the way it is heading, how high it
  * is above the ground and how far it has flown since it took off, and along the bottom the time in the air and that
- * using the screen shows the outside cameras (see {@link PassengerCameras}). The figures are read from the airliner
+ * using the screen shows the outside cameras (see {@link PassengerCameras}). Every ten seconds the page gives way to
+ * the route map for as long (see {@link RouteMap}): the land below, the villages and the route flown since take-off,
+ * the airliner on it, under the same header. The figures are read from the airliner
  * each tick as the client has it, and the page's text is laid out from them once a tick for all the airliner's
  * screens, which share one log of its flight (see {@link Trip}). On an airliner that is not assembled it shows a
  * standby page.
@@ -98,6 +102,11 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
     private static final double METRES_UP_TO = 1000;
     private static final double TENTHS_UP_TO = 100_000;
     private static final String KEY = "screen.aerolarge.passenger_screen.";
+    /** How long each page, the flight information and the route map, stays up before the other, in ticks. */
+    private static final long PAGE_TICKS = 200;
+    /** How far the airliner flies between the points of its route kept for the map, in blocks, and how many at most. */
+    private static final double ROUTE_STEP = 8;
+    private static final int MOST_ROUTE = 2000;
 
     private static final int BACKGROUND = 0xFF081226;
     private static final int BAND = 0xFF10254A;
@@ -153,16 +162,22 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BACKGROUND);
-        if (flight != null) {
+        long now = level.getGameTime();
+        boolean map = flight != null && now / PAGE_TICKS % 2 == 1;
+        if (map) {
+            header(shapes, matrix);
+            // After the shapes, which fetching the map's own buffer ends.
+            flight.map(level, now).draw(buffers, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT - HEADER - STRIPE, LAYER);
+        } else if (flight != null) {
             panels(shapes, matrix);
         }
         // The text over it all, as clear as it can still be made out from here.
         float strength = Math.clamp((Sight.pixels(pose.last(), DIGIT * FIGURE) - GONE) / (SHARP - GONE), 0F, 1F);
         if (strength >= FAINTEST) {
             Font font = Minecraft.getInstance().font;
-            long now = level.getGameTime();
             int alpha = Math.round(255 * strength);
-            for (ScreenDrawing.Label label : flight != null ? flight.page(font, now) : standby(font, now)) {
+            List<ScreenDrawing.Label> text = flight == null ? standby(font, now) : map ? flight.mapPage(font, now) : flight.page(font, now);
+            for (ScreenDrawing.Label label : text) {
                 label.draw(font, pose, buffers, TEXT_LIFT, alpha);
             }
         }
@@ -183,12 +198,24 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         long now = level.getGameTime();
         Flight flight = flights.get(airliner);
         if (flight == null) {
-            flights.values().removeIf(old -> old.forgotten(now));
-            flight = new Flight(now);
+            forgetOld(now);
+            flight = new Flight(airliner, now);
             flights.put(airliner, flight);
         }
         flight.follow(screen, now);
         return flight;
+    }
+
+    /** Forgets the flights nothing has asked after for a long while, letting go of their maps. */
+    private void forgetOld(long now) {
+        Iterator<Flight> each = flights.values().iterator();
+        while (each.hasNext()) {
+            Flight old = each.next();
+            if (old.forgotten(now)) {
+                old.close();
+                each.remove();
+            }
+        }
     }
 
     /** The standby page's text, laid out once a tick. */
@@ -202,23 +229,34 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         return standby;
     }
 
-    /** The page of flight information's bands and tiles, under its text. */
-    private static void panels(VertexConsumer shapes, Matrix4f matrix) {
+    /** The header band along the top, and the stripe under it, of both pages. */
+    private static void header(VertexConsumer shapes, Matrix4f matrix) {
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER, HALF_WIDTH, HALF_HEIGHT, LAYER, BAND);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER - STRIPE, HALF_WIDTH, HALF_HEIGHT - HEADER, LAYER, ACCENT);
+    }
+
+    /** The page of flight information's bands and tiles, under its text. */
+    private static void panels(VertexConsumer shapes, Matrix4f matrix) {
+        header(shapes, matrix);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, -HALF_HEIGHT + FOOTER, LAYER, BAND);
         for (Tile tile : TILES) {
             ScreenDrawing.rect(shapes, matrix, tile.x0(), tile.y0(), tile.x1(), tile.y1(), LAYER, TILE);
         }
     }
 
-    /** The page of flight information's text: the header, a reading in each tile and the footer. */
-    private static List<ScreenDrawing.Label> flightInfo(Font font, Reading[] readings, String status, long flightTicks) {
+    /** The header's text, on both pages: the page's title, and what the airliner is doing. */
+    private static List<ScreenDrawing.Label> header(Font font, String title, String status) {
         List<ScreenDrawing.Label> text = new ArrayList<>();
         double header = HALF_HEIGHT - HEADER / 2;
-        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "title"), -HALF_WIDTH + MARGIN, header, TITLE, WHITE, ScreenDrawing.Align.LEFT));
+        text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + title), -HALF_WIDTH + MARGIN, header, TITLE, WHITE, ScreenDrawing.Align.LEFT));
         text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "status." + status), HALF_WIDTH - MARGIN, header, TITLE, ACCENT,
             ScreenDrawing.Align.RIGHT));
+        return text;
+    }
+
+    /** The page of flight information's text: the header, a reading in each tile and the footer. */
+    private static List<ScreenDrawing.Label> flightInfo(Font font, Reading[] readings, String status, long flightTicks) {
+        List<ScreenDrawing.Label> text = header(font, "title", status);
         for (int i = 0; i < TILES.length; i++) {
             reading(font, text, TILES[i], readings[i]);
         }
@@ -302,17 +340,25 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
      * An assembled airliner as its screens show it: its flight, followed once a tick however many screens ask, as the
      * airliner was that tick, and the page's text, laid out from them once a tick for whichever screens are drawn.
      */
-    private static final class Flight {
+    private static final class Flight implements AutoCloseable {
+        private final UUID airliner;
         private final Trip trip = new Trip();
         @Nullable
         private SableClient.Ride ride;
+        /** Its route map, made the first time it is shown. */
+        @Nullable
+        private RouteMap map;
+        /** The route map page's text, and the game time it was laid out at. */
+        private List<ScreenDrawing.Label> mapPage = List.of();
+        private long mapLaidOut = Long.MIN_VALUE;
         /** The game times something last asked after it, it was last followed and its page last laid out at. */
         private long asked;
         private long followed = Long.MIN_VALUE;
         private long laidOut = Long.MIN_VALUE;
         private List<ScreenDrawing.Label> page = List.of();
 
-        Flight(long now) {
+        Flight(UUID airliner, long now) {
+            this.airliner = airliner;
             asked = now;
         }
 
@@ -326,6 +372,15 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
                 followed = now;
                 ride = found;
                 trip.update(found, now);
+                see(screen.getLevel(), found);
+            }
+        }
+
+        /** Takes in the land below the airliner for the route map, whether or not the map is being shown. */
+        private static void see(@Nullable Level level, SableClient.Ride ride) {
+            TerrainMap terrain = level != null ? TerrainMap.of(level) : null;
+            if (terrain != null) {
+                terrain.see(level, ride.position().x, ride.position().z);
             }
         }
 
@@ -340,6 +395,34 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
                 page = flightInfo(font, readings(ride, trip), trip.status(ride), trip.flightTicks(now));
             }
             return page;
+        }
+
+        /** The route map page's text: only its header, the map under it. */
+        List<ScreenDrawing.Label> mapPage(Font font, long now) {
+            if (mapLaidOut != now && ride != null) {
+                mapLaidOut = now;
+                mapPage = header(font, "map_title", trip.status(ride));
+            }
+            return mapPage;
+        }
+
+        /** The route map, drawn again as it falls due. */
+        RouteMap map(Level level, long now) {
+            if (map == null) {
+                map = new RouteMap(airliner);
+            }
+            if (ride != null) {
+                map.update(level, trip.route(), ride.position().x, ride.position().z, trip.track(), now);
+            }
+            return map;
+        }
+
+        @Override
+        public void close() {
+            if (map != null) {
+                map.close();
+                map = null;
+            }
         }
     }
 
@@ -358,6 +441,8 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         private long tookOff = -1;
         private long landed = -1;
         private double distance;
+        /** The points of the route flown since take-off, in world x and z, a few blocks apart, for the route map. */
+        private final List<Vector2d> route = new ArrayList<>();
         /** The compass heading it was last seen going, 0 north and 90 east; NaN before it has moved. */
         private double track = Double.NaN;
 
@@ -368,6 +453,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
                 airborne = true;
                 tookOff = gameTime;
                 distance = 0;
+                route.clear();
             } else if (onGround && airborne) {
                 airborne = false;
                 landed = gameTime;
@@ -376,10 +462,27 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
             if (airborne && last != null) {
                 distance += Math.hypot(here.x - last.x, here.z - last.z);
             }
+            if (airborne && (route.isEmpty() || route.getLast().distance(here.x, here.z) >= ROUTE_STEP)) {
+                addToRoute(here);
+            }
             last = here;
             Vector3d velocity = ride.velocity();
             if (Math.hypot(velocity.x, velocity.z) > MOVING) {
                 track = (Math.toDegrees(Math.atan2(velocity.x, -velocity.z)) + 360) % 360;
+            }
+        }
+
+        /**
+         * Adds a point to the route; past {@link #MOST_ROUTE} points, a long flight keeps every other one, its route
+         * drawn as it was, a little less finely.
+         */
+        private void addToRoute(Vector3d here) {
+            route.add(new Vector2d(here.x, here.z));
+            if (route.size() <= MOST_ROUTE) {
+                return;
+            }
+            for (int i = route.size() - 2; i > 0; i -= 2) {
+                route.remove(i);
             }
         }
 
@@ -402,6 +505,10 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
 
         double distance() {
             return distance;
+        }
+
+        List<Vector2d> route() {
+            return route;
         }
 
         double track() {

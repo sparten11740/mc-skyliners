@@ -4703,6 +4703,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.passenger_screen.welcome": "WELCOME ABOARD",
   "screen.aerolarge.passenger_screen.standby": "ASSEMBLE TO FLY",
   "screen.aerolarge.passenger_screen.title": "FLIGHT INFO",
+  "screen.aerolarge.passenger_screen.map_title": "ROUTE MAP",
   "screen.aerolarge.passenger_screen.status.ground": "ON THE GROUND",
   "screen.aerolarge.passenger_screen.status.climbing": "CLIMBING",
   "screen.aerolarge.passenger_screen.status.cruising": "CRUISING",

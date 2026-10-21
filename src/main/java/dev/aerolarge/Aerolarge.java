@@ -6,6 +6,7 @@ import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.SetAutopilot;
 import dev.aerolarge.block.UnstickAirliner;
+import dev.aerolarge.block.VillagesBelow;
 import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
 import dev.aerolarge.cabin.Passengers;
@@ -14,6 +15,7 @@ import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.AutopilotSettingsScreen;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
+import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
@@ -71,7 +73,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("6")
+        event.registrar("7")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -82,6 +84,8 @@ public final class Aerolarge {
             .playToClient(OpenAutopilotScreen.TYPE, OpenAutopilotScreen.STREAM_CODEC,
                 (payload, context) -> AutopilotSettingsScreen.open(payload))
             .playToClient(OpenCoffeeMachine.TYPE, OpenCoffeeMachine.STREAM_CODEC,
-                (payload, context) -> CoffeeMachineScreen.open(payload.pos()));
+                (payload, context) -> CoffeeMachineScreen.open(payload.pos()))
+            .playToClient(VillagesBelow.TYPE, VillagesBelow.STREAM_CODEC,
+                (payload, context) -> TerrainMap.villages(payload.villages()));
     }
 }

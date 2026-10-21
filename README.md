@@ -615,6 +615,16 @@ speed over the ground and how fast it climbs or sinks; the way it is heading; an
 long since it took off, kept up after landing until the next take-off. A block counts as a metre. While the airliner
 stands as blocks the screen shows a welcome page.
 
+Every ten seconds the page gives way to the route map for as long: the land below as seen from the airliner, in its
+own colours as on a vanilla map, slopes shaded so hills and valleys stand out and water darker the deeper it is; the
+villages on it as little houses with red roofs; the route flown since take-off as a cyan line from a green dot; and
+the airliner as a gold arrow pointing the way it goes. North is up. The map zooms out as the route grows, so the
+whole flight fits, and the land not seen yet is left dark under a faint grid. The land is taken in as the airliner
+flies over it, as far as the game has it loaded round the player, and every player keeps their own map of each world
+and dimension in the game's folder (`aerolarge/route_maps`), so it fills in a little more with every flight. The
+villages come from the server, which knows where it generated each one, so a village shows whether or not its bell
+still stands.
+
 Use an assembled airliner's screen to look through its outside cameras, the way a security camera is watched: on
 top of the fin looking forward over the whole airliner, over the right wing out at its engines, and under the nose
 past the nose gear down the runway. Use again for the next camera, and after the last you are back in the cabin;
