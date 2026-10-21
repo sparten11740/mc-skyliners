@@ -663,7 +663,9 @@ blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
 
 // Skydiving. The jump light: a lens dark, red or green, brighter in the middle. The jump switch: a dark panel with a
-// red and a green lamp, the one in use lit. The rack: a frame holding packed parachutes. The landing target: red and
+// red and a green lamp, the one in use lit. The rack: a frame holding packed parachutes under a parachute sign, and the
+// sign big on its sides, so it reads as the parachutes' store from any side: a red and white canopy, its cords running
+// down to a jumper hanging under it. The landing target: red and
 // white rings. The parachute icon, and the canopy's texture: red and white halves for the panels, olive below for
 // the pack and the cords.
 {
@@ -685,13 +687,36 @@ blueprint("furnished_airliner_blueprint", true);
   }
   const OLIVE = [0x5a, 0x63, 0x3c];
   const OLIVE_DARK = [0x44, 0x4b, 0x2d];
+  const CANOPY_RED = [0xd8, 0x2a, 0x22];
+  const CANOPY_WHITE = [0xf4, 0xf4, 0xf0];
+  const JUMPER = [0x22, 0x25, 0x2a];
+  // The parachute sign round a middle (cx, cy), the canopy's half width r: the canopy a dome in red and white panels,
+  // two cords from its rim down to the jumper under its middle; null off it.
+  const parachuteSign = (x, y, cx, cy, r) => {
+    const dome = (y - cy) / (r * 0.75);
+    if (y <= cy && Math.hypot((x - cx) / r, dome) <= 1) return Math.floor((x - cx + r) / (r / 2.5)) % 2 === 0 ? CANOPY_RED : CANOPY_WHITE;
+    const drop = r * 0.9;
+    if (y > cy && y < cy + drop) {
+      const along = (y - cy) / drop;
+      const cord = r * (1 - along);
+      if (Math.abs(Math.abs(x - cx) - cord) < 0.5) return JUMPER;
+    }
+    if (Math.abs(x - cx) <= 0.5 && y >= cy + drop - 0.5 && y <= cy + drop + 1.5) return JUMPER;
+    return null;
+  };
   texture(blockOutput, "parachute_rack_front", (x, y) => {
     if (x === 0 || x === 15 || y === 0 || y === 15) return STEEL_DARK;
+    if (y <= 6) return parachuteSign(x, y, 7.5, 3, 4) ?? STEEL;
+    if (y === 7) return STEEL_DARK;
     const slot = Math.floor((x - 1) / 5);
     if ((x - 1) % 5 === 4) return STEEL_DARK;
     return (y + slot) % 4 === 0 ? OLIVE_DARK : OLIVE;
   });
-  texture(blockOutput, "parachute_rack_side", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL_DARK : STEEL));
+  texture(blockOutput, "parachute_rack_side", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return STEEL_DARK;
+    return parachuteSign(x, y, 7.5, 6.5, 5.5) ?? STEEL;
+  });
+  texture(blockOutput, "parachute_rack_top", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL_DARK : STEEL));
   texture(blockOutput, "landing_target_top", (x, y) => {
     const ring = Math.floor(Math.hypot(x - 7.5, y - 7.5) / 2);
     return ring % 2 === 0 ? [0xd0, 0x20, 0x20] : [0xf0, 0xf0, 0xf0];

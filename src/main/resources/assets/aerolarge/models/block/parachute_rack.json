@@ -3,6 +3,6 @@
   "textures": {
     "front": "aerolarge:block/parachute_rack_front",
     "side": "aerolarge:block/parachute_rack_side",
-    "top": "aerolarge:block/parachute_rack_side"
+    "top": "aerolarge:block/parachute_rack_top"
   }
 }

@@ -747,8 +747,9 @@ built with two helmets and two caps in the flight crew's locker on its flight de
 
 ### Skydiving
 
-By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes.
-Use a rack to put a parachute on (or take one into your inventory if your chest slot is taken), then jump while
+By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes,
+packed parachutes behind its front under a red and white parachute sign, the sign big on its sides too, so it is
+found without reading. Use a rack to put a parachute on (or take one into your inventory if your chest slot is taken), then jump while
 falling to open it; it opens by itself if you are still falling free close to the ground. Under the canopy you sink
 gently, drift the way you walk, take no fall damage, and it packs itself away when you land. The jump light switch on
 the centre console cycles every jump light in the airliner through off, red (stand by) and green (go, with a bell).

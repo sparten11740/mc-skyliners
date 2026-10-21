@@ -603,7 +603,7 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   write(`assets/${ID}/models/item/jump_switch.json`, { parent: `${ID}:block/jump_switch_green` });
   write(`assets/${ID}/models/block/parachute_rack.json`, {
     parent: "minecraft:block/orientable",
-    textures: { front: `${ID}:block/parachute_rack_front`, side: `${ID}:block/parachute_rack_side`, top: `${ID}:block/parachute_rack_side` },
+    textures: { front: `${ID}:block/parachute_rack_front`, side: `${ID}:block/parachute_rack_side`, top: `${ID}:block/parachute_rack_top` },
   });
   write(`assets/${ID}/blockstates/parachute_rack.json`, {
     variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/parachute_rack`, y }])),
