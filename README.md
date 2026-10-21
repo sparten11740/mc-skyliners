@@ -265,7 +265,9 @@ the X in their title bar (neither the buttons nor Escape close them).
 Set to fly to a pin, the rows of settings give way to a map: the land and the villages as the route map on the
 passenger screens has them (see Passenger screens), the airliner as a gold arrow, and the pin, once dropped, as a red
 dot in a red ring, the circle it will be flown round. Drag the map to look about, scroll to zoom out and in, and click
-to drop the pin: a click close to a village drops it right on the village. Engaged, the airliner turns for the circle
+to drop the pin: a click close to a village drops it right on the village. A small cross marks the middle of the map,
+whose X and Z show in its bottom left corner (and the pin's in the bottom right once dropped), so you can find your
+way about even where the land has not been seen yet. Engaged, the airliner turns for the circle
 round the pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and
 flies round it clockwise at the radius set (150 blocks at least, banking no more than 20 degrees), until set to fly
 something else or told to land. The height and speed fly as set.

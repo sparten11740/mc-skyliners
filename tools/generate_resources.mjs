@@ -4781,6 +4781,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.autopilot_settings.mode.orbit_right": "Circle Right",
   "screen.aerolarge.autopilot_settings.mode.destination": "Fly to Pin",
   "screen.aerolarge.autopilot_settings.map": "Map: drag to look about, scroll to zoom, click to drop the pin",
+  "screen.aerolarge.autopilot_settings.map.middle": "X %s  Z %s",
+  "screen.aerolarge.autopilot_settings.map.pin": "Pin X %s  Z %s",
   "screen.aerolarge.autopilot_settings.heading": "Heading",
   "screen.aerolarge.autopilot_settings.altitude": "Altitude",
   "screen.aerolarge.autopilot_settings.speed": "Speed",

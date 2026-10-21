@@ -7,6 +7,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -25,7 +26,9 @@ import net.minecraft.world.phys.Vec3;
  * painted by {@link MapPainter}: the land as the player's route map knows it, the villages, the airliner where it is,
  * pointing the way it goes, and the pin with the circle the airliner will fly round it. Drag it to look about, scroll
  * to zoom out and in, and click to drop the pin: on a village when the click is close to one, so a village is easy to
- * pick, else where it was clicked. It opens on the airliner, or on the pin if there is one.
+ * pick, else where it was clicked. It opens on the airliner, or on the pin if there is one. A cross marks its middle,
+ * whose coordinates it shows, and those of the pin once dropped, so it can be found about even where the land has not
+ * been seen yet.
  */
 final class DestinationMap extends AbstractWidget implements AutoCloseable {
     /** How often the map is drawn again while nothing moves it, in ticks: the airliner flies on. */
@@ -39,6 +42,12 @@ final class DestinationMap extends AbstractWidget implements AutoCloseable {
     /** Dragged this many pixels or fewer between pressing and letting go, it was a click. */
     private static final double CLICK_SLOP = 3;
     private static final Component NAME = Component.translatable("screen.aerolarge.autopilot_settings.map");
+    /** The cross at the middle: how far each arm reaches, in pixels, and its colour. */
+    private static final int CROSS = 3;
+    private static final int CROSS_COLOUR = 0xC0FFFFFF;
+    /** The coordinates along the bottom: how far in from the edges, and the band behind them. */
+    private static final int READOUT_INSET = 3;
+    private static final int READOUT_BACKGROUND = 0xB0081226;
 
     private final Supplier<BlockEntity> autopilot;
     private final IntSupplier radius;
@@ -85,6 +94,37 @@ final class DestinationMap extends AbstractWidget implements AutoCloseable {
             draw(level, blockEntity, partialTick);
         }
         graphics.blit(location, getX(), getY(), 0, 0, width, height, width, height);
+        crosshair(graphics);
+        readouts(graphics);
+    }
+
+    /** A small cross at the map's middle, the place its coordinates are read at. */
+    private void crosshair(GuiGraphics graphics) {
+        int x = getX() + width / 2;
+        int y = getY() + height / 2;
+        graphics.fill(x - CROSS, y, x + CROSS + 1, y + 1, CROSS_COLOUR);
+        graphics.fill(x, y - CROSS, x + 1, y + CROSS + 1, CROSS_COLOUR);
+    }
+
+    /**
+     * The coordinates of the map's middle, in its bottom left corner, so it can be found even where the land has not
+     * been seen yet; and once the pin is dropped, the pin's, in its bottom right corner.
+     */
+    private void readouts(GuiGraphics graphics) {
+        Font font = Minecraft.getInstance().font;
+        Component middle = Component.translatable("screen.aerolarge.autopilot_settings.map.middle", Mth.floor(centreX), Mth.floor(centreZ));
+        label(graphics, font, middle, getX() + READOUT_INSET, PanelArt.WHITE);
+        if (pin != null) {
+            Component pinned = Component.translatable("screen.aerolarge.autopilot_settings.map.pin", pin.getX(), pin.getZ());
+            label(graphics, font, pinned, getRight() - READOUT_INSET - font.width(pinned), PanelArt.RED);
+        }
+    }
+
+    /** A line of text along the map's bottom edge, on a dark band so it reads over any land. */
+    private void label(GuiGraphics graphics, Font font, Component text, int x, int colour) {
+        int y = getBottom() - READOUT_INSET - font.lineHeight;
+        graphics.fill(x - 2, y - 2, x + font.width(text) + 1, y + font.lineHeight, READOUT_BACKGROUND);
+        graphics.drawString(font, text, x, y, colour, false);
     }
 
     /** Draws the map again if it has been moved, or a moment has gone by since. */
@@ -126,7 +166,7 @@ final class DestinationMap extends AbstractWidget implements AutoCloseable {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    public void onClick(double mouseX, double mouseY, int button) {
         dragged = 0;
     }
 
