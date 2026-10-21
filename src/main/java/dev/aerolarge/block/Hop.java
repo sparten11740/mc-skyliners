@@ -9,8 +9,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 
 /**
- * Hopping a stuck airliner free: on the ground with its engines running and its brakes off, yet standing still, held
- * by whatever it has run into or sunk into. Asked from the autopilot's settings screen, the control jets that push up
+ * Hopping a stuck airliner free: with its engines running and its brakes off, yet standing still, held by whatever it
+ * has run into or sunk into. Wherever it rests: on the ground, on trees, on a roof, its nose out over a drop; standing
+ * still for a while, it rests on something, as no airliner stands still in the air. Asked from the autopilot's settings screen, the control jets that push up
  * (under the wings and the tailplane) fire for a moment, taking the weight off the wheels so the engines can move it
  * again (the autopilot sets them, see {@link AutopilotBlockEntity}). Those jets all push from behind the centre of
  * mass, so at full together they would tip the airliner onto its nose: the tailplane's hold the nose where it stood,
@@ -57,12 +58,12 @@ final class Hop {
     private static final float ROAR_PITCH = 1.6F;
 
     /** How the airliner stands this tick, as far as hopping it free goes. */
-    record Stance(long now, double speed, boolean grounded, boolean engines, boolean braked) {
+    record Stance(long now, double speed, boolean engines, boolean braked) {
     }
 
     /** What keeps the jets from hopping the airliner free, in the order it is said; NONE when they can. */
     enum Hold {
-        NONE, FIRING, RESTING, AIRBORNE, ENGINES_OFF, BRAKED, MOVING;
+        NONE, FIRING, RESTING, ENGINES_OFF, BRAKED, MOVING;
 
         /** The key of what the autopilot says: that it hops the airliner free, or why it cannot. */
         String message() {
@@ -85,7 +86,7 @@ final class Hop {
 
     /** One tick of watching how the airliner stands; what keeps the jets from hopping it free now. */
     Hold watch(Stance stance) {
-        boolean straining = stance.grounded() && stance.engines() && !stance.braked();
+        boolean straining = stance.engines() && !stance.braked();
         still = straining && stance.speed() < STILL && burst == 0 ? Math.min(still + 1, STUCK_TICKS) : 0;
         return hold(stance);
     }
@@ -97,9 +98,6 @@ final class Hop {
         }
         if (stance.now() < rested) {
             return Hold.RESTING;
-        }
-        if (!stance.grounded()) {
-            return Hold.AIRBORNE;
         }
         if (!stance.engines()) {
             return Hold.ENGINES_OFF;

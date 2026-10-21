@@ -318,7 +318,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Turbulence turbulence = new Turbulence();
     /** The airstairs and slides it has put away before taking off, which it holds the brakes for till they are. */
     private final Stowing stowing = new Stowing();
-    /** Hopping the airliner free when it is stuck on the ground. */
+    /** Hopping the airliner free when it is stuck. */
     private final Hop hop = new Hop();
     /** Whether the settings screen offers to hop the airliner free: found on the server each tick, sent to the clients. */
     private boolean stuck;
@@ -373,7 +373,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         return orbitRadius;
     }
 
-    /** Whether the airliner is stuck on the ground with its engines running, and the jets ready to hop it free. */
+    /** Whether the airliner is stuck with its engines running, and the jets ready to hop it free. */
     public boolean stuck() {
         return stuck;
     }
@@ -520,8 +520,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Hops the airliner free from its settings screen, if it is stuck: only on the ground, with its engines running and
-     * its brakes off, once it has stood still a moment, and not again till the jets have rested (see {@link Hop}). A
+     * Hops the airliner free from its settings screen, if it is stuck: with its engines running and its brakes off, once
+     * it has stood still a moment wherever it rests, and not again till the jets have rested (see {@link Hop}). A
      * parking brake set is left set: holding the airliner is what it is for. Asked again while the jets fire, the
      * button still held, keeps them firing. Says what it does, or why it cannot; nothing while it keeps them firing.
      */
@@ -535,7 +535,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             hop.keep();
             return null;
         }
-        Hop.Hold hold = hop.hold(stance(serverLevel, state, radioAltitude(serverLevel, state)));
+        Hop.Hold hold = hop.hold(stance(serverLevel, state));
         if (hold == Hop.Hold.NONE) {
             hop.start(serverLevel, worldPosition, state);
             offerHop(false);
@@ -642,7 +642,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Before the jets are set: a burst ending now hands them back this tick.
         autopilot.hop.tick(flight, serverLevel.getGameTime());
         // Offered on while the jets fire, so the button stays under the finger holding it.
-        Hop.Hold hold = autopilot.hop.watch(autopilot.stance(serverLevel, flight, radio));
+        Hop.Hold hold = autopilot.hop.watch(autopilot.stance(serverLevel, flight));
         autopilot.offerHop(hold == Hop.Hold.NONE || hold == Hop.Hold.FIRING);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
@@ -961,12 +961,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * How the airliner stands for hopping it free: whether it is on the ground (not airborne, as taking off and landing
-     * reckon it), and whether its engines are running and its brakes on, whoever set them: the thrust levers and the
-     * parking brake, or the autopilot.
+     * How the airliner stands for hopping it free: how fast it goes, and whether its engines are running and its brakes
+     * on, whoever set them: the thrust levers and the parking brake, or the autopilot. Not how high it is over the
+     * ground: stuck on trees, whose leaves the radio altitude looks through, it would seem to be flying.
      */
-    private Hop.Stance stance(ServerLevel level, SableFlight.State state, double radio) {
-        return new Hop.Stance(level.getGameTime(), state.velocity().length(), radio <= AIRBORNE, powered(level, ENGINES), powered(level, Channel.BRAKES));
+    private Hop.Stance stance(ServerLevel level, SableFlight.State state) {
+        return new Hop.Stance(level.getGameTime(), state.velocity().length(), powered(level, ENGINES), powered(level, Channel.BRAKES));
     }
 
     /** Whether any relay of the channels gives off a signal. */

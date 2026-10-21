@@ -95,7 +95,6 @@
   "message.aerolarge.autopilot.unstuck": "Control jets firing: hold Unstuck to lift the airliner higher.",
   "message.aerolarge.autopilot.unstuck.firing": "The control jets are firing already.",
   "message.aerolarge.autopilot.unstuck.resting": "The control jets are resting: try again in a few seconds.",
-  "message.aerolarge.autopilot.unstuck.airborne": "Only on the ground: in the air the control jets keep the airliner steady.",
   "message.aerolarge.autopilot.unstuck.engines_off": "Push the thrust levers forward first: the jets only help engines that cannot move the airliner.",
   "message.aerolarge.autopilot.unstuck.braked": "The parking brake is holding the airliner: release it to roll.",
   "message.aerolarge.autopilot.unstuck.moving": "The airliner is not stuck: it is moving, or has only just stopped.",
