@@ -35,6 +35,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * The autopilot's settings, opened by using the autopilot or its screen on the flight deck: a panel in the flight
@@ -254,7 +255,7 @@ public class AutopilotSettingsScreen extends Screen {
         }
         refresh();
         if (hopping) {
-            if (minecraft.mouseHandler.isLeftPressed()) {
+            if (leftHeld()) {
                 PacketDistributor.sendToServer(new UnstickAirliner(pos));
             } else {
                 onClose();
@@ -275,11 +276,20 @@ public class AutopilotSettingsScreen extends Screen {
      */
     private void unstick() {
         PacketDistributor.sendToServer(new UnstickAirliner(pos));
-        if (minecraft != null && minecraft.mouseHandler.isLeftPressed()) {
+        if (leftHeld()) {
             hopping = true;
         } else {
             onClose();
         }
+    }
+
+    /**
+     * Whether the left mouse button is down, asked of the window itself: the game's own note of it is not kept while a
+     * screen is open, which takes the clicks.
+     */
+    private boolean leftHeld() {
+        return minecraft != null
+            && GLFW.glfwGetMouseButton(minecraft.getWindow().getWindow(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
     }
 
     @Override
