@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
 /**
- * A hot drink: airline coffee from the trolley, or a coffee machine's espresso, cappuccino or mocha. Drunk, not eaten,
+ * A hot drink: airline coffee from the trolley, or a coffee machine's espresso, cappuccino, mocha or babycino. Drunk, not eaten,
  * and each gives a little lift (see its food properties).
  */
 public class CoffeeItem extends Item {

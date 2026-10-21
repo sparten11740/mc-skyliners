@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * top, a drip tray under its spout and a small lit display on its front. Use it while it is ready to open its panel
  * (see {@link OpenCoffeeMachine}) and pick a drink; the server brews it (see {@link BrewCoffee}): the grinder, the
  * pump pouring the coffee into a cup that stands under the spout, and for a cappuccino or a mocha the steam frothing
- * the milk. Then it chimes, and the drink waits under the spout until someone uses the machine to take it. The display
+ * the milk; a babycino is only the milk frothed. Then it chimes, and the drink waits under the spout until someone uses the machine to take it. The display
  * shows each step with a picture of its own. FACING is the way its front looks.
  */
 public class CoffeeMachineBlock extends BaseEntityBlock {
@@ -160,10 +160,15 @@ public class CoffeeMachineBlock extends BaseEntityBlock {
         return InteractionResult.CONSUME;
     }
 
-    /** Starts brewing a drink, grinding the beans first: only on a machine that is ready (see {@link BrewCoffee}). */
+    /**
+     * Starts brewing a drink, grinding the beans first, or for a babycino, with no coffee in it, frothing the milk
+     * straight away: only on a machine that is ready (see {@link BrewCoffee}).
+     */
     static void brew(ServerLevel level, BlockPos pos, BlockState state, CoffeeDrink drink) {
-        level.setBlock(pos, state.setValue(BREW, Brew.GRINDING).setValue(DRINK, drink), Block.UPDATE_ALL);
-        level.playSound(null, pos, AerolargeRegistry.COFFEE_GRIND.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        Brew first = drink.coffee() ? Brew.GRINDING : Brew.STEAMING;
+        level.setBlock(pos, state.setValue(BREW, first).setValue(DRINK, drink), Block.UPDATE_ALL);
+        SoundEvent sound = drink.coffee() ? AerolargeRegistry.COFFEE_GRIND.get() : AerolargeRegistry.COFFEE_STEAM.get();
+        level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /** The next step of the brew, once the one it is on is over: steaming only for a drink with milk. */
@@ -195,7 +200,9 @@ public class CoffeeMachineBlock extends BaseEntityBlock {
             player.drop(cup, false);
         }
         level.playSound(null, pos, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, CUP_VOLUME, CUP_PITCH);
-        FirstFlight.BARISTA.award(player, drink.getSerializedName());
+        if (drink.coffee()) {
+            FirstFlight.BARISTA.award(player, drink.getSerializedName());
+        }
     }
 
     /**

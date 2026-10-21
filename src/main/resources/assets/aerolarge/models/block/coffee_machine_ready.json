@@ -17,6 +17,8 @@
     "cream": "aerolarge:block/mocha_cream",
     "stream": "aerolarge:block/coffee_stream",
     "particle": "aerolarge:block/coffee_machine_steel",
+    "milk": "aerolarge:block/babycino_glass",
+    "froth": "aerolarge:block/babycino_froth",
     "display": "aerolarge:block/coffee_machine_display_ready"
   },
   "elements": [

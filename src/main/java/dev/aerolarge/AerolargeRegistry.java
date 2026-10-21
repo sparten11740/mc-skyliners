@@ -1020,8 +1020,8 @@ public final class AerolargeRegistry {
     /**
      * The coffee machine, a bean-to-cup machine for the galley, the sounds of its brew (the grinder, the pump, the
      * steam frothing the milk and the chime when the drink is ready), and what it brews: an espresso for a short burst
-     * of Haste, a cappuccino for a little Speed and a mocha, sweet with chocolate, for Speed and a moment's
-     * Regeneration. Each is drunk from its cup, which is gone with the drink.
+     * of Haste, a cappuccino for a little Speed, a mocha, sweet with chocolate, for Speed and a moment's Regeneration,
+     * and for children a babycino, frothed milk with no coffee, for a little Regeneration. Each is drunk from its cup, which is gone with the drink.
      */
     public static final DeferredBlock<CoffeeMachineBlock> COFFEE_MACHINE = BLOCKS.registerBlock(
         "coffee_machine", CoffeeMachineBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().pushReaction(PushReaction.DESTROY)
@@ -1045,6 +1045,10 @@ public final class AerolargeRegistry {
         new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible()
             .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 30 * 20, 0), 1.0F)
             .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 5 * 20, 0), 1.0F).build()
+    )));
+    public static final DeferredItem<CoffeeItem> BABYCINO = ITEMS.register("babycino", () -> new CoffeeItem(new Item.Properties().stacksTo(16).food(
+        new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 10 * 20, 0), 1.0F).build()
     )));
 
     /** Basketball in the gym hall: the ball, the hoops, the scoreboard and a rack of balls by the court. */
@@ -1269,7 +1273,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
-            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA,
+            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,

@@ -28,10 +28,14 @@ public class CoffeeMachineBlockEntity extends BlockEntity {
     private static final double WAND_Z = 2.5;
     private static final double CUP_X = 8;
     private static final double CUP_Z = 5;
-    /** The top of each drink's cup, in pixels: the small espresso cup, the cappuccino's and the mocha's tall glass. */
+    /**
+     * The top of each drink's cup, in pixels: the small espresso cup, the cappuccino's, the mocha's tall glass and the
+     * babycino's little glass.
+     */
     private static final double ESPRESSO_TOP = 3.5;
     private static final double CAPPUCCINO_TOP = 4.5;
     private static final double MOCHA_TOP = 5.5;
+    private static final double BABYCINO_TOP = 4;
     /** How likely a wisp off the cup is each tick, as it pours and once done; puffs from the wand each tick. */
     private static final float POURING_WISP = 0.3F;
     private static final float DONE_WISP = 0.08F;
@@ -71,6 +75,7 @@ public class CoffeeMachineBlockEntity extends BlockEntity {
             case ESPRESSO -> ESPRESSO_TOP;
             case CAPPUCCINO -> CAPPUCCINO_TOP;
             case MOCHA -> MOCHA_TOP;
+            case BABYCINO -> BABYCINO_TOP;
         };
         switch (state.getValue(CoffeeMachineBlock.BREW)) {
             case POURING -> wisp(level, CoffeeMachineBlock.at(pos, facing, CUP_X, top, CUP_Z), random, POURING_WISP);

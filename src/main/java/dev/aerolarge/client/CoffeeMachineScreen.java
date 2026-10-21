@@ -31,7 +31,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public class CoffeeMachineScreen extends Screen {
     /** The panel's size, the space inside its bezel, and the width of what is on its face. */
-    private static final int WIDTH = 276;
+    private static final int WIDTH = 348;
     private static final int HEIGHT = 138;
     private static final int PADDING = 8;
     private static final int CONTENT = WIDTH - 2 * (PanelArt.BORDER + PADDING);
@@ -70,12 +70,16 @@ public class CoffeeMachineScreen extends Screen {
         return new Icon(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/item/" + drink.getSerializedName() + ".png"));
     }
 
-    /** A drink's colour on the panel: the espresso's crema amber, the cappuccino's cyan, the mocha's chocolate red. */
+    /**
+     * A drink's colour on the panel: the espresso's crema amber, the cappuccino's cyan, the mocha's chocolate red and
+     * the babycino's marshmallow pink.
+     */
     private static int colour(CoffeeDrink drink) {
         return switch (drink) {
             case ESPRESSO -> PanelArt.AMBER;
             case CAPPUCCINO -> PanelArt.CYAN;
             case MOCHA -> PanelArt.RED;
+            case BABYCINO -> PanelArt.MAGENTA;
         };
     }
 

@@ -1691,10 +1691,12 @@ function rubberDuckLang() {
 // a gloss black body, its head over the cup bay with the display lit on its front, the spout under the head, a drip
 // tray sticking out in front, the steam wand beside the bay and the bean hopper on top. From grinding on, the drink's
 // cup stands on the tray under the spout: the small espresso cup on its saucer, the wider cappuccino cup with its
-// foam, or the mocha's tall glass; while it pours, a stream of coffee runs down into it. One model for each step and
-// drink (one for ready, with no cup), turned for each facing.
+// foam, the mocha's tall glass, or the babycino's little glass of frothed milk; while it pours, a stream of coffee runs
+// down into it. One model for each step and drink (one for ready, with no cup), turned for each facing. The coffees
+// are the drinks Barista asks for; the babycino, with no coffee in it, is not one of them.
 const COFFEE_STEPS = ["ready", "grinding", "pouring", "steaming", "done"];
 const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
+const MACHINE_DRINKS = [...COFFEE_DRINKS, "babycino"];
 {
   const block = (name) => `${ID}:block/${name}`;
   const textures = {
@@ -1703,6 +1705,7 @@ const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
     chrome: block("coffee_machine_chrome"), hopper: block("coffee_machine_hopper"), lid: block("coffee_machine_lid"),
     cup: block("coffee_cup"), crema: block("coffee_crema"), foam: block("coffee_foam"), glass: block("mocha_glass"),
     cream: block("mocha_cream"), stream: block("coffee_stream"), particle: block("coffee_machine_steel"),
+    milk: block("babycino_glass"), froth: block("babycino_froth"),
   };
   // Each drink's cup, and the height its top reaches, where the stream from the spout meets it.
   const cups = {
@@ -1719,6 +1722,9 @@ const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
     mocha: [5.5, [
       [[6.5, 1, 3.5], [9.5, 5.5, 6.5], { up: "#cream", down: "#cup", all: "#glass" }],
     ]],
+    babycino: [4, [
+      [[6.75, 1, 3.75], [9.25, 4, 6.25], { up: "#froth", down: "#cup", all: "#milk" }],
+    ]],
   };
   const body = [
     [[2, 0, 3], [4, 14, 15], "#steel"],
@@ -1731,7 +1737,7 @@ const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
     [[5, 14, 9], [10, 16, 14], { up: "#lid", down: "#black", all: "#hopper" }],
   ];
   for (const step of COFFEE_STEPS) {
-    for (const drink of step === "ready" ? [null] : COFFEE_DRINKS) {
+    for (const drink of step === "ready" ? [null] : MACHINE_DRINKS) {
       const [top, cup] = drink ? cups[drink] : [0, []];
       const stream = step === "pouring" ? [[[7.75, top, 4.75], [8.25, 6, 5.25], "#stream"]] : [];
       // The display, a hair proud of the head's front, glowing whatever the light around.
@@ -1743,13 +1749,13 @@ const COFFEE_DRINKS = ["espresso", "cappuccino", "mocha"];
     }
   }
   write(`assets/${ID}/blockstates/coffee_machine.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => COFFEE_STEPS.flatMap((step) => COFFEE_DRINKS.map((drink) =>
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => COFFEE_STEPS.flatMap((step) => MACHINE_DRINKS.map((drink) =>
       [`brew=${step},drink=${drink},facing=${facing}`, { model: `${ID}:block/coffee_machine_${step === "ready" ? step : `${step}_${drink}`}`, y }])))),
   });
   write(`assets/${ID}/models/item/coffee_machine.json`, { parent: `${ID}:block/coffee_machine_ready` });
   dropsItself("coffee_machine");
   cubes.coffee_machine = null;
-  for (const drink of COFFEE_DRINKS) {
+  for (const drink of MACHINE_DRINKS) {
     write(`assets/${ID}/models/item/${drink}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${drink}` } });
   }
 }
@@ -1787,6 +1793,7 @@ function coffeeMachineLang() {
     "item.aerolarge.espresso": "Espresso",
     "item.aerolarge.cappuccino": "Cappuccino",
     "item.aerolarge.mocha": "Mocha",
+    "item.aerolarge.babycino": "Babycino",
     "screen.aerolarge.coffee_machine.title": "Coffee Machine",
     "screen.aerolarge.coffee_machine.ready": "Ready",
     "subtitles.aerolarge.coffee_grind": "Coffee grinder whirs",

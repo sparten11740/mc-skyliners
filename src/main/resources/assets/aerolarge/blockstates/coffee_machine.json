@@ -12,6 +12,10 @@
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 0
     },
+    "brew=ready,drink=babycino,facing=north": {
+      "model": "aerolarge:block/coffee_machine_ready",
+      "y": 0
+    },
     "brew=grinding,drink=espresso,facing=north": {
       "model": "aerolarge:block/coffee_machine_grinding_espresso",
       "y": 0
@@ -22,6 +26,10 @@
     },
     "brew=grinding,drink=mocha,facing=north": {
       "model": "aerolarge:block/coffee_machine_grinding_mocha",
+      "y": 0
+    },
+    "brew=grinding,drink=babycino,facing=north": {
+      "model": "aerolarge:block/coffee_machine_grinding_babycino",
       "y": 0
     },
     "brew=pouring,drink=espresso,facing=north": {
@@ -36,6 +44,10 @@
       "model": "aerolarge:block/coffee_machine_pouring_mocha",
       "y": 0
     },
+    "brew=pouring,drink=babycino,facing=north": {
+      "model": "aerolarge:block/coffee_machine_pouring_babycino",
+      "y": 0
+    },
     "brew=steaming,drink=espresso,facing=north": {
       "model": "aerolarge:block/coffee_machine_steaming_espresso",
       "y": 0
@@ -46,6 +58,10 @@
     },
     "brew=steaming,drink=mocha,facing=north": {
       "model": "aerolarge:block/coffee_machine_steaming_mocha",
+      "y": 0
+    },
+    "brew=steaming,drink=babycino,facing=north": {
+      "model": "aerolarge:block/coffee_machine_steaming_babycino",
       "y": 0
     },
     "brew=done,drink=espresso,facing=north": {
@@ -60,6 +76,10 @@
       "model": "aerolarge:block/coffee_machine_done_mocha",
       "y": 0
     },
+    "brew=done,drink=babycino,facing=north": {
+      "model": "aerolarge:block/coffee_machine_done_babycino",
+      "y": 0
+    },
     "brew=ready,drink=espresso,facing=east": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 90
@@ -69,6 +89,10 @@
       "y": 90
     },
     "brew=ready,drink=mocha,facing=east": {
+      "model": "aerolarge:block/coffee_machine_ready",
+      "y": 90
+    },
+    "brew=ready,drink=babycino,facing=east": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 90
     },
@@ -84,6 +108,10 @@
       "model": "aerolarge:block/coffee_machine_grinding_mocha",
       "y": 90
     },
+    "brew=grinding,drink=babycino,facing=east": {
+      "model": "aerolarge:block/coffee_machine_grinding_babycino",
+      "y": 90
+    },
     "brew=pouring,drink=espresso,facing=east": {
       "model": "aerolarge:block/coffee_machine_pouring_espresso",
       "y": 90
@@ -94,6 +122,10 @@
     },
     "brew=pouring,drink=mocha,facing=east": {
       "model": "aerolarge:block/coffee_machine_pouring_mocha",
+      "y": 90
+    },
+    "brew=pouring,drink=babycino,facing=east": {
+      "model": "aerolarge:block/coffee_machine_pouring_babycino",
       "y": 90
     },
     "brew=steaming,drink=espresso,facing=east": {
@@ -108,6 +140,10 @@
       "model": "aerolarge:block/coffee_machine_steaming_mocha",
       "y": 90
     },
+    "brew=steaming,drink=babycino,facing=east": {
+      "model": "aerolarge:block/coffee_machine_steaming_babycino",
+      "y": 90
+    },
     "brew=done,drink=espresso,facing=east": {
       "model": "aerolarge:block/coffee_machine_done_espresso",
       "y": 90
@@ -120,6 +156,10 @@
       "model": "aerolarge:block/coffee_machine_done_mocha",
       "y": 90
     },
+    "brew=done,drink=babycino,facing=east": {
+      "model": "aerolarge:block/coffee_machine_done_babycino",
+      "y": 90
+    },
     "brew=ready,drink=espresso,facing=south": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 180
@@ -129,6 +169,10 @@
       "y": 180
     },
     "brew=ready,drink=mocha,facing=south": {
+      "model": "aerolarge:block/coffee_machine_ready",
+      "y": 180
+    },
+    "brew=ready,drink=babycino,facing=south": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 180
     },
@@ -144,6 +188,10 @@
       "model": "aerolarge:block/coffee_machine_grinding_mocha",
       "y": 180
     },
+    "brew=grinding,drink=babycino,facing=south": {
+      "model": "aerolarge:block/coffee_machine_grinding_babycino",
+      "y": 180
+    },
     "brew=pouring,drink=espresso,facing=south": {
       "model": "aerolarge:block/coffee_machine_pouring_espresso",
       "y": 180
@@ -154,6 +202,10 @@
     },
     "brew=pouring,drink=mocha,facing=south": {
       "model": "aerolarge:block/coffee_machine_pouring_mocha",
+      "y": 180
+    },
+    "brew=pouring,drink=babycino,facing=south": {
+      "model": "aerolarge:block/coffee_machine_pouring_babycino",
       "y": 180
     },
     "brew=steaming,drink=espresso,facing=south": {
@@ -168,6 +220,10 @@
       "model": "aerolarge:block/coffee_machine_steaming_mocha",
       "y": 180
     },
+    "brew=steaming,drink=babycino,facing=south": {
+      "model": "aerolarge:block/coffee_machine_steaming_babycino",
+      "y": 180
+    },
     "brew=done,drink=espresso,facing=south": {
       "model": "aerolarge:block/coffee_machine_done_espresso",
       "y": 180
@@ -180,6 +236,10 @@
       "model": "aerolarge:block/coffee_machine_done_mocha",
       "y": 180
     },
+    "brew=done,drink=babycino,facing=south": {
+      "model": "aerolarge:block/coffee_machine_done_babycino",
+      "y": 180
+    },
     "brew=ready,drink=espresso,facing=west": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 270
@@ -189,6 +249,10 @@
       "y": 270
     },
     "brew=ready,drink=mocha,facing=west": {
+      "model": "aerolarge:block/coffee_machine_ready",
+      "y": 270
+    },
+    "brew=ready,drink=babycino,facing=west": {
       "model": "aerolarge:block/coffee_machine_ready",
       "y": 270
     },
@@ -204,6 +268,10 @@
       "model": "aerolarge:block/coffee_machine_grinding_mocha",
       "y": 270
     },
+    "brew=grinding,drink=babycino,facing=west": {
+      "model": "aerolarge:block/coffee_machine_grinding_babycino",
+      "y": 270
+    },
     "brew=pouring,drink=espresso,facing=west": {
       "model": "aerolarge:block/coffee_machine_pouring_espresso",
       "y": 270
@@ -214,6 +282,10 @@
     },
     "brew=pouring,drink=mocha,facing=west": {
       "model": "aerolarge:block/coffee_machine_pouring_mocha",
+      "y": 270
+    },
+    "brew=pouring,drink=babycino,facing=west": {
+      "model": "aerolarge:block/coffee_machine_pouring_babycino",
       "y": 270
     },
     "brew=steaming,drink=espresso,facing=west": {
@@ -228,6 +300,10 @@
       "model": "aerolarge:block/coffee_machine_steaming_mocha",
       "y": 270
     },
+    "brew=steaming,drink=babycino,facing=west": {
+      "model": "aerolarge:block/coffee_machine_steaming_babycino",
+      "y": 270
+    },
     "brew=done,drink=espresso,facing=west": {
       "model": "aerolarge:block/coffee_machine_done_espresso",
       "y": 270
@@ -238,6 +314,10 @@
     },
     "brew=done,drink=mocha,facing=west": {
       "model": "aerolarge:block/coffee_machine_done_mocha",
+      "y": 270
+    },
+    "brew=done,drink=babycino,facing=west": {
+      "model": "aerolarge:block/coffee_machine_done_babycino",
       "y": 270
     }
   }

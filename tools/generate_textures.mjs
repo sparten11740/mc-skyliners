@@ -2481,8 +2481,10 @@ blueprint("furnished_airliner_blueprint", true);
 // The coffee machine's cups, as its model shows them standing under the spout: white porcelain and its saucer, the
 // espresso's golden crema, the cappuccino's milk foam with a dot of cocoa in the middle, the mocha's tall glass with
 // chocolate at the bottom, coffee over it and cream on top, its whipped cream drizzled with chocolate, and the stream
-// of coffee pouring. Their icons: a small espresso cup on its saucer, a wide cappuccino cup with its foam heaped over
-// the rim and a heart of cocoa in it, and the mocha's tall glass under a dome of cream, each with steam rising and
+// of coffee pouring, and the babycino's little glass of frothed milk, its froth dusted with chocolate and topped with
+// pink and white marshmallows. Their icons: a small espresso cup on its saucer, a wide cappuccino cup with its foam heaped over
+// the rim and a heart of cocoa in it, the mocha's tall glass under a dome of cream, and the babycino's little glass
+// of milk, froth heaped over it with two marshmallows on top, each with steam rising and
 // outlined dark, so they read on any background. The coffee machine's panel's title: a steaming cup, in white.
 {
   const PORCELAIN = [0xf4, 0xf4, 0xf0];
@@ -2506,6 +2508,18 @@ blueprint("furnished_airliner_blueprint", true);
   }, 3);
   texture(blockOutput, "mocha_cream", (x, y) => ((x * 3 + y * 5) % 7 === 0 ? COCOA : CREAM), 2);
   texture(blockOutput, "coffee_stream", (x) => (x % 2 === 0 ? [0x5a, 0x30, 0x14] : [0x74, 0x40, 0x1c]), 2);
+  const MILK = [0xfa, 0xf8, 0xf2];
+  const MARSHMALLOW_PINK = [0xf4, 0xa8, 0xc4];
+  // The glass's sides show rows 12 to 15 of it: froth over milk, the glass's edge down each side.
+  texture(blockOutput, "babycino_glass", (x, y) => {
+    if (x === 0 || x === 15) return GLASS_EDGE;
+    return y <= 12 ? FOAM : MILK;
+  }, 2);
+  texture(blockOutput, "babycino_froth", (x, y) => {
+    if (x >= 3 && x <= 6 && y >= 4 && y <= 7) return MARSHMALLOW_PINK;
+    if (x >= 9 && x <= 12 && y >= 8 && y <= 11) return CREAM;
+    return (x * 5 + y * 3) % 7 === 0 ? COCOA : FOAM;
+  }, 2);
 
   // A drink's icon: what paint gives inside, a dark line round it, steam (not outlined) where steam gives it.
   const drink = (name, paint, steam) => texture(itemOutput, name, (x, y) => {
@@ -2545,6 +2559,14 @@ blueprint("furnished_airliner_blueprint", true);
     if (dome) return (x + 2 * y) % 5 === 0 ? COCOA : CREAM;
     return null;
   }, () => false);
+  drink("babycino", (x, y) => {
+    if (y === 14 && x >= 4 && x <= 11) return GLASS_EDGE;
+    if (y >= 9 && y <= 13 && x >= 4 && x <= 11) return x === 4 || x === 11 ? GLASS_EDGE : MILK;
+    if (y >= 4 && y <= 5 && x >= 5 && x <= 6) return MARSHMALLOW_PINK;
+    if (y >= 4 && y <= 5 && x >= 9 && x <= 10) return CREAM;
+    if (y >= 6 && y <= 8 && Math.abs(x - 7.5) <= (y === 6 ? 3.5 : 4.5)) return (x * 2 + y) % 5 === 0 ? COCOA : FOAM;
+    return null;
+  }, wisps(6, 9, 0, 3));
 
   const coffeeGui = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/coffee_machine");
   mkdirSync(coffeeGui, { recursive: true });

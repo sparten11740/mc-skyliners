@@ -379,14 +379,17 @@ the counter with stools in front of every other piece, and behind it the back ba
 between the windows with planters between them.
 
 A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
-top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, three big buttons
-each showing its drink, so it needs no reading: an espresso in a small cup, a cappuccino with its foam, or a mocha in a
-tall glass under its cream. It grinds the beans, then pours the coffee into a cup that stands under the spout and, for
-a cappuccino or a mocha, froths the milk with a hiss of steam from its wand; its display shows each step in a picture
+top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, four big buttons
+each showing its drink, so it needs no reading: an espresso in a small cup, a cappuccino with its foam, a mocha in a
+tall glass under its cream, or for children a babycino, a little glass of frothed milk with no coffee in it, dusted
+with chocolate and topped with marshmallows. It grinds the beans, then pours the coffee into a cup that stands under
+the spout and, for a cappuccino or a mocha, froths the milk with a hiss of steam from its wand (a babycino it only
+froths); its display shows each step in a picture
 (a green cup when ready, a bean, a pour, steam, a green tick when done), and it chimes when the drink is ready. Use it
 again to take the drink out; while it brews it only beeps. An espresso gives 45 seconds of Haste, a cappuccino 45
 seconds of Speed, and a mocha, sweet with chocolate, half a minute of Speed and a few seconds of Regeneration, each a
-little more filling than the one before; the cup goes with the drink. The machine can be crafted, the drinks only
+little more filling than the one before, and a babycino ten seconds of Regeneration; the cup goes with the drink.
+Barista asks only for the three coffees. The machine can be crafted, the drinks only
 brewed. Both blueprints have one on the galley worktop in the crew room behind the flight deck, and the furnished
 airliner another on the lounge's bar, just behind the galley.
 
