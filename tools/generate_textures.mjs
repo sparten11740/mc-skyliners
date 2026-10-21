@@ -275,6 +275,41 @@ for (const hinge of ["side", "top"]) {
     }
   }
 }
+// The cockpit door: one picture of the whole panel, two blocks wide and three or four tall, which its renderer lays
+// across both its faces (drawn hinged on the left, seen from the aisle, and mirrored for one hinged on the right).
+// Pale grey, its top corners rounded off (clear, cut to the arc CockpitDoorRenderer draws its edge round) inside a
+// darker edge, a rounded seam inset all round, a brushed steel kick plate along the floor; high in its middle a round
+// porthole, a hole through the panel in a steel ring, which the renderer glazes; and a round chrome handle rose by the
+// edge away from the hinge, a block up, where the renderer puts its lever. The porthole's middle is a block below the
+// top and its hole six pixels across from it; the corners' radius twelve pixels; the rose's middle at 27.5 across.
+// Edges and the porthole's reveal are cockpit_door_edge.
+const COCKPIT_DOOR = [0xd6, 0xd5, 0xd0];
+const COCKPIT_DOOR_EDGE = [0xa9, 0xa8, 0xa3];
+texture(blockOutput, "cockpit_door_edge", () => COCKPIT_DOOR_EDGE, 3);
+for (const rows of [3, 4]) {
+  const width = 2 * SIZE;
+  const height = rows * SIZE;
+  texture(blockOutput, `cockpit_door_${rows}`, (x, y) => {
+    const px = x + 0.5;
+    const py = y + 0.5;
+    // How far in from the panel's outline, round its rounded top corners.
+    const cornerX = Math.max(12 - px, px - (width - 12), 0);
+    const cornerY = Math.max(12 - py, 0);
+    const inset = cornerX > 0 && cornerY > 0 ? 12 - Math.hypot(cornerX, cornerY) : Math.min(px, width - px, py, height - py);
+    if (inset < 0) return CLEAR;
+    if (inset < 1) return COCKPIT_DOOR_EDGE;
+    const porthole = Math.hypot(px - 16, py - 16);
+    if (porthole < 6) return CLEAR;
+    if (porthole < 7) return STEEL_DARK;
+    if (porthole < 8) return CHROME;
+    const rose = Math.hypot(px - 27.5, py - (height - 16));
+    if (rose < 2.5) return CHROME;
+    if (rose < 3.3) return STEEL_DARK;
+    if (y >= height - 4) return y === height - 4 ? STEEL_DARK : STEEL;
+    if (inset >= 3 && inset < 4) return SEAM;
+    return COCKPIT_DOOR;
+  }, 2, width, height);
+}
 texture(itemOutput, "airliner_door", (x, y) => {
   if (x < 4 || x > 11) return CLEAR;
   if (x === 4 || x === 11 || y === 0 || y === 15) return FRAME_DARK;

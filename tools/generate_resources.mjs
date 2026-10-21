@@ -128,6 +128,16 @@ function plugDoorLang() {
   };
 }
 
+// The cockpit door: drawn whole by its renderer (see CockpitDoorRenderer), so the model only gives the particles;
+// placed only by the blueprints, so no item and no loot. Part of the airframe, in its tags (see cubes); no vanilla
+// door, so villagers do not open it.
+write(`assets/${ID}/blockstates/cockpit_door.json`, { variants: { "": { model: `${ID}:block/cockpit_door` } } });
+write(`assets/${ID}/models/block/cockpit_door.json`, { textures: { particle: `${ID}:block/cockpit_door_edge` } });
+cubes.cockpit_door = null;
+function cockpitDoorLang() {
+  return { "block.aerolarge.cockpit_door": "Cockpit Door" };
+}
+
 // The airstair controller is a plain cube; the call button is vanilla's stone button, retextured.
 {
   const name = "airstair_controller";
@@ -4805,6 +4815,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...holdAndTailLang(),
   ...VACUUM_TOILET_LANG,
   ...plugDoorLang(),
+  ...cockpitDoorLang(),
   ...airstairLang(),
   ...slideLang(),
   ...flightDeckLang(),

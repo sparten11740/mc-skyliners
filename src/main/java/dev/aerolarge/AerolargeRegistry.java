@@ -40,6 +40,8 @@ import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.ClimbingRopeBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.CoffeeMachineBlockEntity;
+import dev.aerolarge.block.CockpitDoorBlock;
+import dev.aerolarge.block.CockpitDoorBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
@@ -344,8 +346,8 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CabinWindowBlock> CABIN_WINDOW = BLOCKS.registerBlock("cabin_window", CabinWindowBlock::new, glass());
     public static final DeferredBlock<TransparentBlock> COCKPIT_WINDOW = BLOCKS.registerBlock("cockpit_window", TransparentBlock::new, glass());
     /**
-     * The doors inside the cabin (the cockpit door, the WC's, the crew room's), and the hull's doors in airliners built
-     * before the plug doors.
+     * The doors inside the cabin (the WC's, the crew room's, and the cockpit door where the big one does not fit), and
+     * the hull's doors in airliners built before the plug doors.
      */
     public static final DeferredBlock<DoorBlock> AIRLINER_DOOR = BLOCKS.registerBlock(
         "airliner_door",
@@ -360,6 +362,15 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<PlugDoorBlock> PLUG_DOOR = BLOCKS.registerBlock("plug_door", PlugDoorBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PlugDoorBlockEntity>> PLUG_DOOR_ENTITY =
         BLOCK_ENTITIES.register("plug_door", () -> BlockEntityType.Builder.of(PlugDoorBlockEntity::new, PLUG_DOOR.get()).build(null));
+    /**
+     * The cockpit door in the bulkhead behind the flight deck: one big panel swinging out into the aisle, drawn by its
+     * renderer. Placed only by the blueprints, so it has no item (see {@link CockpitDoorBlock}).
+     */
+    public static final DeferredBlock<CockpitDoorBlock> COCKPIT_DOOR = BLOCKS.registerBlock(
+        "cockpit_door", CockpitDoorBlock::new, metal(MapColor.SNOW).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CockpitDoorBlockEntity>> COCKPIT_DOOR_ENTITY =
+        BLOCK_ENTITIES.register("cockpit_door", () -> BlockEntityType.Builder.of(CockpitDoorBlockEntity::new, COCKPIT_DOOR.get()).build(null));
     /** A plug door's pneumatic hiss as it starts to move, and the clunk of its latches. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_HISS = sound("plug_door_hiss");
     public static final DeferredHolder<SoundEvent, SoundEvent> PLUG_DOOR_LATCH = sound("plug_door_latch");

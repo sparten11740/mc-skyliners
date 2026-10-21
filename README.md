@@ -80,7 +80,11 @@ Steps at the front of the main deck lead up to a raised floor in the nose. From 
 runs forward to the cockpit door, between the WC to port (a toilet and a basin under its mirror, and a WC sign over
 its door, see Curtains, bulkheads and signs) and the crew room to starboard (a row of crew seats and a galley
 counter: a galley oven, and a galley worktop with a coffee machine on it); every door opens by hand from either side.
-Behind the cockpit door the flight deck is a room of its own, raised so the pilots look straight out through the
+The cockpit door is a big one, two blocks wide and four tall (three in an airliner too small for that, and an ordinary
+door in one too small for either): a pale grey panel with rounded top corners, a round porthole high in its middle and
+a round chrome handle on each face, which swings out into the aisle about its port side and stands back against the
+WC's wall, leaving the way past it clear. It waits to shut while anyone stands in the doorway; villagers do not open
+it. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look straight out through the
 windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right across the front from
 the panel up over the crown, running back into side windows past the pilots' shoulders, framed by posts round the
 sides only.
@@ -805,7 +809,7 @@ clunk, but not on anyone: while someone stands where it goes back in, it waits, 
 docked jet bridge open the door they serve, and shut it again as they fold, and so does an evacuation slide (see
 Evacuation slides). Villagers find their way through the doors as through wooden ones: while the airliner stands
 still, a door opens for a villager walking up to it and shuts again behind it; in flight no villager opens one. The
-cockpit door and the doors of the WC and the crew room are ordinary doors.
+doors of the WC and the crew room are ordinary doors; the cockpit door is its own (see Flight deck).
 
 ### Airstairs
 
@@ -927,7 +931,8 @@ gets too small to read, as `FlightDisplayRenderer` and `AutopilotScreenRenderer`
 `EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where each
 engine's core was told they are, what lies inside the duct only from in front of them; `PlugDoorRenderer` draws the
 hull's doors shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel
-and its lining into, only the quads of it that face the camera; `AirstairRenderer` draws the airstairs coming out and
+and its lining into, only the quads of it that face the camera; `CockpitDoorRenderer` draws the cockpit door's panel
+the same way, swinging about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and
 going away, as `AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an
 evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
 `SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `TailCameraFeed` draws the fin camera's
