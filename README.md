@@ -637,8 +637,9 @@ A villager that finds no seat within three minutes gives the pass back. The fare
 
 A Duty-Free Counter (craftable) is a shop counter with a glass showcase on top. Use it and its shop opens with the
 ding of a door bell: the trading screen, each of its goods shown by its picture and its price in emeralds, so it needs
-no reading. An emerald buys four paper planes, two airline coffees, four bags of pretzels, a chicken or a pasta meal,
-or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6, a model airliner 8
+no reading. An emerald buys four paper planes, two airline coffees, four bags of pretzels, two ice creams (a chocolate and a
+strawberry scoop and a cherry on a waffle cone, quick to eat and cooling: 20 seconds of Fire Resistance), a chicken or
+a pasta meal, or two signal flares; a basketball costs 2, a parachute 4, a pilot cap 5, an empty care package 6, a model airliner 8
 and a pilot helmet 10. Each sale rings the till. It never runs out and its prices never change, and nobody works
 behind it, so it stands anywhere: at the airport, or aboard, where there is nobody to lose in flight. The furnished
 airliner has a duty-free kiosk at the front of the lounge, to port across from the bar: a row of counters facing the

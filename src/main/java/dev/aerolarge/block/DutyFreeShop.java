@@ -42,6 +42,7 @@ public final class DutyFreeShop implements Merchant {
         new Trade(1, AerolargeRegistry.PAPER_PLANE_ITEM, 4),
         new Trade(1, AerolargeRegistry.AIRLINE_COFFEE, 2),
         new Trade(1, AerolargeRegistry.PRETZELS, 4),
+        new Trade(1, AerolargeRegistry.ICE_CREAM, 2),
         new Trade(1, AerolargeRegistry.CHICKEN_MEAL, 1),
         new Trade(1, AerolargeRegistry.PASTA_MEAL, 1),
         new Trade(1, AerolargeRegistry.SIGNAL_FLARE_ITEM, 2),

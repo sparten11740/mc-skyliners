@@ -1057,7 +1057,8 @@ blueprint("furnished_airliner_blueprint", true);
 // Cabin service. The galley, its trolley bay (see the galley units below): brushed steel; over the bay its control
 // panel, a dark strip of buttons, green and white, and an amber readout of the trolleys stocked. The trolley:
 // aluminium with a red stripe and drawer lines, its ends a grid of drawers with handles, its top a grey tray. The
-// meals on their trays, a bag of pretzels and a paper cup of coffee.
+// meals on their trays, a bag of pretzels, a paper cup of coffee, and an ice cream cone: a waffle cone, a chocolate
+// scoop and a strawberry one on it and a cherry on top, outlined dark so it reads on any background.
 {
   const ALU = [0xc4, 0xc9, 0xcf];
   const ALU_DARK = [0x8e, 0x94, 0x9b];
@@ -1094,6 +1095,27 @@ blueprint("furnished_airliner_blueprint", true);
     const knot = Math.abs(Math.hypot(x - 6, y - 8) - 2) < 0.8 || Math.abs(Math.hypot(x - 9.5, y - 8) - 2) < 0.8;
     return knot ? [0x9c, 0x5a, 0x22] : [0x2a, 0x5c, 0xb0];
   }, 0);
+  {
+    const WAFFLE = [0xd8, 0xa0, 0x58];
+    const WAFFLE_DARK = [0xa8, 0x70, 0x34];
+    const CHOCOLATE = [0x7a, 0x48, 0x28];
+    const STRAWBERRY = [0xf4, 0x9c, 0xb8];
+    const STRAWBERRY_LIGHT = [0xfc, 0xc8, 0xd8];
+    const CHERRY = [0xd0, 0x18, 0x28];
+    const OUTLINE = [0x2a, 0x1c, 0x16];
+    const iceCream = (x, y) => {
+      if (y >= 9 && y <= 15 && Math.abs(x - 7.5) <= (15 - y) * 0.55 + 0.5) return (x + y) % 3 === 0 || (x - y + 30) % 3 === 0 ? WAFFLE_DARK : WAFFLE;
+      if (Math.hypot(x - 7.5, y - 8) <= 3.6 && y <= 9) return CHOCOLATE;
+      if (Math.hypot(x - 7.5, y - 4.5) <= 3) return x <= 6 && y <= 4 ? STRAWBERRY_LIGHT : STRAWBERRY;
+      if (Math.hypot(x - 8, y - 1) <= 1.2) return CHERRY;
+      return null;
+    };
+    texture(itemOutput, "ice_cream", (x, y) => {
+      const inside = iceCream(x, y);
+      if (inside) return inside;
+      return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => iceCream(x + dx, y + dy)) ? OUTLINE : CLEAR;
+    }, 0);
+  }
   texture(itemOutput, "airline_coffee", (x, y) => {
     const half = 3 + (y - 3) * 0.2;
     if (y < 3 || y > 14 || Math.abs(x - 7.5) > half) return CLEAR;

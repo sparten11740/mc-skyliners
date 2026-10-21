@@ -1012,6 +1012,11 @@ public final class AerolargeRegistry {
     public static final DeferredItem<Item> PRETZELS = ITEMS.registerSimpleItem(
         "pretzels", new Item.Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).fast().build())
     );
+    /** An ice cream cone, sold at the duty-free counter: quick to eat, and cooling, for a little Fire Resistance. */
+    public static final DeferredItem<Item> ICE_CREAM = ITEMS.registerSimpleItem(
+        "ice_cream", new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).fast().alwaysEdible()
+            .effect(() -> new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 20 * 20, 0), 1.0F).build())
+    );
     /** A minute of Speed in a paper cup. */
     public static final DeferredItem<CoffeeItem> AIRLINE_COFFEE = ITEMS.register("airline_coffee", () -> new CoffeeItem(new Item.Properties().food(
         new FoodProperties.Builder().nutrition(1).saturationModifier(0.2F).alwaysEdible()
@@ -1273,7 +1278,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
-            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
+            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,

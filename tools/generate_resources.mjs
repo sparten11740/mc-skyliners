@@ -878,7 +878,7 @@ write(`assets/${ID}/models/item/boarding_pass.json`, { parent: "minecraft:item/g
 
 // Cabin service. The galley is drawn with the galley units below, as their trolley bay. The trolley, drawn as its
 // item's model in the world as in the hand: an aluminium cart with drawers at both ends, a red stripe and small dark
-// wheels. The meals, pretzels and coffee: flat icons.
+// wheels. The meals, pretzels, ice cream and coffee: flat icons.
 cubes.galley = null;
 write(`assets/${ID}/models/item/trolley.json`, boxes(
   { side: `${ID}:item/trolley_side`, end: `${ID}:item/trolley_end`, top: `${ID}:item/trolley_top`, wheel: `${ID}:block/light_cable`,
@@ -891,7 +891,7 @@ write(`assets/${ID}/models/item/trolley.json`, boxes(
     [[11, 0, 12.5], [13, 2, 14.5], "#wheel"],
   ],
 ));
-for (const food of ["chicken_meal", "pasta_meal", "pretzels", "airline_coffee"]) {
+for (const food of ["chicken_meal", "pasta_meal", "pretzels", "ice_cream", "airline_coffee"]) {
   write(`assets/${ID}/models/item/${food}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${food}` } });
 }
 
@@ -4402,6 +4402,8 @@ shaped("trolley", ["III", "ICI", "N N"], { I: "minecraft:iron_ingot", C: "minecr
 shaped("chicken_meal", ["CPB"], { C: "minecraft:cooked_chicken", P: "minecraft:baked_potato", B: "minecraft:bowl" }, 1);
 shaped("pasta_meal", ["WMB"], { W: "minecraft:wheat", M: "minecraft:brown_mushroom", B: "minecraft:bowl" }, 1);
 shaped("pretzels", ["WSW"], { W: "minecraft:wheat", S: "minecraft:sugar" }, 4);
+// Snow and sugar churned into milk, on a wheat cone.
+shaped("ice_cream", ["SNS", " M ", " W "], { S: "minecraft:sugar", N: "minecraft:snowball", M: "minecraft:milk_bucket", W: "minecraft:wheat" }, 2);
 shaped("airline_coffee", ["C", "M", "P"], { C: "minecraft:cocoa_beans", M: "minecraft:milk_bucket", P: "minecraft:paper" }, 2);
 shaped("cargo_crate", ["PSP", "PCP", "PPP"], { P: "minecraft:oak_planks", S: `${ID}:parachute`, C: "minecraft:chest" }, 1);
 shaped("basketball", [" L ", "LDL", " L "], { L: "minecraft:leather", D: "minecraft:orange_dye" }, 1);
@@ -4620,6 +4622,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.chicken_meal": "Chicken Meal",
   "item.aerolarge.pasta_meal": "Pasta Meal",
   "item.aerolarge.pretzels": "Pretzels",
+  "item.aerolarge.ice_cream": "Ice Cream",
   "item.aerolarge.airline_coffee": "Airline Coffee",
   "message.aerolarge.trolley.served": "Chicken or pasta? %s for you (%s left on the trolley)",
   "message.aerolarge.trolley.empty": "The trolley is empty: restock it at the galley",
