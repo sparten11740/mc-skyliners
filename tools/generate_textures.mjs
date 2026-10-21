@@ -1810,6 +1810,16 @@ blueprint("furnished_airliner_blueprint", true);
     if (y === 13) return GREEN;
     return y >= 14 ? [0x7a, 0x4e, 0x26] : null;
   });
+  // Fly to a pin: a map pin, a round red head with a white dot in it on a point, over a magenta ring round its foot,
+  // the circle flown round it.
+  icon(autopilotOutput, "destination", (x, y) => {
+    const head = Math.hypot(x - 7.5, y - 5.5);
+    if (head <= 1.3) return INK;
+    if (head <= 4.2) return x < 8 && y < 6 ? [0xf0, 0x50, 0x44] : [0xd0, 0x30, 0x28];
+    if (y >= 9 && y <= 12 && Math.abs(x - 7.5) <= (12 - y) * 0.9 + 0.2) return [0xb0, 0x24, 0x1e];
+    const ring = Math.hypot((x - 7.5) / 7, (y - 13) / 2.2);
+    return ring >= 0.75 && ring <= 1.05 ? MAGENTA : null;
+  });
   icon(autopilotOutput, "unstuck", (x, y) => {
     const fin = y >= 1 && y <= 3 && x >= 1 && x <= y;
     const fuselage = (y === 4 && x >= 1 && x <= 12) || (y === 5 && x >= 1 && x <= 14);

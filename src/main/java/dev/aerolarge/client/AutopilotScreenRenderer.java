@@ -198,6 +198,7 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             case HEADING -> Component.translatable("screen.aerolarge.autopilot.mode.heading", AutopilotBlockEntity.compass(autopilot.targetHeading()));
             case ORBIT_LEFT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_left", Math.round(autopilot.orbitRadius()));
             case ORBIT_RIGHT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_right", Math.round(autopilot.orbitRadius()));
+            case DESTINATION -> Component.translatable("screen.aerolarge.autopilot.mode.destination", Math.round(autopilot.orbitRadius()));
         };
         return Component.translatable("screen.aerolarge.autopilot.mode", phase, mode);
     }

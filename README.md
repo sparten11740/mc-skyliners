@@ -252,14 +252,23 @@ storm passing over a desert is as calm as clear skies. Turn it off with `turbule
 Use the autopilot's control head on the centre console, or the big screen in the middle of the instrument panel, to
 open the autopilot's settings. At the top they show what the autopilot is doing, with a lamp (green engaged, amber
 off), how the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the
-settings: hold a heading (a straight arrow), or circle left or right round a point beside the airliner (arrows round
-to the left or right); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above
+settings: hold a heading (a straight arrow), circle left or right round a point beside the airliner (arrows round
+to the left or right), or fly to a pin (a red map pin); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above
 the runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
 radius (a circle, 150 to 1000 blocks; a circle too tight to fly at the speed set is flown wider round the same
 middle, so it never banks more than 20 degrees going round). Slide each one, step it with the arrows either side of
 its slider (15 degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting
 and button has a picture and a colour of its own, so that players who cannot read yet can fly too; point at one to
-see its name. The game goes on behind the settings, and they close once you step away from the flight deck.
+see its name. The game goes on behind the settings, and they stay open, to watch the autopilot fly, until you press
+the X in their title bar (neither the buttons nor Escape close them).
+
+Set to fly to a pin, the rows of settings give way to a map: the land and the villages as the route map on the
+passenger screens has them (see Passenger screens), the airliner as a gold arrow, and the pin, once dropped, as a red
+dot in a red ring, the circle it will be flown round. Drag the map to look about, scroll to zoom out and in, and click
+to drop the pin: a click close to a village drops it right on the village. Engaged, the airliner turns for the circle
+round the pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and
+flies round it clockwise at the radius set (150 blocks at least, banking no more than 20 degrees), until set to fly
+something else or told to land. The height and speed fly as set.
 
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.

@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
@@ -42,14 +41,15 @@ import org.lwjgl.glfw.GLFW;
  * deck's glass-cockpit colours (see {@link PanelArt}) on which every setting and button has a picture and a colour of
  * its own, so that a player who cannot read yet can fly too. In the title bar, what the autopilot is doing, with a
  * lamp: green while engaged, amber while off, dark until the airliner is assembled. Under it, on glass, how the
- * airliner flies now and what the autopilot is set to fly. Then the settings: hold a heading or circle left or right,
- * then the heading, altitude, speed and circle radius, each slid, stepped with the arrows either side of its slider or
- * typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
+ * airliner flies now and what the autopilot is set to fly. Then the settings: hold a heading, circle left or right, or
+ * fly to a pin, then the heading, altitude, speed and circle radius, each slid, stepped with the arrows either side of
+ * its slider or typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
  * engaging flies the settings (taking off first on the ground); engaged, they can be applied, or the autopilot
  * switched off. In the air it can also be told to land; stuck on the ground with its engines running, the airliner can
  * be hopped free in that button's place instead, for as long as it is held. The server checks it all again (see
- * {@link SetAutopilot} and {@link UnstickAirliner}). The game goes on behind it, and it closes once the player is out of
- * the autopilot's reach.
+ * {@link SetAutopilot} and {@link UnstickAirliner}). The game goes on behind it, and it closes only with the close button
+ * in its title bar (or once the autopilot is gone), so it can stay open to watch the autopilot fly. Set to fly to a
+ * pin, the rows give way to a map to drop the pin on (see {@link DestinationMap}).
  */
 public class AutopilotSettingsScreen extends Screen {
     /** The panel's size, the space inside its bezel, and the width of what is on its face. */
@@ -115,6 +115,7 @@ public class AutopilotSettingsScreen extends Screen {
     private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
     private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
     private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
+    private static final Icon PIN = Icon.of("autopilot/destination");
     private static final Lateral[] MODES = Lateral.values();
     private static final Component MODE = Component.translatable("screen.aerolarge.autopilot_settings.mode");
 
@@ -137,6 +138,8 @@ public class AutopilotSettingsScreen extends Screen {
     private IconButton unstuck;
     /** Whether Unstuck is held down, keeping the control jets firing. */
     private boolean hopping;
+    /** The map the pin is dropped on, in the rows' place while the mode flies to it. */
+    private final DestinationMap map;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -148,6 +151,8 @@ public class AutopilotSettingsScreen extends Screen {
         altitude = new Setting("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), AutopilotBlockEntity.ALTITUDE_STEP, ALTITUDE_DETENT, false);
         speed = new Setting("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, AutopilotBlockEntity.SPEED_STEP, SPEED_DETENT, false);
         radius = new Setting("radius", PanelArt.MAGENTA, settings.radius(), AutopilotBlockEntity.MIN_RADIUS, AutopilotBlockEntity.MAX_RADIUS, AutopilotBlockEntity.RADIUS_STEP, RADIUS_DETENT, false);
+        BlockPos pin = lateral == Lateral.DESTINATION ? settings.destination() : null;
+        map = new DestinationMap(CONTENT, rowY(rows().size()) - rowY(1) + CONTROL_HEIGHT, pos, this::autopilot, pin, radius::value);
     }
 
     /** Opens the settings as the server sent them, over whatever else is open. */
@@ -174,6 +179,7 @@ public class AutopilotSettingsScreen extends Screen {
             case HEADING -> STRAIGHT;
             case ORBIT_LEFT -> CIRCLE_LEFT;
             case ORBIT_RIGHT -> CIRCLE_RIGHT;
+            case DESTINATION -> PIN;
         };
     }
 
@@ -191,9 +197,11 @@ public class AutopilotSettingsScreen extends Screen {
         for (int i = 0; i < rows.size(); i++) {
             rows.get(i).place(x, rowY(i + 1));
         }
+        map.setPosition(x, rowY(1));
+        addRenderableWidget(map);
 
         // Along the bottom in three places: engage across the first two, or apply and disengage in them once engaged;
-        // then land, or hop the airliner free. Cancel is the close button in the title bar.
+        // then land, or hop the airliner free. Closing is the close button in the title bar.
         int buttonWidth = (CONTENT - 2 * ACTION_GAP) / 3;
         int buttonY = top + ACTIONS_Y;
         Component engageLabel = Component.translatable(takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage");
@@ -230,11 +238,14 @@ public class AutopilotSettingsScreen extends Screen {
         boolean assembled = autopilot != null && SableClient.attitude(autopilot, nose(autopilot), 1) != null;
         Phase phase = autopilot != null ? autopilot.phase() : Phase.OFF;
         boolean on = phase != Phase.OFF;
+        // Set to fly to a pin, it needs one dropped first.
+        boolean toPin = lateral == Lateral.DESTINATION;
+        boolean pinned = !toPin || map.pin() != null;
         engage.visible = !on;
-        engage.active = assembled;
+        engage.active = assembled && pinned;
         apply.visible = on;
         // Once down after landing it only brakes to a stop.
-        apply.active = phase != Phase.ROLLOUT;
+        apply.active = phase != Phase.ROLLOUT && pinned;
         disengage.visible = on;
         // Only in the air, and not while it lands already.
         land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
@@ -243,44 +254,55 @@ public class AutopilotSettingsScreen extends Screen {
         land.visible = !unstuck.visible;
         heading.setActive(lateral == Lateral.HEADING);
         radius.setActive(lateral != Lateral.HEADING);
+        // Flying to a pin, the map takes the rows' place; the height, speed and circle stay as they were set.
+        map.visible = toPin;
+        for (Setting row : rows()) {
+            row.setVisible(!toPin);
+        }
     }
 
+    /** Closes only once the autopilot is gone; else it stays open until its close button is pressed. */
     @Override
     public void tick() {
-        AutopilotBlockEntity autopilot = autopilot();
-        LocalPlayer player = minecraft != null ? minecraft.player : null;
-        if (autopilot == null || player == null || !autopilot.canBeWorkedBy(player)) {
+        if (autopilot() == null || minecraft == null || minecraft.player == null) {
             onClose();
             return;
         }
         refresh();
         if (hopping) {
-            if (leftHeld()) {
-                PacketDistributor.sendToServer(new UnstickAirliner(pos));
-            } else {
-                onClose();
-            }
+            hopping = leftHeld();
+        }
+        if (hopping) {
+            PacketDistributor.sendToServer(new UnstickAirliner(pos));
         }
     }
 
-    /** Sends the settings as they stand, to fly them, to land or with the autopilot switched off, and closes. */
+    /** Only its close button closes it, not the escape key: it is left open to watch the autopilot fly. */
+    @Override
+    public boolean shouldCloseOnEsc() {
+        return false;
+    }
+
+    @Override
+    public void removed() {
+        map.close();
+        super.removed();
+    }
+
+    /** Sends the settings as they stand: to fly them, to land or with the autopilot switched off. */
     private void send(SetAutopilot.Action action) {
-        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value());
+        BlockPos pin = map.pin() != null ? map.pin() : BlockPos.ZERO;
+        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value(), pin);
         PacketDistributor.sendToServer(new SetAutopilot(pos, action, settings));
-        onClose();
     }
 
     /**
      * Asks for the airliner to be hopped free; clicked, asks again every tick the button is held, to keep the jets
-     * firing (see {@link #tick}). Closes once it is let go, or at once from the keyboard, so it is seen to hop.
+     * firing (see {@link #tick}).
      */
     private void unstick() {
         PacketDistributor.sendToServer(new UnstickAirliner(pos));
-        if (leftHeld()) {
-            hopping = true;
-        } else {
-            onClose();
-        }
+        hopping = leftHeld();
     }
 
     /**
@@ -465,6 +487,7 @@ public class AutopilotSettingsScreen extends Screen {
         /** What it was last set to, for when what is typed cannot be read. */
         private int value;
         private boolean active = true;
+        private boolean visible = true;
         /** Where its picture is. */
         private int iconX;
         private int iconY;
@@ -585,12 +608,25 @@ public class AutopilotSettingsScreen extends Screen {
             return CommonComponents.optionNameValue(name(), Component.literal(format(value())));
         }
 
+        /** Shows the setting's row, or hides it while the map takes its place. */
+        void setVisible(boolean visible) {
+            this.visible = visible;
+            if (box != null && slider != null && down != null && up != null) {
+                box.visible = visible;
+                slider.visible = visible;
+                down.visible = visible;
+                up.visible = visible;
+            }
+        }
+
         void drawIcon(GuiGraphics graphics) {
-            icon.draw(graphics, iconX, iconY, 1, active);
+            if (visible) {
+                icon.draw(graphics, iconX, iconY, 1, active);
+            }
         }
 
         boolean iconHovered(int mouseX, int mouseY) {
-            return mouseX >= iconX && mouseX < iconX + Icon.SIZE && mouseY >= iconY && mouseY < iconY + Icon.SIZE;
+            return visible && mouseX >= iconX && mouseX < iconX + Icon.SIZE && mouseY >= iconY && mouseY < iconY + Icon.SIZE;
         }
 
         /** Its name and its range, shown over its picture. */

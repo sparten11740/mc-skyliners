@@ -227,6 +227,7 @@ public final class PilotHud {
     private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
     private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
     private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
+    private static final Icon PIN = Icon.of("autopilot/destination");
     private static final String PHASE_KEY = "message.aerolarge.autopilot.phase.";
     private static final String COMPASS_KEY = "screen.aerolarge.passenger_screen.compass.";
     private static final Component AP_OFF = Component.translatable("screen.aerolarge.pilot_hud.off");
@@ -672,6 +673,7 @@ public final class PilotHud {
             case HEADING -> STRAIGHT;
             case ORBIT_LEFT -> CIRCLE_LEFT;
             case ORBIT_RIGHT -> CIRCLE_RIGHT;
+            case DESTINATION -> PIN;
         };
     }
 

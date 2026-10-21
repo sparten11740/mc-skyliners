@@ -99,23 +99,27 @@ public class AutopilotBlockEntity extends BlockEntity {
         OFF, TAKEOFF, CLIMB, DESCENT, CRUISE, LAND, ROLLOUT
     }
 
-    /** What it is doing about direction: holding a heading, or circling a point to the left or right. */
+    /**
+     * What it is doing about direction: holding a heading, circling a point to the left or right, or flying to a
+     * destination picked on the map and circling it to the right once there.
+     */
     public enum Lateral {
-        HEADING, ORBIT_LEFT, ORBIT_RIGHT
+        HEADING, ORBIT_LEFT, ORBIT_RIGHT, DESTINATION
     }
 
     /**
      * What the settings screen sets: the speed in blocks a second, the height to hold in world blocks, the heading as
-     * a compass bearing (0 north, 90 east), whether to hold that heading or circle, and the circle's radius in blocks;
-     * whole numbers, as the screen shows them.
+     * a compass bearing (0 north, 90 east), whether to hold that heading, circle or fly to a destination, the circle's
+     * radius in blocks, and the destination (its x and z in the world; y unused); whole numbers, as the screen shows them.
      */
-    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius) {
+    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius, BlockPos destination) {
         public static final StreamCodec<FriendlyByteBuf, Settings> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, Settings::speed,
             ByteBufCodecs.VAR_INT, Settings::altitude,
             ByteBufCodecs.VAR_INT, Settings::heading,
             NeoForgeStreamCodecs.enumCodec(Lateral.class), Settings::lateral,
             ByteBufCodecs.VAR_INT, Settings::radius,
+            BlockPos.STREAM_CODEC, Settings::destination,
             Settings::new
         );
     }
@@ -208,6 +212,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double STEER_GAIN = 3;
     /** How hard an orbit steers back onto its circle: as a share of the way inward, per radius off it. */
     private static final double ORBIT_CAPTURE = 2;
+    /**
+     * Flying to a destination, further from it than this many times the circle's radius it heads for the circle on the
+     * line that just touches it, so it arrives already going round it; nearer, it flies the circle.
+     */
+    private static final double APPROACH = 1.3;
     /** Height above the ground that counts as airborne, and how close to the height wanted counts as holding it. */
     private static final double AIRBORNE = 3;
     private static final double LEVEL_OFF = 8;
@@ -424,7 +433,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             plan = plan(level, state);
         }
         Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
-            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius));
+            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius), BlockPos.containing(orbitX, 0, orbitZ));
         double floor = floor(plan.runway());
         PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF,
             Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level)))));
@@ -487,6 +496,10 @@ public class AutopilotBlockEntity extends BlockEntity {
                 targetHeading = Mth.wrapDegrees(bearing + 180.0);
             }
             lateral = Lateral.HEADING;
+        } else if (settings.lateral() == Lateral.DESTINATION) {
+            orbitX = settings.destination().getX() + 0.5;
+            orbitZ = settings.destination().getZ() + 0.5;
+            lateral = Lateral.DESTINATION;
         } else if (settings.lateral() != lateral || resized) {
             startOrbit(state, settings.lateral());
         }
@@ -847,11 +860,14 @@ public class AutopilotBlockEntity extends BlockEntity {
                 double gravity = Math.max(1, state.gravity());
                 double tightest = horizontal * horizontal / (gravity * Math.tan(Math.toRadians(ORBIT_BANK)));
                 double radius = Math.max(orbitRadius, tightest);
-                wanted = orbitHeading(state, radius);
-                // Banked into the circle from the start: the bank that turns at this speed round this radius.
-                double side = lateral == Lateral.ORBIT_RIGHT ? 1 : -1;
-                bank = side * Math.toDegrees(Math.atan(horizontal * horizontal / (gravity * radius)));
-                wantedTurn = side * Math.toDegrees(horizontal / radius);
+                if (approaching(state, radius)) {
+                    wanted = approachHeading(state, radius);
+                } else {
+                    wanted = orbitHeading(state, radius);
+                    // Banked into the circle from the start: the bank that turns at this speed round this radius.
+                    bank = side() * Math.toDegrees(Math.atan(horizontal * horizontal / (gravity * radius)));
+                    wantedTurn = side() * Math.toDegrees(horizontal / radius);
+                }
             }
             double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
             // It banks less the lower it gets, to keep its long wings clear of the ground.
@@ -911,6 +927,29 @@ public class AutopilotBlockEntity extends BlockEntity {
         return awaitingClearance;
     }
 
+    /** Which way it circles: 1 to the right (clockwise seen from above, as a destination is circled), -1 to the left. */
+    private double side() {
+        return lateral == Lateral.ORBIT_LEFT ? -1 : 1;
+    }
+
+    /** Whether it is flying to a destination still far enough off to head for its circle rather than fly it. */
+    private boolean approaching(SableFlight.State state, double radius) {
+        return lateral == Lateral.DESTINATION
+            && Math.hypot(orbitX - state.position().x, orbitZ - state.position().z) > radius * APPROACH;
+    }
+
+    /**
+     * The heading to a destination's circle: along the line from here that just touches the circle with the middle on
+     * its right, so it comes onto the circle already going round it clockwise, with no sharp turn.
+     */
+    private double approachHeading(SableFlight.State state, double radius) {
+        double dx = orbitX - state.position().x;
+        double dz = orbitZ - state.position().z;
+        double distance = Math.hypot(dx, dz);
+        double toMiddle = Math.toDegrees(Math.atan2(-dx, dz));
+        return toMiddle - Math.toDegrees(Math.asin(Math.min(1, radius / distance)));
+    }
+
     /**
      * The heading that keeps an orbit on a circle of this radius round its middle: along the circle the way it turns,
      * steered in while outside it and out while inside, more the further off it is.
@@ -919,7 +958,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double dx = state.position().x - orbitX;
         double dz = state.position().z - orbitZ;
         double distance = Math.max(1, Math.hypot(dx, dz));
-        double side = lateral == Lateral.ORBIT_RIGHT ? 1 : -1;
+        double side = side();
         // Out from the middle, and along the circle: a right orbit runs clockwise seen from above.
         double outX = dx / distance;
         double outZ = dz / distance;
