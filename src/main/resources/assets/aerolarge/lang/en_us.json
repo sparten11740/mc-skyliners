@@ -92,7 +92,7 @@
   "message.aerolarge.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
   "message.aerolarge.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",
   "message.aerolarge.autopilot.landed": "Landed and stopped: thrust levers at idle, parking brake set, autopilot off.",
-  "message.aerolarge.autopilot.unstuck": "Control jets firing: hopping the airliner free.",
+  "message.aerolarge.autopilot.unstuck": "Control jets firing: hold Unstuck to lift the airliner higher.",
   "message.aerolarge.autopilot.unstuck.firing": "The control jets are firing already.",
   "message.aerolarge.autopilot.unstuck.resting": "The control jets are resting: try again in a few seconds.",
   "message.aerolarge.autopilot.unstuck.airborne": "Only on the ground: in the air the control jets keep the airliner steady.",

@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.Aerolarge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -11,8 +12,9 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Sent by the autopilot's settings screen: hop the airliner of the autopilot at that position free on its control
- * jets. Nothing in it is taken on trust: the server only acts for a player who can reach an autopilot standing there
- * already loaded, and the autopilot checks again that the airliner is stuck (see {@link AutopilotBlockEntity#unstick}).
+ * jets; sent again every tick the button is held, to keep them firing. Nothing in it is taken on trust: the server
+ * only acts for a player who can reach an autopilot standing there already loaded, and the autopilot checks again that
+ * the airliner is stuck (see {@link AutopilotBlockEntity#unstick}).
  */
 public record UnstickAirliner(BlockPos pos) implements CustomPacketPayload {
     public static final Type<UnstickAirliner> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "unstick_airliner"));
@@ -30,8 +32,9 @@ public record UnstickAirliner(BlockPos pos) implements CustomPacketPayload {
     public static void handle(UnstickAirliner payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
             AutopilotBlockEntity autopilot = AutopilotBlockEntity.workedBy(player, payload.pos());
-            if (autopilot != null) {
-                player.displayClientMessage(autopilot.unstick(), true);
+            Component said = autopilot != null ? autopilot.unstick() : null;
+            if (said != null) {
+                player.displayClientMessage(said, true);
             }
         }
     }

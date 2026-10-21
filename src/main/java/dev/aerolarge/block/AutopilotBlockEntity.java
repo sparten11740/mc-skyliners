@@ -522,12 +522,18 @@ public class AutopilotBlockEntity extends BlockEntity {
     /**
      * Hops the airliner free from its settings screen, if it is stuck: only on the ground, with its engines running and
      * its brakes off, once it has stood still a moment, and not again till the jets have rested (see {@link Hop}). A
-     * parking brake set is left set: holding the airliner is what it is for. Says what it does, or why it cannot.
+     * parking brake set is left set: holding the airliner is what it is for. Asked again while the jets fire, the
+     * button still held, keeps them firing. Says what it does, or why it cannot; nothing while it keeps them firing.
      */
+    @Nullable
     public Component unstick() {
         SableFlight.State state = SableFlight.read(this, nose());
         if (state == null || !(level instanceof ServerLevel serverLevel)) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
+        }
+        if (hop.firing()) {
+            hop.keep();
+            return null;
         }
         Hop.Hold hold = hop.hold(stance(serverLevel, state, radioAltitude(serverLevel, state)));
         if (hold == Hop.Hold.NONE) {
@@ -632,11 +638,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         double radio = autopilot.radioAltitude(serverLevel, flight);
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
         Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, radio);
-        // Before the jets are set: a burst ending now hands them back this tick. It ends before the wheels would coast
-        // clear of the ground: taking off, the autopilot would take that for lifting off.
         boolean clear = radio + flight.apex() - flight.position().y > AIRBORNE;
-        autopilot.hop.tick(flight, clear, serverLevel.getGameTime());
-        autopilot.offerHop(autopilot.hop.watch(autopilot.stance(serverLevel, flight, radio)) == Hop.Hold.NONE);
+        // Before the jets are set: a burst ending now hands them back this tick.
+        autopilot.hop.tick(flight, serverLevel.getGameTime());
+        // Offered on while the jets fire, so the button stays under the finger holding it.
+        Hop.Hold hold = autopilot.hop.watch(autopilot.stance(serverLevel, flight, radio));
+        autopilot.offerHop(hold == Hop.Hold.NONE || hold == Hop.Hold.FIRING);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {

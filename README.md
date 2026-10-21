@@ -290,10 +290,12 @@ two white arrows over puffs of exhaust) in place of Land. It fires the control j
 with the roar of jets on the flight deck, taking the weight off the wheels so the engines can move the airliner again.
 The jets under the tailplane fire too, but all of them push from behind the centre of mass, and together they would
 tip the airliner onto its nose, so the tailplane's hold the nose where it stood: under it at full while the nose stays
-up, easing off as it dips and pushing the tail down past that. The burst lasts two and a half seconds, or ends as soon
-as the airliner would coast up 2 blocks, or its wheels clear of the ground (so it never takes off); then the jets are
-the autopilot's again, and they rest 5 seconds before they hop it again. It is never offered in the air, nor while the brakes hold the airliner: the parking brake set is what
-keeps it from moving, so release it first (Unstuck leaves the brake as it is).
+up, easing off as it dips and pushing the tail down past that. A click fires them for two and a half seconds; held
+down, they keep firing until it is let go, so the airliner can be lifted over a house it has run into, while the
+engines carry it forward. The burst never lasts longer than 10 seconds, and ends as soon as the airliner would coast
+up 12 blocks; then the jets are the autopilot's again, and they rest 5 seconds before they hop it again. It is never
+offered in the air, nor while the brakes hold the airliner: the parking brake set is what keeps it from moving, so
+release it first (Unstuck leaves the brake as it is).
 
 The big screen shows the autopilot at work. Its right side is the autopilot's buttons, lit for what it is doing;
 touching them opens the settings. Its left side is a moving map, heading up: the track flown, the circle being

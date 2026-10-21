@@ -46,8 +46,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
  * engaging flies the settings (taking off first on the ground); engaged, they can be applied, or the autopilot
  * switched off. In the air it can also be told to land; stuck on the ground with its engines running, the airliner can
- * be hopped free in that button's place instead. The server checks it all again (see {@link SetAutopilot} and
- * {@link UnstickAirliner}). The game goes on behind it, and it closes once the player is out of the autopilot's reach.
+ * be hopped free in that button's place instead, for as long as it is held. The server checks it all again (see
+ * {@link SetAutopilot} and {@link UnstickAirliner}). The game goes on behind it, and it closes once the player is out of
+ * the autopilot's reach.
  */
 public class AutopilotSettingsScreen extends Screen {
     /** The panel's size, the space inside its bezel, and the width of what is on its face. */
@@ -133,6 +134,8 @@ public class AutopilotSettingsScreen extends Screen {
     private IconButton disengage;
     private IconButton land;
     private IconButton unstuck;
+    /** Whether Unstuck is held down, keeping the control jets firing. */
+    private boolean hopping;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -235,7 +238,7 @@ public class AutopilotSettingsScreen extends Screen {
         // Only in the air, and not while it lands already.
         land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
         // Stuck on the ground with its engines running, where landing is no use, it can be hopped free instead.
-        unstuck.visible = assembled && autopilot.stuck();
+        unstuck.visible = hopping || assembled && autopilot.stuck();
         land.visible = !unstuck.visible;
         heading.setActive(lateral == Lateral.HEADING);
         radius.setActive(lateral != Lateral.HEADING);
@@ -250,6 +253,13 @@ public class AutopilotSettingsScreen extends Screen {
             return;
         }
         refresh();
+        if (hopping) {
+            if (minecraft.mouseHandler.isLeftPressed()) {
+                PacketDistributor.sendToServer(new UnstickAirliner(pos));
+            } else {
+                onClose();
+            }
+        }
     }
 
     /** Sends the settings as they stand, to fly them, to land or with the autopilot switched off, and closes. */
@@ -259,10 +269,17 @@ public class AutopilotSettingsScreen extends Screen {
         onClose();
     }
 
-    /** Asks for the airliner to be hopped free, and closes so it is seen to hop. */
+    /**
+     * Asks for the airliner to be hopped free; clicked, asks again every tick the button is held, to keep the jets
+     * firing (see {@link #tick}). Closes once it is let go, or at once from the keyboard, so it is seen to hop.
+     */
     private void unstick() {
         PacketDistributor.sendToServer(new UnstickAirliner(pos));
-        onClose();
+        if (minecraft != null && minecraft.mouseHandler.isLeftPressed()) {
+            hopping = true;
+        } else {
+            onClose();
+        }
     }
 
     @Override

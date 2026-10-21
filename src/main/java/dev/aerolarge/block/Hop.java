@@ -17,20 +17,31 @@ import net.minecraft.util.Mth;
  * under it at full while the nose stays up, eased off as it dips and pushing the tail down past that.
  *
  * <p>Stuck means slower than {@link #STILL} for {@link #STUCK_TICKS} ticks with the engines straining. A burst lasts
- * {@link #BURST} ticks, or ends once the airliner would coast up {@link #HOP} blocks, or its wheels clear of the
- * ground; then the jets rest for {@link #REST} ticks before they hop it again.
+ * {@link #BURST} ticks, and goes on for as long as the button is held (see {@link #keep}), so the airliner can be lifted
+ * over whatever it ran into, a house in a village say; but never past {@link #LONGEST} ticks, nor once it would coast
+ * up {@link #HOP} blocks. Then the jets rest for {@link #REST} ticks before they hop it again.
  */
 final class Hop {
     /** Slower than this, in blocks a second, the airliner stands still; this many ticks of it, straining, and it is stuck. */
     private static final double STILL = 1;
     private static final int STUCK_TICKS = 40;
     /**
-     * The longest burst, in ticks: long enough for the jets to take the weight off the wheels and the tailplane to
-     * settle the nose, and for the engines to pull the airliner clear meanwhile.
+     * The burst a tap of the button fires, in ticks: long enough for the jets to take the weight off the wheels and
+     * the tailplane to settle the nose, and for the engines to pull the airliner clear meanwhile.
      */
     private static final int BURST = 50;
-    /** How high the airliner hops at most, in blocks: the burst ends once it would coast up this far. */
-    private static final double HOP = 2;
+    /**
+     * How long a burst goes on after the button was last held, in ticks: the screen asks every tick it is held, so
+     * this only bridges a packet come late.
+     */
+    private static final int HELD = 10;
+    /** The longest burst, in ticks, however long the button is held. */
+    private static final int LONGEST = 200;
+    /**
+     * How high the airliner hops at most, in blocks: over a house in its way, not up into the sky. The burst ends once
+     * it would coast up this far.
+     */
+    private static final double HOP = 12;
     /** How long the jets rest after a burst, in ticks. */
     private static final int REST = 100;
     /**
@@ -63,6 +74,8 @@ final class Hop {
     private int still;
     /** Ticks of the burst still to go; 0 while the jets are not firing for it. */
     private int burst;
+    /** Ticks the burst has fired so far. */
+    private int fired;
     /** The game time the jets have rested till after the last burst. */
     private long rested = Long.MIN_VALUE;
     /** Where the burst started: the nose's attitude, in degrees, and the height, in blocks. */
@@ -100,6 +113,7 @@ final class Hop {
     /** Fires the jets, from how the airliner stands now, with their roar on the flight deck at the autopilot. */
     void start(ServerLevel level, BlockPos autopilot, SableFlight.State state) {
         burst = BURST;
+        fired = 0;
         still = 0;
         startPitch = state.pitch();
         lastPitch = startPitch;
@@ -111,15 +125,23 @@ final class Hop {
         return burst > 0;
     }
 
+    /** Keeps the burst firing, the button still held. */
+    void keep() {
+        if (burst > 0) {
+            burst = Math.max(burst, HELD);
+        }
+    }
+
     /**
-     * One tick of a burst: it ends once its time is up, or once the airliner would coast up high enough, or its wheels
-     * clear of the ground (so it never takes off); then the jets rest.
+     * One tick of a burst: it ends once its time is up and the button let go, or it has fired its longest, or the
+     * airliner would coast up high enough; then the jets rest.
      */
-    void tick(SableFlight.State state, boolean clear, long now) {
+    void tick(SableFlight.State state, long now) {
         if (burst == 0) {
             return;
         }
-        burst = clear || state.apex() - startHeight >= HOP ? 0 : burst - 1;
+        fired++;
+        burst = fired >= LONGEST || state.apex() - startHeight >= HOP ? 0 : burst - 1;
         if (burst == 0) {
             rested = now + REST;
         }
