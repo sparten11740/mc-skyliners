@@ -245,6 +245,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double TURN_HEIGHT = 30;
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
+    /** How long the airliner flies on with nobody aboard before it lands by itself, in ticks: a minute. */
+    private static final int UNATTENDED = 60 * 20;
+    /** How often it looks whether anyone is aboard, in ticks. */
+    private static final int ABOARD_LOOK = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
     static final double FLIGHT_DECK = 24;
     /**
@@ -311,6 +315,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * has arrived (see {@link #watchArrival}).
      */
     private boolean flown;
+    /** How long it has flown with nobody aboard, in ticks (see {@link #watchUnattended}). */
+    private int unattended;
     private final Airtime airtime = new Airtime();
     private final Callouts callouts = new Callouts(airtime);
     private final CabinAnnouncements announcements = new CabinAnnouncements(airtime);
@@ -644,6 +650,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Offered on while the jets fire, so the button stays under the finger holding it.
         Hop.Hold hold = autopilot.hop.watch(autopilot.stance(serverLevel, flight));
         autopilot.offerHop(hold == Hop.Hold.NONE || hold == Hop.Hold.FIRING);
+        autopilot.watchUnattended(serverLevel, flight, radio);
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {
@@ -651,6 +658,27 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         autopilot.watchArrival(flight, clear);
         autopilot.atc.tick(serverLevel, autopilot, flight, radio, autopilot.phase);
+    }
+
+    /**
+     * Lands the airliner by itself once it has flown on for {@link #UNATTENDED} ticks with nobody aboard, everyone gone
+     * out of it in flight (by parachute, say), so it does not fly on for ever: as Land on the settings screen does,
+     * engaging the autopilot if it is off. The count stops and starts over as soon as anyone is aboard, and while it is
+     * on the ground or landing already. Looked at every {@link #ABOARD_LOOK} ticks.
+     */
+    private void watchUnattended(ServerLevel level, SableFlight.State flight, double radio) {
+        if (radio <= AIRBORNE || phase == Phase.LAND || phase == Phase.ROLLOUT) {
+            unattended = 0;
+            return;
+        }
+        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
+            return;
+        }
+        unattended = Aboard.players(this).isEmpty() ? unattended + ABOARD_LOOK : 0;
+        if (unattended >= UNATTENDED) {
+            unattended = 0;
+            land(level, flight);
+        }
     }
 
     /**

@@ -287,6 +287,10 @@ with the nose wheel; then it pulls the thrust levers to idle, centres the tiller
 switches itself off. It lands on whatever lies below, so line it up over open, level ground first. Applying the
 settings while it comes down goes around, climbing away to the altitude set.
 
+An airliner left flying with nobody aboard (everyone jumped out with a parachute, say) lands by itself after a minute,
+as if Land had been pressed, so it does not fly on for ever. The minute stops and starts over as soon as anyone is
+aboard again, and is not counted on the ground or while it lands already.
+
 An airliner that will not move, held by whatever it has run into or sunk into, can be hopped free, wherever it rests:
 on the ground, on trees, on a roof. Once it has stood still (slower than a block a second) for 2 seconds with its engines running (on the thrust levers,
 or taking off on the autopilot) and its brakes off, the settings show Unstuck (a cyan airliner lifted off the grass on
