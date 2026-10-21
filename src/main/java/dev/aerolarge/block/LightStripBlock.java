@@ -15,7 +15,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A strip of LED light along the top of a wall, where it meets the ceiling: the cabin's modern indirect lighting.
- * FACING is the wall it is fixed to; strips side by side run on as one. As bright as the flight deck's dimmer has it.
+ * FACING is the wall it is fixed to; strips side by side run on as one. As bright as the flight deck's dimmer has it,
+ * or red for the alarm.
  */
 public class LightStripBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LightStripBlock> CODEC = simpleCodec(LightStripBlock::new);
@@ -28,7 +29,7 @@ public class LightStripBlock extends HorizontalDirectionalBlock {
 
     public LightStripBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(Brightness.PROPERTY, Brightness.BRIGHT));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(Brightness.PROPERTY, Brightness.BRIGHT).setValue(Brightness.ALARM, false));
     }
 
     @Override
@@ -38,7 +39,7 @@ public class LightStripBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, Brightness.PROPERTY);
+        builder.add(FACING, Brightness.PROPERTY, Brightness.ALARM);
     }
 
     @Override

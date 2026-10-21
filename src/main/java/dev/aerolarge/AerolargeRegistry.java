@@ -623,12 +623,12 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<LightStripBlock> LIGHT_STRIP = BLOCKS.registerBlock(
         "light_strip", LightStripBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
-            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15))
+            .lightLevel(state -> Brightness.light(state, 15))
     );
     public static final DeferredBlock<PendantLightBlock> PENDANT_LIGHT = BLOCKS.registerBlock(
         "pendant_light", PendantLightBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.LANTERN).noOcclusion()
-            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(15))
+            .lightLevel(state -> Brightness.light(state, 15))
     );
     public static final DeferredBlock<LightCableBlock> LIGHT_CABLE = BLOCKS.registerBlock(
         "light_cable", LightCableBlock::new,
@@ -911,7 +911,7 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<LightStripBlock> FAIRY_LIGHTS = BLOCKS.registerBlock(
         "fairy_lights", LightStripBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion()
-            .lightLevel(state -> state.getValue(Brightness.PROPERTY).light(FAIRY_GLOW))
+            .lightLevel(state -> Brightness.light(state, FAIRY_GLOW))
     );
     public static final DeferredItem<DoubleHighBlockItem> SECRET_BOOKSHELF_ITEM = ITEMS.register(
         "secret_bookshelf", () -> new DoubleHighBlockItem(SECRET_BOOKSHELF.get(), new Item.Properties())

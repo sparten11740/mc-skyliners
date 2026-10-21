@@ -3,6 +3,7 @@ package dev.aerolarge.cabin;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.compat.SableFlight;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -142,6 +144,12 @@ public final class Decompression {
     private final Map<BlockPos, Long> wind = new HashMap<>();
     private final Map<BlockPos, Long> shutAt = new HashMap<>();
     private long alarmUntil;
+    /**
+     * Whether the cabin lights have been turned red for it, or back; unknown until it first sets them, so lights left red
+     * by a decompression before the game was restarted go back once it finds no door open.
+     */
+    @Nullable
+    private Boolean red;
 
     /**
      * One tick of the assembled airliner the autopilot is part of, its nose pointing the given way in the plot, with how
@@ -149,6 +157,11 @@ public final class Decompression {
      */
     public static void tick(ServerLevel level, BlockEntity autopilot, Direction nose, SableFlight.State flight, double height) {
         AIRLINERS.computeIfAbsent(autopilot, ignored -> new Decompression()).blow(level, autopilot, nose, flight, height);
+    }
+
+    /** The airliner the autopilot is part of is no longer assembled: whatever was going on stops, its lights back too. */
+    public static void stop(BlockEntity autopilot) {
+        AIRLINERS.computeIfAbsent(autopilot, ignored -> new Decompression()).calm(autopilot);
     }
 
     private void blow(ServerLevel level, BlockEntity autopilot, Direction nose, SableFlight.State flight, double height) {
@@ -166,6 +179,7 @@ public final class Decompression {
         }
         if (!blowing) {
             blowing = true;
+            lights(level, autopilot, true);
             Component warning = Component.translatable("message.aerolarge.decompression").withStyle(ChatFormatting.RED);
             for (ServerPlayer player : Aboard.players(autopilot)) {
                 player.displayClientMessage(warning, false);
@@ -283,8 +297,11 @@ public final class Decompression {
         }
     }
 
-    /** The air stops rushing out: the wind dies away for everyone aboard. */
+    /** The air stops rushing out: the wind dies away for everyone aboard, and the lights are as they were again. */
     private void calm(BlockEntity autopilot) {
+        if (autopilot.getLevel() instanceof ServerLevel level) {
+            lights(level, autopilot, false);
+        }
         if (!blowing) {
             return;
         }
@@ -297,6 +314,14 @@ public final class Decompression {
         for (ServerPlayer player : Aboard.players(autopilot)) {
             player.connection.send(stop);
             player.connection.send(silence);
+        }
+    }
+
+    /** Turns the cabin lights red, or back, unless they already are (see {@link CabinLightsBlock#alarm}). */
+    private void lights(ServerLevel level, BlockEntity autopilot, boolean on) {
+        if (!Boolean.valueOf(on).equals(red)) {
+            red = on;
+            CabinLightsBlock.alarm(level, autopilot, on);
         }
     }
 

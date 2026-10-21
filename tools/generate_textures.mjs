@@ -345,6 +345,13 @@ texture(blockOutput, "cabin_light_night", (x, y) => {
   const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
   return [clamp(Math.round(24 + 30 * glow)), clamp(Math.round(40 + 45 * glow)), clamp(Math.round(120 + 90 * glow))];
 }, 2);
+// For a door open in flight the diffuser glows an alarm red, brightest in the middle, in its frame left dark.
+texture(blockOutput, "cabin_light_alarm", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return [0x30, 0x14, 0x14];
+  if (x === 1 || y === 1 || x === 14 || y === 14) return [0x48, 0x1a, 0x1a];
+  const glow = 1 - Math.hypot(x - 7.5, y - 7.5) / 11;
+  return [clamp(Math.round(200 + 55 * glow)), clamp(Math.round(20 + 60 * glow)), clamp(Math.round(16 + 40 * glow))];
+}, 2);
 // The call button's cap: bright yellow so the ground crew find it.
 texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
 // The airstair button beside the controller (see AirstairButtonBlock): its cap the call button's amber, lit from
@@ -807,6 +814,11 @@ blueprint("furnished_airliner_blueprint", true);
   texture(blockOutput, "light_strip_night", (x, y) => {
     const glow = 1 - Math.abs(y - 7.5) / 8;
     return [clamp(Math.round(30 + 40 * glow)), clamp(Math.round(50 + 50 * glow)), clamp(Math.round(150 + 90 * glow))];
+  }, 0);
+  // The strips' and the pendants' glow for a door open in flight: alarm red.
+  texture(blockOutput, "light_strip_alarm", (x, y) => {
+    const glow = 1 - Math.abs(y - 7.5) / 8;
+    return [clamp(Math.round(205 + 50 * glow)), clamp(Math.round(24 + 50 * glow)), clamp(Math.round(20 + 36 * glow))];
   }, 0);
   texture(blockOutput, "light_cable", () => [0x18, 0x19, 0x1b], 2);
   texture(blockOutput, "pendant_shade", (x, y) => (y % 4 === 0 ? [0x3c, 0x40, 0x46] : [0x4a, 0x4f, 0x56]), 3);

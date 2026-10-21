@@ -630,10 +630,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         autopilot.announcements.tick(autopilot);
         SableFlight.State flight = SableFlight.read(autopilot, autopilot.nose());
         if (flight == null) {
-            // Disassembled under it: nothing left to fly, nor to hop free.
+            // Disassembled under it: nothing left to fly, nor to hop free, and no air rushing out of it.
             if (autopilot.phase != Phase.OFF) {
                 autopilot.disengage();
             }
+            Decompression.stop(autopilot);
             if (autopilot.hop.stop()) {
                 autopilot.setJets(serverLevel, 0, 0);
             }

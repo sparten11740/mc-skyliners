@@ -1,13 +1,16 @@
 {
   "variants": {
-    "brightness=bright": {
+    "alarm=false,brightness=bright": {
       "model": "aerolarge:block/pendant_light"
     },
-    "brightness=dim": {
+    "alarm=false,brightness=dim": {
       "model": "aerolarge:block/pendant_light_dim"
     },
-    "brightness=night": {
+    "alarm=false,brightness=night": {
       "model": "aerolarge:block/pendant_light_night"
+    },
+    "alarm=true": {
+      "model": "aerolarge:block/pendant_light_alarm"
     }
   }
 }

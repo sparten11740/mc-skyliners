@@ -2,22 +2,27 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
 /**
  * The cabin lights' dimmer on the flight deck: each use steps the whole cabin from bright to dimmed (as for take-off
- * and landing) to the low glow of a night flight and back, every light that has a {@link Brightness}.
+ * and landing) to the low glow of a night flight and back, every light that has a {@link Brightness}. While a door
+ * stands open in flight, the airliner turns every one of its lights red (see {@link #alarm}), and back as they were once
+ * the doors are shut: the dimmer keeps its own setting through it.
  */
 public class CabinLightsBlock extends CabinControlBlock {
     private static final MapCodec<CabinLightsBlock> CODEC = simpleCodec(CabinLightsBlock::new);
 
     public CabinLightsBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(Brightness.PROPERTY, Brightness.BRIGHT));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(Brightness.PROPERTY, Brightness.BRIGHT)
+            .setValue(Brightness.ALARM, false));
     }
 
     @Override
@@ -27,7 +32,7 @@ public class CabinLightsBlock extends CabinControlBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, Brightness.PROPERTY);
+        builder.add(FACING, Brightness.PROPERTY, Brightness.ALARM);
     }
 
     @Override
@@ -45,8 +50,28 @@ public class CabinLightsBlock extends CabinControlBlock {
         return target.hasProperty(Brightness.PROPERTY);
     }
 
+    /**
+     * Turns the lights of the airliner whose autopilot this is red for a door open in flight, or back as they were:
+     * its dimmer, on the flight deck by the autopilot, keeps the alarm with its own setting and sweeps it through the
+     * cabin as it does its brightness. Nothing where the dimmer already has it so.
+     */
+    public static void alarm(ServerLevel level, BlockEntity autopilot, boolean on) {
+        for (CabinControlBlockEntity control : CabinControlBlockEntity.all(level)) {
+            BlockState state = control.getBlockState();
+            if (state.getBlock() instanceof CabinLightsBlock && state.getValue(Brightness.ALARM) != on
+                && control.getBlockPos().closerThan(autopilot.getBlockPos(), AutopilotBlockEntity.FLIGHT_DECK)) {
+                level.setBlock(control.getBlockPos(), state.setValue(Brightness.ALARM, on), Block.UPDATE_ALL);
+                control.sweep();
+            }
+        }
+    }
+
+    /** Sets the light to the dimmer's brightness, and red for the alarm if the dimmer has it so. */
     @Override
     public BlockState applyTo(BlockState control, BlockState target) {
-        return works(target) ? target.setValue(Brightness.PROPERTY, control.getValue(Brightness.PROPERTY)) : target;
+        if (!works(target)) {
+            return target;
+        }
+        return target.setValue(Brightness.PROPERTY, control.getValue(Brightness.PROPERTY)).trySetValue(Brightness.ALARM, control.getValue(Brightness.ALARM));
     }
 }

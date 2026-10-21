@@ -41,7 +41,8 @@ import org.slf4j.Logger;
  * real blue light round the cabin, as an airliner's mood lighting does, through Veil's light renderer (see
  * {@link VeilLights}). The light is only drawn: the world's light levels, and so what spawns where, stay as the dimmer
  * has them. The lounge's starlit ceiling (a whole ceiling of panels, its stars its night light) and the den's coloured
- * fairy lights keep only their own glow.
+ * fairy lights keep only their own glow. While a door stands open in flight the same lamps cast red instead, whatever
+ * the dimmer's setting, all but the starlit ceiling and the fairy lights (see {@link Brightness#ALARM}).
  *
  * <p>Twice a second the blocks round the camera are looked through for lamps set for the night: those of an airliner
  * standing as blocks in the world, and those of each assembled airliner within reach, among its own blocks. Lamps of a
@@ -83,10 +84,6 @@ public final class NightLights {
      * the space across from it, in light levels: the outside under the belly is not taken for the hold over it.
      */
     private static final int SKY_MARGIN = 4;
-    /** The night's blue, its red, green and blue: an airliner's mood lighting. */
-    private static final float RED = 0.25F;
-    private static final float GREEN = 0.45F;
-    private static final float BLUE = 1.0F;
     /** Veil's buffers, kept on while the lights are near. */
     private static final VeilLights.Buffers BUFFERS = new VeilLights.Buffers("night_lights");
     /** Whether a block is a lamp set for the night: sections whose palettes hold none are skipped whole. */
@@ -142,12 +139,34 @@ public final class NightLights {
         }
     }
 
-    /** A lamp set for the night as found: its kind, its block and a way it shines. */
-    private record Found(Lamp lamp, BlockPos pos, Direction out) {
+    /** The colour a lamp shines, its red, green and blue: the night's blue, or the alarm's red. */
+    private enum Tint {
+        /** An airliner's mood lighting. */
+        NIGHT(0.25F, 0.45F, 1.0F),
+        /** A door open in flight. */
+        ALARM(1.0F, 0.1F, 0.08F);
+
+        final float red;
+        final float green;
+        final float blue;
+
+        Tint(float red, float green, float blue) {
+            this.red = red;
+            this.green = green;
+            this.blue = blue;
+        }
+
+        static Tint of(BlockState lamp) {
+            return Brightness.alarm(lamp) ? ALARM : NIGHT;
+        }
     }
 
-    /** A row of lamps of one kind shining one way: the line it lies on, with the way it runs. */
-    private record Row(Lamp lamp, Direction out, Direction.Axis along, BlockPos line) {
+    /** A lamp set for the night, or red for the alarm, as found: its kind, its colour, its block and a way it shines. */
+    private record Found(Lamp lamp, Tint tint, BlockPos pos, Direction out) {
+    }
+
+    /** A row of lamps of one kind and colour shining one way: the line it lies on, with the way it runs. */
+    private record Row(Lamp lamp, Tint tint, Direction out, Direction.Axis along, BlockPos line) {
     }
 
     /**
@@ -155,7 +174,7 @@ public final class NightLights {
      * middle of their glowing faces, the way the row runs and the way it shines, and how far it reaches either side of
      * its middle, in blocks.
      */
-    private record Glow(Lamp lamp, Vec3 middle, Vec3 along, Vec3 out, double reach) {
+    private record Glow(Lamp lamp, Tint tint, Vec3 middle, Vec3 along, Vec3 out, double reach) {
         /** How far a point is from the row, in blocks. */
         double distance(Vec3 point) {
             Vec3 offset = point.subtract(middle);
@@ -328,7 +347,7 @@ public final class NightLights {
                         if (lamp != null) {
                             BlockPos at = pos.set(x, y, z).immutable();
                             for (Direction out : shining(level, at, lamp, state)) {
-                                found.add(new Found(lamp, at, out));
+                                found.add(new Found(lamp, Tint.of(state), at, out));
                             }
                         }
                     }
@@ -413,14 +432,21 @@ public final class NightLights {
         }
     }
 
-    /** The kind of lamp a block is while it is set for the night and on; null for any other block or setting. */
+    /**
+     * The kind of lamp a block is while it is set for the night and on, or red for the alarm, every cabin light then;
+     * null for any other block or setting.
+     */
     @Nullable
     private static Lamp lamp(BlockState state) {
-        if (!state.hasProperty(Brightness.PROPERTY) || state.getValue(Brightness.PROPERTY) != Brightness.NIGHT) {
+        if (!state.hasProperty(Brightness.PROPERTY)) {
+            return null;
+        }
+        boolean alarm = Brightness.alarm(state);
+        if (!alarm && state.getValue(Brightness.PROPERTY) != Brightness.NIGHT) {
             return null;
         }
         if (state.is(AerolargeRegistry.CABIN_LIGHT.get())) {
-            return state.getValue(CabinLightBlock.KEPT_ON) ? null : Lamp.PANEL;
+            return !alarm && state.getValue(CabinLightBlock.KEPT_ON) ? null : Lamp.PANEL;
         }
         if (state.is(AerolargeRegistry.LIGHT_STRIP.get())) {
             return Lamp.STRIP;
@@ -480,7 +506,7 @@ public final class NightLights {
                 case Y -> cabin;
             };
             BlockPos line = along == Direction.Axis.X ? new BlockPos(0, lamp.pos().getY(), lamp.pos().getZ()) : new BlockPos(lamp.pos().getX(), lamp.pos().getY(), 0);
-            rows.computeIfAbsent(new Row(lamp.lamp(), lamp.out(), along, line), row -> new ArrayList<>()).add(lamp);
+            rows.computeIfAbsent(new Row(lamp.lamp(), lamp.tint(), lamp.out(), along, line), row -> new ArrayList<>()).add(lamp);
         }
         List<Glow> glows = new ArrayList<>();
         rows.forEach((row, members) -> {
@@ -508,7 +534,7 @@ public final class NightLights {
         Vec3 middle = Vec3.atCenterOf(first.pos()).add(Vec3.atCenterOf(last.pos())).scale(0.5)
             .add(out.scale(lamp.forward)).add(0, lamp.up, 0);
         double reach = (last.pos().get(row.along()) - first.pos().get(row.along())) / 2.0 + 0.5;
-        return new Glow(lamp, middle, along, out, reach);
+        return new Glow(lamp, row.tint(), middle, along, out, reach);
     }
 
     /**
@@ -540,7 +566,8 @@ public final class NightLights {
     private static Object add(Glow glow) {
         Lamp lamp = glow.lamp();
         Object light = VeilLights.add(glow.reach(), lamp.halfWidth, lamp.angle);
-        VeilLights.shine(light, lamp.distance, RED, GREEN, BLUE, lamp.brightness);
+        Tint tint = glow.tint();
+        VeilLights.shine(light, lamp.distance, tint.red, tint.green, tint.blue, lamp.brightness);
         return light;
     }
 }

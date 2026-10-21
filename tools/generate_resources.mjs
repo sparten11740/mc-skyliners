@@ -82,9 +82,19 @@ write(`assets/${ID}/models/block/cabin_floor.json`, {
     textures: { all: `${ID}:block/cabin_light_night`, particle: `${ID}:block/cabin_light` },
     elements: [{ from: [0, 0, 0], to: [16, 16, 16], shade: false, faces }],
   });
+  // Red for a door open in flight (see Brightness.ALARM), whatever the dimmer has it at, glowing as at night.
+  write(`assets/${ID}/models/block/cabin_light_alarm.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures: { all: `${ID}:block/cabin_light_alarm`, particle: `${ID}:block/cabin_light` },
+    elements: [{ from: [0, 0, 0], to: [16, 16, 16], shade: false, faces }],
+  });
   write(`assets/${ID}/blockstates/cabin_light.json`, {
-    variants: Object.fromEntries(["bright", "dim", "night"].flatMap((level) => [false, true].map((keptOn) =>
-      [`brightness=${level},kept_on=${keptOn}`, { model: `${ID}:block/cabin_light${level === "night" && !keptOn ? "_night" : ""}` }]))),
+    variants: {
+      ...Object.fromEntries(["bright", "dim", "night"].flatMap((level) => [false, true].map((keptOn) =>
+        [`alarm=false,brightness=${level},kept_on=${keptOn}`, { model: `${ID}:block/cabin_light${level === "night" && !keptOn ? "_night" : ""}` }]))),
+      "alarm=true": { model: `${ID}:block/cabin_light_alarm` },
+    },
   });
 }
 
@@ -752,11 +762,11 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
 // The cabin's lining and lights, drawn facing north. The light strip: a glowing bar along the top of the wall it is
 // fixed to. The pendant light: a slim black cable down to a flat grey shade, glowing underneath; the cable alone for
 // the blocks above it. Both glow at full brightness when bright, are lit only by their own lower light when dimmed,
-// and glow a deep blue at night. The overhead locker: a white bin against the wall, its door facing out, the passenger service
+// and glow a deep blue at night, and red for a door open in flight (see Brightness.ALARM). The overhead locker: a white bin against the wall, its door facing out, the passenger service
 // panel underneath; open, its door shows the luggage inside.
 {
   const brightness = { bright: ["", "light_strip", true], dim: ["_dim", "light_strip", false], night: ["_night", "light_strip_night", true] };
-  for (const [suffix, glow, lit] of Object.values(brightness)) {
+  for (const [suffix, glow, lit] of [...Object.values(brightness), ["_alarm", "light_strip_alarm", true]]) {
     write(`assets/${ID}/models/block/light_strip${suffix}.json`, boxes(
       { strip: `${ID}:block/${glow}`, particle: `${ID}:block/${glow}` },
       [[[0, 12, 0], [16, 15, 3], "#strip", lit]],
@@ -771,11 +781,17 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
     ));
   }
   write(`assets/${ID}/blockstates/light_strip.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.entries(brightness).map(([level, [suffix]]) =>
-      [`brightness=${level},facing=${facing}`, { model: `${ID}:block/light_strip${suffix}`, y }]))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [
+      ...Object.entries(brightness).map(([level, [suffix]]) =>
+        [`alarm=false,brightness=${level},facing=${facing}`, { model: `${ID}:block/light_strip${suffix}`, y }]),
+      [`alarm=true,facing=${facing}`, { model: `${ID}:block/light_strip_alarm`, y }],
+    ])),
   });
   write(`assets/${ID}/blockstates/pendant_light.json`, {
-    variants: Object.fromEntries(Object.entries(brightness).map(([level, [suffix]]) => [`brightness=${level}`, { model: `${ID}:block/pendant_light${suffix}` }])),
+    variants: {
+      ...Object.fromEntries(Object.entries(brightness).map(([level, [suffix]]) => [`alarm=false,brightness=${level}`, { model: `${ID}:block/pendant_light${suffix}` }])),
+      "alarm=true": { model: `${ID}:block/pendant_light_alarm` },
+    },
   });
   write(`assets/${ID}/models/block/light_cable.json`, boxes(
     { cable: `${ID}:block/light_cable`, particle: `${ID}:block/light_cable` },

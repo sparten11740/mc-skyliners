@@ -20,12 +20,12 @@ public class PendantLightBlock extends Block {
 
     public PendantLightBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(Brightness.PROPERTY, Brightness.BRIGHT));
+        registerDefaultState(stateDefinition.any().setValue(Brightness.PROPERTY, Brightness.BRIGHT).setValue(Brightness.ALARM, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(Brightness.PROPERTY);
+        builder.add(Brightness.PROPERTY, Brightness.ALARM);
     }
 
     @Override

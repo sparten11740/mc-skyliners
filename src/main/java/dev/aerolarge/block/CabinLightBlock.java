@@ -18,11 +18,17 @@ public class CabinLightBlock extends Block {
 
     public CabinLightBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(Brightness.PROPERTY, Brightness.BRIGHT).setValue(KEPT_ON, false));
+        registerDefaultState(stateDefinition.any().setValue(Brightness.PROPERTY, Brightness.BRIGHT).setValue(KEPT_ON, false).setValue(Brightness.ALARM, false));
     }
 
-    /** The light it gives at its setting, from what it gives full on; kept on, at night what it gives dimmed. */
+    /**
+     * The light it gives at its setting, from what it gives full on; kept on, at night what it gives dimmed; full on
+     * while it glows red for the alarm.
+     */
     public static int light(BlockState state, int full) {
+        if (Brightness.alarm(state)) {
+            return full;
+        }
         Brightness brightness = state.getValue(Brightness.PROPERTY);
         return (state.getValue(KEPT_ON) && brightness == Brightness.NIGHT ? Brightness.DIM : brightness).light(full);
     }
@@ -39,6 +45,6 @@ public class CabinLightBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(Brightness.PROPERTY, KEPT_ON);
+        builder.add(Brightness.PROPERTY, KEPT_ON, Brightness.ALARM);
     }
 }

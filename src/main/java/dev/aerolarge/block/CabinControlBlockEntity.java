@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,9 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * What a cabin control works: the blocks it sets, as offsets from itself in the order they are reached front to back.
  * A new setting sweeps through them a few at a time, so it runs down the cabin like a wave rather than all at once,
- * and works the same in an airliner in flight, whose blocks keep their places relative to one another.
+ * and works the same in an airliner in flight, whose blocks keep their places relative to one another. Kept track of
+ * while loaded, so a decompressing airliner finds its dimmer to turn the lights red (see {@link CabinLightsBlock#alarm}).
  */
 public class CabinControlBlockEntity extends BlockEntity {
+    private static final Loaded<CabinControlBlockEntity> LOADED = new Loaded<>(CabinControlBlockEntity.class);
     /** Blocks set each tick of a sweep, and how many apart along it the control's sound is heard. */
     private static final int PER_TICK = 24;
     private static final int SOUND_EVERY = 12;
@@ -31,6 +34,29 @@ public class CabinControlBlockEntity extends BlockEntity {
 
     public CabinControlBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.CABIN_CONTROL_ENTITY.get(), pos, state);
+    }
+
+    /** Every cabin control loaded in the level. */
+    static List<CabinControlBlockEntity> all(Level level) {
+        return LOADED.in(level);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        LOADED.add(this);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        LOADED.remove(this);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        LOADED.remove(this);
     }
 
     /** Hands the control the blocks it works, front to back. */
