@@ -502,7 +502,7 @@ public class AutopilotBlockEntity extends BlockEntity {
                 // Cleared by the tower first, if it talks; the cabin hears the take-off announcement as the brakes come off.
                 awaitingClearance = atc.requestTakeOff(level.getGameTime());
                 if (!awaitingClearance) {
-                    announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+                    announcements.announce(Announcement.TAKEOFF, this);
                 }
             }
         } else if (phase == Phase.LAND) {
@@ -579,7 +579,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (phase != Phase.LAND && level instanceof ServerLevel serverLevel) {
             // The tower clears it to land, then the cabin hears the landing announcement.
             atc.approach(serverLevel, this, state, radio);
-            announcements.announce(CabinAnnouncements.Announcement.LANDING, this);
+            announcements.announce(Announcement.LANDING, this);
         }
         phase = Phase.LAND;
         lateral = Lateral.HEADING;
@@ -827,7 +827,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             targetHeading = runway.heading();
         }
         atc.approach(level, this, state, radio);
-        announcements.announce(CabinAnnouncements.Announcement.LANDING, this);
+        announcements.announce(Announcement.LANDING, this);
         changed();
     }
 
@@ -847,7 +847,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Arrived: the arrival announcement, which switches the seatbelt signs off, and nothing more until it flies again. */
     private void arrive() {
         flown = false;
-        announcements.announce(CabinAnnouncements.Announcement.ARRIVAL, this);
+        announcements.announce(Announcement.ARRIVAL, this);
     }
 
     /**
@@ -1084,7 +1084,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean holdingForClearance(long now) {
         if (awaitingClearance && !atc.clearing(now)) {
             awaitingClearance = false;
-            announcements.announce(CabinAnnouncements.Announcement.TAKEOFF, this);
+            announcements.announce(Announcement.TAKEOFF, this);
         }
         return awaitingClearance;
     }

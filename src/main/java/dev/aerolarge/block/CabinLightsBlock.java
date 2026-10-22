@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
@@ -56,11 +57,30 @@ public class CabinLightsBlock extends CabinControlBlock {
      * cabin as it does its brightness. Nothing where the dimmer already has it so.
      */
     public static void alarm(ServerLevel level, BlockEntity autopilot, boolean on) {
+        setDimmer(level, autopilot, state -> state.setValue(Brightness.ALARM, on));
+    }
+
+    /**
+     * Sets the cabin lights of the airliner whose autopilot this is to a brightness, as its dimmer would step them
+     * there: a cabin announcement dims them for a sleep. Nothing where the dimmer already has them so.
+     */
+    public static void set(ServerLevel level, BlockEntity autopilot, Brightness brightness) {
+        setDimmer(level, autopilot, state -> state.setValue(Brightness.PROPERTY, brightness));
+    }
+
+    /**
+     * Changes the dimmer of the airliner whose autopilot this is, on the flight deck by the autopilot, and sweeps the
+     * change through the cabin; nothing where the change leaves it as it was.
+     */
+    private static void setDimmer(ServerLevel level, BlockEntity autopilot, UnaryOperator<BlockState> change) {
         for (CabinControlBlockEntity control : CabinControlBlockEntity.all(level)) {
             BlockState state = control.getBlockState();
-            if (state.getBlock() instanceof CabinLightsBlock && state.getValue(Brightness.ALARM) != on
-                && control.getBlockPos().closerThan(autopilot.getBlockPos(), AutopilotBlockEntity.FLIGHT_DECK)) {
-                level.setBlock(control.getBlockPos(), state.setValue(Brightness.ALARM, on), Block.UPDATE_ALL);
+            if (!(state.getBlock() instanceof CabinLightsBlock) || !control.getBlockPos().closerThan(autopilot.getBlockPos(), AutopilotBlockEntity.FLIGHT_DECK)) {
+                continue;
+            }
+            BlockState changed = change.apply(state);
+            if (changed != state) {
+                level.setBlock(control.getBlockPos(), changed, Block.UPDATE_ALL);
                 control.sweep();
             }
         }

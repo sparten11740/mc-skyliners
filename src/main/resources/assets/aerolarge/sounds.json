@@ -115,11 +115,65 @@
       }
     ]
   },
+  "announcement_welcome": {
+    "subtitle": "subtitles.aerolarge.announcement_welcome",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_welcome",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "announcement_takeoff": {
     "subtitle": "subtitles.aerolarge.announcement_takeoff",
     "sounds": [
       {
         "name": "aerolarge:announcement_takeoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_turbulence": {
+    "subtitle": "subtitles.aerolarge.announcement_turbulence",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_turbulence",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_snacks": {
+    "subtitle": "subtitles.aerolarge.announcement_snacks",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_snacks",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_window": {
+    "subtitle": "subtitles.aerolarge.announcement_window",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_window",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_playtime": {
+    "subtitle": "subtitles.aerolarge.announcement_playtime",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_playtime",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "announcement_sleep": {
+    "subtitle": "subtitles.aerolarge.announcement_sleep",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_sleep",
         "attenuation_distance": 1024
       }
     ]

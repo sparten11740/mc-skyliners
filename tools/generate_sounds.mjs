@@ -754,9 +754,16 @@ const CALLOUTS = {
   callout_bank_angle: "Bank angle. Please do not do that.",
   callout_pull_up: "Pull up. This is not a test.",
 };
-// The cabin announcements (see CabinAnnouncements), each opening with the cabin chime. A "|" is a pause.
+// The cabin announcements (see Announcement), each opening with the cabin chime. A "|" is a pause. The ones only the
+// flight deck's announcement panel makes are for the youngest passengers: short, plain words, and nothing to worry about.
 const ANNOUNCEMENTS = {
+  announcement_welcome: "Hello, and welcome aboard. | This is your captain speaking. | Please sit back, relax, and enjoy the flight.",
   announcement_takeoff: "Welcome aboard. | Cabin crew, please be seated for take-off.",
+  announcement_turbulence: "We are flying through some bumpy air. | Please sit down and fasten your seatbelt. | Bumps are normal. | Wobbling is also normal.",
+  announcement_snacks: "The cabin crew are now serving drinks and snacks. | Today there are cookies. | Lots of cookies.",
+  announcement_window: "Please look out of the window. | The world is down there. | Everything is very small. | Wave hello.",
+  announcement_playtime: "The seatbelt signs are off. | The pool and the gym are now open. | Please do not run beside the pool.",
+  announcement_sleep: "We are dimming the cabin lights. | It is time for a little sleep. | Good night, | and sweet dreams.",
   announcement_landing: "Please return to your seats. | Cabin crew, please be seated for landing.",
   announcement_arrival: "Welcome to your destination. Please remain seated until the aircraft has come to a complete stop. | It has. | You may now leave.",
 };

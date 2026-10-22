@@ -260,8 +260,17 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_RETARD = sound("callout_retard");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
-    /** The same voice over the cabin PA, after the chime: crew seated for take-off, for landing, and arrival. */
+    /**
+     * The same voice over the cabin PA, after the chime: crew seated for take-off, for landing, and arrival; and the
+     * ones only the announcement panel makes: welcome, bumpy air, snacks, the view, the pool and gym open, and sleep.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_WELCOME = sound("announcement_welcome");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_TAKEOFF = sound("announcement_takeoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_TURBULENCE = sound("announcement_turbulence");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SNACKS = sound("announcement_snacks");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_WINDOW = sound("announcement_window");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_PLAYTIME = sound("announcement_playtime");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SLEEP = sound("announcement_sleep");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_LANDING = sound("announcement_landing");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL = sound("announcement_arrival");
     /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */

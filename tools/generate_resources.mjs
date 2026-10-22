@@ -435,7 +435,13 @@ const VOICE_SUBTITLES = {
   callout_retard: "Callout: Retard",
   callout_bank_angle: "Callout: Bank angle!",
   callout_pull_up: "Callout: Pull up!",
+  announcement_welcome: "Announcement: Welcome aboard",
   announcement_takeoff: "Announcement: Crew seated for take-off",
+  announcement_turbulence: "Announcement: Bumpy air, seatbelts on",
+  announcement_snacks: "Announcement: Drinks and snacks",
+  announcement_window: "Announcement: Look out of the window",
+  announcement_playtime: "Announcement: Pool and gym open",
+  announcement_sleep: "Announcement: Lights dimmed, sleep time",
   announcement_landing: "Announcement: Crew seated for landing",
   announcement_arrival: "Announcement: Welcome to your destination",
 };
