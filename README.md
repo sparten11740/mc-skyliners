@@ -314,7 +314,8 @@ heading or circle set, banking no steeper than its height allows (it never banks
 more than 25 degrees), and it climbs on to the altitude set and holds height and speed there. The altitude starts at
 the cruising height (`climbHeight`, 80 blocks above the runway by default) and the speed at `cruiseSpeed`. Engaged
 in the air, they start from the height, speed and heading it finds. While it is engaged, Apply flies the settings as
-changed, and Disengage hands the airliner back to the thrust levers, the tiller and the parking brake. How it is
+changed (it stays dark until something on the panel differs from what the autopilot flies, but while it lands,
+when it goes around), and Disengage hands the airliner back to the thrust levers, the tiller and the parking brake. How it is
 flying shows on the pilots' head-up display (see below).
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto

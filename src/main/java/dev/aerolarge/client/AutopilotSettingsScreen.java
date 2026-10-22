@@ -251,8 +251,9 @@ public class AutopilotSettingsScreen extends Screen {
         engage.visible = !on;
         engage.active = assembled && pinned;
         apply.visible = on;
-        // Once down after landing it only brakes to a stop.
-        apply.active = phase != Phase.ROLLOUT && pinned;
+        // Once down after landing it only brakes to a stop; landing, applying goes around, whatever is set; otherwise
+        // only something set anew is worth applying.
+        apply.active = phase != Phase.ROLLOUT && pinned && (phase == Phase.LAND || autopilot != null && setAnew(autopilot));
         disengage.visible = on;
         // Only in the air, and not while it lands already.
         land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
@@ -267,6 +268,30 @@ public class AutopilotSettingsScreen extends Screen {
         for (Setting row : rows()) {
             row.setVisible(!toPin);
         }
+    }
+
+    /**
+     * Whether anything on the panel differs from what the autopilot flies now, as the server would take it (see
+     * {@link AutopilotBlockEntity#set}): the mode, the height or the speed, and then what the mode flies: the heading, the
+     * circle's radius, or the pin, its circle and whether it lands there.
+     */
+    private boolean setAnew(AutopilotBlockEntity autopilot) {
+        boolean same = lateral == autopilot.lateral() && altitude.value() == Math.round(autopilot.targetAltitude())
+            && speed.value() == Math.round(autopilot.targetSpeed());
+        if (!same) {
+            return true;
+        }
+        return switch (lateral) {
+            case HEADING -> heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
+            case ORBIT_LEFT, ORBIT_RIGHT -> radius.value() != Math.round(autopilot.orbitRadius());
+            case DESTINATION -> pinMoved(autopilot) || radius.value() != Math.round(autopilot.orbitRadius()) || landAtPin != autopilot.landAtPin();
+        };
+    }
+
+    /** Whether the pin on the map is not where the autopilot flies to. */
+    private boolean pinMoved(AutopilotBlockEntity autopilot) {
+        BlockPos pin = map.pin();
+        return pin == null || pin.getX() != Mth.floor(autopilot.orbitX()) || pin.getZ() != Mth.floor(autopilot.orbitZ());
     }
 
     /** Closes only once the autopilot is gone; else it stays open until its close button is pressed. */

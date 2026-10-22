@@ -374,6 +374,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         return lateral;
     }
 
+    /** Whether, flying to a pin, it lands near it rather than circling it. */
+    public boolean landAtPin() {
+        return landAtPin;
+    }
+
     public double targetHeading() {
         return targetHeading;
     }
@@ -1222,7 +1227,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /** A heading (Minecraft's yaw) as a compass bearing in whole degrees, 0 north and 90 east. */
-    private static int bearing(double heading) {
+    public static int bearing(double heading) {
         return Math.floorMod(Math.round(heading) + 180, 360);
     }
 
