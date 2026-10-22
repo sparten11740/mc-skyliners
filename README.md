@@ -866,6 +866,12 @@ blocks it is built with) cannot be mined, broken in creative mode or blown up; t
 on it can. Sneaking with a wrench (Create's will do), or sneaking in creative mode, still breaks them: to take an
 airliner apart on purpose, or to take back a panel put in the wrong spot.
 
+Only the blocks the blueprint laid are held so, and only while they are part of an airliner: inside the Super Glue the
+blueprint glues it with, or among its blocks once it is assembled. The same blocks anywhere else, as the runway's
+lights and the control tower's glass, lights, panels and seats are, break as any other block does. So does one placed
+by hand, a nav light or a panel added to a finished airliner say, until the airliner is assembled; a Create deployer
+places by hand too, a schematicannon does not.
+
 ### Doors
 
 The six passenger doors and the cargo door are plug doors, one panel over each doorway as on the real airliner: white

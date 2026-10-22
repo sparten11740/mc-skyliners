@@ -29,7 +29,8 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
  *
  * <p>A block is part of an airliner while it stands inside the Super Glue its blueprint glues the whole airliner
  * with, or among an assembled airliner's blocks, in its plot. The same blocks laid anywhere else, as the runway's lights
- * and the control tower's glass, lights, panels and seats are, break as any other block does.
+ * and the control tower's glass, lights, panels and seats are, break as any other block does, and so does one a player
+ * placed by hand (see {@link HandPlaced}): only what the blueprint laid is held.
  */
 public final class FrameProtection {
     public static final TagKey<Block> UNBREAKABLE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "unbreakable"));
@@ -46,7 +47,7 @@ public final class FrameProtection {
     }
 
     private static boolean protects(LevelAccessor level, BlockPos pos, BlockState state) {
-        return state.is(UNBREAKABLE) && level instanceof Level world && partOfAirliner(world, pos);
+        return state.is(UNBREAKABLE) && level instanceof Level world && !HandPlaced.at(world, pos, state) && partOfAirliner(world, pos);
     }
 
     /** Whether a block stands inside an airliner's glue, or among an assembled airliner's blocks. */

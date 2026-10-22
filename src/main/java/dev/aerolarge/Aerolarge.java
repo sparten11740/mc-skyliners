@@ -36,6 +36,7 @@ import dev.aerolarge.radar.Transponders;
 import dev.aerolarge.radio.Broadcasts;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -79,6 +80,11 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
+        // Last, so a placement another mod turned down is not marked.
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HandPlaced::onPlace);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, HandPlaced::onArrive);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, HandPlaced::onArrive);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerRespawnEvent.class, HandPlaced::onArrive);
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event -> AerolargeCommand.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
@@ -87,6 +93,7 @@ public final class Aerolarge {
                 ControlTower.tick(level);
                 RunwayBuild.tick(level);
                 RadarSurvey.tick(level);
+                HandPlaced.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
@@ -110,12 +117,14 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("10")
+        event.registrar("11")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
+            .playToClient(HandPlacedBlocks.TYPE, HandPlacedBlocks.STREAM_CODEC,
+                (payload, context) -> HandPlaced.told(context.player().level(), payload))
             // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
                 (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
