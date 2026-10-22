@@ -746,16 +746,27 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
   write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
   write(`assets/${ID}/models/item/runway_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/runway_blueprint` } });
-  // The motion sensor: a white housing, its lens on its face, the lamp under the lens lit while it sees someone.
+  // The motion sensor: a slim white housing screwed to the face of the wall behind it (south, facing north), low in its
+  // block, so set over a door it sits on the door's head; its lens across its face, the lamp beside the lens lit while
+  // it sees someone. Shifted, it sits half a block to the right as seen facing it, over the middle of a pair of doors.
+  const sensorModel = (lit, shifted) => `${ID}:block/motion_sensor${shifted ? "_shifted" : ""}${lit ? "_on" : ""}`;
   for (const lit of [false, true]) {
-    write(`assets/${ID}/models/block/motion_sensor${lit ? "_on" : ""}.json`, {
-      parent: "minecraft:block/orientable",
-      textures: { front: `${ID}:block/motion_sensor_front${lit ? "_on" : ""}`, side: `${ID}:block/motion_sensor_side`, top: `${ID}:block/motion_sensor_side` },
-    });
+    for (const shifted of [false, true]) {
+      const side = { texture: "#side" };
+      const left = shifted ? -5 : 3;
+      write(`assets/${sensorModel(lit, shifted).replace(`${ID}:`, `${ID}/models/`)}.json`, {
+        parent: "minecraft:block/block",
+        textures: { particle: `${ID}:block/motion_sensor_side`, front: `${ID}:block/motion_sensor_front${lit ? "_on" : ""}`, side: `${ID}:block/motion_sensor_side` },
+        elements: [{
+          from: [left, 0, 13], to: [left + 10, 4, 16],
+          faces: { north: { texture: "#front", uv: [3, 6, 13, 10] }, south: side, east: side, west: side, up: side, down: side },
+        }],
+      });
+    }
   }
   write(`assets/${ID}/blockstates/motion_sensor.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((on) =>
-      [`facing=${facing},powered=${on}`, { model: `${ID}:block/motion_sensor${on ? "_on" : ""}`, y }]))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((on) => [false, true].map((shifted) =>
+      [`facing=${facing},powered=${on},shifted=${shifted}`, { model: sensorModel(on, shifted), y }])))),
   });
   write(`assets/${ID}/models/item/motion_sensor.json`, { parent: `${ID}:block/motion_sensor` });
   for (const name of ["transponder", "tower_radar", "motion_sensor"]) {

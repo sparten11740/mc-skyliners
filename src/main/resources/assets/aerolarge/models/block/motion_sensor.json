@@ -1,8 +1,48 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/block",
   "textures": {
+    "particle": "aerolarge:block/motion_sensor_side",
     "front": "aerolarge:block/motion_sensor_front",
-    "side": "aerolarge:block/motion_sensor_side",
-    "top": "aerolarge:block/motion_sensor_side"
-  }
+    "side": "aerolarge:block/motion_sensor_side"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        13
+      ],
+      "to": [
+        13,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            3,
+            6,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
 }

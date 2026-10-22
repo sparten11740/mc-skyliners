@@ -1,35 +1,67 @@
 {
   "variants": {
-    "facing=north,powered=false": {
+    "facing=north,powered=false,shifted=false": {
       "model": "aerolarge:block/motion_sensor",
       "y": 0
     },
-    "facing=north,powered=true": {
+    "facing=north,powered=false,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted",
+      "y": 0
+    },
+    "facing=north,powered=true,shifted=false": {
       "model": "aerolarge:block/motion_sensor_on",
       "y": 0
     },
-    "facing=east,powered=false": {
+    "facing=north,powered=true,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted_on",
+      "y": 0
+    },
+    "facing=east,powered=false,shifted=false": {
       "model": "aerolarge:block/motion_sensor",
       "y": 90
     },
-    "facing=east,powered=true": {
+    "facing=east,powered=false,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted",
+      "y": 90
+    },
+    "facing=east,powered=true,shifted=false": {
       "model": "aerolarge:block/motion_sensor_on",
       "y": 90
     },
-    "facing=south,powered=false": {
+    "facing=east,powered=true,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted_on",
+      "y": 90
+    },
+    "facing=south,powered=false,shifted=false": {
       "model": "aerolarge:block/motion_sensor",
       "y": 180
     },
-    "facing=south,powered=true": {
+    "facing=south,powered=false,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted",
+      "y": 180
+    },
+    "facing=south,powered=true,shifted=false": {
       "model": "aerolarge:block/motion_sensor_on",
       "y": 180
     },
-    "facing=west,powered=false": {
+    "facing=south,powered=true,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted_on",
+      "y": 180
+    },
+    "facing=west,powered=false,shifted=false": {
       "model": "aerolarge:block/motion_sensor",
       "y": 270
     },
-    "facing=west,powered=true": {
+    "facing=west,powered=false,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted",
+      "y": 270
+    },
+    "facing=west,powered=true,shifted=false": {
       "model": "aerolarge:block/motion_sensor_on",
+      "y": 270
+    },
+    "facing=west,powered=true,shifted=true": {
+      "model": "aerolarge:block/motion_sensor_shifted_on",
       "y": 270
     }
   }

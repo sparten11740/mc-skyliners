@@ -232,9 +232,9 @@ public final class ControlTower {
 
     /**
      * The way in at the foot of the front face, set back in the thick wall: a glazed front four blocks wide, a pair of
-     * Create's framed glass sliding doors in the middle with fixed glass either side and a glass transom over them, and
-     * over the left door a motion sensor (see {@link MotionSensorBlock}) that slides them open for anyone coming or
-     * going; a grey canopy over the recess outside.
+     * Create's framed glass sliding doors in the middle with fixed glass either side and over them a grey header, on its
+     * outer face, over the middle of the pair, a motion sensor (see {@link MotionSensorBlock}) that slides them open for
+     * anyone coming or going through the header; a grey canopy over the recess outside.
      */
     private void entrance() {
         int front = -INSIDE - 1;
@@ -253,8 +253,11 @@ public final class ControlTower {
             set(x, 1, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
             set(x, 2, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
         }
-        BlockState sensor = AerolargeRegistry.MOTION_SENSOR.get().defaultBlockState().setValue(MotionSensorBlock.FACING, Direction.NORTH);
-        set(ENTRANCE_LEFT + 2, 3, front, sensor);
+        set(ENTRANCE_LEFT + 1, 3, front, TRIM);
+        set(ENTRANCE_LEFT + 2, 3, front, TRIM);
+        BlockState sensor = AerolargeRegistry.MOTION_SENSOR.get().defaultBlockState()
+            .setValue(MotionSensorBlock.FACING, Direction.NORTH).setValue(MotionSensorBlock.SHIFTED, true);
+        set(ENTRANCE_LEFT + 2, 3, front - 1, sensor);
     }
 
     /** One of the entrance's sliding glass doors, as laid out facing south; an iron door without Create. */
