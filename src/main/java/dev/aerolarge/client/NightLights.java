@@ -61,7 +61,11 @@ import org.slf4j.Logger;
  */
 public final class NightLights {
     private static final Logger LOGGER = LogUtils.getLogger();
-    /** How far from the camera lamps are looked for, in blocks: either way along and across, and up and down. */
+    /**
+     * How far from the camera lamps are looked for, at least, in blocks: either way along and across, and up and down.
+     * The look takes in the whole of every section that reaches into that, so what it finds changes only as the camera
+     * crosses from one section into the next, not with every step (see {@link Box}).
+     */
     private static final int REACH = 24;
     private static final int REACH_UP = 12;
     /** How often a look through the blocks round the camera starts, in milliseconds, once the one before is done. */
@@ -75,8 +79,18 @@ public final class NightLights {
     private static final int MAX_LIGHTS = 32;
     /** Lamps in a row at most this many blocks apart shine as one light: the crown's stand six apart. */
     private static final int MAX_GAP = 6;
-    /** The longest a row of lamps is drawn as one light, in blocks, so that the rows out of reach can be left out. */
+    /**
+     * The longest a row of lamps is drawn as one light, in blocks, so that the rows out of reach can be left out. A row
+     * is cut at every multiple of this along it, where it lies whatever the camera does, so a long row stays cut the same
+     * way look after look: cut from its first lamp found, each step that brought another lamp into the look cut it anew,
+     * and every light along it was dropped and drawn again a little longer or shorter, flickering twice a second.
+     */
     private static final int MAX_RUN = 24;
+    /**
+     * How much nearer than a light already drawn a row must be to take its place among the {@link #MAX_LIGHTS}, in
+     * blocks, so that two rows about as far off do not take turns from one look to the next.
+     */
+    private static final double KEEP_MARGIN = 4;
     /** Daylight coming in this strongly, in light levels, is open sky: the outside. */
     private static final int OPEN_SKY = 15;
     /**
@@ -274,9 +288,9 @@ public final class NightLights {
     }
 
     /**
-     * The blocks round a point in one frame (the world, or an assembled airliner's blocks), {@link #REACH} either way
-     * along and across and {@link #REACH_UP} up and down, looked through for lamps a section at a time: up each chunk's
-     * sections, chunk by chunk.
+     * The blocks round a point in one frame (the world, or an assembled airliner's blocks), the whole of every section
+     * within {@link #REACH} of it either way along and across and {@link #REACH_UP} up and down, looked through for lamps
+     * a section at a time: up each chunk's sections, chunk by chunk.
      */
     private static final class Box {
         final UUID frame;
@@ -297,15 +311,24 @@ public final class NightLights {
         Box(UUID frame, Vec3 centre) {
             this.frame = frame;
             this.centre = centre;
-            minX = Mth.floor(centre.x) - REACH;
-            maxX = Mth.floor(centre.x) + REACH;
-            minY = Mth.floor(centre.y) - REACH_UP;
-            maxY = Mth.floor(centre.y) + REACH_UP;
-            minZ = Mth.floor(centre.z) - REACH;
-            maxZ = Mth.floor(centre.z) + REACH;
+            minX = sectionStart(Mth.floor(centre.x) - REACH);
+            maxX = sectionEnd(Mth.floor(centre.x) + REACH);
+            minY = sectionStart(Mth.floor(centre.y) - REACH_UP);
+            maxY = sectionEnd(Mth.floor(centre.y) + REACH_UP);
+            minZ = sectionStart(Mth.floor(centre.z) - REACH);
+            maxZ = sectionEnd(Mth.floor(centre.z) + REACH);
             chunkX = minX >> 4;
             chunkZ = minZ >> 4;
             sectionY = minY >> 4;
+        }
+
+        /** The first and the last block of the section a block is in, along one axis. */
+        private static int sectionStart(int block) {
+            return block & ~15;
+        }
+
+        private static int sectionEnd(int block) {
+            return block | 15;
         }
 
         /** Looks through the next section for lamps; false once all have been. */
@@ -356,9 +379,12 @@ public final class NightLights {
         }
     }
 
-    /** Keeps the nearest rows of lamps a look found, and adds and drops lights to match. */
+    /**
+     * Keeps the nearest rows of lamps a look found, those already drawn counted {@link #KEEP_MARGIN} nearer, and adds and
+     * drops lights to match.
+     */
     private static void light(List<Candidate> candidates) {
-        candidates.sort(Comparator.comparingDouble(Candidate::distance));
+        candidates.sort(Comparator.comparingDouble(candidate -> candidate.distance() - (drawn(candidate) ? KEEP_MARGIN : 0)));
         Map<UUID, Set<Glow>> wanted = new HashMap<>();
         for (Candidate candidate : candidates.subList(0, Math.min(MAX_LIGHTS, candidates.size()))) {
             wanted.computeIfAbsent(candidate.frame(), frame -> new HashSet<>()).add(candidate.glow());
@@ -393,6 +419,12 @@ public final class NightLights {
             }
             cabin.anchor = frame.equals(WORLD) ? null : glows.iterator().next().middle();
         });
+    }
+
+    /** Whether a row of lamps a look found is drawn already. */
+    private static boolean drawn(Candidate candidate) {
+        Cabin cabin = CABINS.get(candidate.frame());
+        return cabin != null && cabin.lights.containsKey(candidate.glow());
     }
 
     /** Places the lights of each assembled airliner as Sable draws it at this partial tick. */
@@ -494,7 +526,7 @@ public final class NightLights {
 
     /**
      * The lamps' rows, each as one light: lamps of a kind shining the same way, in a line along the cabin (or, shining
-     * along the cabin, across it), at most {@link #MAX_GAP} apart and {@link #MAX_RUN} long.
+     * along the cabin, across it), at most {@link #MAX_GAP} apart, and cut at every multiple of {@link #MAX_RUN}.
      */
     private static List<Glow> rows(List<Found> lamps) {
         Direction.Axis cabin = cabinAxis(lamps);
@@ -515,7 +547,8 @@ public final class NightLights {
             Found last = first;
             for (Found lamp : members.subList(1, members.size())) {
                 int at = lamp.pos().get(row.along());
-                if (at - last.pos().get(row.along()) > MAX_GAP || at - first.pos().get(row.along()) >= MAX_RUN) {
+                boolean nextRun = Math.floorDiv(at, MAX_RUN) != Math.floorDiv(first.pos().get(row.along()), MAX_RUN);
+                if (at - last.pos().get(row.along()) > MAX_GAP || nextRun) {
                     glows.add(glow(row, first, last));
                     first = lamp;
                 }
