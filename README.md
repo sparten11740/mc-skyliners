@@ -956,10 +956,19 @@ anywhere). On its own autopilot's map an airliner's transponder is left out, the
 
 The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
 every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes
-round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower
-(filled in round it while the map is open), rings every 250 blocks round the tower, and every transponder's marker.
-Drag it, scroll to zoom, point at a marker to see what it is, how far from the tower, and for an airliner how high and
-how fast it flies; click on one to centre the map on it.
+round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower,
+rings every 250 blocks round it, and every transponder's marker. Drag it, scroll to zoom, point at a marker to see what
+it is, how far from the tower, and for an airliner how high and how fast it flies; click on one to centre the map on it.
+
+While a radar screen is loaded, the server surveys the land round it, nobody needing to go there: it loads the chunks
+round the tower one by one, nearest first, out to some thousand blocks, notes each one's land as the maps draw it and
+lets it go again. Land nobody has been near is generated as it is loaded, so the survey goes slowly, about five chunks
+a second, a few hundred blocks round the tower in the first minutes and all of it in under an hour, and pauses while
+the server falls behind. Every tower in a dimension shares one survey: land any of them has surveyed is never surveyed
+again, so towers near each other split the work, and a new tower near an old one knows its land at once. The survey is
+kept with the world, in the dimension's `data` folder (`aerolarge_radar.dat`). Players within 96 blocks of a radar
+screen are sent the land surveyed round it, a few chunks a tick, and it goes into their own maps: the radar's, the
+autopilot's (see Autopilot) and the passenger screens' route map.
 
 ### Flying it
 

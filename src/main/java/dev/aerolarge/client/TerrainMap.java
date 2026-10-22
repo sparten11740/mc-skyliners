@@ -1,6 +1,9 @@
 package dev.aerolarge.client;
 
 import com.mojang.logging.LogUtils;
+import dev.aerolarge.radar.LandTile;
+import dev.aerolarge.radar.RadarLand;
+import dev.aerolarge.radar.RadarSurvey;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,28 +25,25 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import org.slf4j.Logger;
 
 /**
  * What the passenger screens' route map (see {@link RouteMap}) knows of the land: the colour and height of the ground
- * in every column of every chunk seen from an airliner, and the villages the server has told of (see
- * {@code VillagesBelow}). It is kept by world and dimension, in a file of its own in the game's folder, so the map goes
- * on growing flight after flight, as a handheld map fills in.
+ * in every column of every chunk seen from an airliner or a tower's radar, or surveyed by the server round a tower (see
+ * {@link RadarSurvey}), and the villages the server has told of (see {@code VillagesBelow}). It is kept by world and
+ * dimension, in a file of its own in the game's folder, so the map goes on growing flight after flight, as a handheld
+ * map fills in.
  *
  * <p>The client only has the chunks round the player, so the land is taken in as the airliner flies over it: each tick
  * a few chunks round the airliner not yet taken in are looked at, nearest first, and those the client has are kept.
  * Each column keeps the map colour of its top block that has one (as vanilla's maps colour it), how deep the water
- * over it is, and its height, from which the map shades the slopes.
+ * over it is, and its height, from which the map shades the slopes (see {@link LandTile}).
  */
 public final class TerrainMap {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -53,7 +53,7 @@ public final class TerrainMap {
     private static final int LOOK_PER_TICK = 48;
     private static final int TAKE_PER_TICK = 4;
     /** Water deeper than this, in blocks, is drawn as deep as this. */
-    static final int DEEPEST = 10;
+    static final int DEEPEST = LandTile.DEEPEST;
     /** How often what has been taken in is saved, in milliseconds, besides on leaving the world. */
     private static final long SAVE_EVERY = 5 * 60 * 1000;
     /** The file format's version: a file of another is started afresh. */
@@ -153,41 +153,33 @@ public final class TerrainMap {
         if (chunk == null || chunk.isEmpty()) {
             return false;
         }
-        Tile tile = new Tile(new int[256], new short[256]);
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int i = 0; i < 256; i++) {
-            int x = i & 15;
-            int z = i >> 4;
-            pos.set((chunkX << 4) + x, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z), (chunkZ << 4) + z);
-            column(level, chunk, pos, tile, i);
-        }
-        tiles.put(ChunkPos.asLong(chunkX, chunkZ), tile);
-        dirty = true;
+        put(ChunkPos.asLong(chunkX, chunkZ), LandTile.sample(level, chunk));
         return true;
     }
 
-    /** Takes in one column, from its top block down: its colour, the water's depth over it and its height. */
-    private static void column(Level level, LevelChunk chunk, BlockPos.MutableBlockPos pos, Tile tile, int index) {
-        int bottom = level.getMinBuildHeight();
-        BlockState state = chunk.getBlockState(pos);
-        MapColor colour = state.getMapColor(level, pos);
-        // Down through whatever has no colour on a map (glass, say) to what has.
-        while (colour == MapColor.NONE && pos.getY() > bottom) {
-            state = chunk.getBlockState(pos.move(Direction.DOWN));
-            colour = state.getMapColor(level, pos);
+    /** Keeps a chunk of land taken in, here or by the server. */
+    private void put(long at, LandTile land) {
+        Tile tile = new Tile(new int[LandTile.COLUMNS], land.heights().clone());
+        for (int i = 0; i < LandTile.COLUMNS; i++) {
+            tile.colours()[i] = land.rgb(i);
         }
-        int depth = state.getFluidState().isEmpty() ? 0 : depth(chunk, pos.mutable(), bottom);
-        tile.colours()[index] = colour.col | depth << 24;
-        tile.heights()[index] = (short) pos.getY();
+        tiles.put(at, tile);
+        dirty = true;
     }
 
-    /** How deep the water is under its surface here, in blocks, up to {@link #DEEPEST}. */
-    private static int depth(LevelChunk chunk, BlockPos.MutableBlockPos under, int bottom) {
-        int depth = 0;
-        while (depth < DEEPEST && under.getY() > bottom && !chunk.getBlockState(under.move(Direction.DOWN)).getFluidState().isEmpty()) {
-            depth++;
+    /**
+     * Land the server's survey round a tower has taken in (see {@link RadarSurvey}), by chunk: kept on the map of the
+     * dimension the player is in, as if the player had seen it, for the tower's radar and every other map.
+     */
+    public static void surveyed(RadarLand payload) {
+        Level level = Minecraft.getInstance().level;
+        TerrainMap map = level != null ? of(level) : null;
+        if (map == null) {
+            return;
         }
-        return depth;
+        for (RadarLand.Chunk chunk : payload.chunks()) {
+            map.put(chunk.at(), chunk.land());
+        }
     }
 
     /** The column's colour (RGB, the water's depth over it in the top byte), or {@link #UNKNOWN} if not taken in yet. */

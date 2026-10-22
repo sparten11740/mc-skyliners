@@ -27,15 +27,19 @@ import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
 import dev.aerolarge.radar.RadarContacts;
+import dev.aerolarge.radar.RadarLand;
+import dev.aerolarge.radar.RadarSurvey;
 import dev.aerolarge.radar.Transponders;
 import dev.aerolarge.radio.Broadcasts;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -74,18 +78,30 @@ public final class Aerolarge {
                 AirframeBuild.tick(level);
                 Transponders.tick(level);
                 ControlTower.tick(level);
+                RadarSurvey.tick(level);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
+            if (event.getLevel() instanceof ServerLevel level) {
+                RadarSurvey.save(level);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                RadarSurvey.forget(player);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Unload.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.drop(level);
                 ControlTower.drop(level);
+                RadarSurvey.unload(level);
             }
         });
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("9")
+        event.registrar("10")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -105,6 +121,8 @@ public final class Aerolarge {
             .playToClient(OpenTowerRadar.TYPE, OpenTowerRadar.STREAM_CODEC,
                 (payload, context) -> RadarScreen.open(payload.pos()))
             .playToClient(RadarContacts.TYPE, RadarContacts.STREAM_CODEC,
-                (payload, context) -> RadarPicture.receive(payload));
+                (payload, context) -> RadarPicture.receive(payload))
+            .playToClient(RadarLand.TYPE, RadarLand.STREAM_CODEC,
+                (payload, context) -> TerrainMap.surveyed(payload));
     }
 }
