@@ -1013,7 +1013,8 @@ it is from the board, its heading, and what it is doing: parked, taxiing, climbi
 when it heads for the tower close by or comes down toward it; a transponder on the ground is a fix. The airliners come
 first, then the nearest; when there are more than it holds, it pages through them every five seconds. The control
 tower's hangs tilted from the cab's ceiling over the front consoles, looking down at the seats; its own transponder is
-left off it.
+left off it. Round the rest of the cab, instrument panels stand on the corners of the consoles' ring, their screens
+glowing at night, each in front of a mullion so it hides none of the view.
 
 ### Runways
 

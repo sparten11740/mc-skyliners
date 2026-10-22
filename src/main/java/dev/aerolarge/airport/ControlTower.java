@@ -673,11 +673,19 @@ public final class ControlTower {
     /**
      * The tower's instruments, once the consoles and the lights are in: the flight strip board hanging tilted from the
      * ceiling over the front consoles, three blocks wide across the middle, looking down at the seats; the weather
-     * screen on the east console, facing the second radar screen across the cab; and a wind sock (see {@link Wind}) on a mast of its own at the middle of
-     * the roof's west rim, clear of the antennas and their obstruction lights, high enough that a limp sock hangs over
-     * the roof without touching it, and out at the edge where the walkway and the ground below see it.
+     * screen on the east console, facing the second radar screen across the cab; a wind sock (see {@link Wind}) on a
+     * mast of its own at the middle of the roof's west rim, clear of the antennas and their obstruction lights, high
+     * enough that a limp sock hangs over the roof without touching it, and out at the edge where the walkway and the
+     * ground below see it; and on every corner of the consoles' ring with nothing on it yet, an instrument panel facing
+     * into the cab, its screens glowing at night, each in front of a mullion so it hides no more of the view than the
+     * mullion does.
      */
     private void instruments() {
+        for (int[] column : octagon(CAB - 1)) {
+            if (octagonCorner(column[0], column[1], CAB - 1) && freeConsole(column[0], column[1])) {
+                set(column[0], KNEE + 1, column[1], facing(AerolargeRegistry.INSTRUMENT_PANEL.get(), inward(column[0], column[1])));
+            }
+        }
         BlockState board = facing(AerolargeRegistry.FLIGHT_STRIP_BOARD.get(), Direction.SOUTH).setValue(WideScreenBlock.TILTED, true);
         // Facing south, the board's parts run to the viewer's right, east, from its westmost.
         for (int part = 0; part < WideScreenBlock.COLUMNS; part++) {
@@ -688,6 +696,20 @@ public final class ControlTower {
             set(-WALKWAY, y, 0, Blocks.LIGHTNING_ROD.defaultBlockState());
         }
         set(-WALKWAY, WIND_SOCK_Y, 0, AerolargeRegistry.WIND_SOCK.get().defaultBlockState());
+    }
+
+    /** Whether a column of the cab has a console (see {@link #consoleAt}) with nothing on top of it. */
+    private boolean freeConsole(int x, int z) {
+        BlockState over = cells.get(new BlockPos(x, KNEE + 1, z));
+        return consoleAt(x, z) && (over == null || over.isAir());
+    }
+
+    /** The way into the cab from a corner of the consoles' ring: off its straight east or west side, or its front or back. */
+    private static Direction inward(int x, int z) {
+        if (Math.abs(x) == CAB - 1) {
+            return x < 0 ? Direction.EAST : Direction.WEST;
+        }
+        return z < 0 ? Direction.SOUTH : Direction.NORTH;
     }
 
     private static BlockState facing(Block block, Direction facing) {
