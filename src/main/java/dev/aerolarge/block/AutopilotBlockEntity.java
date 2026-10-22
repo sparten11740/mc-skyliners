@@ -58,7 +58,9 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  * it holds the height, speed and heading it found. Its settings screen, opened from the autopilot or the flight deck's
  * autopilot screen, engages it and sets the targets (see {@link #set}); switching it off hands the airliner back to
  * its controls: the thrust levers, the tiller and the parking brake. Asked to land, it comes down ahead, touches down
- * gently and brakes to a stop, then parks and hands back to those controls by itself.
+ * gently and brakes to a stop, then parks and hands back to those controls by itself. Set to fly to a pin and land
+ * there, it looks for dry, level land near the pin with nothing in the way of its wings, and flies a proper approach to
+ * it, down onto it along its centre line (see {@link PinLanding}).
  *
  * <p>Whether it is engaged or not, it gives the flight deck its callouts (see {@link Callouts}), and off it still
  * keeps the airliner safe: in the air its jets steady any quick pitching or rolling and push the nose and the wings
@@ -110,18 +112,25 @@ public class AutopilotBlockEntity extends BlockEntity {
     /**
      * What the settings screen sets: the speed in blocks a second, the height to hold in world blocks, the heading as
      * a compass bearing (0 north, 90 east), whether to hold that heading, circle or fly to a destination, the circle's
-     * radius in blocks, and the destination (its x and z in the world; y unused); whole numbers, as the screen shows them.
+     * radius in blocks, the destination (its x and z in the world; y unused), and whether to land near the destination
+     * rather than circle it; whole numbers, as the screen shows them.
      */
-    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius, BlockPos destination) {
-        public static final StreamCodec<FriendlyByteBuf, Settings> STREAM_CODEC = StreamCodec.composite(
+    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius, BlockPos destination, boolean landAtPin) {
+        public static final StreamCodec<FriendlyByteBuf, Settings> STREAM_CODEC = NeoForgeStreamCodecs.composite(
             ByteBufCodecs.VAR_INT, Settings::speed,
             ByteBufCodecs.VAR_INT, Settings::altitude,
             ByteBufCodecs.VAR_INT, Settings::heading,
             NeoForgeStreamCodecs.enumCodec(Lateral.class), Settings::lateral,
             ByteBufCodecs.VAR_INT, Settings::radius,
             BlockPos.STREAM_CODEC, Settings::destination,
+            ByteBufCodecs.BOOL, Settings::landAtPin,
             Settings::new
         );
+
+        /** Whether these settings fly to the pin to land near it. */
+        public boolean landsAtPin() {
+            return lateral == Lateral.DESTINATION && landAtPin;
+        }
     }
 
     /** What engaging flies: the phase it starts in, the runway's height, and the height, speed and heading to hold. */
@@ -149,9 +158,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Nose attitude at rotation, in degrees: what lifts the airliner off the runway. */
     private static final double ROTATION_PITCH = 9;
     /** Rate of climb asked for, in blocks a second per block of height still to go, and the most up and down. */
-    private static final double HEIGHT_GAIN = 0.2;
-    private static final double MAX_CLIMB_RATE = 8;
-    private static final double MAX_SINK_RATE = 6;
+    static final double HEIGHT_GAIN = 0.2;
+    static final double MAX_CLIMB_RATE = 8;
+    static final double MAX_SINK_RATE = 6;
     /**
      * Degrees of pitch added per block a second it climbs too slowly, taken off per block a second each second it is
      * gaining climb (damping), and the range the nose is held in.
@@ -193,7 +202,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final double BANK_GAIN = 0.8;
     private static final double TURN_DAMPING = 1.0;
-    private static final double MAX_BANK = 25;
+    static final double MAX_BANK = 25;
     /**
      * The bank a circle is flown at, at most, in degrees: a circle set too tight to fly at this bank at the speed it
      * goes is flown wider, round the same middle, so there is bank to spare for steering back onto it and nobody aboard
@@ -237,10 +246,10 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Landing: the rate it sinks at, in blocks a second; how much less it sinks per block nearer the ground, from the
      * height the flare starts at; and the rate it touches down at, half what a butter landing has to stay under.
      */
-    private static final double LANDING_SINK_RATE = 3;
-    private static final double FLARE_GAIN = 0.2;
-    private static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
-    private static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
+    static final double LANDING_SINK_RATE = 3;
+    static final double FLARE_GAIN = 0.2;
+    static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
+    static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
     /**
      * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
      * take-off or landing, its long wings must stay clear of the ground.
@@ -337,6 +346,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Hop hop = new Hop();
     /** Whether the settings screen offers to hop the airliner free: found on the server each tick, sent to the clients. */
     private boolean stuck;
+    /** Whether, flying to a pin, it lands near it rather than circling it (see {@link PinLanding}). */
+    private boolean landAtPin;
+    /** Landing near the pin: the land surveyed, the runway found and the approach to it. */
+    private final PinLanding pinLanding = new PinLanding();
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -393,6 +406,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         return stuck;
     }
 
+    /** The runway it has picked to land on near the pin, while it flies to land there; null for none. */
+    @Nullable
+    public Runway runway() {
+        return pinLanding.runway();
+    }
+
     /**
      * Whether a player can work the autopilot from where they are: within reach of it, give or take the few blocks a
      * container's screen stays open past reach, which takes in the flight deck's autopilot screen. With Sable, reach is
@@ -433,7 +452,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             plan = plan(level, state);
         }
         Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
-            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius), BlockPos.containing(orbitX, 0, orbitZ));
+            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius), BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
         double floor = floor(plan.runway());
         PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF,
             Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level)))));
@@ -463,6 +482,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (phase == Phase.ROLLOUT) {
             return Component.translatable("message.aerolarge.autopilot.rolling_out");
         }
+        if (tooLowToGoAround(level, state, settings)) {
+            return Component.translatable("message.aerolarge.autopilot.pin.too_low");
+        }
         boolean engaging = phase == Phase.OFF;
         if (engaging) {
             engage(level, state);
@@ -483,7 +505,13 @@ public class AutopilotBlockEntity extends BlockEntity {
             if (level instanceof ServerLevel serverLevel) {
                 atc.goAround(serverLevel, this, state, radioAltitude(level, state));
             }
+        } else if (pinLanding.onFinal() && level instanceof ServerLevel serverLevel) {
+            // On final to a runway near the pin, not yet flaring: it goes around too, climbing away off the glide path.
+            atc.goAround(serverLevel, this, state, radioAltitude(level, state));
         }
+        // Whatever is set, a runway near the pin is given up; still set to land there, it looks for one afresh.
+        pinLanding.abandon();
+        landAtPin = settings.landAtPin();
         targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
         double floor = floor(runwayAltitude);
         targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, ceiling(level)));
@@ -504,11 +532,28 @@ public class AutopilotBlockEntity extends BlockEntity {
             startOrbit(state, settings.lateral());
         }
         changed();
-        Component mode = lateral == Lateral.HEADING
-            ? Component.translatable("message.aerolarge.autopilot.mode.heading", compass(targetHeading))
-            : Component.translatable("message.aerolarge.autopilot.mode." + lateral.name().toLowerCase(Locale.ROOT), Math.round(orbitRadius));
         String said = !engaging ? "set" : phase == Phase.TAKEOFF ? "engaged" : "holding";
-        return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), mode);
+        return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), modeSaid());
+    }
+
+    /** The mode it flies, as it says it: the heading, the circle and its radius, or the pin and what it does there. */
+    private Component modeSaid() {
+        if (lateral == Lateral.HEADING) {
+            return Component.translatable("message.aerolarge.autopilot.mode.heading", compass(targetHeading));
+        }
+        if (lateral == Lateral.DESTINATION && landAtPin) {
+            return Component.translatable("message.aerolarge.autopilot.mode.destination_land");
+        }
+        return Component.translatable("message.aerolarge.autopilot.mode." + lateral.name().toLowerCase(Locale.ROOT), Math.round(orbitRadius));
+    }
+
+    /**
+     * Whether it is landing on the runway near the pin, below the height the flare starts at, and the settings would
+     * stop it landing there: too low to go around then, it lands, and the settings are not taken. Settings that still
+     * land there go around, as they do for the plain landing.
+     */
+    private boolean tooLowToGoAround(Level level, SableFlight.State state, Settings settings) {
+        return phase == Phase.LAND && pinLanding.landing() && !settings.landsAtPin() && radioAltitude(level, state) < FLARE_HEIGHT;
     }
 
     /**
@@ -532,10 +577,17 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         phase = Phase.LAND;
         lateral = Lateral.HEADING;
+        // Down ahead, wherever that is: any runway found near the pin is given up.
+        pinLanding.abandon();
         targetHeading = state.heading();
-        targetSpeed = Mth.clamp(AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get() * APPROACH_MARGIN, MIN_SPEED, MAX_SPEED);
+        targetSpeed = approachSpeed();
         changed();
         return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading));
+    }
+
+    /** The speed it starts the approach at: a little above the rotation speed, within the speeds it flies. */
+    static double approachSpeed() {
+        return Mth.clamp(AerolargeConfig.AUTOPILOT_ROTATE_SPEED.get() * APPROACH_MARGIN, MIN_SPEED, MAX_SPEED);
     }
 
     /**
@@ -666,6 +718,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         Hop.Hold hold = autopilot.hop.watch(autopilot.stance(serverLevel, flight));
         autopilot.offerHop(hold == Hop.Hold.NONE || hold == Hop.Hold.FIRING);
         autopilot.watchUnattended(serverLevel, flight, radio);
+        if (autopilot.flyingToLand()) {
+            autopilot.followPin(serverLevel, flight, radio);
+        }
         if (autopilot.phase != Phase.OFF) {
             autopilot.fly(serverLevel, flight);
         } else {
@@ -682,7 +737,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * on the ground or landing already. Looked at every {@link #ABOARD_LOOK} ticks.
      */
     private void watchUnattended(ServerLevel level, SableFlight.State flight, double radio) {
-        if (radio <= AIRBORNE || phase == Phase.LAND || phase == Phase.ROLLOUT) {
+        if (radio <= AIRBORNE || phase == Phase.LAND || phase == Phase.ROLLOUT || pinLanding.runway() != null) {
             unattended = 0;
             return;
         }
@@ -706,6 +761,81 @@ public class AutopilotBlockEntity extends BlockEntity {
         } else if (flown && flight.velocity().length() < STOPPED) {
             arrive();
         }
+    }
+
+    /**
+     * Whether it flies to the pin to land near it: set to, in the air (not landing yet), and done climbing out after
+     * take-off.
+     */
+    private boolean flyingToLand() {
+        boolean flying = phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE;
+        return flying && landAtPin && lateral == Lateral.DESTINATION && !climbingOut;
+    }
+
+    /** Whether landing near the pin flies it this tick: on its way there, or landing on the runway it found. */
+    private boolean guided() {
+        return flyingToLand() || pinLanding.landing() && (phase == Phase.LAND || phase == Phase.ROLLOUT);
+    }
+
+    /** The height of the bottom of the wheels in the world. */
+    private double wheels(SableFlight.State state) {
+        return state.position().y - 0.5 - wheelsBelow;
+    }
+
+    /**
+     * Flying to the pin to land near it: surveys the land and looks for a runway (see {@link PinLanding}), and acts on
+     * what that comes to: says a runway is found, or that there is nowhere clear to land; turning onto final, the tower
+     * clears it to land and the cabin hears the landing announcement, as for the plain landing; then it flares and
+     * lands, or goes around to try again.
+     */
+    private void followPin(ServerLevel level, SableFlight.State state, double radio) {
+        pinLanding.aim(Mth.floor(orbitX), Mth.floor(orbitZ));
+        PinLanding.Event event = pinLanding.tick(level, worldPosition, nose(), state, radio, wheels(state), approachSpeed());
+        switch (event) {
+            case FOUND -> foundRunway(level, state);
+            case NOWHERE -> tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.pin.nowhere"));
+            case FINAL -> turnFinal(level, state, radio);
+            case FLARE -> flare();
+            case MISSED -> goAroundAgain(level, state, radio);
+            case NONE -> {
+            }
+        }
+    }
+
+    /** A runway found near the pin: it says where, and slows to the approach speed, to turn tighter on the way in. */
+    private void foundRunway(ServerLevel level, SableFlight.State state) {
+        Runway runway = pinLanding.runway();
+        if (runway == null) {
+            return;
+        }
+        targetSpeed = approachSpeed();
+        long fromPin = Math.round(Math.hypot(runway.x() - orbitX, runway.z() - orbitZ));
+        tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.pin.found", fromPin, compass(runway.heading())));
+        changed();
+    }
+
+    /** Turning onto final: cleared to land, the landing announcement, and the runway's heading to show as set. */
+    private void turnFinal(ServerLevel level, SableFlight.State state, double radio) {
+        Runway runway = pinLanding.runway();
+        if (runway != null) {
+            targetHeading = runway.heading();
+        }
+        atc.approach(level, this, state, radio);
+        announcements.announce(CabinAnnouncements.Announcement.LANDING, this);
+        changed();
+    }
+
+    /** At the flare's start, lined up: it lands, as the plain landing does from there. */
+    private void flare() {
+        phase = Phase.LAND;
+        changed();
+    }
+
+    /** Not lined up, or too high, at the flare's start: it goes around, back to the start of final, and tries again. */
+    private void goAroundAgain(ServerLevel level, SableFlight.State state, double radio) {
+        atc.goAround(level, this, state, radio);
+        tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.pin.go_around"));
+        changed();
     }
 
     /** Arrived: the arrival announcement, which switches the seatbelt signs off, and nothing more until it flies again. */
@@ -806,6 +936,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Down the runway and climbing out it holds the heading it started on; the heading set is flown once it is
         // high enough to turn.
         double wanted = takingOff || climbingOut ? runwayHeading : targetHeading;
+        // Landing near the pin, that steers, and sets the height or the climb, until it has stopped.
+        PinLanding.Guide guide = guided() ? pinLanding.guide(state, radio, wheels(state), targetAltitude, onGround) : null;
+        if (guide != null) {
+            wanted = guide.heading();
+        }
         double bank = 0;
         if (takingOff) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
@@ -826,10 +961,9 @@ public class AutopilotBlockEntity extends BlockEntity {
             thrust = 0;
         } else {
             boolean landing = phase == Phase.LAND;
-            double heightToGo = targetAltitude - state.position().y;
-            // Landing, it sinks gently, and ever more gently the nearer the ground below: the flare.
-            double wantedClimb = landing ? -Mth.clamp(FLARE_GAIN * radio, TOUCHDOWN_SINK, LANDING_SINK_RATE)
-                : Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
+            boolean onFinal = guide != null && guide.onFinal();
+            double heightToGo = (guide != null ? guide.altitude() : targetAltitude) - state.position().y;
+            double wantedClimb = wantedClimb(landing, guide, heightToGo, radio);
             double climbError = wantedClimb - climb;
             // Landing, the nose comes up no further than at rotation, so the tail stays clear of the ground.
             double maxPitch = landing ? ROTATION_PITCH : MAX_PITCH;
@@ -838,16 +972,18 @@ public class AutopilotBlockEntity extends BlockEntity {
             if (!pinned && Math.abs(targetPitch - pitch) < TRIM_WINDOW) {
                 trim = Mth.clamp(trim + TRIM_RATE * Mth.clamp(climbError, -TRIM_CLIMB_LIMIT, TRIM_CLIMB_LIMIT), MIN_PITCH, MAX_PITCH);
             }
-            if (landing && radio > FLARE_HEIGHT) {
+            if ((landing || onFinal) && radio > FLARE_HEIGHT) {
                 // Coming in, slower while the nose is below the way it goes and faster while above; flaring, it keeps
-                // the speed it found.
+                // the speed it found. Down the glide path to a runway near the pin, it finds the speed there already.
                 double horizontal = Math.max(1, Math.hypot(state.velocity().x, state.velocity().z));
                 double attitude = pitch - Math.toDegrees(Math.atan2(climb, horizontal));
                 targetSpeed = Mth.clamp(targetSpeed + APPROACH_SPEED_RATE * (attitude - APPROACH_ATTITUDE),
                     APPROACH_SLOWEST * rotateSpeed, MAX_SPEED);
             }
             thrust = holdSpeed(speed, speedCommand);
-            if (!landing) {
+            if (onFinal) {
+                phase = Phase.DESCENT;
+            } else if (!landing) {
                 phase = Math.abs(heightToGo) < LEVEL_OFF ? Phase.CRUISE : heightToGo > 0 ? Phase.CLIMB : Phase.DESCENT;
             } else if (radio < Callouts.ON_GROUND) {
                 phase = Phase.ROLLOUT;
@@ -855,7 +991,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             // The turn it should be making, in degrees a second: round the circle at this speed in an orbit, none on a
             // heading.
             double wantedTurn = 0;
-            if (lateral != Lateral.HEADING && !climbingOut) {
+            if (lateral != Lateral.HEADING && !climbingOut && guide == null) {
                 double horizontal = Math.hypot(state.velocity().x, state.velocity().z);
                 double gravity = Math.max(1, state.gravity());
                 double tightest = horizontal * horizontal / (gravity * Math.tan(Math.toRadians(ORBIT_BANK)));
@@ -913,6 +1049,23 @@ public class AutopilotBlockEntity extends BlockEntity {
         } else {
             setChanged();
         }
+    }
+
+    /**
+     * The rate to climb at, in blocks a second, in the air (not taking off or rolling out). Landing, it sinks gently,
+     * and ever more gently the nearer the ground below: the flare; on a runway near the pin, flared over whichever is
+     * nearer, the ground below or the runway, so it does not sink below the runway over a dip before it. Down the glide
+     * path to such a runway, the rate the path asks for; else the rate the height still to go asks for.
+     */
+    private static double wantedClimb(boolean landing, @Nullable PinLanding.Guide guide, double heightToGo, double radio) {
+        if (landing) {
+            double above = guide != null ? Math.min(radio, guide.aboveRunway()) : radio;
+            return -Mth.clamp(FLARE_GAIN * above, TOUCHDOWN_SINK, LANDING_SINK_RATE);
+        }
+        if (guide != null && !Double.isNaN(guide.climb())) {
+            return guide.climb();
+        }
+        return Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
     }
 
     /**
@@ -1106,6 +1259,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private void disengage() {
         phase = Phase.OFF;
         awaitingClearance = false;
+        pinLanding.abandon();
         changed();
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
@@ -1181,8 +1335,17 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putBoolean("Flown", flown);
     }
 
-    /** What the screen shows: the phase, the modes and the targets. */
+    /**
+     * What the screen shows: the phase, the modes and the targets; whether it lands at the pin, and the runway it has
+     * found there and how far along the approach to it it is, which the map shows.
+     */
     private void saveTargets(CompoundTag tag) {
+        tag.putBoolean("LandAtPin", landAtPin);
+        Runway runway = pinLanding.runway();
+        if (runway != null) {
+            runway.save(tag, "Runway");
+            tag.putString("Approach", pinLanding.stage().name());
+        }
         tag.putString("Phase", phase.name());
         tag.putString("Lateral", lateral.name());
         tag.putDouble("TargetHeading", targetHeading);
@@ -1229,8 +1392,25 @@ public class AutopilotBlockEntity extends BlockEntity {
         orbitX = tag.getDouble("OrbitX");
         orbitZ = tag.getDouble("OrbitZ");
         orbitRadius = tag.contains("OrbitRadius") ? tag.getDouble("OrbitRadius") : DEFAULT_RADIUS;
+        // Saved before it could land at the pin: it circles it.
+        landAtPin = tag.getBoolean("LandAtPin");
+        loadRunway(tag);
         // Only ever in the update sent to clients: the server finds it afresh each tick.
         stuck = tag.getBoolean("Stuck");
+    }
+
+    /**
+     * The runway near the pin and the stage of the approach to it, as saved or sent: taken up again where it was, or,
+     * with none, any runway given up (the survey of the land is not saved: it is seen again as the airliner flies).
+     */
+    private void loadRunway(CompoundTag tag) {
+        Runway runway = Runway.load(tag, "Runway");
+        if (runway == null) {
+            pinLanding.abandon();
+            return;
+        }
+        PinLanding.Stage stage = parse(PinLanding.Stage.class, tag.getString("Approach"), PinLanding.Stage.ENTRY);
+        pinLanding.resume(runway, stage, Mth.floor(orbitX), Mth.floor(orbitZ));
     }
 
     private static <E extends Enum<E>> E parse(Class<E> type, String name, E fallback) {

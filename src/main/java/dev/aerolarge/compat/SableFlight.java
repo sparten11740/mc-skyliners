@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
@@ -128,6 +129,16 @@ public final class SableFlight {
      */
     public static double underside(Level level, Vec3 point) {
         return SABLE ? Access.underside(level, point) : Double.NaN;
+    }
+
+    /**
+     * The box round all the blocks of the assembled airliner a point among its blocks is part of, in its plot, corners
+     * included; null when the point is not among an assembled airliner's blocks. What the autopilot measures the
+     * airliner by, to know how much room it needs to land (see {@code AirlinerShape}).
+     */
+    @Nullable
+    public static BoundingBox blocks(Level level, Vec3 point) {
+        return SABLE ? Access.blocks(level, point) : null;
     }
 
     /** Whether the entity lives among an assembled airliner's blocks, in its plot, as the cabin's loose things do. */
@@ -312,6 +323,16 @@ public final class SableFlight {
             }
             BoundingBox3ic blocks = airliner.getPlot().getBoundingBox();
             return blocks == BoundingBox3i.EMPTY ? Double.NaN : blocks.minY();
+        }
+
+        @Nullable
+        static BoundingBox blocks(Level level, Vec3 point) {
+            SubLevel airliner = Sable.HELPER.getContaining(level, point);
+            if (airliner == null) {
+                return null;
+            }
+            BoundingBox3ic box = airliner.getPlot().getBoundingBox();
+            return box == BoundingBox3i.EMPTY ? null : new BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
         }
 
         static boolean inPlot(Entity entity) {

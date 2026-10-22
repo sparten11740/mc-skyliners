@@ -1849,6 +1849,16 @@ blueprint("control_tower_blueprint", false, towerFromTheSide);
     const ring = Math.hypot((x - 7.5) / 7, (y - 13) / 2.2);
     return ring >= 0.75 && ring <= 1.05 ? MAGENTA : null;
   });
+  // Land at the pin: the amber airliner settling onto the runway, as Land has it but smaller, by a small red map pin
+  // standing at the runway's far end.
+  icon(autopilotOutput, "land_at_pin", (x, y) => {
+    const head = Math.hypot(x - 12, y - 3.5);
+    if (head <= 0.9) return INK;
+    if (head <= 2.6) return x < 12 && y < 4 ? [0xf0, 0x50, 0x44] : [0xd0, 0x30, 0x28];
+    if (y >= 6 && y <= 9 && Math.abs(x - 12) <= (9 - y) * 0.6 + 0.2) return [0xb0, 0x24, 0x1e];
+    if (airliner(x, y, 5.5, 7, 135, 0.7)) return AMBER;
+    return runway(x, y, 1, 15);
+  });
   icon(autopilotOutput, "unstuck", (x, y) => {
     const fin = y >= 1 && y <= 3 && x >= 1 && x <= y;
     const fuselage = (y === 4 && x >= 1 && x <= 12) || (y === 5 && x >= 1 && x <= 14);

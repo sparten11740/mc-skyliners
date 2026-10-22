@@ -275,6 +275,27 @@ round the pin, heading for it along the line that just touches it, so it comes o
 flies round it clockwise at the radius set (150 blocks at least, banking no more than 20 degrees), until set to fly
 something else or told to land. The height and speed fly as set.
 
+Beside the mode, while it flies to a pin, is Land at the Pin: an amber airliner settling onto a runway by a little red
+pin, its tile lit green while it is on (point at it to see whether it is). Like every button, it has its picture and
+its colour so that players who cannot read yet can use it: pick the pin on the map, light the button, engage. Then the
+airliner does not circle the pin but lands near it, on its own, somewhere clear of buildings and trees. It flies
+straight to the pin and on over it, back and forth, looking at the land below: the server only has the land near the
+players aboard to look at, so it has to fly over it first. Meanwhile it measures itself, wingtip to wingtip and nose to
+tail, and looks for a strip of land within 200 blocks of the pin, nearest first and every 15 degrees round, where it
+fits: dry, level ground (no more than 2 blocks above or below where it touches down, and no step higher than 1) for
+its wheels all the way from touchdown until it has braked to a stop, a good 400 blocks with room either end; nothing
+taller under its wings and engines than they stand above the ground; and nothing under the end of its glide down that
+it would not pass over. Once it finds one it says so on the flight deck, and the strip shows on the map as a white
+line. It slows down, flies out to a point well back along the strip's line (coming round from the side if it is on the
+wrong side of it), comes down to 60 blocks above the strip, turns onto the line, then comes down a gentle glide path
+toward it, cleared to land by the tower, the cabin hearing the landing announcement. It flares as Land does, steering
+along the strip's middle all the way, touches down, brakes to a stop steering along the line, and parks. If nowhere
+near the pin is quite clear, it picks the strip with the fewest things under its wings (never under its body); if
+there is nowhere at all, it says so once and keeps flying over the pin, looking again as more land comes into view.
+Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way
+in goes around too: with Land at the Pin still lit it looks again and comes back round; switched off, it circles the
+pin instead, though below the flare's 15 blocks switching it off is too late: it lands.
+
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the

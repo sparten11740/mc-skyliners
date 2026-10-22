@@ -116,6 +116,7 @@ public class AutopilotSettingsScreen extends Screen {
     private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
     private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
     private static final Icon PIN = Icon.of("autopilot/destination");
+    private static final Icon LAND_AT_PIN = Icon.of("autopilot/land_at_pin");
     private static final Lateral[] MODES = Lateral.values();
     private static final Component MODE = Component.translatable("screen.aerolarge.autopilot_settings.mode");
 
@@ -123,6 +124,8 @@ public class AutopilotSettingsScreen extends Screen {
     /** Whether engaging takes off, so the button says so. */
     private final boolean takeoff;
     private Lateral lateral;
+    /** Whether, flying to the pin, it lands near it rather than circling it. */
+    private boolean landAtPin;
     private final Setting heading;
     private final Setting altitude;
     private final Setting speed;
@@ -131,6 +134,7 @@ public class AutopilotSettingsScreen extends Screen {
     private int left;
     private int top;
     private ModeSelector mode;
+    private LandToggle landToggle;
     private IconButton engage;
     private IconButton apply;
     private IconButton disengage;
@@ -147,6 +151,7 @@ public class AutopilotSettingsScreen extends Screen {
         pos = opened.pos();
         takeoff = opened.takeoff();
         lateral = settings.lateral();
+        landAtPin = settings.landAtPin();
         heading = new Setting("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, AutopilotBlockEntity.HEADING_STEP, HEADING_DETENT, true);
         altitude = new Setting("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), AutopilotBlockEntity.ALTITUDE_STEP, ALTITUDE_DETENT, false);
         speed = new Setting("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, AutopilotBlockEntity.SPEED_STEP, SPEED_DETENT, false);
@@ -193,6 +198,8 @@ public class AutopilotSettingsScreen extends Screen {
         top = (height - HEIGHT) / 2;
         int x = left + PanelArt.BORDER + PADDING;
         mode = addRenderableWidget(new ModeSelector(x, rowY(0)));
+        // At the far end of the mode's row, over the map: whether to land at the pin.
+        landToggle = addRenderableWidget(new LandToggle(x + CONTENT - SEGMENT, rowY(0)));
         List<Setting> rows = rows();
         for (int i = 0; i < rows.size(); i++) {
             rows.get(i).place(x, rowY(i + 1));
@@ -256,6 +263,7 @@ public class AutopilotSettingsScreen extends Screen {
         radius.setActive(lateral != Lateral.HEADING);
         // Flying to a pin, the map takes the rows' place; the height, speed and circle stay as they were set.
         map.visible = toPin;
+        landToggle.visible = toPin;
         for (Setting row : rows()) {
             row.setVisible(!toPin);
         }
@@ -292,7 +300,7 @@ public class AutopilotSettingsScreen extends Screen {
     /** Sends the settings as they stand: to fly them, to land or with the autopilot switched off. */
     private void send(SetAutopilot.Action action) {
         BlockPos pin = map.pin() != null ? map.pin() : BlockPos.ZERO;
-        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value(), pin);
+        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value(), pin, landAtPin);
         PacketDistributor.sendToServer(new SetAutopilot(pos, action, settings));
     }
 
@@ -467,6 +475,43 @@ public class AutopilotSettingsScreen extends Screen {
             }
             if (pointedAt >= 0) {
                 AutopilotSettingsScreen.this.setTooltipForNextRenderPass(modeName(MODES[pointedAt]));
+            }
+        }
+    }
+
+    /**
+     * Whether, flying to the pin, it lands near it: a tile with an airliner touching down on a runway by a pin, edged
+     * in the landing's amber, lit green while it is on. Pointed at, it says what it does and whether it is on. It is
+     * there only while the mode flies to a pin, and pressed it only changes the settings, to be engaged or applied.
+     */
+    private final class LandToggle extends PanelArt.PanelButton {
+        LandToggle(int x, int y) {
+            super(x, y, SEGMENT, CONTROL_HEIGHT, label(landAtPin));
+        }
+
+        private static Component label(boolean on) {
+            return Component.translatable(on ? "screen.aerolarge.autopilot_settings.land_at_pin.on" : "screen.aerolarge.autopilot_settings.land_at_pin.off");
+        }
+
+        @Override
+        public void onPress() {
+            landAtPin = !landAtPin;
+            setMessage(label(landAtPin));
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            sounds.play(SimpleSoundInstance.forUI(SoundEvents.LEVER_CLICK, 1.4F, 0.5F));
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            Look look = look();
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, look, landAtPin);
+            int sink = look == Look.PRESSED ? 1 : 0;
+            LAND_AT_PIN.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+            if (isHovered()) {
+                AutopilotSettingsScreen.this.setTooltipForNextRenderPass(getMessage());
             }
         }
     }
