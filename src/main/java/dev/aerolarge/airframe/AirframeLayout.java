@@ -1850,8 +1850,23 @@ public final class AirframeLayout {
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turned = new EnumMap<>(AutopilotBlockEntity.Channel.class);
                 channels.forEach((channel, relays) -> turned.put(channel, offsets(at, relays, rotation)));
                 autopilot.configure(turned, offsets(at, controls, rotation), at.getY() - ground);
+                List<BlockPos> frame = offsets(at, frameCorners(), rotation);
+                autopilot.frame(frame.get(0), frame.get(1));
             }
         });
+    }
+
+    /** Two opposite corners of the box round every block of the airliner, air aside. */
+    private List<BlockPos> frameCorners() {
+        BlockPos min = null;
+        BlockPos max = null;
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            if (!cell.getValue().isAir()) {
+                min = min == null ? cell.getKey() : BlockPos.min(min, cell.getKey());
+                max = max == null ? cell.getKey() : BlockPos.max(max, cell.getKey());
+            }
+        }
+        return min == null ? List.of(BlockPos.ZERO, BlockPos.ZERO) : List.of(min, max);
     }
 
     /** Positions in the layout as offsets from a block, turned with the airliner. */

@@ -14,19 +14,27 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 /**
  * The block entities of one kind loaded on the server, level by level, so a landing, a radio call or a basket finds
  * the ones it concerns without searching the world. Each block entity adds itself once loaded and drops out when it
- * is removed or its chunk unloads.
+ * is removed or its chunk unloads. A kind a client asks after too (the autopilots, whose airliners' frames a client
+ * tells apart as it mines) is kept on clients as well.
  */
 public final class Loaded<T extends BlockEntity> {
     private final Class<T> type;
+    private final boolean onClients;
     private final Map<Level, Set<BlockPos>> positions = new WeakHashMap<>();
 
     public Loaded(Class<T> type) {
-        this.type = type;
+        this(type, false);
     }
 
-    /** From the block entity's {@code onLoad}: keeps track of it, on the server. */
+    public Loaded(Class<T> type, boolean onClients) {
+        this.type = type;
+        this.onClients = onClients;
+    }
+
+    /** From the block entity's {@code onLoad}: keeps track of it, on the server, and on a client too if asked to. */
     public void add(T blockEntity) {
-        if (blockEntity.getLevel() instanceof ServerLevel level) {
+        Level level = blockEntity.getLevel();
+        if (level instanceof ServerLevel || level != null && onClients) {
             positions.computeIfAbsent(level, ignored -> new HashSet<>()).add(blockEntity.getBlockPos().immutable());
         }
     }

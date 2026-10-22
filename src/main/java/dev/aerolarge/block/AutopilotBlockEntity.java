@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
@@ -270,8 +271,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final int ABOARD_LOOK = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
     static final double FLIGHT_DECK = 24;
-    /** The autopilots loaded on the server, so an announcement panel put up by hand finds its airliner's. */
-    private static final Loaded<AutopilotBlockEntity> LOADED = new Loaded<>(AutopilotBlockEntity.class);
+    /**
+     * The autopilots loaded, so an announcement panel put up by hand finds its airliner's, and both sides tell an
+     * airliner's own blocks (see {@link #framing}).
+     */
+    private static final Loaded<AutopilotBlockEntity> LOADED = new Loaded<>(AutopilotBlockEntity.class, true);
     /**
      * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
      * radius per press.
@@ -291,6 +295,15 @@ public class AutopilotBlockEntity extends BlockEntity {
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
+    /**
+     * Two opposite corners of the box round its airliner's blocks, as offsets from it in the world's directions, as
+     * its blueprint built it; null for one built before. What tells the airliner's own blocks from the same blocks
+     * anywhere else (see {@link #framing}).
+     */
+    @Nullable
+    private BlockPos frameFrom;
+    @Nullable
+    private BlockPos frameTo;
     /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
     private boolean linksChecked;
     private Phase phase = Phase.OFF;
@@ -366,6 +379,27 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.controls = List.copyOf(controls);
         linksChecked = true;
         setChanged();
+    }
+
+    /** Wired when the airliner is built: the corners of the box round its blocks, as offsets from the autopilot. */
+    public void frame(BlockPos from, BlockPos to) {
+        frameFrom = from;
+        frameTo = to;
+        setChanged();
+    }
+
+    /**
+     * Whether a block lies in the box round the blocks of an airliner whose autopilot is loaded, on either side: in the
+     * world as its blueprint built it, or among its blocks once assembled, where its box goes along with it.
+     */
+    public static boolean framing(Level level, BlockPos pos) {
+        for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
+            if (autopilot.frameFrom != null && autopilot.frameTo != null
+                && BoundingBox.fromCorners(autopilot.worldPosition.offset(autopilot.frameFrom), autopilot.worldPosition.offset(autopilot.frameTo)).isInside(pos)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Phase phase() {
@@ -1382,6 +1416,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         relays.forEach((channel, offsets) -> channels.put(channel.name(), Relays.write(offsets)));
         tag.put("Relays", channels);
         tag.put("Controls", Relays.write(controls));
+        saveFrame(tag);
         Turning.save(tag, getBlockState());
         saveTargets(tag);
         tag.putDouble("Trim", trim);
@@ -1457,6 +1492,25 @@ public class AutopilotBlockEntity extends BlockEntity {
         loadRunway(tag);
         // Only ever in the update sent to clients: the server finds it afresh each tick.
         stuck = tag.getBoolean("Stuck");
+        loadFrame(tag);
+    }
+
+    /** The box round the airliner's blocks, saved and sent to clients alike, so both tell its blocks the same way. */
+    private void saveFrame(CompoundTag tag) {
+        if (frameFrom != null && frameTo != null) {
+            tag.putLong("FrameFrom", frameFrom.asLong());
+            tag.putLong("FrameTo", frameTo.asLong());
+        }
+    }
+
+    /** Turned as its block has turned since it was saved, as its other links are (see {@link Turning}). */
+    private void loadFrame(CompoundTag tag) {
+        if (!tag.contains("FrameFrom")) {
+            return;
+        }
+        Rotation turn = Turning.since(tag, getBlockState());
+        frameFrom = Turning.turn(BlockPos.of(tag.getLong("FrameFrom")), turn);
+        frameTo = Turning.turn(BlockPos.of(tag.getLong("FrameTo")), turn);
     }
 
     /**
@@ -1486,6 +1540,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         CompoundTag tag = new CompoundTag();
         saveTargets(tag);
         tag.putBoolean("Stuck", stuck);
+        saveFrame(tag);
+        Turning.save(tag, getBlockState());
         return tag;
     }
 

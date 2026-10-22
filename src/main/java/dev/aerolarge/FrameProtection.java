@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
+import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -27,8 +28,10 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
  * can still take them apart: to clear an airliner away on purpose, or to take back a panel placed in the wrong spot.
  * The cabin floor and everything built inside are not in the tag.
  *
- * <p>A block is part of an airliner while it stands inside the Super Glue its blueprint glues the whole airliner
- * with, or among an assembled airliner's blocks, in its plot. The same blocks laid anywhere else, as the runway's lights
+ * <p>A block is part of an airliner while it stands within the box round the blocks its blueprint laid, which the
+ * airliner's autopilot keeps, or among an assembled airliner's blocks, in its plot; for an airliner built before its
+ * autopilot kept that box, inside the Super Glue its blueprint glued it with (which can leave gaps: Create's glue
+ * comes out narrower than laid along an airliner built facing east or west). The same blocks laid anywhere else, as the runway's lights
  * and the control tower's glass, lights, panels and seats are, break as any other block does, and so does one a player
  * placed by hand (see {@link HandPlaced}): only what the blueprint laid is held.
  */
@@ -50,9 +53,13 @@ public final class FrameProtection {
         return state.is(UNBREAKABLE) && level instanceof Level world && !HandPlaced.at(world, pos, state) && partOfAirliner(world, pos);
     }
 
-    /** Whether a block stands inside an airliner's glue, or among an assembled airliner's blocks. */
+    /**
+     * Whether a block stands within the frame of an airliner whose autopilot is loaded (see
+     * {@link AutopilotBlockEntity#framing}), among an assembled airliner's blocks, or, for one built before the
+     * autopilot kept its frame, inside its glue.
+     */
     private static boolean partOfAirliner(Level level, BlockPos pos) {
-        if (SableFlight.aboard(level, Vec3.atCenterOf(pos))) {
+        if (AutopilotBlockEntity.framing(level, pos) || SableFlight.aboard(level, Vec3.atCenterOf(pos))) {
             return true;
         }
         return !level.getEntitiesOfClass(SuperGlueEntity.class, new AABB(pos).deflate(GLUE_INSET)).isEmpty();
