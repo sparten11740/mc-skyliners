@@ -1117,8 +1117,10 @@ evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for t
 picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
 at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod
-gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the one
-mixin, `mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil;
+gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the
+mixin `mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil; the other
+mixin, `mixin/GirderBlockMixin`, turns Create's metal girders a quarter turn without losing their beams, which
+Create's own turn does (the gym hall's trusses of an airliner built facing east or west);
 `CloudlessCabin` leaves the clouds out of the player's view while the camera is inside a hull in the cloud layer. Assets
 are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
