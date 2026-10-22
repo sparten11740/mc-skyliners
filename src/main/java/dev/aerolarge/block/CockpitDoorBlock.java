@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -39,18 +40,23 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The cockpit door in the bulkhead behind the flight deck: one big panel two blocks wide and three or four tall, its
  * top corners rounded and a round porthole in it, which swings out of the flight deck into the aisle behind it about
- * one side, as a room door does. Each block of the doorway is a part of it, by its COLUMN (counted left to right as
- * seen from the aisle it swings into) and ROW (from the floor up); the part in the bottom left corner keeps the door's
- * block entity, which swings it (see {@link CockpitDoorBlockEntity}) and is drawn by the client with the whole panel.
- * FACING is the way it swings out, HINGE the side it swings about. OPEN is whether the doorway is clear: from the
- * moment the door starts to open until it is shut again.
+ * one side, as a room door does. The doorway is three blocks wide, so it stands in the middle of the aisle: the panel
+ * in its middle, half a block of frame either side of it. Each block of the doorway is a part of it, by its COLUMN
+ * (counted left to right as seen from the aisle it swings into) and ROW (from the floor up); the part in the bottom
+ * left corner keeps the door's block entity, which swings it (see {@link CockpitDoorBlockEntity}) and is drawn by the
+ * client with the whole panel. FACING is the way it swings out, HINGE the side it swings about. OPEN is whether the
+ * doorway is clear: from the moment the door starts to open until it is shut again. FRAMED is whether the doorway has
+ * its frame: doors built before it had one are two blocks wide, the panel right across them, and stay so.
  *
  * <p>Using any part of it, from either side, opens or shuts the whole door. Villagers do not open it: the passengers
  * have no business on the flight deck. Only the blueprints place it, so it has no item and drops nothing.
  */
 public class CockpitDoorBlock extends BaseEntityBlock {
     private static final MapCodec<CockpitDoorBlock> CODEC = simpleCodec(CockpitDoorBlock::new);
-    public static final int COLUMNS = 2;
+    /** How many blocks wide the doorway is: the panel's two and its frame's half a block either side. */
+    public static final int COLUMNS = 3;
+    /** How many blocks wide the panel is, and so a doorway without its frame. */
+    public static final int PANEL_WIDTH = 2;
     /** How many blocks tall it may be: four, where the flight deck has the headroom. */
     public static final int MOST_ROWS = 4;
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -58,12 +64,22 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     public static final IntegerProperty COLUMN = IntegerProperty.create("column", 0, COLUMNS - 1);
     public static final IntegerProperty ROW = IntegerProperty.create("row", 0, MOST_ROWS - 1);
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    public static final BooleanProperty FRAMED = BooleanProperty.create("framed");
     /** How thick the panel is, in sixteenths of a block: a reinforced door, against the doorway's outer face. */
     public static final int THICKNESS = 3;
     /** How thick the open doorway is to aim at and use, in sixteenths: a sliver across its outer face. */
     private static final int OPEN_FACE = 1;
-    private static final Map<Direction, VoxelShape> SHUT = shapes(THICKNESS);
-    private static final Map<Direction, VoxelShape> CLEAR = shapes(OPEN_FACE);
+    /** How wide the frame is either side of the panel, in sixteenths: half a block. */
+    private static final int FRAME = 8;
+    /** The parts' shapes for each way out: a part with no frame in it, one with the frame on its left, on its right. */
+    private static final Map<Direction, PartShapes[]> SHAPES = shapes();
+
+    /**
+     * A part's shapes: shut, the panel and any frame; open, to aim at, the frame and a sliver across the rest of the
+     * doorway's outer face, to shut it again by; and open, to bump into, only the frame.
+     */
+    private record PartShapes(VoxelShape shut, VoxelShape open, VoxelShape clear) {
+    }
 
     /** The side of the door it swings about, seen from the aisle it swings into. */
     public enum Hinge implements StringRepresentable {
@@ -89,17 +105,53 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     public CockpitDoorBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
-            .setValue(FACING, Direction.NORTH).setValue(HINGE, Hinge.LEFT).setValue(COLUMN, 0).setValue(ROW, 0).setValue(OPEN, false));
+            .setValue(FACING, Direction.NORTH).setValue(HINGE, Hinge.LEFT).setValue(COLUMN, 0).setValue(ROW, 0).setValue(OPEN, false)
+            .setValue(FRAMED, false));
     }
 
-    /** The panel's box in a block for each way out, this many sixteenths thick against the block's outer face. */
-    private static Map<Direction, VoxelShape> shapes(int thick) {
-        return Map.of(
-            Direction.NORTH, Block.box(0, 0, 0, 16, 16, thick),
-            Direction.SOUTH, Block.box(0, 0, 16 - thick, 16, 16, 16),
-            Direction.WEST, Block.box(0, 0, 0, thick, 16, 16),
-            Direction.EAST, Block.box(16 - thick, 0, 0, 16, 16, 16)
-        );
+    private static Map<Direction, PartShapes[]> shapes() {
+        Map<Direction, PartShapes[]> shapes = new EnumMap<>(Direction.class);
+        for (Direction out : Direction.Plane.HORIZONTAL) {
+            shapes.put(out, new PartShapes[]{
+                partShapes(out, 0, 16, Shapes.empty()),
+                partShapes(out, FRAME, 16, box(out, 0, 0, FRAME, 16)),
+                partShapes(out, 0, 16 - FRAME, box(out, 16 - FRAME, 0, 16, 16))
+            });
+        }
+        return shapes;
+    }
+
+    /** The shapes of a part with this frame in it and the panel across it from x0 to x1, in sixteenths from its left. */
+    private static PartShapes partShapes(Direction out, int x0, int x1, VoxelShape frame) {
+        return new PartShapes(
+            Shapes.or(frame, box(out, x0, 16 - THICKNESS, x1, 16)),
+            Shapes.or(frame, box(out, x0, 16 - OPEN_FACE, x1, 16)),
+            frame);
+    }
+
+    /**
+     * A box the height of the block from (x0, z0) to (x1, z1), in sixteenths turned with the door: x across to the
+     * right as seen from the aisle it swings into, z out toward the aisle, the doorway's outer face at z 16.
+     */
+    private static VoxelShape box(Direction out, int x0, int z0, int x1, int z1) {
+        Direction right = out.getCounterClockWise();
+        int ax = 8 + (x0 - 8) * right.getStepX() + (z0 - 8) * out.getStepX();
+        int az = 8 + (x0 - 8) * right.getStepZ() + (z0 - 8) * out.getStepZ();
+        int bx = 8 + (x1 - 8) * right.getStepX() + (z1 - 8) * out.getStepX();
+        int bz = 8 + (x1 - 8) * right.getStepZ() + (z1 - 8) * out.getStepZ();
+        return Block.box(Math.min(ax, bx), 0, Math.min(az, bz), Math.max(ax, bx), 16, Math.max(az, bz));
+    }
+
+    /** The part's shapes: with the frame in it at either edge of a framed doorway. */
+    private static PartShapes partShapes(BlockState state) {
+        int column = state.getValue(COLUMN);
+        int kind = 0;
+        if (state.getValue(FRAMED) && column == 0) {
+            kind = 1;
+        } else if (state.getValue(FRAMED) && column == COLUMNS - 1) {
+            kind = 2;
+        }
+        return SHAPES.get(state.getValue(FACING))[kind];
     }
 
     @Override
@@ -109,7 +161,7 @@ public class CockpitDoorBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HINGE, COLUMN, ROW, OPEN);
+        builder.add(FACING, HINGE, COLUMN, ROW, OPEN, FRAMED);
     }
 
     /** Drawn whole by the door's block entity, wherever it is in its swing. */
@@ -121,13 +173,15 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     /** The panel while it is in the doorway; open, a sliver across the doorway's face, to aim at and shut it again. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return (state.getValue(OPEN) ? CLEAR : SHUT).get(state.getValue(FACING));
+        PartShapes shapes = partShapes(state);
+        return state.getValue(OPEN) ? shapes.open() : shapes.shut();
     }
 
-    /** Open, the doorway is clear: the panel stands back against the aisle's side. */
+    /** Open, the doorway is clear but for its frame: the panel stands back against the aisle's side. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
+        PartShapes shapes = partShapes(state);
+        return state.getValue(OPEN) ? shapes.clear() : shapes.shut();
     }
 
     @Override
@@ -169,7 +223,7 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
         return state.setValue(FACING, mirror.mirror(state.getValue(FACING)))
-            .setValue(COLUMN, COLUMNS - 1 - state.getValue(COLUMN))
+            .setValue(COLUMN, columns(state) - 1 - state.getValue(COLUMN))
             .setValue(HINGE, state.getValue(HINGE).mirrored());
     }
 
@@ -194,6 +248,11 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     /** Whether the state is a door's bottom left part, which keeps its block entity: one for each door. */
     public static boolean isController(BlockState state) {
         return isDoor(state) && state.getValue(COLUMN) == 0 && state.getValue(ROW) == 0;
+    }
+
+    /** How many blocks wide the door this is a part of is: with its frame, or one built before it had one. */
+    public static int columns(BlockState state) {
+        return state.getValue(FRAMED) ? COLUMNS : PANEL_WIDTH;
     }
 
     /** The way across the door from its left edge to its right, as seen from the aisle it swings into. */
@@ -225,7 +284,7 @@ public class CockpitDoorBlock extends BaseEntityBlock {
         }
         Direction right = right(bottom);
         for (int row = 0; row < MOST_ROWS; row++) {
-            for (int column = 0; column < COLUMNS; column++) {
+            for (int column = 0; column < columns(bottom); column++) {
                 BlockPos at = controller.relative(right, column).above(row);
                 if (isPart(level.getBlockState(at), bottom, column, row)) {
                     parts.add(at);
@@ -238,6 +297,6 @@ public class CockpitDoorBlock extends BaseEntityBlock {
     /** Whether the state is the part of the same door as the bottom left part at this column and row. */
     private static boolean isPart(BlockState state, BlockState bottom, int column, int row) {
         return isDoor(state) && state.getValue(FACING) == bottom.getValue(FACING) && state.getValue(HINGE) == bottom.getValue(HINGE)
-            && state.getValue(COLUMN) == column && state.getValue(ROW) == row;
+            && state.getValue(FRAMED) == bottom.getValue(FRAMED) && state.getValue(COLUMN) == column && state.getValue(ROW) == row;
     }
 }

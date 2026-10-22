@@ -136,9 +136,10 @@ public final class AirframeLayout {
      */
     private static final double COCKPIT_DOOR = 7.0;
     /**
-     * The big cockpit door's left column, seen from the aisle: one to port of the middle, so that swung open it stands
-     * back against the port side of the aisle, a WC's wall, and leaves the middle of the aisle and the starboard side
-     * free to walk through.
+     * The big cockpit door's left column, seen from the aisle: one to port of the middle, so that its doorway, three
+     * blocks wide, stands in the middle of the bulkhead and the aisle, and swung open about its port side the panel
+     * stands back along the port side of the aisle by a WC's wall, short of its door, and leaves the middle of the
+     * aisle and the starboard side free to walk through.
      */
     private static final int COCKPIT_DOOR_LEFT = -1;
     /** How many blocks of standing room the flight deck keeps under the tail camera display. */
@@ -1585,9 +1586,10 @@ public final class AirframeLayout {
     /**
      * The bulkhead that makes the flight deck a room of its own: across the cabin at station z, from the raised floor
      * up to the crown, of the hull's own panels, with the cockpit door in the middle and a cabin light over it shining
-     * both ways. The door is the big one (see {@link CockpitDoorBlock}), as tall as the room leaves it, swinging out
-     * into the aisle behind about its port side, where it stands back against the WC's wall; where even the shorter one
-     * does not fit, an airliner door (opened by hand from either side). False, and nothing built, where no door fits.
+     * both ways. The door is the big one (see {@link CockpitDoorBlock}), as tall as the room leaves it, its panel
+     * between half a block of frame either side, swinging out into the aisle behind about its port side, where it
+     * stands back along the WC's wall; where even the shorter one does not fit, an airliner door (opened by hand from
+     * either side). False, and nothing built, where no door fits.
      */
     private boolean cockpitDoor(int deck, int z) {
         if (!isOpen(0, deck + 1, z) || !isOpen(0, deck + 2, z)) {
@@ -1606,7 +1608,8 @@ public final class AirframeLayout {
         if (rows > 0) {
             BlockState door = AerolargeRegistry.COCKPIT_DOOR.get().defaultBlockState()
                 .setValue(CockpitDoorBlock.FACING, Direction.SOUTH)
-                .setValue(CockpitDoorBlock.HINGE, CockpitDoorBlock.Hinge.LEFT);
+                .setValue(CockpitDoorBlock.HINGE, CockpitDoorBlock.Hinge.LEFT)
+                .setValue(CockpitDoorBlock.FRAMED, true);
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < CockpitDoorBlock.COLUMNS; column++) {
                     // Seen from the aisle, looking forward, its left is to port.
@@ -1629,14 +1632,15 @@ public final class AirframeLayout {
 
     /**
      * How tall the big cockpit door in the bulkhead at station z can be: as tall as it may be, or a row shorter, where
-     * its doorway is open and so is the aisle behind it, which it swings into; 0 where it does not fit at all.
+     * its doorway is open and so is the aisle behind it, as far as its panel swings into it; 0 where it does not fit at
+     * all.
      */
     private int cockpitDoorRows(int deck, int z) {
         for (int rows = CockpitDoorBlock.MOST_ROWS; rows >= CockpitDoorBlock.MOST_ROWS - 1; rows--) {
             boolean fits = true;
             for (int y = deck + 1; y <= deck + rows && fits; y++) {
                 for (int x = COCKPIT_DOOR_LEFT; x < COCKPIT_DOOR_LEFT + CockpitDoorBlock.COLUMNS && fits; x++) {
-                    for (int behind = 0; behind <= CockpitDoorBlock.COLUMNS && fits; behind++) {
+                    for (int behind = 0; behind <= CockpitDoorBlock.PANEL_WIDTH && fits; behind++) {
                         fits = isOpen(x, y, z + behind);
                     }
                 }

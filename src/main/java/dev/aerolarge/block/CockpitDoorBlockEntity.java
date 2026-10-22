@@ -165,10 +165,11 @@ public class CockpitDoorBlockEntity extends BlockEntity {
         return false;
     }
 
-    /** The whole doorway, every block of it, in the door's own blocks. */
+    /** The whole doorway, every block of it, frame and all, in the door's own blocks. */
     private AABB doorway() {
-        Direction right = CockpitDoorBlock.right(getBlockState());
-        BlockPos corner = worldPosition.relative(right, CockpitDoorBlock.COLUMNS - 1).above(Math.max(rows(), 1) - 1);
+        BlockState state = getBlockState();
+        Direction right = CockpitDoorBlock.right(state);
+        BlockPos corner = worldPosition.relative(right, CockpitDoorBlock.columns(state) - 1).above(Math.max(rows(), 1) - 1);
         return AABB.encapsulatingFullBlocks(worldPosition, corner);
     }
 

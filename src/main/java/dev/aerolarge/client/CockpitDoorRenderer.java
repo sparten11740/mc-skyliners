@@ -32,14 +32,16 @@ import org.joml.Vector3f;
  * either face by the edge away from its hinge, a lever on each (see the cockpit_door pictures in
  * tools/generate_textures.mjs, whose porthole, corners and handle the constants here match). The porthole is glazed
  * right through, so the flight deck shows through it from the aisle. Opening, it swings out about its hinge a quarter
- * turn, until it stands against the aisle's side.
+ * turn, until it stands along the aisle's side. The panel stands in the middle of its doorway, between half a block of
+ * frame either side, drawn here too, lined like the bulkhead; a door built before it had a frame has the panel right
+ * across its doorway.
  *
  * <p>Drawn in the door's own frame: x across the doorway to the right as seen from the aisle it swings into, y up from
  * the floor, z out toward the aisle, the doorway's outer face at z 1.
  */
 public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlockEntity> {
     private static final float THICK = CockpitDoorBlock.THICKNESS / 16F;
-    private static final float WIDE = CockpitDoorBlock.COLUMNS;
+    private static final float WIDE = CockpitDoorBlock.PANEL_WIDTH;
     /** How far the door swings open, in degrees. */
     private static final float SWING = 90;
     /** The radius of its rounded top corners, in blocks. */
@@ -62,6 +64,8 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
     /** The bulkhead's lining, which the doorway's arch is finished in, and the lining round a doorway's sides. */
     private static final ResourceLocation LINING = texture("hull_lining");
     private static final ResourceLocation REVEAL = texture("hull_lining_reveal");
+    /** Across the lining's picture, clear of the joint at its left edge: where it is plain. */
+    private static final float PLAIN = 0.5F;
     private static final int FEWEST_ROWS = 3;
     /** The porthole's glass: see-through, as the plug doors' windows are (see {@link PlugDoorRenderer}). */
     private static final RenderType GLASS = RenderType.create(Aerolarge.MOD_ID + "_cockpit_door_glass", DefaultVertexFormat.NEW_ENTITY,
@@ -89,61 +93,68 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
         float progress = door.progress(partialTick);
         Direction out = state.getValue(CockpitDoorBlock.FACING);
         boolean left = state.getValue(CockpitDoorBlock.HINGE) == CockpitDoorBlock.Hinge.LEFT;
-        Lights lights = Lights.of(level, door.getBlockPos(), out, rows, progress > 0);
+        int columns = CockpitDoorBlock.columns(state);
+        // The panel in the middle of the doorway, its frame either side; a door built before it had one has none.
+        float jamb = (columns - WIDE) / 2;
+        Lights lights = Lights.of(level, door.getBlockPos(), out, rows, columns, progress > 0);
 
         pose.pushPose();
         pose.translate(0.5, 0, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-out.toYRot()));
         pose.translate(-0.5, 0, -0.5);
-        arch(buffers, pose.last(), level, door.getBlockPos(), out, rows);
+        arch(buffers, pose.last(), level, door.getBlockPos(), out, rows, columns, jamb);
+        if (jamb > 0) {
+            jambs(buffers, pose.last(), level, door.getBlockPos(), out, rows, columns, jamb);
+        }
         // About the hinge, on the doorway's outer face, the far edge swinging out toward the aisle.
-        float hingeX = left ? 0 : WIDE;
+        float hingeX = left ? jamb : jamb + WIDE;
         float turn = (left ? -SWING : SWING) * ease(progress);
         pose.rotateAround(Axis.YP.rotationDegrees(turn), hingeX, 0, 1);
-        panel(buffers, pose.last(), lights, rows, left);
+        panel(buffers, pose.last(), lights, rows, jamb, left);
         pose.popPose();
     }
 
     /**
      * The panel: its faces block by block with the light where each is, its edge round the rounded top and down its
      * sides, the porthole's reveal through it and the levers on both faces; then the porthole's glass. Only the quads
-     * facing the camera are drawn.
+     * facing the camera are drawn. The panel stands this far in from the doorway's left edge, past its frame, and its
+     * faces are cut at the blocks' edges, each piece lit by the block it is in.
      */
-    private static void panel(MultiBufferSource buffers, PoseStack.Pose pose, Lights lights, int rows, boolean left) {
+    private static void panel(MultiBufferSource buffers, PoseStack.Pose pose, Lights lights, int rows, float jamb, boolean left) {
         TextureAtlasSprite face = sprite(texture("cockpit_door_" + Math.clamp(rows, FEWEST_ROWS, CockpitDoorBlock.MOST_ROWS)));
         TextureAtlasSprite edge = sprite(EDGE);
         VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         Vector3f eye = Sight.eye(pose);
         float back = 1 - THICK;
         for (int row = 0; row < rows; row++) {
-            for (int column = 0; column < CockpitDoorBlock.COLUMNS; column++) {
-                float x0 = column;
-                float x1 = column + 1;
+            for (int column = 0; column < lights.columns(); column++) {
+                float x0 = Math.max(column, jamb);
+                float x1 = Math.min(column + 1, jamb + WIDE);
                 float y0 = row;
                 float y1 = row + 1;
                 // The picture is drawn hinged on the left, seen from the aisle; mirrored for a door hinged on the right.
-                float u0 = left ? x0 / WIDE : 1 - x0 / WIDE;
-                float u1 = left ? x1 / WIDE : 1 - x1 / WIDE;
+                float u0 = left ? (x0 - jamb) / WIDE : 1 - (x0 - jamb) / WIDE;
+                float u1 = left ? (x1 - jamb) / WIDE : 1 - (x1 - jamb) / WIDE;
                 float v0 = 1 - y0 / rows;
                 float v1 = 1 - y1 / rows;
-                if (eye.z > 1) {
+                if (x0 < x1 && eye.z > 1) {
                     quad(solid, pose, face, lights.at(column, row, true), 1, 0, 0, 1,
                         x0, y0, 1, u0, v0, x1, y0, 1, u1, v0, x1, y1, 1, u1, v1, x0, y1, 1, u0, v1);
                 }
-                if (eye.z < back) {
+                if (x0 < x1 && eye.z < back) {
                     quad(solid, pose, face, lights.at(column, row, false), 1, 0, 0, -1,
                         x1, y0, back, u1, v0, x0, y0, back, u0, v0, x0, y1, back, u0, v1, x1, y1, back, u1, v1);
                 }
             }
         }
         // The edge right round the panel, and the porthole's reveal, each piece facing away from what it bounds.
-        List<float[]> outline = outline(rows);
+        List<float[]> outline = outline(rows, jamb);
         for (int i = 0; i < outline.size(); i++) {
             float[] a = outline.get(i);
             float[] b = outline.get((i + 1) % outline.size());
             strip(solid, pose, edge, lights, eye, a[0], a[1], b[0], b[1], back, 0.85F);
         }
-        float cx = WIDE / 2;
+        float cx = jamb + WIDE / 2;
         float cy = rows - PORTHOLE_DROP;
         for (int i = 0; i < PORTHOLE_PIECES; i++) {
             double a = 2 * Math.PI * i / PORTHOLE_PIECES;
@@ -153,13 +164,14 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
                 cx + PORTHOLE * (float) Math.cos(a), cy + PORTHOLE * (float) Math.sin(a), back, 0.7F);
         }
         TextureAtlasSprite lever = sprite(LEVER);
-        float handleX = left ? HANDLE_X : WIDE - HANDLE_X;
+        float handleX = jamb + (left ? HANDLE_X : WIDE - HANDLE_X);
         // The levers point from the rose toward the middle of the door.
         float from = left ? handleX - LEVER_LONG : handleX - LEVER_TALL / 2;
         float to = left ? handleX + LEVER_TALL / 2 : handleX + LEVER_LONG;
-        int handleLight = lights.at(left ? 1 : 0, 1, true);
+        int handleColumn = (int) handleX;
+        int handleLight = lights.at(handleColumn, 1, true);
         box(solid, pose, lever, handleLight, from, HANDLE_Y - LEVER_TALL / 2, 1, to, HANDLE_Y + LEVER_TALL / 2, 1 + LEVER_STANDS);
-        box(solid, pose, lever, lights.at(left ? 1 : 0, 1, false), from, HANDLE_Y - LEVER_TALL / 2, back - LEVER_STANDS, to, HANDLE_Y + LEVER_TALL / 2, back);
+        box(solid, pose, lever, lights.at(handleColumn, 1, false), from, HANDLE_Y - LEVER_TALL / 2, back - LEVER_STANDS, to, HANDLE_Y + LEVER_TALL / 2, back);
 
         // The glass last, in its own buffer, in the middle of the panel: the panel's faces hide all of it but the hole.
         VertexConsumer glass = buffers.getBuffer(GLASS);
@@ -171,7 +183,7 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
         float gy1 = cy + PORTHOLE;
         int row = Math.min((int) cy, rows - 1);
         boolean front = eye.z > mid;
-        quad(glass, pose, pane, lights.at(0, row, front), 1, 0, 0, front ? 1 : -1, front
+        quad(glass, pose, pane, lights.at((int) cx, row, front), 1, 0, 0, front ? 1 : -1, front
             ? new float[]{gx0, gy0, mid, 0, 1, gx1, gy0, mid, 1, 1, gx1, gy1, mid, 1, 0, gx0, gy1, mid, 0, 0}
             : new float[]{gx1, gy0, mid, 0, 1, gx0, gy0, mid, 1, 1, gx0, gy1, mid, 1, 0, gx1, gy1, mid, 0, 0});
     }
@@ -179,22 +191,23 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
     /**
      * The doorway's arch: its top corners filled in, as rounded as the panel's, so the doorway is the panel's shape and
      * the bulkhead closes round it. Lined like the bulkhead on both faces, with a reveal round the arch through the
-     * doorway's depth; it stays where it is as the door swings.
+     * doorway's depth; it stays where it is as the door swings. Its corners stand at the panel's, this far in from the
+     * doorway's edges, past its frame.
      */
-    private static void arch(MultiBufferSource buffers, PoseStack.Pose pose, Level level, BlockPos door, Direction out, int rows) {
+    private static void arch(MultiBufferSource buffers, PoseStack.Pose pose, Level level, BlockPos door, Direction out, int rows,
+                             int columns, float jamb) {
         VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         TextureAtlasSprite lining = sprite(LINING);
         TextureAtlasSprite reveal = sprite(REVEAL);
         Vector3f eye = Sight.eye(pose);
         BlockPos top = door.above(rows - 1);
-        for (int column = 0; column < CockpitDoorBlock.COLUMNS; column++) {
-            boolean left = column == 0;
-            BlockPos part = top.relative(out.getCounterClockWise(), column);
+        for (boolean left : new boolean[]{true, false}) {
+            BlockPos part = top.relative(out.getCounterClockWise(), left ? 0 : columns - 1);
             int aisle = SableClient.light(level, part.relative(out));
             int deck = SableClient.light(level, part.relative(out.getOpposite()));
-            float cx = left ? CORNER : WIDE - CORNER;
+            float cx = left ? jamb + CORNER : jamb + WIDE - CORNER;
             float cy = rows - CORNER;
-            float cornerX = left ? 0 : WIDE;
+            float cornerX = left ? jamb : jamb + WIDE;
             float from = left ? 90 : 0;
             for (int i = 0; i < CORNER_PIECES; i++) {
                 double a = Math.toRadians(from + 90.0 * i / CORNER_PIECES);
@@ -203,8 +216,9 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
                 float ay = cy + CORNER * (float) Math.sin(a);
                 float bx = cx + CORNER * (float) Math.cos(b);
                 float by = cy + CORNER * (float) Math.sin(b);
-                // Each piece a triangle from the doorway's corner, a quad with its corner doubled.
-                float[] u = {cornerX - column, ax - column, bx - column};
+                // Each piece a triangle from the doorway's corner, a quad with its corner doubled, in the lining's plain
+                // middle: a corner may straddle two blocks, and the joint at their edge would not line up.
+                float[] u = {PLAIN, PLAIN, PLAIN};
                 float[] v = {0, rows - ay, rows - by};
                 if (eye.z > 1) {
                     quad(solid, pose, lining, aisle, 1, 0, 0, 1,
@@ -227,15 +241,58 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
     }
 
     /**
-     * The panel's outline seen from the aisle, round from the bottom left corner: along the floor, up the right side,
-     * round the rounded top corners and down the left side.
+     * The doorway's frame either side of the panel, this wide, from the floor to the arch: its faces lined like the
+     * bulkhead's, block by block, and a reveal down its side into the doorway.
      */
-    private static List<float[]> outline(int rows) {
+    private static void jambs(MultiBufferSource buffers, PoseStack.Pose pose, Level level, BlockPos door, Direction out, int rows,
+                              int columns, float jamb) {
+        VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
+        Vector3f eye = Sight.eye(pose);
+        for (int row = 0; row < rows; row++) {
+            jamb(solid, pose, eye, level, door.above(row), out, row, 0, 0, jamb);
+            jamb(solid, pose, eye, level, door.above(row), out, row, columns - 1, columns - jamb, columns);
+        }
+    }
+
+    /**
+     * One block of the frame, in the column of the doorway it stands in, from x0 to x1 across it: its faces to the
+     * aisle and the flight deck, lined in step with the bulkhead's blocks, and its side facing into the doorway.
+     */
+    private static void jamb(VertexConsumer solid, PoseStack.Pose pose, Vector3f eye, Level level, BlockPos bottom, Direction out,
+                             int row, int column, float x0, float x1) {
+        TextureAtlasSprite lining = sprite(LINING);
+        BlockPos part = bottom.relative(out.getCounterClockWise(), column);
+        int aisle = SableClient.light(level, part.relative(out));
+        int y0 = row;
+        int y1 = row + 1;
+        float u0 = x0 - column;
+        float u1 = x1 - column;
+        if (eye.z > 1) {
+            quad(solid, pose, lining, aisle, 1, 0, 0, 1, x0, y0, 1, u0, 1, x1, y0, 1, u1, 1, x1, y1, 1, u1, 0, x0, y1, 1, u0, 0);
+        }
+        if (eye.z < 0) {
+            int deck = SableClient.light(level, part.relative(out.getOpposite()));
+            quad(solid, pose, lining, deck, 1, 0, 0, -1, x1, y0, 0, u1, 1, x0, y0, 0, u0, 1, x0, y1, 0, u0, 0, x1, y1, 0, u1, 0);
+        }
+        // The side away from the doorway's edge, facing the panel.
+        boolean left = column == 0;
+        float side = left ? x1 : x0;
+        if (left ? eye.x > side : eye.x < side) {
+            quad(solid, pose, sprite(REVEAL), aisle, 0.8F, left ? 1 : -1, 0, 0,
+                side, y0, 0, 0, 0, side, y0, 1, 0, 1, side, y1, 1, 1, 1, side, y1, 0, 1, 0);
+        }
+    }
+
+    /**
+     * The panel's outline seen from the aisle, this far in from the doorway's left edge, round from the bottom left
+     * corner: along the floor, up the right side, round the rounded top corners and down the left side.
+     */
+    private static List<float[]> outline(int rows, float jamb) {
         List<float[]> points = new ArrayList<>();
-        points.add(new float[]{0, 0});
-        points.add(new float[]{WIDE, 0});
-        arc(points, WIDE - CORNER, rows - CORNER, 0);
-        arc(points, CORNER, rows - CORNER, 90);
+        points.add(new float[]{jamb, 0});
+        points.add(new float[]{jamb + WIDE, 0});
+        arc(points, jamb + WIDE - CORNER, rows - CORNER, 0);
+        arc(points, jamb + CORNER, rows - CORNER, 90);
         return points;
     }
 
@@ -261,7 +318,7 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
         }
         nx /= length;
         ny /= length;
-        int column = Math.clamp((int) ((ax + bx) / 2), 0, CockpitDoorBlock.COLUMNS - 1);
+        int column = Math.clamp((int) ((ax + bx) / 2), 0, lights.columns() - 1);
         int row = Math.clamp((int) ((ay + by) / 2), 0, lights.rows() - 1);
         quad(consumer, pose, sprite, lights.at(column, row, true), shade, nx, ny, 0,
             ax, ay, 1, 0, 1, bx, by, 1, 1, 1, bx, by, back, 1, 0, ax, ay, back, 0, 0);
@@ -321,18 +378,18 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
      * flight deck side, block after block along each row). Shut, its aisle face is lit by the aisle and its flight deck
      * face by the doorway; swung open, all of it by the aisle.
      */
-    private record Lights(int[] lights, int rows) {
-        static Lights of(Level level, BlockPos door, Direction out, int rows, boolean moved) {
-            int[] lights = new int[rows * CockpitDoorBlock.COLUMNS * 2];
+    private record Lights(int[] lights, int rows, int columns) {
+        static Lights of(Level level, BlockPos door, Direction out, int rows, int columns, boolean moved) {
+            int[] lights = new int[rows * columns * 2];
             for (int row = 0; row < rows; row++) {
-                for (int column = 0; column < CockpitDoorBlock.COLUMNS; column++) {
+                for (int column = 0; column < columns; column++) {
                     BlockPos part = door.relative(out.getCounterClockWise(), column).above(row);
-                    int at = (row * CockpitDoorBlock.COLUMNS + column) * 2;
+                    int at = (row * columns + column) * 2;
                     lights[at] = SableClient.light(level, moved ? part.relative(out) : part);
                     lights[at + 1] = SableClient.light(level, part.relative(out));
                 }
             }
-            return new Lights(lights, rows);
+            return new Lights(lights, rows, columns);
         }
 
         /**
@@ -341,8 +398,8 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
          */
         int at(int column, int row, boolean aisle) {
             int r = Math.clamp(row, 0, rows - 1);
-            int c = Math.clamp(column, 0, CockpitDoorBlock.COLUMNS - 1);
-            return lights[(r * CockpitDoorBlock.COLUMNS + c) * 2 + (aisle ? 1 : 0)];
+            int c = Math.clamp(column, 0, columns - 1);
+            return lights[(r * columns + c) * 2 + (aisle ? 1 : 0)];
         }
     }
 }
