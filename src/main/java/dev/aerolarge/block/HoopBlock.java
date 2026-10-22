@@ -44,9 +44,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class HoopBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<HoopBlock> CODEC = simpleCodec(HoopBlock::new);
     public static final EnumProperty<Team> TEAM = EnumProperty.create("team", Team.class);
-    /** The ring's height in the block, and how near its middle a ball has to drop through it, in blocks. */
+    /**
+     * The ring's height in the block, and how near its middle a ball's middle has to drop through it, in blocks: as
+     * near as a ball that grazes the rim on its way in, its middle a ball's half width inside the ring's outer edge.
+     */
     private static final double RING_Y = 10.5 / 16;
-    private static final double INNER_RADIUS = 0.3;
+    private static final double INNER_RADIUS = 0.45;
     /** Thrown from farther than this, across the floor, a basket is worth three: the real line, in metres, scaled like the airliner. */
     private static final double THREE_POINT_METRES = 6.75;
     /** Scoreboards this close to the hoop count its baskets, and players this close hear of them. */
@@ -126,14 +129,19 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    /** The middle of a hoop's ring, in its own frame. */
+    public static Vec3 ringMiddle(BlockPos hoop) {
+        return new Vec3(hoop.getX() + 0.5, hoop.getY() + RING_Y, hoop.getZ() + 0.5);
+    }
+
     /** Whether a ball's middle moving from one point to the next, in the hoop's own frame, dropped down through its ring. */
     public static boolean dropsThrough(BlockPos hoop, Vec3 from, Vec3 to) {
-        double ring = hoop.getY() + RING_Y;
-        if (!(from.y > ring && to.y <= ring)) {
+        Vec3 ring = ringMiddle(hoop);
+        if (!(from.y > ring.y && to.y <= ring.y)) {
             return false;
         }
-        Vec3 crossing = from.lerp(to, (from.y - ring) / (from.y - to.y));
-        return Math.hypot(crossing.x - (hoop.getX() + 0.5), crossing.z - (hoop.getZ() + 0.5)) < INNER_RADIUS;
+        Vec3 crossing = from.lerp(to, (from.y - ring.y) / (from.y - to.y));
+        return Math.hypot(crossing.x - ring.x, crossing.z - ring.z) < INNER_RADIUS;
     }
 
     /** A basket: the points go up on every scoreboard near the hoop, with a swish, a burst of sparks and a word to all around. */

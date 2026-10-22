@@ -6,6 +6,7 @@ import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -53,6 +54,17 @@ public class Basketball extends Entity implements ItemSupplier {
     private static final int PICKUP_DELAY = 15;
     /** Ticks after a basket before the next can count, so one drop through the ring scores once. */
     private static final int SCORED_COOLDOWN = 20;
+    /**
+     * A throw aimed this near a hoop, in degrees either side across the floor, from at most this far across it, in
+     * blocks, is helped into an arc that drops through the ring (see {@link #aimForHoop}); and how far up and down from
+     * the ball a hoop is looked for.
+     */
+    private static final double ASSIST_CONE = 15;
+    private static final int ASSIST_RANGE = 20;
+    private static final int ASSIST_REACH_UP = 10;
+    /** How high over the higher of the ball and the ring the helped arc peaks, in blocks, and how far under the ceiling at most. */
+    private static final double ARC_RISE = 1.5;
+    private static final double CEILING_ROOM = 0.6;
 
     @Nullable
     private UUID thrower;
@@ -65,7 +77,9 @@ public class Basketball extends Entity implements ItemSupplier {
 
     /**
      * A ball thrown by the player, the way they look, from just in front of their eyes; softly if they sneak. Thrown
-     * inside an assembled airliner's hull, it starts among the airliner's blocks, the throw relative to the cabin.
+     * inside an assembled airliner's hull, it starts among the airliner's blocks, the throw relative to the cabin. A
+     * full throw aimed near a hoop is helped through it (see {@link #aimForHoop}); a soft one is left as thrown, for
+     * those who would rather aim for themselves.
      */
     public static Basketball thrown(Level level, Player player) {
         Basketball ball = new Basketball(AerolargeRegistry.BASKETBALL.get(), level);
@@ -76,7 +90,80 @@ public class Basketball extends Entity implements ItemSupplier {
         ball.thrower = player.getUUID();
         ball.pickupDelay = PICKUP_DELAY;
         SableFlight.takeAboard(ball);
+        if (!player.isShiftKeyDown()) {
+            ball.aimForHoop();
+        }
         return ball;
+    }
+
+    /**
+     * Helps a throw through a hoop, as games do for a shot that is near enough: if a hoop is ahead, within
+     * {@link #ASSIST_CONE} of the way the ball goes and {@link #ASSIST_RANGE} of it across the floor, the ball is sent
+     * on an arc that peaks {@link #ARC_RISE} over the higher of it and the ring (kept under the ceiling) and drops its
+     * middle through the middle of the ring. Worked out in the ball's own frame, among an airliner's blocks or in the
+     * world, as the hoops it can drop through are.
+     */
+    private void aimForHoop() {
+        Vec3 middle = position().add(0, getBbHeight() / 2, 0);
+        BlockPos hoop = hoopAhead(middle, getDeltaMovement());
+        if (hoop == null) {
+            return;
+        }
+        Vec3 ring = HoopBlock.ringMiddle(hoop);
+        double peak = Math.min(Math.max(middle.y, ring.y) + ARC_RISE, ceilingOver(middle.lerp(ring, 0.5)) - CEILING_ROOM);
+        if (peak <= ring.y || peak <= middle.y) {
+            return;
+        }
+        // Each tick the ball falls GRAVITY faster, then moves: after t ticks it has risen t * up - GRAVITY * t (t + 1) / 2.
+        double up = Math.sqrt(2 * GRAVITY * (peak - middle.y));
+        double b = GRAVITY / 2 - up;
+        double room = b * b - 2 * GRAVITY * (ring.y - middle.y);
+        if (room <= 0) {
+            // Under a ceiling this low no arc comes down through the ring: the throw goes as thrown.
+            return;
+        }
+        double ticks = (-b + Math.sqrt(room)) / GRAVITY;
+        // Across the floor the air leaves AIR_DRAG of its speed each tick: in t ticks it goes (1 - AIR_DRAG^t) / (1 - AIR_DRAG) of it.
+        Vec3 across = new Vec3(ring.x - middle.x, 0, ring.z - middle.z);
+        double speed = across.length() * (1 - AIR_DRAG) / (1 - Math.pow(AIR_DRAG, ticks));
+        setDeltaMovement(across.normalize().scale(speed).add(0, up, 0));
+    }
+
+    /** The nearest hoop ahead of a ball thrown this way, within the assist's reach and cone; null if none. */
+    @Nullable
+    private BlockPos hoopAhead(Vec3 middle, Vec3 throwing) {
+        Vec3 way = new Vec3(throwing.x, 0, throwing.z);
+        if (way.lengthSqr() < 1e-6) {
+            return null;
+        }
+        double leastCos = Math.cos(Math.toRadians(ASSIST_CONE));
+        BlockPos centre = BlockPos.containing(middle);
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-ASSIST_RANGE, -ASSIST_REACH_UP, -ASSIST_RANGE),
+            centre.offset(ASSIST_RANGE, ASSIST_REACH_UP, ASSIST_RANGE))) {
+            if (!(level().getBlockState(pos).getBlock() instanceof HoopBlock)) {
+                continue;
+            }
+            Vec3 to = HoopBlock.ringMiddle(pos).subtract(middle).multiply(1, 0, 1);
+            double distance = to.length();
+            if (distance <= ASSIST_RANGE && distance < bestDistance && to.normalize().dot(way.normalize()) >= leastCos) {
+                best = pos.immutable();
+                bestDistance = distance;
+            }
+        }
+        return best;
+    }
+
+    /** The underside of the first solid block over a point, or a long way up if there is none near. */
+    private double ceilingOver(Vec3 point) {
+        BlockPos.MutableBlockPos pos = BlockPos.containing(point).mutable();
+        for (int up = 0; up <= ASSIST_REACH_UP * 2; up++, pos.move(Direction.UP)) {
+            if (!level().getBlockState(pos).getCollisionShape(level(), pos).isEmpty()) {
+                return pos.getY();
+            }
+        }
+        return Double.MAX_VALUE;
     }
 
     /** Who threw or last knocked it, if they are still about. */
