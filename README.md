@@ -940,7 +940,9 @@ clear windows over a grey knee wall, the upper band leaning a block further out 
 theirs out against reflections, dark mullions at the corners, a walkway with a railing round its foot and an
 overhanging roof. On the roof stand a white radar dome, antennas and a mast with a flashing red beacon.
 
-Through the iron door at its foot (a button either side opens it), switchback stairs climb round the shaft's glass lift
+Its entrance is a glazed front four blocks wide set back under a canopy: a pair of Create's framed glass sliding doors
+between fixed glass, a glass transom over them, and over the left door a motion sensor that slides them open for anyone
+coming or going. Inside, switchback stairs climb round the shaft's glass lift
 core, lit by lamps in the walls, to the equipment floor and on into the cab. The lift is Create's elevator, assembled
 and powered when the tower is built (a creative motor under the cab's floor turns it): press the button by its door, at
 the lobby or the equipment floor, to call the cabin, whose arrival opens the iron door; aboard, scroll on its controls
@@ -958,6 +960,12 @@ near it. The control tower's transponder shows the tower as an orange tower, and
 on has one on the centre console beside the seatbelt switch, showing it as a white airliner (an older airliner can be
 given one: a Transponder is crafted from iron, a glass pane, redstone and a compass, and goes on a console or a desk
 anywhere). On its own autopilot's map an airliner's transponder is left out, the airliner being its gold arrow there.
+
+A **Motion Sensor** (craftable from quartz, an observer and redstone) is the sensor over an automatic door: a white
+housing with a dark lens and a little lamp that lights red while it sees someone. Put it in the wall over a door, its lens
+facing out: while a player or a villager is within four blocks of the wall, in front of it or behind it, it gives off a
+full redstone signal all round, and for a second after they have gone, so a door under it opens for them and shuts
+behind them. Create's sliding doors open as a pair when either is powered, so one sensor works a double door.
 
 The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
 every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes

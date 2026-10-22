@@ -5,6 +5,7 @@ import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.AirframePalette;
+import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.TransponderBlockEntity;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -45,7 +48,7 @@ import net.minecraft.world.phys.AABB;
  * real cabs lean theirs out against reflections), dark mullions at its corners, a walkway with a railing round its
  * foot, and an overhanging roof carrying a white radar dome, antennas and a flashing red beacon.
  *
- * <p>Inside, from a recessed door at its foot, switchback stairs climb round one side of a glass lift core to the
+ * <p>Inside, through glass sliding doors at its foot that a motion sensor opens, switchback stairs climb round one side of a glass lift core to the
  * equipment floor and on into the cab. The lift is Create's elevator: a cabin under an elevator pulley driven by a
  * creative motor in the top of the core, with a pair of contacts at the lobby and at the equipment floor, an iron door
  * at each that the contact opens while the cabin is there, a button by each to call it, and the cabin's own controls to
@@ -99,6 +102,8 @@ public final class ControlTower {
     /** How far apart the lights set into the shaft's inner walls are, up it, and the row of the first. */
     private static final int LIGHT_EVERY = 8;
     private static final int FIRST_LIGHT = 3;
+    /** The entrance's westmost column: it is four wide, its two sliding doors in the middle. */
+    private static final int ENTRANCE_LEFT = -2;
     /** How far down under the shaft the ground is filled in, at most. */
     private static final int FOUNDATION_DEPTH = 16;
     /**
@@ -124,6 +129,8 @@ public final class ControlTower {
     private static final BlockState DOME_SHELL = Blocks.SMOOTH_QUARTZ.defaultBlockState();
     private static final BlockState RAILING = Blocks.IRON_BARS.defaultBlockState();
     private static final BlockState FOUNDATION = Blocks.STONE_BRICKS.defaultBlockState();
+    private static final BlockState ENTRANCE_GLASS = Blocks.GLASS.defaultBlockState();
+    private static final BlockState CANOPY = Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** The lifts waiting to be assembled, by level, and when. */
     private static final Map<ServerLevel, List<PendingLift>> PENDING = new IdentityHashMap<>();
@@ -228,22 +235,37 @@ public final class ControlTower {
     }
 
     /**
-     * The way in at the foot of the front face: an iron door set back in the thick wall, a button either side of it to
-     * open it, and a grey canopy over the recess.
+     * The way in at the foot of the front face, set back in the thick wall: a glazed front four blocks wide, a pair of
+     * Create's framed glass sliding doors in the middle with fixed glass either side and a glass transom over them, and
+     * over the left door a motion sensor (see {@link MotionSensorBlock}) that slides them open for anyone coming or
+     * going; a grey canopy over the recess outside.
      */
     private void entrance() {
-        int door = -INSIDE - 1;
-        BlockState iron = ironDoor(DoorHingeSide.LEFT);
-        set(0, 1, door, iron.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
-        set(0, 2, door, iron.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
-        for (int y = 1; y <= 2; y++) {
-            set(0, y, door - 1, AIR);
+        int front = -INSIDE - 1;
+        for (int x = ENTRANCE_LEFT; x <= ENTRANCE_LEFT + 3; x++) {
+            for (int y = 1; y <= 3; y++) {
+                set(x, y, front - 1, AIR);
+                set(x, y, front, ENTRANCE_GLASS);
+            }
+            set(x, 4, front - 2, CANOPY);
+            set(x, 4, front - 3, CANOPY);
         }
-        set(-1, 2, door - 2, button(Direction.NORTH));
-        set(1, 2, door + 1, button(Direction.SOUTH));
-        for (int x = -1; x <= 1; x++) {
-            set(x, 3, -SHAFT - 1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
+        BlockState door = slidingDoor();
+        for (int x : new int[]{ENTRANCE_LEFT + 1, ENTRANCE_LEFT + 2}) {
+            // Seen from outside, facing south, the door to the east is the left one: hinged at its own outer side, as a pair.
+            BlockState leaf = door.setValue(DoorBlock.HINGE, x == ENTRANCE_LEFT + 2 ? DoorHingeSide.LEFT : DoorHingeSide.RIGHT);
+            set(x, 1, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+            set(x, 2, front, leaf.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
         }
+        BlockState sensor = AerolargeRegistry.MOTION_SENSOR.get().defaultBlockState().setValue(MotionSensorBlock.FACING, Direction.NORTH);
+        set(ENTRANCE_LEFT + 2, 3, front, sensor);
+    }
+
+    /** One of the entrance's sliding glass doors, as laid out facing south; an iron door without Create. */
+    private static BlockState slidingDoor() {
+        BlockState glass = create("framed_glass_door");
+        BlockState door = glass != null ? glass : Blocks.IRON_DOOR.defaultBlockState();
+        return door.setValue(DoorBlock.FACING, Direction.SOUTH);
     }
 
     /** An iron door, as laid out facing south, hinged on one side; its halves are set from it. */

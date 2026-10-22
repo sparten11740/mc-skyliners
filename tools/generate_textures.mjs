@@ -803,6 +803,23 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "tower_radar_casing", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 2);
 }
 
+// The motion sensor over an automatic door: a white housing, seamed round its edge, its dark rounded lens in the middle
+// with a glint, and under it a little lamp, dark, or lit red while it sees someone.
+{
+  const HOUSING = [0xee, 0xf0, 0xf2];
+  const HOUSING_SEAM = [0xc6, 0xcb, 0xd1];
+  const LENS = [0x1a, 0x1d, 0x22];
+  const sensor = (lit) => (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return HOUSING_SEAM;
+    if (Math.hypot(x - 7.5, y - 6.5) <= 4.2) return x === 6 && y === 4 ? [0x8a, 0x90, 0x98] : LENS;
+    if (y >= 12 && y <= 13 && x >= 7 && x <= 8) return lit ? [0xff, 0x30, 0x24] : [0x50, 0x18, 0x14];
+    return HOUSING;
+  };
+  texture(blockOutput, "motion_sensor_front", sensor(false), 2);
+  texture(blockOutput, "motion_sensor_front_on", sensor(true), 2);
+  texture(blockOutput, "motion_sensor_side", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? HOUSING_SEAM : HOUSING), 2);
+}
+
 // Buckling up. The seatbelt sign: a dark panel with a seated figure and its belt beside a crossed-out cigarette,
 // glowing amber on white when lit. The seatbelt switch: a dark panel with the same figure on a lamp, amber when on.
 {

@@ -351,6 +351,7 @@
   "message.aerolarge.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
+  "block.aerolarge.motion_sensor": "Motion Sensor",
   "screen.aerolarge.radar.title": "Tower Radar",
   "screen.aerolarge.radar.map": "Radar map",
   "screen.aerolarge.map.contact.where": "X %s, Z %s",

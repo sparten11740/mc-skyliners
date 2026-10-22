@@ -746,7 +746,19 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
   write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
   write(`assets/${ID}/models/item/runway_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/runway_blueprint` } });
-  for (const name of ["transponder", "tower_radar"]) {
+  // The motion sensor: a white housing, its lens on its face, the lamp under the lens lit while it sees someone.
+  for (const lit of [false, true]) {
+    write(`assets/${ID}/models/block/motion_sensor${lit ? "_on" : ""}.json`, {
+      parent: "minecraft:block/orientable",
+      textures: { front: `${ID}:block/motion_sensor_front${lit ? "_on" : ""}`, side: `${ID}:block/motion_sensor_side`, top: `${ID}:block/motion_sensor_side` },
+    });
+  }
+  write(`assets/${ID}/blockstates/motion_sensor.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((on) =>
+      [`facing=${facing},powered=${on}`, { model: `${ID}:block/motion_sensor${on ? "_on" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/motion_sensor.json`, { parent: `${ID}:block/motion_sensor` });
+  for (const name of ["transponder", "tower_radar", "motion_sensor"]) {
     dropsItself(name);
     cubes[name] = null;
   }
@@ -4369,7 +4381,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 // Climbed as a ladder is.
 write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "jet_bridge", "check_in_desk"];
+const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
@@ -4463,6 +4475,7 @@ shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_pane
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
 shaped("tower_radar", ["GGG", "GRG", "ICI"], { G: "minecraft:green_stained_glass_pane", R: "minecraft:redstone", I: "minecraft:iron_ingot", C: "minecraft:compass" }, 1);
 shaped("transponder", ["IGI", "RCR"], { I: "minecraft:iron_ingot", G: "minecraft:glass_pane", R: "minecraft:redstone", C: "minecraft:compass" }, 1);
+shaped("motion_sensor", ["QOQ", " R "], { Q: "minecraft:quartz", O: "minecraft:observer", R: "minecraft:redstone" }, 1);
 shaped("jet_bridge", ["GGG", "IPI", "IRI"], { G: "minecraft:glass", I: "minecraft:iron_ingot", P: "minecraft:piston", R: "minecraft:redstone" }, 1);
 shaped("check_in_desk", ["PGP", "IRI", "III"], { P: "minecraft:paper", G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -4874,6 +4887,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
+  "block.aerolarge.motion_sensor": "Motion Sensor",
   "screen.aerolarge.radar.title": "Tower Radar",
   "screen.aerolarge.radar.map": "Radar map",
   "screen.aerolarge.map.contact.where": "X %s, Z %s",

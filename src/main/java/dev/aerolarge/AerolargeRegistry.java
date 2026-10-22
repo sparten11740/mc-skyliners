@@ -93,6 +93,7 @@ import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinedShellBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.ModelAirlinerBlock;
+import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
 import dev.aerolarge.block.OverheadBinBlock;
@@ -606,6 +607,11 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("transponder", () -> BlockEntityType.Builder.of(TransponderBlockEntity::new, TRANSPONDER.get()).build(null));
     public static final DeferredItem<BlockItem> TOWER_RADAR_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADAR);
     public static final DeferredItem<BlockItem> TRANSPONDER_ITEM = ITEMS.registerSimpleBlockItem(TRANSPONDER);
+    /** A motion sensor over an automatic door, as at the control tower's entrance. */
+    public static final DeferredBlock<MotionSensorBlock> MOTION_SENSOR = BLOCKS.registerBlock(
+        "motion_sensor", MotionSensorBlock::new, metal(MapColor.SNOW).lightLevel(state -> state.getValue(MotionSensorBlock.POWERED) ? 3 : 0)
+    );
+    public static final DeferredItem<BlockItem> MOTION_SENSOR_ITEM = ITEMS.registerSimpleBlockItem(MOTION_SENSOR);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1323,7 +1329,7 @@ public final class AerolargeRegistry {
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
-        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM))
+        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM))
     );
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("aerolarge", () -> CreativeModeTab.builder()
