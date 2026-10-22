@@ -281,7 +281,7 @@ its colour so that players who cannot read yet can use it: pick the pin on the m
 airliner does not circle the pin but lands near it, on its own, somewhere clear of buildings and trees. It flies
 straight to the pin and on over it, back and forth, looking at the land below: the server only has the land near the
 players aboard to look at, so it has to fly over it first. Meanwhile it measures itself, wingtip to wingtip and nose to
-tail, and looks for a strip of land within 200 blocks of the pin, nearest first and every 15 degrees round, where it
+tail, and looks for a strip of land within 320 blocks of the pin, nearest first and every 15 degrees round, where it
 fits: dry, level ground (no more than 2 blocks above or below where it touches down, and no step higher than 1) for
 its wheels all the way from touchdown until it has braked to a stop, a good 400 blocks with room either end; nothing
 taller under its wings and engines than they stand above the ground; and nothing under the end of its glide down that

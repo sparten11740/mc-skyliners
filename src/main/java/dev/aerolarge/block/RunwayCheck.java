@@ -63,17 +63,28 @@ final class RunwayCheck {
      */
     private static final double CHECKED_HEIGHT = 30;
 
+    /**
+     * How many blocks apart a coarse check looks, across and along, as many times further apart as the fine one: a
+     * quick look that rules out most runways for a fraction of the cost, leaving the fine look for those that pass it.
+     */
+    static final int COARSE = 4;
+
     private final GroundSurvey ground;
     private final AirlinerShape shape;
     /** The speed it is reckoned to fly the approach at, in blocks a second. */
     private final double speed;
+    /** How many times further apart than the fine check this one looks: 1 for the fine one, {@link #COARSE} for the quick one. */
+    private final int stride;
+    /** How many things in the way it counts at most before it stops looking: a runway with more is no better than one found. */
+    private int cap = Integer.MAX_VALUE;
     /** How many columns it has looked at, so the search can spread the looking over ticks. */
     private int samples;
 
-    RunwayCheck(GroundSurvey ground, AirlinerShape shape, double speed) {
+    RunwayCheck(GroundSurvey ground, AirlinerShape shape, double speed, int stride) {
         this.ground = ground;
         this.shape = shape;
         this.speed = speed;
+        this.stride = stride;
     }
 
     /** How far the airliner rolls on its brakes from touching down at a speed, in blocks. */
@@ -88,18 +99,20 @@ final class RunwayCheck {
 
     /**
      * Whether the airliner can land on the runway: how many things stand in the way under its wings (0 for a clear
-     * runway), or {@link #REJECTED} or {@link #UNKNOWN}.
+     * runway), or {@link #REJECTED} or {@link #UNKNOWN}. Past {@code cap} things it stops counting, and gives a
+     * count past the cap.
      */
-    int check(Runway runway) {
+    int check(Runway runway, int cap) {
+        this.cap = cap;
         int wheels = wheels(runway);
         if (wheels != 0) {
             return wheels;
         }
         int underneath = underneath(runway);
-        if (underneath < 0) {
+        if (underneath < 0 || underneath > cap) {
             return underneath;
         }
-        int before = beforeTouchdown(runway);
+        int before = beforeTouchdown(runway, underneath);
         return before < 0 ? before : underneath + before;
     }
 
@@ -124,7 +137,7 @@ final class RunwayCheck {
 
     /** Whether the land the wheels roll on is fit for them: 0 if it is, else {@link #REJECTED} or {@link #UNKNOWN}. */
     private int wheels(Runway runway) {
-        for (int across = shape.gearLeft() - CENTRE_LINE_TOLERANCE; across <= shape.gearRight() + CENTRE_LINE_TOLERANCE; across++) {
+        for (int across = shape.gearLeft() - CENTRE_LINE_TOLERANCE; across <= shape.gearRight() + CENTRE_LINE_TOLERANCE; across += stride) {
             int verdict = wheelTrack(runway, across);
             if (verdict != 0) {
                 return verdict;
@@ -136,7 +149,7 @@ final class RunwayCheck {
     /** One line along the runway where wheels may roll, a distance across it. */
     private int wheelTrack(Runway runway, int across) {
         int previous = Integer.MIN_VALUE;
-        for (double along = wheelsFrom(); along <= wheelsTo(runway); along++) {
+        for (double along = wheelsFrom(); along <= wheelsTo(runway); along += stride) {
             samples++;
             int x = runway.columnX(along, across);
             int z = runway.columnZ(along, across);
@@ -147,7 +160,8 @@ final class RunwayCheck {
             if (!rollable(patch, x, z, runway.elevation(), previous)) {
                 return REJECTED;
             }
-            previous = patch.top(x, z);
+            // The coarse look's columns are too far apart to tell a step.
+            previous = stride == 1 ? patch.top(x, z) : Integer.MIN_VALUE;
         }
         return 0;
     }
@@ -169,7 +183,7 @@ final class RunwayCheck {
      */
     private int underneath(Runway runway) {
         int obstacles = 0;
-        for (int across = -shape.halfSpan(); across <= shape.halfSpan(); across += ACROSS_STEP) {
+        for (int across = -shape.halfSpan(); across <= shape.halfSpan() && obstacles <= cap; across += ACROSS_STEP * stride) {
             int found = underneathLine(runway, across);
             if (found < 0) {
                 return found;
@@ -188,7 +202,7 @@ final class RunwayCheck {
         boolean fuselage = inCorridor(across);
         int obstacles = 0;
         double to = TOUCHDOWN_SCATTER + runway.rollout() + shape.ahead();
-        for (double along = -TOUCHDOWN_SCATTER - shape.behind(); along <= to; along += ALONG_STEP) {
+        for (double along = -TOUCHDOWN_SCATTER - shape.behind(); along <= to; along += ALONG_STEP * stride) {
             if (underWheels(across, along, runway)) {
                 continue;
             }
@@ -211,17 +225,18 @@ final class RunwayCheck {
     /**
      * What stands in the way under the airliner before it touches down: back from where its wheels first roll at the
      * earliest touchdown, under the flare and the end of the glide, until even its tail, the last of it over the land
-     * and so the lowest, would pass {@link #CHECKED_HEIGHT} over the runway.
+     * and so the lowest, would pass {@link #CHECKED_HEIGHT} over the runway; no further once the things in the way,
+     * with those already found under it on the ground, are past the cap.
      */
-    private int beforeTouchdown(Runway runway) {
+    private int beforeTouchdown(Runway runway, int already) {
         int obstacles = 0;
-        for (double along = wheelsFrom() - ALONG_STEP; ; along -= ALONG_STEP) {
+        for (double along = wheelsFrom() - ALONG_STEP; already + obstacles <= cap; along -= ALONG_STEP * stride) {
             // How high the rearmost wheels and the tail pass over this row, as low as they come over it.
             double gear = PinLanding.wheelHeight(-TOUCHDOWN_SCATTER - (along - shape.gearRear()), speed);
             double tailBefore = -TOUCHDOWN_SCATTER - (along + shape.behind());
             double tail = tailBefore > 0 ? PinLanding.wheelHeight(tailBefore, speed) : Double.NaN;
             if (tail > CHECKED_HEIGHT) {
-                return obstacles;
+                break;
             }
             int found = beforeRow(runway, along, gear, tail);
             if (found < 0) {
@@ -229,6 +244,7 @@ final class RunwayCheck {
             }
             obstacles += found;
         }
+        return obstacles;
     }
 
     /**
@@ -241,7 +257,7 @@ final class RunwayCheck {
     private int beforeRow(Runway runway, double along, double gear, double tail) {
         int obstacles = 0;
         double lowest = Double.isNaN(tail) ? gear : Math.min(gear, tail);
-        for (int across = -shape.halfSpan(); across <= shape.halfSpan(); across += ACROSS_STEP) {
+        for (int across = -shape.halfSpan(); across <= shape.halfSpan(); across += ACROSS_STEP * stride) {
             double limit = passingOver(runway, across, gear, tail);
             if (Double.isNaN(limit)) {
                 continue;
@@ -272,7 +288,9 @@ final class RunwayCheck {
         if (Double.isNaN(tail) || clearance == AirlinerShape.NOTHING) {
             return limit;
         }
-        double body = runway.elevation() + tail + clearance - FLIGHT_MARGIN;
+        // Never below the runway itself: land no higher than where the wheels touch down is passed over, whatever the
+        // margin, as low as the airliner's underside comes there.
+        double body = Math.max(runway.elevation(), runway.elevation() + tail + clearance - FLIGHT_MARGIN);
         return Double.isNaN(limit) ? body : Math.min(limit, body);
     }
 

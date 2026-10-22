@@ -7,17 +7,21 @@ import javax.annotation.Nullable;
 
 /**
  * The search for a runway near the pin: touchdown points round it, nearest first, each with every heading in turn,
- * checked against the land as surveyed (see {@link RunwayCheck}) a few at a time each tick. The first clear one found
- * is chosen. A search that goes round them all with none clear chooses the one with the fewest things standing under
- * its wings, if any can be landed on at all, once it has had a fair look at the land: once the airliner has flown over
- * the pin, and either every runway round it was decided or it has been round a few times since. Otherwise it waits a
- * moment, while more land is surveyed, and goes round again.
+ * checked against the land as surveyed (see {@link RunwayCheck}) a few at a time each tick: each at a glance, which rules
+ * most out and counts what stands under the wings, no more of it than the best one so far has, and one that looks clear
+ * closely too. The first clear one found is chosen. A search that goes round them all with none clear chooses the one
+ * with the fewest things standing under its wings, if any can be landed on at all, once it has had a fair look at the
+ * land: once the airliner has flown over the pin, and either every runway round it was decided or it has been round a
+ * few times since. Otherwise it waits a moment, while more land is surveyed, and goes round again.
  */
 final class RunwaySearch {
-    /** How far from the pin the airliner may touch down, in blocks. */
-    static final int REACH = 200;
+    /**
+     * How far from the pin the airliner may touch down, in blocks: far enough to find clear land beside a village or the
+     * tower the pin is on, which leave no room for its wings right next to them.
+     */
+    static final int REACH = 320;
     /** How far apart the touchdown points looked at are, in blocks, across and along. */
-    private static final int SPACING = 16;
+    private static final int SPACING = 24;
     /** How far apart the headings looked at are, in degrees. */
     private static final int HEADING_STEP = 15;
     private static final int HEADINGS = 360 / HEADING_STEP;
@@ -101,11 +105,12 @@ final class RunwaySearch {
             resting--;
             return Outcome.LOOKING;
         }
-        RunwayCheck check = new RunwayCheck(ground, shape, speed);
+        RunwayCheck glance = new RunwayCheck(ground, shape, speed, RunwayCheck.COARSE);
+        RunwayCheck close = new RunwayCheck(ground, shape, speed, 1);
         double rollout = RunwayCheck.rollout(speed);
-        while (check.samples() < SAMPLES_PER_TICK && next < POINTS.size() * HEADINGS) {
+        while (glance.samples() + close.samples() < SAMPLES_PER_TICK && next < POINTS.size() * HEADINGS) {
             Runway runway = candidate(ground, pinX, pinZ, rollout, next++);
-            int verdict = runway == null ? RunwayCheck.UNKNOWN : check.check(runway);
+            int verdict = runway == null ? RunwayCheck.UNKNOWN : look(glance, close, runway);
             if (verdict == 0) {
                 found = runway;
                 return Outcome.FOUND;
@@ -113,6 +118,21 @@ final class RunwaySearch {
             weigh(runway, verdict);
         }
         return next < POINTS.size() * HEADINGS ? Outcome.LOOKING : endRound(overflown);
+    }
+
+    /**
+     * Checks a runway at a glance, counting what stands under its wings only as far as it could still be better than the
+     * best so far, and one that looks clear closely too: clear, or with something small in the way the glance stepped
+     * over, counted as one. Runways are ranked by what the glance finds, which is enough to tell a few things in the way
+     * from many.
+     */
+    private int look(RunwayCheck glance, RunwayCheck close, Runway runway) {
+        int verdict = glance.check(runway, best == null ? Integer.MAX_VALUE : bestObstacles - 1);
+        if (verdict != 0) {
+            return verdict;
+        }
+        int closely = close.check(runway, 0);
+        return closely <= 0 ? closely : 1;
     }
 
     /** Notes a runway checked: undecided, or the best so far of those that can be landed on. */

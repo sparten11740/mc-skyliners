@@ -29,7 +29,7 @@ final class GroundSurvey {
      * {@link RunwaySearch#REACH}), and beyond it as far as a landing there must know the ground: back past where the
      * flare starts, and on past where the airliner has braked to a stop (see {@link RunwayCheck}).
      */
-    static final int RADIUS = 900;
+    static final int RADIUS = RunwaySearch.REACH + 700;
     /**
      * How far round the airliner it looks for loaded chunks, in chunks: past the farthest a server sends players the
      * land (its view distance, 10 chunks unless set otherwise), so all they are sent is seen.
