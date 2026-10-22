@@ -119,9 +119,6 @@ public final class ControlTower {
     private static final BlockState TRIM = Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState();
     private static final BlockState MULLION = Blocks.GRAY_CONCRETE.defaultBlockState();
     private static final BlockState FLOOR = Blocks.POLISHED_ANDESITE.defaultBlockState();
-    private static final BlockState WINDOW = Blocks.GRAY_STAINED_GLASS.defaultBlockState();
-    /** The cab's glass: clear, so the controllers see out all round, and anyone below sees them at their consoles. */
-    private static final BlockState CAB_GLASS = Blocks.GLASS.defaultBlockState();
     private static final BlockState CORE_GLASS = Blocks.LIGHT_GRAY_STAINED_GLASS.defaultBlockState();
     private static final BlockState LIGHT = Blocks.SEA_LANTERN.defaultBlockState();
     private static final BlockState CONSOLE = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
@@ -129,7 +126,6 @@ public final class ControlTower {
     private static final BlockState DOME_SHELL = Blocks.SMOOTH_QUARTZ.defaultBlockState();
     private static final BlockState RAILING = Blocks.IRON_BARS.defaultBlockState();
     private static final BlockState FOUNDATION = Blocks.STONE_BRICKS.defaultBlockState();
-    private static final BlockState ENTRANCE_GLASS = Blocks.GLASS.defaultBlockState();
     private static final BlockState CANOPY = Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** The lifts waiting to be assembled, by level, and when. */
@@ -231,7 +227,7 @@ public final class ControlTower {
             return LIGHT;
         }
         boolean strip = Math.abs(z) <= 1 && Math.abs(x) > INSIDE && y >= STRIP_FROM && y < OPS_FLOOR - STRIP_FROM;
-        return strip ? WINDOW : WALL;
+        return strip ? glass() : WALL;
     }
 
     /**
@@ -245,7 +241,7 @@ public final class ControlTower {
         for (int x = ENTRANCE_LEFT; x <= ENTRANCE_LEFT + 3; x++) {
             for (int y = 1; y <= 3; y++) {
                 set(x, y, front - 1, AIR);
-                set(x, y, front, ENTRANCE_GLASS);
+                set(x, y, front, glass());
             }
             set(x, 4, front - 2, CANOPY);
             set(x, 4, front - 3, CANOPY);
@@ -352,6 +348,14 @@ public final class ControlTower {
         }
     }
 
+    /**
+     * The tower's glass, all of it but the lift's core: the airliner's own tinted windscreen glass, its panes joining
+     * without a seam, so the cab's band of windows reads as one sheet as the flight deck's does.
+     */
+    private static BlockState glass() {
+        return AerolargeRegistry.COCKPIT_WINDOW.get().defaultBlockState();
+    }
+
     /** One of Create's blocks by name; null without Create. */
     @Nullable
     private static BlockState create(String name) {
@@ -448,7 +452,7 @@ public final class ControlTower {
         if (y == CAB_FLOOR - 1) {
             return WALL;
         }
-        return octagonCorner(x, z, OPS) ? WALL : WINDOW;
+        return octagonCorner(x, z, OPS) ? WALL : glass();
     }
 
     /**
@@ -473,7 +477,7 @@ public final class ControlTower {
             boolean upper = y >= LEAN;
             int radius = upper ? CAB + 1 : CAB;
             if (onOctagon(x, z, radius)) {
-                set(x, y, z, y == KNEE ? TRIM : octagonCorner(x, z, radius) ? MULLION : CAB_GLASS);
+                set(x, y, z, y == KNEE ? TRIM : octagonCorner(x, z, radius) ? MULLION : glass());
             } else if (inOctagon(x, z, radius)) {
                 keepOrSet(x, y, z, AIR);
             }
