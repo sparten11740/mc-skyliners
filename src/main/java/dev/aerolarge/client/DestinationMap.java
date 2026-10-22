@@ -2,6 +2,8 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.aerolarge.block.AutopilotBlock;
+import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.block.Runway;
 import dev.aerolarge.radar.Contact;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -19,7 +21,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The autopilot's map, on its settings panel while it is set to fly to a pin (see {@link AutopilotSettingsScreen}): a
  * {@link MapWidget} with the airliner where it is, pointing the way it goes, the pin with the circle the airliner will
- * fly round it, and the transponders' markers but for the airliner's own. A click drops the pin: on a transponder's
+ * fly round it, set to land there the strip of land the autopilot has picked to land on near it once it has, and the
+ * transponders' markers but for the airliner's own. A click drops the pin: on a transponder's
  * marker or a village when the click is close to one, so either is easy to pick, else where it was clicked. It opens
  * on the airliner, or on the pin if there is one, whose coordinates it shows beside its middle's.
  */
@@ -32,6 +35,9 @@ final class DestinationMap extends MapWidget {
      */
     private static final int SAME_AIRLINER = 512;
     private static final Component NAME = Component.translatable("screen.aerolarge.autopilot_settings.map");
+    /** The runway picked near the pin: how many pixels wide, and its colour. */
+    private static final int RUNWAY_WIDTH = 1;
+    private static final int RUNWAY = 0xF0F2F5;
 
     private final BlockPos at;
     private final Supplier<BlockEntity> autopilot;
@@ -80,7 +86,7 @@ final class DestinationMap extends MapWidget {
         return !contact.airborne() || !contact.block().closerThan(at, SAME_AIRLINER);
     }
 
-    /** The pin with its circle, and the airliner over all, pointing the way it goes. */
+    /** The pin with its circle, the runway picked near it, and the airliner over all, pointing the way it goes. */
     @Override
     void paint(NativeImage image, MapPainter.View view, Level level, float partialTick) {
         if (pin != null) {
@@ -93,10 +99,30 @@ final class DestinationMap extends MapWidget {
         if (blockEntity == null) {
             return;
         }
+        runway(image, view, blockEntity);
         Vec3 airliner = from(level);
         Direction nose = blockEntity.getBlockState().getValue(AutopilotBlock.FACING);
         SableClient.Attitude attitude = SableClient.attitude(blockEntity, nose, partialTick);
         MapPainter.airliner(image, view.pixelX(airliner.x), view.pixelY(airliner.z), attitude != null ? attitude.heading() : 0);
+    }
+
+    /**
+     * The runway the autopilot has picked near the pin to land on, if it has: a white strip edged dark, from where it
+     * may touch down at the earliest to where it has stopped at the latest.
+     */
+    private static void runway(NativeImage image, MapPainter.View view, BlockEntity blockEntity) {
+        Runway runway = blockEntity instanceof AutopilotBlockEntity autopilot ? autopilot.runway() : null;
+        if (runway == null) {
+            return;
+        }
+        Vec3 start = runway.start();
+        Vec3 end = runway.end();
+        int x0 = view.pixelX(start.x);
+        int y0 = view.pixelY(start.z);
+        int x1 = view.pixelX(end.x);
+        int y1 = view.pixelY(end.z);
+        MapPainter.line(image, x0, y0, x1, y1, RUNWAY_WIDTH + 2, MapPainter.OUTLINE);
+        MapPainter.line(image, x0, y0, x1, y1, RUNWAY_WIDTH, RUNWAY);
     }
 
     /** Beside the middle's coordinates, the pin's in the bottom right corner once it is dropped. */
