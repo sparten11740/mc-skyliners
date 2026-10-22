@@ -36,6 +36,7 @@
     "aerolarge:transponder",
     "aerolarge:tower_radar",
     "aerolarge:motion_sensor",
+    "aerolarge:lift_panel",
     "aerolarge:seatbelt_sign",
     "aerolarge:seatbelt_switch",
     "aerolarge:light_strip",

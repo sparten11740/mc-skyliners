@@ -352,6 +352,8 @@
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
   "block.aerolarge.motion_sensor": "Motion Sensor",
+  "block.aerolarge.lift_panel": "Lift Panel",
+  "screen.aerolarge.lift_panel.none": "NO LIFT",
   "screen.aerolarge.radar.title": "Tower Radar",
   "screen.aerolarge.radar.map": "Radar map",
   "screen.aerolarge.map.contact.where": "X %s, Z %s",

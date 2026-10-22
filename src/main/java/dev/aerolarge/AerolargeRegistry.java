@@ -88,6 +88,8 @@ import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
+import dev.aerolarge.block.LiftPanelBlock;
+import dev.aerolarge.block.LiftPanelBlockEntity;
 import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinedShellBlock;
@@ -613,6 +615,14 @@ public final class AerolargeRegistry {
         "motion_sensor", MotionSensorBlock::new, metal(MapColor.SNOW).lightLevel(state -> state.getValue(MotionSensorBlock.POWERED) ? 3 : 0)
     );
     public static final DeferredItem<BlockItem> MOTION_SENSOR_ITEM = ITEMS.registerSimpleBlockItem(MOTION_SENSOR);
+    /** A lift panel by the door of one of Create's elevators, or in its cabin, as in the control tower. */
+    public static final DeferredBlock<LiftPanelBlock> LIFT_PANEL = BLOCKS.registerBlock(
+        "lift_panel", LiftPanelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.METAL).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftPanelBlockEntity>> LIFT_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("lift_panel", () -> BlockEntityType.Builder.of(LiftPanelBlockEntity::new, LIFT_PANEL.get()).build(null));
+    public static final DeferredItem<BlockItem> LIFT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(LIFT_PANEL);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1332,7 +1342,9 @@ public final class AerolargeRegistry {
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
-        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM))
+        new TabSection("airport", List.of(
+            JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM
+        ))
     );
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("aerolarge", () -> CreativeModeTab.builder()

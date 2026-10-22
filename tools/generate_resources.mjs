@@ -769,7 +769,15 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
       [`facing=${facing},powered=${on},shifted=${shifted}`, { model: sensorModel(on, shifted), y }])))),
   });
   write(`assets/${ID}/models/item/motion_sensor.json`, { parent: `${ID}:block/motion_sensor` });
-  for (const name of ["transponder", "tower_radar", "motion_sensor"]) {
+  // The lift panel: a slim plate of dark glass in the passenger screen's casing, drawn facing north with its back
+  // against the south side of its block (see LiftPanelBlock); its renderer draws the floors over the glass.
+  write(`assets/${ID}/models/block/lift_panel.json`, boxes(
+    { screen: `${ID}:block/lift_panel`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+    [[[3, 1, 15], [13, 15, 16], { north: "#screen", all: "#casing" }]],
+  ));
+  facing("lift_panel");
+  write(`assets/${ID}/models/item/lift_panel.json`, { parent: `${ID}:block/lift_panel` });
+  for (const name of ["transponder", "tower_radar", "motion_sensor", "lift_panel"]) {
     dropsItself(name);
     cubes[name] = null;
   }
@@ -4399,7 +4407,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 // Climbed as a ladder is.
 write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "jet_bridge", "check_in_desk"];
+const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
@@ -4494,6 +4502,7 @@ shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "mi
 shaped("tower_radar", ["GGG", "GRG", "ICI"], { G: "minecraft:green_stained_glass_pane", R: "minecraft:redstone", I: "minecraft:iron_ingot", C: "minecraft:compass" }, 1);
 shaped("transponder", ["IGI", "RCR"], { I: "minecraft:iron_ingot", G: "minecraft:glass_pane", R: "minecraft:redstone", C: "minecraft:compass" }, 1);
 shaped("motion_sensor", ["QOQ", " R "], { Q: "minecraft:quartz", O: "minecraft:observer", R: "minecraft:redstone" }, 1);
+shaped("lift_panel", ["IGI", " R "], { I: "minecraft:iron_ingot", G: "minecraft:black_stained_glass_pane", R: "minecraft:redstone" }, 1);
 shaped("jet_bridge", ["GGG", "IPI", "IRI"], { G: "minecraft:glass", I: "minecraft:iron_ingot", P: "minecraft:piston", R: "minecraft:redstone" }, 1);
 shaped("check_in_desk", ["PGP", "IRI", "III"], { P: "minecraft:paper", G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -4908,6 +4917,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
   "block.aerolarge.motion_sensor": "Motion Sensor",
+  "block.aerolarge.lift_panel": "Lift Panel",
+  "screen.aerolarge.lift_panel.none": "NO LIFT",
   "screen.aerolarge.radar.title": "Tower Radar",
   "screen.aerolarge.radar.map": "Radar map",
   "screen.aerolarge.map.contact.where": "X %s, Z %s",

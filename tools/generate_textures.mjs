@@ -1707,6 +1707,21 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 0);
   // The autopilot screen's glass, for when it is too far off to be drawn live: the same dark glass, edge to edge.
   texture(blockOutput, "autopilot_screen", () => [0x0a, 0x0e, 0x14], 1);
+
+  // The lift panel's glass, on the part of the texture its plate shows (x 3 to 12, y 1 to 14), for when it is too far
+  // off to be drawn live and in the hand: black in the bezel, an amber figure in the indicator across the top with an
+  // amber line under it, and under that two rows of green floors, the lower one lit amber.
+  const AMBER = [0xff, 0xb0, 0x20];
+  const LED_BLACK = [0x04, 0x06, 0x04];
+  texture(blockOutput, "lift_panel", (x, y) => {
+    if (x <= 3 || x >= 12 || y <= 1 || y >= 14) return BEZEL;
+    if (y === 6) return AMBER;
+    if (y >= 2 && y <= 5) return (x === 7 || x === 8) && y >= 3 && y <= 4 ? AMBER : [0x0a, 0x0d, 0x07];
+    const text = x >= 5 && x <= 10 && x !== 6;
+    if (y === 8) return text ? [0x3c, 0xf0, 0x7a] : LED_BLACK;
+    if (y === 10) return text ? AMBER : [0x3a, 0x28, 0x04];
+    return LED_BLACK;
+  }, 1);
 }
 
 // The control panels' pictures, in the glass cockpit's colours: every setting and button has one, so the panels work

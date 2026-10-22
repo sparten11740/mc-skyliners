@@ -1,9 +1,11 @@
 package dev.aerolarge;
 
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airport.ControlTower;
 import dev.aerolarge.airport.RunwayBuild;
 import dev.aerolarge.block.BrewCoffee;
+import dev.aerolarge.block.LiftPanelInteraction;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.OpenTowerRadar;
@@ -38,6 +40,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -60,6 +63,9 @@ public final class Aerolarge {
         container.registerConfig(ModConfig.Type.SERVER, AerolargeConfig.SPEC);
 
         modEventBus.addListener(Aerolarge::onRegisterPayloads);
+        // A lift panel carried in an elevator's cabin is touched through Create, which only knows blocks it is told of.
+        modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(
+            () -> MovingInteractionBehaviour.REGISTRY.register(AerolargeRegistry.LIFT_PANEL.get(), new LiftPanelInteraction())));
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
         NeoForge.EVENT_BUS.addListener(HighDive::onTick);

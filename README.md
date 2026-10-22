@@ -968,6 +968,13 @@ facing out: while a player or a villager is within four blocks of the wall, in f
 full redstone signal all round, and for a second after they have gone, so a door under it opens for them and shuts
 behind them. Create's sliding doors open as a pair when either is powered, so one sensor works a double door.
 
+A **Lift Panel** (craftable from iron, a black glass pane and redstone) is the digital panel by a lift's door, for one of
+Create's elevators: amber and green light on black, readable in the dark. Across its top it shows the floor the cabin
+is at in big amber figures, with its name under them and an arrow while the cabin goes up or down; under that a row for
+each floor, the top one first, by the names given to its elevator contact (in Create's contact screen), the floor the
+cabin was last sent to lit up in amber. Touch a floor's row to send the cabin there. Put one on the wall within three
+blocks of the lift's column of contacts, at any landing; one glued into the cabin rides with it and works from inside.
+
 The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
 every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes
 round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower,
