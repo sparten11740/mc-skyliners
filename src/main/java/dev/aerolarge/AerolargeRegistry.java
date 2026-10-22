@@ -161,6 +161,7 @@ import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ControlTowerBlueprintItem;
 import dev.aerolarge.item.RunwayBlueprintItem;
+import dev.aerolarge.item.LaserPointerItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
@@ -1173,6 +1174,8 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<PaperPlaneItem> PAPER_PLANE_ITEM = ITEMS.register("paper_plane", () -> new PaperPlaneItem(new Item.Properties().stacksTo(16)));
     public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
+    /** A laser pointer to shine about the cabin, which dazzles whoever it catches in the face. */
+    public static final DeferredItem<LaserPointerItem> LASER_POINTER = ITEMS.register("laser_pointer", () -> new LaserPointerItem(new Item.Properties().stacksTo(1)));
     /** Souvenirs: a pilot's cap to wear and a model of the airliner on its stand. */
     public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
     public static final DeferredBlock<ModelAirlinerBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
@@ -1314,7 +1317,7 @@ public final class AerolargeRegistry {
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
-            PAPER_PLANE_ITEM, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM, DISCO_BALL_ITEM,

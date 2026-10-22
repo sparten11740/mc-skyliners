@@ -1922,6 +1922,13 @@ function coffeeMachineLang() {
 
 // Duty free and the paper plane. The paper plane: a flat icon, folded into shape by its renderer in flight.
 write(`assets/${ID}/models/item/paper_plane.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/paper_plane` } });
+// The laser pointer (see LaserPointerItem): a flat icon, held like a tool.
+write(`assets/${ID}/models/item/laser_pointer.json`, { parent: "minecraft:item/handheld", textures: { layer0: `${ID}:item/laser_pointer` } });
+function laserPointerLang() {
+  return {
+    "item.aerolarge.laser_pointer": "Laser Pointer",
+  };
+}
 // Souvenirs. The pilot's cap, drawn as it sits on the head: worn, it is drawn there as its own model, the way a carved
 // pumpkin is, the model's box a little bigger than the head. A black band round the brow, a navy crown over it flaring
 // out at the top, a black peak drooping forward over the eyes, a gold cord across the front and a gold badge with
@@ -4512,6 +4519,8 @@ shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", 
 // panel on a stick.
 shaped("duty_free_counter", ["GGG", "ECE", "WWW"], { G: "minecraft:glass", E: "minecraft:emerald", C: "minecraft:chest", W: "minecraft:white_concrete" }, 1);
 shaped("paper_plane", ["P"], { P: "minecraft:paper" }, 1);
+// The laser pointer: red glass over a stick of redstone in an iron tube.
+shaped("laser_pointer", ["G", "R", "I"], { G: "minecraft:red_stained_glass_pane", R: "minecraft:redstone", I: "minecraft:iron_ingot" }, 1);
 shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:gold_nugget" }, 1);
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
 // The pilot's helmet: an iron shell, a dark glass visor across its middle and black wool ear cups under it.
@@ -4978,6 +4987,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...planterLang(),
   ...barLang(),
   ...dutyFreeKioskLang(),
+  ...laserPointerLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

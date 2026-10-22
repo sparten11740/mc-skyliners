@@ -2902,4 +2902,31 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 2);
 }
 
+// The laser pointer (see LaserPointerItem): a slim pen of dark steel lying from the lower left up to the right, lit
+// along its top edge, a red button a little past its middle and a chrome cap at its tip with the red of the laser
+// glowing out of it, outlined dark so it shows on any background.
+{
+  const from = [2.5, 13.5];
+  const to = [12.5, 3.5];
+  const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+  const along = [(to[0] - from[0]) / length, (to[1] - from[1]) / length];
+  const pen = (x, y) => {
+    const px = x + 0.5 - from[0];
+    const py = y + 0.5 - from[1];
+    const t = px * along[0] + py * along[1];
+    const side = px * along[1] - py * along[0];
+    if (t > length && t <= length + 1.6 && Math.abs(side) < 0.8) return [0xff, 0x30, 0x24];
+    if (t < 0 || t > length || Math.abs(side) > 1.2) return null;
+    if (t > length - 2) return CHROME;
+    if (Math.abs(t - length * 0.6) < 0.8 && side > -0.3) return [0xd8, 0x1c, 0x18];
+    return side > 0.3 ? STEEL : STEEL_DARK;
+  };
+  texture(itemOutput, "laser_pointer", (x, y) => {
+    const inside = pen(x, y);
+    if (inside) return inside;
+    const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => pen(x + dx, y + dy));
+    return edge ? FRAME_DARK : CLEAR;
+  }, 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
