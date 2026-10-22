@@ -1,11 +1,13 @@
 package dev.aerolarge.airport;
 
+import com.simibubi.create.content.contraptions.elevator.ElevatorContactBlockEntity;
 import com.simibubi.create.content.contraptions.elevator.ElevatorPulleyBlockEntity;
 import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.AirframePalette;
 import dev.aerolarge.block.CabinRailBlock;
+import dev.aerolarge.block.LiftPanelBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
@@ -137,6 +139,8 @@ public final class ControlTower {
     /** Every block of the tower, by where it goes from the shaft's middle at floor level, air included. */
     private final Map<BlockPos, BlockState> cells = new LinkedHashMap<>();
     private BlockPos transponder = BlockPos.ZERO;
+    /** The lift's landings, the lobby first, by their contacts. */
+    private final List<Landing> landings = new ArrayList<>();
     /** Where the steps are, for the head room cut over them. */
     private final List<BlockPos> steps = new ArrayList<>();
 
@@ -287,17 +291,17 @@ public final class ControlTower {
 
     /**
      * The lift: a glass core round the cabin's shaft from the lobby to the equipment floor, its top row solid with the
-     * pulley over the cabin and the motor beside it; at the lobby and the equipment floor a doorway at the front with an
-     * iron door, a contact beside it and a button to call the cabin; and the cabin itself, waiting at the lobby: a floor
-     * and a lit roof on two posts, its contact facing the lobby's, and its controls.
+     * pulley over the cabin and the motor beside it; at the lobby (G) and the equipment floor (1) a doorway at the front
+     * with an iron door, a contact beside it and a lift panel on the contact to call the cabin; and the cabin itself,
+     * waiting at the lobby: a floor and a lit roof on two posts, its contact facing the lobby's, its controls, and a
+     * lift panel over them.
      */
     private void lift() {
         for (int x = LIFT_X - 2; x <= LIFT_X + 2; x++) {
             liftCoreColumn(x);
         }
-        for (int floor : new int[]{0, OPS_FLOOR}) {
-            liftLanding(floor);
-        }
+        liftLanding(0, "G", "Lobby");
+        liftLanding(OPS_FLOOR, "1", "Equipment");
         liftMachinery();
         liftCabin();
     }
@@ -312,17 +316,37 @@ public final class ControlTower {
         }
     }
 
-    /** One floor's landing: the doorway with its iron door, the contact beside it and the button on the contact. */
-    private void liftLanding(int floor) {
+    /**
+     * One floor's landing: the doorway with its iron door, the contact beside it, named as Create's controls and the
+     * lift panels list the floor, and the lift panel on the contact; without Create, a button where the panel goes.
+     */
+    private void liftLanding(int floor, String shortName, String longName) {
         BlockState iron = ironDoor(DoorHingeSide.RIGHT);
         set(LIFT_X, floor + 1, -2, iron.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
         set(LIFT_X, floor + 2, -2, iron.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
         // Open over the door, so the pulley above can be reached from the landing.
         set(LIFT_X, floor + 3, -2, AIR);
-        BlockState contact = create("redstone_contact");
-        if (contact != null) {
-            set(LIFT_X - 1, floor + 2, -2, AirframePalette.with(contact, "facing", "south"));
+        // An elevator contact already, as the pulley would make it, so it can be named before the lift is assembled.
+        BlockState contact = create("elevator_contact");
+        if (contact == null) {
             set(LIFT_X - 1, floor + 2, -3, button(Direction.NORTH));
+            return;
+        }
+        set(LIFT_X - 1, floor + 2, -2, AirframePalette.with(contact, "facing", "south"));
+        set(LIFT_X - 1, floor + 2, -3, liftPanel(Direction.NORTH));
+        landings.add(new Landing(new BlockPos(LIFT_X - 1, floor + 2, -2), shortName, longName));
+    }
+
+    /** A lift panel facing the given way, its back to the block behind it. */
+    private static BlockState liftPanel(Direction facing) {
+        return AerolargeRegistry.LIFT_PANEL.get().defaultBlockState().setValue(LiftPanelBlock.FACING, facing);
+    }
+
+    /** A landing of the lift, by its contact, and the names the floor goes by there. */
+    public record Landing(BlockPos contact, String shortName, String longName) {
+        /** The landing as the tower is placed: its contact turned and moved with the rest of it. */
+        Landing placed(BlockPos middle, Rotation rotation) {
+            return new Landing(middle.offset(contact.rotate(rotation)), shortName, longName);
         }
     }
 
@@ -356,6 +380,7 @@ public final class ControlTower {
         BlockState controls = create("contraption_controls");
         if (controls != null) {
             set(LIFT_X + 1, 1, 0, AirframePalette.with(controls, "facing", "west"));
+            set(LIFT_X + 1, 2, 0, liftPanel(Direction.WEST));
         }
     }
 
@@ -676,12 +701,12 @@ public final class ControlTower {
     /**
      * Where the tower lands in the world: its shaft's middle at {@code middle}, turned so that its back lies
      * {@code along} from there; where its floor takes the ground's place; where its transponder, its lift's pulley and
-     * motor and its lift's cabin are; how many of its blocks something is in the way of (the floor aside), and the first; and its
+     * motor and its lift's cabin and landings are; how many of its blocks something is in the way of (the floor aside), and the first; and its
      * top.
      */
     public record Placement(
         List<BlockPos> positions, List<BlockState> states, List<BlockPos> floor, BlockPos transponder, BlockPos pulley, BlockPos motor, AABB cabin,
-        int blocked, @Nullable BlockPos firstBlocked, int top
+        List<Landing> landings, int blocked, @Nullable BlockPos firstBlocked, int top
     ) {
     }
 
@@ -715,7 +740,9 @@ public final class ControlTower {
         BlockPos motor = middle.offset(new BlockPos(LIFT_X + 1, PULLEY_Y, 0).rotate(rotation));
         AABB cabin = AABB.encapsulatingFullBlocks(middle.offset(new BlockPos(LIFT_X - 1, 0, -1).rotate(rotation)),
             middle.offset(new BlockPos(LIFT_X + 1, 3, 1).rotate(rotation)));
-        return new Placement(positions, states, floor, middle.offset(transponder.rotate(rotation)), pulley, motor, cabin, blocked, firstBlocked, top);
+        List<Landing> placedLandings = landings.stream().map(landing -> landing.placed(middle, rotation)).toList();
+        return new Placement(positions, states, floor, middle.offset(transponder.rotate(rotation)), pulley, motor, cabin, placedLandings,
+            blocked, firstBlocked, top);
     }
 
     /**
@@ -736,8 +763,8 @@ public final class ControlTower {
 
     /**
      * Builds the tower as placed: the ground filled in under its shaft first, then every block; its transponder set to
-     * show the tower on the maps, the lift's motor set to its speed, its cabin glued together, and the lift assembled a
-     * moment later.
+     * show the tower on the maps, the lift's motor set to its speed, its landings named, its cabin glued together, and
+     * the lift assembled a moment later.
      */
     public static void build(ServerLevel level, Placement placement) {
         placement.floor().forEach(pos -> underpin(level, pos.below()));
@@ -752,6 +779,11 @@ public final class ControlTower {
         }
         if (level.getBlockEntity(placement.motor()) instanceof CreativeMotorBlockEntity motor) {
             motor.generatedSpeed.setValue(LIFT_RPM);
+        }
+        for (Landing landing : placement.landings()) {
+            if (level.getBlockEntity(landing.contact()) instanceof ElevatorContactBlockEntity contact) {
+                contact.updateName(landing.shortName(), landing.longName());
+            }
         }
         level.addFreshEntity(new SuperGlueEntity(level, placement.cabin()));
         PENDING.computeIfAbsent(level, ignored -> new ArrayList<>()).add(new PendingLift(placement.pulley(), level.getGameTime() + ASSEMBLE_AFTER));

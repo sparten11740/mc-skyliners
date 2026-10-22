@@ -945,9 +945,9 @@ Its entrance is a glazed front four blocks wide set back under a canopy: a pair 
 between fixed glass, a glass transom over them, and over the left door a motion sensor that slides them open for anyone
 coming or going. Inside, switchback stairs climb round the shaft's glass lift
 core, lit by lamps in the walls, to the equipment floor and on into the cab. The lift is Create's elevator, assembled
-and powered when the tower is built (a creative motor under the cab's floor turns it): press the button by its door, at
-the lobby or the equipment floor, to call the cabin, whose arrival opens the iron door; aboard, scroll on its controls
-and click to pick a floor. In the cab a ring of dark consoles runs round under the windows, with the tower's radio (see
+and powered when the tower is built (a creative motor under the cab's floor turns it): touch a floor on the lift panel
+by its door, at the lobby (G) or the equipment floor (1), to call the cabin, whose arrival opens the iron door; aboard,
+touch a floor on the cabin's own lift panel, or scroll on its controls under it and click. In the cab a ring of dark consoles runs round under the windows, with the tower's radio (see
 Announcements and the radio), its radar screen and its transponder at the front, two pilot seats at them looking out,
 and a second radar screen at the side. The ground under the shaft is filled in, so it stands on uneven ground too.
 
