@@ -890,8 +890,30 @@ function towerInstrumentsLang() {
       solid([7.5, 6.5, 3], [8.5, 9, 4], "#toggle", { origin: [8, 6.5, 3.5], axis: "x", angle: lit ? 22.5 : -22.5 }),
     ]);
   }
+  // Plated, set into the hull: the sign on its north face only, looking into the cabin, the skin's plating on the
+  // others, so it is not seen from outside; lit, only the sign glows.
+  for (const lit of [false, true]) {
+    const sign = { texture: "#sign", cullface: "north" };
+    write(`assets/${ID}/models/block/seatbelt_sign_plated${lit ? "_on" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { sign: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}`, skin: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel` },
+      elements: [
+        {
+          from: [0, 0, 0], to: [16, 16, 16],
+          faces: Object.fromEntries(["south", "east", "west", "up", "down"].map((face) => [face, { texture: "#skin", cullface: face }])),
+        },
+        {
+          from: [0, 0, 0], to: [16, 16, 16], shade: !lit,
+          faces: { north: lit ? { ...sign, neoforge_data: { block_light: 15, sky_light: 15 } } : sign },
+        },
+      ],
+    });
+  }
   write(`assets/${ID}/blockstates/seatbelt_sign.json`, {
-    variants: { "lit=false": { model: `${ID}:block/seatbelt_sign` }, "lit=true": { model: `${ID}:block/seatbelt_sign_on` } },
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => [false, true].map((plated) =>
+      [`facing=${facing},lit=${lit},plated=${plated}`, plated
+        ? { model: `${ID}:block/seatbelt_sign_plated${lit ? "_on" : ""}`, y }
+        : { model: `${ID}:block/seatbelt_sign${lit ? "_on" : ""}` }])))),
   });
   write(`assets/${ID}/blockstates/seatbelt_switch.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((on) =>

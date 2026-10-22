@@ -39,6 +39,7 @@ import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.PlugDoorBlock;
+import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.ShellBlock;
@@ -1158,9 +1159,11 @@ public final class AirframeLayout {
         for (double station : SEATBELT_SIGN_STATIONS) {
             int z = (int) Math.round(station * scale);
             for (int side : new int[]{1, -1}) {
-                wallLamp(side, z, new int[]{head, head + 1, head - 1}, sign, relays);
+                // Its face looks in across the cabin, to the middle; outside it is plated like the skin.
+                BlockState facingIn = SeatbeltSignBlock.facingInto(sign, side > 0 ? Direction.WEST : Direction.EAST);
+                wallLamp(side, z, new int[]{head, head + 1, head - 1}, facingIn, relays);
                 for (int at : new int[]{z, z + 1, z - 1}) {
-                    if (upperDeck != null && upperDeck.walkwayBeside(side, at) && wallLamp(side, at, upperRows, sign, relays) != null) {
+                    if (upperDeck != null && upperDeck.walkwayBeside(side, at) && wallLamp(side, at, upperRows, facingIn, relays) != null) {
                         break;
                     }
                 }

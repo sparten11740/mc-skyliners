@@ -1,0 +1,67 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "sign": "aerolarge:block/seatbelt_sign_on",
+    "skin": "aerolarge:block/airframe_panel",
+    "particle": "aerolarge:block/airframe_panel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "south": {
+          "texture": "#skin",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#skin",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#skin",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#skin",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#skin",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#sign",
+          "cullface": "north",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}
