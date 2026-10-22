@@ -3,18 +3,13 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.TransponderBlock;
 import dev.aerolarge.block.TransponderBlockEntity;
-import dev.aerolarge.radar.MarkerIcon;
-import java.util.EnumMap;
-import java.util.Map;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 /**
@@ -27,13 +22,6 @@ public class TransponderRenderer implements BlockEntityRenderer<TransponderBlock
     /** The screen's middle, how far back from the module's middle (away from its face), and the picture's half size. */
     private static final float SCREEN_BACK = 2.5F / 16;
     private static final float HALF = 3.5F / 16;
-    private static final Map<MarkerIcon, ResourceLocation> TEXTURES = new EnumMap<>(MarkerIcon.class);
-
-    static {
-        for (MarkerIcon icon : MarkerIcon.values()) {
-            TEXTURES.put(icon, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/" + icon.texture() + ".png"));
-        }
-    }
 
     @Override
     public void render(TransponderBlockEntity transponder, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -44,7 +32,7 @@ public class TransponderRenderer implements BlockEntityRenderer<TransponderBlock
         pose.mulPose(Axis.YP.rotationDegrees(-face.toYRot()));
         pose.mulPose(Axis.XP.rotationDegrees(-90));
         Matrix4f matrix = pose.last().pose();
-        VertexConsumer picture = buffers.getBuffer(RenderType.text(TEXTURES.get(transponder.icon())));
+        VertexConsumer picture = buffers.getBuffer(RenderType.text(MarkerArt.texture(transponder.icon())));
         int colour = transponder.colour().argb();
         float y = SCREEN_BACK;
         vertex(picture, matrix, -HALF, y - HALF, colour, 0, 1);

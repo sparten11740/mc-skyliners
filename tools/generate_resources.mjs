@@ -801,13 +801,18 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
     dropsItself(name);
     cubes[name] = null;
   }
+  // The flight strip board: a wide screen in the tail camera display's dark glass and casing, upright or tilted; its
+  // strips are drawn on it by FlightStripBoardRenderer.
+  wideScreen("flight_strip_board", "tail_camera_display");
 }
 // The tower's instruments stand on the ground, never aboard an airliner (see GROUND).
 function towerInstrumentsGround() {
-  return ["wind_sock", "atis_screen"];
+  return ["wind_sock", "atis_screen", "flight_strip_board"];
 }
-// A wind sock: orange and white wool flown from iron bars. A weather screen: a clock behind blue glass, on iron.
+// A wind sock: orange and white wool flown from iron bars. A weather screen: a clock behind blue glass, on iron. A
+// flight strip board: black glass over paper strips and a compass.
 function towerInstrumentsRecipes() {
+  shaped("flight_strip_board", ["GGG", "PCP"], { G: "minecraft:black_stained_glass_pane", P: "minecraft:paper", C: "minecraft:compass" }, 1);
   shaped("wind_sock", ["IOW", "I  ", "I  "], { I: "minecraft:iron_bars", O: "minecraft:orange_wool", W: "minecraft:white_wool" }, 1);
   shaped("atis_screen", ["GGG", "GCG", "IRI"], { G: "minecraft:blue_stained_glass_pane", C: "minecraft:clock", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 }
@@ -827,6 +832,32 @@ function towerInstrumentsLang() {
     "weather.aerolarge.rain": "RAIN",
     "weather.aerolarge.snow": "SNOW",
     "weather.aerolarge.thunder": "STORM",
+    "block.aerolarge.flight_strip_board": "Flight Strip Board",
+    "screen.aerolarge.flight_strips.column.callsign": "CALLSIGN",
+    "screen.aerolarge.flight_strips.column.height": "ALT",
+    "screen.aerolarge.flight_strips.column.distance": "DIST",
+    "screen.aerolarge.flight_strips.column.heading": "HDG",
+    "screen.aerolarge.flight_strips.column.phase": "STATUS",
+    "screen.aerolarge.flight_strips.page": "PAGE %s/%s",
+    "screen.aerolarge.flight_strips.none": "NO TRAFFIC",
+    "screen.aerolarge.flight_strips.callsign": "%s%s",
+    "screen.aerolarge.flight_strips.callsign.tower": "TWR",
+    "screen.aerolarge.flight_strips.callsign.airliner": "AER",
+    "screen.aerolarge.flight_strips.callsign.house": "HOME",
+    "screen.aerolarge.flight_strips.callsign.star": "STAR",
+    "screen.aerolarge.flight_strips.callsign.flag": "FLAG",
+    "screen.aerolarge.flight_strips.callsign.heart": "HRT",
+    "screen.aerolarge.flight_strips.callsign.gem": "GEM",
+    "screen.aerolarge.flight_strips.callsign.tree": "TREE",
+    "screen.aerolarge.flight_strips.callsign.anchor": "PORT",
+    "screen.aerolarge.flight_strips.callsign.pickaxe": "MINE",
+    "screen.aerolarge.flight_strips.phase.parked": "PARKED",
+    "screen.aerolarge.flight_strips.phase.taxi": "TAXI",
+    "screen.aerolarge.flight_strips.phase.climb": "CLIMB",
+    "screen.aerolarge.flight_strips.phase.cruise": "CRUISE",
+    "screen.aerolarge.flight_strips.phase.descend": "DESCEND",
+    "screen.aerolarge.flight_strips.phase.inbound": "INBOUND",
+    "screen.aerolarge.flight_strips.phase.fix": "FIX",
   };
 }
 
@@ -3244,25 +3275,30 @@ cubes.flight_display = null;
       ...steps,
     ],
   });
-  write(`assets/${ID}/blockstates/tail_camera_display.json`, {
+  wideScreen("tail_camera_display", "tail_camera_display");
+}
+// A wide screen (see WideScreenBlock) drawn with the models given, upright or tilted, and its item a picture of its
+// own; only part 0 drops it, so the whole screen gives back one.
+function wideScreen(name, model) {
+  write(`assets/${ID}/blockstates/${name}.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2].flatMap((part) => [false, true].map((tilted) =>
-      [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/tail_camera_display${tilted ? "_tilted" : ""}`, y }])))),
+      [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/${model}${tilted ? "_tilted" : ""}`, y }])))),
   });
-  write(`assets/${ID}/models/item/tail_camera_display.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/tail_camera_display` } });
-  write(`data/${ID}/loot_table/blocks/tail_camera_display.json`, {
+  write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
     pools: [{
       rolls: 1.0,
       bonus_rolls: 0.0,
-      entries: [{ type: "minecraft:item", name: `${ID}:tail_camera_display` }],
+      entries: [{ type: "minecraft:item", name: `${ID}:${name}` }],
       conditions: [
-        { condition: "minecraft:block_state_property", block: `${ID}:tail_camera_display`, properties: { part: "0" } },
+        { condition: "minecraft:block_state_property", block: `${ID}:${name}`, properties: { part: "0" } },
         { condition: "minecraft:survives_explosion" },
       ],
     }],
-    random_sequence: `${ID}:blocks/tail_camera_display`,
+    random_sequence: `${ID}:blocks/${name}`,
   });
-  cubes.tail_camera_display = null;
+  cubes[name] = null;
 }
 
 // The autopilot's control head: a module of the centre console with a raised head on it, its panel (the AP badge

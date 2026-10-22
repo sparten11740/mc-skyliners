@@ -1,5 +1,6 @@
 package dev.aerolarge.client;
 
+import dev.aerolarge.Aerolarge;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.radar.Contact;
 import dev.aerolarge.radar.MarkerColour;
@@ -11,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 /**
@@ -27,10 +29,12 @@ final class MarkerArt {
     private static final int HEADING_DOTS = 3;
     private static final int HEADING_GAP = 2;
     private static final Map<MarkerIcon, Icon> ICONS = new EnumMap<>(MarkerIcon.class);
+    private static final Map<MarkerIcon, ResourceLocation> TEXTURES = new EnumMap<>(MarkerIcon.class);
 
     static {
         for (MarkerIcon icon : MarkerIcon.values()) {
             ICONS.put(icon, Icon.of(icon.texture()));
+            TEXTURES.put(icon, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/" + icon.texture() + ".png"));
         }
     }
 
@@ -39,6 +43,11 @@ final class MarkerArt {
 
     static Icon icon(MarkerIcon icon) {
         return ICONS.get(icon);
+    }
+
+    /** A picture's texture, white so it can be drawn in any colour, for drawing it in the world (on a screen, say). */
+    static ResourceLocation texture(MarkerIcon icon) {
+        return TEXTURES.get(icon);
     }
 
     /** A marker of this picture and colour, its middle at (x, y), at a whole multiple of its size. */

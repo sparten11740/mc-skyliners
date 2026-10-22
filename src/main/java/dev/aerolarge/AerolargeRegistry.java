@@ -63,6 +63,8 @@ import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.block.FlightStripBoardBlock;
+import dev.aerolarge.block.FlightStripBoardBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GalleyOvenBlock;
@@ -641,6 +643,13 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AtisScreenBlockEntity>> ATIS_SCREEN_ENTITY =
         BLOCK_ENTITIES.register("atis_screen", () -> BlockEntityType.Builder.of(AtisScreenBlockEntity::new, ATIS_SCREEN.get()).build(null));
     public static final DeferredItem<BlockItem> ATIS_SCREEN_ITEM = ITEMS.registerSimpleBlockItem(ATIS_SCREEN);
+    /** The tower's flight strip board, listing every transponder in the radar's range. */
+    public static final DeferredBlock<FlightStripBoardBlock> FLIGHT_STRIP_BOARD = BLOCKS.registerBlock(
+        "flight_strip_board", FlightStripBoardBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlightStripBoardBlockEntity>> FLIGHT_STRIP_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("flight_strip_board", () -> BlockEntityType.Builder.of(FlightStripBoardBlockEntity::new, FLIGHT_STRIP_BOARD.get()).build(null));
+    public static final DeferredItem<BlockItem> FLIGHT_STRIP_BOARD_ITEM = ITEMS.registerSimpleBlockItem(FLIGHT_STRIP_BOARD);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1362,7 +1371,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("airport", List.of(
             JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM,
-            ATIS_SCREEN_ITEM, WIND_SOCK_ITEM
+            FLIGHT_STRIP_BOARD_ITEM, ATIS_SCREEN_ITEM, WIND_SOCK_ITEM
         ))
     );
 

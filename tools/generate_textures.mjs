@@ -803,6 +803,22 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "tower_radar_casing", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 2);
 }
 
+// The flight strip board in the hand: a wide dark screen, a blue band along its top, and under it three strips, each
+// with a bar of its transponder's colour at its left and a line of white writing.
+{
+  const BEZEL = [0x3a, 0x3f, 0x47];
+  const BARS = [[0xf2, 0x8c, 0x28], [0xf2, 0xf2, 0xf2], [0x46, 0xc8, 0xf0]];
+  texture(itemOutput, "flight_strip_board", (x, y) => {
+    if (y < 3 || y > 13) return CLEAR;
+    if (x === 0 || x === 15 || y === 3 || y === 13) return BEZEL;
+    if (y === 4) return [0x10, 0x25, 0x4a];
+    const strip = Math.floor((y - 5) / 3);
+    if ((y - 5) % 3 === 2) return [0x0a, 0x0e, 0x14];
+    if (x === 1 || x === 2) return BARS[strip];
+    return x >= 4 && x <= 6 + strip * 2 ? INK : [0x1a, 0x22, 0x30];
+  }, 0);
+}
+
 // The wind sock. The sock's cloth, laid out flat along its length (x from the mouth to the tail, y round it): five
 // bands, orange at the mouth and the tail and white between, as an airfield's are, a faint weave across it. Its pole:
 // pale galvanised steel, shaded down one side. In the hand: the pole with the sock flying out from its top.

@@ -2,7 +2,6 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import dev.aerolarge.airframe.OutsideCamera;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
@@ -13,7 +12,6 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -30,23 +28,15 @@ import org.joml.Matrix4f;
  * under them on why: the airliner is not assembled, or no picture is coming.
  */
 public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCameraDisplayBlockEntity> {
-    /** The upright face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
-    private static final float UPRIGHT_FACE = -0.5F + TailCameraDisplayBlock.DEPTH / 16F + 0.002F;
-    /** The tilted face, from the middle of the block, lifted just off the screen plate across its diagonal. */
-    private static final float TILTED_FACE = 0.03F;
-    /** How far the tilted face is turned from upright, in degrees, its top edge out toward the viewer so it looks down. */
-    private static final float TILT = 45;
-    /** The whole face, in blocks: as wide as the screen, as tall as its rows upright or its diagonal tilted. */
-    static final double WIDTH = TailCameraDisplayBlock.COLUMNS;
-    private static final double UPRIGHT_HEIGHT = TailCameraDisplayBlock.ROWS;
-    private static final double TILTED_HEIGHT = Math.sqrt(2) * TailCameraDisplayBlock.ROWS;
+    /** The whole face's width, in blocks (see {@link WideScreenFace}). */
+    private static final double WIDTH = WideScreenFace.WIDTH;
     /** The bezel round the picture, in blocks. */
     private static final double BEZEL = 0.05;
     /**
      * The picture's width over its height as the fin camera draws it: the tilted face's, as the airliner's own display
      * hangs; an upright face, wider, shows the middle of it.
      */
-    static final double ASPECT = pictureAspect(TILTED_HEIGHT);
+    static final double ASPECT = pictureAspect(WideScreenFace.TILTED_HEIGHT);
     /**
      * The camera's label in the picture's top left corner, in blocks: its margin from the corner, its height, the
      * padding inside it and the gap between what is in it.
@@ -106,22 +96,10 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     @Override
     public void render(TailCameraDisplayBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         BlockState state = screen.getBlockState();
-        Direction facing = state.getValue(TailCameraDisplayBlock.FACING);
-        boolean tilted = state.getValue(TailCameraDisplayBlock.TILTED);
-        double height = tilted ? TILTED_HEIGHT : UPRIGHT_HEIGHT;
+        double height = WideScreenFace.height(state);
         ResourceLocation picture = TailCameraFeed.show(screen);
         pose.pushPose();
-        // Onto the face, x to the viewer's right and y up, from the bottom left corner of the whole screen.
-        pose.translate(0.5, 0.5, 0.5);
-        pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-        if (tilted) {
-            // Across the diagonal through the block's middle, from the bottom edge of its back to the top edge of the
-            // side it faces: the face looks down and out that way.
-            pose.mulPose(Axis.XP.rotationDegrees(TILT));
-            pose.translate(-0.5, -height / 2, TILTED_FACE);
-        } else {
-            pose.translate(-0.5, -0.5, UPRIGHT_FACE);
-        }
+        WideScreenFace.onto(pose, state);
         Matrix4f matrix = pose.last().pose();
         ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, WIDTH, height, 0, CASING);
         Font font = Minecraft.getInstance().font;

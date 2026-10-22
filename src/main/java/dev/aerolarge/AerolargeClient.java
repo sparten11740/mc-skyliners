@@ -30,6 +30,7 @@ import dev.aerolarge.client.EngineIntakeRenderer;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
+import dev.aerolarge.client.FlightStripBoardRenderer;
 import dev.aerolarge.client.HelmetVisor;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.NavLightRenderer;
@@ -189,6 +190,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_PANEL_ENTITY.get(), context -> new LiftPanelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.WIND_SOCK_ENTITY.get(), context -> new WindSockRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ATIS_SCREEN_ENTITY.get(), context -> new AtisScreenRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_STRIP_BOARD_ENTITY.get(), context -> new FlightStripBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());

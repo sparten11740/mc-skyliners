@@ -1005,6 +1005,16 @@ cold, or a storm) with its word, the wind on a compass dial with its bearing and
 ten kilometres when it is clear, less in rain, snow and storms. The control tower has one on its east console, facing
 the second radar screen across the cab.
 
+A **Flight Strip Board** (craftable from black glass panes, paper and a compass) is a wide screen three blocks across,
+put up like the Tail Camera Display (against a wall it stands upright, against a ceiling it hangs tilted), with a flight
+strip for every transponder within the radar's 2000 blocks: a bar and its picture in its colour, a callsign that is the
+same for it every time (AER for an airliner, TWR for a tower, HOME, MINE and so on, and a number), its height, how far
+it is from the board, its heading, and what it is doing: parked, taxiing, climbing, cruising, descending, or inbound
+when it heads for the tower close by or comes down toward it; a transponder on the ground is a fix. The airliners come
+first, then the nearest; when there are more than it holds, it pages through them every five seconds. The control
+tower's hangs tilted from the cab's ceiling over the front consoles, looking down at the seats; its own transponder is
+left off it.
+
 ### Runways
 
 The **Runway Blueprint** (in the creative tab with the airliners') lays down a runway for the airliner: used on the

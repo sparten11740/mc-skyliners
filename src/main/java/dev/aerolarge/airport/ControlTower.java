@@ -13,6 +13,7 @@ import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.TransponderBlockEntity;
+import dev.aerolarge.block.WideScreenBlock;
 import dev.aerolarge.radar.MarkerColour;
 import dev.aerolarge.radar.MarkerIcon;
 import java.util.ArrayList;
@@ -670,12 +671,18 @@ public final class ControlTower {
     }
 
     /**
-     * The tower's instruments, once the consoles and the lights are in: the weather screen on the east console, facing
-     * the second radar screen across the cab; and a wind sock (see {@link Wind}) on a mast of its own at the middle of
+     * The tower's instruments, once the consoles and the lights are in: the flight strip board hanging tilted from the
+     * ceiling over the front consoles, three blocks wide across the middle, looking down at the seats; the weather
+     * screen on the east console, facing the second radar screen across the cab; and a wind sock (see {@link Wind}) on a mast of its own at the middle of
      * the roof's west rim, clear of the antennas and their obstruction lights, high enough that a limp sock hangs over
      * the roof without touching it, and out at the edge where the walkway and the ground below see it.
      */
     private void instruments() {
+        BlockState board = facing(AerolargeRegistry.FLIGHT_STRIP_BOARD.get(), Direction.SOUTH).setValue(WideScreenBlock.TILTED, true);
+        // Facing south, the board's parts run to the viewer's right, east, from its westmost.
+        for (int part = 0; part < WideScreenBlock.COLUMNS; part++) {
+            set(part - WideScreenBlock.COLUMNS / 2, ROOF - 1, -(CAB - 1), board.setValue(WideScreenBlock.PART, part));
+        }
         set(CAB - 1, KNEE + 1, 0, facing(AerolargeRegistry.ATIS_SCREEN.get(), Direction.WEST));
         for (int y = ROOF + 1; y < WIND_SOCK_Y; y++) {
             set(-WALKWAY, y, 0, Blocks.LIGHTNING_ROD.defaultBlockState());
