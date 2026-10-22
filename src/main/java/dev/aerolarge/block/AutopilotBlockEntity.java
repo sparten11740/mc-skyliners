@@ -270,6 +270,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final int ABOARD_LOOK = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
     static final double FLIGHT_DECK = 24;
+    /** The autopilots loaded on the server, so an announcement panel put up by hand finds its airliner's. */
+    private static final Loaded<AutopilotBlockEntity> LOADED = new Loaded<>(AutopilotBlockEntity.class);
     /**
      * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
      * radius per press.
@@ -425,6 +427,54 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     public boolean canBeWorkedBy(Player player) {
         return !player.isSpectator() && Container.stillValidBlockEntity(this, player);
+    }
+
+    /** The autopilot nearest to a position on the server, within {@link #FLIGHT_DECK} of it; null for none. */
+    @Nullable
+    static AutopilotBlockEntity nearest(Level level, BlockPos pos) {
+        AutopilotBlockEntity nearest = null;
+        for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
+            double distance = autopilot.getBlockPos().distSqr(pos);
+            if (distance < FLIGHT_DECK * FLIGHT_DECK && (nearest == null || distance < nearest.getBlockPos().distSqr(pos))) {
+                nearest = autopilot;
+            }
+        }
+        return nearest;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        LOADED.add(this);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        LOADED.remove(this);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        LOADED.remove(this);
+    }
+
+    /**
+     * The announcement panel asks for a cabin announcement: made, or waiting its turn behind whatever is being said on
+     * the flight deck, only if it stands ready (see {@link Announcement.Standing}); whether it was.
+     */
+    boolean ask(Announcement announcement) {
+        if (level == null || announcements.standing(announcement, level.getGameTime()) != Announcement.Standing.READY) {
+            return false;
+        }
+        announcements.announce(announcement, this);
+        return true;
+    }
+
+    /** Where a cabin announcement stands now, for the announcement panel to show. */
+    Announcement.Standing standing(Announcement announcement) {
+        return level == null ? Announcement.Standing.READY : announcements.standing(announcement, level.getGameTime());
     }
 
     /**

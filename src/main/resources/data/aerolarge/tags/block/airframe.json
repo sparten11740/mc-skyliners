@@ -37,6 +37,7 @@
     "aerolarge:autopilot_screen",
     "aerolarge:flight_display",
     "aerolarge:tail_camera_display",
+    "aerolarge:announcement_panel",
     "aerolarge:autopilot",
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",

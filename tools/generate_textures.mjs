@@ -2010,6 +2010,148 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   for (const [name, shape] of Object.entries(markers)) {
     icon(markerOutput, name, (x, y) => (shape(x, y) ? INK : null));
   }
+
+  // The announcement panel's tiles (see Announcement), each a picture a child knows without reading, 32 by 32 so it
+  // stays clear across a whole tile: someone waving hello beside yellow waves of the hand; a white airliner from the
+  // side climbing off a runway on a green trail; a grey cloud over orange bumps over a buckled seatbelt; a paper cup
+  // with a straw beside a chocolate-chip cookie; a cabin window looking out on a blue sky, a cloud, the sun and green
+  // mountains; an orange basketball over the pool's blue water, its chrome ladder beside it; a yellow crescent moon
+  // with sleepy Zs and stars; the airliner coming down onto a runway on an amber trail; and a red heart over the
+  // airliner parked on the ground.
+  const announcementOutput = resolve(guiOutput, "announcement");
+  mkdirSync(announcementOutput, { recursive: true });
+  const BIG = 32;
+  const SKIN = [0xf2, 0xc0, 0x96];
+  const HAIR = [0x6a, 0x3a, 0x1a];
+  const SHIRT = [0x3c, 0x8c, 0xff];
+  const TROUSERS = [0x2a, 0x3c, 0x6a];
+  const YELLOW = [0xff, 0xd8, 0x4a];
+  const ORANGE = [0xff, 0x8a, 0x3c];
+  const LIVERY = [0x3c, 0x6c, 0xd8];
+  const DARK = [0x24, 0x30, 0x40];
+  const CLOUD = [0xd8, 0xde, 0xe6];
+  const SKY = [0x6c, 0xa8, 0xe0];
+  const HILL = [0x4a, 0xa8, 0x4c];
+  const HILL_DARK = [0x32, 0x7a, 0x36];
+  const WATER = [0x2c, 0x7c, 0xe8];
+  const WATER_LIGHT = [0x8c, 0xc8, 0xff];
+  const COOKIE = [0xd0, 0x8c, 0x48];
+  const COOKIE_LIGHT = [0xe4, 0xa8, 0x64];
+  const CHIP = [0x4a, 0x26, 0x12];
+  const BALL = [0xf0, 0x7a, 0x28];
+  const BALL_SEAM = [0x5a, 0x24, 0x08];
+  const HEART_LIGHT = [0xff, 0x7a, 0x70];
+  const bigIcon = (name, paint) => texture(announcementOutput, name, (x, y) => paint(x, y) ?? CLEAR, 0, BIG, BIG);
+  const disc = (x, y, cx, cy, r) => Math.hypot(x - cx, y - cy) <= r;
+  // Within r of the rectangle from (x0, y0) to (x1, y1): a rectangle with rounded corners, grown by r.
+  const rounded = (x, y, x0, y0, x1, y1, r) => Math.hypot(x - Math.max(x0, Math.min(x1, x)), y - Math.max(y0, Math.min(y1, y))) <= r;
+  // A runway along a row, its centre line dashed.
+  const strip = (x, y, row, from, to) => (y >= row && y <= row + 1 && x >= from && x <= to ? (y === row && x % 4 < 2 ? INK : RUNWAY) : null);
+  // A dotted trail along a segment, every other pixel.
+  const trail = (x, y, a, b, colour) => (onSegment(x, y, a, b, 1.6) && (x + y) % 3 !== 0 ? colour : null);
+  // The airliner from the side, nose to the right, its middle at (cx, cy), its nose raised by the angle in degrees
+  // (lowered if negative): a white fuselage with a row of windows, the flight deck's dark glass at the nose, the blue
+  // fin, the wing and an engine under it.
+  const sidePlane = (x, y, cx, cy, angle, size = 1) => {
+    const turn = (angle * Math.PI) / 180;
+    const dx = (x - cx) / size;
+    const up = -(y - cy) / size;
+    const u = dx * Math.cos(turn) + up * Math.sin(turn);
+    const v = -dx * Math.sin(turn) + up * Math.cos(turn);
+    if (inTriangle(u, v, [-12.5, 1.5], [-8, 1.5], [-12.5, 9])) return LIVERY;
+    const body = Math.hypot(u - Math.max(-10, Math.min(9, u)), v) <= 2.6;
+    if (body && u >= 8 && v >= 0.3) return DARK;
+    if (body && Math.abs(v - 0.8) <= 0.6 && u >= -7 && u <= 6 && Math.floor(u) % 2 === 0) return CYAN_DARK;
+    if (body) return v < -1.3 ? PALE : INK;
+    if (Math.hypot(u - Math.max(-1.5, Math.min(1.5, u)), v + 4.6) <= 1.3) return STEEL;
+    return inTriangle(u, v, [-3, -1], [3, -1], [-4.5, -5.5]) ? PALE : null;
+  };
+
+  bigIcon("welcome", (x, y) => {
+    const wave = Math.hypot(x - 21, y - 7);
+    const angle = Math.atan2(y - 7, x - 21);
+    if (angle > -1.4 && angle < 0.7 && ((wave >= 4.6 && wave <= 5.8) || (wave >= 7.6 && wave <= 8.8))) return YELLOW;
+    if (disc(x, y, 21, 6.5, 2.4) || disc(x, y, 5, 24, 1.8)) return SKIN;
+    if (onSegment(x, y, [16, 15], [20.5, 9], 3.2) || onSegment(x, y, [8, 15], [5, 22], 3.2)) return SHIRT;
+    if (disc(x, y, 12, 8, 4.6)) {
+      if (y <= 5.5) return HAIR;
+      const eye = (x === 10 || x === 14) && y === 8;
+      const smile = y === 10 && x >= 11 && x <= 13;
+      return eye || smile ? DARK : SKIN;
+    }
+    if (rounded(x, y, 8, 15, 16, 24, 1.5)) return SHIRT;
+    return y >= 26 && y <= 30 && ((x >= 8 && x <= 10) || (x >= 14 && x <= 16)) ? TROUSERS : null;
+  });
+  bigIcon("takeoff", (x, y) => sidePlane(x, y, 17, 13, 25, 0.95) ?? trail(x, y, [2, 27], [8, 21], GREEN) ?? strip(x, y, 29, 0, 20));
+  bigIcon("turbulence", (x, y) => {
+    const puff = disc(x, y, 10, 9, 5) || disc(x, y, 17, 6.5, 6) || disc(x, y, 23.5, 9.5, 4.5) || rounded(x, y, 7, 10, 25, 12, 2);
+    if (puff) return y <= 6 ? INK : CLOUD;
+    if (x >= 4 && x <= 27 && Math.abs(y - (18 + 1.6 * Math.sin(x * 0.7))) <= 0.9) return ORANGE;
+    if (rounded(x, y, 12, 23, 19, 27, 1.5)) {
+      return x >= 14 && x <= 17 && y >= 24 && y <= 26 ? DARK : PALE;
+    }
+    return y >= 23 && y <= 27 && (x <= 10 || x >= 21) ? AMBER : null;
+  });
+  bigIcon("snacks", (x, y) => {
+    if (onSegment(x, y, [10.5, 9], [14, 2], 1.6)) return RED;
+    if (y >= 7 && y <= 8 && x >= 3 && x <= 15) return PALE;
+    const half = 6 - (y - 9) * 0.12;
+    if (y >= 9 && y <= 26 && Math.abs(x - 9) <= half) return y >= 15 && y <= 17 ? RED : INK;
+    const cookie = Math.hypot(x - 23, y - 20);
+    if (cookie > 7.5) return null;
+    const chips = [[20, 17], [25, 18], [22, 23], [26, 23], [19, 21], [23, 15]];
+    if (chips.some(([cx, cy]) => disc(x, y, cx, cy, 0.9))) return CHIP;
+    return cookie >= 6.5 ? COOKIE_LIGHT : COOKIE;
+  });
+  bigIcon("window", (x, y) => {
+    if (!rounded(x, y, 13, 9, 18, 22, 8)) return null;
+    if (!rounded(x, y, 14, 10, 17, 21, 5.5)) return PALE;
+    if (disc(x, y, 19, 9, 2.6)) return YELLOW;
+    if (disc(x, y, 11, 12, 2.4) || disc(x, y, 14, 11, 2.8) || rounded(x, y, 10, 12, 15, 13, 1)) return INK;
+    const peak = (cx, height) => y >= 25 - height + Math.abs(x - cx) * 1.1;
+    if (peak(12, 10) || peak(20, 8)) return y <= 17 ? INK : x < 15 ? HILL : HILL_DARK;
+    return y >= 24 ? HILL : SKY;
+  });
+  bigIcon("playtime", (x, y) => {
+    const ladder = (x === 24 || x === 28) && y >= 9 && y <= 22;
+    const rung = y % 4 === 1 && y >= 12 && y <= 21 && x > 24 && x < 28;
+    const rail = (x >= 24 && x <= 28) && Math.hypot(x - 26, y - 9) >= 1.4 && Math.hypot(x - 26, y - 9) <= 2.6 && y <= 9;
+    if (ladder || rung || rail) return STEEL;
+    const ball = Math.hypot(x - 11, y - 10);
+    if (ball <= 7.5) {
+      const seam = Math.abs(x - 11) <= 0.5 || Math.abs(y - 10) <= 0.5 || Math.abs(Math.hypot(x - 2, y - 10) - 6.5) <= 0.6
+        || Math.abs(Math.hypot(x - 20, y - 10) - 6.5) <= 0.6;
+      return seam ? BALL_SEAM : BALL;
+    }
+    if (y < 21) return null;
+    return Math.abs(y - (23 + Math.sin(x * 0.8))) <= 0.6 || Math.abs(y - (27 + Math.sin(x * 0.8 + 2))) <= 0.6 ? WATER_LIGHT : WATER;
+  });
+  bigIcon("sleep", (x, y) => {
+    if (disc(x, y, 13, 17, 10) && !disc(x, y, 19, 12, 9)) return YELLOW;
+    const bigZ = (y === 11 || y === 17) && x >= 20 && x <= 26 || onSegment(x, y, [26, 11], [20, 17], 1.4) && y > 11 && y < 17;
+    const smallZ = (y === 3 || y === 7) && x >= 25 && x <= 29 || onSegment(x, y, [29, 3], [25, 7], 1.2) && y > 3 && y < 7;
+    if (bigZ || smallZ) return INK;
+    const stars = [[5, 4], [27, 25], [20, 29]];
+    return stars.some(([cx, cy]) => (x === cx && Math.abs(y - cy) <= 1) || (y === cy && Math.abs(x - cx) <= 1)) ? YELLOW : null;
+  });
+  bigIcon("landing", (x, y) => sidePlane(x, y, 15, 13, -18, 0.95) ?? trail(x, y, [1, 3], [3, 8], AMBER) ?? strip(x, y, 28, 8, 31));
+  bigIcon("arrival", (x, y) => {
+    const u = (x - 15.5) / 8;
+    const v = -(y - 11) / 8;
+    if ((u * u + v * v - 1) ** 3 - u * u * v ** 3 <= 0) return disc(x, y, 11, 7, 1.8) ? HEART_LIGHT : RED;
+    return sidePlane(x, y, 16, 25, 0, 0.7) ?? strip(x, y, 29, 0, 31);
+  });
+
+  // The announcement panel's glass, for when it is too far off to be drawn live: a dark tile in its grey rim. In the
+  // hand: the panel's nine tiles, each in its own colour, on the dark casing.
+  texture(blockOutput, "announcement_panel", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? [0x4a, 0x51, 0x5b] : [0x0b, 0x10, 0x17]), 1);
+  const TILE_COLOURS = [YELLOW, GREEN, ORANGE, [0xff, 0x6f, 0xae], CYAN, SHIRT, [0xa5, 0x8c, 0xff], AMBER, RED];
+  texture(itemOutput, "announcement_panel", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0x2c, 0x30, 0x36];
+    const column = Math.floor((x - 1) / 5);
+    const row = Math.floor((y - 1) / 5);
+    return (x - 1) % 5 === 4 || (y - 1) % 5 === 4 ? [0x15, 0x17, 0x1b] : TILE_COLOURS[row * 3 + column];
+  }, 0);
 }
 
 // Duty free and the paper plane. The paper plane's icon: a white plane flying up to the right, its far wing and keel

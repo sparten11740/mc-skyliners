@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * <p>One at a time, and not over and over: one asked for while anything else is said on the flight deck (another
  * announcement, a callout or air traffic control, all sharing its {@link Airtime}) waits for it to end (only the latest
  * one asked for waits), and one made in the last {@link #REPEAT} ticks is not made again, so pressing the autopilot
- * screen's buttons again and again does not make a chorus of them.
+ * screen's buttons again and again does not make a chorus of them. Where each one stands in that, the panel shows.
  */
 final class CabinAnnouncements {
     /**
@@ -38,6 +38,10 @@ final class CabinAnnouncements {
     private final Airtime airtime;
     @Nullable
     private Announcement waiting;
+    /** The announcement last made, and the game time at which the time it was given to play ends. */
+    @Nullable
+    private Announcement onAir;
+    private long onAirUntil;
 
     CabinAnnouncements(Airtime airtime) {
         this.airtime = airtime;
@@ -64,6 +68,25 @@ final class CabinAnnouncements {
         }
     }
 
+    /**
+     * Where an announcement stands at this game time: being made, waiting its turn, hushed while another is made or
+     * waits, resting after it was asked for until it may be made again, or ready.
+     */
+    Announcement.Standing standing(Announcement announcement, long now) {
+        boolean speaking = onAir != null && now < onAirUntil;
+        if (speaking && announcement == onAir) {
+            return Announcement.Standing.ON_AIR;
+        }
+        if (announcement == waiting) {
+            return Announcement.Standing.WAITING;
+        }
+        if (speaking || waiting != null) {
+            return Announcement.Standing.HUSHED;
+        }
+        Long last = asked.get(announcement);
+        return last != null && now - last < REPEAT ? Announcement.Standing.RESTING : Announcement.Standing.READY;
+    }
+
     /** Each tick: makes the one waiting, once whatever is being said on the flight deck has ended. */
     void tick(BlockEntity autopilot) {
         if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && airtime.free(level.getGameTime())) {
@@ -74,7 +97,10 @@ final class CabinAnnouncements {
     }
 
     private void play(ServerLevel level, BlockEntity autopilot, Announcement announcement) {
-        airtime.take(level.getGameTime(), LONGEST);
+        long now = level.getGameTime();
+        airtime.take(now, LONGEST);
+        onAir = announcement;
+        onAirUntil = now + LONGEST;
         if (announcement.seatbelts != null) {
             seatbelts(level, autopilot, announcement.seatbelts);
         }

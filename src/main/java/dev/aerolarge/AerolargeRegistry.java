@@ -8,6 +8,8 @@ import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairStepBlock;
 import dev.aerolarge.block.AisleCarpetBlock;
+import dev.aerolarge.block.AnnouncementPanelBlock;
+import dev.aerolarge.block.AnnouncementPanelBlockEntity;
 import dev.aerolarge.block.AtisScreenBlock;
 import dev.aerolarge.block.AtisScreenBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
@@ -549,6 +551,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TailCameraDisplayBlockEntity>> TAIL_CAMERA_DISPLAY_ENTITY =
         BLOCK_ENTITIES.register("tail_camera_display", () -> BlockEntityType.Builder.of(TailCameraDisplayBlockEntity::new, TAIL_CAMERA_DISPLAY.get()).build(null));
+    /** The overhead panel of picture tiles over the centre console, each making one cabin announcement. */
+    public static final DeferredBlock<AnnouncementPanelBlock> ANNOUNCEMENT_PANEL = BLOCKS.registerBlock(
+        "announcement_panel", AnnouncementPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AnnouncementPanelBlockEntity>> ANNOUNCEMENT_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("announcement_panel", () -> BlockEntityType.Builder.of(AnnouncementPanelBlockEntity::new, ANNOUNCEMENT_PANEL.get()).build(null));
     public static final DeferredBlock<EngineCoreBlock> ENGINE_CORE = BLOCKS.registerBlock("engine_core", EngineCoreBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EngineCoreBlockEntity>> ENGINE_CORE_ENTITY =
         BLOCK_ENTITIES.register("engine_core", () -> BlockEntityType.Builder.of(EngineCoreBlockEntity::new, ENGINE_CORE.get()).build(null));
@@ -574,6 +582,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> AUTOPILOT_ITEM = ITEMS.registerSimpleBlockItem(AUTOPILOT);
     public static final DeferredItem<BlockItem> FLIGHT_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(FLIGHT_DISPLAY);
     public static final DeferredItem<BlockItem> TAIL_CAMERA_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(TAIL_CAMERA_DISPLAY);
+    public static final DeferredItem<BlockItem> ANNOUNCEMENT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(ANNOUNCEMENT_PANEL);
     public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
     public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
     public static final DeferredItem<BlockItem> PILOT_SEAT_ITEM = ITEMS.registerSimpleBlockItem(PILOT_SEAT);
@@ -1354,7 +1363,7 @@ public final class AerolargeRegistry {
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,
-            TAIL_CAMERA_DISPLAY_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
+            TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM
         )),
         new TabSection("cabin", List.of(
