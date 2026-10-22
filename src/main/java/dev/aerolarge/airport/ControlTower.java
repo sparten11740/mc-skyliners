@@ -5,6 +5,8 @@ import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.AirframePalette;
+import dev.aerolarge.block.CabinRailBlock;
+import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.PilotSeatBlock;
@@ -102,6 +104,8 @@ public final class ControlTower {
     /** How far apart the lights set into the shaft's inner walls are, up it, and the row of the first. */
     private static final int LIGHT_EVERY = 8;
     private static final int FIRST_LIGHT = 3;
+    /** How far apart the light grey bands round the outside of the shaft are, up it, as storeys would be. */
+    private static final int BAND_EVERY = 8;
     /** The entrance's westmost column: it is four wide, its two sliding doors in the middle. */
     private static final int ENTRANCE_LEFT = -2;
     /** How far down under the shaft the ground is filled in, at most. */
@@ -120,7 +124,6 @@ public final class ControlTower {
     private static final BlockState MULLION = Blocks.GRAY_CONCRETE.defaultBlockState();
     private static final BlockState FLOOR = Blocks.POLISHED_ANDESITE.defaultBlockState();
     private static final BlockState CORE_GLASS = Blocks.LIGHT_GRAY_STAINED_GLASS.defaultBlockState();
-    private static final BlockState LIGHT = Blocks.SEA_LANTERN.defaultBlockState();
     private static final BlockState CONSOLE = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
     private static final BlockState STEP = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState();
     private static final BlockState DOME_SHELL = Blocks.SMOOTH_QUARTZ.defaultBlockState();
@@ -151,6 +154,8 @@ public final class ControlTower {
         tower.cab();
         tower.roof();
         tower.consoles();
+        tower.lighting();
+        tower.walkwayDoor();
         tower.headRoom();
         tower.joinRailings();
         return tower;
@@ -224,10 +229,13 @@ public final class ControlTower {
             return TRIM;
         }
         if (shaftLight(x, y, z)) {
-            return LIGHT;
+            return light();
         }
         boolean strip = Math.abs(z) <= 1 && Math.abs(x) > INSIDE && y >= STRIP_FROM && y < OPS_FLOOR - STRIP_FROM;
-        return strip ? glass() : WALL;
+        if (strip) {
+            return glass();
+        }
+        return y % BAND_EVERY == 0 && onOctagon(x, z, SHAFT) ? TRIM : WALL;
     }
 
     /**
@@ -334,7 +342,7 @@ public final class ControlTower {
         for (int x = LIFT_X - 1; x <= LIFT_X + 1; x++) {
             for (int z = -1; z <= 1; z++) {
                 set(x, 0, z, Blocks.SMOOTH_STONE.defaultBlockState());
-                set(x, 3, z, x == LIFT_X && z == 0 ? LIGHT : FLOOR);
+                set(x, 3, z, x == LIFT_X && z == 0 ? light() : FLOOR);
             }
         }
         for (int x : new int[]{LIFT_X - 1, LIFT_X + 1}) {
@@ -357,6 +365,11 @@ public final class ControlTower {
      */
     private static BlockState glass() {
         return AerolargeRegistry.COCKPIT_WINDOW.get().defaultBlockState();
+    }
+
+    /** The tower's lights: the airliner's white LED panels, set flush into walls and ceilings. */
+    private static BlockState light() {
+        return AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState();
     }
 
     /** One of Create's blocks by name; null without Create. */
@@ -439,7 +452,7 @@ public final class ControlTower {
             }
         }
         for (int[] light : new int[][]{{-5, -3}, {-5, 3}, {4, -5}}) {
-            set(light[0], CAB_FLOOR, light[1], LIGHT);
+            set(light[0], CAB_FLOOR, light[1], light());
         }
     }
 
@@ -461,7 +474,7 @@ public final class ControlTower {
     /**
      * The cab: its floor out to the walkway's railing; round the octagon the grey knee wall, two rows of glass, then
      * two more a block further out, leaning the windows out as they rise, dark mullions at every corner of both; and
-     * the railing of iron bars round the walkway at its foot.
+     * the airliner's glass rail round the walkway at its foot, too high to jump over.
      */
     private void cab() {
         for (int[] column : octagon(WALKWAY)) {
@@ -469,10 +482,29 @@ public final class ControlTower {
             int z = column[1];
             keepOrSet(x, CAB_FLOOR, z, FLOOR);
             if (onOctagon(x, z, WALKWAY)) {
-                set(x, KNEE, z, RAILING);
+                set(x, KNEE, z, walkwayRail(x, z));
             }
             cabColumn(x, z);
         }
+    }
+
+    /** The walkway's glass rail in a block of its edge, along the sides of the block that face out over the drop. */
+    private static BlockState walkwayRail(int x, int z) {
+        BlockState rail = AerolargeRegistry.CABIN_RAIL.get().defaultBlockState();
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            rail = rail.setValue(CabinRailBlock.EDGES.get(side), !inOctagon(x + side.getStepX(), z + side.getStepZ(), WALKWAY));
+        }
+        return rail;
+    }
+
+    /**
+     * The door out onto the walkway, in the back of the cab's knee wall and its lower glass, away from the consoles: a
+     * glass door as at the entrance, the console in front of it left out (see {@link #consoleAt}).
+     */
+    private void walkwayDoor() {
+        BlockState door = slidingDoor().setValue(DoorBlock.HINGE, DoorHingeSide.LEFT);
+        set(0, KNEE, CAB, door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+        set(0, KNEE + 1, CAB, door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
     }
 
     private void cabColumn(int x, int z) {
@@ -489,14 +521,15 @@ public final class ControlTower {
 
     /**
      * The roof: out over the leaning windows and the walkway, its rim grey, lights set in its ceiling over the cab; on it
-     * a white radar dome on a pedestal, antennas round it, and the mast with the red beacon on top.
+     * a white radar dome on a pedestal, antennas round it, and the mast with the red beacon on top; and steady red
+     * obstruction lights, as on every tall thing by an airfield, on the rim's corners, the dome's top and each antenna.
      */
     private void roof() {
         for (int[] column : octagon(WALKWAY)) {
             set(column[0], ROOF, column[1], onOctagon(column[0], column[1], WALKWAY) ? TRIM : WALL);
         }
         for (int[] light : new int[][]{{0, 0}, {-4, -4}, {4, -4}, {-4, 4}, {4, 4}, {0, -5}}) {
-            set(light[0], ROOF, light[1], LIGHT);
+            set(light[0], ROOF, light[1], light());
         }
         for (int y = ROOF + 1; y < DOME_MIDDLE - DOME + 1; y++) {
             set(0, y, 0, TRIM);
@@ -506,12 +539,23 @@ public final class ControlTower {
             for (int y = ROOF + 1; y <= ROOF + 3; y++) {
                 set(antenna[0], y, antenna[1], Blocks.LIGHTNING_ROD.defaultBlockState());
             }
+            set(antenna[0], ROOF + 4, antenna[1], obstructionLight());
         }
+        for (int[] column : octagon(WALKWAY)) {
+            if (octagonCorner(column[0], column[1], WALKWAY)) {
+                set(column[0], ROOF + 1, column[1], obstructionLight());
+            }
+        }
+        set(0, DOME_MIDDLE + DOME + 1, 0, obstructionLight());
         for (int y = ROOF + 1; y <= ROOF + MAST_HEIGHT; y++) {
             set(MAST_X, y, MAST_Z, Blocks.LIGHTNING_ROD.defaultBlockState());
         }
         set(MAST_X, ROOF + MAST_HEIGHT + 1, MAST_Z, AerolargeRegistry.NAV_LIGHT.get().defaultBlockState()
             .setValue(NavLightBlock.FACING, Direction.UP).setValue(NavLightBlock.KIND, NavLightBlock.Kind.BEACON));
+    }
+
+    private static BlockState obstructionLight() {
+        return AerolargeRegistry.NAV_LIGHT.get().defaultBlockState().setValue(NavLightBlock.FACING, Direction.UP).setValue(NavLightBlock.KIND, NavLightBlock.Kind.RED);
     }
 
     /** The radar dome: a hollow white ball on the pedestal. */
@@ -533,13 +577,14 @@ public final class ControlTower {
     }
 
     /**
-     * The consoles: a ring of dark desks under the windows, all round but where the stairs come up; on the front ones,
+     * The consoles: a ring of dark desks under the windows, all round but where the stairs come up and in front of the
+     * walkway's door; on the front ones,
      * looking into the cab, the tower's radio, its radar screen in the middle and its transponder, with a pilot seat
      * either side facing out over them; and a second radar screen at the west side.
      */
     private void consoles() {
         for (int[] column : octagon(CAB - 1)) {
-            if (onOctagon(column[0], column[1], CAB - 1) && !(column[0] >= LANE_A && column[1] > 0)) {
+            if (consoleAt(column[0], column[1])) {
                 set(column[0], KNEE, column[1], CONSOLE);
             }
         }
@@ -554,6 +599,45 @@ public final class ControlTower {
         for (int x : new int[]{-1, 1}) {
             set(x, KNEE, front + 1, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.LOWER));
             set(x, KNEE + 1, front + 1, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.UPPER));
+        }
+    }
+
+    /** Whether a column of the cab has a console: round under the windows, but where the stairs come up and at the door. */
+    private static boolean consoleAt(int x, int z) {
+        boolean stairs = x >= LANE_A && z > 0;
+        boolean door = x == 0 && z == CAB - 1;
+        return onOctagon(x, z, CAB - 1) && !stairs && !door;
+    }
+
+    /**
+     * The lighting: the airliner's LED strips along the tops of the walls, round the cab under its roof against the
+     * leaning glass and round the equipment floor under its white band, where nothing else stands; and a sill under the
+     * leaning glass, out over the walkway, so the glass does not hang over it bare.
+     */
+    private void lighting() {
+        for (int[] column : octagon(CAB)) {
+            ledStrip(column[0], ROOF - 1, column[1], CAB);
+        }
+        for (int[] column : octagon(OPS - 1)) {
+            ledStrip(column[0], CAB_FLOOR - 1, column[1], OPS - 1);
+        }
+        for (int[] column : octagon(CAB + 1)) {
+            if (onOctagon(column[0], column[1], CAB + 1)) {
+                set(column[0], LEAN - 1, column[1], CANOPY);
+            }
+        }
+    }
+
+    /** An LED strip in an open block on an octagon's edge, fixed to the wall beyond it, where there is a wall beyond. */
+    private void ledStrip(int x, int y, int z, int radius) {
+        if (!onOctagon(x, z, radius) || cells.get(new BlockPos(x, y, z)) != AIR) {
+            return;
+        }
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (!inOctagon(x + side.getStepX(), z + side.getStepZ(), radius)) {
+                set(x, y, z, AerolargeRegistry.LIGHT_STRIP.get().defaultBlockState().setValue(LightStripBlock.FACING, side));
+                return;
+            }
         }
     }
 
