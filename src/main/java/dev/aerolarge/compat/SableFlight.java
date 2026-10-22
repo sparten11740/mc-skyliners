@@ -112,6 +112,11 @@ public final class SableFlight {
         return SABLE ? Access.toWorld(level, point) : point;
     }
 
+    /** Whether a point is among an assembled airliner's blocks, in its plot. */
+    public static boolean aboard(Level level, Vec3 point) {
+        return SABLE && Access.aboard(level, point);
+    }
+
     /** How fast a point among an assembled airliner's blocks moves, in blocks a second; still anywhere else. */
     public static Vec3 velocity(Level level, Vec3 point) {
         return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
@@ -290,6 +295,10 @@ public final class SableFlight {
 
         static Vec3 toWorld(Level level, Vec3 point) {
             return Sable.HELPER.projectOutOfSubLevel(level, point);
+        }
+
+        static boolean aboard(Level level, Vec3 point) {
+            return Sable.HELPER.getContaining(level, point) != null;
         }
 
         static Vec3 velocity(Level level, Vec3 point) {

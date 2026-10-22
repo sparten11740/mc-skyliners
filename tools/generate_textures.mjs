@@ -650,24 +650,36 @@ mkdirSync(miscOutput, { recursive: true });
 }
 
 // The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
-// carries a gold star for the fittings.
-function blueprint(name, star) {
+// carries a gold star for the fittings. The control tower's shows the tower from the side: its shaft under the wider
+// cab, the cab's windows a band of the paper, and the mast on its roof.
+function blueprint(name, star, drawn = airlinerFromAbove) {
   texture(itemOutput, name, (x, y) => {
     if (x < 1 || x > 14 || y < 2 || y > 13) return CLEAR;
     if (star && Math.abs(x - 12.5) + Math.abs(y - 4.5) <= 1.5) return GOLD;
-    // Seen from above, nose up: swept wings and tailplane drift back as they reach out.
-    const out = Math.abs(x - 7.5);
-    const fuselage = out <= 0.5 && y >= 3 && y <= 12;
-    const wings = out <= 6.5 && y >= 5.5 + out * 0.35 && y <= 7 + out * 0.35;
-    const tail = out <= 2.5 && y >= 10.5 + out * 0.35 && y <= 11.5 + out * 0.35;
-    if (fuselage || wings || tail) return INK;
+    if (drawn(x, y)) return INK;
     if (x === 1 || x === 14 || y === 2 || y === 13) return PAPER_LINE;
     if (x % 4 === 0 || y % 4 === 0) return PAPER_LINE;
     return PAPER;
   }, 2);
 }
+// Seen from above, nose up: swept wings and tailplane drift back as they reach out.
+function airlinerFromAbove(x, y) {
+  const out = Math.abs(x - 7.5);
+  const fuselage = out <= 0.5 && y >= 3 && y <= 12;
+  const wings = out <= 6.5 && y >= 5.5 + out * 0.35 && y <= 7 + out * 0.35;
+  const tail = out <= 2.5 && y >= 10.5 + out * 0.35 && y <= 11.5 + out * 0.35;
+  return fuselage || wings || tail;
+}
+function towerFromTheSide(x, y) {
+  const mast = x === 10 && y === 3;
+  const roof = y === 4 && x >= 4 && x <= 11;
+  const cab = y >= 5 && y <= 7 && x >= 5 && x <= 10 && !(y === 6 && x >= 6 && x <= 9);
+  const shaft = y >= 8 && y <= 12 && x >= 6 && x <= 9;
+  return mast || roof || cab || shaft;
+}
 blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
+blueprint("control_tower_blueprint", false, towerFromTheSide);
 
 // Skydiving. The jump light: a lens dark, red or green, brighter in the middle. The jump switch: a dark panel with a
 // red and a green lamp, the one in use lit. The rack: a frame holding packed parachutes under a parachute sign, and the
@@ -765,6 +777,23 @@ blueprint("furnished_airliner_blueprint", true);
     if (y % 3 === 1 && x >= 3 && x <= 12) return [0x3a, 0x3d, 0x41];
     return PANEL_GREY;
   });
+}
+
+// The control tower. The transponder's panel, read from its face: at the back the black glass of the little screen
+// its picture is drawn on (see TransponderRenderer), at the front its four-digit code in green. The radar screen's
+// monitor: its face a dark bezel round the black glass the scope is drawn on (see TowerRadarRenderer), its casing
+// dark grey.
+{
+  const SCREEN = [0x08, 0x0c, 0x10];
+  const CODE = [0x30, 0xc0, 0x40];
+  texture(blockOutput, "transponder_top", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return PANEL_EDGE;
+    if (x >= 4 && x <= 11 && y >= 2 && y <= 9) return SCREEN;
+    if (y >= 11 && y <= 12 && x >= 3 && x <= 12) return (x - 3) % 3 === 2 ? PANEL_DARK : CODE;
+    return PANEL_DARK;
+  }, 2);
+  texture(blockOutput, "tower_radar_screen", (x, y) => (x >= 1 && x <= 14 && y >= 2 && y <= 12 ? SCREEN : PANEL_DARK), 2);
+  texture(blockOutput, "tower_radar_casing", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 2);
 }
 
 // Buckling up. The seatbelt sign: a dark panel with a seated figure and its belt beside a crossed-out cigarette,
@@ -1846,6 +1875,54 @@ blueprint("furnished_airliner_blueprint", true);
     if (onSegment(x, y, [2, 13], [6, 14.5], 1.2)) return PALE;
     return Math.hypot(x - 7.5, y - 14.5) <= 1.1 ? RUNWAY : null;
   });
+
+  // The transponders' markers (see MarkerIcon), drawn white so each takes its transponder's colour, kept to the middle
+  // so they fit the round marker they sit in: a control tower, its glass cab over the shaft, the windows showing
+  // through; an airliner from above; a house with its door; a five-pointed star; a flag on its pole; a heart; a cut gem,
+  // its girdle showing through; a round tree on its trunk; an anchor; a pickaxe.
+  const markerOutput = resolve(guiOutput, "marker");
+  mkdirSync(markerOutput, { recursive: true });
+  const markers = {
+    tower: (x, y) => {
+      const cab = y >= 3 && y <= 5 && x >= 4 && x <= 11 && !(y === 4 && x >= 5 && x <= 10);
+      const shaft = y >= 6 && y <= 13 && x >= 6 && x <= 9;
+      return cab || shaft || (y === 2 && x >= 3 && x <= 12) || (y === 13 && x >= 5 && x <= 10) || (x === 8 && y <= 1);
+    },
+    airliner: (x, y) => airliner(x, y, 7.5, 7.5, 0, 0.95),
+    house: (x, y) => {
+      const roof = y >= 2 && y <= 7 && Math.abs(x - 7.5) <= y - 1;
+      const walls = y >= 8 && y <= 13 && x >= 3 && x <= 12 && !(x >= 7 && x <= 8 && y >= 10);
+      return roof || walls;
+    },
+    star: (x, y) => {
+      const r = Math.hypot(x - 7.5, y - 8);
+      const point = (2 * Math.PI) / 5;
+      const share = ((((Math.atan2(x - 7.5, 8 - y) % point) + point) % point) / point) * 2 - 1;
+      return r <= 2.8 + 3.9 * Math.abs(share);
+    },
+    flag: (x, y) => (x === 4 && y >= 2 && y <= 14) || (x >= 5 && x <= 12 && y >= 2 + (x % 4 === 0 ? 1 : 0) && y <= 8 + (x % 4 === 0 ? 1 : 0)),
+    heart: (x, y) => {
+      const u = (x - 7.5) / 6;
+      const v = -(y - 7) / 6;
+      return (u * u + v * v - 1) ** 3 - u * u * v ** 3 <= 0;
+    },
+    gem: (x, y) => {
+      const crown = y >= 3 && y <= 5 && Math.abs(x - 7.5) <= 3.5 + (y - 3);
+      const pavilion = y >= 7 && y <= 13 && Math.abs(x - 7.5) <= (13.5 - y) * 0.9;
+      return crown || pavilion;
+    },
+    tree: (x, y) => Math.hypot(x - 7.5, y - 6) <= 5 || (x >= 7 && x <= 8 && y >= 10 && y <= 14),
+    anchor: (x, y) => {
+      const ring = Math.hypot(x - 7.5, y - 2.5);
+      if (ring >= 0.9 && ring <= 2.1) return true;
+      const arms = Math.hypot(x - 7.5, y - 7);
+      return (x >= 7 && x <= 8 && y >= 4 && y <= 13) || (y === 6 && x >= 4 && x <= 11) || (y >= 9 && arms >= 5 && arms <= 6.4);
+    },
+    pickaxe: (x, y) => onSegment(x, y, [3, 13], [10, 6], 1.8) || onSegment(x, y, [10, 6], [4.5, 2.5], 2.2) || onSegment(x, y, [10, 6], [13.5, 11.5], 2.2),
+  };
+  for (const [name, shape] of Object.entries(markers)) {
+    icon(markerOutput, name, (x, y) => (shape(x, y) ? INK : null));
+  }
 }
 
 // Duty free and the paper plane. The paper plane's icon: a white plane flying up to the right, its far wing and keel

@@ -47,6 +47,9 @@ import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.TillerBlock;
+import dev.aerolarge.block.TransponderBlockEntity;
+import dev.aerolarge.radar.MarkerColour;
+import dev.aerolarge.radar.MarkerIcon;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -1463,7 +1466,7 @@ public final class AirframeLayout {
      * low enough to see the screen over: everything on it within reach from either seat but for the far thrust lever
      * (any lever moves all four), and the window shades' control and the drop release, each beside the seat that works
      * it. Across its front, as wide as the screen just ahead of it, the autopilot's control head between the seatbelt
-     * switch and the jump light switch. Behind them, in front of the seats, the throttle quadrant: the four thrust
+     * switch and the jump light switch, and the transponder outboard of the seatbelt switch. Behind them, in front of the seats, the throttle quadrant: the four thrust
      * levers with the parking brake in the middle of them. Between the seats the nose wheel tiller in the middle, the
      * cabin lights' dimmer and the captain's handset either side of it, and at the seats' sides the window shades'
      * control by the captain and the drop release by the first officer, each facing the one beside it. Gives where the
@@ -1480,6 +1483,7 @@ public final class AirframeLayout {
         controls.add(brake);
         seatbeltSwitch = control(-1, y, front, AerolargeRegistry.SEATBELT_SWITCH.get(), Direction.SOUTH);
         jumpSwitch = control(1, y, front, AerolargeRegistry.JUMP_SWITCH.get(), Direction.SOUTH);
+        transponder(control(-2, y, front, AerolargeRegistry.TRANSPONDER.get(), Direction.SOUTH));
         cabinLights = control(-1, y, seatZ, AerolargeRegistry.CABIN_LIGHTS.get(), Direction.SOUTH);
         control(1, y, seatZ, AerolargeRegistry.HANDSET.get(), Direction.SOUTH);
         windowShades = control(-(SEAT_X - 1), y, seatZ, AerolargeRegistry.WINDOW_SHADES.get(), Direction.WEST);
@@ -1494,7 +1498,8 @@ public final class AirframeLayout {
      * the autopilot's control head in the middle of it; the tiller and the parking brake outboard of the seats where
      * there is room for both, and behind them the window shades' control by the captain and the drop release by the
      * first officer; and on the panel either side of the autopilot screen the seatbelt switch and the captain's
-     * handset, the jump light switch and the cabin lights' dimmer. Gives where the autopilot went.
+     * handset (and the transponder past it), the jump light switch and the cabin lights' dimmer. Gives where the
+     * autopilot went.
      */
     private BlockPos narrowControls(int y, int panelZ, int seatZ) {
         List<BlockPos> controls = new ArrayList<>(thrustLevers(y, seatZ));
@@ -1512,6 +1517,7 @@ public final class AirframeLayout {
         onPanel(-beside - 1, y, panelZ, AerolargeRegistry.HANDSET.get());
         jumpSwitch = onPanel(beside, y, panelZ, AerolargeRegistry.JUMP_SWITCH.get());
         cabinLights = onPanel(beside + 1, y, panelZ, AerolargeRegistry.CABIN_LIGHTS.get());
+        transponder(onPanel(-beside - 2, y, panelZ, AerolargeRegistry.TRANSPONDER.get()));
         BlockPos autopilot = new BlockPos(0, y, seatZ);
         autopilot(autopilot, controls);
         return autopilot;
@@ -1537,6 +1543,21 @@ public final class AirframeLayout {
             });
         }
         return levers;
+    }
+
+    /**
+     * The airliner's transponder, where it went (if it did): set when the airliner is built to show the airliner on the
+     * tower's radar and on other airliners' maps by an airliner in white.
+     */
+    private void transponder(@Nullable BlockPos at) {
+        if (at == null) {
+            return;
+        }
+        fittings.put(at, (blockEntity, rotation) -> {
+            if (blockEntity instanceof TransponderBlockEntity transponder) {
+                transponder.show(MarkerIcon.AIRLINER, MarkerColour.WHITE);
+            }
+        });
     }
 
     /** A control of the flight deck at the spot, its face looking the given way, if the spot is open; where it went. */

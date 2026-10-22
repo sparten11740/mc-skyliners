@@ -47,6 +47,8 @@ import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
 import dev.aerolarge.client.TerrainMap;
+import dev.aerolarge.client.TowerRadarRenderer;
+import dev.aerolarge.client.TransponderRenderer;
 import dev.aerolarge.client.TrolleyRenderer;
 import dev.aerolarge.client.VeilLights;
 import net.minecraft.client.renderer.entity.NoopRenderer;
@@ -179,6 +181,8 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DOOR_ENTITY.get(), context -> new CockpitDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), context -> new AirstairRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SLIDE_CONTROL_ENTITY.get(), context -> new SlideRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.TRANSPONDER_ENTITY.get(), context -> new TransponderRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.TOWER_RADAR_ENTITY.get(), context -> new TowerRadarRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());

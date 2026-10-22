@@ -721,6 +721,36 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   }
 }
 
+// The control tower. The transponder: a module of the centre console, its panel facing whoever it looks at, with two
+// code knobs at the front of it (its picture is drawn on the panel's screen, see TransponderRenderer). The radar
+// screen: a monitor on a desk stand, drawn facing north, its screen's face on its north side (the scope is drawn on
+// it, see TowerRadarRenderer).
+{
+  consoleModule("transponder", { panel: `${ID}:block/transponder_top`, knob: `${ID}:block/thrust_lever_knob` }, "#panel", true, [
+    solid([3.5, CONSOLE_HEIGHT, 1.5], [5.5, 7.5, 3.5], "#knob"),
+    solid([10.5, CONSOLE_HEIGHT, 1.5], [12.5, 7.5, 3.5], "#knob"),
+  ]);
+  facing("transponder");
+  write(`assets/${ID}/models/item/transponder.json`, { parent: `${ID}:block/transponder` });
+  const casing = { texture: "#casing" };
+  write(`assets/${ID}/models/block/tower_radar.json`, {
+    parent: "minecraft:block/block",
+    textures: { casing: `${ID}:block/tower_radar_casing`, screen: `${ID}:block/tower_radar_screen`, particle: `${ID}:block/tower_radar_casing` },
+    elements: [
+      solid([3, 0, 6], [13, 1, 11], "#casing"),
+      solid([7, 1, 8], [9, 3, 10], "#casing"),
+      { from: [0.5, 3, 6], to: [15.5, 15, 10], faces: { north: { texture: "#screen" }, south: casing, east: casing, west: casing, up: casing, down: casing } },
+    ],
+  });
+  facing("tower_radar");
+  write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
+  write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
+  for (const name of ["transponder", "tower_radar"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+
 // Buckling up. The seatbelt sign, dark or lit: lit, it glows at full brightness whatever the light around, a backlit
 // sign that shows in a dark cabin without lighting it up. The seatbelt switch, a module of the centre console facing
 // the pilots: its lamp dark or lit, and a toggle in front of it, pushed away when on.
@@ -4338,7 +4368,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 // Climbed as a ladder is.
 write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "jet_bridge", "check_in_desk"];
+const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "jet_bridge", "check_in_desk"];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
@@ -4430,6 +4460,8 @@ shaped("window_shades", ["W", "P"], { W: "minecraft:white_wool", P: `${ID}:instr
 shaped("cabin_lights", ["G", "P"], { G: "minecraft:glowstone_dust", P: `${ID}:instrument_panel` }, 1);
 shaped("handset", ["S", "P"], { S: "minecraft:string", P: `${ID}:instrument_panel` }, 1);
 shaped("tower_radio", ["IRI", "INI", "ICI"], { I: "minecraft:iron_ingot", R: "minecraft:lightning_rod", N: "minecraft:note_block", C: "minecraft:comparator" }, 1);
+shaped("tower_radar", ["GGG", "GRG", "ICI"], { G: "minecraft:green_stained_glass_pane", R: "minecraft:redstone", I: "minecraft:iron_ingot", C: "minecraft:compass" }, 1);
+shaped("transponder", ["IGI", "RCR"], { I: "minecraft:iron_ingot", G: "minecraft:glass_pane", R: "minecraft:redstone", C: "minecraft:compass" }, 1);
 shaped("jet_bridge", ["GGG", "IPI", "IRI"], { G: "minecraft:glass", I: "minecraft:iron_ingot", P: "minecraft:piston", R: "minecraft:redstone" }, 1);
 shaped("check_in_desk", ["PGP", "IRI", "III"], { P: "minecraft:paper", G: "minecraft:glass_pane", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 shaped("cockpit_window", ["GGG", "GDG", "GGG"], { G: `${ID}:cabin_window`, D: "minecraft:black_dye" }, 8);
@@ -4822,6 +4854,39 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.airliner_blueprint.tooltip": "A double-deck airliner with an empty cabin, ready to build in",
   "item.aerolarge.furnished_airliner_blueprint.tooltip": "A double-deck airliner fitted with a pool, a gym hall and a lounge",
   "item.aerolarge.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
+  "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
+  "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
+  "item.aerolarge.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",
+  "message.aerolarge.control_tower.built": "The control tower is up. Climb the ladder to the cab: its transponder shows it on every autopilot's map.",
+  "block.aerolarge.transponder": "Transponder",
+  "block.aerolarge.tower_radar": "Tower Radar",
+  "screen.aerolarge.radar.title": "Tower Radar",
+  "screen.aerolarge.radar.map": "Radar map",
+  "screen.aerolarge.map.contact.where": "X %s, Z %s",
+  "screen.aerolarge.map.contact.distance": "%s blocks away",
+  "screen.aerolarge.map.contact.flight": "Height %s, speed %s blocks a second",
+  "marker.aerolarge.icon.tower": "Control tower",
+  "marker.aerolarge.icon.airliner": "Airliner",
+  "marker.aerolarge.icon.house": "Home",
+  "marker.aerolarge.icon.star": "Star",
+  "marker.aerolarge.icon.flag": "Flag",
+  "marker.aerolarge.icon.heart": "Heart",
+  "marker.aerolarge.icon.gem": "Treasure",
+  "marker.aerolarge.icon.tree": "Forest",
+  "marker.aerolarge.icon.anchor": "Harbour",
+  "marker.aerolarge.icon.pickaxe": "Mine",
+  "marker.aerolarge.colour.white": "White",
+  "marker.aerolarge.colour.red": "Red",
+  "marker.aerolarge.colour.orange": "Orange",
+  "marker.aerolarge.colour.yellow": "Yellow",
+  "marker.aerolarge.colour.lime": "Lime",
+  "marker.aerolarge.colour.green": "Green",
+  "marker.aerolarge.colour.cyan": "Cyan",
+  "marker.aerolarge.colour.blue": "Blue",
+  "marker.aerolarge.colour.purple": "Purple",
+  "marker.aerolarge.colour.magenta": "Magenta",
+  "marker.aerolarge.colour.pink": "Pink",
+  "marker.aerolarge.colour.brown": "Brown",
   "message.aerolarge.building": "Building the airliner… %s%%",
   "message.aerolarge.built": "The airliner is ready and glued together. Fold the airstairs away, then use the Physics Assembler in the cockpit to fly it.",
   "message.aerolarge.busy": "An airliner is already being built here; wait for it to finish.",

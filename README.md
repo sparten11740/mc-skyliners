@@ -15,7 +15,7 @@ airliner is a building.
 
 ## In game
 
-Both blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
+The blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
 banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops, and the airport.
 
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
@@ -265,7 +265,10 @@ the X in their title bar (neither the buttons nor Escape close them).
 Set to fly to a pin, the rows of settings give way to a map: the land and the villages as the route map on the
 passenger screens has them (see Passenger screens), the airliner as a gold arrow, and the pin, once dropped, as a red
 dot in a red ring, the circle it will be flown round. Drag the map to look about, scroll to zoom out and in, and click
-to drop the pin: a click close to a village drops it right on the village. A small cross marks the middle of the map,
+to drop the pin: a click close to a village drops it right on the village. Every transponder shows on the map too
+(see Control tower and transponders), by its picture in its colour on a dark disc, as a beacon shows in Subnautica,
+other airliners with a few dots the way they fly; point at one to see what it is, where and how far, and click on one
+to drop the pin right on it. A small cross marks the middle of the map,
 whose X and Z show in its bottom left corner (and the pin's in the bottom right once dropped), so you can find your
 way about even where the land has not been seen yet. Engaged, the airliner turns for the circle
 round the pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and
@@ -899,6 +902,35 @@ black canopy closing against the curve of the hull around the door; it docks at 
 assembled airliner standing still, up to 32 blocks out, and opens the door once it is there. If no door lines up it
 says which way to move the bridge. Use it again to fold it back once everyone is off it; it also pulls back on its own
 when the airliner starts to move, and shuts the door as it goes. Breaking it takes the whole tunnel with it.
+
+### Control tower and transponders
+
+The **Control Tower Blueprint** (in the creative tab with the airliners') puts up an airfield's control tower: used on
+the ground, the tower goes up with its front two blocks past the block you click, its door and its desk toward you, and
+it refuses while anything is in the way unless you sneak. A white shaft seven blocks square, banded in grey with slit
+windows up its sides, rises twenty blocks; through the door at its foot a ladder climbs its back wall to a hatch in the
+floor of the glass cab on top, wider than the shaft, windows all round over a knee wall under an overhanging roof, with
+a mast and a flashing red beacon on the roof. Along the cab's front windows runs a desk with the tower's radio (see
+Announcements and the radio), its radar screen and its transponder on it, and a pilot seat either side to sit at it.
+The ground under the shaft is filled in, so it stands on uneven ground too.
+
+A **Transponder** shows wherever it is on every autopilot's map (see Autopilot) and on the tower's radar, by a picture
+and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: ten pictures (a control
+tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour and a mine) and twelve colours, each a
+button showing what it picks, with the marker as the maps will show it on the left; it shows its picture in its colour
+on its own little screen, too. One standing on the ground shows on the maps from anywhere, however far off; one aboard
+an assembled airliner flies with it, and shows where the airliner is while it is loaded, which it is while anyone is
+near it. The control tower's transponder shows the tower as an orange tower, and every airliner built from 0.1.0-alpha.48
+on has one on the centre console beside the seatbelt switch, showing it as a white airliner (an older airliner can be
+given one: a Transponder is crafted from iron, a glass pane, redstone and a compass, and goes on a console or a desk
+anywhere). On its own autopilot's map an airliner's transponder is left out, the airliner being its gold arrow there.
+
+The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
+every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes
+round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower
+(filled in round it while the map is open), rings every 250 blocks round the tower, and every transponder's marker.
+Drag it, scroll to zoom, point at a marker to see what it is, how far from the tower, and for an airliner how high and
+how fast it flies; click on one to centre the map on it.
 
 ### Flying it
 

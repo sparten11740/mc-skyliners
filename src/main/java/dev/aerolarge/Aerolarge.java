@@ -4,7 +4,10 @@ import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.block.BrewCoffee;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
+import dev.aerolarge.block.OpenTowerRadar;
+import dev.aerolarge.block.OpenTransponder;
 import dev.aerolarge.block.SetAutopilot;
+import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.block.UnstickAirliner;
 import dev.aerolarge.block.VillagesBelow;
 import dev.aerolarge.cabin.Headroom;
@@ -15,10 +18,15 @@ import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.AutopilotSettingsScreen;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
+import dev.aerolarge.client.RadarPicture;
+import dev.aerolarge.client.RadarScreen;
 import dev.aerolarge.client.TerrainMap;
+import dev.aerolarge.client.TransponderScreen;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
+import dev.aerolarge.radar.RadarContacts;
+import dev.aerolarge.radar.Transponders;
 import dev.aerolarge.radio.Broadcasts;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
@@ -63,6 +71,7 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);
+                Transponders.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Unload.class, event -> {
@@ -73,11 +82,12 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("8")
+        event.registrar("9")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
+            .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
             // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
                 (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
@@ -86,6 +96,12 @@ public final class Aerolarge {
             .playToClient(OpenCoffeeMachine.TYPE, OpenCoffeeMachine.STREAM_CODEC,
                 (payload, context) -> CoffeeMachineScreen.open(payload.pos()))
             .playToClient(VillagesBelow.TYPE, VillagesBelow.STREAM_CODEC,
-                (payload, context) -> TerrainMap.villages(payload.villages()));
+                (payload, context) -> TerrainMap.villages(payload.villages()))
+            .playToClient(OpenTransponder.TYPE, OpenTransponder.STREAM_CODEC,
+                (payload, context) -> TransponderScreen.open(payload))
+            .playToClient(OpenTowerRadar.TYPE, OpenTowerRadar.STREAM_CODEC,
+                (payload, context) -> RadarScreen.open(payload.pos()))
+            .playToClient(RadarContacts.TYPE, RadarContacts.STREAM_CODEC,
+                (payload, context) -> RadarPicture.receive(payload));
     }
 }

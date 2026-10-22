@@ -137,7 +137,11 @@ import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
 import dev.aerolarge.block.ThrustRelayBlock;
 import dev.aerolarge.block.TillerBlock;
+import dev.aerolarge.block.TowerRadarBlock;
+import dev.aerolarge.block.TowerRadarBlockEntity;
 import dev.aerolarge.block.TowerRadioBlock;
+import dev.aerolarge.block.TransponderBlock;
+import dev.aerolarge.block.TransponderBlockEntity;
 import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WcSignBlock;
@@ -154,6 +158,7 @@ import dev.aerolarge.item.AirlinerBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
+import dev.aerolarge.item.ControlTowerBlueprintItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
@@ -586,6 +591,20 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("radio", () -> BlockEntityType.Builder.of(RadioBlockEntity::new, HANDSET.get(), TOWER_RADIO.get()).build(null));
     public static final DeferredItem<BlockItem> HANDSET_ITEM = ITEMS.registerSimpleBlockItem(HANDSET);
     public static final DeferredItem<BlockItem> TOWER_RADIO_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADIO);
+
+    /** The control tower: its radar screen, and the transponders that show on the radar and on the autopilots' maps. */
+    public static final DeferredBlock<TowerRadarBlock> TOWER_RADAR = BLOCKS.registerBlock(
+        "tower_radar", TowerRadarBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TowerRadarBlockEntity>> TOWER_RADAR_ENTITY =
+        BLOCK_ENTITIES.register("tower_radar", () -> BlockEntityType.Builder.of(TowerRadarBlockEntity::new, TOWER_RADAR.get()).build(null));
+    public static final DeferredBlock<TransponderBlock> TRANSPONDER = BLOCKS.registerBlock(
+        "transponder", TransponderBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TransponderBlockEntity>> TRANSPONDER_ENTITY =
+        BLOCK_ENTITIES.register("transponder", () -> BlockEntityType.Builder.of(TransponderBlockEntity::new, TRANSPONDER.get()).build(null));
+    public static final DeferredItem<BlockItem> TOWER_RADAR_ITEM = ITEMS.registerSimpleBlockItem(TOWER_RADAR);
+    public static final DeferredItem<BlockItem> TRANSPONDER_ITEM = ITEMS.registerSimpleBlockItem(TRANSPONDER);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1255,6 +1274,10 @@ public final class AerolargeRegistry {
         "furnished_airliner_blueprint",
         () -> new AirlinerBlueprintItem(true, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+    /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
+    public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
+        "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
 
     /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
     public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
@@ -1262,7 +1285,7 @@ public final class AerolargeRegistry {
 
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
-        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT)),
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, CONTROL_TOWER_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
@@ -1295,7 +1318,7 @@ public final class AerolargeRegistry {
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
-        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM))
+        new TabSection("airport", List.of(JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM))
     );
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("aerolarge", () -> CreativeModeTab.builder()

@@ -1,0 +1,83 @@
+package dev.aerolarge.client;
+
+import dev.aerolarge.client.PanelArt.Icon;
+import dev.aerolarge.radar.Contact;
+import dev.aerolarge.radar.MarkerColour;
+import dev.aerolarge.radar.MarkerIcon;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+
+/**
+ * A transponder's marker on the maps, as a beacon shows in Subnautica: its picture in its colour on a dark disc ringed
+ * in that colour, and for one aboard an airliner going somewhere, a short line of dots off the ring the way it goes.
+ * Pointed at, it says what it is, where, how far off, and for an airliner how high and fast it flies.
+ */
+final class MarkerArt {
+    /** The disc's radius, in pixels at scale 1, and the dark inside its ring. */
+    static final int RADIUS = 8;
+    private static final int INSIDE = 0xF0081226;
+    /** The heading's dots: from how far out from the middle, how many and how far apart. */
+    private static final int HEADING_FROM = RADIUS + 2;
+    private static final int HEADING_DOTS = 3;
+    private static final int HEADING_GAP = 2;
+    private static final Map<MarkerIcon, Icon> ICONS = new EnumMap<>(MarkerIcon.class);
+
+    static {
+        for (MarkerIcon icon : MarkerIcon.values()) {
+            ICONS.put(icon, Icon.of(icon.texture()));
+        }
+    }
+
+    private MarkerArt() {
+    }
+
+    static Icon icon(MarkerIcon icon) {
+        return ICONS.get(icon);
+    }
+
+    /** A marker of this picture and colour, its middle at (x, y), at a whole multiple of its size. */
+    static void draw(GuiGraphics graphics, MarkerIcon icon, MarkerColour colour, int x, int y, int scale) {
+        PanelArt.drawDisc(graphics, x, y, RADIUS * scale, colour.argb());
+        PanelArt.drawDisc(graphics, x, y, RADIUS * scale - scale, INSIDE);
+        int half = Icon.SIZE * scale / 2;
+        icon(icon).draw(graphics, x - half, y - half, scale, colour.argb());
+    }
+
+    /** A transponder's marker, its middle at (x, y), with the dots of its heading if it flies somewhere. */
+    static void draw(GuiGraphics graphics, Contact contact, int x, int y) {
+        draw(graphics, contact.icon(), contact.colour(), x, y, 1);
+        if (!contact.airborne() || Float.isNaN(contact.heading())) {
+            return;
+        }
+        double angle = Math.toRadians(contact.heading());
+        for (int dot = 0; dot < HEADING_DOTS; dot++) {
+            int out = HEADING_FROM + dot * HEADING_GAP;
+            int dx = (int) Math.round(Math.sin(angle) * out);
+            int dy = (int) Math.round(-Math.cos(angle) * out);
+            graphics.fill(x + dx, y + dy, x + dx + 1, y + dy + 1, contact.colour().argb());
+        }
+    }
+
+    /**
+     * What a marker says, pointed at: its picture's name, where it is, how far it is from a place (the airliner, or the
+     * tower), and for an airliner how high and how fast it flies.
+     */
+    static List<Component> describe(Contact contact, double fromX, double fromZ) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(contact.icon().title().copy().withColor(contact.colour().rgb()));
+        lines.add(Component.translatable("screen.aerolarge.map.contact.where", Mth.floor(contact.x()), Mth.floor(contact.z())));
+        long distance = Math.round(Math.hypot(contact.x() - fromX, contact.z() - fromZ));
+        lines.add(Component.translatable("screen.aerolarge.map.contact.distance", distance));
+        if (contact.airborne()) {
+            lines.add(Component.translatable("screen.aerolarge.map.contact.flight",
+                Mth.floor(contact.y()), String.format(Locale.ROOT, "%.0f", contact.speed())));
+        }
+        return lines;
+    }
+}

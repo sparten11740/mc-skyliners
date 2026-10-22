@@ -33,6 +33,8 @@
     "aerolarge:parachute_rack",
     "aerolarge:handset",
     "aerolarge:tower_radio",
+    "aerolarge:transponder",
+    "aerolarge:tower_radar",
     "aerolarge:seatbelt_sign",
     "aerolarge:seatbelt_switch",
     "aerolarge:light_strip",
