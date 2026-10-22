@@ -335,8 +335,14 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
             return new Lights(lights, rows);
         }
 
+        /**
+         * The light of a block of the panel; for one outside it (the handle's or the porthole's, on a door broken down to
+         * its bottom row), the nearest block's.
+         */
         int at(int column, int row, boolean aisle) {
-            return lights[(row * CockpitDoorBlock.COLUMNS + column) * 2 + (aisle ? 1 : 0)];
+            int r = Math.clamp(row, 0, rows - 1);
+            int c = Math.clamp(column, 0, CockpitDoorBlock.COLUMNS - 1);
+            return lights[(r * CockpitDoorBlock.COLUMNS + c) * 2 + (aisle ? 1 : 0)];
         }
     }
 }
