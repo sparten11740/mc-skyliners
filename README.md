@@ -926,14 +926,22 @@ when the airliner starts to move, and shuts the door as it goes. Breaking it tak
 
 ### Control tower and transponders
 
-The **Control Tower Blueprint** (in the creative tab with the airliners') puts up an airfield's control tower: used on
-the ground, the tower goes up with its front two blocks past the block you click, its door and its desk toward you, and
-it refuses while anything is in the way unless you sneak. A white shaft seven blocks square, banded in grey with slit
-windows up its sides, rises twenty blocks; through the door at its foot a ladder climbs its back wall to a hatch in the
-floor of the glass cab on top, wider than the shaft, windows all round over a knee wall under an overhanging roof, with
-a mast and a flashing red beacon on the roof. Along the cab's front windows runs a desk with the tower's radio (see
-Announcements and the radio), its radar screen and its transponder on it, and a pilot seat either side to sit at it.
-The ground under the shaft is filled in, so it stands on uneven ground too.
+The **Control Tower Blueprint** (in the creative tab with the airliners') puts up an airfield's control tower, after the
+towers at real airports: used on the ground, the tower goes up ahead of the block you click, the canopy over its door
+two blocks past it and the door toward you, and it refuses while anything is in the way unless you sneak. A slender
+octagonal shaft of white concrete, light grey pilasters at its corners and a glazed strip up two of its faces, rises
+forty blocks to a wider equipment floor with a ribbon of windows round it, and on that sits the octagonal glass cab:
+clear windows over a grey knee wall, the upper band leaning a block further out than the lower one, as real cabs lean
+theirs out against reflections, dark mullions at the corners, a walkway with a railing round its foot and an
+overhanging roof. On the roof stand a white radar dome, antennas and a mast with a flashing red beacon.
+
+Through the iron door at its foot (a button either side opens it), switchback stairs climb round the shaft's glass lift
+core, lit by lamps in the walls, to the equipment floor and on into the cab. The lift is Create's elevator, assembled
+and powered when the tower is built (a creative motor under the cab's floor turns it): press the button by its door, at
+the lobby or the equipment floor, to call the cabin, whose arrival opens the iron door; aboard, scroll on its controls
+and click to pick a floor. In the cab a ring of dark consoles runs round under the windows, with the tower's radio (see
+Announcements and the radio), its radar screen and its transponder at the front, two pilot seats at them looking out,
+and a second radar screen at the side. The ground under the shaft is filled in, so it stands on uneven ground too.
 
 A **Transponder** shows wherever it is on every autopilot's map (see Autopilot) and on the tower's radar, by a picture
 and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: ten pictures (a control

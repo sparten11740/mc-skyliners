@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.properties.Property;
  * from Create Propulsion and Create Aeronautics when they are installed, looked up by the ids in the config, so this
  * mod never links against them; without them the same places get airframe panels, or nothing.
  */
-record AirframePalette(
+public record AirframePalette(
     BlockState hull,
     BlockState livery,
     BlockState floor,
@@ -74,7 +74,7 @@ record AirframePalette(
     }
 
     /** Sets a property by name if the block has it and the value is valid, otherwise leaves the state alone. */
-    static BlockState with(BlockState state, String name, String value) {
+    public static BlockState with(BlockState state, String name, String value) {
         Property<?> property = state.getBlock().getStateDefinition().getProperty(name);
         return property == null ? state : with(state, property, value);
     }

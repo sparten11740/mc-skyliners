@@ -17,8 +17,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 
 /**
- * Lays down an airfield's control tower (see {@link ControlTower}). Used on the ground, it builds the tower with its
- * front wall two blocks past the block clicked, facing back at the player, its door and its desk toward them. It
+ * Lays down an airfield's control tower (see {@link ControlTower}). Used on the ground, it builds the tower ahead of the
+ * block clicked, the canopy over its door two blocks past it, facing back at the player, its door and its radio toward
+ * them. It
  * refuses when the space is not clear, unless the player sneaks, which builds straight through whatever is there.
  */
 public class ControlTowerBlueprintItem extends Item {
@@ -35,8 +36,8 @@ public class ControlTowerBlueprintItem extends Item {
             return InteractionResult.PASS;
         }
         Direction along = player.getDirection();
-        BlockPos front = context.getClickedPos().relative(along, 2);
-        ControlTower.Placement placement = ControlTower.layout().place(level, front, along);
+        BlockPos middle = context.getClickedPos().relative(along, ControlTower.middleAhead());
+        ControlTower.Placement placement = ControlTower.layout().place(level, middle, along);
         if (placement.top() >= level.getMaxBuildHeight()) {
             player.displayClientMessage(Component.translatable("message.aerolarge.too_high"), false);
             return InteractionResult.FAIL;
@@ -49,7 +50,7 @@ public class ControlTowerBlueprintItem extends Item {
             return InteractionResult.FAIL;
         }
         ControlTower.build(level, placement);
-        level.playSound(null, front, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.2F);
+        level.playSound(null, middle, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.2F);
         player.displayClientMessage(Component.translatable("message.aerolarge.control_tower.built"), false);
         return InteractionResult.CONSUME;
     }

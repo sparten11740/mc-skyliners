@@ -343,7 +343,7 @@
   "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
   "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
   "item.aerolarge.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",
-  "message.aerolarge.control_tower.built": "The control tower is up. Climb the ladder to the cab: its transponder shows it on every autopilot's map.",
+  "message.aerolarge.control_tower.built": "The control tower is up. Take the lift or the stairs up to the cab: its transponder shows it on every autopilot's map.",
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
   "screen.aerolarge.radar.title": "Tower Radar",

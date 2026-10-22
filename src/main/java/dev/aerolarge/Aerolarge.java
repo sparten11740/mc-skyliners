@@ -1,6 +1,7 @@
 package dev.aerolarge;
 
 import dev.aerolarge.airframe.AirframeBuild;
+import dev.aerolarge.airport.ControlTower;
 import dev.aerolarge.block.BrewCoffee;
 import dev.aerolarge.block.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
@@ -72,11 +73,13 @@ public final class Aerolarge {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);
                 Transponders.tick(level);
+                ControlTower.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Unload.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.drop(level);
+                ControlTower.drop(level);
             }
         });
     }
