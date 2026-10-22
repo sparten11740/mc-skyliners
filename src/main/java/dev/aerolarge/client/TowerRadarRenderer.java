@@ -25,15 +25,15 @@ import org.joml.Matrix4f;
  */
 public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEntity> {
     /** How far in front of the block's middle the screen's face is, in blocks, and the drawing just off it. */
-    private static final float SURFACE = 2 / 16F + 0.003F;
-    /** The scope's middle, how far up from the block's middle, and its radius, in blocks. */
-    private static final float MIDDLE_Y = 1 / 16F;
+    static final float SURFACE = 2 / 16F + 0.003F;
+    /** The scope's middle (and the glass's), how far up from the block's middle, and its radius, in blocks. */
+    static final float MIDDLE_Y = 1 / 16F;
     private static final float RADIUS = 5.5F / 16;
-    /** The screen's glass round the scope: half its width and height, and how far up its middle is. */
-    private static final float GLASS_HALF_WIDTH = 7 / 16F;
-    private static final float GLASS_HALF_HEIGHT = 5.75F / 16;
+    /** The screen's glass round the scope: half its width and height. */
+    static final float GLASS_HALF_WIDTH = 7 / 16F;
+    static final float GLASS_HALF_HEIGHT = 5.75F / 16;
     /** How far the scope reaches, in blocks: the rim. */
-    private static final double RANGE = 2000;
+    static final double RANGE = 2000;
     private static final int RINGS = 4;
     /** How long the sweep takes to go round, in milliseconds, and how many pieces of the disc it is drawn in. */
     private static final long SWEEP_PERIOD = 4000;
@@ -47,7 +47,7 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
     /** The text's size, in blocks per font pixel. */
     private static final float TEXT = 1 / 300F;
 
-    private static final int GLASS = 0xFF050A06;
+    static final int GLASS = 0xFF050A06;
     private static final int SCOPE = 0xFF072810;
     private static final int RING = 0xFF1D6A30;
     private static final int SWEEP = 0xFF46E070;
@@ -90,19 +90,15 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
         }
         double tipX = Math.sin(sweep) * RADIUS;
         double tipY = Math.cos(sweep) * RADIUS;
-        line(shapes, matrix, 0, 0, tipX, tipY, 0.0025F, 0.004F, SWEEP);
+        ScreenDrawing.line(shapes, matrix, 0, 0, tipX, tipY, 0.0025F, 0.004F, SWEEP);
         ScreenDrawing.text(Minecraft.getInstance().font, pose, buffers, Component.literal(String.valueOf(Math.round(RANGE))),
             GLASS_HALF_WIDTH - 0.02F, -GLASS_HALF_HEIGHT + 0.03F, 0.005F, TEXT, RING, ScreenDrawing.Align.RIGHT);
         pose.popPose();
     }
 
-    /** A filled disc round the middle, as a fan of pieces. */
+    /** A filled disc round the middle. */
     private static void disc(VertexConsumer shapes, Matrix4f matrix, float radius, float z, int colour) {
-        for (int i = 0; i < PIECES; i++) {
-            double a = 2 * Math.PI * i / PIECES;
-            double b = 2 * Math.PI * (i + 1) / PIECES;
-            piece(shapes, matrix, a, b, radius, z, colour);
-        }
+        ScreenDrawing.disc(shapes, matrix, 0, 0, radius, PIECES, z, colour);
     }
 
     /** One piece of a disc, from one angle round to another (clockwise from up, as a compass goes). */
@@ -143,17 +139,6 @@ public class TowerRadarRenderer implements BlockEntityRenderer<TowerRadarBlockEn
             return;
         }
         double heading = Math.toRadians(contact.heading());
-        line(shapes, matrix, x, y, x + Math.sin(heading) * HEADING, y + Math.cos(heading) * HEADING, 0.003F, 0.003F, colour);
-    }
-
-    /** A straight line from one point to another, this wide. */
-    private static void line(VertexConsumer shapes, Matrix4f matrix, double x0, double y0, double x1, double y1, float z, float width, int colour) {
-        double length = Math.max(1e-6, Math.hypot(x1 - x0, y1 - y0));
-        double nx = -(y1 - y0) / length * width / 2;
-        double ny = (x1 - x0) / length * width / 2;
-        ScreenDrawing.vertex(shapes, matrix, x0 + nx, y0 + ny, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, x0 - nx, y0 - ny, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, x1 - nx, y1 - ny, z, colour);
-        ScreenDrawing.vertex(shapes, matrix, x1 + nx, y1 + ny, z, colour);
+        ScreenDrawing.line(shapes, matrix, x, y, x + Math.sin(heading) * HEADING, y + Math.cos(heading) * HEADING, 0.003F, 0.003F, colour);
     }
 }

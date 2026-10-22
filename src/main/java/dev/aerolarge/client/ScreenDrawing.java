@@ -42,6 +42,29 @@ final class ScreenDrawing {
         vertex(shapes, matrix, x0, y1, z, colour);
     }
 
+    /** A filled disc round a middle, as a fan of this many pieces. */
+    static void disc(VertexConsumer shapes, Matrix4f matrix, double x, double y, double radius, int pieces, float z, int colour) {
+        for (int i = 0; i < pieces; i++) {
+            double a = 2 * Math.PI * i / pieces;
+            double b = 2 * Math.PI * (i + 1) / pieces;
+            vertex(shapes, matrix, x, y, z, colour);
+            vertex(shapes, matrix, x + Math.sin(b) * radius, y + Math.cos(b) * radius, z, colour);
+            vertex(shapes, matrix, x + Math.sin(a) * radius, y + Math.cos(a) * radius, z, colour);
+            vertex(shapes, matrix, x, y, z, colour);
+        }
+    }
+
+    /** A straight line from one point to another, this wide. */
+    static void line(VertexConsumer shapes, Matrix4f matrix, double x0, double y0, double x1, double y1, float z, float width, int colour) {
+        double length = Math.max(1e-6, Math.hypot(x1 - x0, y1 - y0));
+        double nx = -(y1 - y0) / length * width / 2;
+        double ny = (x1 - x0) / length * width / 2;
+        vertex(shapes, matrix, x0 + nx, y0 + ny, z, colour);
+        vertex(shapes, matrix, x0 - nx, y0 - ny, z, colour);
+        vertex(shapes, matrix, x1 - nx, y1 - ny, z, colour);
+        vertex(shapes, matrix, x1 + nx, y1 + ny, z, colour);
+    }
+
     /** Text placed against x as aligned and centred on y, at a size in blocks per font pixel. */
     static void text(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, float z, float size, int colour, Align align) {
         Label.of(font, text, x, y, size, colour, align).draw(font, pose, buffers, z);

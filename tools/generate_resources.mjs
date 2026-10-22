@@ -793,20 +793,40 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   });
   write(`assets/${ID}/blockstates/wind_sock.json`, { variants: { "": { model: `${ID}:block/wind_sock` } } });
   write(`assets/${ID}/models/item/wind_sock.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/wind_sock` } });
-  dropsItself("wind_sock");
-  cubes.wind_sock = null;
+  // The weather screen: the radar screen's monitor and stand; its report is drawn on it by AtisScreenRenderer.
+  write(`assets/${ID}/models/block/atis_screen.json`, { parent: `${ID}:block/tower_radar` });
+  facing("atis_screen");
+  write(`assets/${ID}/models/item/atis_screen.json`, { parent: `${ID}:block/atis_screen` });
+  for (const name of ["wind_sock", "atis_screen"]) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
 }
 // The tower's instruments stand on the ground, never aboard an airliner (see GROUND).
 function towerInstrumentsGround() {
-  return ["wind_sock"];
+  return ["wind_sock", "atis_screen"];
 }
-// A wind sock: orange and white wool flown from iron bars.
+// A wind sock: orange and white wool flown from iron bars. A weather screen: a clock behind blue glass, on iron.
 function towerInstrumentsRecipes() {
   shaped("wind_sock", ["IOW", "I  ", "I  "], { I: "minecraft:iron_bars", O: "minecraft:orange_wool", W: "minecraft:white_wool" }, 1);
+  shaped("atis_screen", ["GGG", "GCG", "IRI"], { G: "minecraft:blue_stained_glass_pane", C: "minecraft:clock", I: "minecraft:iron_ingot", R: "minecraft:redstone" }, 1);
 }
 function towerInstrumentsLang() {
   return {
     "block.aerolarge.wind_sock": "Wind Sock",
+    "block.aerolarge.atis_screen": "Weather Screen",
+    "screen.aerolarge.atis.title": "ATIS",
+    "screen.aerolarge.atis.information": "INFORMATION",
+    "screen.aerolarge.atis.wind": "WIND",
+    "screen.aerolarge.atis.wind.value": "%s° %sKT",
+    "screen.aerolarge.atis.wind.calm": "CALM",
+    "screen.aerolarge.atis.visibility": "VISIBILITY",
+    "screen.aerolarge.atis.visibility.km": "%sKM",
+    "screen.aerolarge.atis.visibility.metres": "%sM",
+    "weather.aerolarge.clear": "CLEAR",
+    "weather.aerolarge.rain": "RAIN",
+    "weather.aerolarge.snow": "SNOW",
+    "weather.aerolarge.thunder": "STORM",
   };
 }
 

@@ -8,6 +8,8 @@ import dev.aerolarge.block.AirstairCallButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlock;
 import dev.aerolarge.block.AirstairStepBlock;
 import dev.aerolarge.block.AisleCarpetBlock;
+import dev.aerolarge.block.AtisScreenBlock;
+import dev.aerolarge.block.AtisScreenBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
@@ -632,6 +634,13 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WindSockBlockEntity>> WIND_SOCK_ENTITY =
         BLOCK_ENTITIES.register("wind_sock", () -> BlockEntityType.Builder.of(WindSockBlockEntity::new, WIND_SOCK.get()).build(null));
     public static final DeferredItem<BlockItem> WIND_SOCK_ITEM = ITEMS.registerSimpleBlockItem(WIND_SOCK);
+    /** The tower's weather screen, reporting the airfield's weather under its information letter. */
+    public static final DeferredBlock<AtisScreenBlock> ATIS_SCREEN = BLOCKS.registerBlock(
+        "atis_screen", AtisScreenBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AtisScreenBlockEntity>> ATIS_SCREEN_ENTITY =
+        BLOCK_ENTITIES.register("atis_screen", () -> BlockEntityType.Builder.of(AtisScreenBlockEntity::new, ATIS_SCREEN.get()).build(null));
+    public static final DeferredItem<BlockItem> ATIS_SCREEN_ITEM = ITEMS.registerSimpleBlockItem(ATIS_SCREEN);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1353,7 +1362,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("airport", List.of(
             JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM,
-            WIND_SOCK_ITEM
+            ATIS_SCREEN_ITEM, WIND_SOCK_ITEM
         ))
     );
 

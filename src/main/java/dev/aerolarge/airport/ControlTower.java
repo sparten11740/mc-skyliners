@@ -670,12 +670,13 @@ public final class ControlTower {
     }
 
     /**
-     * The tower's instruments, once the consoles and the lights are in: a wind sock (see {@link Wind}) on a mast of its
-     * own at the middle of the roof's west rim, clear of the antennas and their obstruction lights, high enough that a
-     * limp sock hangs over the roof without touching it, and out at the edge where the walkway and the ground below see
-     * it.
+     * The tower's instruments, once the consoles and the lights are in: the weather screen on the east console, facing
+     * the second radar screen across the cab; and a wind sock (see {@link Wind}) on a mast of its own at the middle of
+     * the roof's west rim, clear of the antennas and their obstruction lights, high enough that a limp sock hangs over
+     * the roof without touching it, and out at the edge where the walkway and the ground below see it.
      */
     private void instruments() {
+        set(CAB - 1, KNEE + 1, 0, facing(AerolargeRegistry.ATIS_SCREEN.get(), Direction.WEST));
         for (int y = ROOF + 1; y < WIND_SOCK_Y; y++) {
             set(-WALKWAY, y, 0, Blocks.LIGHTNING_ROD.defaultBlockState());
         }

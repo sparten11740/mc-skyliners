@@ -34,7 +34,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class TowerRadarBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<TowerRadarBlock> CODEC = simpleCodec(TowerRadarBlock::new);
     /** The stand and the monitor on it, drawn facing north: the screen's face is the monitor's north side. */
-    private static final Map<Direction, VoxelShape> SHAPES = TurnedShapes.of(Shapes.or(Block.box(3, 0, 6, 13, 3, 11), Block.box(0.5, 3, 6, 15.5, 15, 10)));
+    static final Map<Direction, VoxelShape> SHAPES = TurnedShapes.of(Shapes.or(Block.box(3, 0, 6, 13, 3, 11), Block.box(0.5, 3, 6, 15.5, 15, 10)));
 
     public TowerRadarBlock(Properties properties) {
         super(properties);

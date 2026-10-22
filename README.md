@@ -998,6 +998,13 @@ orange-and-white striped sock on a short steel pole that points the way the wind
 half out in rain and straight out in a storm, fluttering as it goes. The control tower flies one from a short mast at the
 middle of its roof's west rim.
 
+A **Weather Screen** (craftable from blue glass panes, a clock, iron and redstone) is the airfield's ATIS, on the radar
+screen's monitor: "INFORMATION" and the report's letter, which steps on from A to Z and round again each time the sky
+changes, the time of day as a 24-hour clock, a picture of the sky (the sun, or the moon at night; rain, snow where it is
+cold, or a storm) with its word, the wind on a compass dial with its bearing and knots, or calm, and how far one sees:
+ten kilometres when it is clear, less in rain, snow and storms. The control tower has one on its east console, facing
+the second radar screen across the cab.
+
 ### Runways
 
 The **Runway Blueprint** (in the creative tab with the airliners') lays down a runway for the airliner: used on the

@@ -11,6 +11,7 @@ import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AirstairRenderer;
 import dev.aerolarge.client.AtcHeadset;
+import dev.aerolarge.client.AtisScreenRenderer;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BasketballRenderer;
 import dev.aerolarge.client.BlueIceChunkRenderer;
@@ -187,6 +188,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.TOWER_RADAR_ENTITY.get(), context -> new TowerRadarRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_PANEL_ENTITY.get(), context -> new LiftPanelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.WIND_SOCK_ENTITY.get(), context -> new WindSockRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ATIS_SCREEN_ENTITY.get(), context -> new AtisScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
