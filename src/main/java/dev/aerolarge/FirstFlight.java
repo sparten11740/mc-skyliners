@@ -41,7 +41,9 @@ public enum FirstFlight {
     /** Found the rubber ducks hidden aboard a furnished airliner: "duck_1" and on, one criterion each. */
     DUCK_HUNT,
     /** Took each of a coffee machine's drinks from under its spout: one criterion each, named as the drink. */
-    BARISTA;
+    BARISTA,
+    /** Aboard an airliner as its autopilot landed it on a runway laid down from a blueprint, and stopped. */
+    ON_THE_NUMBERS;
 
     /** Grants the player this milestone, if they have not got it already. */
     public void award(ServerPlayer player) {

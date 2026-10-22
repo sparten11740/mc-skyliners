@@ -296,6 +296,11 @@ Not lined up with the strip as it comes to flare, it goes around and tries again
 in goes around too: with Land at the Pin still lit it looks again and comes back round; switched off, it circles the
 pin instead, though below the flare's 15 blocks switching it off is too late: it lands.
 
+Where a runway laid down from its blueprint (see Runways) lies in the circle round the pin, it has nothing to look for:
+as soon as it has measured itself it lands on that runway, from whichever end it comes to with less turning, touching
+down just past the threshold and braking to a stop on the centre line. Everyone aboard as it stops there earns On the
+Numbers.
+
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the
@@ -970,6 +975,22 @@ kept with the world, in the dimension's `data` folder (`aerolarge_radar.dat`). P
 screen are sent the land surveyed round it, a few chunks a tick, and it goes into their own maps: the radar's, the
 autopilot's (see Autopilot) and the passenger screens' route map.
 
+### Runways
+
+The **Runway Blueprint** (in the creative tab with the airliners') lays down a runway for the airliner: used on the
+ground, the runway starts two blocks past the block you click, centred on it, and runs away the way you face. It is
+sized for the airliner at the scale it is built at: as wide as its wingspan with a shoulder either side, and twice as
+long as it needs to take off on the autopilot (its roll up to `rotateSpeed`, the moment from there to lifting off and
+its own length): at the default scale 780 blocks long and 179 wide. It takes the place of whatever is in the layer it is
+laid in, clears everything above it as high as the airliner's fin and a few blocks more, and fills in holes under it.
+It is painted as an airport's runway is: grey asphalt between lighter shoulders, white edge lines and a dashed centre
+line with lights set into it, and at either end the piano keys, the runway's number (its heading in tens of degrees,
+09, 18, 27 or 36, the far end the reciprocal) and the aiming point's bars, all sized to the runway. White edge lights run
+down both sides, green lights across its start and red across its far end. It goes down a few chunks a tick, so even
+the land it crosses that nobody has seen yet is generated without the server stalling, and it says when it is done.
+To line an airliner up on it, use the airliner's blueprint at the runway's far end, looking back down it. A runway laid
+down is remembered with the world, for the autopilot to land on (see Autopilot).
+
 ### Flying it
 
 The finished airliner is covered in Create's Super Glue, in overlapping stretches the Physics Assembler can find from
@@ -992,7 +1013,8 @@ out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into
 or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), the three golden suitcases
 hidden in the hold (Lost and Found), a vacuum toilet flushed in flight, its blue ice let go 15 metres or more above
 the ground (Blue Ice), the five rubber ducks hidden aboard (Duck Hunt), and an espresso, a cappuccino and a mocha
-taken from a coffee machine (Barista).
+taken from a coffee machine (Barista), and aboard as the autopilot lands on a runway laid down from its blueprint and
+stops there (On the Numbers).
 
 ### Settings
 

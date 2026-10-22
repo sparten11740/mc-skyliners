@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.FirstFlight;
 import dev.aerolarge.cabin.Decompression;
 import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.SableFlight;
@@ -213,7 +214,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * The most the speed it holds is changed by, in blocks a second every second: about a third of the pull of gravity,
      * what an airliner's passengers feel on the runway, so nobody standing is thrown down the cabin.
      */
-    private static final double MAX_ACCELERATION = 3;
+    public static final double MAX_ACCELERATION = 3;
     /** Engine signal split per degree off the heading, and the most it splits by. */
     private static final double YAW_GAIN = 0.4;
     private static final int YAW_SPLIT = 4;
@@ -789,7 +790,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * lands, or goes around to try again.
      */
     private void followPin(ServerLevel level, SableFlight.State state, double radio) {
-        pinLanding.aim(Mth.floor(orbitX), Mth.floor(orbitZ));
+        pinLanding.aim(Mth.floor(orbitX), Mth.floor(orbitZ), orbitRadius);
         PinLanding.Event event = pinLanding.tick(level, worldPosition, nose(), state, radio, wheels(state), approachSpeed());
         switch (event) {
             case FOUND -> foundRunway(level, state);
@@ -1037,7 +1038,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         lastClimb = climb;
         lastHeading = state.heading();
         if (rollingOut && state.velocity().length() < STOPPED) {
-            // Stopped after landing: parked, and handed back to the flight deck.
+            // Stopped after landing: parked, and handed back to the flight deck; on a laid runway, on the numbers.
+            if (pinLanding.laid()) {
+                Aboard.players(this).forEach(FirstFlight.ON_THE_NUMBERS::award);
+            }
             park(level);
             disengage();
             tell(level, state.position(), Component.translatable("message.aerolarge.autopilot.landed"));
@@ -1344,6 +1348,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         Runway runway = pinLanding.runway();
         if (runway != null) {
             runway.save(tag, "Runway");
+            tag.putBoolean("LaidRunway", pinLanding.laid());
             tag.putString("Approach", pinLanding.stage().name());
         }
         tag.putString("Phase", phase.name());
@@ -1410,7 +1415,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         PinLanding.Stage stage = parse(PinLanding.Stage.class, tag.getString("Approach"), PinLanding.Stage.ENTRY);
-        pinLanding.resume(runway, stage, Mth.floor(orbitX), Mth.floor(orbitZ));
+        pinLanding.resume(runway, tag.getBoolean("LaidRunway"), stage, Mth.floor(orbitX), Mth.floor(orbitZ));
     }
 
     private static <E extends Enum<E>> E parse(Class<E> type, String name, E fallback) {

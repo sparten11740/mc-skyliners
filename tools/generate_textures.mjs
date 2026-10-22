@@ -670,6 +670,12 @@ function airlinerFromAbove(x, y) {
   const tail = out <= 2.5 && y >= 10.5 + out * 0.35 && y <= 11.5 + out * 0.35;
   return fuselage || wings || tail;
 }
+// A runway from above, running up the sheet: its edges, its dashed centre line and the piano keys at either end.
+function runwayFromAbove(x, y) {
+  if (x < 4 || x > 11 || y < 3 || y > 12) return false;
+  const keys = (y === 3 || y === 12) && x % 2 === 0;
+  return x === 4 || x === 11 || keys || (x === 7 && y % 3 !== 0);
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -680,6 +686,7 @@ function towerFromTheSide(x, y) {
 blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
+blueprint("runway_blueprint", false, runwayFromAbove);
 
 // Skydiving. The jump light: a lens dark, red or green, brighter in the middle. The jump switch: a dark panel with a
 // red and a green lamp, the one in use lit. The rack: a frame holding packed parachutes under a parachute sign, and the

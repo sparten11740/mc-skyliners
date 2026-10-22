@@ -745,6 +745,7 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   facing("tower_radar");
   write(`assets/${ID}/models/item/tower_radar.json`, { parent: `${ID}:block/tower_radar` });
   write(`assets/${ID}/models/item/control_tower_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/control_tower_blueprint` } });
+  write(`assets/${ID}/models/item/runway_blueprint.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/runway_blueprint` } });
   for (const name of ["transponder", "tower_radar"]) {
     dropsItself(name);
     cubes[name] = null;
@@ -4537,6 +4538,7 @@ const FIRST_FLIGHT = [
   ["cleared_for_takeoff", "root", "thrust_lever", "task", "Cleared for Takeoff", "Be aboard an airliner as it climbs away from the runway"],
   ["buckle_up", "root", "seatbelt_sign", "task", "Buckle Up", "Try to get up from your seat while the seatbelt signs are on"],
   ["butter_landing", "cleared_for_takeoff", "landing_gear_tire", "challenge", "Butter Landing", "Be aboard an airliner touching down so gently you hardly feel it"],
+  ["on_the_numbers", "cleared_for_takeoff", "runway_blueprint", "goal", "On the Numbers", "Be aboard an airliner as its autopilot lands it on a runway you laid down, flying to a pin by it"],
   ["swish", "cleared_for_takeoff", "basketball", "challenge", "Swish at 30,000 Feet", "Score a basket aboard an airliner in flight"],
   ["perfect_jump", "cleared_for_takeoff", "parachute", "goal", "Perfect Jump", "Land your parachute within a block of a landing target"],
   ["special_delivery", "cleared_for_takeoff", "cargo_crate", "goal", "Special Delivery", "Drop a care package within 10 blocks of a burning signal flare"],
@@ -4865,6 +4867,11 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",
   "item.aerolarge.control_tower_blueprint.usage": "Use on the ground: the tower goes up ahead of you, its door toward you. Sneak to build through anything in the way.",
   "message.aerolarge.control_tower.built": "The control tower is up. Take the lift or the stairs up to the cab: its transponder shows it on every autopilot's map.",
+  "item.aerolarge.runway_blueprint": "Runway Blueprint",
+  "item.aerolarge.runway_blueprint.tooltip": "A lit runway for the airliner, twice as long as it needs to take off",
+  "item.aerolarge.runway_blueprint.usage": "Use on the ground: the runway runs away the way you face, replacing whatever is there.",
+  "message.aerolarge.runway.building": "Laying the runway: %s%%",
+  "message.aerolarge.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
   "screen.aerolarge.radar.title": "Tower Radar",

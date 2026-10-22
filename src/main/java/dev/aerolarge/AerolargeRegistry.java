@@ -159,6 +159,7 @@ import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ControlTowerBlueprintItem;
+import dev.aerolarge.item.RunwayBlueprintItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
@@ -1278,6 +1279,10 @@ public final class AerolargeRegistry {
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
         "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+    /** A runway for the airliner, twice as long as it needs to take off. */
+    public static final DeferredItem<RunwayBlueprintItem> RUNWAY_BLUEPRINT = ITEMS.register(
+        "runway_blueprint", () -> new RunwayBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
 
     /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
     public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
@@ -1285,7 +1290,7 @@ public final class AerolargeRegistry {
 
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
-        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, CONTROL_TOWER_BLUEPRINT)),
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,

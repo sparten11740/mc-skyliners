@@ -1,5 +1,6 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.airport.Runways;
 import dev.aerolarge.compat.SableFlight;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -16,7 +17,9 @@ import net.minecraft.world.phys.Vec3;
  *     back and forth, so that the land round it comes to be loaded (the game only loads the land near the players
  *     aboard, and a circle round the pin, which an airliner flies wide, would never pass over it). Meanwhile the land
  *     is surveyed as it comes (see {@link GroundSurvey}), the airliner measured (see {@link AirlinerShape}), and a
- *     runway looked for near the pin (see {@link RunwaySearch}).</li>
+ *     runway looked for near the pin (see {@link RunwaySearch}). Where a runway laid down from its blueprint lies in the
+ *     circle round the pin (see {@link Runways}), there is nothing to look for: it lands on that, from whichever end
+ *     takes less turning to come to, as soon as it has measured itself.</li>
  *     <li>Entry: with a runway found, it slows to its approach speed and flies to a point far back along the runway's
  *     centre line, coming down to {@link #APPROACH_HEIGHT} over the runway on the way, and never lower than
  *     {@link #TERRAIN_CLEARANCE} over the land under it. Coming from the runway's side of that point, it first flies
@@ -50,6 +53,8 @@ final class PinLanding {
     record Guide(double heading, double altitude, double climb, double aboveRunway, boolean onFinal) {
     }
 
+    /** How far past a laid runway's threshold its wheels touch down at the earliest, in blocks. */
+    private static final double THRESHOLD_MARGIN = 4;
     /** Within this many blocks of the pin, searching, it has flown over it, and flies on past it the way it goes. */
     private static final double OVERHEAD = 150;
     /** How far past the pin, searching, it flies on before it turns back to fly over it again, in blocks. */
@@ -91,6 +96,10 @@ final class PinLanding {
     /** The pin, in world blocks; none until aimed. */
     private int pinX = Integer.MIN_VALUE;
     private int pinZ = Integer.MIN_VALUE;
+    /** The radius of the circle round the pin, in blocks, within which a laid runway is landed on. */
+    private double circle;
+    /** Whether the runway it lands on was laid down from its blueprint, rather than found in the open. */
+    private boolean laid;
     /** Searching: whether it has flown over the pin, whether it flies on away from it now, and on what heading. */
     private boolean overflown;
     private boolean outbound;
@@ -115,6 +124,11 @@ final class PinLanding {
         return runway;
     }
 
+    /** Whether the runway it lands on was laid down from its blueprint. */
+    boolean laid() {
+        return laid;
+    }
+
     /** Whether it is landing on the runway: from the flare on, until it has stopped. */
     boolean landing() {
         return stage == Stage.LANDING && runway != null;
@@ -127,9 +141,10 @@ final class PinLanding {
 
     /**
      * Lands near a pin: if it is a new one, from the start, searching; and surveys the land round it, starting anew if
-     * the pin is in another chunk.
+     * the pin is in another chunk; a laid runway within the circle of this radius round it is landed on.
      */
-    void aim(int x, int z) {
+    void aim(int x, int z, double radius) {
+        circle = radius;
         ground.aim(x, z);
         if (x == pinX && z == pinZ) {
             return;
@@ -145,12 +160,14 @@ final class PinLanding {
     void abandon() {
         stage = Stage.SEARCHING;
         runway = null;
+        laid = false;
         toldNowhere = false;
         search.restart();
     }
 
-    /** Takes up a landing again where it was saved: on a runway near a pin, at a stage. */
-    void resume(Runway saved, Stage at, int x, int z) {
+    /** Takes up a landing again where it was saved: on a runway near a pin (a laid one or not), at a stage. */
+    void resume(Runway saved, boolean wasLaid, Stage at, int x, int z) {
+        laid = wasLaid;
         pinX = x;
         pinZ = z;
         runway = saved;
@@ -171,11 +188,52 @@ final class PinLanding {
             startEntry(state, speed);
         }
         return switch (stage) {
-            case SEARCHING -> search(state, speed);
+            case SEARCHING -> landOnLaid(level, state, speed) ? Event.FOUND : search(state, speed);
             case ENTRY -> entry(state);
             case FINAL -> fin(state, radio, wheels, speed);
             case LANDING -> Event.NONE;
         };
+    }
+
+    /**
+     * Searching, once it has measured itself: lands on the laid runway in the circle round the pin, if there is one
+     * long enough; whether it does.
+     */
+    private boolean landOnLaid(ServerLevel level, SableFlight.State state, double speed) {
+        if (!shape.measured()) {
+            return false;
+        }
+        Runways.Built built = Runways.near(level, pinX + 0.5, pinZ + 0.5, circle);
+        Runway onto = built != null ? onto(built, state.heading(), speed) : null;
+        if (onto == null) {
+            return false;
+        }
+        runway = onto;
+        laid = true;
+        startEntry(state, speed);
+        return true;
+    }
+
+    /**
+     * Landing on a laid runway: from whichever end it comes to with less turning from the heading it flies, touching
+     * down so its wheels meet the runway, at the earliest, just past the threshold; null if the runway is too short for
+     * the airliner to stop on at this speed.
+     */
+    @Nullable
+    private Runway onto(Runways.Built built, double heading, double speed) {
+        double rollout = RunwayCheck.rollout(speed);
+        double touchdown = RunwayCheck.TOUCHDOWN_SCATTER - shape.gearRear() + THRESHOLD_MARGIN;
+        if (touchdown + RunwayCheck.TOUCHDOWN_SCATTER + rollout + shape.gearFront() > built.length()) {
+            return null;
+        }
+        Direction forward = built.along();
+        double toStart = Math.abs(Mth.wrapDegrees(forward.toYRot() - heading));
+        boolean fromStart = toStart <= Math.abs(Mth.wrapDegrees(forward.getOpposite().toYRot() - heading));
+        Direction way = fromStart ? forward : forward.getOpposite();
+        int fromThreshold = fromStart ? 0 : built.length() - 1;
+        double x = built.start().getX() + 0.5 + forward.getStepX() * fromThreshold + way.getStepX() * touchdown;
+        double z = built.start().getZ() + 0.5 + forward.getStepZ() * fromThreshold + way.getStepZ() * touchdown;
+        return new Runway(x, z, way.toYRot(), built.elevation(), rollout);
     }
 
     /** Searching: back and forth over the pin, and a little more of the search each tick. */
