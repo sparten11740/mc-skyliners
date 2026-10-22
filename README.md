@@ -991,6 +991,13 @@ kept with the world, in the dimension's `data` folder (`aerolarge_radar.dat`). P
 screen are sent the land surveyed round it, a few chunks a tick, and it goes into their own maps: the radar's, the
 autopilot's (see Autopilot) and the passenger screens' route map.
 
+The wind over an airfield drifts slowly round the compass and rises and falls through the day, drawn afresh every
+quarter of a day and eased into from the one before, the same on the server and every client; rain freshens it and a
+thunderstorm makes a gale of it. A **Wind Sock** (craftable from iron bars and orange and white wool) flies with it: an
+orange-and-white striped sock on a short steel pole that points the way the wind blows, hangs limp in a calm, stands
+half out in rain and straight out in a storm, fluttering as it goes. The control tower flies one from a short mast at the
+middle of its roof's west rim.
+
 ### Runways
 
 The **Runway Blueprint** (in the creative tab with the airliners') lays down a runway for the airliner: used on the

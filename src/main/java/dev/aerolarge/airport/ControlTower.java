@@ -88,6 +88,8 @@ public final class ControlTower {
     private static final int MAST_X = 5;
     private static final int MAST_Z = 4;
     private static final int MAST_HEIGHT = 5;
+    /** The wind sock's row, on a short mast at the middle of the roof's west rim. */
+    private static final int WIND_SOCK_Y = ROOF + 3;
     /**
      * The lift: its cabin's middle, the cabin three blocks square inside a glass core a block thicker all round; the
      * row the pulley and its motor sit in, at the top of the core under the cab's floor.
@@ -160,6 +162,7 @@ public final class ControlTower {
         tower.consoles();
         tower.lighting();
         tower.walkwayDoor();
+        tower.instruments();
         tower.headRoom();
         tower.joinRailings();
         return tower;
@@ -664,6 +667,19 @@ public final class ControlTower {
                 return;
             }
         }
+    }
+
+    /**
+     * The tower's instruments, once the consoles and the lights are in: a wind sock (see {@link Wind}) on a mast of its
+     * own at the middle of the roof's west rim, clear of the antennas and their obstruction lights, high enough that a
+     * limp sock hangs over the roof without touching it, and out at the edge where the walkway and the ground below see
+     * it.
+     */
+    private void instruments() {
+        for (int y = ROOF + 1; y < WIND_SOCK_Y; y++) {
+            set(-WALKWAY, y, 0, Blocks.LIGHTNING_ROD.defaultBlockState());
+        }
+        set(-WALKWAY, WIND_SOCK_Y, 0, AerolargeRegistry.WIND_SOCK.get().defaultBlockState());
     }
 
     private static BlockState facing(Block block, Direction facing) {

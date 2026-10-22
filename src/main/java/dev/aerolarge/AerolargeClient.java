@@ -52,6 +52,7 @@ import dev.aerolarge.client.TowerRadarRenderer;
 import dev.aerolarge.client.TransponderRenderer;
 import dev.aerolarge.client.TrolleyRenderer;
 import dev.aerolarge.client.VeilLights;
+import dev.aerolarge.client.WindSockRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -185,6 +186,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.TRANSPONDER_ENTITY.get(), context -> new TransponderRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TOWER_RADAR_ENTITY.get(), context -> new TowerRadarRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_PANEL_ENTITY.get(), context -> new LiftPanelRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.WIND_SOCK_ENTITY.get(), context -> new WindSockRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());

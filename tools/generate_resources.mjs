@@ -783,6 +783,33 @@ function consoleModule(name, textures, top, viewedFromNorth, parts) {
   }
 }
 
+// The control tower's instruments (see ControlTower.instruments). The wind sock: a slim steel pole with a collar round
+// its top; the sock flying from the collar is drawn by WindSockRenderer.
+{
+  write(`assets/${ID}/models/block/wind_sock.json`, {
+    parent: "minecraft:block/block",
+    textures: { pole: `${ID}:block/wind_sock_pole`, particle: `${ID}:block/wind_sock` },
+    elements: [solid([7.5, 0, 7.5], [8.5, 16, 8.5], "#pole"), solid([7, 13, 7], [9, 15, 9], "#pole")],
+  });
+  write(`assets/${ID}/blockstates/wind_sock.json`, { variants: { "": { model: `${ID}:block/wind_sock` } } });
+  write(`assets/${ID}/models/item/wind_sock.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/wind_sock` } });
+  dropsItself("wind_sock");
+  cubes.wind_sock = null;
+}
+// The tower's instruments stand on the ground, never aboard an airliner (see GROUND).
+function towerInstrumentsGround() {
+  return ["wind_sock"];
+}
+// A wind sock: orange and white wool flown from iron bars.
+function towerInstrumentsRecipes() {
+  shaped("wind_sock", ["IOW", "I  ", "I  "], { I: "minecraft:iron_bars", O: "minecraft:orange_wool", W: "minecraft:white_wool" }, 1);
+}
+function towerInstrumentsLang() {
+  return {
+    "block.aerolarge.wind_sock": "Wind Sock",
+  };
+}
+
 // Buckling up. The seatbelt sign, dark or lit: lit, it glows at full brightness whatever the light around, a backlit
 // sign that shows in a dark cabin without lighting it up. The seatbelt switch, a module of the centre console facing
 // the pilots: its lamp dark or lit, and a toggle in front of it, pushed away when on.
@@ -4407,7 +4434,7 @@ write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airli
 // Climbed as a ladder is.
 write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
-const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk"];
+const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
@@ -4571,6 +4598,7 @@ galleyUnitRecipes();
 planterRecipes();
 barRecipes();
 dutyFreeKioskRecipes();
+towerInstrumentsRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
 // "done", that only the mod grants, when it happens (see FirstFlight).
@@ -4999,6 +5027,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...barLang(),
   ...dutyFreeKioskLang(),
   ...laserPointerLang(),
+  ...towerInstrumentsLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

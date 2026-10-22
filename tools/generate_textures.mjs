@@ -803,6 +803,26 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "tower_radar_casing", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 2);
 }
 
+// The wind sock. The sock's cloth, laid out flat along its length (x from the mouth to the tail, y round it): five
+// bands, orange at the mouth and the tail and white between, as an airfield's are, a faint weave across it. Its pole:
+// pale galvanised steel, shaded down one side. In the hand: the pole with the sock flying out from its top.
+{
+  const SOCK_ORANGE = [0xf0, 0x6a, 0x1e];
+  const SOCK_WHITE = [0xf2, 0xf2, 0xee];
+  const band = (x) => Math.min(4, Math.floor(x / 3.2)) % 2 === 0 ? SOCK_ORANGE : SOCK_WHITE;
+  texture(blockOutput, "wind_sock", (x, y) => {
+    const [r, g, b] = band(x);
+    return y % 4 === 3 ? [r - 14, g - 14, b - 14] : [r, g, b];
+  }, 3);
+  texture(blockOutput, "wind_sock_pole", (x) => (x < 5 ? CHROME : x < 11 ? STEEL : STEEL_DARK), 2);
+  texture(itemOutput, "wind_sock", (x, y) => {
+    if (x >= 2 && x <= 3 && y >= 2) return x === 2 ? CHROME : STEEL_DARK;
+    const half = 2.5 - (x - 4) * 0.15;
+    if (x >= 4 && x <= 14 && Math.abs(y - 4.5) <= half) return band(Math.round((x - 4) * 1.6));
+    return CLEAR;
+  }, 0);
+}
+
 // The motion sensor over an automatic door: the face of a slim white housing (the model shows only x 3-12, y 6-9 of
 // it), seamed at its ends, a band of dark smoked lens across it with a glint, and beside the lens a little lamp, dark,
 // or lit red while it sees someone. Its sides and top are plain white.

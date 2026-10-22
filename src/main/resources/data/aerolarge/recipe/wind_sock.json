@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "IOW",
+    "I  ",
+    "I  "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "O": {
+      "item": "minecraft:orange_wool"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "result": {
+    "id": "aerolarge:wind_sock",
+    "count": 1
+  }
+}

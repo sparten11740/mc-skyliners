@@ -149,6 +149,8 @@ import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WcSignBlock;
 import dev.aerolarge.block.WcSignBlockEntity;
+import dev.aerolarge.block.WindSockBlock;
+import dev.aerolarge.block.WindSockBlockEntity;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
@@ -623,6 +625,13 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftPanelBlockEntity>> LIFT_PANEL_ENTITY =
         BLOCK_ENTITIES.register("lift_panel", () -> BlockEntityType.Builder.of(LiftPanelBlockEntity::new, LIFT_PANEL.get()).build(null));
     public static final DeferredItem<BlockItem> LIFT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(LIFT_PANEL);
+    /** The wind sock on the control tower's roof, flying with the wind its weather screen reports. */
+    public static final DeferredBlock<WindSockBlock> WIND_SOCK = BLOCKS.registerBlock(
+        "wind_sock", WindSockBlock::new, metal(MapColor.COLOR_ORANGE).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WindSockBlockEntity>> WIND_SOCK_ENTITY =
+        BLOCK_ENTITIES.register("wind_sock", () -> BlockEntityType.Builder.of(WindSockBlockEntity::new, WIND_SOCK.get()).build(null));
+    public static final DeferredItem<BlockItem> WIND_SOCK_ITEM = ITEMS.registerSimpleBlockItem(WIND_SOCK);
 
     /** The jet bridge at the terminal, reaching out to an airliner's door. */
     public static final DeferredBlock<JetBridgeBlock> JET_BRIDGE = BLOCKS.registerBlock("jet_bridge", JetBridgeBlock::new, metal(MapColor.COLOR_GRAY));
@@ -1343,7 +1352,8 @@ public final class AerolargeRegistry {
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
         new TabSection("airport", List.of(
-            JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM
+            JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM,
+            WIND_SOCK_ITEM
         ))
     );
 

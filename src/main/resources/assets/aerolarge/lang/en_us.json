@@ -528,6 +528,7 @@
   "block.aerolarge.duty_free_display": "Duty-Free Display",
   "block.aerolarge.awning": "Awning",
   "item.aerolarge.laser_pointer": "Laser Pointer",
+  "block.aerolarge.wind_sock": "Wind Sock",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",
