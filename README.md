@@ -216,6 +216,20 @@ so everyone can get up. Announcements never talk over each other: one asked
 for while another plays waits for it to end, and the same one is not made again within a minute, however often the
 buttons are pressed.
 
+Overhead, hung from the ceiling over the centre console between the seats, is the announcement panel: nine tiles,
+three by three, each making one announcement in the same voice when pressed (use it), for young pilots too, since every
+tile is a big picture first and its name only small under it. Read from the seats, row by row in the order of a flight:
+Welcome (someone waving hello), Take-off (the airliner climbing off a runway; the autopilot's own announcement),
+Seatbelts (a cloud over bumpy air and a buckled belt: bumpy air ahead, seatbelt signs on), Snacks (a cup and a
+cookie: drinks and snacks are coming), Look out (a cabin window onto the sky and mountains), Pool & gym (a basketball
+over the pool: seatbelt signs off, the pool and the gym open), Sleep (the moon and stars: the cabin lights go down to
+their night glow), Landing (the airliner coming down to a runway) and Arrival (a heart over the parked airliner). A
+tile glows in its colour while it can be pressed, lights up and pulses while its announcement plays, blinks while it
+waits for the flight deck's voice to be free, and greys out while another is playing and for a minute after its own.
+An Announcement Panel can be crafted and put up in your own builds too, against the underside of a block, its middle
+tile where you put it and its top row nearest you as you face; it works the nearest airliner's autopilot within 24
+blocks.
+
 Air traffic control talks to the airliner over the flight deck's radio, calling it "Aerolarge three eight zero": a
 man's voice, so it is never taken for the flight deck's own, crackling through a VHF radio's hiss and squelch. Set to
 take off, the autopilot holds the brakes until the tower has cleared it for take-off, a few seconds, and the cabin

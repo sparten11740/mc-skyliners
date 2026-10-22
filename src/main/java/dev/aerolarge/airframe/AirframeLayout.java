@@ -9,6 +9,8 @@ import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairControllerBlockEntity;
 import dev.aerolarge.block.AirstairFlight;
 import dev.aerolarge.block.AirstairStepBlock;
+import dev.aerolarge.block.AnnouncementPanelBlock;
+import dev.aerolarge.block.AnnouncementPanelBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
@@ -144,6 +146,13 @@ public final class AirframeLayout {
     private static final int COCKPIT_DOOR_LEFT = -1;
     /** How many blocks of standing room the flight deck keeps under the tail camera display. */
     private static final int TAIL_CAMERA_DISPLAY_HEADROOM = 2;
+    /**
+     * How many blocks of standing room the flight deck keeps under the announcement panel: enough to walk under, and
+     * low enough that from either pilot's seat it is within reach overhead.
+     */
+    private static final int ANNOUNCEMENT_PANEL_HEADROOM = 3;
+    /** How many rows of open space over the announcement panel, at most, are boxed in up to the crown. */
+    private static final int ANNOUNCEMENT_PANEL_MOUNT = 2;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
     /** How far either side of the middle the steps up to the flight deck reach. */
@@ -1405,6 +1414,7 @@ public final class AirframeLayout {
         if (!cameraOnScreen(deck + 1, screenZ)) {
             tailCameraDisplay(deck, seatZ - 1);
         }
+        announcementPanel(deck, seatZ, autopilot);
         // The Physics Assembler out of the way, against the wall behind the captain's seat.
         int assemblerZ = seatZ + 2;
         assemblerSpot = new BlockPos(-openHalfWidth(deck + 1, assemblerZ), deck + 1, assemblerZ);
@@ -1727,6 +1737,75 @@ public final class AirframeLayout {
         for (int column = 0; column < TailCameraDisplayBlock.COLUMNS; column++) {
             // Facing south, the viewer's right is east.
             set(left + column, under, z, display.setValue(TailCameraDisplayBlock.PART, column));
+        }
+    }
+
+    /**
+     * The announcement panel, hung overhead in the middle like an airliner's overhead panel: from the pilots' seats'
+     * row forward over the centre console, {@link #ANNOUNCEMENT_PANEL_HEADROOM} rows of standing room under it, so from
+     * either seat the pilot looks up at it, and in among the crown's skin, clear of the windscreen ahead and of the
+     * screens under it. Where the crown curves up away from the panel's back, the gap over it is boxed in with the
+     * hull's own panels, as far as {@link #ANNOUNCEMENT_PANEL_MOUNT} rows; nothing where the room under the crown is not
+     * open, or the crown is further up. Linked to the autopilot when the airliner is built.
+     */
+    private void announcementPanel(int deck, int seatZ, BlockPos autopilot) {
+        int y = deck + 1 + ANNOUNCEMENT_PANEL_HEADROOM;
+        int left = -(AnnouncementPanelBlock.COLUMNS / 2);
+        int front = seatZ - AnnouncementPanelBlock.ROWS + 1;
+        if (!fitsOver(left, y, front, AnnouncementPanelBlock.COLUMNS, AnnouncementPanelBlock.ROWS)) {
+            return;
+        }
+        for (int z = front; z <= seatZ; z++) {
+            if (mount(left, y + 1, z, AnnouncementPanelBlock.COLUMNS) > ANNOUNCEMENT_PANEL_MOUNT) {
+                return;
+            }
+        }
+        for (int z = front; z <= seatZ; z++) {
+            for (int x = left; x < left + AnnouncementPanelBlock.COLUMNS; x++) {
+                boxIn(x, y + 1, z);
+            }
+        }
+        // Facing the nose, as its viewers do: part 0 is the back row's left, over the seats' row, and the rows go
+        // forward from there, the columns to the right (east, facing north).
+        BlockState panel = AerolargeRegistry.ANNOUNCEMENT_PANEL.get().defaultBlockState().setValue(AnnouncementPanelBlock.FACING, Direction.NORTH);
+        for (int part = 0; part < AnnouncementPanelBlock.COLUMNS * AnnouncementPanelBlock.ROWS; part++) {
+            set(left + part % AnnouncementPanelBlock.COLUMNS, y, seatZ - part / AnnouncementPanelBlock.COLUMNS, panel.setValue(AnnouncementPanelBlock.PART, part));
+        }
+        BlockPos origin = new BlockPos(left, y, seatZ);
+        fittings.put(origin, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AnnouncementPanelBlockEntity linked) {
+                linked.configure(autopilot.subtract(origin).rotate(rotation));
+            }
+        });
+    }
+
+    /** Whether the cabin is open over the whole of a level rectangle at height y, from its corner at station z on. */
+    private boolean fitsOver(int left, int y, int z, int columns, int rows) {
+        for (int row = 0; row < rows; row++) {
+            if (!fits(left, y, z + row, columns, 1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** How many rows of open cabin there are at most over a row of blocks from y up, before the hull closes it. */
+    private int mount(int left, int y, int z, int columns) {
+        int most = 0;
+        for (int x = left; x < left + columns; x++) {
+            int rows = 0;
+            while (isOpen(x, y + rows, z)) {
+                rows++;
+            }
+            most = Math.max(most, rows);
+        }
+        return most;
+    }
+
+    /** Fills the open cabin from y up with the hull's own panels, until the hull closes it. */
+    private void boxIn(int x, int y, int z) {
+        for (int up = y; isOpen(x, up, z); up++) {
+            set(x, up, z, palette.hull());
         }
     }
 
