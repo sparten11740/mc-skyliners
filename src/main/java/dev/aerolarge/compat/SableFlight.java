@@ -3,19 +3,27 @@ package dev.aerolarge.compat;
 import dev.aerolarge.Aboard;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
+import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
+import dev.ryanhcode.sable.neoforge.event.ForgeSableSubLevelContainerReadyEvent;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import dev.ryanhcode.sable.sublevel.SubLevel;
+import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
+import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -27,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector3d;
 
 /**
@@ -221,6 +230,28 @@ public final class SableFlight {
             return inWorld;
         }
         return SABLE ? Access.findAboard(level, point, test) : null;
+    }
+
+    /**
+     * Where a block that stood at a position, in the world or among an assembled airliner's blocks, stands now that an
+     * airliner was assembled round it, or split off the one it was part of: its position among the new airliner's
+     * blocks, at the same place in the world, if the test accepts the block there; null if none does.
+     */
+    @Nullable
+    public static BlockPos movedAboard(Level level, BlockPos pos, Predicate<BlockState> test) {
+        return SABLE ? Access.findAboard(level, Access.toWorld(level, Vec3.atCenterOf(pos)), test) : null;
+    }
+
+    /**
+     * Has the server tell of the airliners assembled and done away with in each dimension, once Sable is installed: in
+     * the tick after any were assembled (or split off another, or loaded), their blocks moved into their plots by then;
+     * and as one goes for good, taken apart or broken up rather than merely unloaded, which positions were in its plot,
+     * which the next airliner assembled may be given.
+     */
+    public static void watch(Consumer<ServerLevel> assembled, BiConsumer<ServerLevel, Predicate<BlockPos>> gone) {
+        if (SABLE) {
+            Access.watch(assembled, gone);
+        }
     }
 
     /**
@@ -445,6 +476,52 @@ public final class SableFlight {
                 }
             }
             return null;
+        }
+
+        static void watch(Consumer<ServerLevel> assembled, BiConsumer<ServerLevel, Predicate<BlockPos>> gone) {
+            NeoForge.EVENT_BUS.addListener(ForgeSableSubLevelContainerReadyEvent.class, event -> {
+                if (event.getLevel() instanceof ServerLevel level) {
+                    event.getContainer().addObserver(new Watch(level, assembled, gone));
+                }
+            });
+        }
+
+        /**
+         * Tells of one dimension's airliners as they are assembled and done away with. An airliner is added before its
+         * blocks move in, so it is told of in the tick after.
+         */
+        private static final class Watch implements SubLevelObserver {
+            private final ServerLevel level;
+            private final Consumer<ServerLevel> assembled;
+            private final BiConsumer<ServerLevel, Predicate<BlockPos>> gone;
+            private boolean added;
+
+            Watch(ServerLevel level, Consumer<ServerLevel> assembled, BiConsumer<ServerLevel, Predicate<BlockPos>> gone) {
+                this.level = level;
+                this.assembled = assembled;
+                this.gone = gone;
+            }
+
+            @Override
+            public void onSubLevelAdded(SubLevel airliner) {
+                added = true;
+            }
+
+            @Override
+            public void onSubLevelRemoved(SubLevel airliner, SubLevelRemovalReason reason) {
+                if (reason == SubLevelRemovalReason.REMOVED) {
+                    LevelPlot plot = airliner.getPlot();
+                    gone.accept(level, pos -> plot.contains(pos.getX() + 0.5, pos.getZ() + 0.5));
+                }
+            }
+
+            @Override
+            public void tick(SubLevelContainer airliners) {
+                if (added) {
+                    added = false;
+                    assembled.accept(level);
+                }
+            }
         }
 
         @Nullable

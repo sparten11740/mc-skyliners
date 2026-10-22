@@ -26,6 +26,7 @@ import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
 import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.client.TransponderScreen;
+import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
@@ -85,6 +86,7 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, HandPlaced::onArrive);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, HandPlaced::onArrive);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerRespawnEvent.class, HandPlaced::onArrive);
+        SableFlight.watch(HandPlaced::assembled, HandPlaced::gone);
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event -> AerolargeCommand.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {

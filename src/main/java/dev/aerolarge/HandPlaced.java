@@ -1,11 +1,13 @@
 package dev.aerolarge;
 
+import dev.aerolarge.compat.SableFlight;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
@@ -37,6 +39,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * so within the use of the blueprint, but the blueprint is no block's item. Each is kept by its position with the
  * block placed there, and only counts while that block still stands there: broken, blown up or replaced, it is
  * forgotten a few seconds later.
+ *
+ * <p>Assembled, an airliner's blocks move out of the world into its plot, so in the tick after one is assembled, and
+ * once a second besides, each block placed by hand that has gone is looked for among an airliner's blocks at the same
+ * place in the world, and followed there if it is found; one split off an assembled airliner into another is followed
+ * the same way (see {@link SableFlight#movedAboard}). An airliner taken apart again loses them: back in the world, the
+ * blocks placed by hand on it are taken for the blueprint's.
  *
  * <p>A client works out on its own whether mining makes progress, so every player is told of those in their dimension
  * (see {@link HandPlacedBlocks}).
@@ -130,19 +138,44 @@ public final class HandPlaced extends SavedData {
         }
     }
 
-    /** Forgets those that have been gone a while; one whose chunk is not loaded is left be until it is. */
+    /** In the tick after airliners were assembled in the dimension: follows the blocks they took along at once. */
+    public static void assembled(ServerLevel level) {
+        of(level).lookOver(level);
+    }
+
+    /**
+     * As an airliner goes for good: forgets the blocks placed by hand in its plot, so that the next airliner given the
+     * plot does not find them among its own.
+     */
+    public static void gone(ServerLevel level, Predicate<BlockPos> inPlot) {
+        HandPlaced hand = of(level);
+        hand.change(level, Map.of(), hand.placed.keySet().stream().filter(inPlot).toList());
+    }
+
+    /**
+     * Follows those whose block has gone into an airliner assembled round it, and forgets the rest that have been gone
+     * a while; one whose chunk is not loaded is left be until it is.
+     */
     private void lookOver(ServerLevel level) {
         long now = level.getGameTime();
+        Map<BlockPos, Block> moved = new HashMap<>();
         List<BlockPos> gone = new ArrayList<>();
         for (Map.Entry<BlockPos, Block> mark : placed.entrySet()) {
             BlockPos pos = mark.getKey();
-            if (stands(level, pos, mark.getValue())) {
+            Block block = mark.getValue();
+            if (stands(level, pos, block)) {
                 goneSince.remove(pos);
+                continue;
+            }
+            BlockPos aboard = SableFlight.movedAboard(level, pos, state -> state.is(block));
+            if (aboard != null) {
+                moved.put(aboard, block);
+                gone.add(pos);
             } else if (now - goneSince.computeIfAbsent(pos, ignored -> now) >= FORGET_AFTER) {
                 gone.add(pos);
             }
         }
-        change(level, Map.of(), gone);
+        change(level, moved, gone);
     }
 
     /** Whether the block still stands at a position; taken as so while its chunk is not loaded, never loaded just to look. */

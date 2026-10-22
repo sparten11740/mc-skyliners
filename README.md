@@ -869,8 +869,8 @@ airliner apart on purpose, or to take back a panel put in the wrong spot.
 Only the blocks the blueprint laid are held so, and only while they are part of an airliner: inside the Super Glue the
 blueprint glues it with, or among its blocks once it is assembled. The same blocks anywhere else, as the runway's
 lights and the control tower's glass, lights, panels and seats are, break as any other block does. So does one placed
-by hand, a nav light or a panel added to a finished airliner say, until the airliner is assembled; a Create deployer
-places by hand too, a schematicannon does not.
+by hand, a nav light or a panel added to a finished airliner say, glued in or flying; a Create deployer places by hand
+too, a schematicannon does not. An airliner taken apart again forgets which of its blocks were placed by hand.
 
 ### Doors
 
