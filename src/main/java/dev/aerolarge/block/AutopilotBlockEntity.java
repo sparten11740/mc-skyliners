@@ -196,6 +196,14 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final double THRUST_TRIM_RATE = 0.005;
     private static final double THRUST_TRIM_LIMIT = 5;
+    /**
+     * How fast the push the nose needs to stay where it is wanted is learnt, in signal a tick per degree it is off, and
+     * the most that is learnt. Pushed back only as hard as it is off, the nose would rest off wherever the airliner
+     * pitches by itself, as far off as it needs to be pushed back; and the trim, which only learns with the nose near
+     * where it is wanted, might then never learn the climb at all, the airliner holding a height off the one set.
+     */
+    private static final double PITCH_HOLD_RATE = 0.01;
+    private static final double PITCH_HOLD_LIMIT = 8;
     /** Signal per degree of pitch or bank error, and per degree a second it is changing at (damping). */
     private static final double PITCH_GAIN = 0.75;
     private static final double PITCH_DAMPING = 0.4;
@@ -219,8 +227,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      * what an airliner's passengers feel on the runway, so nobody standing is thrown down the cabin.
      */
     public static final double MAX_ACCELERATION = 3;
-    /** Engine signal split per degree off the heading, and the most it splits by. */
+    /**
+     * Engine signal split per degree off the heading, taken off per degree a second it turns faster than it should
+     * (damping: without it the airliner swung to and fro about the heading, rocking its wings as it went, the faster
+     * wing lifting the more), and the most it splits by.
+     */
     private static final double YAW_GAIN = 0.4;
+    private static final double YAW_DAMPING = 0.5;
     private static final int YAW_SPLIT = 4;
     /** Nose wheel steering signal per degree off the heading on the ground. */
     private static final double STEER_GAIN = 3;
@@ -326,6 +339,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** The pitch that holds the height at this speed, and the engines' signal that holds the speed, learnt as it flies. */
     private double trim;
     private double thrustTrim = CRUISE_THRUST;
+    /** The push the nose needs to stay where it is wanted, in signal, learnt as it flies (see {@link #PITCH_HOLD_RATE}). */
+    private double pitchHold;
     private double lastPitch;
     private double lastRoll;
     private double lastSpeed;
@@ -737,6 +752,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             trim = Mth.clamp(state.pitch(), MIN_PITCH, MAX_PITCH);
         }
         thrustTrim = CRUISE_THRUST;
+        pitchHold = 0;
         climbingOut = phase == Phase.TAKEOFF;
         lastPitch = state.pitch();
         lastRoll = state.roll();
@@ -1048,6 +1064,10 @@ public class AutopilotBlockEntity extends BlockEntity {
             wanted = guide.heading();
         }
         double bank = 0;
+        // The turn it should be making, in degrees a second (round the circle at this speed in an orbit, none on a
+        // heading), and the turn it is making.
+        double wantedTurn = 0;
+        double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
         if (takingOff) {
             boolean accelerating = speed - lastSpeed > STILL_ACCELERATING / 20;
             slowTicks = accelerating || holding || speed < 2 ? 0 : slowTicks + 1;
@@ -1094,9 +1114,6 @@ public class AutopilotBlockEntity extends BlockEntity {
             } else if (radio < Callouts.ON_GROUND) {
                 phase = Phase.ROLLOUT;
             }
-            // The turn it should be making, in degrees a second: round the circle at this speed in an orbit, none on a
-            // heading.
-            double wantedTurn = 0;
             if (lateral != Lateral.HEADING && !climbingOut && guide == null) {
                 double horizontal = Math.hypot(state.velocity().x, state.velocity().z);
                 double gravity = Math.max(1, state.gravity());
@@ -1111,13 +1128,16 @@ public class AutopilotBlockEntity extends BlockEntity {
                     wantedTurn = side() * Math.toDegrees(horizontal / radius);
                 }
             }
-            double turn = Mth.wrapDegrees(state.heading() - lastHeading) * 20;
             // It banks less the lower it gets, to keep its long wings clear of the ground.
             double maxBank = Mth.clamp(BANK_PER_BLOCK * radio, 0, MAX_BANK);
             bank = Mth.clamp(bank + BANK_GAIN * Mth.wrapDegrees(wanted - state.heading()) - TURN_DAMPING * (turn - wantedTurn), -maxBank, maxBank);
         }
 
-        int pitchCommand = (int) Math.round(PITCH_GAIN * (targetPitch - pitch) - PITCH_DAMPING * pitchRate);
+        // In the air the push the nose needs is learnt, kept right down to the touchdown: let go in the flare, a few
+        // blocks up, the nose rose and the airliner floated along over the ground. On the ground the wheels hold it.
+        double pitchError = targetPitch - pitch;
+        pitchHold = onGround ? 0 : Mth.clamp(pitchHold + PITCH_HOLD_RATE * pitchError, -PITCH_HOLD_LIMIT, PITCH_HOLD_LIMIT);
+        int pitchCommand = (int) Math.round(pitchHold + PITCH_GAIN * pitchError - PITCH_DAMPING * pitchRate);
         int rollCommand = (int) Math.round(ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate);
         boolean rolls = !onGround || radio > 0.5;
         driveJets(level, state, pitchCommand, rolls ? rollCommand : 0);
@@ -1131,7 +1151,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         drive(level, Channel.STEER_LEFT, Math.max(0, -steer));
 
         // Turning right means more thrust on the left engines; the heading grows turning right.
-        int split = Mth.clamp((int) Math.round(YAW_GAIN * headingError), -YAW_SPLIT, YAW_SPLIT);
+        int split = Mth.clamp((int) Math.round(YAW_GAIN * headingError - YAW_DAMPING * (turn - wantedTurn)), -YAW_SPLIT, YAW_SPLIT);
         drive(level, Channel.ENGINE_1, thrust - Math.max(0, -split));
         drive(level, Channel.ENGINE_2, thrust - Math.max(0, -split));
         drive(level, Channel.ENGINE_3, thrust - Math.max(0, split));
@@ -1451,6 +1471,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveTargets(tag);
         tag.putDouble("Trim", trim);
         tag.putDouble("ThrustTrim", thrustTrim);
+        tag.putDouble("PitchHold", pitchHold);
         tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
         tag.putBoolean("Governing", governing);
@@ -1499,6 +1520,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             trim = tag.getDouble("Trim");
             // Saved before the signal that holds the speed was learnt.
             thrustTrim = tag.contains("ThrustTrim") ? tag.getDouble("ThrustTrim") : CRUISE_THRUST;
+            // Saved before the push the nose needs was learnt: none, learnt afresh in a few seconds.
+            pitchHold = tag.getDouble("PitchHold");
             // Saved before a take-off held the runway's heading apart from the one set.
             runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");
