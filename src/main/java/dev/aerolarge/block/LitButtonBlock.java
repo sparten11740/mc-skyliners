@@ -49,7 +49,8 @@ public abstract class LitButtonBlock extends ButtonBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        Direction out = getConnectedDirection(state).getOpposite();
+        // The way the button looks out from what it is on; what it is on lies the other way.
+        Direction out = getConnectedDirection(state);
         return (state.getValue(POWERED) ? DOWN_SHAPES : UP_SHAPES).get(out);
     }
 }
