@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -22,7 +23,9 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * A cabin window with its shade: open, it lets the daylight in; pulled down, it shuts it out. The captain works every
  * shade at once from the flight deck (see {@link WindowShadesBlock}); anyone can open or close a window's own by hand.
- * Windows stacked one on another join into one tall window (UP and DOWN say which way it goes on), with one shade.
+ * Windows stacked one on another join into one tall window (UP and DOWN say which way it goes on), with one shade;
+ * one standing a block in or out from the one under it joins it too, so no frame runs across the middle of the window
+ * there, though their shades stay apart (see {@link #goesOn}).
  * Where the hull curves, the same window is cut to its curve ({@link CabinWindowShellBlock}); the two join alike.
  */
 public class CabinWindowBlock extends TransparentBlock {
@@ -52,12 +55,12 @@ public class CabinWindowBlock extends TransparentBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        return defaultBlockState().setValue(UP, isPane(level.getBlockState(pos.above()))).setValue(DOWN, isPane(level.getBlockState(pos.below())));
+        return defaultBlockState().setValue(UP, goesOn(level, pos, Direction.UP)).setValue(DOWN, goesOn(level, pos, Direction.DOWN));
     }
 
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        return join(state, direction, neighbor);
+        return join(state, direction, level, pos);
     }
 
     @Override
@@ -83,12 +86,34 @@ public class CabinWindowBlock extends TransparentBlock {
         return state.getBlock() instanceof CabinWindowBlock || state.getBlock() instanceof CabinWindowShellBlock;
     }
 
-    /** A pane's join toward a neighbour above or below that has just changed: there while that is a pane too. */
-    static BlockState join(BlockState state, Direction direction, BlockState neighbor) {
+    /** A pane's join toward a neighbour above or below that has just changed: there while the window goes on that way. */
+    static BlockState join(BlockState state, Direction direction, BlockGetter level, BlockPos pos) {
         if (direction.getAxis().isVertical()) {
-            return state.setValue(direction == Direction.UP ? UP : DOWN, isPane(neighbor));
+            return state.setValue(direction == Direction.UP ? UP : DOWN, goesOn(level, pos, direction));
         }
         return state;
+    }
+
+    private static boolean goesOn(BlockGetter level, BlockPos pos, Direction way) {
+        return goesOn(level::getBlockState, pos, way);
+    }
+
+    /**
+     * Whether the window goes on from the pane at the position into the row above or below, among the given blocks: a
+     * pane right there, or a block to the side of there, where the hull's curve steps the window in or out a block
+     * between its rows (toward the tail, where the fuselage narrows), so no frame is drawn across the middle of it.
+     */
+    public static boolean goesOn(Function<BlockPos, BlockState> blocks, BlockPos pos, Direction way) {
+        BlockPos row = pos.relative(way);
+        if (isPane(blocks.apply(row))) {
+            return true;
+        }
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (isPane(blocks.apply(row.relative(side)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Pulls the shade of the whole window the pane is part of, every pane it is joined into, up or down. */

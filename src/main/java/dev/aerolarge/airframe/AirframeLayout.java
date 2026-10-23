@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -1215,7 +1216,7 @@ public final class AirframeLayout {
 
     /**
      * Cuts the fuselage's skin to its curve, in the configured style ({@link ShellStyle}); then, cut or not, window
-     * panes right above one another are joined into tall windows.
+     * panes above one another are joined into tall windows, as {@link CabinWindowBlock#goesOn} joins them in the world.
      */
     private void shell() {
         if (style == ShellStyle.SNAPPED) {
@@ -1223,12 +1224,13 @@ public final class AirframeLayout {
         } else {
             fittedShell();
         }
+        Function<BlockPos, BlockState> blocks = at -> stateAt(at.getX(), at.getY(), at.getZ());
         for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
             if (CabinWindowBlock.isPane(cell.getValue())) {
                 BlockPos pos = cell.getKey();
                 cell.setValue(cell.getValue()
-                    .setValue(CabinWindowBlock.UP, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() + 1, pos.getZ())))
-                    .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.isPane(stateAt(pos.getX(), pos.getY() - 1, pos.getZ()))));
+                    .setValue(CabinWindowBlock.UP, CabinWindowBlock.goesOn(blocks, pos, Direction.UP))
+                    .setValue(CabinWindowBlock.DOWN, CabinWindowBlock.goesOn(blocks, pos, Direction.DOWN)));
             }
         }
     }

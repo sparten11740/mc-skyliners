@@ -50,7 +50,7 @@ public class CabinWindowShellBlock extends ShellBlock {
 
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        return CabinWindowBlock.join(state, direction, neighbor);
+        return CabinWindowBlock.join(state, direction, level, pos);
     }
 
     @Override
