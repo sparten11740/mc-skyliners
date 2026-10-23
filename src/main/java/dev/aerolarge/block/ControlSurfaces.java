@@ -9,7 +9,11 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -17,6 +21,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The autopilot's control surfaces, an experiment switched on by {@code controlSurfaces} in the server config: ailerons
@@ -38,8 +43,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  * and landing speeds, and once the airliner is past the attitude the autopilot keeps it within, the surfaces sweep back
  * to how they were built and the jets take it all again. Each block turned over is work for Sable, so the surfaces sweep
  * at most {@link #MOST_PER_TICK} blocks a tick and stand still within {@link #DEADBAND} blocks of where they should be.
- * The clients are never sent the change: a lifting block looks and stands the same either way up, and only the server
- * reads which way it faces.
+ * The clients are never sent the blocks turned over: a lifting block looks and stands the same either way up, and only
+ * the server reads which way it faces. They are told instead how far to swing the panels drawn for the surfaces (see
+ * {@link Panel} and {@link #showMoved}).
  */
 public final class ControlSurfaces {
     /**
@@ -76,9 +82,23 @@ public final class ControlSurfaces {
     private static final DirectionProperty FACING = BlockStateProperties.FACING;
     private static final String SURFACES = "Surfaces";
     private static final String TURNED = "SurfacesTurned";
+    private static final String PANELS = "SurfacePanels";
+    private static final String SHOWN = "SurfacesShown";
+    /**
+     * How finely the clients are told how far the panels swing, in steps of their whole travel either way, and
+     * the fewest ticks between two tellings: each is a block entity update to everyone near the airliner.
+     */
+    private static final int SHOWN_STEPS = 40;
+    private static final int SHOW_EVERY = 2;
+    /**
+     * How much the surfaces give beyond what keeps the airliner trimmed, in the jets' signal, for the panels to swing
+     * all the way over; and the share of the way the trim follows what they give each tick: about ten seconds behind.
+     */
+    private static final double FULL_SWING = 4;
+    private static final double TRIM_SHARE = 1 / 200.0;
 
     /** A way the surfaces turn the airliner, the channels of the surfaces that turn it either way, and their worth. */
-    enum Axis {
+    public enum Axis {
         PITCH(Channel.PITCH_UP, Channel.PITCH_DOWN, ELEVATOR_WORTH, true), ROLL(Channel.ROLL_RIGHT, Channel.ROLL_LEFT, AILERON_WORTH, false);
 
         private final Channel positive;
@@ -104,6 +124,44 @@ public final class ControlSurfaces {
     }
 
     /**
+     * A panel drawn where a real airliner's aileron or elevator hangs off a wing's trailing edge, to show how hard the
+     * surfaces it stands for steer (the blocks turned over themselves look no different either way up): a row
+     * of the wing's own lifting blocks, so many rows deep, swung as one about its hinge. Its hinge runs from its inner
+     * end to its outer, a whole number of blocks apart, in blocks from the middle of the autopilot's block, to
+     * starboard, up and ahead along the nose, level with the middle of the blocks; then the rows aft of the hinge, the
+     * block it is drawn with, the axis whose surfaces it shows, and which way it swings for them, its trailing edge up
+     * (1) or down (-1) for steering the axis's first way, as an airliner's right aileron goes up to roll it right and its
+     * left one down.
+     */
+    public record Panel(Axis axis, int way, Vec3 inner, Vec3 outer, int rows, BlockState look) {
+        CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("Axis", axis.name());
+            tag.putInt("Way", way);
+            saveVec(tag, "Inner", inner);
+            saveVec(tag, "Outer", outer);
+            tag.putInt("Rows", rows);
+            tag.put("Look", NbtUtils.writeBlockState(look));
+            return tag;
+        }
+
+        static Panel load(CompoundTag tag) {
+            return new Panel(Axis.valueOf(tag.getString("Axis")), tag.getInt("Way"), loadVec(tag, "Inner"), loadVec(tag, "Outer"),
+                tag.getInt("Rows"), NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), tag.getCompound("Look")));
+        }
+
+        private static void saveVec(CompoundTag tag, String key, Vec3 vec) {
+            tag.putDouble(key + "X", vec.x);
+            tag.putDouble(key + "Y", vec.y);
+            tag.putDouble(key + "Z", vec.z);
+        }
+
+        private static Vec3 loadVec(CompoundTag tag, String key) {
+            return new Vec3(tag.getDouble(key + "X"), tag.getDouble(key + "Y"), tag.getDouble(key + "Z"));
+        }
+    }
+
+    /**
      * The lifting blocks of each surface, by the way it turns the airliner, as offsets from the autopilot in the
      * world's directions, in the order they are turned over; none for an airliner built before the surfaces.
      */
@@ -123,6 +181,21 @@ public final class ControlSurfaces {
     private final Map<Channel, double[]> reach = new EnumMap<>(Channel.class);
     /** Whether the airliner has been fast enough for the surfaces, between {@link #FLY_FROM} and {@link #FLY_UNTIL}. */
     private boolean fast;
+    /** The panels drawn for the surfaces; none for an airliner built before them. */
+    private List<Panel> panels = List.of();
+    /**
+     * How much each axis's surfaces give as they stand, in the jets' signal, as of the last tick; and that averaged
+     * over the last while (see {@link #TRIM_SHARE}): the steady part of it, which holds the airliner trimmed. Not yet
+     * known once loaded, so an airliner loaded in flight takes what its surfaces give then as its trim.
+     */
+    private final Map<Axis, Double> giving = new EnumMap<>(Map.of(Axis.PITCH, 0.0, Axis.ROLL, 0.0));
+    private final Map<Axis, Double> trimmed = new EnumMap<>(Map.of(Axis.PITCH, Double.NaN, Axis.ROLL, Double.NaN));
+    /**
+     * How far each axis's panels swing, as the clients were last told, in {@link #SHOWN_STEPS} of their whole travel
+     * either way; and when they were told.
+     */
+    private final Map<Axis, Integer> shown = new EnumMap<>(Map.of(Axis.PITCH, 0, Axis.ROLL, 0));
+    private long shownAt;
 
     /**
      * Which way a surface's blocks face as built, standing still: the tailplane's that lower the nose face down, as its
@@ -132,12 +205,62 @@ public final class ControlSurfaces {
         return channel == Channel.PITCH_DOWN ? Direction.DOWN : Direction.UP;
     }
 
-    /** Wired when the airliner is built: the lifting blocks of each surface, as offsets from the autopilot. */
-    void wire(Map<Channel, List<BlockPos>> surfaces) {
+    /**
+     * Wired when the airliner is built: the lifting blocks of each surface, as offsets from the autopilot, and the
+     * panels drawn for them.
+     */
+    void wire(Map<Channel, List<BlockPos>> surfaces, List<Panel> panels) {
         blocks = new EnumMap<>(Channel.class);
         surfaces.forEach((channel, offsets) -> blocks.put(channel, List.copyOf(offsets)));
+        this.panels = List.copyOf(panels);
         turned.replaceAll((axis, count) -> 0);
         reach.clear();
+    }
+
+    /** The panels drawn for the surfaces (see {@link Panel}). */
+    public List<Panel> panels() {
+        return panels;
+    }
+
+    /** How far an axis's panels swing, as the clients were last told: -1 all the way its second way to 1 its first. */
+    public double deflection(Axis axis) {
+        return shown.get(axis) / (double) SHOWN_STEPS;
+    }
+
+    /**
+     * Whether how far the panels swing has moved on since the clients were last told, by a step of
+     * {@link #SHOWN_STEPS} and no sooner than {@link #SHOW_EVERY} ticks after: then it is the new one to tell them.
+     * They show how hard the surfaces steer, over and above the steady push that keeps the airliner trimmed, as an
+     * airliner's ailerons and elevators move while its trimmed tailplane holds it level: all the way over at
+     * {@link #FULL_SWING} of the jets' signal.
+     */
+    boolean showMoved(long now) {
+        if (panels.isEmpty() || now - shownAt < SHOW_EVERY) {
+            return false;
+        }
+        boolean moved = false;
+        for (Axis axis : Axis.values()) {
+            double steering = Mth.clamp((giving.get(axis) - trimmed.get(axis)) / FULL_SWING, -1, 1);
+            int step = (int) Math.round(steering * SHOWN_STEPS);
+            if (step != shown.get(axis)) {
+                shown.put(axis, step);
+                moved = true;
+            }
+        }
+        if (moved) {
+            shownAt = now;
+        }
+        return moved;
+    }
+
+    /**
+     * Notes how much an axis's surfaces give as they stand, in the jets' signal, and the steady part of it; while they
+     * do not fly the airliner, there is none to steady, and the panels rest.
+     */
+    private void note(Axis axis, double gives, boolean flies) {
+        giving.put(axis, gives);
+        double trim = trimmed.get(axis);
+        trimmed.put(axis, flies && !Double.isNaN(trim) ? trim + (gives - trim) * TRIM_SHARE : gives);
     }
 
     /** Turns the offsets with the autopilot's other links (see {@link Turning}). */
@@ -167,6 +290,7 @@ public final class ControlSurfaces {
     void rest(Level level, BlockPos origin) {
         for (Axis axis : Axis.values()) {
             followed.put(axis, 0.0);
+            note(axis, 0, false);
             if (turned.get(axis) != 0) {
                 move(level, origin, axis, 0);
             }
@@ -204,7 +328,9 @@ public final class ControlSurfaces {
         if (Math.abs(wanted - now) >= DEADBAND || wanted == 0 && now != 0) {
             move(level, origin, axis, now + Mth.clamp(wanted - now, -MOST_PER_TICK, MOST_PER_TICK));
         }
-        return (int) Math.round(demand - worth * given(axis, turned.get(axis)));
+        double gives = worth * given(axis, turned.get(axis));
+        note(axis, gives, flies);
+        return (int) Math.round(demand - gives);
     }
 
     /**
@@ -316,5 +442,28 @@ public final class ControlSurfaces {
         CompoundTag counts = tag.getCompound(TURNED);
         turned.replaceAll((axis, count) -> counts.getInt(axis.name()));
         reach.clear();
+    }
+
+    /**
+     * Saves what the clients draw the surfaces with: the panels, and how far they swing, as last told.
+     * Both in the save and in the update the clients are sent.
+     */
+    void saveShown(CompoundTag tag) {
+        ListTag list = new ListTag();
+        panels.forEach(panel -> list.add(panel.save()));
+        tag.put(PANELS, list);
+        tag.putIntArray(SHOWN, new int[]{shown.get(Axis.PITCH), shown.get(Axis.ROLL)});
+    }
+
+    /** Loads them; none for an airliner built before the panels, which draws none. */
+    void loadShown(CompoundTag tag) {
+        if (tag.contains(PANELS)) {
+            panels = tag.getList(PANELS, Tag.TAG_COMPOUND).stream().map(entry -> Panel.load((CompoundTag) entry)).toList();
+        }
+        int[] steps = tag.getIntArray(SHOWN);
+        if (steps.length == 2) {
+            shown.put(Axis.PITCH, steps[0]);
+            shown.put(Axis.ROLL, steps[1]);
+        }
     }
 }

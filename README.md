@@ -420,9 +420,16 @@ asked, and the surfaces can only ever take work off the jets. Below 1.3 times th
 is past 25 degrees nose up, 20 down or 35 of bank, the surfaces sweep back as built and the jets fly it all, as they
 always have. In the test flights, the surfaces carried nearly all of the cruise, the climbs and descents and the
 turns, the jets coming in for the take-off, the landing and the sharpest part of a turn. A wing block looks the same
-either way up, so nothing is seen moving: flying on the surfaces shows as the wingtip and tailplane jets staying quiet.
-Only airliners built since the surfaces came in have them; older ones fly on their jets whatever the setting. Switched
-off, or once the airliner is disassembled, its surfaces turn back as they were built.
+either way up, so the surfaces are shown as hinged panels along the trailing edges instead: an aileron on the outer
+part of each wing and an elevator along each side of the tailplane, made of the wing's own blocks and split where the
+trailing edge steps in, each hung on a dark hinge rod with brackets. They swing up to 25 degrees with how hard the
+surfaces steer, over and above the slow, steady part of it that keeps the airliner trimmed, the way a real airliner's
+ailerons and elevators move about its trimmed stabiliser: the ailerons kick one up and one down as it rolls into and
+out of a turn, and the elevators sit near the middle in level flight and tilt on climbs and descents. The panels are
+drawn only, not built, so they do not touch the airliner's flight or collide with anything. Only airliners built
+since the surfaces came in have them, and only those built since the panels came in show them; older ones fly on their
+jets whatever the setting. Switched off, or once the airliner is disassembled, its surfaces turn back as they were
+built, and the panels swing back level.
 
 Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
 control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,

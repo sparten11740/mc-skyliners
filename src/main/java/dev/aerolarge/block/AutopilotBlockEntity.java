@@ -412,9 +412,14 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Wired when the airliner is built: the lifting blocks its control surfaces turn over, by the way they turn the
      * airliner, each in the order they are turned over, as offsets from the autopilot (see {@link ControlSurfaces}).
      */
-    public void wireSurfaces(Map<Channel, List<BlockPos>> blocks) {
-        surfaces.wire(blocks);
-        setChanged();
+    public void wireSurfaces(Map<Channel, List<BlockPos>> blocks, List<ControlSurfaces.Panel> panels) {
+        surfaces.wire(blocks, panels);
+        changed();
+    }
+
+    /** The control surfaces, which the clients draw from here (see {@link ControlSurfaces#panels}). */
+    public ControlSurfaces surfaces() {
+        return surfaces;
     }
 
     /**
@@ -826,6 +831,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             autopilot.offerHop(false);
             // Its control surfaces stand as built again.
             autopilot.surfaces.rest(serverLevel, pos);
+            autopilot.showSurfaces(serverLevel);
             return;
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
@@ -850,6 +856,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         autopilot.watchArrival(flight, clear);
         autopilot.atc.tick(serverLevel, autopilot, flight, radio, autopilot.phase);
+        autopilot.showSurfaces(serverLevel);
+    }
+
+    /** Tells the clients how far to swing the control surfaces' panels, once that has moved on (see {@link ControlSurfaces}). */
+    private void showSurfaces(ServerLevel level) {
+        if (surfaces.showMoved(level.getGameTime())) {
+            changed();
+        }
     }
 
     /**
@@ -1466,6 +1480,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.put("Relays", channels);
         tag.put("Controls", Relays.write(controls));
         surfaces.save(tag);
+        surfaces.saveShown(tag);
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         saveTargets(tag);
@@ -1531,6 +1546,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             awaitingClearance = tag.getBoolean("AwaitingClearance");
             flown = tag.getBoolean("Flown");
         }
+        // In the save and in the update the clients are sent alike: what they draw the control surfaces with.
+        surfaces.loadShown(tag);
         phase = parse(Phase.class, tag.getString("Phase"), Phase.OFF);
         lateral = parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING);
         targetHeading = tag.getDouble("TargetHeading");
@@ -1596,6 +1613,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putBoolean("Stuck", stuck);
         saveFrame(tag);
         Turning.save(tag, getBlockState());
+        surfaces.saveShown(tag);
         return tag;
     }
 

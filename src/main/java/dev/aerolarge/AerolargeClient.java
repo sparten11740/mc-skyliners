@@ -21,6 +21,7 @@ import dev.aerolarge.client.CarriedAboard;
 import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.CockpitDoorRenderer;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.ControlSurfaceRenderer;
 import dev.aerolarge.client.DiscoBallRenderer;
 import dev.aerolarge.client.DiscoLights;
 import dev.aerolarge.client.DropBayScreen;
@@ -180,6 +181,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineIntakeRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), ControlSurfaceRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ANNOUNCEMENT_PANEL_ENTITY.get(), context -> new AnnouncementPanelRenderer());
