@@ -354,16 +354,26 @@ texture(blockOutput, "cabin_light_alarm", (x, y) => {
 }, 2);
 // The call button's cap: bright yellow so the ground crew find it.
 texture(blockOutput, "airstair_call_button", (x, y) => (x + y) % 5 === 0 ? [0xd0, 0x9f, 0x14] : HAZARD, 3);
-// The airstair button beside the controller (see AirstairButtonBlock): its cap the call button's amber, lit from
-// behind, the middle six pixels the face, with the controller's staircase on it in three steps rising to the right in
-// dark amber; pressed, the cap glows brighter, nearly white, the stairs a deeper amber on it. Its bezel: dark steel,
-// a lighter line along the top of each row of brushing.
+// The lit push-buttons' caps (see LitButtonBlock): lit from behind, the middle six pixels the face, with a picture on
+// it in a dark shade of the cap's colour, a row of the picture to a row of pixels, "#" where it is drawn.
+const litCap = (picture) => (glow, glyph) => (x, y) => (picture[y - 5]?.[x - 5] === "#" ? glyph : glow);
+// The airstair button beside the controller (see AirstairButtonBlock): its cap the call button's amber, with the
+// controller's staircase on it in three steps rising to the right in dark amber; pressed, the cap glows brighter,
+// nearly white, the stairs a deeper amber on it. Its bezel: dark steel, a lighter line along the top of each row of
+// brushing.
 {
-  const STAIRS = ["....##", "....##", "..####", "..####", "######", "######"];
-  const cap = (glow, glyph) => (x, y) => (STAIRS[y - 5]?.[x - 5] === "#" ? glyph : glow);
+  const cap = litCap(["....##", "....##", "..####", "..####", "######", "######"]);
   texture(blockOutput, "airstair_button", cap([0xf6, 0xae, 0x22], [0x5a, 0x34, 0x08]), 1);
   texture(blockOutput, "airstair_button_pressed", cap([0xff, 0xec, 0xa8], [0xa8, 0x6c, 0x10]), 1);
   texture(blockOutput, "airstair_button_bezel", (x, y) => (y % 3 === 0 ? [0x6e, 0x74, 0x7c] : [0x4a, 0x50, 0x57]), 2);
+}
+// The door button beside each hull door (see DoorButtonBlock), in the airstair button's bezel: its cap sky blue, unlike
+// the airstairs' amber, with a door on it in dark blue, a tall slab with its handle by its right edge, where the cap's
+// light shows through; pressed, the cap glows brighter, nearly white, the door a deeper blue on it.
+{
+  const cap = litCap([".####.", ".####.", ".####.", ".##.#.", ".####.", ".####."]);
+  texture(blockOutput, "door_button", cap([0x3c, 0xb4, 0xf0], [0x0a, 0x2a, 0x5c]), 1);
+  texture(blockOutput, "door_button_pressed", cap([0xd2, 0xf2, 0xff], [0x1a, 0x5c, 0xa8]), 1);
 }
 // The integral airstairs, drawn by their renderer a pixel of texture to a pixel of the airliner. A tread: dark grey
 // non-slip plate, ribbed across with raised studs between the ribs; its nosing, safety yellow, a shade darker along

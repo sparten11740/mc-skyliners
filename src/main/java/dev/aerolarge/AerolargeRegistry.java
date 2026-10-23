@@ -53,6 +53,7 @@ import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DiscoBallBlock;
 import dev.aerolarge.block.DiscoBallBlockEntity;
 import dev.aerolarge.block.DisplayShelfBlock;
+import dev.aerolarge.block.DoorButtonBlock;
 import dev.aerolarge.block.DropBayBlock;
 import dev.aerolarge.block.DropBayBlockEntity;
 import dev.aerolarge.block.DropBayMenu;
@@ -418,6 +419,12 @@ public final class AerolargeRegistry {
         properties -> new AirstairButtonBlock(AIRLINER, properties),
         BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
     );
+    /** The lit push-button inside beside every hull door, which opens the door or shuts it but powers nothing. */
+    public static final DeferredBlock<DoorButtonBlock> DOOR_BUTTON = BLOCKS.registerBlock(
+        "door_button",
+        properties -> new DoorButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirstairBlockEntity>> AIRSTAIR_CONTROLLER_ENTITY =
         BLOCK_ENTITIES.register("airstair_controller", () -> BlockEntityType.Builder.of(AirstairBlockEntity::new, AIRSTAIR_CONTROLLER.get()).build(null));
     /**
@@ -590,6 +597,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
     public static final DeferredItem<BlockItem> AIRSTAIR_CALL_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CALL_BUTTON);
     public static final DeferredItem<BlockItem> AIRSTAIR_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_BUTTON);
+    public static final DeferredItem<BlockItem> DOOR_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(DOOR_BUTTON);
 
     /** Skydiving out of the airliner: the jump light by the doors, the rack of parachutes and the target to land on. */
     public static final DeferredBlock<JumpLightBlock> JUMP_LIGHT = BLOCKS.registerBlock(
@@ -1358,7 +1366,7 @@ public final class AerolargeRegistry {
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
-            AIRSTAIR_CALL_BUTTON_ITEM, AIRSTAIR_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
+            AIRSTAIR_CALL_BUTTON_ITEM, AIRSTAIR_BUTTON_ITEM, DOOR_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,

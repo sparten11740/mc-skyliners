@@ -25,6 +25,7 @@ import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
+import dev.aerolarge.block.DoorButtonBlock;
 import dev.aerolarge.block.DropReleaseBlockEntity;
 import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
@@ -307,6 +308,8 @@ public final class AirframeLayout {
         // The skin is lined inside once it is cut and the gear meets it, before the airstairs keep their hatch's skin.
         new HullLining(layout).apply();
         layout.boardingStairs();
+        // Once the skin is cut and lined and everything by the doors stands, so they only go on whole panels.
+        layout.doorButtons();
         layout.assembler();
         layout.crewLocker();
         layout.cabinControls();
@@ -2478,6 +2481,49 @@ public final class AirframeLayout {
         }
         double face = Math.abs(served.outer()) + 0.5;
         return (float) Math.max(0, face - inside * scale);
+    }
+
+    /**
+     * A door button inside beside every hull door (see {@link DoorButtonBlock}), so the door can be opened and shut
+     * from the cabin without aiming at the doorway, which is hard while the cabin decompresses through it: on the
+     * cabin wall's inside face in one of the door's jambs, facing into the cabin, a block above the sill or failing
+     * that level with it, just ahead of the door or failing that just aft of it. It goes in the first of those spots
+     * where the wall is a whole plain panel, nothing set into it (a slide control, a jump light or its relay, the
+     * airstair controller), and the cabin in front of it is open, nothing standing there (the airstair button, a rack
+     * of parachutes) and room to stand in front of that; a door with no such spot by it has no button.
+     */
+    private void doorButtons() {
+        BlockState button = AerolargeRegistry.DOOR_BUTTON.get().defaultBlockState().setValue(ButtonBlock.FACE, AttachFace.WALL);
+        for (HullDoor door : hullDoors) {
+            BlockPos spot = doorButtonSpot(door);
+            if (spot != null) {
+                set(spot.getX(), spot.getY(), spot.getZ(), button.setValue(ButtonBlock.FACING, door.side() > 0 ? Direction.WEST : Direction.EAST));
+            }
+        }
+    }
+
+    /** Where the door button beside one door goes: the first spot by it that has room for it; null for none. */
+    @Nullable
+    private BlockPos doorButtonSpot(HullDoor door) {
+        for (int y : new int[]{door.bottom() + 1, door.bottom()}) {
+            BlockPos spot = doorButtonSpot(door, y);
+            if (spot != null) {
+                return spot;
+            }
+        }
+        return null;
+    }
+
+    /** Where in this row the door button beside one door goes: in the jamb ahead of it, else aft; null for neither. */
+    @Nullable
+    private BlockPos doorButtonSpot(HullDoor door, int y) {
+        for (int z : new int[]{door.fore() - 1, door.fore() + PlugDoorBlock.COLUMNS}) {
+            int inside = besideWall(door.side(), y, z);
+            if (inside != 0 && isOpen(inside, y, z) && isOpen(inside - door.side(), y, z) && isPlainHull(inside + door.side(), y, z)) {
+                return new BlockPos(inside, y, z);
+            }
+        }
+        return null;
     }
 
 

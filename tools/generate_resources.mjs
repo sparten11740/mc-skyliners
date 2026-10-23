@@ -170,15 +170,15 @@ function cockpitDoorLang() {
   write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
   cubes[name] = null;
 }
-// The airstair button beside the controller (see AirstairButtonBlock), drawn as vanilla draws a button, lying on the
-// floor and turned by the blockstate as vanilla's buttons are: a dark steel bezel a pixel thick, and on it the square
+// The lit push-buttons (see LitButtonBlock), drawn as vanilla draws a button, lying on the floor and turned by the
+// blockstate as vanilla's buttons are: a dark steel bezel a pixel thick, the airstair button's, and on it the square
 // cap, glowing whatever the light around, a pixel and a half proud, or half a pixel pressed in. The cap's face shows the
-// middle six pixels of its texture, the staircase, the right way up for someone standing at the button's foot; on a
+// middle six pixels of its texture, its picture, the right way up for someone standing at the button's foot; on a
 // wall, turned up off the floor, it would stand on its head and back to front, so a wall button's face is turned half
 // round to read the right way up. In the hand, the button upright, its cap to the north.
-{
-  const name = "airstair_button";
+function litButton(name) {
   const block = (texture) => `${ID}:block/${texture}`;
+  const bezel = block("airstair_button_bezel");
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const cap = (from, to, turned) => ({
     from, to, shade: false,
@@ -189,14 +189,14 @@ function cockpitDoorLang() {
     for (const pressed of [false, true]) {
       write(`assets/${ID}/models/block/${name}${wall ? "_wall" : ""}${pressed ? "_pressed" : ""}.json`, {
         parent: "minecraft:block/block",
-        textures: { bezel: block(`${name}_bezel`), cap: block(`${name}${pressed ? "_pressed" : ""}`), particle: block(`${name}_bezel`) },
+        textures: { bezel, cap: block(`${name}${pressed ? "_pressed" : ""}`), particle: bezel },
         elements: [solid([4, 0, 4], [12, 1, 12], "#bezel"), cap([5, 1, 5], [11, pressed ? 1.5 : 2.5, 11], wall)],
       });
     }
   }
   write(`assets/${ID}/models/block/${name}_inventory.json`, {
     parent: "minecraft:block/block",
-    textures: { bezel: block(`${name}_bezel`), cap: block(name), particle: block(`${name}_bezel`) },
+    textures: { bezel, cap: block(name), particle: bezel },
     elements: [
       solid([4, 4, 8], [12, 12, 9], "#bezel"),
       { from: [5, 5, 6.5], to: [11, 11, 8], shade: false, faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#cap", ...lit }])) },
@@ -219,6 +219,8 @@ function cockpitDoorLang() {
   dropsItself(name);
   cubes[name] = null;
 }
+// The airstair button beside the controller (see AirstairButtonBlock), its cap showing the controller's staircase.
+litButton("airstair_button");
 // The illuminated button: the call button with glowstone dust over it to light its cap.
 function airstairButtonRecipes() {
   shaped("airstair_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: `${ID}:airstair_call_button` }, 1);
@@ -226,6 +228,17 @@ function airstairButtonRecipes() {
 function airstairButtonLang() {
   return {
     "block.aerolarge.airstair_button": "Airstair Button",
+  };
+}
+// The door button beside each hull door (see DoorButtonBlock), its cap showing a door.
+litButton("door_button");
+// An airstair button with its cap dyed light blue.
+function doorButtonRecipes() {
+  shaped("door_button", ["D", "B"], { D: "minecraft:light_blue_dye", B: `${ID}:airstair_button` }, 1);
+}
+function doorButtonLang() {
+  return {
+    "block.aerolarge.door_button": "Door Button",
   };
 }
 // The integral airstairs are drawn by their controller's renderer (see AirstairRenderer); the steps it lays under them
@@ -4581,7 +4594,8 @@ FITTINGS.push(...dutyFreeKioskFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
-// and the airstairs' buttons, the call button on the gear and the one on the skin outside by the top of the stairs.
+// and the buttons, the airstairs' (the call button on the gear and the one on the skin outside by the top of the stairs
+// among them) and the doors'.
 write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !b.endsWith("_button"))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
 // controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
@@ -4704,6 +4718,7 @@ bulkheadSignRecipes();
 wcSignRecipes();
 denFurnitureRecipes();
 airstairButtonRecipes();
+doorButtonRecipes();
 cargoNetRecipes();
 cargoFloorRecipes();
 uldContainerRecipes();
@@ -5144,6 +5159,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...wcSignLang(),
   ...denFurnitureLang(),
   ...airstairButtonLang(),
+  ...doorButtonLang(),
   ...cargoNetLang(),
   ...cargoFloorLang(),
   ...uldContainerLang(),

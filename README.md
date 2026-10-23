@@ -828,7 +828,8 @@ drawn, the red lights cast red light round the cabin too), and whoever stands wi
 basketball, a trolley), is dragged to it, the harder the closer, and flung out into the sky, wherever the air has a
 clear way to the door (not up through the floor from the hold, or round a wall). Anyone seated is belted in and stays
 put. With a parachute on, being sucked out is just the start of a skydive; close the door from a few steps back to
-stop it, or wait: ten seconds after it opened, the door shuts by itself (waiting, as ever, for anyone in its way).
+stop it, most easily with the Door Button on the wall beside it (see Doors), or wait: ten seconds after it opened,
+the door shuts by itself (waiting, as ever, for anyone in its way).
 Turn it off with `decompression` in the server config.
 
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
@@ -890,6 +891,16 @@ docked jet bridge open the door they serve, and shut it again as they fold, and 
 Evacuation slides). Villagers find their way through the doors as through wooden ones: while the airliner stands
 still, a door opens for a villager walking up to it and shuts again behind it; in flight no villager opens one. The
 doors of the WC and the crew room are ordinary doors; the cockpit door is its own (see Flight deck).
+
+Inside, beside every one of these doors, a Door Button on the cabin wall works it too: an illuminated push-button in
+a dark steel bezel like the Airstair Button (see Airstairs), its square cap glowing sky blue whatever the light, with a
+door on it, so it needs no reading. Press it and the door opens if it is shut and shuts if it is open, just as using
+the door does, in flight as on the ground: far easier to hit than the doorway while the cabin decompresses and drags
+everyone near toward it (see Skydiving). It is in the jamb just ahead of the door, a block above the sill; by the aft
+doors, where the jump light and the slide control take the jambs at that height, it is level with the sill, and by
+the cargo door in the hold it is just aft of the door, a block above its sill. It gives off no redstone signal: it works
+the door itself. An airliner built before the buttons has none; a Door Button can be crafted from an Airstair Button
+and light blue dye, and put up within three blocks of a plug door it works that door.
 
 ### Airstairs
 
