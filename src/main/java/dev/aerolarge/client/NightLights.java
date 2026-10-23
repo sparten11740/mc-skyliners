@@ -91,6 +91,12 @@ public final class NightLights {
      * blocks, so that two rows about as far off do not take turns from one look to the next.
      */
     private static final double KEEP_MARGIN = 4;
+    /**
+     * How far in front of its lamps' glowing faces a light is, in blocks: a pixel. In the face's own plane it lit the
+     * face, and the ceiling or wall round it flush with the face, edge on, as a light so placed has no way to tell
+     * which side of it they are, and they glittered in ragged blue fringes; just in front, they are behind it, unlit.
+     */
+    private static final double STANDOFF = 1 / 16.0;
     /** Daylight coming in this strongly, in light levels, is open sky: the outside. */
     private static final int OPEN_SKY = 15;
     /**
@@ -559,13 +565,13 @@ public final class NightLights {
         return glows;
     }
 
-    /** One light for the lamps of a row from the first to the last. */
+    /** One light for the lamps of a row from the first to the last, just in front of their glowing faces. */
     private static Glow glow(Row row, Found first, Found last) {
         Vec3 along = Vec3.atLowerCornerOf(Direction.fromAxisAndDirection(row.along(), Direction.AxisDirection.POSITIVE).getNormal());
         Vec3 out = Vec3.atLowerCornerOf(row.out().getNormal());
         Lamp lamp = row.lamp();
         Vec3 middle = Vec3.atCenterOf(first.pos()).add(Vec3.atCenterOf(last.pos())).scale(0.5)
-            .add(out.scale(lamp.forward)).add(0, lamp.up, 0);
+            .add(out.scale(lamp.forward + STANDOFF)).add(0, lamp.up, 0);
         double reach = (last.pos().get(row.along()) - first.pos().get(row.along())) / 2.0 + 0.5;
         return new Glow(lamp, row.tint(), middle, along, out, reach);
     }
