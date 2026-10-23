@@ -30,8 +30,8 @@ final class CabinAnnouncements {
      * shorter (its ANNOUNCEMENT_LONGEST).
      */
     private static final int LONGEST = 15 * 20;
-    /** Ticks after an announcement is asked for within which the same one is not made again: a minute. */
-    private static final int REPEAT = 60 * 20;
+    /** Ticks after an announcement is asked for within which the same one is not made again: twenty seconds. */
+    private static final int REPEAT = 20 * 20;
 
     /** When each announcement was last asked for, in game time. */
     private final Map<Announcement, Long> asked = new EnumMap<>(Announcement.class);
