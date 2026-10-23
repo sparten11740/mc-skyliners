@@ -2,6 +2,7 @@ package dev.aerolarge.compat;
 
 import dev.aerolarge.Aboard;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
@@ -54,10 +55,11 @@ public final class SableFlight {
     }
 
     /**
-     * The airliner's state seen from one of its blocks: positions in blocks, velocity in blocks per second, and the
-     * strength of gravity where it is, in blocks per second each second.
+     * The airliner's state seen from one of its blocks: positions in blocks, velocity in blocks per second, the
+     * strength of gravity where it is, in blocks per second each second, and the air's pressure there as Sable has it,
+     * which every lifting block's push and drag are in proportion to: 1 at sea level, thinning higher up.
      */
-    public record State(Vec3 position, Vec3 nose, Vec3 right, Vec3 up, Vec3 velocity, double gravity) {
+    public record State(Vec3 position, Vec3 nose, Vec3 right, Vec3 up, Vec3 velocity, double gravity, double air) {
         /** Degrees above the horizon the nose points. */
         public double pitch() {
             return Math.toDegrees(Math.asin(Math.clamp(nose.y, -1, 1)));
@@ -130,6 +132,15 @@ public final class SableFlight {
     /** How fast a point among an assembled airliner's blocks moves, in blocks a second; still anywhere else. */
     public static Vec3 velocity(Level level, Vec3 point) {
         return SABLE ? Access.velocity(level, point) : Vec3.ZERO;
+    }
+
+    /**
+     * Whether Sable lifts an assembled airliner with the block, as it does with the wings' lifting layer: pushed along
+     * the way it faces in proportion to the airspeed. What the autopilot's control surfaces turn over (see
+     * {@code ControlSurfaces}); false without Sable.
+     */
+    public static boolean lifts(BlockState state) {
+        return SABLE && Access.lifts(state);
     }
 
     /**
@@ -345,6 +356,10 @@ public final class SableFlight {
 
         static Vec3 velocity(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, point);
+        }
+
+        static boolean lifts(BlockState state) {
+            return state.getBlock() instanceof BlockSubLevelLiftProvider;
         }
 
         static double underside(Level level, Vec3 point) {
@@ -567,8 +582,9 @@ public final class SableFlight {
             Vec3 right = direction(level, centre, position, nose.getClockWise());
             Vec3 up = direction(level, centre, position, Direction.UP);
             Vec3 velocity = Sable.HELPER.getVelocity(level, centre);
-            double gravity = DimensionPhysicsData.getGravity(level, new Vector3d(position.x, position.y, position.z)).length();
-            return new State(position, forward, right, up, velocity, gravity);
+            Vector3d at = new Vector3d(position.x, position.y, position.z);
+            double gravity = DimensionPhysicsData.getGravity(level, at).length();
+            return new State(position, forward, right, up, velocity, gravity, DimensionPhysicsData.getAirPressure(level, at));
         }
 
         private static Vec3 direction(Level level, Vec3 centre, Vec3 position, Direction direction) {

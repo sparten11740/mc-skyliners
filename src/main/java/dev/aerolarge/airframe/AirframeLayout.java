@@ -22,6 +22,7 @@ import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.CabinWindowBlock;
 import dev.aerolarge.block.CockpitDoorBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.ControlSurfaces;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.CurtainBlock;
@@ -65,6 +66,7 @@ import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -123,6 +125,21 @@ public final class AirframeLayout {
     /** Where along the tailplane and the wings the control jets stand, as shares of their half span: outboard of the engines. */
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
+    /**
+     * The ailerons: the wings' lifting blocks from this share of their half span, outboard of the outer engine and its
+     * pylon, out to this share, and aft of this share of the chord, the trailing edge.
+     */
+    private static final double AILERON_INBOARD = 0.7;
+    private static final double AILERON_OUTBOARD = 0.97;
+    private static final double AILERON_HINGE = 0.6;
+    /**
+     * The control surfaces a starboard lifting block can be part of: the right aileron, whose mirror image is the
+     * left's, or the tailplane's, one way or the other.
+     */
+    private static final AutopilotBlockEntity.Channel[] AILERON = {AutopilotBlockEntity.Channel.ROLL_RIGHT};
+    private static final AutopilotBlockEntity.Channel[] ELEVATOR = {
+        AutopilotBlockEntity.Channel.PITCH_UP, AutopilotBlockEntity.Channel.PITCH_DOWN
+    };
     /**
      * How far either side of the middle the pilots' seats stand: right beside the centre console, close enough together
      * that from either seat the whole console is within reach, but for the far thrust lever (any lever moves all four).
@@ -201,6 +218,8 @@ public final class AirframeLayout {
     private final Map<Double, List<BlockPos>> engineRelays = new HashMap<>();
     /** The control jets' relays, by what they do. */
     private final Map<AutopilotBlockEntity.Channel, List<BlockPos>> jetRelays = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+    /** The lifting blocks of the autopilot's control surfaces, by what they do, each in the order they turn over. */
+    private final Map<AutopilotBlockEntity.Channel, List<BlockPos>> surfaces = new EnumMap<>(AutopilotBlockEntity.Channel.class);
     /** The nose gear's steering relays, by the way they turn it, and the main gear's brake relays. */
     private final Map<String, List<BlockPos>> steerRelays = new HashMap<>();
     private final List<BlockPos> brakeRelays = new ArrayList<>();
@@ -305,6 +324,8 @@ public final class AirframeLayout {
         layout.shell();
         layout.landingGear();
         layout.trimTail();
+        // The control surfaces are picked once the tail's trim has turned its blocks the way they rest.
+        layout.controlSurfaces();
         // The skin is lined inside once it is cut and the gear meets it, before the airstairs keep their hatch's skin.
         new HullLining(layout).apply();
         layout.boardingStairs();
@@ -1831,8 +1852,8 @@ public final class AirframeLayout {
 
     /**
      * The autopilot's control head on the centre console, wired to every relay it flies with: the four engines', the
-     * control jets', and the landing gear's steering and brake relays, and to the controls it hands the airliner back
-     * to.
+     * control jets', and the landing gear's steering and brake relays; to the controls it hands the airliner back to;
+     * and to the lifting blocks of its control surfaces.
      */
     private void autopilot(BlockPos at, List<BlockPos> controls) {
         set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
@@ -1857,6 +1878,9 @@ public final class AirframeLayout {
                 autopilot.configure(turned, offsets(at, controls, rotation), at.getY() - ground);
                 List<BlockPos> frame = offsets(at, frameCorners(), rotation);
                 autopilot.frame(frame.get(0), frame.get(1));
+                Map<AutopilotBlockEntity.Channel, List<BlockPos>> turnedSurfaces = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+                surfaces.forEach((channel, blocks) -> turnedSurfaces.put(channel, offsets(at, blocks, rotation)));
+                autopilot.wireSurfaces(turnedSurfaces);
             }
         });
     }
@@ -1902,10 +1926,11 @@ public final class AirframeLayout {
     }
 
     /**
-     * Control jets for the autopilot, standing in for the control surfaces the airliner does not have: jets on top of
-     * and under the outer tailplane to pitch it (pushing the tail down lifts the nose), and on top of and under the
-     * outer wings to roll it, at a few stations along each so they can hold the airliner against its engines. Each
-     * is a thruster pointing up or down with its own relay right behind it.
+     * Control jets for the autopilot, standing in for control surfaces (and beside them, where it flies with its
+     * experimental ones, see {@link #controlSurfaces}): jets on top of and under the outer tailplane to pitch it
+     * (pushing the tail down lifts the nose), and on top of and under the outer wings to roll it, at a few stations
+     * along each so they can hold the airliner against its engines. Each is a thruster pointing up or down with its own
+     * relay right behind it.
      */
     private void controlJets() {
         if (palette.engine().isEmpty()) {
@@ -2594,6 +2619,71 @@ public final class AirframeLayout {
                 set(mirror.getX(), mirror.getY(), mirror.getZ(), down);
             }
         }
+    }
+
+    /**
+     * Picks the lifting blocks of the autopilot's control surfaces, once the tail is trimmed (see
+     * {@link ControlSurfaces}, which turns them over in flight): ailerons at the outer wings' trailing edges, the right
+     * wing's and the left's mirror images of each other, the furthest out turned first; and the whole tailplane as the
+     * elevator, the way a real one's trimmable stabiliser moves, its blocks that face up (to raise the nose) apart from
+     * those the trim turned down (to lower it), in mirrored pairs, the furthest aft first. Picked whether the autopilot
+     * flies with them or not; they stand as built until it does.
+     */
+    private void controlSurfaces() {
+        Map<AutopilotBlockEntity.Channel, List<BlockPos>> starboard = new EnumMap<>(AutopilotBlockEntity.Channel.class);
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            AutopilotBlockEntity.Channel channel = surface(cell.getKey(), cell.getValue());
+            if (channel != null) {
+                starboard.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(cell.getKey());
+            }
+        }
+        List<BlockPos> ailerons = starboard.getOrDefault(AutopilotBlockEntity.Channel.ROLL_RIGHT, new ArrayList<>());
+        ailerons.sort(Comparator.comparingInt((BlockPos pos) -> pos.getX()).thenComparingInt(BlockPos::getZ).reversed());
+        surfaces.put(AutopilotBlockEntity.Channel.ROLL_RIGHT, ailerons);
+        surfaces.put(AutopilotBlockEntity.Channel.ROLL_LEFT, ailerons.stream().map(AirframeLayout::mirror).toList());
+        for (AutopilotBlockEntity.Channel pitch : ELEVATOR) {
+            List<BlockPos> tail = starboard.getOrDefault(pitch, new ArrayList<>());
+            tail.sort(Comparator.comparingInt((BlockPos pos) -> pos.getZ()).thenComparingInt(BlockPos::getX).reversed());
+            surfaces.put(pitch, tail.stream().flatMap(pos -> Stream.of(pos, mirror(pos))).toList());
+        }
+    }
+
+    /**
+     * Which of the autopilot's control surfaces a block on the starboard side is part of, by the way it rests, its
+     * mirror image to port resting the same way; null for none. The tailplane's lifting blocks lie aft of where it
+     * starts, which the wingtips stop short of; the fin's stand on edge in the middle.
+     */
+    @Nullable
+    private AutopilotBlockEntity.Channel surface(BlockPos pos, BlockState state) {
+        if (pos.getX() <= 0 || !palette.isLift(state) || !state.equals(stateAt(-pos.getX(), pos.getY(), pos.getZ()))) {
+            return null;
+        }
+        boolean tail = pos.getZ() >= STABILIZER_ROOT_LEADING_EDGE * scale;
+        if (!tail && !aileron(pos)) {
+            return null;
+        }
+        for (AutopilotBlockEntity.Channel channel : tail ? ELEVATOR : AILERON) {
+            if (state.equals(palette.lift(ControlSurfaces.rest(channel), palette.hull()))) {
+                return channel;
+            }
+        }
+        return null;
+    }
+
+    /** Whether a block of the wings' lifting layer lies in an aileron: in its stretch of the span, aft of its hinge. */
+    private boolean aileron(BlockPos pos) {
+        double x = pos.getX() / scale;
+        double out = x / WING_HALF_SPAN;
+        if (out < AILERON_INBOARD || out > AILERON_OUTBOARD) {
+            return false;
+        }
+        double chordwise = ((pos.getZ() + 0.5) / scale - wingLeadingEdge(x)) / lerp(WING_ROOT_CHORD, WING_TIP_CHORD, out);
+        return chordwise >= AILERON_HINGE;
+    }
+
+    /** A position's mirror image across the middle of the airliner. */
+    private static BlockPos mirror(BlockPos pos) {
+        return new BlockPos(-pos.getX(), pos.getY(), pos.getZ());
     }
 
     /** The block's mass in Sable, from the tags Sable weighs blocks by; air and fluids weigh nothing here. */

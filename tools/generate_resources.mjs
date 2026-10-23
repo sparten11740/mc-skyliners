@@ -5056,6 +5056,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.climbHeight": "Climb Height",
   "aerolarge.configuration.rotateSpeed": "Rotate Speed",
   "aerolarge.configuration.cruiseSpeed": "Cruise Speed",
+  "aerolarge.configuration.controlSurfaces": "Control Surfaces (Experimental)",
   "aerolarge.configuration.radio": "Radio",
   "aerolarge.configuration.atcChatter": "Air Traffic Control",
   "aerolarge.configuration.atcVolume": "Air Traffic Control Volume",

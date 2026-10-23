@@ -18,6 +18,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
+    public static final ModConfigSpec.BooleanValue CONTROL_SURFACES;
     public static final ModConfigSpec.BooleanValue ATC_CHATTER;
     public static final ModConfigSpec.DoubleValue ATC_VOLUME;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
@@ -95,6 +96,15 @@ public final class AerolargeConfig {
                 "Never less than a quarter above the speed it rotated at, so the wings keep lifting."
             )
             .defineInRange("cruiseSpeed", 50.0, 5.0, 300.0);
+        CONTROL_SURFACES = builder
+            .comment(
+                "Experimental: whether the autopilot rolls and pitches the airliner with control surfaces, turning the wing blocks of the",
+                "outer wings' trailing edges (ailerons) and of the tailplane over, rather than with the control jets. The jets stay for",
+                "safety: they do it all at take-off and landing speeds and whenever the airliner is past the attitude the autopilot keeps",
+                "it within, and they add whatever more the surfaces cannot give. Only airliners built since the surfaces came in have them;",
+                "older ones fly on their jets either way."
+            )
+            .define("controlSurfaces", false);
         builder.pop();
 
         builder.push("radio");

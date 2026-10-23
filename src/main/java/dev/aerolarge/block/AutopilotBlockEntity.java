@@ -47,7 +47,10 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 /**
  * The autopilot: flies the assembled airliner by setting its thrusters. The four engines push it along and, split
  * left against right, help turn it; jets on the tailplane pitch it, standing in for elevators, and jets at the wingtips
- * bank it, standing in for ailerons. It reads where the airliner is and how it moves from Sable each tick.
+ * bank it, standing in for ailerons. It reads where the airliner is and how it moves from Sable each tick. With
+ * {@code controlSurfaces} on in the server config, an experiment, it pitches and rolls with control surfaces instead,
+ * once the airliner flies fast enough, and the jets only add what the surfaces cannot give (see
+ * {@link ControlSurfaces}).
  *
  * <p>Engaged on the ground it takes off: the roll at full thrust up to rotation speed, holding the runway heading with
  * the nose wheel, then the nose raised until the airliner lifts off. In the air it holds a height and a speed, and
@@ -360,6 +363,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final Stowing stowing = new Stowing();
     /** Hopping the airliner free when it is stuck. */
     private final Hop hop = new Hop();
+    /** The control surfaces it pitches and rolls with, switched on, beside the jets. */
+    private final ControlSurfaces surfaces = new ControlSurfaces();
     /** Whether the settings screen offers to hop the airliner free: found on the server each tick, sent to the clients. */
     private boolean stuck;
     /** Whether, flying to a pin, it lands near it rather than circling it (see {@link PinLanding}). */
@@ -385,6 +390,15 @@ public class AutopilotBlockEntity extends BlockEntity {
     public void frame(BlockPos from, BlockPos to) {
         frameFrom = from;
         frameTo = to;
+        setChanged();
+    }
+
+    /**
+     * Wired when the airliner is built: the lifting blocks its control surfaces turn over, by the way they turn the
+     * airliner, each in the order they are turned over, as offsets from the autopilot (see {@link ControlSurfaces}).
+     */
+    public void wireSurfaces(Map<Channel, List<BlockPos>> blocks) {
+        surfaces.wire(blocks);
         setChanged();
     }
 
@@ -794,6 +808,8 @@ public class AutopilotBlockEntity extends BlockEntity {
                 autopilot.setJets(serverLevel, 0, 0);
             }
             autopilot.offerHop(false);
+            // Its control surfaces stand as built again.
+            autopilot.surfaces.rest(serverLevel, pos);
             return;
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
@@ -1238,15 +1254,27 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Sets the control jets to pitch and roll the airliner as asked, in signal up and to the right; while it hops
-     * free, as the hop needs them instead.
+     * Sets the control jets to pitch and roll the airliner as asked, in signal up and to the right, the control
+     * surfaces taking what they can of it if switched on (see {@link ControlSurfaces}); while it hops free, the jets as
+     * the hop needs them instead, the surfaces standing as built.
      */
     private void driveJets(ServerLevel level, SableFlight.State state, int pitch, int roll) {
         if (hop.firing()) {
+            surfaces.rest(level, worldPosition);
             hopJets(level, state);
-        } else {
-            setJets(level, pitch, roll);
+            return;
         }
+        ControlSurfaces.Jets jets = surfaces.fly(level, worldPosition, state, pitch, roll, upset(state));
+        setJets(level, jets.pitch(), jets.roll());
+    }
+
+    /**
+     * Whether the airliner is past the attitude it is kept within with the autopilot off: then, whatever the control
+     * surfaces could do, the jets right it, as they always have.
+     */
+    private static boolean upset(SableFlight.State state) {
+        double pitch = state.pitch();
+        return pitch > PROTECT_CLIMB || pitch < -PROTECT_DIVE || Math.abs(state.roll()) > PROTECT_BANK;
     }
 
     private void setJets(ServerLevel level, int pitch, int roll) {
@@ -1394,10 +1422,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Relays.isRelay(state) || block instanceof ThrustLeverBlock || block instanceof TillerBlock || block instanceof ParkingBrakeBlock;
     }
 
-    /** Turns its links to the relays and the controls, mending them. */
+    /** Turns its links to the relays, the controls and the control surfaces, mending them. */
     private void turnLinks(Rotation turn) {
         relays.replaceAll((channel, offsets) -> Turning.turn(offsets, turn));
         controls = Turning.turn(controls, turn);
+        surfaces.turn(turn);
         setChanged();
     }
 
@@ -1416,6 +1445,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         relays.forEach((channel, offsets) -> channels.put(channel.name(), Relays.write(offsets)));
         tag.put("Relays", channels);
         tag.put("Controls", Relays.write(controls));
+        surfaces.save(tag);
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         saveTargets(tag);
@@ -1465,6 +1495,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             }
             // Saved as "Levers" before the tiller and the parking brake joined them.
             controls = Turning.turn(Relays.read(tag.getList(tag.contains("Controls") ? "Controls" : "Levers", Tag.TAG_INT_ARRAY)), turn);
+            surfaces.load(tag, turn);
             trim = tag.getDouble("Trim");
             // Saved before the signal that holds the speed was learnt.
             thrustTrim = tag.contains("ThrustTrim") ? tag.getDouble("ThrustTrim") : CRUISE_THRUST;
