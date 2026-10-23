@@ -43,6 +43,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Explosive decompression: a door of an airliner opened in flight lets the cabin's air rush out through it. Whoever
@@ -357,10 +358,10 @@ public final class Decompression {
     }
 
     /**
-     * Pulls the entity, its middle at the given point in the world, toward the doorway, the harder the closer, and
-     * flings it out once it is in it. Only from inside, and only where the air has a clear way to the door: not up
-     * through the floor from the hold, or round a wall. Whatever is already out past the middle of the doorway is only
-     * sped on its way while still in it.
+     * Pulls the entity, its middle at the given point in the world, toward the doorway along the floor, the harder the
+     * closer, and flings it out once it is in it. Only from inside, and only where the air has a clear way to the door:
+     * not up through the floor from the hold, or round a wall. Whatever is already out past the middle of the doorway is
+     * only sped on its way while still in it.
      */
     private static void pull(ServerLevel level, Entity entity, Vec3 centre, Doorway doorway, Vec3 up, double reach) {
         Vec3 offset = centre.subtract(doorway.world());
@@ -383,10 +384,9 @@ public final class Decompression {
         if (distance < FLING_RANGE) {
             push = push.add(doorway.outward().scale(FLING));
         }
-        if (!(entity instanceof LivingEntity)) {
-            // Loose things slide along the floor: one lifted off it in the world is carried along with the cabin no more.
-            push = push.subtract(up.scale(push.dot(up)));
-        }
+        // Along the floor, lifting nothing off it: a loose thing lifted off it in the world is carried along with the
+        // cabin no more, and the middle of the doorway is a little above anyone's own, so near it they were lifted.
+        push = push.subtract(up.scale(push.dot(up)));
         push(level, entity, push);
     }
 
@@ -408,8 +408,18 @@ public final class Decompression {
         }
     }
 
-    /** Pushes the entity, in the world's directions: turned into the airliner's frame for what lives among its blocks. */
+    /**
+     * Pushes the entity, in the world's directions: turned into the airliner's frame for what lives among its blocks. A
+     * player moves on their own client, so theirs is sent to it, to add to how they move. Marking the player's motion
+     * on the server to be sent instead sent the client whatever else the server keeps there: above all the jump it books
+     * whenever the client says the player left the ground going up, which threw the player up into the top of the
+     * doorway rather than out through it.
+     */
     private static void push(ServerLevel level, Entity entity, Vec3 push) {
+        if (entity instanceof ServerPlayer player) {
+            PacketDistributor.sendToPlayer(player, new DecompressionPush(push));
+            return;
+        }
         entity.push(SableFlight.turnToPlot(level, entity.blockPosition(), push));
         entity.hurtMarked = true;
     }

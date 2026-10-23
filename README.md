@@ -825,11 +825,11 @@ out through the doorway in a stream of fog, everyone aboard is warned in chat, t
 whole cabin and every cabin light, LED strip and pendant light turns red, a wave of red running down the cabin from
 the flight deck, until the door is shut again (then the lights go back to how the dimmer had them; with Veil's lights
 drawn, the red lights cast red light round the cabin too), and whoever stands within a few blocks of the door (3 per unit of `scale`), and anything loose (mobs, villagers out of their seats, dropped items, a
-basketball, a trolley), is dragged to it, the harder the closer, and flung out into the sky, wherever the air has a
-clear way to the door (not up through the floor from the hold, or round a wall). Anyone seated is belted in and stays
-put. With a parachute on, being sucked out is just the start of a skydive; close the door from a few steps back to
-stop it, most easily with the Door Button on the wall beside it (see Doors), or wait: ten seconds after it opened,
-the door shuts by itself (waiting, as ever, for anyone in its way).
+basketball, a trolley), is dragged along the floor to it, the harder the closer, and flung out through it into the
+sky, wherever the air has a clear way to the door (not up through the floor from the hold, or round a wall). Anyone
+seated is belted in and stays put. With a parachute on, being sucked out is just the start of a skydive; close the
+door from a few steps back to stop it, most easily with the Door Button on the wall beside it (see Doors), or wait:
+ten seconds after it opened, the door shuts by itself (waiting, as ever, for anyone in its way).
 Turn it off with `decompression` in the server config.
 
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to

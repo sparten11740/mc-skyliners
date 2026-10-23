@@ -14,6 +14,7 @@ import dev.aerolarge.block.SetAutopilot;
 import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.block.UnstickAirliner;
 import dev.aerolarge.block.VillagesBelow;
+import dev.aerolarge.cabin.DecompressionPush;
 import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
 import dev.aerolarge.cabin.Passengers;
@@ -119,7 +120,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("11")
+        event.registrar("12")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -127,6 +128,8 @@ public final class Aerolarge {
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
             .playToClient(HandPlacedBlocks.TYPE, HandPlacedBlocks.STREAM_CODEC,
                 (payload, context) -> HandPlaced.told(context.player().level(), payload))
+            .playToClient(DecompressionPush.TYPE, DecompressionPush.STREAM_CODEC,
+                (payload, context) -> context.player().push(payload.x(), payload.y(), payload.z()))
             // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
                 (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
