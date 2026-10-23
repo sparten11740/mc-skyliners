@@ -982,14 +982,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         double rollRate = Mth.wrapDegrees(roll - lastRoll) * 20;
         lastPitch = pitch;
         lastRoll = roll;
-        int pitchCommand = 0;
-        int rollCommand = 0;
+        double pitchCommand = 0;
+        double rollCommand = 0;
         if (radioAltitude(level, state) > AIRBORNE) {
             double climbLimit = state.apex() > ceiling(level) ? 0 : PROTECT_CLIMB;
             double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
             double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
-            pitchCommand = (int) Math.round(PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate);
-            rollCommand = (int) Math.round(ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate);
+            pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
+            rollCommand = ROLL_GAIN * rollBack - ROLL_DAMPING * rollRate;
         }
         driveJets(level, state, pitchCommand, rollCommand);
 
@@ -1137,8 +1137,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         // blocks up, the nose rose and the airliner floated along over the ground. On the ground the wheels hold it.
         double pitchError = targetPitch - pitch;
         pitchHold = onGround ? 0 : Mth.clamp(pitchHold + PITCH_HOLD_RATE * pitchError, -PITCH_HOLD_LIMIT, PITCH_HOLD_LIMIT);
-        int pitchCommand = (int) Math.round(pitchHold + PITCH_GAIN * pitchError - PITCH_DAMPING * pitchRate);
-        int rollCommand = (int) Math.round(ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate);
+        double pitchCommand = pitchHold + PITCH_GAIN * pitchError - PITCH_DAMPING * pitchRate;
+        double rollCommand = ROLL_GAIN * (bank - roll) - ROLL_DAMPING * rollRate;
         boolean rolls = !onGround || radio > 0.5;
         driveJets(level, state, pitchCommand, rolls ? rollCommand : 0);
 
@@ -1278,13 +1278,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      * surfaces taking what they can of it if switched on (see {@link ControlSurfaces}); while it hops free, the jets as
      * the hop needs them instead, the surfaces standing as built.
      */
-    private void driveJets(ServerLevel level, SableFlight.State state, int pitch, int roll) {
+    private void driveJets(ServerLevel level, SableFlight.State state, double pitch, double roll) {
         if (hop.firing()) {
             surfaces.rest(level, worldPosition);
             hopJets(level, state);
             return;
         }
-        ControlSurfaces.Jets jets = surfaces.fly(level, worldPosition, state, pitch, roll, upset(state));
+        ControlSurfaces.Jets jets = surfaces.fly(level, worldPosition, nose(), state, pitch, roll, upset(state));
         setJets(level, jets.pitch(), jets.roll());
     }
 

@@ -126,12 +126,14 @@ public final class AirframeLayout {
     private static final double[] TAIL_JET_STATIONS = {0.6, 0.72, 0.84};
     private static final double[] WING_JET_STATIONS = {0.76, 0.82, 0.88};
     /**
-     * The ailerons: the wings' lifting blocks from this share of their half span, outboard of the outer engine and its
-     * pylon, out to this share, and aft of this share of the chord, the trailing edge.
+     * The ailerons: the wings' lifting blocks from this share of their half span out to this share, aft of this share of
+     * the chord. A lifting block turned over pushes so little against an airliner's weight that a real aileron's strip
+     * along the trailing edge rolls it no faster than one step of the jets; so here the aileron is the whole outer half
+     * of the wing, front to back, which rolls it about five times as hard.
      */
-    private static final double AILERON_INBOARD = 0.7;
+    private static final double AILERON_INBOARD = 0.45;
     private static final double AILERON_OUTBOARD = 0.97;
-    private static final double AILERON_HINGE = 0.6;
+    private static final double AILERON_HINGE = 0;
     /**
      * The control surfaces a starboard lifting block can be part of: the right aileron, whose mirror image is the
      * left's, or the tailplane's, one way or the other.

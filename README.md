@@ -395,27 +395,34 @@ faintly toward the edges and catches a little light along its top.
 The airliner has no control surfaces that move, so the autopilot flies with thrusters: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
-hard along the nose, so it learns the pitch that holds the height at its speed as it flies. Part of the tailplane
-pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It needs
-Sable (Create Aeronautics) to read where the airliner is.
+hard along the nose, so it learns the pitch that holds the height at its speed as it flies, and the push the nose
+needs to stay at that pitch, so it settles on the height set rather than a few blocks off it. It eases the engines'
+split as it swings toward a heading, so it rolls out onto it without rocking to and fro about it. Part of the
+tailplane pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It
+needs Sable (Create Aeronautics) to read where the airliner is.
 
 As an experiment, `controlSurfaces` in the server config (off by default) has the autopilot pitch and roll the
 airliner with control surfaces instead, the jets kept for safety. Sable pushes each wing block along the way it faces,
 as hard as it goes through the air (and as thick as the air is), whatever angle the air meets it at; turned upside
 down, a block pushes the other way, and drags just as before. So the surfaces are the wings' own lifting blocks,
-turned over in flight: ailerons at the trailing edges of the outer wings, outboard of the outer engines (turned over
-on the right wing, they push it down and roll the airliner right; on the left, left), and the whole tailplane as the
-elevator, the way an airliner's trimmable stabiliser moves (its blocks that face up, turned down, raise the nose; those
-its trim turned down, turned up, lower it). The more blocks turned, the harder they push, the furthest out along the
-wing and the furthest aft along the tailplane first; and the faster the airliner flies, the fewer it takes. The
-surfaces take as much of what the autopilot asks for as they can, and the jets only add what they cannot give. Below
-1.3 times the rotation speed (until it slows below 1.2 times), so at take-off and landing, and whenever the airliner is
-past 25 degrees nose up, 20 down or 35 of bank, the surfaces stand as built and the jets fly it all, as they always
-have. To spare Sable the work, the surfaces only move once what is asked has changed by a step and a half of the jets'
-signal, and at most four times a second. A wing block looks the same either way up, so nothing is seen moving: flying
-on the surfaces shows as the wingtip and tailplane jets staying quiet as the airliner turns. Only airliners built since
-the surfaces came in have them; older ones fly on their jets whatever the setting. Switched off, or once the airliner
-is disassembled, its surfaces turn back as they were built.
+turned over in flight: ailerons over the whole outer half of each wing, front to back (turned over on the right wing,
+they push it down and roll the airliner right; on the left, left), and the whole tailplane as the elevator, the way an
+airliner's trimmable stabiliser moves (its blocks that face up, turned down, raise the nose; those its trim turned
+down, turned up, lower it). One block turned over pushes very little against the airliner's weight, so it takes a lot
+of them: a strip along the trailing edge, as on a real airliner, rolled it no faster than a single step of the jets.
+The more blocks turned, the harder they push, the furthest out along the wing and the furthest aft along the tailplane
+first; and the faster the airliner flies and the thicker the air, the fewer it takes, worked out from what each block
+was measured to give in flight. The surfaces follow what the autopilot asks for, smoothed over a few ticks, as far as
+they reach, sweeping at most 40 blocks a tick and standing still within a few blocks of where they should be; and the
+jets give exactly what the surfaces do not give as they stand, so between them the autopilot always gets what it
+asked, and the surfaces can only ever take work off the jets. Below 1.3 times the rotation speed (until it slows below
+1.2 times), so on the take-off run and once a landing has slowed the airliner to its approach speed, and whenever it
+is past 25 degrees nose up, 20 down or 35 of bank, the surfaces sweep back as built and the jets fly it all, as they
+always have. In the test flights, the surfaces carried nearly all of the cruise, the climbs and descents and the
+turns, the jets coming in for the take-off, the landing and the sharpest part of a turn. A wing block looks the same
+either way up, so nothing is seen moving: flying on the surfaces shows as the wingtip and tailplane jets staying quiet.
+Only airliners built since the surfaces came in have them; older ones fly on their jets whatever the setting. Switched
+off, or once the airliner is disassembled, its surfaces turn back as they were built.
 
 Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
 control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,
