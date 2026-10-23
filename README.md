@@ -392,12 +392,30 @@ screen and while you look through an outside camera; turn it off with `pilotHud`
 the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold, darkens it
 faintly toward the edges and catches a little light along its top.
 
-The airliner has no control surfaces, so the autopilot flies with thrusters only: besides the engines there are
+The airliner has no control surfaces that move, so the autopilot flies with thrusters: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
 banking, so the wings' lift turns it. Sable's wings lift with the airspeed even flying level, and the engines push
 hard along the nose, so it learns the pitch that holds the height at its speed as it flies. Part of the tailplane
 pushes down and the fin's lift cancels out, so the airliner keeps its nose up and runs straight at speed. It needs
 Sable (Create Aeronautics) to read where the airliner is.
+
+As an experiment, `controlSurfaces` in the server config (off by default) has the autopilot pitch and roll the
+airliner with control surfaces instead, the jets kept for safety. Sable pushes each wing block along the way it faces,
+as hard as it goes through the air (and as thick as the air is), whatever angle the air meets it at; turned upside
+down, a block pushes the other way, and drags just as before. So the surfaces are the wings' own lifting blocks,
+turned over in flight: ailerons at the trailing edges of the outer wings, outboard of the outer engines (turned over
+on the right wing, they push it down and roll the airliner right; on the left, left), and the whole tailplane as the
+elevator, the way an airliner's trimmable stabiliser moves (its blocks that face up, turned down, raise the nose; those
+its trim turned down, turned up, lower it). The more blocks turned, the harder they push, the furthest out along the
+wing and the furthest aft along the tailplane first; and the faster the airliner flies, the fewer it takes. The
+surfaces take as much of what the autopilot asks for as they can, and the jets only add what they cannot give. Below
+1.3 times the rotation speed (until it slows below 1.2 times), so at take-off and landing, and whenever the airliner is
+past 25 degrees nose up, 20 down or 35 of bank, the surfaces stand as built and the jets fly it all, as they always
+have. To spare Sable the work, the surfaces only move once what is asked has changed by a step and a half of the jets'
+signal, and at most four times a second. A wing block looks the same either way up, so nothing is seen moving: flying
+on the surfaces shows as the wingtip and tailplane jets staying quiet as the airliner turns. Only airliners built since
+the surfaces came in have them; older ones fly on their jets whatever the setting. Switched off, or once the airliner
+is disassembled, its surfaces turn back as they were built.
 
 Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
 control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,
@@ -1112,7 +1130,8 @@ landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
 `ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
-flies (not sending the clients the control jets' relays, which nothing there reads), reading the airliner from Sable
+flies (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks
+`ControlSurfaces` turns over), reading the airliner from Sable
 through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other
