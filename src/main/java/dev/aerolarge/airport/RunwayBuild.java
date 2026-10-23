@@ -121,6 +121,11 @@ public final class RunwayBuild {
             .add(new RunwayBuild(start, along, Size.forAirliner(), builder != null ? builder.getUUID() : null));
     }
 
+    public static boolean isRunning(ServerLevel level) {
+        List<RunwayBuild> builds = ACTIVE.get(level);
+        return builds != null && !builds.isEmpty();
+    }
+
     public static void tick(ServerLevel level) {
         List<RunwayBuild> builds = ACTIVE.get(level);
         if (builds != null) {

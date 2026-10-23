@@ -17,6 +17,7 @@ import net.minecraft.world.item.context.UseOnContext;
 /**
  * Lays down a runway for the airliner (see {@link RunwayBuild}). Used on the ground, the runway starts two blocks past
  * the block clicked, in its layer, centred on it, and runs away the way the player faces, replacing whatever is there.
+ * One at a time: while a runway is being laid, another cannot be started.
  */
 public class RunwayBlueprintItem extends Item {
     /** How far past the block clicked the runway starts, so the player is not standing on its threshold lights. */
@@ -33,6 +34,10 @@ public class RunwayBlueprintItem extends Item {
         }
         if (!(context.getPlayer() instanceof ServerPlayer player)) {
             return InteractionResult.PASS;
+        }
+        if (RunwayBuild.isRunning(level)) {
+            player.displayClientMessage(Component.translatable("message.aerolarge.runway.busy"), true);
+            return InteractionResult.FAIL;
         }
         Direction along = player.getDirection();
         BlockPos start = context.getClickedPos().relative(along, AHEAD);
