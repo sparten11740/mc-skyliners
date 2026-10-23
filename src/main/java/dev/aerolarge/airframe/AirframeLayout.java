@@ -1960,7 +1960,7 @@ public final class AirframeLayout {
      * One engine: a round nacelle under the wing at span station x (negative to port), cut to its curve, the intake
      * up front, the thrusters filling the middle of the exhaust face, and a pylon up to the wing. The intake's face is
      * the cowl's skin round a mouth of intake blocks; the engine's core is told where it is, so the client can draw
-     * the cowl's lip, the fan and its spinner over it, round at any scale.
+     * the cowl's lip, the fan and its spinner over it, finer than blocks at any scale.
      */
     private void engine(double x) {
         double front = nacelleFront(Math.abs(x));

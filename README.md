@@ -63,8 +63,8 @@ under it), light ceiling panels over the crown, and grey floor panels where the 
 floor. An airliner built before the lining keeps its plating inside until it is built again. Overhead lockers line both cabin walls
 above head height (not in the gym hall), each holding a cabin bag's worth like a small chest. Outside it carries red and green navigation lights on the wingtips with white strobes,
 a white tail light and red beacons above and below the fuselage. The engines' nacelles are skinned round like the hull,
-and each intake is round too: a polished lip curling into the duct, the fan and its spinner at the bottom of it. While
-an engine is at rest an iris shuts its intake; it opens as soon as the engine is asked for thrust, and behind the
+and each intake is faceted to match: a polished lip bevelled into the duct, the fan and its spinner at the bottom of it.
+While an engine is at rest an iris shuts its intake; it opens as soon as the engine is asked for thrust, and behind the
 turning fan the engine glows a dull red, brighter the harder it runs, until it has spun down and the iris shuts again.
 Each engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a
 contrail. Flying through the cloud layer, the clouds stay outside: while you are inside the hull of an airliner that
@@ -1111,7 +1111,7 @@ Sable draws an assembled airliner's block entities every frame wherever the came
 leave out what the camera cannot see themselves, as `Sight` tells them where it stands: `PassengerScreenRenderer` draws
 a screen only from in front of it, its text laid out once a tick for all of an airliner's screens and faded out as it
 gets too small to read, as `FlightDisplayRenderer` and `AutopilotScreenRenderer` draw theirs only from in front too;
-`EngineIntakeRenderer` draws the intakes round over the nacelles' faces, from where each
+`EngineIntakeRenderer` draws the intakes in flat sides over the nacelles' faces, from where each
 engine's core was told they are, what lies inside the duct only from in front of them; `PlugDoorRenderer` draws the
 hull's doors shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel
 and its lining into, only the quads of it that face the camera; `CockpitDoorRenderer` draws the cockpit door's panel

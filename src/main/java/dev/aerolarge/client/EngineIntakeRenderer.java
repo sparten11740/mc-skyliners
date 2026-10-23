@@ -19,13 +19,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Draws an engine's intake round over the face of its nacelle: the cowl standing a little proud of the blocks, its
- * polished lip curling over into the duct, and at the bottom of the duct the fan round its spinner. At rest an iris
- * shuts the duct; it opens as the engine starts, and behind the turning fan the engine glows a dull red, brighter the
- * harder it runs. It is drawn from the engine's core, which knows where its intake is (see
- * {@link EngineCoreBlockEntity.Intake}) and how its iris and fan stand, in flat colours lit by the light just in front
- * of the intake, and in proportion to the nacelle, so it looks the same at any scale. An engine built before its core
- * knew where its intake is draws nothing and keeps its plain face.
+ * Draws an engine's intake over the face of its nacelle: the cowl standing a little proud of the blocks, in flat sides
+ * as the nacelle's shell behind it is cut, its polished lip bevelled over into the duct, and at the bottom of the duct
+ * the fan round its spinner. At rest an iris shuts the duct; it opens as the engine starts, and behind the turning fan
+ * the engine glows a dull red, brighter the harder it runs. It is drawn from the engine's core, which knows where its
+ * intake is (see {@link EngineCoreBlockEntity.Intake}) and how its iris and fan stand, in flat colours lit by the
+ * light just in front of the intake, and in proportion to the nacelle, so it looks the same at any scale. An engine
+ * built before its core knew where its intake is draws nothing and keeps its plain face.
  *
  * <p>The cowl stands proud of the nacelle, so it shows from beside and behind it too and is always drawn; what lies
  * inside the duct is left out with the camera behind the nacelle's face, where the face and the duct's wall hide it.
@@ -33,9 +33,15 @@ import net.minecraft.world.phys.Vec3;
 public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlockEntity> {
     /** Vanilla's plain white texture, painted over in the vertices' colours. */
     private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
-    /** Steps round the intake, and round the lip's curl from the cowl into the duct. */
+    /** Steps round the dark at the bottom of the duct and round the spinner. */
     private static final int SEGMENTS = 48;
-    private static final int LIP_STEPS = 5;
+    /**
+     * The flat sides the cowl, its lip and the duct are drawn in, so they read as cut like the nacelle's shell rather
+     * than turned round: a side each faces up, down and out to either side, as the nacelle's flats do.
+     */
+    private static final int SIDES = 16;
+    /** The flat steps the lip turns over in from the cowl into the duct: a bevel, a flat front and a bevel. */
+    private static final int LIP_STEPS = 3;
     /** How far the cowl stands proud of the nacelle's face, as a share of the nacelle's radius. */
     private static final float PROUD = 0.4F;
     /**
@@ -92,6 +98,14 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
     private static final float[] COS = new float[SEGMENTS + 1];
     private static final float[] SIN = new float[SEGMENTS + 1];
     /**
+     * The cosine and sine at every corner of the cowl's sides, half a side round from straight out to port, the first
+     * repeated at the end; and the same for the way each side faces, from the middle of it.
+     */
+    private static final float[] CORNER_COS = new float[SIDES + 1];
+    private static final float[] CORNER_SIN = new float[SIDES + 1];
+    private static final float[] FACING_COS = new float[SIDES];
+    private static final float[] FACING_SIN = new float[SIDES];
+    /**
      * The same at every step round the iris's petals, before they turn: worked out once, rather than for each of the
      * iris's 640 points in every frame.
      */
@@ -102,6 +116,14 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
         for (int i = 0; i <= SEGMENTS; i++) {
             COS[i] = (float) Math.cos(2 * Math.PI * i / SEGMENTS);
             SIN[i] = (float) Math.sin(2 * Math.PI * i / SEGMENTS);
+        }
+        for (int i = 0; i <= SIDES; i++) {
+            CORNER_COS[i] = (float) Math.cos(2 * Math.PI * (i + 0.5) / SIDES);
+            CORNER_SIN[i] = (float) Math.sin(2 * Math.PI * (i + 0.5) / SIDES);
+        }
+        for (int i = 0; i < SIDES; i++) {
+            FACING_COS[i] = (float) Math.cos(2 * Math.PI * (i + 1) / SIDES);
+            FACING_SIN[i] = (float) Math.sin(2 * Math.PI * (i + 1) / SIDES);
         }
         for (int i = 0; i <= PETALS * IRIS_STEPS; i++) {
             IRIS_COS[i] = (float) Math.cos(2 * Math.PI * i / (PETALS * IRIS_STEPS));
@@ -132,7 +154,7 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
         Painter paint = new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(WHITE)), pose.last(), light);
         float radius = intake.radius();
         float mouth = intake.mouth();
-        // The lip curls over in a half circle as wide as it is thick; the cowl's straight sides end where it starts.
+        // The lip turns over round a half circle as wide as it is thick; the cowl's straight sides end where it starts.
         float curl = (radius - mouth) / 2;
         float sides = PROUD * radius - curl;
         cowl(paint, radius, mouth, curl, sides);
@@ -170,22 +192,18 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
     }
 
     /**
-     * The cowl: its outside, from the nacelle's face out to where the lip starts to curl; the lip curling over in a
-     * half circle from the outside to the mouth; and the duct, from the lip back to the face.
+     * The cowl: its outside, from the nacelle's face out to where the lip starts to turn over; the lip turning over in
+     * flat steps round a half circle from the outside to the mouth; and the duct, from the lip back to the face.
      */
     private static void cowl(Painter paint, float radius, float mouth, float curl, float sides) {
-        band(paint, radius, 0, 1, 0, radius, sides, 1, 0, COWL);
+        band(paint, radius, 0, radius, sides, COWL);
         for (int k = 0; k < LIP_STEPS; k++) {
             double from = Math.PI * k / LIP_STEPS;
             double to = Math.PI * (k + 1) / LIP_STEPS;
-            float outFrom = (float) Math.cos(from);
-            float aheadFrom = (float) Math.sin(from);
-            float outTo = (float) Math.cos(to);
-            float aheadTo = (float) Math.sin(to);
-            band(paint, mouth + curl + curl * outFrom, sides + curl * aheadFrom, outFrom, aheadFrom,
-                mouth + curl + curl * outTo, sides + curl * aheadTo, outTo, aheadTo, LIP);
+            band(paint, mouth + curl + curl * (float) Math.cos(from), sides + curl * (float) Math.sin(from),
+                mouth + curl + curl * (float) Math.cos(to), sides + curl * (float) Math.sin(to), LIP);
         }
-        band(paint, mouth, sides, -1, 0, mouth, 0, -1, 0, DUCT);
+        band(paint, mouth, sides, mouth, 0, DUCT);
     }
 
     /**
@@ -298,16 +316,21 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
     }
 
     /**
-     * A band round the axis from one ring to another, each given by its radius, how far out of the face it is, and
-     * its surface's way out as a share outward from the axis and a share ahead.
+     * A band of the cowl's flat sides round the axis from one ring to another, each given by the radius of its corners
+     * and how far out of the face it is, every side lit as the flat face it is.
      */
-    private static void band(Painter paint, float radiusFrom, float outFrom, float acrossFrom, float aheadFrom,
-                             float radiusTo, float outTo, float acrossTo, float aheadTo, int colour) {
-        for (int i = 0; i < SEGMENTS; i++) {
-            paint.vertex(radiusFrom * COS[i], radiusFrom * SIN[i], outFrom, acrossFrom * COS[i], acrossFrom * SIN[i], aheadFrom, colour);
-            paint.vertex(radiusFrom * COS[i + 1], radiusFrom * SIN[i + 1], outFrom, acrossFrom * COS[i + 1], acrossFrom * SIN[i + 1], aheadFrom, colour);
-            paint.vertex(radiusTo * COS[i + 1], radiusTo * SIN[i + 1], outTo, acrossTo * COS[i + 1], acrossTo * SIN[i + 1], aheadTo, colour);
-            paint.vertex(radiusTo * COS[i], radiusTo * SIN[i], outTo, acrossTo * COS[i], acrossTo * SIN[i], aheadTo, colour);
+    private static void band(Painter paint, float radiusFrom, float outFrom, float radiusTo, float outTo, int colour) {
+        // The sides' way out, square to the band's slope from one ring to the other: a share outward and a share ahead.
+        float slope = (float) Math.hypot(radiusTo - radiusFrom, outTo - outFrom);
+        float across = (outTo - outFrom) / slope;
+        float ahead = (radiusFrom - radiusTo) / slope;
+        for (int i = 0; i < SIDES; i++) {
+            float nx = across * FACING_COS[i];
+            float ny = across * FACING_SIN[i];
+            paint.vertex(radiusFrom * CORNER_COS[i], radiusFrom * CORNER_SIN[i], outFrom, nx, ny, ahead, colour);
+            paint.vertex(radiusFrom * CORNER_COS[i + 1], radiusFrom * CORNER_SIN[i + 1], outFrom, nx, ny, ahead, colour);
+            paint.vertex(radiusTo * CORNER_COS[i + 1], radiusTo * CORNER_SIN[i + 1], outTo, nx, ny, ahead, colour);
+            paint.vertex(radiusTo * CORNER_COS[i], radiusTo * CORNER_SIN[i], outTo, nx, ny, ahead, colour);
         }
     }
 
