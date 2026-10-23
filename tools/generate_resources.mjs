@@ -5068,6 +5068,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.runway_blueprint.tooltip": "A lit runway for the airliner, twice as long as it needs to take off",
   "item.aerolarge.runway_blueprint.usage": "Use on the ground: the runway runs away the way you face, replacing whatever is there.",
   "message.aerolarge.runway.building": "Laying the runway: %s%%",
+  "message.aerolarge.runway.busy": "A runway is already being laid; wait for it to finish.",
   "message.aerolarge.runway.built": "The runway is down: %s blocks long and %s wide. To line an airliner up on it, use its blueprint at the far end, looking back down the runway.",
   "block.aerolarge.transponder": "Transponder",
   "block.aerolarge.tower_radar": "Tower Radar",
