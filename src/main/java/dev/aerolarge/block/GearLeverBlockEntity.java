@@ -70,6 +70,14 @@ public class GearLeverBlockEntity extends BlockEntity {
         return level != null && legs(level).stream().allMatch(bay -> bay.motion() == GearBayBlockEntity.Motion.DOWN);
     }
 
+    /**
+     * How high the lowest of the legs' wheels is above the ground, in blocks, each leg's measured where it stands, down
+     * or not; with no legs, as high as can be.
+     */
+    public double lowestWheels(Level level) {
+        return legs(level).stream().mapToDouble(bay -> bay.wheelsAboveGround(level)).min().orElse(Double.MAX_VALUE);
+    }
+
     /** Throws the lever down, if it is not, and the legs follow. */
     public void lower(ServerLevel level) {
         throwTo(level, true);

@@ -1350,11 +1350,17 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Mth.clamp((int) Math.round(signal), 0, 15);
     }
 
-    /** How high the bottom of the wheels is above the ground below the autopilot. */
+    /**
+     * How high the bottom of the wheels is above the ground below the autopilot. With the gear not all down, no higher
+     * than the lowest of its legs' wheels would be, each measured where its leg stands: down on its belly the airliner
+     * rests nose up, and the wheels under the nose, where the autopilot is, would seem to be off the ground.
+     */
     private double radioAltitude(Level level, SableFlight.State state) {
         Vec3 at = state.position();
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
-        return at.y - 0.5 - wheelsBelow - ground;
+        double radio = at.y - 0.5 - wheelsBelow - ground;
+        GearLeverBlockEntity gear = gear(level);
+        return gear == null || gear.locked() ? radio : Math.min(radio, gear.lowestWheels(level));
     }
 
     /**
