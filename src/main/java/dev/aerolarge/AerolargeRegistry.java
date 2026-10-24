@@ -323,6 +323,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_RETRACT = sound("gear_retract");
     public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_EXTEND = sound("gear_extend");
     public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_HORN = sound("gear_horn");
+    /** The cabin dropping into an air pocket: the rush of air, the rattle of the cabin and the thud as the air catches it. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIR_POCKET = sound("air_pocket");
     /** A puff of a signal flare's smoke, in the flare's colour, rising high enough to be seen from the air. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<ColorParticleOption>> FLARE_SMOKE = PARTICLES.register(
         "flare_smoke", () -> new ParticleType<ColorParticleOption>(true) {

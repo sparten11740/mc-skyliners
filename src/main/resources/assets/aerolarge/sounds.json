@@ -719,5 +719,14 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "air_pocket": {
+    "subtitle": "subtitles.aerolarge.air_pocket",
+    "sounds": [
+      {
+        "name": "aerolarge:air_pocket",
+        "attenuation_distance": 1024
+      }
+    ]
   }
 }

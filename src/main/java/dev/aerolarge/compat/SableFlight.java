@@ -4,6 +4,7 @@ import dev.aerolarge.Aboard;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
+import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
@@ -13,6 +14,7 @@ import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.neoforge.event.ForgeSableSubLevelContainerReadyEvent;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
+import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
@@ -122,6 +124,16 @@ public final class SableFlight {
     /** Where a point among an assembled airliner's blocks is in the world; the point itself anywhere else. */
     public static Vec3 toWorld(Level level, Vec3 point) {
         return SABLE ? Access.toWorld(level, point) : point;
+    }
+
+    /**
+     * Changes how fast the assembled airliner the block entity is part of moves, by a velocity in the world's
+     * directions, in blocks a second, as a pocket of sinking air does; nothing when it is not part of one.
+     */
+    public static void jolt(BlockEntity blockEntity, Vec3 change) {
+        if (SABLE && blockEntity.getLevel() instanceof ServerLevel) {
+            Access.jolt(blockEntity, change);
+        }
     }
 
     /** Whether a point is among an assembled airliner's blocks, in its plot. */
@@ -352,6 +364,12 @@ public final class SableFlight {
 
         static boolean aboard(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) != null;
+        }
+
+        static void jolt(BlockEntity blockEntity, Vec3 change) {
+            if (Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airliner) {
+                RigidBodyHandle.of(airliner).addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
+            }
         }
 
         static Vec3 velocity(Level level, Vec3 point) {

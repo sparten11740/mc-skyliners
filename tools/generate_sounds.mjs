@@ -859,6 +859,45 @@ function gearRamp(t, from, to) {
   writeSound("gear_horn", samples, 0.7);
 }
 
+// Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
+// cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
+// thud through the airframe as the air catches it again, and the rattle settling.
+const pocketNoise = (() => {
+  let pocketSeed = 0x706f636b;
+  return () => {
+    pocketSeed = (Math.imul(pocketSeed, 1664525) + 1013904223) | 0;
+    return (pocketSeed >>> 0) / 4294967296;
+  };
+})();
+{
+  const samples = new Float64Array(Math.round(1.8 * RATE));
+  const caught = 0.7;
+  let low = 0;
+  let band = 0;
+  let ring = 0;
+  let ringPhase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = pocketNoise() * 2 - 1;
+    low += 0.04 * (white - low);
+    band += 0.3 * (white - band);
+    // The rush of air, swelling as the cabin falls and dying once the air has caught it.
+    const rush = Math.min(1, t / 0.15) * Math.exp(-Math.max(0, t - caught) / 0.25);
+    samples[i] += rush * (1.8 * low + 0.5 * (band - low));
+    // The rattle: sharp knocks, thick while it falls, sparser as it settles, each ringing a moment.
+    const rattleRate = t < caught ? 70 : 70 * Math.exp(-(t - caught) / 0.3);
+    if (pocketNoise() < rattleRate / RATE) {
+      ring = 0.5 + 0.5 * pocketNoise();
+    }
+    ringPhase += (2 * Math.PI * 2300) / RATE;
+    samples[i] += 0.35 * ring * Math.sin(ringPhase) + 0.25 * ring * white;
+    ring *= 0.996;
+  }
+  gearThud(samples, caught, 1.6);
+  gearRing(samples, caught + 0.004, 300, 0.2);
+  writeSound("air_pocket", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

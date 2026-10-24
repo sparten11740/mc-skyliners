@@ -23,6 +23,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ATC_CHATTER;
     public static final ModConfigSpec.DoubleValue ATC_VOLUME;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
+    public static final ModConfigSpec.BooleanValue AIR_POCKETS;
     public static final ModConfigSpec.BooleanValue DECOMPRESSION;
     public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
 
@@ -135,6 +136,13 @@ public final class AerolargeConfig {
                 "It comes a little more often and harder in rain, and much more often, longer and harder in a thunderstorm."
             )
             .define("turbulence", true);
+        AIR_POCKETS = builder
+            .comment(
+                "Whether airliners flying high up (60 blocks or more above the ground) now and then drop into an air pocket: a few blocks of",
+                "sudden fall that lifts whoever is not seated off the floor. The higher, the more often; more often in rain, and more often",
+                "and deeper in a thunderstorm."
+            )
+            .define("airPockets", true);
         DECOMPRESSION = builder
             .comment(
                 "Whether a door opened in flight lets the air rush out of the airliner: whoever stands near it, and anything loose, is dragged to the door and flung out.",

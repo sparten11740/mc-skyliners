@@ -10,8 +10,9 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 
 /**
  * Feeling the airliner from inside it: a rumble through the floor on the runway that grows with speed, a thump on
- * touchdown as hard as the landing, a slight sway while flying, and a jolting shake through rough air (the server says
- * when, see {@link dev.aerolarge.cabin.Turbulence}). Only for the player riding it, only from the camera (nothing in
+ * touchdown as hard as the landing, a slight sway while flying, a jolting shake through rough air, and the view
+ * dropping away and swinging back as it falls into an air pocket (the server says when, see
+ * {@link dev.aerolarge.cabin.Turbulence} and {@link dev.aerolarge.cabin.AirPockets}). Only for the player riding it, only from the camera (nothing in
  * the world moves), and off with the client setting "cameraShake".
  */
 public final class CameraShake {
@@ -30,6 +31,13 @@ public final class CameraShake {
      */
     private static final float TURBULENCE = 1.6F;
     private static final float TURBULENCE_FADE_TICKS = 20;
+    /**
+     * How far the view drops as the airliner falls into an air pocket of depth 1, in degrees, how long the dip lasts in
+     * ticks, and the share of it the view takes to drop: fast down, then slowly back as the air catches the airliner.
+     */
+    private static final float POCKET_DIP = 7;
+    private static final int POCKET_TICKS = 30;
+    private static final float POCKET_DROP = 0.2F;
 
     private static final RandomSource RANDOM = RandomSource.create();
     /** Whether the airliner the player rides is on its wheels. */
@@ -40,6 +48,8 @@ public final class CameraShake {
     private static float rough;
     private static int roughLeft;
     private static float roughStrength;
+    private static float pocket;
+    private static int pocketTicks = POCKET_TICKS;
     private static float time;
     private static boolean wasOnGround = true;
     private static double lastSink;
@@ -53,11 +63,18 @@ public final class CameraShake {
         roughLeft = ticks;
     }
 
+    /** The airliner the player rides has dropped into an air pocket this deep (about 1, deeper in a storm). */
+    public static void airPocket(float depth) {
+        pocket = depth;
+        pocketTicks = 0;
+    }
+
     public static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         thump *= THUMP_FADE;
         time++;
         roughLeft = Math.max(0, roughLeft - 1);
+        pocketTicks = Math.min(POCKET_TICKS, pocketTicks + 1);
         rough = TURBULENCE * roughStrength * Math.min(1, roughLeft / TURBULENCE_FADE_TICKS);
         rumble = 0;
         sway = 0;
@@ -83,17 +100,28 @@ public final class CameraShake {
     }
 
     public static void angles(ViewportEvent.ComputeCameraAngles event) {
-        if (!AerolargeClientConfig.CAMERA_SHAKE.get() || rumble + thump + sway + rough <= 0.001F) {
+        float partial = (float) event.getPartialTick();
+        float dip = dip(partial);
+        if (!AerolargeClientConfig.CAMERA_SHAKE.get() || rumble + thump + sway + rough + dip <= 0.001F) {
             return;
         }
-        float partial = (float) event.getPartialTick();
         float t = time + partial;
         float jitter = rumble * (RANDOM.nextFloat() * 2 - 1);
         // Rough air: two uneven waves, so the jolts never settle into a rhythm.
         float bump = rough * (Mth.sin(t * 0.9F) + 0.6F * Mth.sin(t * 2.3F + 1.1F));
-        float pitch = jitter + thump * Mth.sin(t * 1.7F) + sway * Mth.sin(t * 0.05F) + bump;
+        float pitch = jitter + thump * Mth.sin(t * 1.7F) + sway * Mth.sin(t * 0.05F) + bump + dip;
         float roll = rumble * (RANDOM.nextFloat() * 2 - 1) * 0.6F + sway * Mth.sin(t * 0.037F + 1.3F) + rough * Mth.sin(t * 1.3F + 0.4F);
         event.setPitch(event.getPitch() + pitch);
         event.setRoll(event.getRoll() + roll);
+    }
+
+    /** How far the view has dropped into an air pocket, in degrees down: quickly at first, then easing back up. */
+    private static float dip(float partial) {
+        float t = Math.min(1, (pocketTicks + partial) / POCKET_TICKS);
+        if (t >= 1) {
+            return 0;
+        }
+        float shape = t < POCKET_DROP ? t / POCKET_DROP : (1 - t) / (1 - POCKET_DROP);
+        return POCKET_DIP * pocket * shape * shape * (3 - 2 * shape);
     }
 }

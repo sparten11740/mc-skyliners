@@ -5,14 +5,12 @@ import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.Trolley;
 import java.util.List;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -46,17 +44,17 @@ public final class Turbulence {
     /** How far around the airliner's middle to look for anyone aboard, in blocks per unit of scale. */
     private static final double SEARCH_PER_SCALE = 80;
     /** In rain (or snow), rough air comes half again as often as in clear skies: about every 40 seconds. */
-    private static final double RAIN_ONSET = 1.5;
+    static final double RAIN_ONSET = 1.5;
     /** In rain, it shakes and throws a quarter harder than in clear skies. */
-    private static final float RAIN_STRENGTH = 1.25F;
+    static final float RAIN_STRENGTH = 1.25F;
     /** In rain, a patch of it lasts a quarter longer than in clear skies. */
-    private static final double RAIN_LENGTH = 1.25;
+    static final double RAIN_LENGTH = 1.25;
     /** In a thunderstorm, rough air comes four times as often as in clear skies: about every 15 seconds. */
-    private static final double STORM_ONSET = 4;
+    static final double STORM_ONSET = 4;
     /** In a thunderstorm, it shakes and throws up to 1.8 times as hard (the bumps no harder than {@link #MAX_BUMP}). */
-    private static final float STORM_STRENGTH = 1.8F;
+    static final float STORM_STRENGTH = 1.8F;
     /** In a thunderstorm, a patch of it lasts twice as long, so the air is rough for a good part of the storm. */
-    private static final double STORM_LENGTH = 2;
+    static final double STORM_LENGTH = 2;
 
     private int left;
     private float strength;
@@ -83,13 +81,17 @@ public final class Turbulence {
         if (left % BUMP_EVERY != 0) {
             return;
         }
-        double reach = SEARCH_PER_SCALE * AerolargeConfig.SCALE.get();
-        List<Entity> around = level.getEntities((Entity) null, new AABB(middle, middle).inflate(reach), entity -> shaken(entity) && Aboard.isAboard(entity, anchor));
         double push = Math.min(BUMP * strength, MAX_BUMP);
-        for (Entity entity : around) {
+        for (Entity entity : loose(level, anchor, middle)) {
             entity.push((random.nextDouble() * 2 - 1) * push, random.nextDouble() * push * 0.6, (random.nextDouble() * 2 - 1) * push);
             entity.hurtMarked = true;
         }
+    }
+
+    /** Everything aboard the airliner round its middle that rough air throws about (see {@link #shaken}). */
+    static List<Entity> loose(ServerLevel level, BlockEntity anchor, Vec3 middle) {
+        double reach = SEARCH_PER_SCALE * AerolargeConfig.SCALE.get();
+        return level.getEntities((Entity) null, new AABB(middle, middle).inflate(reach), entity -> shaken(entity) && Aboard.isAboard(entity, anchor));
     }
 
     /**
@@ -99,38 +101,5 @@ public final class Turbulence {
     private static boolean shaken(Entity entity) {
         boolean loose = entity instanceof LivingEntity || entity instanceof Basketball || entity instanceof Trolley;
         return loose && !entity.isPassenger() && !entity.isSpectator() && !(entity instanceof Player player && player.getAbilities().flying);
-    }
-
-    /**
-     * The weather the airliner flies through, and what it makes of rough air: how many times as often it comes as in
-     * clear skies, how many times as hard it shakes and throws, and how many times as long a patch of it lasts.
-     */
-    private enum Weather {
-        CLEAR(1, 1, 1),
-        RAIN(RAIN_ONSET, RAIN_STRENGTH, RAIN_LENGTH),
-        STORM(STORM_ONSET, STORM_STRENGTH, STORM_LENGTH);
-
-        private final double onset;
-        private final float strength;
-        private final double length;
-
-        Weather(double onset, float strength, double length) {
-            this.onset = onset;
-            this.strength = strength;
-            this.length = length;
-        }
-
-        /**
-         * The weather at a point: rain or a thunderstorm only where something falls there, so a storm passing over a
-         * desert brings no more than clear skies. Read from the biome rather than {@code isRainingAt}, so snow (which
-         * falls high up over cooler land) counts as much as rain; an airliner in flight is out under the sky anyway.
-         */
-        private static Weather at(ServerLevel level, Vec3 point) {
-            BlockPos at = BlockPos.containing(point);
-            if (!level.isRaining() || level.getBiome(at).value().getPrecipitationAt(at) == Biome.Precipitation.NONE) {
-                return CLEAR;
-            }
-            return level.isThundering() ? STORM : RAIN;
-        }
     }
 }

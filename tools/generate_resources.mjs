@@ -536,6 +536,7 @@ function atcLang() {
   Object.assign(sounds, coffeeMachineSounds());
   Object.assign(sounds, crewLockerSounds());
   Object.assign(sounds, gearSounds());
+  Object.assign(sounds, airPocketSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -628,6 +629,13 @@ function atcLang() {
 function gearSounds() {
   return Object.fromEntries(["gear_retract", "gear_extend", "gear_horn"].map((name) =>
     [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}`, attenuation_distance: 48 }] }]));
+}
+// Dropping into an air pocket: played to each listener aboard, following them about.
+function airPocketSounds() {
+  return { air_pocket: heardAboard("air_pocket") };
+}
+function airPocketLang() {
+  return { "subtitles.aerolarge.air_pocket": "Airliner drops into an air pocket" };
 }
 function gearRecipes() {
   shaped("gear_lever", ["T", "S", "P"], { T: `${ID}:landing_gear_tire`, S: "minecraft:lever", P: `${ID}:airframe_panel` }, 1);
@@ -5237,6 +5245,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...cabinStairsLang(),
   ...crewLockerLang(),
   ...gearLang(),
+  ...airPocketLang(),
   ...hullLiningLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),

@@ -292,6 +292,14 @@ rougher; a thunderstorm brings heavy turbulence, about every 15 seconds, twice a
 hard: a stronger shake, and bumps that knock anyone standing off their feet. Only where something falls, though: a
 storm passing over a desert is as calm as clear skies. Turn it off with `turbulence` in the server config.
 
+High up (60 blocks or more above the ground) the airliner now and then drops into an air pocket: it falls a few
+blocks in a moment, with the rush of air and everything loose in the cabin rattling, until the air catches it again
+with a thud through the airframe. Everyone aboard sees their view drop away and swing back, and whoever is standing
+floats up off the floor for a moment, as do balls and trolleys; anyone seated stays put. The higher it flies, the more
+often (about every four minutes at 60 blocks up, every minute from 200), half again as often in rain, and three times
+as often and half again as deep in a thunderstorm. The autopilot climbs back to the height it holds. Turn it off with
+`airPockets` in the server config.
+
 ### Autopilot
 
 Use the autopilot's control head on the centre console, or the big screen in the middle of the instrument panel, to

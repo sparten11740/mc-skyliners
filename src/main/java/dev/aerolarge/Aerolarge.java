@@ -14,6 +14,7 @@ import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.autopilot.UnstickAirliner;
 import dev.aerolarge.block.VillagesBelow;
+import dev.aerolarge.cabin.AirPocketPayload;
 import dev.aerolarge.cabin.DecompressionPush;
 import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
@@ -120,7 +121,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("13")
+        event.registrar("14")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -133,6 +134,8 @@ public final class Aerolarge {
             // Only ever handled on a client: the lambdas keep the client classes from loading anywhere else.
             .playToClient(TurbulencePayload.TYPE, TurbulencePayload.STREAM_CODEC,
                 (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
+            .playToClient(AirPocketPayload.TYPE, AirPocketPayload.STREAM_CODEC,
+                (payload, context) -> CameraShake.airPocket(payload.depth()))
             .playToClient(OpenAutopilotScreen.TYPE, OpenAutopilotScreen.STREAM_CODEC,
                 (payload, context) -> AutopilotSettingsScreen.open(payload))
             .playToClient(OpenCoffeeMachine.TYPE, OpenCoffeeMachine.STREAM_CODEC,
