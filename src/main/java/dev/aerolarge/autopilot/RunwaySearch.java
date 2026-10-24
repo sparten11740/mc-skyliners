@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import java.util.ArrayList;
 import java.util.Comparator;

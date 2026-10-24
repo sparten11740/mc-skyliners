@@ -26,7 +26,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * village, only those already loaded, so looking never loads or generates one; the players aboard keep what they are
  * told, so whoever comes aboard later learns of the villages still near.
  */
-final class VillageSpotter {
+public final class VillageSpotter {
     /** How often it looks, in ticks. */
     private static final int LOOK_TICKS = 100;
     /** How far round the airliner it looks, in chunks either way: further than the screens' map of what is seen. */
@@ -36,7 +36,7 @@ final class VillageSpotter {
     }
 
     /** One tick of the airliner whose autopilot this is, standing at this place in the world. */
-    static void tick(ServerLevel level, BlockEntity autopilot, Vec3 position) {
+    public static void tick(ServerLevel level, BlockEntity autopilot, Vec3 position) {
         // Spread over the ticks between looks, so the airliners do not all look on the same one.
         if (Math.floorMod(level.getGameTime() + autopilot.getBlockPos().asLong(), LOOK_TICKS) != 0) {
             return;

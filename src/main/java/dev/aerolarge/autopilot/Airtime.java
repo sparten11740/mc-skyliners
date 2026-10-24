@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 /**
  * Who has the floor on the flight deck: the callouts, the cabin announcements and air traffic control share it, so that

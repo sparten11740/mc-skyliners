@@ -14,7 +14,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
  * the autopilot has them put away first, as a crew would, and holds the brakes till they are, or till it has waited
  * long enough (someone standing on the stairs keeps them out).
  */
-final class Stowing {
+public final class Stowing {
     /** How far round the autopilot they are looked for, in blocks per unit of scale: the whole of a 73 m airliner. */
     private static final double REACH_PER_SCALE = 80;
     /** The longest the autopilot waits for them, in ticks. */
@@ -25,7 +25,7 @@ final class Stowing {
     private long until;
 
     /** Sets everything down beside the airliner going away, as its autopilot round {@code autopilot} is set to take off. */
-    void start(ServerLevel level, BlockPos autopilot) {
+    public void start(ServerLevel level, BlockPos autopilot) {
         stairs.clear();
         slides.clear();
         List<BlockEntity> found = new ArrayList<>();
@@ -55,7 +55,7 @@ final class Stowing {
     }
 
     /** Whether any of them is still going away, and the autopilot still waiting for it. */
-    boolean waiting(ServerLevel level) {
+    public boolean waiting(ServerLevel level) {
         if (stairs.isEmpty() && slides.isEmpty()) {
             return false;
         }

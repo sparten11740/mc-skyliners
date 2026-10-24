@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;

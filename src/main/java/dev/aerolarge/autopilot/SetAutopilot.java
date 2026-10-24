@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aerolarge;
 import net.minecraft.core.BlockPos;

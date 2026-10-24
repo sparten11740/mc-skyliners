@@ -3,7 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;

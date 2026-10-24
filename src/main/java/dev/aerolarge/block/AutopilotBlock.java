@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

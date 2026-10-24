@@ -1,6 +1,9 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aboard;
+import dev.aerolarge.block.Announcement;
+import dev.aerolarge.block.CabinLightsBlock;
+import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import java.util.EnumMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -24,7 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * one asked for waits), and one made in the last {@link #REPEAT} ticks is not made again, so pressing the autopilot
  * screen's buttons again and again does not make a chorus of them. Where each one stands in that, the panel shows.
  */
-final class CabinAnnouncements {
+public final class CabinAnnouncements {
     /**
      * How long an announcement is given to play, chime and all, in ticks: tools/generate_sounds.mjs keeps every one
      * shorter (its ANNOUNCEMENT_LONGEST).

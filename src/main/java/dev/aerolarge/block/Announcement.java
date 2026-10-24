@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.CabinAnnouncements;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -34,13 +35,13 @@ public enum Announcement {
         READY, ON_AIR, WAITING, HUSHED, RESTING
     }
 
-    final Holder<SoundEvent> sound;
+    public final Holder<SoundEvent> sound;
     /** Whether it switches the seatbelt signs on or off; null leaves them as they are. */
     @Nullable
-    final Boolean seatbelts;
+    public final Boolean seatbelts;
     /** What it sets the cabin lights to; null leaves them as they are. */
     @Nullable
-    final Brightness lights;
+    public final Brightness lights;
 
     Announcement(Holder<SoundEvent> sound, @Nullable Boolean seatbelts, @Nullable Brightness lights) {
         this.sound = sound;

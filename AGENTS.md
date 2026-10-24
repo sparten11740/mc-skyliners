@@ -22,10 +22,14 @@ feature as a player meets it, and its Building section says which classes do wha
 - `airframe/`: the airliner itself. `AirframeShape` holds the A380's measurements in metres, `AirframeLayout` cuts them
   into blocks nose north, `AirframeBuild` places the result with one rotation, and the fit-out classes (`CabinFitOut`,
   `UpperDeck`, `HoldFitOut`, `CrewRooms`, ...) furnish it. `OutsideCamera` places the outside cameras.
-- `block/`: blocks and block entities, and the autopilot: `AutopilotBlockEntity` flies (its `fly` method),
-  `ControlSurfaces` moves the flaps, `PinLanding` with `RunwaySearch`, `GroundSurvey`, `AirlinerShape` and
-  `RunwayCheck` lands near a pin, `Hop` frees a stuck airliner, and `Callouts`, `CabinAnnouncements` and `AtcRadio`
-  speak.
+- `block/`: blocks and block entities, the autopilot's control head (`AutopilotBlock`) and screen among them, and the
+  helpers several blocks share (`Turning`, `Loaded`, `Relays`, `Stowing`, `Control`).
+- `autopilot/`: what flies the airliner. `AutopilotBlockEntity` is the control head's block entity and flies (its
+  `fly` method), `ControlSurfaces` moves the flaps, `PinLanding` with `RunwaySearch`, `GroundSurvey`, `AirlinerShape`
+  and `RunwayCheck` lands near a pin, `Hop` frees a stuck airliner, `Callouts`, `CabinAnnouncements` and `AtcRadio`
+  are the flight deck's voice, and `SetAutopilot`, `OpenAutopilotScreen` and `UnstickAirliner` are its screen's
+  payloads. The client draws its screens in `client/` (`AutopilotSettingsScreen`, `DestinationMap`,
+  `AutopilotScreenRenderer`).
 - `client/`: everything that only runs on the client: renderers, screens, maps, the HUD, `SableClient`.
 - `compat/`: `SableFlight`, the server's only way into Sable; `Ultrasplosive`.
 - `cabin/`, `airport/`, `radar/`, `radio/`, `entity/`, `item/`, `parachute/`: features by area, each with its own

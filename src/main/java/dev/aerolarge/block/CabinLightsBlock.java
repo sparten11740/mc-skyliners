@@ -1,10 +1,11 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;

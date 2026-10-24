@@ -2,8 +2,8 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.aerolarge.block.AutopilotBlock;
-import dev.aerolarge.block.AutopilotBlockEntity;
-import dev.aerolarge.block.Runway;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Runway;
 import dev.aerolarge.radar.Contact;
 import dev.aerolarge.radar.PlayerContact;
 import java.util.function.IntSupplier;

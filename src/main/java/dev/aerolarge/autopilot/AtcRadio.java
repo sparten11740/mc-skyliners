@@ -1,9 +1,9 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
-import dev.aerolarge.block.AutopilotBlockEntity.Phase;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.item.PilotHelmetItem;
 import java.util.ArrayDeque;

@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;

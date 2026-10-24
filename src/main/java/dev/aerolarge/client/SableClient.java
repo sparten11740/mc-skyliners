@@ -2,7 +2,7 @@ package dev.aerolarge.client;
 
 import dev.aerolarge.Aboard;
 import dev.aerolarge.block.AutopilotBlock;
-import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3dc;

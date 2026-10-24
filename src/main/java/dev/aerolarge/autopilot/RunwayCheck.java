@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 /**
  * Whether the airliner can land on a runway: whether, from the end of its glide down to where it has braked to a stop,

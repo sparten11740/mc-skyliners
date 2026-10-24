@@ -3,7 +3,7 @@ package dev.aerolarge.airport;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.AirframeLayout;
-import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.NavLightBlock;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

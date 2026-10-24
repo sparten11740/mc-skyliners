@@ -1,9 +1,21 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import dev.aerolarge.block.Announcement;
+import dev.aerolarge.block.AutopilotBlock;
+import dev.aerolarge.block.Control;
+import dev.aerolarge.block.Loaded;
+import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.Relays;
+import dev.aerolarge.block.Stowing;
+import dev.aerolarge.block.ThrustLeverBlock;
+import dev.aerolarge.block.ThrustRelayBlock;
+import dev.aerolarge.block.TillerBlock;
+import dev.aerolarge.block.Turning;
+import dev.aerolarge.block.VillageSpotter;
 import dev.aerolarge.cabin.Decompression;
 import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.SableFlight;
@@ -286,7 +298,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How often it looks whether anyone is aboard, in ticks. */
     private static final int ABOARD_LOOK = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
-    static final double FLIGHT_DECK = 24;
+    public static final double FLIGHT_DECK = 24;
     /**
      * The autopilots loaded, so an announcement panel put up by hand finds its airliner's, and both sides tell an
      * airliner's own blocks (see {@link #framing}).
@@ -499,7 +511,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /** The autopilot nearest to a position on the server, within {@link #FLIGHT_DECK} of it; null for none. */
     @Nullable
-    static AutopilotBlockEntity nearest(Level level, BlockPos pos) {
+    public static AutopilotBlockEntity nearest(Level level, BlockPos pos) {
         AutopilotBlockEntity nearest = null;
         for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
             double distance = autopilot.getBlockPos().distSqr(pos);
@@ -532,7 +544,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * The announcement panel asks for a cabin announcement: made, or waiting its turn behind whatever is being said on
      * the flight deck, only if it stands ready (see {@link Announcement.Standing}); whether it was.
      */
-    boolean ask(Announcement announcement) {
+    public boolean ask(Announcement announcement) {
         if (level == null || announcements.standing(announcement, level.getGameTime()) != Announcement.Standing.READY) {
             return false;
         }
@@ -541,7 +553,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /** Where a cabin announcement stands now, for the announcement panel to show. */
-    Announcement.Standing standing(Announcement announcement) {
+    public Announcement.Standing standing(Announcement announcement) {
         return level == null ? Announcement.Standing.READY : announcements.standing(announcement, level.getGameTime());
     }
 

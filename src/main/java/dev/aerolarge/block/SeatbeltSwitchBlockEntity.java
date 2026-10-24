@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.CabinAnnouncements;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -53,7 +54,7 @@ public class SeatbeltSwitchBlockEntity extends LinkedControlBlockEntity {
      * Turns the signs on or off with a click, as using the switch does, and as they come on opens the curtains; nothing
      * if they already are. The autopilot's cabin announcements work it too (see {@link CabinAnnouncements}).
      */
-    void turn(boolean on) {
+    public void turn(boolean on) {
         if (level == null || isOn() == on) {
             return;
         }

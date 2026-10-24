@@ -1,7 +1,8 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.AerolargeConfig;
-import dev.aerolarge.block.AutopilotBlockEntity.Channel;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.Channel;
+import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Arrays;
 import java.util.EnumMap;

@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.autopilot.ControlSurfaces;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;

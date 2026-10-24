@@ -1,7 +1,7 @@
 package dev.aerolarge;
 
 import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
-import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;

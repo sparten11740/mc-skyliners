@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;

@@ -1,4 +1,4 @@
-package dev.aerolarge.block;
+package dev.aerolarge.autopilot;
 
 import dev.aerolarge.airport.Runways;
 import dev.aerolarge.compat.SableFlight;

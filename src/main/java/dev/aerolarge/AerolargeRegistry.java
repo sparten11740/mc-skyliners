@@ -13,7 +13,7 @@ import dev.aerolarge.block.AnnouncementPanelBlockEntity;
 import dev.aerolarge.block.AtisScreenBlock;
 import dev.aerolarge.block.AtisScreenBlockEntity;
 import dev.aerolarge.block.AutopilotBlock;
-import dev.aerolarge.block.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AwningBlock;
