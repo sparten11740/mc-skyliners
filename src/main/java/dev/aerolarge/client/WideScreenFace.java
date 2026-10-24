@@ -13,8 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 final class WideScreenFace {
     /** The whole face, in blocks: as wide as the screen, as tall as its rows upright or its diagonal tilted. */
     static final double WIDTH = WideScreenBlock.COLUMNS;
-    static final double UPRIGHT_HEIGHT = WideScreenBlock.ROWS;
-    static final double TILTED_HEIGHT = Math.sqrt(2) * WideScreenBlock.ROWS;
+    static final double UPRIGHT_HEIGHT = WideScreenBlock.UPRIGHT_HEIGHT;
+    static final double TILTED_HEIGHT = WideScreenBlock.TILTED_HEIGHT;
     /** The upright face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
     private static final float UPRIGHT_FACE = -0.5F + WideScreenBlock.DEPTH / 16F + 0.002F;
     /** The tilted face, from the middle of the block, lifted just off the screen plate across its diagonal. */

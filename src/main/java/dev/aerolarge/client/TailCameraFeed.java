@@ -13,6 +13,7 @@ import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.IntSupplier;
@@ -46,12 +47,13 @@ import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
 /**
- * The live pictures on the tail camera displays: the world drawn from the camera on top of each assembled airliner's fin
- * ({@link OutsideCamera#TAIL}) into a small picture of its own, which every display aboard that airliner shows. An
- * airliner's picture is drawn only while one of its displays was in view and within {@link #REACH} blocks in the frame
- * before, at most {@code tailCameraFps} times a second and one airliner a frame. It reaches as far as the
- * {@code tailCameraRenderDistance} setting or the player's own render distance, whichever is less. Once none of its
- * displays has been seen for a while, the picture is thrown away; with no display about, nothing is drawn or kept.
+ * The live pictures on the flight deck's camera displays: the world drawn from one of each assembled airliner's outside
+ * cameras (see {@link OutsideCamera}), whichever a display is set to, into a small picture of its own, which every
+ * display aboard that airliner set to that camera shows. A picture is drawn only while one of its displays was in view
+ * and within {@link #REACH} blocks in the frame before, at most {@code tailCameraFps} times a second and one picture a
+ * frame. It reaches as far as the {@code tailCameraRenderDistance} setting or the player's own render distance,
+ * whichever is less. Once none of its displays has been seen for a while, the picture is thrown away; with no display
+ * about, nothing is drawn or kept.
  *
  * <p>The picture is drawn before each frame, outside the frame's own drawing of the world, by Veil's perspective
  * renderer. Veil comes inside Sable's jar, so it is there whenever an airliner can be assembled, and it is made for
@@ -84,8 +86,8 @@ public final class TailCameraFeed {
     /** How often an airliner whose camera cannot be placed (it has no autopilot to go by) is looked at again, in milliseconds. */
     private static final long RETRY_AFTER = 5_000;
     /**
-     * The tail camera's lens is set for a 16:9 screen, as the passenger screens show it; the picture keeps that width
-     * of view (the wingtips at its edges) and is cut to the display's shape top and bottom.
+     * Each camera's lens is set for a 16:9 screen, as the passenger screens show it; the picture keeps that width of
+     * view (the fin camera's, the wingtips at its edges) and is cut to the display's shape top and bottom.
      */
     private static final double LENS_ASPECT = 16 / 9.0;
     /** How close to the camera the picture shows anything, in blocks, as the world's own drawing does. */
@@ -96,7 +98,7 @@ public final class TailCameraFeed {
      */
     private static final float FAR = 4;
 
-    private static final Map<UUID, Feed> FEEDS = new HashMap<>();
+    private static final Map<Key, Feed> FEEDS = new HashMap<>();
     /** Counts the frames, so a display seen in one frame is drawn for in the next. */
     private static long frame;
     /** Whether a picture is being drawn now, when the displays it shows must not show it (or ask for it). */
@@ -115,11 +117,17 @@ public final class TailCameraFeed {
     private TailCameraFeed() {
     }
 
+    /** A picture is an airliner's from one of its cameras. */
+    private record Key(UUID airliner, OutsideCamera camera) {
+    }
+
     /**
-     * One airliner's picture: its camera, where it is drawn to, when a display last asked for it, and when it may be
-     * drawn next or its camera looked for again. Times are {@link Util#getMillis} and compared by difference.
+     * A picture from one of an airliner's cameras: the camera, where it is on the airliner, where the picture is drawn
+     * to, when a display last asked for it, and when it may be drawn next or its camera looked for again. Times are
+     * {@link Util#getMillis} and compared by difference.
      */
     private static final class Feed {
+        final OutsideCamera camera;
         final ResourceLocation texture;
         @Nullable
         CameraMount mount;
@@ -132,8 +140,10 @@ public final class TailCameraFeed {
         /** Whether the picture has been drawn at all, so there is something to show. */
         boolean ready;
 
-        Feed(UUID airliner, long now) {
-            texture = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "tail_camera/" + airliner);
+        Feed(Key key, long now) {
+            camera = key.camera();
+            texture = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID,
+                "tail_camera/" + key.airliner() + "/" + camera.name().toLowerCase(Locale.ROOT));
             mountDue = now;
             drawDue = now;
         }
@@ -148,8 +158,8 @@ public final class TailCameraFeed {
     }
 
     /**
-     * A display is being drawn: the picture to show on it, or null for its test card. A display in view within reach
-     * asks for its airliner's picture to be drawn before the next frame.
+     * A display is being drawn: the picture to show on it, from the camera it is set to, or null for its test card. A
+     * display in view within reach asks for that picture to be drawn before the next frame.
      */
     @Nullable
     static ResourceLocation show(TailCameraDisplayBlockEntity screen) {
@@ -161,12 +171,13 @@ public final class TailCameraFeed {
         if (airliner == null) {
             return null;
         }
-        Feed feed = FEEDS.get(airliner);
+        Key key = new Key(airliner, screen.camera());
+        Feed feed = FEEDS.get(key);
         if (inSight(level, screen)) {
             long now = Util.getMillis();
             if (feed == null) {
-                feed = new Feed(airliner, now);
-                FEEDS.put(airliner, feed);
+                feed = new Feed(key, now);
+                FEEDS.put(key, feed);
             }
             feed.seenFrame = frame;
             feed.seenAt = now;
@@ -174,7 +185,7 @@ public final class TailCameraFeed {
                 feed.mountDue = now + RETRY_AFTER;
                 SableClient.Frame airlinerFrame = SableClient.frame(screen);
                 // The server's settings, the airliner's scale among them, reach the client as it joins.
-                feed.mount = airlinerFrame != null ? CameraMount.on(airlinerFrame, AerolargeConfig.SCALE.get(), OutsideCamera.TAIL) : null;
+                feed.mount = airlinerFrame != null ? CameraMount.on(airlinerFrame, AerolargeConfig.SCALE.get(), feed.camera) : null;
             }
         }
         return feed != null && feed.ready ? feed.texture : null;
@@ -277,7 +288,7 @@ public final class TailCameraFeed {
         }
     }
 
-    /** Draws an airliner's picture from its fin camera as the airliner is drawn this frame, putting back all it moves. */
+    /** Draws a picture from its camera as the airliner is drawn this frame, putting back all it moves. */
     private static void draw(Minecraft minecraft, Feed feed, DeltaTracker deltaTracker, long now) {
         LevelRenderer levelRenderer = minecraft.levelRenderer;
         SectionRenderDispatcher sections = levelRenderer.getSectionRenderDispatcher();
@@ -315,7 +326,7 @@ public final class TailCameraFeed {
             float renderDistance = Math.min(minecraft.options.getEffectiveRenderDistance(),
                 AerolargeClientConfig.TAIL_CAMERA_RENDER_DISTANCE.get());
             Target target = feed.target;
-            SableClient.withoutWaterOcclusion(() -> target.draw(lens, view, renderDistance, deltaTracker));
+            SableClient.withoutWaterOcclusion(() -> target.draw(lens, view, feed.camera, renderDistance, deltaTracker));
             feed.ready = true;
             feed.drawDue = now + 1000L / AerolargeClientConfig.TAIL_CAMERA_FPS.get();
         } catch (RuntimeException | LinkageError e) {
@@ -350,11 +361,11 @@ public final class TailCameraFeed {
     }
 
     /**
-     * The vertical field of view of a picture of this width over its height, in radians: as wide as the tail camera's
-     * lens on a 16:9 screen.
+     * The vertical field of view of a picture of this width over its height, in radians: as wide as the camera's lens on
+     * a 16:9 screen.
      */
-    private static float fieldOfView(double aspect) {
-        double halfWidth = Math.tan(Math.toRadians(OutsideCamera.TAIL.fov) / 2) * LENS_ASPECT;
+    private static float fieldOfView(double aspect, OutsideCamera camera) {
+        double halfWidth = Math.tan(Math.toRadians(camera.fov) / 2) * LENS_ASPECT;
         return (float) (2 * Math.atan(halfWidth / aspect));
     }
 
@@ -381,7 +392,7 @@ public final class TailCameraFeed {
          * picture opaque: the world's drawing leaves the sky's alpha clear, and the displays draw the picture blended
          * by its alpha, which would let the screen behind show through the sky.
          */
-        void draw(Entity lens, SableClient.View view, float renderDistance, DeltaTracker deltaTracker) {
+        void draw(Entity lens, SableClient.View view, OutsideCamera camera, float renderDistance, DeltaTracker deltaTracker) {
             Vector3f forward = view.forward().toVector3f().normalize();
             Vector3f up = view.up().toVector3f();
             up.sub(new Vector3f(forward).mul(up.dot(forward))).normalize();
@@ -394,7 +405,7 @@ public final class TailCameraFeed {
             Quaternionf viewTurn = orientation.conjugate(new Quaternionf());
             Matrix4f modelView = new Matrix4f().rotation(viewTurn).rotate(viewTurn);
             float aspect = (float) framebuffer.getWidth() / framebuffer.getHeight();
-            Matrix4f projection = new Matrix4f().perspective(fieldOfView(aspect), aspect, NEAR, renderDistance * 16 * FAR);
+            Matrix4f projection = new Matrix4f().perspective(fieldOfView(aspect, camera), aspect, NEAR, renderDistance * 16 * FAR);
             Vec3 eye = view.eye();
             VeilLevelPerspectiveRenderer.render(framebuffer, lens, modelView, projection, new Vector3d(eye.x, eye.y, eye.z), orientation, renderDistance,
                 deltaTracker, false);

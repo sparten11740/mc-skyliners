@@ -21,6 +21,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -44,6 +46,9 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
     public static final BooleanProperty TILTED = BooleanProperty.create("tilted");
     /** How thick the upright screen is, in pixels of its block, standing against the back of it. */
     public static final int DEPTH = 3;
+    /** How tall the face its renderer draws on is, in blocks: its rows upright, or tilted, its diagonal. */
+    public static final double UPRIGHT_HEIGHT = ROWS;
+    public static final double TILTED_HEIGHT = Math.sqrt(2) * ROWS;
     /** How many steps the tilted screen's filled half is made of for collision and selection. */
     private static final int TILTED_STEPS = 4;
     private static final Map<Direction, VoxelShape> UPRIGHT_SHAPES = new EnumMap<>(Direction.class);
@@ -99,6 +104,52 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
     public static BlockPos origin(BlockState state, BlockPos pos) {
         int part = state.getValue(PART);
         return pos.relative(right(state.getValue(FACING)), -(part % COLUMNS)).below(part / COLUMNS);
+    }
+
+    /** Where on a screen's face it was touched, in blocks from the face's bottom left corner as the viewer sees it. */
+    public record Touch(double across, double up) {
+    }
+
+    /**
+     * Whether a hit on this side of a part of the screen is on its face: upright, the front of the slim screen; tilted,
+     * the diagonal, met from in front on its steps' fronts and from below on their undersides.
+     */
+    public static boolean onFace(BlockState state, Direction side) {
+        return side == state.getValue(FACING) || state.getValue(TILTED) && side == Direction.DOWN;
+    }
+
+    /**
+     * Where a hit on a part of the screen touched its face, the player looking along a direction turned into the
+     * screen's frame; null for a hit on its back or ends. Upright, the hit is on the face. Tilted, the face runs across
+     * the diagonal, behind the steps its blocks are shaped of, which stand out in front of it: the touch is where the
+     * look, carried on past the hit, meets the diagonal.
+     */
+    @Nullable
+    public static Touch touched(BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
+        if (!onFace(state, hit.getDirection())) {
+            return null;
+        }
+        Direction facing = state.getValue(FACING);
+        boolean tilted = state.getValue(TILTED);
+        Vec3 at = hit.getLocation().subtract(Vec3.atCenterOf(origin(state, pos)));
+        if (tilted) {
+            at = ontoDiagonal(at, Vec3.atLowerCornerOf(facing.getNormal()), look);
+        }
+        double up = (at.y + 0.5) * (tilted ? TILTED_HEIGHT : UPRIGHT_HEIGHT) / ROWS;
+        return new Touch(at.dot(Vec3.atLowerCornerOf(right(facing).getNormal())) + 0.5, up);
+    }
+
+    /**
+     * A point by the tilted face, from the middle of the block holding the screen, carried along a look onto the
+     * diagonal, where it stands as far out from the block's back as up from its bottom; the point itself for a look
+     * along the diagonal.
+     */
+    private static Vec3 ontoDiagonal(Vec3 at, Vec3 out, Vec3 look) {
+        double closing = look.dot(out) - look.y;
+        if (Math.abs(closing) < 1e-6) {
+            return at;
+        }
+        return at.add(look.scale(-(at.dot(out) - at.y) / closing));
     }
 
     /**

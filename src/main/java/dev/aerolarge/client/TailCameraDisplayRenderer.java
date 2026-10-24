@@ -3,8 +3,11 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.airframe.OutsideCamera;
+import dev.aerolarge.block.CameraButtons;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
+import java.util.Arrays;
+import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,12 +23,14 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
 /**
- * Draws the tail camera display over the whole of its face, from the block that holds it, inside a thin dark bezel:
- * upright, on the front of the slim screen; tilted, on the screen plate across the blocks' diagonal, which makes the
- * face taller. On it the live picture from the camera on top of the fin (see {@link TailCameraFeed}), its name in the
- * top corner behind a blinking recording light and a little camera. With no picture it shows a test card, the way a
- * screen with no signal does: colour bars over a dark band, the airliner seen from behind in the middle, and a word
- * under them on why: the airliner is not assembled, or no picture is coming.
+ * Draws the flight deck's camera display over the whole of its face, from the block that holds it, inside a thin dark
+ * bezel: upright, on the front of the slim screen; tilted, on the screen plate across the blocks' diagonal, which makes
+ * the face taller. On it the live picture from the outside camera it is set to (see {@link TailCameraFeed}), the
+ * camera's name in the top corner behind a blinking recording light and a little camera. With no picture it shows a
+ * test card, the way a screen with no signal does: colour bars over a dark band, the airliner seen from behind in the
+ * middle, and a word under them on why: the airliner is not assembled, or no picture is coming. Either way, along the
+ * bottom left, the buttons that pick the camera (see {@link CameraButtons}): each the airliner seen from its right side,
+ * nose to the right, with a dot where its camera is, the one shown lit.
  */
 public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCameraDisplayBlockEntity> {
     /** The whole face's width, in blocks (see {@link WideScreenFace}). */
@@ -57,6 +62,17 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double CAMERA_LENS_LENGTH = 0.02;
     private static final double CAMERA_LENS_NARROW = 0.008;
     private static final double CAMERA_LENS_WIDE = 0.016;
+    /**
+     * The camera buttons: the airliner's margin inside each, the rim round the lit one, and the size of the dot where
+     * its camera is, in blocks.
+     */
+    private static final double BUTTON_PAD = 0.008;
+    private static final double BUTTON_RIM = 0.006;
+    private static final double CAMERA_DOT = 0.016;
+    /** How far the side view and the cameras on it reach, in metres: ahead of the nose, back from it, and up. */
+    private static final double VIEW_AHEAD = reach(point -> -point[0], camera -> -camera.back);
+    private static final double VIEW_BACK = reach(point -> point[0], camera -> camera.back);
+    private static final double VIEW_UP = reach(point -> point[1], camera -> camera.up);
     /** How much of the test card's height the colour bars take, over the dark band. */
     private static final double BARS = 2 / 3.0;
     /** The badge with the airliner on it: its height, as a share of the bars', and its width over its height. */
@@ -75,6 +91,9 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final int LABEL_BACKING = 0x90000000;
     private static final int RECORDING = 0xFFE03030;
     private static final int WHITE = 0xFFF2F6FB;
+    private static final int BUTTON_LIT = 0xE0000000;
+    private static final int AIRLINER_DIM = 0xFF8A949E;
+    private static final int CAMERA_DIM = 0xFFF2B233;
     /** The test card's bars, left to right: grey, yellow, cyan, green, magenta, red and blue. */
     private static final int[] COLOUR_BARS = {0xFFC0C0C0, 0xFFC0C000, 0xFF00C0C0, 0xFF00C000, 0xFFC000C0, 0xFFC00000, 0xFF0000C0};
 
@@ -106,12 +125,16 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         if (picture != null) {
             picture(buffers.getBuffer(RenderType.text(picture)), matrix, height);
             // The picture took its own buffer; the shapes over it take theirs back, and the text its own after them.
-            Component label = Component.translatable(KEY + "camera", Component.translatable(OutsideCamera.TAIL.label()));
-            double labelX = cameraLabel(ScreenDrawing.shapes(buffers), matrix, height, font.width(label) * TEXT, screen.getLevel());
+            Component label = Component.translatable(KEY + "camera", Component.translatable(screen.camera().label()));
+            VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+            double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.getLevel());
+            cameraButtons(shapes, matrix, screen.camera());
             ScreenDrawing.text(font, pose, buffers, label, labelX, height - BEZEL - LABEL_MARGIN - LABEL_HEIGHT / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.LEFT);
         } else {
-            testCard(ScreenDrawing.shapes(buffers), matrix, height);
+            VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+            testCard(shapes, matrix, height);
+            cameraButtons(shapes, matrix, screen.camera());
             // Text last: it takes its own buffer, which ends the one the shapes went into.
             String status = SableClient.ride(screen) != null ? "no_signal" : "standby";
             double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
@@ -169,6 +192,68 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         ScreenDrawing.vertex(shapes, matrix, lens + CAMERA_LENS_LENGTH, middle + CAMERA_LENS_WIDE, 3 * LAYER, WHITE);
         ScreenDrawing.vertex(shapes, matrix, lens, middle + CAMERA_LENS_NARROW, 3 * LAYER, WHITE);
         return name;
+    }
+
+    /** The camera buttons along the bottom left, the shown camera's lit. */
+    private static void cameraButtons(VertexConsumer shapes, Matrix4f matrix, OutsideCamera shown) {
+        for (OutsideCamera camera : OutsideCamera.values()) {
+            cameraButton(shapes, matrix, camera, camera == shown);
+        }
+    }
+
+    /**
+     * A camera's button: the airliner seen from its right side on a dark backing, with a dot where the camera is; lit,
+     * the airliner white, the dot red as a recording light and a white rim round it all.
+     */
+    private static void cameraButton(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, boolean lit) {
+        double x0 = CameraButtons.left(camera);
+        double y0 = CameraButtons.INSET;
+        double x1 = x0 + CameraButtons.WIDTH;
+        double y1 = y0 + CameraButtons.HEIGHT;
+        if (lit) {
+            ScreenDrawing.rect(shapes, matrix, x0 - BUTTON_RIM, y0 - BUTTON_RIM, x1 + BUTTON_RIM, y1 + BUTTON_RIM, 2 * LAYER, WHITE);
+        }
+        ScreenDrawing.rect(shapes, matrix, x0, y0, x1, y1, 3 * LAYER, lit ? BUTTON_LIT : LABEL_BACKING);
+        SideView view = SideView.in(x0, y0, x1, y1);
+        int colour = lit ? WHITE : AIRLINER_DIM;
+        for (double[][] quad : OutsideCamera.SIDE_VIEW) {
+            // Back to front: the nose to the right turns the quads over, and they keep facing the viewer this way.
+            for (int corner = quad.length - 1; corner >= 0; corner--) {
+                ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), 4 * LAYER, colour);
+            }
+        }
+        double x = view.x(camera.back);
+        double y = view.y(camera.up);
+        double half = CAMERA_DOT / 2;
+        ScreenDrawing.rect(shapes, matrix, x - half, y - half, x + half, y + half, 5 * LAYER, lit ? RECORDING : CAMERA_DIM);
+    }
+
+    /**
+     * The side view fitted into a button, as large as it fits with every camera on it, in the middle: where the nose's
+     * tip and the ground under the wheels come, and blocks of the button per metre of the airliner.
+     */
+    private record SideView(double noseX, double groundY, double scale) {
+        static SideView in(double x0, double y0, double x1, double y1) {
+            double length = VIEW_AHEAD + VIEW_BACK;
+            double scale = Math.min((x1 - x0 - 2 * BUTTON_PAD) / length, (y1 - y0 - 2 * BUTTON_PAD) / VIEW_UP);
+            return new SideView((x0 + x1 + length * scale) / 2 - VIEW_AHEAD * scale, (y0 + y1 - VIEW_UP * scale) / 2, scale);
+        }
+
+        /** Where on the button a place this far back from the nose comes, the nose to the right. */
+        double x(double back) {
+            return noseX - back * scale;
+        }
+
+        /** Where on the button a place this high above the ground comes. */
+        double y(double up) {
+            return groundY + up * scale;
+        }
+    }
+
+    /** How far the side view's corners and the cameras on it reach, the furthest any of them goes one way. */
+    private static double reach(ToDoubleFunction<double[]> corner, ToDoubleFunction<OutsideCamera> camera) {
+        double outline = OutsideCamera.SIDE_VIEW.stream().flatMap(Arrays::stream).mapToDouble(corner).max().orElse(0);
+        return Math.max(outline, Arrays.stream(OutsideCamera.values()).mapToDouble(camera).max().orElse(0));
     }
 
     /** The test card over the picture: the colour bars over the dark band, and the airliner on its badge over the bars. */
