@@ -1196,7 +1196,8 @@ are generated: `node tools/generate_textures.mjs` writes the textures
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
-`node tools/generate_sounds.mjs` writes the sounds with FFmpeg: the engine loop is synthesised, and the flight deck's
+`node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any) with FFmpeg, and with
+`oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is synthesised, and the flight deck's
 voice (the callouts and the cabin announcements) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so
 that part runs on Windows only. The script then flattens the voice's intonation and tunes it to the semitones around
 one note, and FFmpeg adds a faint vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the

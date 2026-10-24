@@ -4,8 +4,10 @@ import { resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 
-// Run from anywhere: node tools/generate_sounds.mjs
-// Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH:
+// Run from anywhere: node tools/generate_sounds.mjs [<name> ...]
+// Writes the airliner's sounds as Ogg Vorbis into assets/aerolarge/sounds, with FFmpeg on PATH (and, where FFmpeg has
+// no libvorbis, as Homebrew's FFmpeg 9 has not, oggenc from vorbis-tools, the same encoder). Given sound names, it
+// writes only those and leaves the rest as they are:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
 // - the flight deck's voice, its callouts and cabin announcements, and air traffic control over the radio, spoken by
 //   Windows' own speech synthesis (System.Speech) and then reworked (see VOICE and RADIO), so those parts run on
@@ -45,8 +47,22 @@ function writeWav(path, samples) {
   writeFileSync(path, Buffer.concat([header, data]));
 }
 
+// The sounds named on the command line, to write only those; every sound is still worked out, in order, so each comes
+// out the same either way.
+const ONLY = new Set(process.argv.slice(2));
+// Whether this FFmpeg encodes Vorbis with libvorbis; if not, oggenc does, at the same quality.
+const LIBVORBIS = execFileSync("ffmpeg", ["-hide_banner", "-encoders"]).toString().includes("libvorbis");
+
 function toOgg(wav, name) {
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-c:a", "libvorbis", "-q:a", "5", resolve(output, `${name}.ogg`)]);
+  if (ONLY.size > 0 && !ONLY.has(name)) {
+    return;
+  }
+  const ogg = resolve(output, `${name}.ogg`);
+  if (LIBVORBIS) {
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-c:a", "libvorbis", "-q:a", "5", ogg]);
+  } else {
+    execFileSync("oggenc", ["--quiet", "-q", "5", "-o", ogg, wav]);
+  }
 }
 
 // The engine: low-passed roar for the exhaust, a band of fan whine with the blades' harmonics wavering slightly, and a
