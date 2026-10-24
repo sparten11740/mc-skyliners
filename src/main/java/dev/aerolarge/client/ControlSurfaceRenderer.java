@@ -197,6 +197,16 @@ public class ControlSurfaceRenderer implements BlockEntityRenderer<AutopilotBloc
         }
     }
 
+    /**
+     * Drawn whether or not the section the autopilot stands in is: the autopilot is up in the cockpit, a hundred blocks
+     * and more from the panels, and that section is often off to the side of the view or hidden behind the hull while
+     * the wings are in plain sight.
+     */
+    @Override
+    public boolean shouldRenderOffScreen(AutopilotBlockEntity autopilot) {
+        return true;
+    }
+
     @Override
     public int getViewDistance() {
         return VIEW_DISTANCE;
