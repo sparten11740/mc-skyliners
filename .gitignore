@@ -19,5 +19,8 @@ run-*/
 .DS_Store
 Thumbs.db
 
-# Claude Code local skills and settings
-.claude/
+# Claude Code: worktrees and local settings stay local; the project's skills, hooks and settings are shared
+.claude/*
+!.claude/skills/
+!.claude/hooks/
+!.claude/settings.json
