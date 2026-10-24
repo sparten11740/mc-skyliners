@@ -21,8 +21,8 @@ import net.minecraft.world.phys.Vec3;
  * The hint a hidden rubber duck gives the player who has not found it yet: while they are within {@link #RANGE}
  * blocks, every few seconds it squeaks softly and wiggles, with a note over it, each duck to its own beat. A squeak
  * and a wiggle a child can follow without reading, getting louder as they get nearer, as sounds do. Whether the player
- * has found it is read from their Duck Hunt progress, which the server sends them; once found, it falls quiet for them
- * only.
+ * has found it is told by the server with the duck, for its airliner's own hunt; once found, it falls quiet for them
+ * only, and aboard that airliner only.
  */
 public final class DuckHints {
     /** How near the player has to be for a hidden duck to give its hint, in blocks. */
@@ -48,7 +48,7 @@ public final class DuckHints {
         }
         Player player = Minecraft.getInstance().player;
         Vec3 middle = Vec3.atCenterOf(pos);
-        if (player == null || player.distanceToSqr(SableClient.toWorld(level, middle)) > RANGE * RANGE || found(duck.duck())) {
+        if (player == null || player.distanceToSqr(SableClient.toWorld(level, middle)) > RANGE * RANGE || found(duck, player)) {
             return;
         }
         duck.wiggle();
@@ -56,8 +56,16 @@ public final class DuckHints {
         level.addParticle(ParticleTypes.NOTE, middle.x, pos.getY() + NOTE_HEIGHT + RubberDuckBlock.lift(duck.getBlockState()), middle.z, NOTE_COLOUR, 0, 0);
     }
 
-    /** Whether the player has found this hidden duck, from 1, as their Duck Hunt progress has it. */
-    private static boolean found(int duck) {
+    /**
+     * Whether the player has found this hidden duck in its airliner's hunt, as the server last told; one hidden before
+     * each airliner had a hunt, as their Duck Hunt progress has it.
+     */
+    private static boolean found(RubberDuckBlockEntity duck, Player player) {
+        return duck.hunt() != null ? duck.foundBy(player.getUUID()) : foundEver(duck.duck());
+    }
+
+    /** Whether the player has ever found the hidden duck, from 1, as their Duck Hunt progress has it. */
+    private static boolean foundEver(int duck) {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
         if (connection == null) {
             return false;

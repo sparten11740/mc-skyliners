@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -28,8 +29,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The duck hunt: five rubber ducks hidden about the furnished airliner, one for each criterion of the Duck Hunt
- * advancement (see {@link RubberDuckBlock}). Their spots are found from the finished layout, from what the rooms hold,
- * rather than laid by each room, so they follow however the rooms are fitted out:
+ * advancement (see {@link RubberDuckBlock}), in a hunt of the airliner's own, which each is told as it is built, so
+ * they are found aboard it apart from any other's. Their spots are found from the finished layout, from what the
+ * rooms hold, rather than laid by each room, so they follow however the rooms are fitted out:
  * <ol>
  * <li>on the flight deck's glareshield, where real pilots keep a mascot;</li>
  * <li>in the WC behind the flight deck, on the floor beside its basin;</li>
@@ -68,14 +70,13 @@ final class DuckHunt {
         hide(4, luggage(), hidden);
         hide(5, pool(), hidden);
         Spot giant = giant();
-        if (giant == null) {
-            return;
-        }
+        // The airliner's own hunt: a layout is drawn afresh for each airliner built, so no two share one.
+        UUID hunt = UUID.randomUUID();
         for (Spot duck : hidden) {
-            RubberDuckBlockEntity.GiantSpot seen = seenFrom(duck, giant);
+            RubberDuckBlockEntity.GiantSpot seen = giant == null ? null : seenFrom(duck, giant);
             layout.fittings().put(duck.pos(), (blockEntity, rotation) -> {
                 if (blockEntity instanceof RubberDuckBlockEntity hiddenDuck) {
-                    hiddenDuck.giant(seen);
+                    hiddenDuck.hide(hunt, hidden.size(), seen);
                 }
             });
         }

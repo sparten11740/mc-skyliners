@@ -2,7 +2,10 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -10,12 +13,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -23,11 +32,14 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A rubber duck's state. On the client: when it last started wiggling, for its renderer, which draws the duck so it
  * can move; and through {@link #clientTicker}, which the client sets so this class stays safe to load on a dedicated
- * server, a hidden duck's hint to the player who has not found it yet. On the server, a hidden duck counts toward the
- * finder's Duck Hunt advancement the first time they squeak it: a row of five dots on screen fills in yellow for the
- * ducks found so far, and the duck counts them out in squeaks, rising, a heart with each, for those who cannot read
- * the dots yet. For the last of them, the giant duck rises out of the airliner's moon pool, from where each hidden duck
- * was told it is when the airliner was built (see {@link GiantRubberDuckBlock}).
+ * server, a hidden duck's hint to the player who has not found it yet. On the server, a hidden duck is found by the
+ * player the first time they squeak it, in its airliner's own hunt (see {@link DuckHunts}): a row of a dot for each of
+ * the airliner's hidden ducks fills in yellow for those found so far, and the duck counts them out in squeaks, rising,
+ * a heart with each, for those who cannot read the dots yet. For the last of them, the giant duck rises out of the
+ * airliner's moon pool, from where each hidden duck was told it is when the airliner was built (see
+ * {@link GiantRubberDuckBlock}). Each find also counts toward the finder's Duck Hunt advancement, which keeps every
+ * duck they have found aboard any airliner. An airliner built before each had a hunt of its own has its ducks counted
+ * by the advancement alone, as they were then: a player finds each of them once, whichever airliner it is aboard.
  */
 public class RubberDuckBlockEntity extends BlockEntity {
     /** Set by the client: a hidden duck's hint, each tick. */
@@ -74,6 +86,15 @@ public class RubberDuckBlockEntity extends BlockEntity {
     /** Where the giant duck rises, for a hidden duck in an airliner with room for one; null for any other. */
     @Nullable
     private GiantSpot giant;
+    /**
+     * The hunt a hidden duck is part of, and how many ducks its airliner hides for it; none for one hidden before each
+     * airliner had a hunt of its own.
+     */
+    @Nullable
+    private UUID hunt;
+    private int ducks;
+    /** Who has found the duck in its hunt, as the client was last told. */
+    private Set<UUID> foundBy = Set.of();
     /** After a find, how many squeaks are left to count and how many have been; when the next is due, in game ticks. */
     private int toCount;
     private int counted;
@@ -113,10 +134,26 @@ public class RubberDuckBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Sets where the giant duck rises, as the airliner is built. */
-    public void giant(GiantSpot giant) {
+    /**
+     * Tells a hidden duck, as the airliner is built, the hunt it is part of, how many ducks the airliner hides for it,
+     * and where the giant duck rises, if it has room to.
+     */
+    public void hide(UUID hunt, int ducks, @Nullable GiantSpot giant) {
+        this.hunt = hunt;
+        this.ducks = ducks;
         this.giant = giant;
         setChanged();
+    }
+
+    /** The hunt a hidden duck is part of; null for one hidden before each airliner had a hunt of its own. */
+    @Nullable
+    public UUID hunt() {
+        return hunt;
+    }
+
+    /** Whether the player has found the duck in its hunt, as the client was last told. */
+    public boolean foundBy(UUID player) {
+        return foundBy.contains(player);
     }
 
     /**
@@ -124,17 +161,40 @@ public class RubberDuckBlockEntity extends BlockEntity {
      * squeaks; and for the last of them, the giant duck rises.
      */
     void found(ServerPlayer player) {
-        if (duck() <= 0 || !FirstFlight.DUCK_HUNT.award(player, criterion(duck())) || !(level instanceof ServerLevel server)) {
+        if (duck() <= 0 || !(level instanceof ServerLevel server)) {
             return;
         }
-        int found = FirstFlight.DUCK_HUNT.progress(player);
-        player.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.found", dots(found)), true);
+        boolean firstEver = FirstFlight.DUCK_HUNT.award(player, criterion(duck()));
+        int found = countFind(server, player, firstEver);
+        if (found == 0) {
+            return;
+        }
+        int of = hunt != null ? ducks : RubberDuckBlock.HIDDEN_DUCKS;
+        player.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.found", dots(found, of)), true);
         toCount = found;
         counted = 0;
         nextCount = server.getGameTime() + COUNT_DELAY;
-        if (found >= RubberDuckBlock.HIDDEN_DUCKS) {
+        if (found >= of) {
             raiseGiant(server, player);
         }
+    }
+
+    /**
+     * How many of its hunt's ducks the player has found, this one with them, if it is new to them in the hunt; 0 if
+     * they had found it already. One hidden before each airliner had a hunt counts their Duck Hunt progress instead,
+     * if this is the first time they have found it anywhere.
+     */
+    private int countFind(ServerLevel level, ServerPlayer player, boolean firstEver) {
+        if (hunt == null) {
+            return firstEver ? FirstFlight.DUCK_HUNT.progress(player) : 0;
+        }
+        DuckHunts hunts = DuckHunts.of(level);
+        if (!hunts.find(hunt, player.getUUID(), duck())) {
+            return 0;
+        }
+        // The clients hear who has found it, so its hint falls quiet for the finder.
+        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        return hunts.found(hunt, player.getUUID());
     }
 
     /**
@@ -157,10 +217,10 @@ public class RubberDuckBlockEntity extends BlockEntity {
         finder.displayClientMessage(Component.translatable("message.aerolarge.rubber_duck.giant"), false);
     }
 
-    /** A dot for each hidden duck, the first {@code found} of them yellow and the rest grey. */
-    private static MutableComponent dots(int found) {
+    /** A dot for each of so many hidden ducks, the first {@code found} of them yellow and the rest grey. */
+    private static MutableComponent dots(int found, int of) {
         MutableComponent row = Component.empty();
-        for (int duck = 0; duck < RubberDuckBlock.HIDDEN_DUCKS; duck++) {
+        for (int duck = 0; duck < of; duck++) {
             row.append(Component.literal(duck == 0 ? DOT : " " + DOT).withStyle(duck < found ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
         }
         return row;
@@ -187,11 +247,37 @@ public class RubberDuckBlockEntity extends BlockEntity {
         if (giant != null) {
             tag.put("Giant", giant.save());
         }
+        if (hunt != null) {
+            tag.putUUID("Hunt", hunt);
+            tag.putInt("Ducks", ducks);
+        }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         giant = tag.contains("Giant", Tag.TAG_COMPOUND) ? GiantSpot.load(tag.getCompound("Giant")) : null;
+        hunt = tag.hasUUID("Hunt") ? tag.getUUID("Hunt") : null;
+        ducks = tag.getInt("Ducks");
+        foundBy = tag.getList("FoundBy", Tag.TAG_INT_ARRAY).stream().map(NbtUtils::loadUUID).collect(Collectors.toUnmodifiableSet());
+    }
+
+    /** What the clients are told of a hidden duck: its hunt, and who has found it in that hunt, for its hint. */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        if (hunt == null || !(level instanceof ServerLevel server)) {
+            return tag;
+        }
+        tag.putUUID("Hunt", hunt);
+        ListTag finders = new ListTag();
+        DuckHunts.of(server).finders(hunt, duck()).forEach(finder -> finders.add(NbtUtils.createUUID(finder)));
+        tag.put("FoundBy", finders);
+        return tag;
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 }

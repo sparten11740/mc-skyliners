@@ -643,19 +643,24 @@ on the flight deck's glareshield, where pilots keep their mascots, one in the WC
 one sitting on the balls of the den's ball pit, one on the luggage in the hold, and one bobbing on the moon pool's
 water by the steps out, in plain sight, to show what to look for. (At the smallest scale the airliner has none of
 these rooms, and no ducks.) Within a few blocks of one you have not found yet, it squeaks softly every few seconds
-and wiggles, with a note over it. Use it, or hit it, to find it: it squeaks loudly, a row of five dots on screen fills
-in yellow for the ducks found so far, and the duck counts them out in squeaks, each a little higher, with a heart
-each. Every player finds the ducks for themselves, and a duck falls quiet only for whoever found it. Each counts
-toward Duck Hunt in the First Flight advancements; find all five to earn it. A hidden duck stays put when hit, even in
-creative mode; sneak to take one away, and it is gone until the airliner is built again.
+and wiggles, with a note over it. Use it, or hit it, to find it: it squeaks loudly, a row of dots on screen, one for
+each duck the airliner hides, fills in yellow for those found so far, and the duck counts them out in squeaks, each a
+little higher, with a heart each. Every player finds the ducks for themselves, and a duck falls quiet only for whoever
+found it. Every airliner has a hunt of its own: the ducks found aboard one count toward that airliner only, so each
+new airliner is hunted afresh. Each find also counts toward Duck Hunt in the First Flight advancements, which keeps
+every duck found aboard any airliner; find all five to earn it. (An airliner built before each had a hunt of its own
+counts its ducks by that advancement alone, so a duck found aboard any of those is found aboard them all.) A hidden
+duck stays put when hit, even in creative mode; sneak to take one away, and it is gone until the airliner is built
+again.
 
-Whoever finds the fifth sets off the surprise: with a great splash a giant rubber duck, three blocks wide and tall,
-rises out of the airliner's moon pool, and once it is up it lets out a huge squeak, with a fanfare and a burst of
-confetti and fireworks; the finder hears the squeak from anywhere aboard. It floats there, bobbing gently, and it is
-solid: jump onto its back or its head and it bounces you straight back up with a deep squeak, like the springboard
-(sneak to stand on it); use it, or hit it, and it squeaks. It is part of the airliner, flies with it and stays until
-the airliner is built again: like a hidden duck it stays put when hit, and only comes apart for a player who sneaks,
-breaking any part of it taking the whole duck away. A second player finding all five makes it squeak again.
+Whoever finds the last of an airliner's ducks sets off the surprise: with a great splash a giant rubber duck, three
+blocks wide and tall, rises out of the airliner's moon pool, and once it is up it lets out a huge squeak, with a
+fanfare and a burst of confetti and fireworks; the finder hears the squeak from anywhere aboard. It floats there,
+bobbing gently, and it is solid: jump onto its back or its head and it bounces you straight back up with a deep
+squeak, like the springboard (sneak to stand on it); use it, or hit it, and it squeaks. It is part of the airliner,
+flies with it and stays until the airliner is built again: like a hidden duck it stays put when hit, and only comes
+apart for a player who sneaks, breaking any part of it taking the whole duck away. A second player finding all of the
+airliner's ducks makes it squeak again.
 
 ### Cabin seats
 

@@ -46,9 +46,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * can bob afloat and wiggle.
  * <p>
  * DUCK is which of the ducks hidden aboard a furnished airliner it is, 1 to {@link #HIDDEN_DUCKS}, or 0 for one put
- * down by hand. Squeaking a hidden duck finds it, for the Duck Hunt advancement. A hidden duck stays put for anyone not
- * sneaking: a hit finds it rather than breaking it, even in creative mode, so a child cannot lose one by clicking the
- * wrong button; taken away on purpose, it leaves nothing behind.
+ * down by hand. Squeaking a hidden duck finds it, in its airliner's own hunt and for the Duck Hunt advancement (see
+ * {@link RubberDuckBlockEntity}). A hidden duck stays put for anyone not sneaking: a hit finds it rather than breaking
+ * it, even in creative mode, so a child cannot lose one by clicking the wrong button; taken away on purpose, it leaves
+ * nothing behind.
  */
 public class RubberDuckBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
     private static final MapCodec<RubberDuckBlock> CODEC = simpleCodec(RubberDuckBlock::new);
