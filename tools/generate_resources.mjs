@@ -626,10 +626,10 @@ function atcLang() {
 }
 // The gear going up: the hydraulics whining under the floor, the leg thumping into its bay, the doors shutting; coming
 // down: the uplocks letting go, the air roaring in, the leg locking down. And the gear horn on the flight deck. Heard
-// from the legs and the lever, where they are.
+// from the legs and the lever, where they are; the legs play theirs loud enough to carry through the cabin.
 function gearSounds() {
   return Object.fromEntries(["gear_retract", "gear_extend", "gear_horn"].map((name) =>
-    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}`, attenuation_distance: 48 }] }]));
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
 }
 // Dropping into an air pocket: played to each listener aboard, following them about.
 function airPocketSounds() {

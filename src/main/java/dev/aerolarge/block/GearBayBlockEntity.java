@@ -75,7 +75,11 @@ public class GearBayBlockEntity extends BlockEntity {
      * stays down: the height the callouts count the airliner on the ground at, its tires squashed or not.
      */
     private static final double ON_GROUND = 1.5;
-    private static final float HYDRAULICS_VOLUME = 1.0F;
+    /**
+     * How loud a leg going up or down is: past 1 it carries further, as the server sends a sound to everyone within 16
+     * blocks for each unit of its volume, so the whole cabin over the gear hears it, as on an airliner.
+     */
+    private static final float HYDRAULICS_VOLUME = 3.0F;
     /** The legs loaded, so the controls' and the autopilot's links into a stowed leg are not taken for broken ones. */
     private static final Loaded<GearBayBlockEntity> LOADED = new Loaded<>(GearBayBlockEntity.class);
 
