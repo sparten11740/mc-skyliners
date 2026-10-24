@@ -24,6 +24,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.DoubleValue ATC_VOLUME;
     public static final ModConfigSpec.BooleanValue TURBULENCE;
     public static final ModConfigSpec.BooleanValue AIR_POCKETS;
+    public static final ModConfigSpec.BooleanValue LIGHTNING_STRIKES;
     public static final ModConfigSpec.BooleanValue DECOMPRESSION;
     public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
 
@@ -143,6 +144,12 @@ public final class AerolargeConfig {
                 "and deeper in a thunderstorm."
             )
             .define("airPockets", true);
+        LIGHTNING_STRIKES = builder
+            .comment(
+                "Whether lightning now and then strikes airliners flying through a thunderstorm, about once a minute (twice as often high up):",
+                "a real bolt with its flash and thunder, the cabin flickering and the screens full of static, but nothing harmed or set alight."
+            )
+            .define("lightningStrikes", true);
         DECOMPRESSION = builder
             .comment(
                 "Whether a door opened in flight lets the air rush out of the airliner: whoever stands near it, and anything loose, is dragged to the door and flung out.",

@@ -300,6 +300,13 @@ often (about every four minutes at 60 blocks up, every minute from 200), half ag
 as often and half again as deep in a thunderstorm. The autopilot climbs back to the height it holds. Turn it off with
 `airPockets` in the server config.
 
+Flying through a thunderstorm (15 blocks or more above the ground, where it rains), the airliner is struck by
+lightning about once a minute, twice as often from 150 blocks up: a real bolt cracks into it, mostly at a wingtip, the
+nose or the tail, with the sky's flash and a crack of thunder right there. Everyone aboard sees a blinding white
+flash, the cabin flickers dark twice, the flight displays fill with static for a moment and the radio crackles. Like a
+real airliner it comes through unharmed: nothing aboard is hurt and nothing is set alight. Turn it off with
+`lightningStrikes` in the server config.
+
 ### Autopilot
 
 Use the autopilot's control head on the centre console, or the big screen in the middle of the instrument panel, to

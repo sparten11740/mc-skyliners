@@ -37,6 +37,7 @@ import dev.aerolarge.client.FlightStripBoardRenderer;
 import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmetVisor;
 import dev.aerolarge.client.LiftPanelRenderer;
+import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
 import dev.aerolarge.client.PaperPlaneRenderer;
@@ -94,6 +95,7 @@ public final class AerolargeClient {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
+        NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
@@ -154,6 +156,7 @@ public final class AerolargeClient {
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "outside_camera"), PassengerCameras::overlay);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "pilot_hud"), PilotHud::overlay);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "atc_headset"), AtcHeadset::overlay);

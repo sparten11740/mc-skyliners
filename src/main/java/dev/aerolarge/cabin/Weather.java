@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The weather an airliner flies through, and what it makes of rough air (see {@link Turbulence}): how many times as
  * often rough air comes as in clear skies, how many times as hard it shakes and throws, and how many times as long a
- * patch of it lasts. Air pockets go by it too (see {@link AirPockets}).
+ * patch of it lasts. Air pockets and lightning go by it too (see {@link AirPockets} and {@link LightningStrikes}).
  */
 enum Weather {
     CLEAR(1, 1, 1),

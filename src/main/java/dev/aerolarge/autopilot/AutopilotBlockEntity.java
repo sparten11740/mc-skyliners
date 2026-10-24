@@ -20,6 +20,7 @@ import dev.aerolarge.block.Turning;
 import dev.aerolarge.block.VillageSpotter;
 import dev.aerolarge.cabin.AirPockets;
 import dev.aerolarge.cabin.Decompression;
+import dev.aerolarge.cabin.LightningStrikes;
 import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.SableFlight;
 import java.util.EnumMap;
@@ -401,6 +402,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final AtcRadio atc = new AtcRadio(airtime, callouts);
     private final Turbulence turbulence = new Turbulence();
     private final AirPockets airPockets = new AirPockets();
+    private final LightningStrikes lightning = new LightningStrikes();
     /** The airstairs and slides it has put away before taking off, which it holds the brakes for till they are. */
     private final Stowing stowing = new Stowing();
     /** Hopping the airliner free when it is stuck. */
@@ -845,7 +847,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Each tick: a cabin announcement waiting for the one before it has its turn; and while the airliner is assembled,
-     * the callouts watch it, rough air and air pockets come and go, the autopilot flies it if engaged, or keeps it from tipping over
+     * the callouts watch it, rough air and air pockets come and go, lightning strikes in a storm, the autopilot flies it if engaged, or keeps it from tipping over
      * if not, and air traffic control talks to it.
      */
     public static void serverTick(Level level, BlockPos pos, BlockState state, AutopilotBlockEntity autopilot) {
@@ -873,6 +875,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double radio = autopilot.radioAltitude(serverLevel, flight);
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
         autopilot.airPockets.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
+        autopilot.lightning.tick(serverLevel, autopilot, flight.position(), radio);
         Decompression.tick(serverLevel, autopilot, autopilot.nose(), flight, radio);
         VillageSpotter.tick(serverLevel, autopilot, flight.position());
         boolean clear = radio + flight.apex() - flight.position().y > AIRBORNE;

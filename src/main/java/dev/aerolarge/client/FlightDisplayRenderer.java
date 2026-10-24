@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -37,6 +38,9 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
     private static final float TEXT_LIFT = 0.005F;
+    /** The static after a lightning strike, in specks across and up the screen. */
+    private static final int NOISE_COLUMNS = 16;
+    private static final int NOISE_ROWS = 12;
 
     private static final int BLACK = 0xFF0A0C10;
     private static final int SKY = 0xFF2D6FD1;
@@ -81,7 +85,29 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         text(font, pose, buffers, "ALT", 0.34F, ADI_RAISE + 0.08F, GREEN);
         text(font, pose, buffers, String.format(Locale.ROOT, "%+d", Math.round(attitude.verticalSpeed())), 0.34F, ADI_RAISE - 0.09F, GREEN);
         text(font, pose, buffers, String.format(Locale.ROOT, "HDG %03d", Math.round(attitude.heading()) % 360), 0, -0.29F, WHITE);
+        if (LightningFlash.screensStatic() && display.getLevel() != null) {
+            // A buffer of its own: drawing the text has moved the buffers on from the one the screen was drawn into.
+            noise(ScreenDrawing.shapes(buffers), matrix, display.getBlockPos().asLong() + display.getLevel().getGameTime());
+        }
         pose.popPose();
+    }
+
+    /**
+     * Static over the whole screen, just after lightning struck: a grid of grey specks of every brightness, different
+     * each tick.
+     */
+    private static void noise(VertexConsumer fill, Matrix4f matrix, long seed) {
+        RandomSource random = RandomSource.create(seed);
+        float width = 2 * HALF_WIDTH / NOISE_COLUMNS;
+        float height = 2 * HALF_HEIGHT / NOISE_ROWS;
+        for (int column = 0; column < NOISE_COLUMNS; column++) {
+            for (int row = 0; row < NOISE_ROWS; row++) {
+                int grey = random.nextInt(256);
+                float x = -HALF_WIDTH + column * width;
+                float y = -HALF_HEIGHT + row * height;
+                ScreenDrawing.rect(fill, matrix, x, y, x + width, y + height, 2 * TEXT_LIFT, 0xFF000000 | grey << 16 | grey << 8 | grey);
+            }
+        }
     }
 
     /**

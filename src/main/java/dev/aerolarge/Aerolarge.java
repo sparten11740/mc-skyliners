@@ -18,12 +18,14 @@ import dev.aerolarge.cabin.AirPocketPayload;
 import dev.aerolarge.cabin.DecompressionPush;
 import dev.aerolarge.cabin.Headroom;
 import dev.aerolarge.cabin.HighDive;
+import dev.aerolarge.cabin.LightningStrikePayload;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
 import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.AutopilotSettingsScreen;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
+import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
 import dev.aerolarge.client.TerrainMap;
@@ -121,7 +123,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("14")
+        event.registrar("15")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -136,6 +138,8 @@ public final class Aerolarge {
                 (payload, context) -> CameraShake.turbulence(payload.strength(), payload.ticks()))
             .playToClient(AirPocketPayload.TYPE, AirPocketPayload.STREAM_CODEC,
                 (payload, context) -> CameraShake.airPocket(payload.depth()))
+            .playToClient(LightningStrikePayload.TYPE, LightningStrikePayload.STREAM_CODEC,
+                (payload, context) -> LightningFlash.struck())
             .playToClient(OpenAutopilotScreen.TYPE, OpenAutopilotScreen.STREAM_CODEC,
                 (payload, context) -> AutopilotSettingsScreen.open(payload))
             .playToClient(OpenCoffeeMachine.TYPE, OpenCoffeeMachine.STREAM_CODEC,
