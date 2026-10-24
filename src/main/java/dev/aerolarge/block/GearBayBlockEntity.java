@@ -38,14 +38,14 @@ import net.minecraft.world.phys.Vec3;
  * on its real wheels again then: Offroad's wheel mount is a Sable actor that finds the ground from wherever its block
  * stands, each physics tick, so a mount put back mid-flight carries the airliner as before.
  *
- * <p>Going up takes {@link #RAISE_TICKS}: the doors open, the leg swings up and the doors close behind it. Its blocks go
- * as it starts up, so none hang under a leg drawn swinging. Coming down takes {@link #LOWER_TICKS}, and its blocks come
- * back once it has swung down, if its wheels have room under them; lowered with the airliner on its belly, it holds
- * there until the airliner is lifted off the ground (a hop frees it). Turned back halfway, it goes back from where it
- * got to. It never goes up with the airliner standing on its wheels.
+ * <p>Going up takes {@link #RAISE_TICKS}: the doors open, the leg swings up and the doors close behind it. Its blocks
+ * go as it starts up, so none hang under a leg drawn swinging. Coming down takes {@link #LOWER_TICKS}, and its blocks
+ * come back once it has swung down, if its wheels have room under them; lowered with the airliner on its belly, it
+ * holds there until the airliner is lifted off the ground (a hop frees it). Turned back halfway, it goes back from
+ * where it got to. It never goes up with the airliner standing on its wheels.
  *
- * <p>The flight deck's gear lever works every leg (see {@link GearLeverBlockEntity}). The server runs each leg and tells
- * the clients when it starts moving; each client runs the same clock to draw it (see the client's
+ * <p>The flight deck's gear lever works every leg (see {@link GearLeverBlockEntity}). The server runs each leg and
+ * tells the clients when it starts moving; each client runs the same clock to draw it (see the client's
  * {@code GearBayRenderer}). Its links to the leg's blocks turn with its block (see {@link Turning}), and so do the
  * blocks it has taken away.
  */

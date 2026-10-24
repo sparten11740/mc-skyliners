@@ -23,11 +23,11 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * What the landing gear lever works: every leg of the retractable gear (see {@link GearBayBlockEntity}), as offsets
- * from the lever. The legs follow the lever: thrown up, each goes up as soon as it may (never with the airliner standing
- * on its wheels: then the lever bumps back down with a buzz and its lamps flash red); thrown down, each comes down. The
- * lamps show where the legs are, and coming down below {@link #HORN_HEIGHT} with the gear not down the gear horn
- * sounds on the flight deck and the lamps flash red, as on an airliner, though nothing stops a pilot landing on the
- * belly. The autopilot throws it too, up once it climbs away and down to land (see {@code AutopilotBlockEntity}).
+ * from the lever. The legs follow the lever: thrown up, each goes up as soon as it may (never with the airliner
+ * standing on its wheels: then the lever bumps back down with a buzz and its lamps flash red); thrown down, each comes
+ * down. The lamps show where the legs are, and coming down below {@link #HORN_HEIGHT} with the gear not down the gear
+ * horn sounds on the flight deck and the lamps flash red, as on an airliner, though nothing stops a pilot landing on
+ * the belly. The autopilot throws it too, up once it climbs away and down to land (see {@code AutopilotBlockEntity}).
  */
 public class GearLeverBlockEntity extends BlockEntity {
     /** How often the lever looks at the legs, to light its lamps and sound the horn, in ticks: the horn's beat. */
@@ -96,8 +96,8 @@ public class GearLeverBlockEntity extends BlockEntity {
     }
 
     /**
-     * Used by a pilot: thrown the other way; or, held down by the airliner's weight or with retractable gear switched off,
-     * a buzz and a red flash, and why.
+     * Used by a pilot: thrown the other way; or, held down by the airliner's weight or with retractable gear switched
+     * off, a buzz and a red flash, and why.
      */
     void pull(ServerLevel level, Player player) {
         if (!down()) {

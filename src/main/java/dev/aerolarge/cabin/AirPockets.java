@@ -20,8 +20,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * falls a few blocks in a moment, until the air catches it again with a thud. Everyone aboard feels it (their view
  * drops and the cabin rattles, see the client's {@code CameraShake}), and whoever is not sitting down floats up off the
  * floor for a moment, as do loose balls and trolleys; belted in, passengers stay put. The higher the airliner flies,
- * the more often it happens, and in rain or a thunderstorm more often still, in a storm deeper too. The autopilot climbs
- * back to the height it holds. One per airliner, worked by its autopilot block beside the rough air (see
+ * the more often it happens, and in rain or a thunderstorm more often still, in a storm deeper too. The autopilot
+ * climbs back to the height it holds. One per airliner, worked by its autopilot block beside the rough air (see
  * {@link Turbulence}).
  */
 public final class AirPockets {

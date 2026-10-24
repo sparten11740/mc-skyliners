@@ -36,8 +36,8 @@ public final class LightningStrikes {
     private static final double HIGH = 150;
     private static final double HIGH_CHANCE = 2;
     /**
-     * How many columns of the airliner's blocks are looked at for where a bolt strikes, the one furthest out taken: so it
-     * mostly finds a wingtip, the nose or the tail, without searching the whole airliner.
+     * How many columns of the airliner's blocks are looked at for where a bolt strikes, the one furthest out taken: so
+     * it mostly finds a wingtip, the nose or the tail, without searching the whole airliner.
      */
     private static final int TRIES = 6;
 
