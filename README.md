@@ -44,7 +44,10 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   deck, galleries round the tall rooms (see The upper deck).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
-face. It refuses while anything is in the way and says where; sneak to build through it. Operators can also run
+face. While you hold one, a see-through miniature of the airliner floats over the block you aim at, turned the way it
+would be built there, so you can see which way it will go before you click: nose toward you, tail away, along
+whichever of north, east, south and west you face most. It refuses while anything is in the way and says where;
+sneak to build through it. Operators can also run
 `/aerolarge build <pos> <north|east|south|west> [furnished]`.
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
