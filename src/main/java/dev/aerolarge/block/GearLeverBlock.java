@@ -32,7 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The landing gear lever on the flight deck, as on an airliner's centre panel: a lever with a little wheel for a knob,
- * thrown back toward the pilots for the gear down and forward for it up, and beside it three lamps, one for each group
+ * thrown back toward the pilots for the gear down and forward for it up, and in front of it three lamps, one for each group
  * of legs: green with the gear down and locked, red while it moves (and flashing red with the gear horn, coming down
  * to land with the gear up), dark with it up and stowed. Use it to throw it the other way (see
  * {@link GearLeverBlockEntity}). FACING is the way its face looks, toward the pilots.

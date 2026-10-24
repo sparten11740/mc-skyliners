@@ -586,7 +586,8 @@ function atcLang() {
 // The retractable landing gear (see GearBayBlock and GearLeverBlock). The bay at the top of each leg: the belly's skin
 // with the gear doors shut underneath, turned with the way the leg swings so the doors' seam runs along it. The lever,
 // a module of the flight deck drawn with the pilots at its north side: an arm with a little wheel for a knob, thrown
-// back toward the pilots for the gear down and forward for it up, and three lamps beyond it, dark, red or green.
+// back toward the pilots for the gear down and forward for it up, and three lamps in front of it, on the pilots' side
+// where the knob never hides them, dark, red or green.
 {
   write(`assets/${ID}/models/block/gear_bay.json`, {
     parent: "minecraft:block/cube",
@@ -610,7 +611,7 @@ function atcLang() {
         solid([6.5, CONSOLE_HEIGHT, 4], [9.5, CONSOLE_HEIGHT + 0.5, 12], "#handle"),
         solid([7.5, CONSOLE_HEIGHT, 7.5], [8.5, 12, 8.5], "#handle", rotation),
         solid([7, 11, 6], [9, 15, 10], "#knob", rotation),
-        ...[3, 7, 11].map((x) => solid([x, CONSOLE_HEIGHT, 12.5], [x + 2, CONSOLE_HEIGHT + 0.5, 14.5], "#lamp")),
+        ...[2, 6.5, 11].map((x) => solid([x, CONSOLE_HEIGHT, 1], [x + 3, CONSOLE_HEIGHT + 0.5, 4], "#lamp")),
       ]);
     }
   }
