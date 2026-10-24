@@ -426,11 +426,12 @@ trailing edge steps in, each hung on a dark hinge rod with brackets. They swing 
 surfaces steer, over and above the slow, steady part of it that keeps the airliner trimmed, the way a real airliner's
 ailerons and elevators move about its trimmed stabiliser: the ailerons kick one up and one down as it rolls into and
 out of a turn, and the elevators sit near the middle in level flight and tilt on climbs and descents. The panels are
-drawn only, not built, so they do not touch the airliner's flight or collide with anything. They are drawn wherever
-they are in view, even with the cockpit, whose autopilot draws them, out of sight. Only airliners built since the
-surfaces came in have them, and only those built since the panels came in show them; older ones fly on their jets
-whatever the setting. Switched off, or once the airliner is disassembled, its surfaces turn back as they were
-built, and the panels swing back level.
+drawn, not built, so they never touch the airliner's flight; where each lies at rest an invisible plate, as thin as
+the wing's blocks and level with them, lets the wing be walked out to its very edge, and stays flat as the panel
+swings. They are drawn wherever they are in view, even with the cockpit, whose autopilot draws them, out of sight.
+Only airliners built since the surfaces came in have them, and only those built since the panels came in show them
+(and since the plates came in, can be walked on); older ones fly on their jets whatever the setting. Switched off, or
+once the airliner is disassembled, its surfaces turn back as they were built, and the panels swing back level.
 
 Switched off, the autopilot still keeps the airliner safe while it is flown on the thrust levers. In the air the
 control jets damp quick pitching and rolling and push it back once the nose goes more than 25 degrees up or 20 down,

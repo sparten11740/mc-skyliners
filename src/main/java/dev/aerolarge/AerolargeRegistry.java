@@ -141,6 +141,7 @@ import dev.aerolarge.block.SlideStepBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
+import dev.aerolarge.block.SurfacePanelBlock;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
 import dev.aerolarge.block.ThrustLeverBlock;
@@ -518,6 +519,16 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotBlockEntity>> AUTOPILOT_ENTITY =
         BLOCK_ENTITIES.register("autopilot", () -> BlockEntityType.Builder.of(AutopilotBlockEntity::new, AUTOPILOT.get()).build(null));
+    /**
+     * What the control surfaces' panels, drawn by the autopilot, are walked on: invisible plates laid with the wings, so
+     * they cannot be mined, blown up or moved, and drop nothing.
+     */
+    public static final DeferredBlock<SurfacePanelBlock> SURFACE_PANEL = BLOCKS.registerBlock(
+        "surface_panel", SurfacePanelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+            .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
+    );
     /** The pilots' seats: two blocks tall, sat in like Create's seats. */
     public static final DeferredBlock<PilotSeatBlock> PILOT_SEAT = BLOCKS.registerBlock(
         "pilot_seat", PilotSeatBlock::new, metal(MapColor.COLOR_BLACK).sound(SoundType.WOOL).noOcclusion().pushReaction(PushReaction.DESTROY)

@@ -466,6 +466,7 @@
   "block.aerolarge.airstair_step": "Airstair Step",
   "subtitles.aerolarge.airstair_motor": "Airstairs whirr",
   "subtitles.aerolarge.airstair_latch": "Airstairs latch",
+  "block.aerolarge.surface_panel": "Control Surface Panel",
   "block.aerolarge.slide_control": "Evacuation Slide Control",
   "block.aerolarge.slide_step": "Evacuation Slide",
   "entity.aerolarge.slide_ride": "Evacuation Slide",

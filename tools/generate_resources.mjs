@@ -262,6 +262,21 @@ function airstairLang() {
     "subtitles.aerolarge.airstair_latch": "Airstairs latch",
   };
 }
+// What the control surfaces' panels are walked on, aft of the wings' trailing edges: the panels are drawn by the
+// autopilot's renderer (see ControlSurfaceRenderer), so these are invisible, and their model only gives the particles
+// feet kick up. Laid only with the wings, so no item and no loot; light like the rest of the airliner, but no part of its
+// hull.
+write(`assets/${ID}/blockstates/surface_panel.json`, { variants: { "": { model: `${ID}:block/surface_panel` } } });
+write(`assets/${ID}/models/block/surface_panel.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
+cubes.surface_panel = null;
+function surfacePanelFittings() {
+  return ["surface_panel"];
+}
+function surfacePanelLang() {
+  return {
+    "block.aerolarge.surface_panel": "Control Surface Panel",
+  };
+}
 // The evacuation slides. The control, set into the cabin wall beside a door, drawn facing north: the hull's skin all
 // round but on its north face, which is its red panel, a red handle in the slot down its side, up while the slide is
 // packed and down once it is out, and a lamp beside it, dark or glowing green. The slides themselves are drawn by the
@@ -4569,6 +4584,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin",
   "model_airliner", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
+FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
 FITTINGS.push(...coffeeMachineFittings());
@@ -5145,6 +5161,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...plugDoorLang(),
   ...cockpitDoorLang(),
   ...airstairLang(),
+  ...surfacePanelLang(),
   ...slideLang(),
   ...flightDeckLang(),
   ...rubberDuckLang(),

@@ -48,6 +48,7 @@ import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.SlideControlBlock;
 import dev.aerolarge.block.SlideControlBlockEntity;
+import dev.aerolarge.block.SurfacePanelBlock;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
@@ -341,6 +342,8 @@ public final class AirframeLayout {
         layout.trimTail();
         // The control surfaces are picked once the tail's trim has turned its blocks the way they rest.
         layout.controlSurfaces();
+        // And what the panels drawn for them are walked on, aft of the trailing edges.
+        layout.panelFloors();
         // The skin is lined inside once it is cut and the gear meets it, before the airstairs keep their hatch's skin.
         new HullLining(layout).apply();
         layout.boardingStairs();
@@ -2702,19 +2705,27 @@ public final class AirframeLayout {
      * tailplane's. They stand in the autopilot's frame, which turns with it, so nothing about them is turned here.
      */
     private List<ControlSurfaces.Panel> surfacePanels(BlockPos at) {
-        List<ControlSurfaces.Panel> panels = new ArrayList<>();
-        // Wings without lifting blocks have no surfaces to show.
-        if (surfaces.isEmpty()) {
-            return panels;
+        return panelRuns().stream().map(run -> panel(at, run)).toList();
+    }
+
+    /**
+     * Where the panels drawn to show the control surfaces at work lie: ailerons along each outer wing's trailing edge,
+     * and elevators along each side of the tailplane's; none for wings without lifting blocks, which have no surfaces
+     * to show.
+     */
+    private List<PanelRun> panelRuns() {
+        List<PanelRun> runs = new ArrayList<>();
+        if (surfaces.values().stream().allMatch(List::isEmpty)) {
+            return runs;
         }
         Wing wing = new Wing(WING_HALF_SPAN, WING_ROOT_CHORD, WING_TIP_CHORD, AirframeShape::wingLeadingEdge, AirframeShape::wingY);
         Wing tailplane = new Wing(STABILIZER_HALF_SPAN, STABILIZER_ROOT_CHORD, STABILIZER_TIP_CHORD,
             x -> STABILIZER_ROOT_LEADING_EDGE + STABILIZER_SWEEP * x, x -> STABILIZER_Y + STABILIZER_DIHEDRAL * x);
         for (int side : new int[]{1, -1}) {
-            panels.addAll(panels(at, ControlSurfaces.Axis.ROLL, side, side, AILERON_PANEL_FROM, AILERON_PANEL_TO, wing));
-            panels.addAll(panels(at, ControlSurfaces.Axis.PITCH, 1, side, ELEVATOR_PANEL_FROM, ELEVATOR_PANEL_TO, tailplane));
+            runs.addAll(panelRuns(ControlSurfaces.Axis.ROLL, side, side, AILERON_PANEL_FROM, AILERON_PANEL_TO, wing));
+            runs.addAll(panelRuns(ControlSurfaces.Axis.PITCH, 1, side, ELEVATOR_PANEL_FROM, ELEVATOR_PANEL_TO, tailplane));
         }
-        return panels;
+        return runs;
     }
 
     /** A wing's planform, as {@link #wings} lays it: its half span, its chord at the root and the tip, and where it lies. */
@@ -2722,24 +2733,30 @@ public final class AirframeLayout {
     }
 
     /**
-     * The panels along one side of a wing (1 starboard, -1 port), from one share of its half span to another, swinging
-     * the given way for their axis: one for each step of the trailing edge, the stretch of the span where the wing's
-     * last block stands as far aft and as high, so each lies flush along the blocks it hangs from, and no wider than
-     * {@link #MOST_PANEL_SPAN}.
+     * Where one panel lies: along a wing's trailing edge from column {@code from} out from the middle to {@code to}, on
+     * one side (1 starboard, -1 port), swinging the given way for its axis (see {@link ControlSurfaces.Panel}).
      */
-    private List<ControlSurfaces.Panel> panels(BlockPos at, ControlSurfaces.Axis axis, int way, int side, double from, double to, Wing wing) {
-        List<ControlSurfaces.Panel> panels = new ArrayList<>();
+    private record PanelRun(ControlSurfaces.Axis axis, int way, int side, int from, int to, Wing wing) {
+    }
+
+    /**
+     * The panels along one side of a wing, from one share of its half span to another: one for each step of the
+     * trailing edge, the stretch of the span where the wing's last block stands as far aft and as high, so each lies
+     * flush along the blocks it hangs from, and no wider than {@link #MOST_PANEL_SPAN}.
+     */
+    private List<PanelRun> panelRuns(ControlSurfaces.Axis axis, int way, int side, double from, double to, Wing wing) {
+        List<PanelRun> runs = new ArrayList<>();
         int first = (int) Math.ceil(from * wing.halfSpan() * scale);
         int last = (int) Math.floor(to * wing.halfSpan() * scale);
         int widest = Math.max(1, (int) Math.round(MOST_PANEL_SPAN * scale));
         int start = first;
         for (int xb = first + 1; xb <= last + 1; xb++) {
             if (xb > last || xb - start >= widest || trailingBlock(wing, xb) != trailingBlock(wing, start)) {
-                panels.add(panel(at, axis, way, side, start, xb - 1, wing));
+                runs.add(new PanelRun(axis, way, side, start, xb - 1, wing));
                 start = xb;
             }
         }
-        return panels;
+        return runs;
     }
 
     /**
@@ -2756,22 +2773,51 @@ public final class AirframeLayout {
     }
 
     /**
-     * One panel, hinged along the back face of the wing's last blocks from column {@code from} out to {@code to} on one
-     * side, level with the middle of the wing's lifting layer there (all of the wing that reaches back to its trailing
-     * edge), and drawn with its lifting block; so many whole rows deep as make {@link #PANEL_CHORD} of the chord in its
-     * middle. In blocks from the middle of the autopilot's block, to starboard, up and ahead; a block's middle stands for
-     * the point x / scale across, (y + 0.5) / scale up and (z + 0.5) / scale back.
+     * One panel, hinged along the back face of the wing's last blocks over its run, level with the middle of the wing's
+     * lifting layer there (all of the wing that reaches back to its trailing edge), and drawn with its lifting block.
+     * In blocks from the middle of the autopilot's block, to starboard, up and ahead; a block's middle stands for the
+     * point x / scale across, (y + 0.5) / scale up and (z + 0.5) / scale back.
      */
-    private ControlSurfaces.Panel panel(BlockPos at, ControlSurfaces.Axis axis, int way, int side, int from, int to, Wing wing) {
-        BlockPos edge = BlockPos.of(trailingBlock(wing, from));
+    private ControlSurfaces.Panel panel(BlockPos at, PanelRun run) {
+        BlockPos edge = BlockPos.of(trailingBlock(run.wing(), run.from()));
         double up = edge.getY() + 0.5 - (at.getY() + 0.5);
         double ahead = at.getZ() + 0.5 - (edge.getZ() + 1);
-        double inner = side * (from - 0.5) - at.getX();
-        double outer = side * (to + 0.5) - at.getX();
-        double middle = (from + to) / 2.0 / scale / wing.halfSpan();
-        int rows = Math.max(1, (int) Math.round(PANEL_CHORD * lerp(wing.rootChord(), wing.tipChord(), middle) * scale));
-        return new ControlSurfaces.Panel(axis, way, new Vec3(inner, up, ahead), new Vec3(outer, up, ahead), rows,
+        double inner = run.side() * (run.from() - 0.5) - at.getX();
+        double outer = run.side() * (run.to() + 0.5) - at.getX();
+        return new ControlSurfaces.Panel(run.axis(), run.way(), new Vec3(inner, up, ahead), new Vec3(outer, up, ahead), rows(run),
             palette.lift(Direction.UP, palette.hull()));
+    }
+
+    /** How many whole rows deep a panel is: so many as make {@link #PANEL_CHORD} of the chord in the middle of its run. */
+    private int rows(PanelRun run) {
+        double middle = (run.from() + run.to()) / 2.0 / scale / run.wing().halfSpan();
+        return Math.max(1, (int) Math.round(PANEL_CHORD * lerp(run.wing().rootChord(), run.wing().tipChord(), middle) * scale));
+    }
+
+    /**
+     * Lays what the panels are walked on (see {@link SurfacePanelBlock}), where each lies at rest: its rows aft of the
+     * wing's last blocks, in the row of its lifting layer, each hanging from the block ahead of it toward the nose;
+     * wherever nothing else stands.
+     */
+    private void panelFloors() {
+        BlockState floor = SurfacePanelBlock.toward(AerolargeRegistry.SURFACE_PANEL.get().defaultBlockState(), Direction.NORTH);
+        for (PanelRun run : panelRuns()) {
+            BlockPos edge = BlockPos.of(trailingBlock(run.wing(), run.from()));
+            int rows = rows(run);
+            for (int xb = run.from(); xb <= run.to(); xb++) {
+                floorRow(new BlockPos(run.side() * xb, edge.getY(), edge.getZ()), rows, floor);
+            }
+        }
+    }
+
+    /** A panel's floor so many rows deep aft of one of the wing's last blocks, wherever nothing else stands. */
+    private void floorRow(BlockPos edge, int rows, BlockState floor) {
+        for (int row = 1; row <= rows; row++) {
+            BlockPos pos = edge.south(row);
+            if (!has(pos.getX(), pos.getY(), pos.getZ())) {
+                set(pos.getX(), pos.getY(), pos.getZ(), floor);
+            }
+        }
     }
 
     /** A position's mirror image across the middle of the airliner. */
