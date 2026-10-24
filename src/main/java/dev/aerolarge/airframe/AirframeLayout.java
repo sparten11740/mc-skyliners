@@ -35,6 +35,8 @@ import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.GearBayBlock;
 import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.block.GearLeverBlockEntity;
+import dev.aerolarge.block.LaserSwitchBlockEntity;
+import dev.aerolarge.block.LaserTurretBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.Joining;
 import dev.aerolarge.block.JumpSwitchBlock;
@@ -164,6 +166,8 @@ public final class AirframeLayout {
      * that from either seat the whole console is within reach, but for the far thrust lever (any lever moves all four).
      */
     private static final int SEAT_X = 3;
+    /** How many rows up from the lowest a column is looked up for the airframe's underside, in blocks. */
+    private static final int COLUMN_SEARCH = 64;
     /**
      * Rows between the instrument panel and the pilots' seats, where their legs stretch out beside the centre console's
      * front row and its throttle quadrant.
@@ -250,6 +254,9 @@ public final class AirframeLayout {
     /** The ground crew's call button on the nose gear; null where it found no room. */
     @Nullable
     private BlockPos callButton;
+    /** The laser path clearer's switch on the flight deck; null with the laser switched off or no room for it. */
+    @Nullable
+    private BlockPos laserSwitch;
     /** Where the flight deck leaves room for the Physics Assembler, by the wall behind the captain; null without a flight deck. */
     private BlockPos assemblerSpot;
     /** The jump light switch in the instrument panel; null without a flight deck. */
@@ -365,6 +372,8 @@ public final class AirframeLayout {
         layout.cabinControls();
         // Once everything hanging on the gear legs stands (the call button), each leg knows its blocks.
         layout.wireGear();
+        // In the nose's skin as finally cut and lined.
+        layout.laserTurret();
         return layout.lifted();
     }
 
@@ -1560,6 +1569,9 @@ public final class AirframeLayout {
         windowShades = control(-(SEAT_X - 1), y, seatZ, AerolargeRegistry.WINDOW_SHADES.get(), Direction.WEST);
         dropRelease = control(SEAT_X - 1, y, seatZ, AerolargeRegistry.DROP_RELEASE.get(), Direction.EAST);
         gearLever(2, y, screenZ - 1);
+        if (AerolargeConfig.LASER_PATH_CLEARER.get()) {
+            laserSwitch = control(2, y, front, AerolargeRegistry.LASER_SWITCH.get(), Direction.SOUTH);
+        }
         BlockPos autopilot = new BlockPos(0, y, front);
         autopilot(autopilot, controls);
         return autopilot;
@@ -1591,6 +1603,9 @@ public final class AirframeLayout {
         cabinLights = onPanel(beside + 1, y, panelZ, AerolargeRegistry.CABIN_LIGHTS.get());
         transponder(onPanel(-beside - 2, y, panelZ, AerolargeRegistry.TRANSPONDER.get()));
         gearLever(beside + 2, y, panelZ);
+        if (AerolargeConfig.LASER_PATH_CLEARER.get()) {
+            laserSwitch = onPanel(-beside - 3, y, panelZ, AerolargeRegistry.LASER_SWITCH.get());
+        }
         BlockPos autopilot = new BlockPos(0, y, seatZ);
         autopilot(autopilot, controls);
         return autopilot;
@@ -2988,6 +3003,36 @@ public final class AirframeLayout {
                 gear.configure(offsets(lever, bays, rotation));
             }
         });
+    }
+
+    /**
+     * The laser path clearer's turret in the underside of the nose, a few metres back from its tip, in place of the
+     * lowest block of the skin there, wired to the switch on the flight deck; only with a switch to arm it.
+     */
+    private void laserTurret() {
+        int z = (int) Math.round(LASER_TURRET_Z * scale);
+        BlockPos at = lowestBlock(0, z);
+        if (laserSwitch == null || at == null) {
+            return;
+        }
+        set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.LASER_TURRET.get().defaultBlockState().setValue(LaserTurretBlock.FACING, Direction.NORTH));
+        BlockPos button = laserSwitch;
+        fittings.put(button, (blockEntity, rotation) -> {
+            if (blockEntity instanceof LaserSwitchBlockEntity laser) {
+                laser.configure(at.subtract(button).rotate(rotation));
+            }
+        });
+    }
+
+    /** The lowest block of the layout in a column, no more than {@link #COLUMN_SEARCH} rows up; null if there is none. */
+    @Nullable
+    private BlockPos lowestBlock(int x, int z) {
+        for (int y = minY; y < minY + COLUMN_SEARCH; y++) {
+            if (has(x, y, z)) {
+                return new BlockPos(x, y, z);
+            }
+        }
+        return null;
     }
 
     /** A retractable gear leg: the bay at its top, and the blocks below it that it raises and lowers. */

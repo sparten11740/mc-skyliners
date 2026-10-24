@@ -725,5 +725,21 @@
         "attenuation_distance": 1024
       }
     ]
+  },
+  "laser_hiss": {
+    "subtitle": "subtitles.aerolarge.laser_hiss",
+    "sounds": [
+      {
+        "name": "aerolarge:laser_hiss"
+      }
+    ]
+  },
+  "laser_charge": {
+    "subtitle": "subtitles.aerolarge.laser_charge",
+    "sounds": [
+      {
+        "name": "aerolarge:laser_charge"
+      }
+    ]
   }
 }

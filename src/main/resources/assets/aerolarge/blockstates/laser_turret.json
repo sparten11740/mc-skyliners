@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,gun=false": {
+      "model": "aerolarge:block/laser_turret",
+      "y": 0
+    },
+    "facing=north,gun=true": {
+      "model": "aerolarge:block/laser_turret_gun",
+      "y": 0
+    },
+    "facing=east,gun=false": {
+      "model": "aerolarge:block/laser_turret",
+      "y": 90
+    },
+    "facing=east,gun=true": {
+      "model": "aerolarge:block/laser_turret_gun",
+      "y": 90
+    },
+    "facing=south,gun=false": {
+      "model": "aerolarge:block/laser_turret",
+      "y": 180
+    },
+    "facing=south,gun=true": {
+      "model": "aerolarge:block/laser_turret_gun",
+      "y": 180
+    },
+    "facing=west,gun=false": {
+      "model": "aerolarge:block/laser_turret",
+      "y": 270
+    },
+    "facing=west,gun=true": {
+      "model": "aerolarge:block/laser_turret_gun",
+      "y": 270
+    }
+  }
+}

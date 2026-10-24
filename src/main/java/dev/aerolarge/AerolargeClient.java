@@ -36,6 +36,8 @@ import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.FlightStripBoardRenderer;
 import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmetVisor;
+import dev.aerolarge.client.LaserBolts;
+import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.NavLightRenderer;
@@ -96,6 +98,8 @@ public final class AerolargeClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
+        NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
+        NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
         NeoForge.EVENT_BUS.addListener(CameraShake::angles);
         NeoForge.EVENT_BUS.addListener(ParachuteControls::tick);
         NeoForge.EVENT_BUS.addListener(TabBanners::layOut);
@@ -184,6 +188,7 @@ public final class AerolargeClient {
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AerolargeRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.GEAR_BAY_ENTITY.get(), context -> new GearBayRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.LASER_TURRET_ENTITY.get(), context -> new LaserTurretRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());

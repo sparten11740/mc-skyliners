@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "armed=false,facing=north,holding=false": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 0
+    },
+    "armed=false,facing=north,holding=true": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 0
+    },
+    "armed=true,facing=north,holding=false": {
+      "model": "aerolarge:block/laser_switch_armed",
+      "y": 0
+    },
+    "armed=true,facing=north,holding=true": {
+      "model": "aerolarge:block/laser_switch_holding",
+      "y": 0
+    },
+    "armed=false,facing=east,holding=false": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 90
+    },
+    "armed=false,facing=east,holding=true": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 90
+    },
+    "armed=true,facing=east,holding=false": {
+      "model": "aerolarge:block/laser_switch_armed",
+      "y": 90
+    },
+    "armed=true,facing=east,holding=true": {
+      "model": "aerolarge:block/laser_switch_holding",
+      "y": 90
+    },
+    "armed=false,facing=south,holding=false": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 180
+    },
+    "armed=false,facing=south,holding=true": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 180
+    },
+    "armed=true,facing=south,holding=false": {
+      "model": "aerolarge:block/laser_switch_armed",
+      "y": 180
+    },
+    "armed=true,facing=south,holding=true": {
+      "model": "aerolarge:block/laser_switch_holding",
+      "y": 180
+    },
+    "armed=false,facing=west,holding=false": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 270
+    },
+    "armed=false,facing=west,holding=true": {
+      "model": "aerolarge:block/laser_switch_safe",
+      "y": 270
+    },
+    "armed=true,facing=west,holding=false": {
+      "model": "aerolarge:block/laser_switch_armed",
+      "y": 270
+    },
+    "armed=true,facing=west,holding=true": {
+      "model": "aerolarge:block/laser_switch_holding",
+      "y": 270
+    }
+  }
+}

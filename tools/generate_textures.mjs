@@ -217,6 +217,27 @@ texture(blockOutput, "gear_bay_bottom", (x, y) => {
   return WHITE;
 }, 3);
 
+// The laser path clearer. Its hatch in the belly under the nose, seen from below: the white skin with a round hatch
+// in it, a seam round it and a dark slot across it where the turret drops out. Its emitter, the glowing red tip of its
+// barrel, brighter in the middle. (The top of its switch is with the console's panels, below.)
+texture(blockOutput, "laser_hatch", (x, y) => {
+  const r = Math.hypot(x - 7.5, y - 7.5);
+  if (r > 6.5 && r < 7.5) return SEAM;
+  if (r <= 6.5 && y >= 7 && y <= 8) return STEEL;
+  return WHITE;
+}, 3);
+// The amber its switch's button glows while, low down, the laser holds its fire at blocks: a lens like the jump
+// light's, brighter in the middle.
+texture(blockOutput, "laser_amber", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return FRAME_DARK;
+  const glow = Math.max(0, 1 - Math.hypot(x - 7.5, y - 7.5) / 8);
+  return [0xf0, 0xa0, 0x20].map((c) => clamp(Math.round(c + 60 * glow)));
+});
+texture(blockOutput, "laser_emitter", (x, y) => {
+  const glow = Math.max(0, 1 - Math.hypot(x - 7.5, y - 7.5) / 8);
+  return [clamp(Math.round(0xd0 + 0x2f * glow)), clamp(Math.round(0x20 + 0xb0 * glow * glow)), clamp(Math.round(0x20 + 0xa0 * glow * glow))];
+}, 0);
+
 // Tire tread: rubber with chevron grooves, as seen from the side and from above alike.
 texture(blockOutput, "landing_gear_tire", (x, y) => {
   if ((x + Math.abs(y % 6 - 3)) % 6 === 0) return RUBBER_LIGHT;
@@ -504,6 +525,16 @@ texture(blockOutput, "instrument_panel", (x, y) => {
   return [0x08, 0x0a, 0x0c];
 }, 2);
 texture(blockOutput, "panel_side", (x, y) => (x === 0 || y === 0 ? PANEL_EDGE : PANEL_DARK), 3);
+// The top of the laser path clearer's switch on the console: a dark panel pictured with a little turret firing a red
+// beam out to the right, so it reads as the laser without a word.
+texture(blockOutput, "laser_switch_top", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15) return PANEL_EDGE;
+  if (x >= 2 && x <= 4 && y >= 6 && y <= 9) return STEEL;
+  if (x >= 5 && x <= 6 && y >= 7 && y <= 8) return STEEL;
+  if (x >= 7 && y === 7) return [0xff, 0x30, 0x30];
+  if (x >= 7 && (y === 6 || y === 8)) return [0x90, 0x18, 0x18];
+  return PANEL_DARK;
+}, 2);
 // The centre console's casing: dark panel, a light lip along the top of its sides (the top of a module's six pixels)
 // and a darker kick along the floor, a seam where one module meets the next. The thrust lever: the quadrant's plate,
 // dark with the lever's slot down the middle and a light tick either side of it at each of its five notches, a black

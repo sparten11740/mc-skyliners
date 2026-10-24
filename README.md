@@ -193,6 +193,28 @@ can be crafted, but only an airliner built with retractable gear has its legs wi
 `retractableGear` in the server config: an airliner built then keeps its gear down, and one built before can still
 lower its gear but no longer raise it.
 
+### Laser path clearer
+
+On the centre console, front right, is the laser switch: a big red button under a flip-up guard, its panel pictured
+with a little turret firing a red beam. Press it and the guard flips up, the button glows red and, with a rising
+whine, a turret drops out of a hatch in the underside of the nose. Once out, it fires rapid short laser bolts, five a
+second, each a bright red beam with a sharp hiss and sparks where it strikes, at whatever lies in the assembled
+airliner's flight path up to 96 blocks ahead (where it is going, or, standing still, where its nose points), as wide as
+its wingspan and from under its wheels to the top of its fin: hostile mobs first, each bolt hurting one (two or three
+bolts for a zombie), and otherwise the nearest block in the way, each bolt vaporising a bite of up to 27 blocks round
+it, the clearing spreading from there across whatever stands in the way. Press the button again and the turret folds
+back in. Low down (less than 15 blocks over the ground, until it is 25 blocks up again) it holds its fire at blocks,
+so it never digs into the runway it stands on or comes in to land on, and shoots only hostile mobs; the button then
+glows amber instead of red, with a soft beep down as it starts holding and up as it clears the way again. Nor does it
+ever vaporise anything standing no higher than the bottom of the airliner's wheels.
+
+It never fires at players, villagers, pets or any mob that is not hostile, nor at anything aboard an airliner. It
+leaves alone blocks with something in them (chests, signs and the like), blocks that cannot be broken, liquids and
+other airliners, and blocks entirely wherever the `mobGriefing` game rule is off; it asks first, as a player breaking
+the block would, so land a claim protects keeps its blocks. Turn it off with `laserPathClearer` in the server config
+(the switch then only buzzes), where `laserRange` and `laserBoltsPerSecond` set how far it reaches and how fast it
+fires. A Laser Switch and a Laser Turret can be crafted, but only an airliner built with the laser has them wired.
+
 ### The upper deck
 
 Like an A380, the airliner has two decks. The upper deck's floor runs three metres over the main deck's, under the
@@ -1224,7 +1246,9 @@ and its lining into, only the quads of it that face the camera; `CockpitDoorRend
 the same way, swinging about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and
 going away, as `AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an
 evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
-`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `GearBayRenderer` draws a landing gear leg
+`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `LaserTurretRenderer` draws the laser path
+clearer's turret out of its hatch and `LaserBolts` its bolts, which its `LaserTurretBlockEntity` fires at what
+`LaserAim`'s rays find in the way; `GearBayRenderer` draws a landing gear leg
 swinging up or down, and its doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going
 up and puts them back coming down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras'
 pictures for the flight deck's camera displays through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light

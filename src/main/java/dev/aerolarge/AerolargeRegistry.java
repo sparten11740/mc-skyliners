@@ -78,6 +78,10 @@ import dev.aerolarge.block.GearBayBlock;
 import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.block.GearLeverBlock;
 import dev.aerolarge.block.GearLeverBlockEntity;
+import dev.aerolarge.block.LaserSwitchBlock;
+import dev.aerolarge.block.LaserSwitchBlockEntity;
+import dev.aerolarge.block.LaserTurretBlock;
+import dev.aerolarge.block.LaserTurretBlockEntity;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GlassBackboardBlock;
@@ -191,6 +195,8 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -325,6 +331,11 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_HORN = sound("gear_horn");
     /** The cabin dropping into an air pocket: the rush of air, the rattle of the cabin and the thud as the air catches it. */
     public static final DeferredHolder<SoundEvent, SoundEvent> AIR_POCKET = sound("air_pocket");
+    /** The laser path clearer: a bolt's hiss, and the whine of its turret charging as it is armed. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_HISS = sound("laser_hiss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LASER_CHARGE = sound("laser_charge");
+    /** What the laser path clearer hurts hostile mobs with (data/aerolarge/damage_type/laser.json). */
+    public static final ResourceKey<DamageType> LASER_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "laser"));
     /** A puff of a signal flare's smoke, in the flare's colour, rising high enough to be seen from the air. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<ColorParticleOption>> FLARE_SMOKE = PARTICLES.register(
         "flare_smoke", () -> new ParticleType<ColorParticleOption>(true) {
@@ -532,6 +543,15 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GearLeverBlockEntity>> GEAR_LEVER_ENTITY =
         BLOCK_ENTITIES.register("gear_lever", () -> BlockEntityType.Builder.of(GearLeverBlockEntity::new, GEAR_LEVER.get()).build(null));
+    /** The laser path clearer's switch on the console, lit while armed, and its turret in the nose's underside. */
+    public static final DeferredBlock<LaserSwitchBlock> LASER_SWITCH = BLOCKS.registerBlock(
+        "laser_switch", LaserSwitchBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(LaserSwitchBlock.ARMED) ? 7 : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserSwitchBlockEntity>> LASER_SWITCH_ENTITY =
+        BLOCK_ENTITIES.register("laser_switch", () -> BlockEntityType.Builder.of(LaserSwitchBlockEntity::new, LASER_SWITCH.get()).build(null));
+    public static final DeferredBlock<LaserTurretBlock> LASER_TURRET = BLOCKS.registerBlock("laser_turret", LaserTurretBlock::new, metal(MapColor.METAL));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserTurretBlockEntity>> LASER_TURRET_ENTITY =
+        BLOCK_ENTITIES.register("laser_turret", () -> BlockEntityType.Builder.of(LaserTurretBlockEntity::new, LASER_TURRET.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
         BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get(), JUMP_SWITCH.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
@@ -625,6 +645,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
     public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
     public static final DeferredItem<BlockItem> GEAR_LEVER_ITEM = ITEMS.registerSimpleBlockItem(GEAR_LEVER);
+    public static final DeferredItem<BlockItem> LASER_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(LASER_SWITCH);
+    public static final DeferredItem<BlockItem> LASER_TURRET_ITEM = ITEMS.registerSimpleBlockItem(LASER_TURRET);
     public static final DeferredItem<BlockItem> PILOT_SEAT_ITEM = ITEMS.registerSimpleBlockItem(PILOT_SEAT);
     public static final DeferredItem<BlockItem> NAV_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(NAV_LIGHT);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
@@ -1403,7 +1425,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
-            THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, FLIGHT_DISPLAY_ITEM,
+            THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, LASER_SWITCH_ITEM, LASER_TURRET_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM
         )),

@@ -898,6 +898,46 @@ const pocketNoise = (() => {
   writeSound("air_pocket", samples);
 }
 
+// The laser path clearer, with its own noise, so it never shifts the sounds above. A bolt: a sharp zap, a bright tone
+// sweeping down fast with a buzz on it, over a hiss of noise that bursts in and dies away, short enough for five a
+// second to run together into a rattle of zaps. The turret charging as it is armed: a whine rising from low to high
+// over a second, buzzing, with a soft click at the top as it locks.
+const laserNoise = (() => {
+  let laserSeed = 0x6c617372;
+  return () => {
+    laserSeed = (Math.imul(laserSeed, 1664525) + 1013904223) | 0;
+    return (laserSeed >>> 0) / 4294967296;
+  };
+})();
+{
+  const samples = new Float64Array(Math.round(0.22 * RATE));
+  let phase = 0;
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (700 + 2600 * Math.exp(-t / 0.035))) / RATE;
+    const zap = Math.sin(phase) + 0.3 * Math.sign(Math.sin(3 * phase));
+    const white = laserNoise() * 2 - 1;
+    const hiss = white - previous;
+    previous = white;
+    samples[i] = Math.min(1, t * 800) * (Math.exp(-t / 0.05) * zap + 0.6 * Math.exp(-t / 0.09) * hiss);
+  }
+  writeSound("laser_hiss", samples, 0.75);
+}
+{
+  const length = 1.1;
+  const samples = new Float64Array(Math.round(length * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * (180 + 1400 * Math.pow(t / length, 1.6))) / RATE;
+    const whine = Math.sin(phase) + 0.25 * Math.sin(2 * phase) + 0.15 * Math.sign(Math.sin(phase));
+    samples[i] = Math.min(1, t / 0.1) * Math.min(1, (length - t) / 0.08) * whine * 0.7;
+  }
+  gearRing(samples, length - 0.12, 1800, 0.4);
+  writeSound("laser_charge", samples);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see

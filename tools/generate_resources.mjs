@@ -537,6 +537,7 @@ function atcLang() {
   Object.assign(sounds, crewLockerSounds());
   Object.assign(sounds, gearSounds());
   Object.assign(sounds, airPocketSounds());
+  Object.assign(sounds, laserSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -653,6 +654,83 @@ function gearLang() {
     "message.aerolarge.gear.down": "Gear down",
     "message.aerolarge.gear.on_ground": "The gear stays down: the airliner is standing on its wheels",
     "message.aerolarge.gear.fixed": "The gear stays down: retractable gear is switched off on this server",
+  };
+}
+
+// The laser path clearer (see LaserTurretBlock and LaserSwitchBlock). The turret's block: the belly's skin with the
+// round hatch it drops out of underneath. The turret itself, out of its hatch (gun=true, drawn by its renderer a block
+// lower): a dark housing hanging from a stalk, a steel barrel pointing ahead (north in the model) and the barrel's
+// glowing red emitter at its tip. The switch, a module of the flight deck drawn with the pilots at its north side: its
+// top pictured with a turret firing a red beam, a big red button, dark until armed and glowing once it is, and the
+// button's guard, shut over it while safe and flipped up behind it when armed.
+{
+  write(`assets/${ID}/models/block/laser_turret.json`, {
+    parent: "minecraft:block/cube",
+    textures: {
+      down: `${ID}:block/laser_hatch`, up: `${ID}:block/airframe_panel`, particle: `${ID}:block/airframe_panel`,
+      north: `${ID}:block/airframe_panel`, south: `${ID}:block/airframe_panel`, east: `${ID}:block/airframe_panel`, west: `${ID}:block/airframe_panel`,
+    },
+  });
+  const glowing = (element) => ({ ...element, faces: Object.fromEntries(Object.entries(element.faces).map(([face, value]) =>
+    [face, { ...value, neoforge_data: { block_light: 15, sky_light: 15 } }])) });
+  write(`assets/${ID}/models/block/laser_turret_gun.json`, {
+    parent: "minecraft:block/block",
+    textures: { body: `${ID}:block/flight_console`, barrel: `${ID}:block/landing_gear`, emitter: `${ID}:block/laser_emitter`, particle: `${ID}:block/flight_console` },
+    elements: [
+      solid([7, 14, 7], [9, 16, 9], "#barrel"),
+      solid([4, 8, 4], [12, 14, 12], "#body"),
+      solid([7, 10, -4], [9, 12, 4], "#barrel"),
+      glowing(solid([6.5, 9.5, -5], [9.5, 12.5, -4], "#emitter")),
+    ],
+  });
+  write(`assets/${ID}/blockstates/laser_turret.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [false, true].map((gun) => [`facing=${facing},gun=${gun}`, { model: `${ID}:block/laser_turret${gun ? "_gun" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/laser_turret.json`, { parent: `${ID}:block/laser_turret_gun` });
+  dropsItself("laser_turret");
+  cubes.laser_turret = null;
+
+  // Safe, clearing the way (glowing red) and holding its fire at blocks low down (glowing amber).
+  const looks = { safe: `${ID}:block/jump_light_off`, armed: `${ID}:block/jump_light_red`, holding: `${ID}:block/laser_amber` };
+  for (const [look, lens] of Object.entries(looks)) {
+    const textures = { plate: `${ID}:block/laser_switch_top`, button: lens, guard: `${ID}:block/thrust_lever_handle` };
+    const button = solid([5, CONSOLE_HEIGHT, 5], [11, CONSOLE_HEIGHT + 2, 11], "#button");
+    const up = solid([4.5, CONSOLE_HEIGHT, 11.5], [11.5, CONSOLE_HEIGHT + 7, 12.5], "#guard");
+    const shut = solid([4.5, CONSOLE_HEIGHT + 2, 4.5], [11.5, CONSOLE_HEIGHT + 2.5, 11.5], "#guard");
+    consoleModule(`laser_switch_${look}`, textures, "#plate", true, look === "safe" ? [button, shut] : [glowing(button), up]);
+  }
+  const switchLook = (armed, holding) => (!armed ? "safe" : holding ? "holding" : "armed");
+  write(`assets/${ID}/blockstates/laser_switch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [false, true].flatMap((armed) => [false, true].map((holding) =>
+        [`armed=${armed},facing=${facing},holding=${holding}`, { model: `${ID}:block/laser_switch_${switchLook(armed, holding)}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/laser_switch.json`, { parent: `${ID}:block/laser_switch_safe` });
+  dropsItself("laser_switch");
+  cubes.laser_switch = null;
+
+  // What a bolt hurts with: no armour scaling, the death message its own.
+  write(`data/${ID}/damage_type/laser.json`, { exhaustion: 0.1, message_id: `${ID}.laser`, scaling: "never" });
+}
+// A bolt's hiss and the turret's charging whine, from the turret under the nose.
+function laserSounds() {
+  return Object.fromEntries(["laser_hiss", "laser_charge"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function laserRecipes() {
+  shaped("laser_switch", ["R", "B", "P"], { R: "minecraft:redstone", B: "minecraft:stone_button", P: `${ID}:airframe_panel` }, 1);
+  shaped("laser_turret", ["P", "O", "G"], { P: `${ID}:airframe_panel`, O: "minecraft:observer", G: "minecraft:glass" }, 1);
+}
+function laserLang() {
+  return {
+    "block.aerolarge.laser_switch": "Laser Switch",
+    "block.aerolarge.laser_turret": "Laser Turret",
+    "subtitles.aerolarge.laser_hiss": "Laser fires",
+    "subtitles.aerolarge.laser_charge": "Laser charges",
+    "message.aerolarge.laser.armed": "Laser path clearer armed",
+    "message.aerolarge.laser.disarmed": "Laser path clearer safe",
+    "message.aerolarge.laser.off": "The laser path clearer is switched off on this server",
+    "death.attack.aerolarge.laser": "%1$s was vaporised by an airliner's laser",
   };
 }
 
@@ -4801,6 +4879,7 @@ coffeeMachineRecipes();
 cabinStairsRecipes();
 crewLockerRecipes();
 gearRecipes();
+laserRecipes();
 slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
@@ -5247,6 +5326,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...crewLockerLang(),
   ...gearLang(),
   ...airPocketLang(),
+  ...laserLang(),
   ...hullLiningLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),

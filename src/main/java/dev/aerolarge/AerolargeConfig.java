@@ -27,6 +27,9 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LIGHTNING_STRIKES;
     public static final ModConfigSpec.BooleanValue DECOMPRESSION;
     public static final ModConfigSpec.BooleanValue VILLAGER_PASSENGERS;
+    public static final ModConfigSpec.BooleanValue LASER_PATH_CLEARER;
+    public static final ModConfigSpec.IntValue LASER_RANGE;
+    public static final ModConfigSpec.IntValue LASER_BOLTS_PER_SECOND;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -162,6 +165,23 @@ public final class AerolargeConfig {
                 "and pays its fare in emeralds when the airliner has flown it somewhere and stands still with the seatbelt signs off."
             )
             .define("villagerPassengers", true);
+        builder.pop();
+
+        builder.push("laser");
+        LASER_PATH_CLEARER = builder
+            .comment(
+                "Whether the laser path clearer works: armed from the flight deck, a turret under the nose fires at hostile mobs and vaporises",
+                "blocks in an assembled airliner's flight path. It never hits players or passive mobs, never vaporises blocks with block",
+                "entities, unbreakable blocks, liquids or other airliners, leaves blocks alone where mobGriefing is off, and asks first as a",
+                "player breaking them would, so claimed land keeps them. Only airliners built with it have the switch and the turret."
+            )
+            .define("laserPathClearer", true);
+        LASER_RANGE = builder
+            .comment("How far ahead along the flight path the laser reaches, in blocks.")
+            .defineInRange("laserRange", 96, 16, 256);
+        LASER_BOLTS_PER_SECOND = builder
+            .comment("How many bolts the laser fires each second; each vaporises at most 27 blocks or hurts one mob.")
+            .defineInRange("laserBoltsPerSecond", 5, 1, 20);
         builder.pop();
 
         SPEC = builder.build();

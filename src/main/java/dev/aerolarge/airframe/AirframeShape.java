@@ -74,6 +74,8 @@ final class AirframeShape {
 
     /** The nose gear, on the centreline. */
     static final double NOSE_GEAR_Z = 6.5;
+    /** How far back from the nose tip the laser path clearer's turret sits in the underside of the nose. */
+    static final double LASER_TURRET_Z = 3;
     /**
      * The wing and body gear in pairs, (x, z) for the starboard one, z measured back from the airframe's centre of
      * mass: just behind it, as on the real aircraft, so the airliner rests on its nose gear and does not sit back on
