@@ -32,6 +32,9 @@ import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
+import dev.aerolarge.block.GearBayBlock;
+import dev.aerolarge.block.GearBayBlockEntity;
+import dev.aerolarge.block.GearLeverBlockEntity;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.Joining;
 import dev.aerolarge.block.JumpSwitchBlock;
@@ -239,6 +242,14 @@ public final class AirframeLayout {
     /** The nose gear's steering relays, by the way they turn it, and the main gear's brake relays. */
     private final Map<String, List<BlockPos>> steerRelays = new HashMap<>();
     private final List<BlockPos> brakeRelays = new ArrayList<>();
+    /** The retractable gear's legs, each with the bay at its top; none where the gear does not retract. */
+    private final List<GearLeg> gearLegs = new ArrayList<>();
+    /** The landing gear lever on the instrument panel; null without retractable gear or room for it. */
+    @Nullable
+    private BlockPos gearLever;
+    /** The ground crew's call button on the nose gear; null where it found no room. */
+    @Nullable
+    private BlockPos callButton;
     /** Where the flight deck leaves room for the Physics Assembler, by the wall behind the captain; null without a flight deck. */
     private BlockPos assemblerSpot;
     /** The jump light switch in the instrument panel; null without a flight deck. */
@@ -352,6 +363,8 @@ public final class AirframeLayout {
         layout.assembler();
         layout.crewLocker();
         layout.cabinControls();
+        // Once everything hanging on the gear legs stands (the call button), each leg knows its blocks.
+        layout.wireGear();
         return layout.lifted();
     }
 
@@ -1546,6 +1559,7 @@ public final class AirframeLayout {
         control(1, y, seatZ, AerolargeRegistry.HANDSET.get(), Direction.SOUTH);
         windowShades = control(-(SEAT_X - 1), y, seatZ, AerolargeRegistry.WINDOW_SHADES.get(), Direction.WEST);
         dropRelease = control(SEAT_X - 1, y, seatZ, AerolargeRegistry.DROP_RELEASE.get(), Direction.EAST);
+        gearLever(2, y, screenZ - 1);
         BlockPos autopilot = new BlockPos(0, y, front);
         autopilot(autopilot, controls);
         return autopilot;
@@ -1576,6 +1590,7 @@ public final class AirframeLayout {
         jumpSwitch = onPanel(beside, y, panelZ, AerolargeRegistry.JUMP_SWITCH.get());
         cabinLights = onPanel(beside + 1, y, panelZ, AerolargeRegistry.CABIN_LIGHTS.get());
         transponder(onPanel(-beside - 2, y, panelZ, AerolargeRegistry.TRANSPONDER.get()));
+        gearLever(beside + 2, y, panelZ);
         BlockPos autopilot = new BlockPos(0, y, seatZ);
         autopilot(autopilot, controls);
         return autopilot;
@@ -1894,6 +1909,7 @@ public final class AirframeLayout {
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turned = new EnumMap<>(AutopilotBlockEntity.Channel.class);
                 channels.forEach((channel, relays) -> turned.put(channel, offsets(at, relays, rotation)));
                 autopilot.configure(turned, offsets(at, controls, rotation), at.getY() - ground);
+                autopilot.wireGear(gearLever == null ? null : gearLever.subtract(at).rotate(rotation));
                 List<BlockPos> frame = offsets(at, frameCorners(), rotation);
                 autopilot.frame(frame.get(0), frame.get(1));
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turnedSurfaces = new EnumMap<>(AutopilotBlockEntity.Channel.class);
@@ -2440,6 +2456,7 @@ public final class AirframeLayout {
         if (stateAt(0, callY, noseZ).is(palette.gear().getBlock()) && !has(0, callY, noseZ - 1)) {
             set(0, callY, noseZ - 1, AerolargeRegistry.AIRSTAIR_CALL_BUTTON.get().defaultBlockState()
                 .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.NORTH));
+            callButton = new BlockPos(0, callY, noseZ - 1);
         }
     }
 
@@ -2861,20 +2878,27 @@ public final class AirframeLayout {
     private void strut(int x, int z, int ground, boolean steers) {
         int axle = ground + 1;
         if (palette.wheelMount().isPresent() && palette.tireItem().isPresent()) {
+            List<BlockPos> parts = new ArrayList<>();
             for (Direction out : new Direction[]{Direction.EAST, Direction.WEST}) {
                 BlockPos at = new BlockPos(x + out.getStepX(), axle, z);
                 set(at.getX(), at.getY(), at.getZ(), AirframePalette.with(palette.wheelMount().get(), "facing", out.getSerializedName()));
+                parts.add(at);
                 Item tire = palette.tireItem().get();
                 fittings.put(at, (blockEntity, rotation) -> fitWheel(blockEntity, tire));
                 if (steers) {
-                    relay(at.relative(out.getClockWise()), steerRelays.computeIfAbsent(TillerBlock.LEFT, ignored -> new ArrayList<>()));
-                    relay(at.relative(out.getCounterClockWise()), steerRelays.computeIfAbsent(TillerBlock.RIGHT, ignored -> new ArrayList<>()));
+                    relay(at.relative(out.getClockWise()), steerRelays.computeIfAbsent(TillerBlock.LEFT, ignored -> new ArrayList<>()), parts);
+                    relay(at.relative(out.getCounterClockWise()), steerRelays.computeIfAbsent(TillerBlock.RIGHT, ignored -> new ArrayList<>()), parts);
                 } else {
-                    relay(at.above(), brakeRelays);
+                    relay(at.above(), brakeRelays, parts);
                 }
             }
             set(x, axle, z, palette.gear());
-            leg(x, axle + 1, z);
+            parts.add(new BlockPos(x, axle, z));
+            int top = leg(x, axle + 1, z, parts);
+            // Only where the flight deck has its lever: nothing else could raise the gear.
+            if (gearLever != null && top > axle) {
+                gearBay(new BlockPos(x, top, z), steers ? Direction.NORTH : x > 0 ? Direction.WEST : Direction.EAST, parts);
+            }
             return;
         }
         int tireHalfWidth = (int) Math.round(0.45 * scale);
@@ -2887,29 +2911,87 @@ public final class AirframeLayout {
                 }
             }
         }
-        leg(x, ground + tireHeight, z);
+        leg(x, ground + tireHeight, z, new ArrayList<>());
     }
 
     /**
      * A gear leg from row y up to the airframe, and on up through any skin there cut to the hull's curve (the gear goes
-     * on after the skin is cut), so the leg meets the hull itself instead of stopping short under a sliver of skin.
+     * on after the skin is cut), so the leg meets the hull itself instead of stopping short under a sliver of skin. Each
+     * block of it is added to the leg's parts; gives the row of its top block, the row under y if there is none.
      */
-    private void leg(int x, int y, int z) {
+    private int leg(int x, int y, int z, List<BlockPos> parts) {
         int top = y + 64;
+        int last = y - 1;
         for (; y < top && !has(x, y, z); y++) {
             set(x, y, z, palette.gear());
+            parts.add(new BlockPos(x, y, z));
+            last = y;
         }
         for (; y < top && stateAt(x, y, z).is(AerolargeRegistry.AIRFRAME_SHELL.get()); y++) {
             set(x, y, z, palette.gear());
+            parts.add(new BlockPos(x, y, z));
+            last = y;
         }
+        return last;
     }
 
-    /** A relay at the position if it is free, added to the group. */
-    private void relay(BlockPos pos, List<BlockPos> group) {
+    /** A relay at the position if it is free, added to the group and to the blocks of its gear leg. */
+    private void relay(BlockPos pos, List<BlockPos> group, List<BlockPos> parts) {
         if (!has(pos.getX(), pos.getY(), pos.getZ())) {
             set(pos.getX(), pos.getY(), pos.getZ(), AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
             group.add(pos);
+            parts.add(pos);
         }
+    }
+
+    /**
+     * Makes the top block of a gear leg its bay, which raises and lowers the rest of the leg (see
+     * {@link GearBayBlockEntity}), the leg swinging up the given way; wired once the whole leg stands (see
+     * {@link #wireGear}).
+     */
+    private void gearBay(BlockPos at, Direction swing, List<BlockPos> parts) {
+        set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.GEAR_BAY.get().defaultBlockState().setValue(GearBayBlock.FACING, swing));
+        parts.remove(at);
+        gearLegs.add(new GearLeg(at, parts));
+    }
+
+    /** The landing gear lever on the panel's top at the spot, with retractable gear and room for it. */
+    private void gearLever(int x, int y, int panelZ) {
+        if (AerolargeConfig.RETRACTABLE_GEAR.get() && palette.wheelMount().isPresent() && palette.tireItem().isPresent()) {
+            gearLever = onPanel(x, y, panelZ, AerolargeRegistry.GEAR_LEVER.get());
+        }
+    }
+
+    /**
+     * Wires the retractable gear once everything on its legs stands: each bay to the blocks of its leg (the nose leg's
+     * with the ground crew's call button on it), and the lever to every bay.
+     */
+    private void wireGear() {
+        for (GearLeg leg : gearLegs) {
+            List<BlockPos> parts = new ArrayList<>(leg.parts());
+            if (callButton != null && callButton.getX() == leg.bay().getX() && Math.abs(callButton.getZ() - leg.bay().getZ()) == 1) {
+                parts.add(callButton);
+            }
+            fittings.put(leg.bay(), (blockEntity, rotation) -> {
+                if (blockEntity instanceof GearBayBlockEntity bay) {
+                    bay.configure(offsets(leg.bay(), parts, rotation));
+                }
+            });
+        }
+        if (gearLever == null) {
+            return;
+        }
+        BlockPos lever = gearLever;
+        List<BlockPos> bays = gearLegs.stream().map(GearLeg::bay).toList();
+        fittings.put(lever, (blockEntity, rotation) -> {
+            if (blockEntity instanceof GearLeverBlockEntity gear) {
+                gear.configure(offsets(lever, bays, rotation));
+            }
+        });
+    }
+
+    /** A retractable gear leg: the bay at its top, and the blocks below it that it raises and lowers. */
+    private record GearLeg(BlockPos bay, List<BlockPos> parts) {
     }
 
     /**

@@ -169,6 +169,30 @@ announcements (see below).
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
 
+### Landing gear
+
+The landing gear folds up into the belly in flight. On the instrument panel, right of the autopilot screen as on an
+A380's centre panel, is the landing gear lever: a lever with a little black wheel for a knob, thrown back toward the
+pilots for the gear down and forward for it up, and beyond it three lamps, one for each group of legs: green with the
+gear down and locked, red while it moves, dark with it up. Use the lever to throw it the other way. Going up takes
+eight seconds: the doors under each leg swing open, the leg swings up into the belly (the nose gear forward, the main
+gear in toward the middle) and the doors close behind it, with the sounds of a real airliner's gear from the cabin:
+the clunk of the uplocks, the roar of the air past the open doors, the hydraulics moaning, the wheels braked to a stop
+in a rumble, the thump of the legs into their bays and the doors shutting. Coming down takes six: the air roars in,
+the legs drop and lock down with a heavy thunk, the doors close, and the rumble of the gear out in the airstream
+follows. Folded up, a leg's wheels and everything on them are gone from under the airliner, and they come back as they
+were, tires and all.
+
+The gear never goes up while the airliner stands on its wheels: the lever bumps back down with a buzz and the lamps
+flash red. Coming down near the ground with the gear not down (sinking, its wheels less than 30 blocks above the
+ground), the gear horn beeps on the flight deck and the lamps flash red; nothing stops a pilot landing on the belly,
+though, and the airliner slides to a stop on it. Thrown down then, the legs swing down and wait until there is room
+under them: lift the airliner off the ground (Unstuck does, see Autopilot) and they lock down. The autopilot works the
+gear by itself (see Autopilot). A Landing Gear Lever (a tire on a lever on an airframe panel) and a Landing Gear Bay
+can be crafted, but only an airliner built with retractable gear has its legs wired to them. Switch it off with
+`retractableGear` in the server config: an airliner built then keeps its gear down, and one built before can still
+lower its gear but no longer raise it.
+
 ### The upper deck
 
 Like an A380, the airliner has two decks. The upper deck's floor runs three metres over the main deck's, under the
@@ -328,12 +352,13 @@ Numbers.
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the
-airstairs folded away and any evacuation slide packed first (down on the ground they would hold the airliner where it
+airstairs folded away, any evacuation slide packed and the gear down first (down on the ground they would hold the airliner where it
 stands), and once they are and the tower has cleared it (a few seconds on the brakes, see Announcements and the radio;
 it waits for the stairs and slides 20 seconds at most, as someone standing on the stairs keeps them out), brakes off, speeding up down the runway no faster than an airliner does (3 blocks a second every second, so nobody standing is
 thrown down the cabin; it speeds up and slows down that gently in the air too), holding the heading it started on
 with the nose wheel, nose up at rotation speed, then a climb straight ahead, wings level, until it is 30 blocks
-above the ground (or at the altitude set, where the ground below rises that high). Only then does it turn onto the
+above the ground (or at the altitude set, where the ground below rises that high), raising the gear once it is 10
+blocks up and climbing (see Landing gear). Only then does it turn onto the
 heading or circle set, banking no steeper than its height allows (it never banks hard near the ground, and never
 more than 25 degrees), and it climbs on to the altitude set and holds height and speed there. The altitude starts at
 the cruising height (`climbHeight`, 80 blocks above the runway by default) and the speed at `cruiseSpeed`. Engaged
@@ -349,7 +374,8 @@ How fast it flies nose level depends on how heavily it is loaded and how thin th
 the way down, starting from a tenth above the rotation speed (`rotateSpeed`): furnishing it or loading it up needs
 no new settings. Down, it idles the engines, lowers the nose and brakes to a stop, steering along the heading
 with the nose wheel; then it pulls the thrust levers to idle, centres the tiller, sets the parking brake and
-switches itself off. It lands on whatever lies below, so line it up over open, level ground first. Applying the
+switches itself off. It lowers the gear as it starts down, and on a landing at the pin as it turns onto final. It lands
+on whatever lies below, so line it up over open, level ground first. Applying the
 settings while it comes down goes around, climbing away to the altitude set.
 
 An airliner left flying with nobody aboard (everyone jumped out with a parachute, say) lands by itself after a minute,
@@ -1119,7 +1145,8 @@ down is remembered with the world, for the autopilot to land on (see Autopilot).
 The finished airliner is covered in Create's Super Glue, in overlapping stretches the Physics Assembler can find from
 anywhere in it; that is what it takes as the structure, so everything you build inside it flies along. Fold the
 airstairs away and pull the thrust levers to idle, then assemble it. It rolls on Offroad wheel mounts fitted with
-large tires, their suspension at its stiffest; the main gear stands just behind its centre of mass, worked out from
+large tires, their suspension at its stiffest (each a Sable actor that finds the ground from wherever its block stands,
+which is what lets the retractable gear take them away and put them back in flight); the main gear stands just behind its centre of mass, worked out from
 Sable's block masses, so it rests on its nose gear. The wings and tail are built around a layer of Create Propulsion
 wing blocks, and every airframe block is in `#sable:super_light`. Which blocks are used is set in the server config
 (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
@@ -1182,7 +1209,9 @@ and its lining into, only the quads of it that face the camera; `CockpitDoorRend
 the same way, swinging about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and
 going away, as `AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an
 evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
-`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `TailCameraFeed` draws the outside cameras'
+`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `GearBayRenderer` draws a landing gear leg
+swinging up or down, and its doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going
+up and puts them back coming down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras'
 pictures for the flight deck's camera displays through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
 at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod

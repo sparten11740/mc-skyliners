@@ -7,6 +7,8 @@ import dev.aerolarge.FirstFlight;
 import dev.aerolarge.block.Announcement;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.Control;
+import dev.aerolarge.block.GearBayBlockEntity;
+import dev.aerolarge.block.GearLeverBlockEntity;
 import dev.aerolarge.block.Loaded;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.Relays;
@@ -291,6 +293,10 @@ public class AutopilotBlockEntity extends BlockEntity {
      * heading or circle set.
      */
     private static final double TURN_HEIGHT = 30;
+    /** Climbing away after take-off, it raises the gear once this high above the ground, in blocks. */
+    private static final double GEAR_UP_HEIGHT = 10;
+    /** Set to take off with its gear not down, the longest it holds the brakes for the gear to come down, in ticks. */
+    private static final int GEAR_WAIT = 20 * 20;
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
     /** How long the airliner flies on with nobody aboard before it lands by itself, in ticks: a minute. */
@@ -334,6 +340,13 @@ public class AutopilotBlockEntity extends BlockEntity {
     private BlockPos frameTo;
     /** Whether its links have been looked at since it was loaded, to mend them (see {@link Turning#mend}). */
     private boolean linksChecked;
+    /** The landing gear lever it throws, as an offset from it; null for an airliner whose gear does not retract. */
+    @Nullable
+    private BlockPos gearLever;
+    /** Whether it has raised the gear on this climb out already, so a pilot lowering it again is left to. */
+    private boolean gearRaised;
+    /** Set to take off, until when it holds the brakes for the gear to come down, in game ticks. */
+    private long gearWaitUntil;
     private Phase phase = Phase.OFF;
     private Lateral lateral = Lateral.HEADING;
     /** The heading to hold, as Minecraft yaw; the height to hold, in world blocks; the speed, in blocks a second. */
@@ -410,6 +423,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.relays.putAll(relays);
         this.controls = List.copyOf(controls);
         linksChecked = true;
+        setChanged();
+    }
+
+    /** Wired when the airliner is built: the landing gear lever, as an offset from it; null without retractable gear. */
+    public void wireGear(@Nullable BlockPos lever) {
+        gearLever = lever;
         setChanged();
     }
 
@@ -628,6 +647,7 @@ public class AutopilotBlockEntity extends BlockEntity {
                 // Airstairs and slides down on the ground would hold it where it stands: they go away first.
                 if (level instanceof ServerLevel server) {
                     stowing.start(server, worldPosition);
+                    gearWaitUntil = server.getGameTime() + GEAR_WAIT;
                 }
                 // Cleared by the tower first, if it talks; the cabin hears the take-off announcement as the brakes come off.
                 awaitingClearance = atc.requestTakeOff(level.getGameTime());
@@ -771,6 +791,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         thrustTrim = CRUISE_THRUST;
         pitchHold = 0;
         climbingOut = phase == Phase.TAKEOFF;
+        gearRaised = false;
         lastPitch = state.pitch();
         lastRoll = state.roll();
         lastSpeed = state.airspeed();
@@ -1057,7 +1078,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             primed = true;
         }
         boolean clearing = holdingForClearance(level.getGameTime());
-        boolean holding = stowing.waiting(level) || clearing;
+        boolean holding = stowing.waiting(level) || clearing || phase == Phase.TAKEOFF && waitingForGear(level);
         if (holding) {
             // On the brakes, the speed held starts from where it stands once they come off.
             speedCommand = speed;
@@ -1183,6 +1204,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         drive(level, Channel.ENGINE_3, thrust - Math.max(0, split));
         drive(level, Channel.ENGINE_4, thrust - Math.max(0, split));
 
+        workGear(level, radio, climb, guide);
         lastPitch = pitch;
         lastRoll = roll;
         lastSpeed = speed;
@@ -1221,6 +1243,42 @@ public class AutopilotBlockEntity extends BlockEntity {
             return guide.climb();
         }
         return Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
+    }
+
+    /**
+     * The gear, worked as a crew would: raised once it climbs away after take-off, past {@link #GEAR_UP_HEIGHT} (once a
+     * climb out), and lowered as it comes in to land, on the plain landing and on final to a runway near the pin.
+     */
+    private void workGear(ServerLevel level, double radio, double climb, @Nullable PinLanding.Guide guide) {
+        GearLeverBlockEntity gear = gear(level);
+        if (gear == null) {
+            return;
+        }
+        boolean comingIn = phase == Phase.LAND || guide != null && guide.onFinal();
+        if (comingIn && !gear.down()) {
+            gear.lower(level);
+        } else if (climbingOut && !gearRaised && radio > GEAR_UP_HEIGHT && climb > 0) {
+            gearRaised = gear.raise(level);
+        }
+    }
+
+    /**
+     * Set to take off with the gear not down (come down on its belly, say): it throws the lever down and holds the
+     * brakes until the gear is down and locked, or it has waited {@link #GEAR_WAIT} ticks.
+     */
+    private boolean waitingForGear(ServerLevel level) {
+        GearLeverBlockEntity gear = gear(level);
+        if (gear == null || gear.locked() || level.getGameTime() >= gearWaitUntil) {
+            return false;
+        }
+        gear.lower(level);
+        return true;
+    }
+
+    /** The landing gear lever it throws, if its airliner has one. */
+    @Nullable
+    private GearLeverBlockEntity gear(Level level) {
+        return gearLever != null && level.getBlockEntity(worldPosition.offset(gearLever)) instanceof GearLeverBlockEntity gear ? gear : null;
     }
 
     /**
@@ -1457,7 +1515,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     private void mendLinks(ServerLevel level) {
         if (!linksChecked) {
             linksChecked = true;
-            List<BlockPos> links = Stream.concat(relays.values().stream().flatMap(List::stream), controls.stream()).toList();
+            // The steering and brake relays of a leg folded up are away with it, not lost.
+            List<BlockPos> links = Stream.concat(relays.values().stream().flatMap(List::stream), controls.stream())
+                .filter(link -> !GearBayBlockEntity.stows(level, worldPosition.offset(link))).toList();
             Turning.mend(level, worldPosition, links, AutopilotBlockEntity::linked, this::turnLinks);
         }
     }
@@ -1472,6 +1532,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private void turnLinks(Rotation turn) {
         relays.replaceAll((channel, offsets) -> Turning.turn(offsets, turn));
         controls = Turning.turn(controls, turn);
+        gearLever = Turning.turn(gearLever, turn);
         surfaces.turn(turn);
         setChanged();
     }
@@ -1501,6 +1562,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putDouble("PitchHold", pitchHold);
         tag.putDouble("RunwayHeading", runwayHeading);
         tag.putInt("WheelsBelow", wheelsBelow);
+        if (gearLever != null) {
+            tag.putLong("GearLever", gearLever.asLong());
+        }
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
         tag.putBoolean("AwaitingClearance", awaitingClearance);
@@ -1552,6 +1616,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             // Saved before a take-off held the runway's heading apart from the one set.
             runwayHeading = tag.contains("RunwayHeading") ? tag.getDouble("RunwayHeading") : tag.getDouble("TargetHeading");
             wheelsBelow = tag.getInt("WheelsBelow");
+            // Saved without one by an airliner built before the gear retracted.
+            gearLever = tag.contains("GearLever") ? Turning.turn(BlockPos.of(tag.getLong("GearLever")), turn) : null;
             governing = tag.getBoolean("Governing");
             climbingOut = tag.getBoolean("ClimbingOut");
             // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.

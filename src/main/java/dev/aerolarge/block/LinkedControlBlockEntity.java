@@ -57,7 +57,9 @@ public class LinkedControlBlockEntity extends BlockEntity implements Control {
     private void mendLinks() {
         if (!linksChecked && level != null) {
             linksChecked = true;
-            Turning.mend(level, worldPosition, links(), this::leadsTo, this::turnLinks);
+            // The relays of a gear leg folded up are away with it, not lost.
+            List<BlockPos> links = links().stream().filter(link -> !GearBayBlockEntity.stows(level, worldPosition.offset(link))).toList();
+            Turning.mend(level, worldPosition, links, this::leadsTo, this::turnLinks);
         }
     }
 

@@ -15,6 +15,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.IntValue THRUST_SETTING;
     public static final ModConfigSpec.ConfigValue<String> WHEEL_MOUNT_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> TIRE_ITEM;
+    public static final ModConfigSpec.BooleanValue RETRACTABLE_GEAR;
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
@@ -78,6 +79,13 @@ public final class AerolargeConfig {
         TIRE_ITEM = builder
             .comment("The tire fitted to each wheel mount.")
             .define("tireItem", "offroad:large_tire");
+        RETRACTABLE_GEAR = builder
+            .comment(
+                "Whether the landing gear folds up into the belly: a gear lever on the flight deck raises and lowers it, and the autopilot",
+                "raises it after take-off and lowers it to land. Read when a blueprint is used (only gear on wheel mounts retracts), and",
+                "switched off later the gear can still be lowered but no longer raised."
+            )
+            .define("retractableGear", true);
         builder.pop();
 
         builder.push("autopilot");

@@ -692,5 +692,32 @@
         "pitch": 1.5
       }
     ]
+  },
+  "gear_retract": {
+    "subtitle": "subtitles.aerolarge.gear_retract",
+    "sounds": [
+      {
+        "name": "aerolarge:gear_retract",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "gear_extend": {
+    "subtitle": "subtitles.aerolarge.gear_extend",
+    "sounds": [
+      {
+        "name": "aerolarge:gear_extend",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "gear_horn": {
+    "subtitle": "subtitles.aerolarge.gear_horn",
+    "sounds": [
+      {
+        "name": "aerolarge:gear_horn",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

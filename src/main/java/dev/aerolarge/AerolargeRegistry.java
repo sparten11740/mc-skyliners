@@ -74,6 +74,10 @@ import dev.aerolarge.block.GalleyOvenBlock;
 import dev.aerolarge.block.GalleyOvenBlockEntity;
 import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.GalleyUnitBlockEntity;
+import dev.aerolarge.block.GearBayBlock;
+import dev.aerolarge.block.GearBayBlockEntity;
+import dev.aerolarge.block.GearLeverBlock;
+import dev.aerolarge.block.GearLeverBlockEntity;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GlassBackboardBlock;
@@ -315,6 +319,10 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> SCOREBOARD_BUZZER = sound("scoreboard_buzzer");
     /** A springboard throwing someone up in the air. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SPRINGBOARD_BOING = sound("springboard_boing");
+    /** The landing gear going up and coming down, heard under the floor, and the gear horn on the flight deck. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_RETRACT = sound("gear_retract");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_EXTEND = sound("gear_extend");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_HORN = sound("gear_horn");
     /** A puff of a signal flare's smoke, in the flare's colour, rising high enough to be seen from the air. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<ColorParticleOption>> FLARE_SMOKE = PARTICLES.register(
         "flare_smoke", () -> new ParticleType<ColorParticleOption>(true) {
@@ -368,6 +376,10 @@ public final class AerolargeRegistry {
         "cabin_light", CabinLightBlock::new, metal(MapColor.SNOW).lightLevel(state -> CabinLightBlock.light(state, 15)).sound(SoundType.GLASS)
     );
     public static final DeferredBlock<Block> LANDING_GEAR = BLOCKS.registerSimpleBlock("landing_gear", metal(MapColor.METAL));
+    /** The top of a retractable gear leg, with its doors and the hydraulics that raise and lower it. */
+    public static final DeferredBlock<GearBayBlock> GEAR_BAY = BLOCKS.registerBlock("gear_bay", GearBayBlock::new, metal(MapColor.METAL));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GearBayBlockEntity>> GEAR_BAY_ENTITY =
+        BLOCK_ENTITIES.register("gear_bay", () -> BlockEntityType.Builder.of(GearBayBlockEntity::new, GEAR_BAY.get()).build(null));
     public static final DeferredBlock<Block> LANDING_GEAR_TIRE = BLOCKS.registerSimpleBlock(
         "landing_gear_tire",
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 3.0F).sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never)
@@ -512,6 +524,12 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<ParkingBrakeBlock> PARKING_BRAKE = BLOCKS.registerBlock(
         "parking_brake", ParkingBrakeBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
     );
+    /** The landing gear lever, with its lamps, which raises and lowers the retractable gear. */
+    public static final DeferredBlock<GearLeverBlock> GEAR_LEVER = BLOCKS.registerBlock(
+        "gear_lever", GearLeverBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(GearLeverBlock.LAMPS) == GearLeverBlock.Lamps.OFF ? 0 : 5)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GearLeverBlockEntity>> GEAR_LEVER_ENTITY =
+        BLOCK_ENTITIES.register("gear_lever", () -> BlockEntityType.Builder.of(GearLeverBlockEntity::new, GEAR_LEVER.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
         BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get(), JUMP_SWITCH.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
@@ -595,6 +613,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> CABIN_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(CABIN_LIGHT);
     public static final DeferredItem<BlockItem> LANDING_GEAR_ITEM = ITEMS.registerSimpleBlockItem(LANDING_GEAR);
     public static final DeferredItem<BlockItem> LANDING_GEAR_TIRE_ITEM = ITEMS.registerSimpleBlockItem(LANDING_GEAR_TIRE);
+    public static final DeferredItem<BlockItem> GEAR_BAY_ITEM = ITEMS.registerSimpleBlockItem(GEAR_BAY);
     public static final DeferredItem<BlockItem> THRUST_LEVER_ITEM = ITEMS.registerSimpleBlockItem(THRUST_LEVER);
     public static final DeferredItem<BlockItem> INSTRUMENT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(INSTRUMENT_PANEL);
     public static final DeferredItem<BlockItem> AUTOPILOT_ITEM = ITEMS.registerSimpleBlockItem(AUTOPILOT);
@@ -603,6 +622,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> ANNOUNCEMENT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(ANNOUNCEMENT_PANEL);
     public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
     public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
+    public static final DeferredItem<BlockItem> GEAR_LEVER_ITEM = ITEMS.registerSimpleBlockItem(GEAR_LEVER);
     public static final DeferredItem<BlockItem> PILOT_SEAT_ITEM = ITEMS.registerSimpleBlockItem(PILOT_SEAT);
     public static final DeferredItem<BlockItem> NAV_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(NAV_LIGHT);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
@@ -1376,12 +1396,12 @@ public final class AerolargeRegistry {
         new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
-            AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
+            AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, GEAR_BAY_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
             AIRSTAIR_CALL_BUTTON_ITEM, AIRSTAIR_BUTTON_ITEM, DOOR_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
-            THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, FLIGHT_DISPLAY_ITEM,
+            THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM
         )),

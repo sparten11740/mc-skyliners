@@ -209,6 +209,14 @@ texture(blockOutput, "landing_gear", (x, y) => {
   return STEEL;
 }, 4);
 
+// A retractable gear leg's bay, seen from below: the gear doors shut, two white leaves meeting down the middle in a
+// seam, with a seam all round where they meet the belly.
+texture(blockOutput, "gear_bay_bottom", (x, y) => {
+  if (x === 0 || y === 0 || x === 15 || y === 15 || x === 7 || x === 8) return SEAM;
+  if ((y === 3 || y === 12) && (x === 2 || x === 13)) return STEEL;
+  return WHITE;
+}, 3);
+
 // Tire tread: rubber with chevron grooves, as seen from the side and from above alike.
 texture(blockOutput, "landing_gear_tire", (x, y) => {
   if ((x + Math.abs(y % 6 - 3)) % 6 === 0) return RUBBER_LIGHT;

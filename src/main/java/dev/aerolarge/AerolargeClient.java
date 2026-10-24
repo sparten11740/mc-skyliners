@@ -34,6 +34,7 @@ import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.FlightStripBoardRenderer;
+import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmetVisor;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.NavLightRenderer;
@@ -179,6 +180,7 @@ public final class AerolargeClient {
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AerolargeRegistry.NAV_LIGHT_ENTITY.get(), context -> new NavLightRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.GEAR_BAY_ENTITY.get(), context -> new GearBayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());

@@ -1,7 +1,9 @@
 package dev.aerolarge.autopilot;
 
+import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +43,11 @@ final class AirlinerShape {
     /** The airliner's blocks in its plot, and the next column of them to look down; null until measuring starts. */
     @Nullable
     private BoundingBox box;
+    /**
+     * The row the bottom of the wheels is in, in the plot: the box's lowest with the gear down; with it up, the lowest of
+     * the blocks its legs have taken away, which it will land on.
+     */
+    private int wheels;
     private int nextX;
     private int nextZ;
     private boolean measured;
@@ -98,12 +105,16 @@ final class AirlinerShape {
         autopilot = at;
         forward = nose;
         right = nose.getClockWise();
+        List<BlockPos> stowed = GearBayBlockEntity.stowedWithin(level, blocks);
+        wheels = Math.min(blocks.minY(), stowed.stream().mapToInt(BlockPos::getY).min().orElse(blocks.minY()));
         nextX = blocks.minX();
         nextZ = blocks.minZ();
         reach = Math.max(Math.max(Math.abs(blocks.minX() - at.getX()), Math.abs(blocks.maxX() - at.getX())),
             Math.max(Math.abs(blocks.minZ() - at.getZ()), Math.abs(blocks.maxZ() - at.getZ())));
         body = new int[2 * reach + 1];
         Arrays.fill(body, NOTHING);
+        // The gear folded up is measured where it stands once lowered, as the airliner lands on it.
+        stowed.forEach(pos -> note(pos.getX(), pos.getZ(), pos.getY() - wheels));
         return true;
     }
 
@@ -122,7 +133,7 @@ final class AirlinerShape {
     private void lookDown(Level level, BlockPos.MutableBlockPos column) {
         for (int y = box.minY(); y <= box.maxY(); y++) {
             if (!level.getBlockState(column.setY(y)).isAir()) {
-                note(column.getX(), column.getZ(), y - box.minY());
+                note(column.getX(), column.getZ(), y - wheels);
                 return;
             }
         }

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "T",
+    "S",
+    "P"
+  ],
+  "key": {
+    "T": {
+      "item": "aerolarge:landing_gear_tire"
+    },
+    "S": {
+      "item": "minecraft:lever"
+    },
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:gear_lever",
+    "count": 1
+  }
+}

@@ -535,6 +535,7 @@ function atcLang() {
   Object.assign(sounds, rubberDuckSounds());
   Object.assign(sounds, coffeeMachineSounds());
   Object.assign(sounds, crewLockerSounds());
+  Object.assign(sounds, gearSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -579,6 +580,71 @@ function atcLang() {
     });
     cubes[name] = null;
   }
+}
+
+// The retractable landing gear (see GearBayBlock and GearLeverBlock). The bay at the top of each leg: the belly's skin
+// with the gear doors shut underneath, turned with the way the leg swings so the doors' seam runs along it. The lever,
+// a module of the flight deck drawn with the pilots at its north side: an arm with a little wheel for a knob, thrown
+// back toward the pilots for the gear down and forward for it up, and three lamps beyond it, dark, red or green.
+{
+  write(`assets/${ID}/models/block/gear_bay.json`, {
+    parent: "minecraft:block/cube",
+    textures: {
+      down: `${ID}:block/gear_bay_bottom`, up: `${ID}:block/landing_gear`, side: `${ID}:block/airframe_panel`,
+      particle: `${ID}:block/airframe_panel`,
+      north: `${ID}:block/airframe_panel`, south: `${ID}:block/airframe_panel`, east: `${ID}:block/airframe_panel`, west: `${ID}:block/airframe_panel`,
+    },
+  });
+  facing("gear_bay");
+  write(`assets/${ID}/models/item/gear_bay.json`, { parent: `${ID}:block/gear_bay` });
+  dropsItself("gear_bay");
+  cubes.gear_bay = null;
+
+  const lamps = ["off", "red", "green"];
+  for (const [down, angle] of [[true, -22.5], [false, 22.5]]) {
+    const rotation = { origin: [8, CONSOLE_HEIGHT, 8], axis: "x", angle };
+    for (const lamp of lamps) {
+      const textures = { plate: `${ID}:block/panel_side`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/landing_gear_tire`, lamp: `${ID}:block/jump_light_${lamp}` };
+      consoleModule(`gear_lever_${down ? "down" : "up"}_${lamp}`, textures, "#plate", true, [
+        solid([6.5, CONSOLE_HEIGHT, 4], [9.5, CONSOLE_HEIGHT + 0.5, 12], "#handle"),
+        solid([7.5, CONSOLE_HEIGHT, 7.5], [8.5, 12, 8.5], "#handle", rotation),
+        solid([7, 11, 6], [9, 15, 10], "#knob", rotation),
+        ...[3, 7, 11].map((x) => solid([x, CONSOLE_HEIGHT, 12.5], [x + 2, CONSOLE_HEIGHT + 0.5, 14.5], "#lamp")),
+      ]);
+    }
+  }
+  write(`assets/${ID}/blockstates/gear_lever.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [true, false].flatMap((down) => lamps.map((lamp) =>
+        [`down=${down},facing=${facing},lamps=${lamp}`, { model: `${ID}:block/gear_lever_${down ? "down" : "up"}_${lamp}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/gear_lever.json`, { parent: `${ID}:block/gear_lever_down_green` });
+  dropsItself("gear_lever");
+  cubes.gear_lever = null;
+}
+// The gear going up: the hydraulics whining under the floor, the leg thumping into its bay, the doors shutting; coming
+// down: the uplocks letting go, the air roaring in, the leg locking down. And the gear horn on the flight deck. Heard
+// from the legs and the lever, where they are.
+function gearSounds() {
+  return Object.fromEntries(["gear_retract", "gear_extend", "gear_horn"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}`, attenuation_distance: 48 }] }]));
+}
+function gearRecipes() {
+  shaped("gear_lever", ["T", "S", "P"], { T: `${ID}:landing_gear_tire`, S: "minecraft:lever", P: `${ID}:airframe_panel` }, 1);
+  shaped("gear_bay", ["P", "G", "I"], { P: `${ID}:airframe_panel`, G: `${ID}:landing_gear`, I: "minecraft:piston" }, 1);
+}
+function gearLang() {
+  return {
+    "block.aerolarge.gear_bay": "Landing Gear Bay",
+    "block.aerolarge.gear_lever": "Landing Gear Lever",
+    "subtitles.aerolarge.gear_retract": "Landing gear retracts",
+    "subtitles.aerolarge.gear_extend": "Landing gear extends",
+    "subtitles.aerolarge.gear_horn": "Gear horn sounds",
+    "message.aerolarge.gear.up": "Gear up",
+    "message.aerolarge.gear.down": "Gear down",
+    "message.aerolarge.gear.on_ground": "The gear stays down: the airliner is standing on its wheels",
+    "message.aerolarge.gear.fixed": "The gear stays down: retractable gear is switched off on this server",
+  };
 }
 
 // The exterior lights: a small lens on the face it is fixed to, pointing the way it shines (up in the model), one
@@ -4725,6 +4791,7 @@ rubberDuckRecipes();
 coffeeMachineRecipes();
 cabinStairsRecipes();
 crewLockerRecipes();
+gearRecipes();
 slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
@@ -5169,6 +5236,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...coffeeMachineLang(),
   ...cabinStairsLang(),
   ...crewLockerLang(),
+  ...gearLang(),
   ...hullLiningLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),

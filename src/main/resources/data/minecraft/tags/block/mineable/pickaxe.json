@@ -29,6 +29,8 @@
     "aerolarge:engine_core",
     "aerolarge:tiller",
     "aerolarge:parking_brake",
+    "aerolarge:gear_bay",
+    "aerolarge:gear_lever",
     "aerolarge:nav_light",
     "aerolarge:jump_light",
     "aerolarge:jump_switch",

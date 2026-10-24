@@ -722,6 +722,143 @@ const slideNoise = (() => {
   writeSound("slide_whoosh", samples);
 }
 
+// The landing gear, with its own noise, so it never shifts the sounds above. Heard from the cabin as on a real
+// airliner. Going up: the uplocks' clunk as the doors open, the roar of the air past them, the hydraulic pumps moaning
+// as they lift the legs, the wheels braked to a stop in a rumble that flutters and dies, the legs thumping into their
+// bays and the doors shutting on them, and the airliner gone quiet. Coming down: the clunk of the uplocks letting go,
+// the air roaring in through the open doors and buffeting the legs, the dampers hissing as the legs drop, the heavy
+// thunk of the downlocks, the doors closing, and the rumble of the gear out in the airstream. Each is timed to the
+// legs' swing in GearBayBlockEntity and its renderer: the doors take the first and last 15% of it.
+const gearNoise = (() => {
+  let gearSeed = 0x67656172;
+  return () => {
+    gearSeed = (Math.imul(gearSeed, 1664525) + 1013904223) | 0;
+    return (gearSeed >>> 0) / 4294967296;
+  };
+})();
+/** A weight of metal striking home at a time in seconds: a low partial falling in pitch as it dies, cracking as it hits. */
+function gearThud(samples, start, weight) {
+  let phase = 0;
+  const begin = Math.round(start * RATE);
+  const end = Math.min(samples.length, begin + Math.round(0.6 * RATE));
+  for (let i = begin; i < end; i++) {
+    const t = (i - begin) / RATE;
+    phase += (2 * Math.PI * (38 + 120 * Math.exp(-t / 0.02))) / RATE;
+    const crack = t < 0.012 ? (gearNoise() * 2 - 1) * (1 - t / 0.012) : 0;
+    samples[i] += weight * (Math.exp(-t / 0.12) * Math.sin(phase) + 0.6 * crack);
+  }
+}
+/** The ring of the struck metal on top of a thud: a few partials of the note dying fast, this loud. */
+function gearRing(samples, start, frequency, gain) {
+  const begin = Math.round(start * RATE);
+  const end = Math.min(samples.length, begin + Math.round(0.4 * RATE));
+  for (let i = begin; i < end; i++) {
+    const t = (i - begin) / RATE;
+    const envelope = Math.min(1, t * 600) * Math.exp(-t / 0.06);
+    samples[i] += gain * envelope * (Math.sin(2 * Math.PI * frequency * t) + 0.4 * Math.sin(2 * Math.PI * frequency * 2.76 * t));
+  }
+}
+/**
+ * The roar of the air past the open doors and the legs out in it, as loud as level(t) says: low noise with a band of
+ * it on top, gusting slowly as the air buffets the legs.
+ */
+function gearAirflow(samples, level) {
+  let low = 0;
+  let band = 0;
+  let gust = 0.8;
+  let gustTo = 0.8;
+  for (let i = 0; i < samples.length; i++) {
+    const white = gearNoise() * 2 - 1;
+    low += 0.03 * (white - low);
+    band += 0.2 * (white - band);
+    if (i % Math.round(0.05 * RATE) === 0) {
+      gustTo = 0.6 + 0.4 * gearNoise();
+    }
+    gust += 0.0006 * (gustTo - gust);
+    samples[i] += level(i / RATE) * gust * (3 * low + 0.35 * (band - low));
+  }
+}
+/**
+ * The hydraulic pumps working the legs from one time to another, in seconds: a moaning tone rising from one pitch to
+ * another as the pressure builds, with its harmonics and a slight waver, and the hiss of the oil through the valves.
+ */
+function gearHydraulics(samples, from, to, startHz, endHz, gain) {
+  let phase = 0;
+  let previous = 0;
+  const span = to - from;
+  for (let i = Math.round(from * RATE); i < Math.min(samples.length, Math.round(to * RATE)); i++) {
+    const t = i / RATE - from;
+    const envelope = Math.min(1, t / 0.4) * Math.min(1, (span - t) / 0.6);
+    const hz = startHz + (endHz - startHz) * Math.min(1, t / (0.6 * span));
+    phase += (2 * Math.PI * hz * (1 + 0.004 * Math.sin(2 * Math.PI * 3.1 * t))) / RATE;
+    const tone = Math.sin(phase) + 0.45 * Math.sin(2 * phase) + 0.25 * Math.sin(3 * phase) + 0.12 * Math.sin(5 * phase);
+    const white = gearNoise() * 2 - 1;
+    const hiss = white - previous;
+    previous = white;
+    samples[i] += gain * envelope * (0.5 * tone + 0.12 * hiss);
+  }
+}
+/** The wheels braked to a stop as they go up: a low rumble fluttering with each turn of the tires, slowing and dying. */
+function gearWheelsBraked(samples, from, to, gain) {
+  let low = 0;
+  let turn = 0;
+  const span = to - from;
+  for (let i = Math.round(from * RATE); i < Math.min(samples.length, Math.round(to * RATE)); i++) {
+    const t = i / RATE - from;
+    const spinning = 1 - t / span;
+    turn += (2 * Math.PI * (1 + 14 * spinning)) / RATE;
+    low += 0.01 * ((gearNoise() * 2 - 1) - low);
+    samples[i] += gain * spinning * spinning * Math.min(1, t / 0.1) * (0.6 + 0.4 * Math.sin(turn)) * 8 * low;
+  }
+}
+/** Rises smoothly from 0 to 1 between two times, in seconds. */
+function gearRamp(t, from, to) {
+  const k = Math.max(0, Math.min(1, (t - from) / (to - from)));
+  return k * k * (3 - 2 * k);
+}
+{
+  // Going up, eight seconds as the legs swing, and a little after for the cabin to settle.
+  const samples = new Float64Array(Math.round(8.6 * RATE));
+  gearThud(samples, 0, 0.9);
+  gearRing(samples, 0.004, 640, 0.25);
+  gearAirflow(samples, (t) => 0.12 + 0.88 * gearRamp(t, 0, 1.2) - 0.76 * gearRamp(t, 6.8, 7.9) - 0.24 * gearRamp(t, 7.9, 8.6));
+  gearHydraulics(samples, 0.3, 7.0, 330, 470, 0.55);
+  gearWheelsBraked(samples, 0.4, 3.0, 0.9);
+  gearThud(samples, 6.8, 1.4);
+  gearThud(samples, 6.95, 0.8);
+  gearRing(samples, 6.804, 410, 0.3);
+  gearThud(samples, 7.9, 1.0);
+  gearRing(samples, 7.904, 720, 0.2);
+  writeSound("gear_retract", samples);
+}
+{
+  // Coming down, six seconds as the legs swing, and the rumble of the gear out in the airstream fading after.
+  const samples = new Float64Array(Math.round(6.8 * RATE));
+  gearThud(samples, 0, 0.8);
+  gearRing(samples, 0.004, 560, 0.25);
+  gearAirflow(samples, (t) => 0.15 + 1.15 * gearRamp(t, 0, 0.9) - 0.35 * gearRamp(t, 5.1, 6.0) - 0.95 * gearRamp(t, 6.1, 6.8));
+  gearHydraulics(samples, 0.8, 5.2, 300, 240, 0.35);
+  gearThud(samples, 5.1, 1.6);
+  gearRing(samples, 5.104, 380, 0.35);
+  gearThud(samples, 5.25, 0.7);
+  gearThud(samples, 6.0, 0.9);
+  gearRing(samples, 6.004, 700, 0.2);
+  writeSound("gear_extend", samples);
+}
+// The gear horn on the flight deck, coming down to land with the gear up: a harsh, buzzing beep, short enough to
+// sound again and again on the lever's beat (every half second), as a warning horn does.
+{
+  const samples = new Float64Array(Math.round(0.4 * RATE));
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * 720 * (1 + 0.01 * Math.sin(2 * Math.PI * 30 * t))) / RATE;
+    const square = Math.sign(Math.sin(phase)) * 0.6 + 0.4 * Math.sin(phase);
+    samples[i] = square * Math.min(1, t / 0.01) * Math.min(1, (0.32 - t) / 0.02) * (t < 0.32 ? 1 : 0);
+  }
+  writeSound("gear_horn", samples, 0.7);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
 // voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
 // its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
