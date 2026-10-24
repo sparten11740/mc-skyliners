@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.aerolarge.block.TowerRadarBlockEntity;
 import dev.aerolarge.client.PanelArt.CloseButton;
 import dev.aerolarge.client.PanelArt.Icon;
-import dev.aerolarge.radar.Contact;
 import dev.aerolarge.radar.MarkerIcon;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -19,8 +18,9 @@ import net.minecraft.world.phys.Vec3;
  * The tower's radar, opened by using its radar screen: a panel in the flight deck's colours (see {@link PanelArt})
  * filled by a map round the tower (see {@link MapWidget}), with range rings round the tower every so many blocks and
  * every transponder's marker on it: the airliners where they fly, the way they go, and those on the ground, the
- * tower's own among them. Pointed at, a marker says what it is and how far from the tower; a click on one centres the
- * map on it. The game goes on behind it, and it closes with its close button or Escape.
+ * tower's own among them; and the other players' faces. Pointed at, a marker says what it is and a face who it is,
+ * and how far from the tower; a click on either centres the map on it. The game goes on behind it, and it closes with
+ * its close button or Escape.
  */
 public class RadarScreen extends Screen {
     /** The panel's largest size, how far it keeps in from the window's edges, and the space inside its bezel. */
@@ -111,8 +111,8 @@ public class RadarScreen extends Screen {
     }
 
     /**
-     * The map round the tower: range rings every {@link #RING} blocks round it, and the markers of every transponder.
-     * A click on a marker centres the map on it.
+     * The map round the tower: range rings every {@link #RING} blocks round it, the markers of every transponder and
+     * the other players' faces. A click on a marker or a face centres the map on it.
      */
     private static final class RadarMap extends MapWidget {
         /** How many blocks a pixel takes in at first: the rings out to a few thousand blocks across the panel. */
@@ -157,9 +157,9 @@ public class RadarScreen extends Screen {
         }
 
         @Override
-        void clicked(double x, double z, @Nullable Contact contact) {
-            if (contact != null) {
-                lookAt(contact.x(), contact.z());
+        void clicked(double x, double z, boolean marked) {
+            if (marked) {
+                lookAt(x, z);
             }
         }
     }

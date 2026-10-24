@@ -24,7 +24,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * data, so it shows on the maps however far off it is, its chunk loaded or not, as a beacon in Subnautica does; one
  * aboard an assembled airliner flies with it, so it is only shown while it is loaded, where the airliner is, which it
  * always is while anyone is near enough to fly it. Once a second every player in the dimension is sent them all (see
- * {@link RadarContacts}): a few dozen at most, and the airliners among them move.
+ * {@link RadarContacts}): a few dozen at most, and the airliners among them move. With them goes where each player
+ * of the dimension is, however far off, for their faces on the maps.
  */
 public final class Transponders extends SavedData {
     private static final String NAME = Aerolarge.MOD_ID + "_transponders";
@@ -74,7 +75,7 @@ public final class Transponders extends SavedData {
 
     /**
      * Each tick: once a second, the loaded transponders are kept in the saved data as they stand (see {@link #keep}),
-     * and every player in the dimension is sent where they all are.
+     * and every player in the dimension is sent where they all are, and where each of the dimension's players is.
      */
     public static void tick(ServerLevel level) {
         if (level.getGameTime() % SEND_EVERY != 0) {
@@ -85,7 +86,7 @@ public final class Transponders extends SavedData {
         if (level.players().isEmpty()) {
             return;
         }
-        RadarContacts contacts = new RadarContacts(contacts(level, loaded));
+        RadarContacts contacts = new RadarContacts(contacts(level, loaded), PlayerContact.in(level));
         for (ServerPlayer player : level.players()) {
             PacketDistributor.sendToPlayer(player, contacts);
         }

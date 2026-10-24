@@ -10,12 +10,14 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Sent to every player once a second: every transponder in their dimension, for the autopilot's map and the tower's
- * radar (see {@link Transponders}). Each list stands in for the one before.
+ * radar (see {@link Transponders}), and every player there, for their faces on them. Each list stands in for the one
+ * before.
  */
-public record RadarContacts(List<Contact> contacts) implements CustomPacketPayload {
+public record RadarContacts(List<Contact> contacts, List<PlayerContact> players) implements CustomPacketPayload {
     public static final Type<RadarContacts> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "radar_contacts"));
     public static final StreamCodec<FriendlyByteBuf, RadarContacts> STREAM_CODEC = StreamCodec.composite(
         Contact.STREAM_CODEC.apply(ByteBufCodecs.list()), RadarContacts::contacts,
+        PlayerContact.STREAM_CODEC.apply(ByteBufCodecs.list()), RadarContacts::players,
         RadarContacts::new
     );
 

@@ -12,7 +12,7 @@ import net.minecraft.network.codec.StreamCodec;
  * transponder's block is: in the world for one on the ground, among the airliner's blocks (its plot) for one aboard,
  * which tells the airliner's own transponder apart from the others on its autopilot's map.
  */
-public record Contact(BlockPos block, double x, double y, double z, MarkerIcon icon, MarkerColour colour, boolean airborne, float heading, float speed) {
+public record Contact(BlockPos block, double x, double y, double z, MarkerIcon icon, MarkerColour colour, boolean airborne, float heading, float speed) implements OnTheMap {
     public static final StreamCodec<ByteBuf, Contact> STREAM_CODEC = StreamCodec.of(Contact::write, Contact::read);
 
     private static void write(ByteBuf buffer, Contact contact) {

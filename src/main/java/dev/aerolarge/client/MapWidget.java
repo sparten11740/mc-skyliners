@@ -3,6 +3,8 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.radar.Contact;
+import dev.aerolarge.radar.OnTheMap;
+import dev.aerolarge.radar.PlayerContact;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -21,9 +23,10 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * A map on a panel, painted by {@link MapPainter}: the land as the player's route map knows it and the villages, and
- * over them the transponders' markers (see {@link MarkerArt}), each saying what it is when pointed at. Drag it to look
- * about and scroll to zoom out and in; a click (pressed and let go without dragging) is the map's own to use. A cross
- * marks its middle, whose coordinates it shows, so it can be found about even where the land has not been seen yet.
+ * over them the transponders' markers (see {@link MarkerArt}) and the other players' faces, each saying what it is or
+ * who they are when pointed at. Drag it to look about and scroll to zoom out and in; a click (pressed and let go
+ * without dragging) is the map's own to use, snapped to a face or a marker close to it. A cross marks its middle,
+ * whose coordinates it shows, so it can be found about even where the land has not been seen yet.
  * The autopilot's map ({@link DestinationMap}) and the tower's radar ({@link RadarScreen}) are maps.
  */
 abstract class MapWidget extends AbstractWidget implements AutoCloseable {
@@ -76,11 +79,19 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
     /** Paints what the map shows over the land and the villages. */
     abstract void paint(NativeImage image, MapPainter.View view, Level level, float partialTick);
 
-    /** A click on the map, not a drag: at a place in the world, on a marker there if one is close enough. */
-    abstract void clicked(double x, double z, @Nullable Contact contact);
+    /**
+     * A click on the map, not a drag: at a place in the world, or on a face or a marker if one is close enough, at
+     * where that is.
+     */
+    abstract void clicked(double x, double z, boolean marked);
 
     /** Whether a transponder's marker shows: all do, unless the map says otherwise. */
     boolean shows(Contact contact) {
+        return true;
+    }
+
+    /** Whether another player's face shows: all do, unless the map says otherwise. */
+    boolean shows(PlayerContact player) {
         return true;
     }
 
@@ -141,38 +152,65 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
         graphics.drawString(font, text, x, y, colour, false);
     }
 
-    /** The transponders' markers, kept inside the map, and what the one pointed at says. */
+    /**
+     * The transponders' markers and over them the other players' faces, kept inside the map, and what the one pointed
+     * at says.
+     */
     private void markers(GuiGraphics graphics, Level level, int mouseX, int mouseY) {
         MapPainter.View view = view();
         graphics.enableScissor(getX(), getY(), getRight(), getBottom());
         for (Contact contact : shown(level)) {
             MarkerArt.draw(graphics, contact, getX() + view.pixelX(contact.x()), getY() + view.pixelY(contact.z()));
         }
+        for (PlayerContact player : players(level)) {
+            MarkerArt.draw(graphics, player, getX() + view.pixelX(player.x()), getY() + view.pixelY(player.z()));
+        }
         graphics.disableScissor();
-        Contact pointed = isHovered() ? contactAt(level, mouseX, mouseY, MarkerArt.RADIUS) : null;
         Screen screen = Minecraft.getInstance().screen;
-        if (pointed != null && screen != null) {
-            Vec3 from = from(level);
-            List<FormattedCharSequence> lines = MarkerArt.describe(pointed, from.x, from.z).stream().map(Component::getVisualOrderText).toList();
+        List<Component> pointed = isHovered() ? pointedAt(level, mouseX, mouseY) : List.of();
+        if (!pointed.isEmpty() && screen != null) {
+            List<FormattedCharSequence> lines = pointed.stream().map(Component::getVisualOrderText).toList();
             screen.setTooltipForNextRenderPass(lines);
         }
+    }
+
+    /** What the face or the marker under the pointer says, a face before a marker, which it is drawn over; or nothing. */
+    private List<Component> pointedAt(Level level, int mouseX, int mouseY) {
+        Vec3 from = from(level);
+        PlayerContact player = nearest(players(level), mouseX, mouseY, MarkerArt.FACE_RADIUS);
+        if (player != null) {
+            return MarkerArt.describe(player, from.x, from.z);
+        }
+        Contact contact = nearest(shown(level), mouseX, mouseY, MarkerArt.RADIUS);
+        return contact != null ? MarkerArt.describe(contact, from.x, from.z) : List.of();
     }
 
     private List<Contact> shown(Level level) {
         return RadarPicture.in(level).stream().filter(this::shows).toList();
     }
 
-    /** The marker nearest a place on the screen, if one is within this many pixels of it. */
+    private List<PlayerContact> players(Level level) {
+        return RadarPicture.others(level).stream().filter(this::shows).toList();
+    }
+
+    /** The face or the marker a click this near takes, a face before a marker, which it is drawn over. */
     @Nullable
-    private Contact contactAt(Level level, double mouseX, double mouseY, double reach) {
+    private OnTheMap marked(Level level, double mouseX, double mouseY) {
+        PlayerContact player = nearest(players(level), mouseX, mouseY, SNAP);
+        return player != null ? player : nearest(shown(level), mouseX, mouseY, SNAP);
+    }
+
+    /** What of these is nearest a place on the screen, if one is within this many pixels of it. */
+    @Nullable
+    private <T extends OnTheMap> T nearest(List<T> shown, double mouseX, double mouseY, double reach) {
         MapPainter.View view = view();
-        Contact nearest = null;
+        T nearest = null;
         double best = reach;
-        for (Contact contact : shown(level)) {
-            double distance = Math.hypot(getX() + view.pixelX(contact.x()) - mouseX, getY() + view.pixelY(contact.z()) - mouseY);
+        for (T each : shown) {
+            double distance = Math.hypot(getX() + view.pixelX(each.x()) - mouseX, getY() + view.pixelY(each.z()) - mouseY);
             if (distance <= best) {
                 best = distance;
-                nearest = contact;
+                nearest = each;
             }
         }
         return nearest;
@@ -223,8 +261,13 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
         if (dragged > CLICK_SLOP || level == null) {
             return;
         }
+        OnTheMap marked = marked(level, mouseX, mouseY);
         MapPainter.View view = view();
-        clicked(view.worldX(mouseX - getX()), view.worldZ(mouseY - getY()), contactAt(level, mouseX, mouseY, SNAP));
+        if (marked != null) {
+            clicked(marked.x(), marked.z(), true);
+        } else {
+            clicked(view.worldX(mouseX - getX()), view.worldZ(mouseY - getY()), false);
+        }
         moved = true;
     }
 

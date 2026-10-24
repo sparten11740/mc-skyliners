@@ -5,6 +5,7 @@ import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.AutopilotBlockEntity;
 import dev.aerolarge.block.Runway;
 import dev.aerolarge.radar.Contact;
+import dev.aerolarge.radar.PlayerContact;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -22,9 +23,10 @@ import net.minecraft.world.phys.Vec3;
  * The autopilot's map, on its settings panel while it is set to fly to a pin (see {@link AutopilotSettingsScreen}): a
  * {@link MapWidget} with the airliner where it is, pointing the way it goes, the pin with the circle the airliner will
  * fly round it, set to land there the strip of land the autopilot has picked to land on near it once it has, and the
- * transponders' markers but for the airliner's own. A click drops the pin: on a transponder's
- * marker or a village when the click is close to one, so either is easy to pick, else where it was clicked. It opens
- * on the airliner, or on the pin if there is one, whose coordinates it shows beside its middle's.
+ * transponders' markers but for the airliner's own, and the faces of the other players but those aboard. A click drops
+ * the pin: where a player stands, on a transponder's marker or a village when the click is close to one, so each is
+ * easy to pick, else where it was clicked. It opens on the airliner, or on the pin if there is one, whose coordinates
+ * it shows beside its middle's.
  */
 final class DestinationMap extends MapWidget {
     /** How many blocks a pixel takes in at first. */
@@ -86,6 +88,17 @@ final class DestinationMap extends MapWidget {
         return !contact.airborne() || !contact.block().closerThan(at, SAME_AIRLINER);
     }
 
+    /** All but those riding the airliner, whose faces would hide its arrow. */
+    @Override
+    boolean shows(PlayerContact player) {
+        Level level = level();
+        BlockEntity blockEntity = autopilot.get();
+        if (level == null || blockEntity == null) {
+            return true;
+        }
+        return !SableClient.isAboard(level.getPlayerByUUID(player.id()), blockEntity);
+    }
+
     /** The pin with its circle, the runway picked near it, and the airliner over all, pointing the way it goes. */
     @Override
     void paint(NativeImage image, MapPainter.View view, Level level, float partialTick) {
@@ -136,11 +149,11 @@ final class DestinationMap extends MapWidget {
         }
     }
 
-    /** Drops the pin there: on the transponder or the village close by, if there is one. */
+    /** Drops the pin there: on the player or the transponder clicked, else on the village close by, if there is one. */
     @Override
-    void clicked(double x, double z, @Nullable Contact contact) {
-        if (contact != null) {
-            pin = BlockPos.containing(contact.x(), 0, contact.z());
+    void clicked(double x, double z, boolean marked) {
+        if (marked) {
+            pin = BlockPos.containing(x, 0, z);
             return;
         }
         BlockPos village = village(x, z);

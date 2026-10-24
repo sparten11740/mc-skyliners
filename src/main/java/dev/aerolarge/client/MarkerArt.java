@@ -5,12 +5,19 @@ import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.radar.Contact;
 import dev.aerolarge.radar.MarkerColour;
 import dev.aerolarge.radar.MarkerIcon;
+import dev.aerolarge.radar.PlayerContact;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -18,11 +25,15 @@ import net.minecraft.util.Mth;
 /**
  * A transponder's marker on the maps, as a beacon shows in Subnautica: its picture in its colour on a dark disc ringed
  * in that colour, and for one aboard an airliner going somewhere, a short line of dots off the ring the way it goes.
- * Pointed at, it says what it is, where, how far off, and for an airliner how high and fast it flies.
+ * Pointed at, it says what it is, where, how far off, and for an airliner how high and fast it flies. A player shows
+ * as their face, framed, and says who they are, where and how far off.
  */
 final class MarkerArt {
     /** The disc's radius, in pixels at scale 1, and the dark inside its ring. */
     static final int RADIUS = 8;
+    /** A player's face: half its width, in pixels, with the frame round it, and the frame's colour. */
+    static final int FACE_RADIUS = 5;
+    private static final int FACE_FRAME = 0xFFFFFFFF;
     private static final int INSIDE = 0xF0081226;
     /** The heading's dots: from how far out from the middle, how many and how far apart. */
     private static final int HEADING_FROM = RADIUS + 2;
@@ -73,6 +84,20 @@ final class MarkerArt {
         }
     }
 
+    /** A player's face, its middle at (x, y), framed so it stands out from the land under it. */
+    static void draw(GuiGraphics graphics, PlayerContact player, int x, int y) {
+        int half = FACE_RADIUS - 1;
+        graphics.fill(x - FACE_RADIUS, y - FACE_RADIUS, x + FACE_RADIUS, y + FACE_RADIUS, FACE_FRAME);
+        PlayerFaceRenderer.draw(graphics, skin(player), x - half, y - half, half * 2);
+    }
+
+    /** A player's skin, as the player list has it; a default one while it has not been fetched. */
+    private static PlayerSkin skin(PlayerContact player) {
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        PlayerInfo info = connection != null ? connection.getPlayerInfo(player.id()) : null;
+        return info != null ? info.getSkin() : DefaultPlayerSkin.get(player.id());
+    }
+
     /**
      * What a marker says, pointed at: its picture's name, where it is, how far it is from a place (the airliner, or the
      * tower), and for an airliner how high and how fast it flies.
@@ -80,13 +105,26 @@ final class MarkerArt {
     static List<Component> describe(Contact contact, double fromX, double fromZ) {
         List<Component> lines = new ArrayList<>();
         lines.add(contact.icon().title().copy().withColor(contact.colour().rgb()));
-        lines.add(Component.translatable("screen.aerolarge.map.contact.where", Mth.floor(contact.x()), Mth.floor(contact.z())));
-        long distance = Math.round(Math.hypot(contact.x() - fromX, contact.z() - fromZ));
-        lines.add(Component.translatable("screen.aerolarge.map.contact.distance", distance));
+        where(lines, contact.x(), contact.z(), fromX, fromZ);
         if (contact.airborne()) {
             lines.add(Component.translatable("screen.aerolarge.map.contact.flight",
                 Mth.floor(contact.y()), String.format(Locale.ROOT, "%.0f", contact.speed())));
         }
         return lines;
+    }
+
+    /** What a player's face says, pointed at: who they are, where, and how far they are from a place. */
+    static List<Component> describe(PlayerContact player, double fromX, double fromZ) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.literal(player.name()));
+        where(lines, player.x(), player.z(), fromX, fromZ);
+        return lines;
+    }
+
+    /** Where something on the map is, and how far it is from a place. */
+    private static void where(List<Component> lines, double x, double z, double fromX, double fromZ) {
+        lines.add(Component.translatable("screen.aerolarge.map.contact.where", Mth.floor(x), Mth.floor(z)));
+        long distance = Math.round(Math.hypot(x - fromX, z - fromZ));
+        lines.add(Component.translatable("screen.aerolarge.map.contact.distance", distance));
     }
 }
