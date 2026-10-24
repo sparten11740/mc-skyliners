@@ -124,10 +124,15 @@ heading once the airliner is assembled. In the middle, standing just in front of
 screens in the same slim dark casing: the autopilot screen below, and on top of it the tail camera display, a wide
 screen three blocks across like an A380's taxiing camera screen. Where the nose leaves it no room there, the camera
 display hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward them. Once the airliner is
-assembled it shows the live picture from the camera on top of the fin, the one the passenger screens look through
-(see below): the whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond,
-with CAM TAIL and a blinking recording light in the corner. The picture is drawn small, a few times a second, and only
-while a display is in sight within 32 blocks; every display aboard the same airliner shows the same picture. Without
+assembled it shows the live picture from one of the airliner's outside cameras, the ones the passenger screens look
+through (see below), the camera on top of the fin at first: the whole airliner from above and behind, its wingtips at
+the edges, the ground or the clouds beyond, with CAM TAIL and a blinking recording light in the corner. Four buttons
+along its bottom left pick the camera, each a little airliner seen from the side with a dot where its camera sits, the
+one shown lit with a red dot: the fin, the right wing, under the nose by the nose gear, and in front of the nose, level
+with the pilots' eyes and looking fifteen degrees down at the runway coming up to meet the airliner. Use one to switch;
+everyone sees the camera picked, and the display keeps it. The picture is drawn small, a few times a second, and only
+while a display is in sight within 32 blocks; every display aboard the same airliner set to the same camera shows the
+same picture. Without
 one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
 while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
 graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
@@ -140,7 +145,7 @@ every time it is drawn, while the game waits, about four times as much at twice 
 can be crafted and put up in your own builds too: against a wall it stands upright, and put up against the underside
 of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as you face it,
 and needs the room there; it comes down whole. On
-an assembled airliner with an autopilot it shows that airliner's fin camera. Against the wall behind the captain's
+an assembled airliner with an autopilot it shows that airliner's cameras. Against the wall behind the captain's
 seat is the Physics Assembler, and across from it, against the wall behind the first officer's, the flight crew's
 locker, with a Pilot Helmet and a Pilot Cap in it for each pilot when the airliner is built (see Souvenirs): within
 reach of the first officer's seat at the default scale, a few steps from either seat on the larger flight decks.
@@ -284,7 +289,10 @@ dot in a red ring, the circle it will be flown round. Drag the map to look about
 to drop the pin: a click close to a village drops it right on the village. Every transponder shows on the map too
 (see Control tower and transponders), by its picture in its colour on a dark disc, as a beacon shows in Subnautica,
 other airliners with a few dots the way they fly; point at one to see what it is, where and how far, and click on one
-to drop the pin right on it. A small cross marks the middle of the map,
+to drop the pin right on it. Every other player in the dimension shows on it as well, however far off, as their face
+in a white frame, where they were a second ago (those riding this airliner are left out, its arrow standing for them);
+point at a face to see who it is, where and how far, and click on it to drop the pin where they stand. The pin stays
+where it was dropped; it does not follow them. A small cross marks the middle of the map,
 whose X and Z show in its bottom left corner (and the pin's in the bottom right once dropped), so you can find your
 way about even where the land has not been seen yet. Engaged, the airliner turns for the circle
 round the pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and
@@ -722,8 +730,9 @@ villages come from the server, which knows where it generated each one, so a vil
 still stands.
 
 Use an assembled airliner's screen to look through its outside cameras, the way a security camera is watched: on
-top of the fin looking forward over the whole airliner, over the right wing out at its engines, and under the nose
-past the nose gear down the runway. Use again for the next camera, and after the last you are back in the cabin;
+top of the fin looking forward over the whole airliner, over the right wing out at its engines, under the nose past
+the nose gear down the runway, and in front of the nose, level with the pilots' eyes, looking ahead and down at
+what the airliner flies toward. Use again for the next camera, and after the last you are back in the cabin;
 sneak to go straight back. The view follows the airliner as it flies, while you stay where you are (seated, you
 stay in your seat) and nothing you click reaches the world. The cameras are placed from the airliner's autopilot, so
 an airliner without one has none.
@@ -1050,8 +1059,9 @@ blocks of the lift's column of contacts, at any landing; one glued into the cabi
 The **Tower Radar** is a monitor on a desk stand whose screen sweeps round like a radar's: north up, range rings, and
 every transponder within 2000 blocks a blip in its colour, brightest as the sweep passes it and fading until it comes
 round again, an airliner's with a short line the way it flies. Use it to open the radar's map: the land round the tower,
-rings every 250 blocks round it, and every transponder's marker. Drag it, scroll to zoom, point at a marker to see what
-it is, how far from the tower, and for an airliner how high and how fast it flies; click on one to centre the map on it.
+rings every 250 blocks round it, every transponder's marker and every other player's face. Drag it, scroll to zoom,
+point at a marker to see what it is, how far from the tower, and for an airliner how high and how fast it flies, or at
+a face to see who it is and how far; click on either to centre the map on it.
 
 While a radar screen is loaded, the server surveys the land round it, nobody needing to go there: it loads the chunks
 round the tower one by one, nearest first, out to some thousand blocks, notes each one's land as the maps draw it and
@@ -1172,8 +1182,8 @@ and its lining into, only the quads of it that face the camera; `CockpitDoorRend
 the same way, swinging about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and
 going away, as `AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an
 evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
-`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `TailCameraFeed` draws the fin camera's
-picture through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
+`SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `TailCameraFeed` draws the outside cameras'
+pictures for the flight deck's camera displays through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
 at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod
 gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the
