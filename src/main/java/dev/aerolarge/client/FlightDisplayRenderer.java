@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -36,6 +38,14 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final float PER_DEGREE = 0.009F;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 180F;
+    /**
+     * The standby screen's picture of the Physics Assembler to press, for whoever cannot read its words: how far up
+     * its middle is from the screen's, and how far out it reaches each way, in blocks.
+     */
+    private static final float STANDBY_PICTURE_Y = 0.17F;
+    private static final float STANDBY_PICTURE = 0.13F;
+    /** The picture of the Physics Assembler with its button pressed and the airliner climbing away. */
+    static final ResourceLocation ASSEMBLE = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/cockpit/assemble.png");
     /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
     private static final float TEXT_LIFT = 0.005F;
@@ -74,8 +84,8 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
 
     /**
      * Draws the display round the pose's origin, {@link #HALF_WIDTH} and {@link #HALF_HEIGHT} out each way and facing
-     * out along its z: the standby screen without an attitude to show, and static over it all just after lightning
-     * struck, its specks picked by the seed.
+     * out along its z: the standby screen without an attitude to show, a picture of the Physics Assembler over its
+     * words, and static over it all just after lightning struck, its specks picked by the seed.
      */
     static void draw(PoseStack pose, MultiBufferSource buffers, @Nullable SableClient.Attitude attitude, long staticSeed) {
         Matrix4f matrix = pose.last().pose();
@@ -84,6 +94,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
 
         Font font = Minecraft.getInstance().font;
         if (attitude == null) {
+            ScreenDrawing.picture(buffers, matrix, ASSEMBLE, 0, STANDBY_PICTURE_Y, STANDBY_PICTURE, TEXT_LIFT, 0xFFFFFFFF);
             text(font, pose, buffers, "STBY", 0, 0, GREEN);
             text(font, pose, buffers, "ASSEMBLE TO FLY", 0, -0.12F, WHITE);
             return;

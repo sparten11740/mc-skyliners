@@ -87,6 +87,11 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double VIEW_UP = reach(point -> point[1], camera -> camera.up);
     /** How much of the test card's height the colour bars take, over the dark band. */
     private static final double BARS = 2 / 3.0;
+    /**
+     * How far out each way the picture of the Physics Assembler in the band reaches while waiting to be assembled, as
+     * a share of the band's height, for whoever cannot read the words beside it.
+     */
+    private static final double STANDBY_PICTURE = 0.4;
     /** The badge with the airliner on it: its height, as a share of the bars', and its width over its height. */
     private static final double BADGE = 0.75;
     private static final double BADGE_SHAPE = 1.3;
@@ -160,11 +165,15 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             if (buttons) {
                 cameraButtons(shapes, matrix, screen.camera());
             }
-            // Text last: it takes its own buffer, which ends the one the shapes went into.
-            String status = SableClient.ride(screen) != null ? "no_signal" : "standby";
+            // The picture and the text last: each takes its own buffer, which ends the one the shapes went into.
+            boolean standby = SableClient.ride(screen) == null;
             double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + status), width / 2, (BEZEL + band) / 2, TEXT_LIFT, TEXT, WHITE,
-                ScreenDrawing.Align.CENTRE);
+            if (standby) {
+                double half = (band - BEZEL) * STANDBY_PICTURE;
+                ScreenDrawing.picture(buffers, matrix, FlightDisplayRenderer.ASSEMBLE, BEZEL + half * 1.6, (BEZEL + band) / 2, half, TEXT_LIFT, WHITE);
+            }
+            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + (standby ? "standby" : "no_signal")), width / 2, (BEZEL + band) / 2,
+                TEXT_LIFT, TEXT, WHITE, ScreenDrawing.Align.CENTRE);
         }
     }
 

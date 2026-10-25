@@ -2340,6 +2340,18 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (onSegment(x, y, [9.5, 17], [14, 23], 0.6) || onSegment(x, y, [22.5, 17], [18, 23], 0.6)) return PALE;
     return crate(x, y, 13, 23, 19, 29);
   });
+  // Waiting to be assembled, on the flight deck's screens: the Physics Assembler, a machine with a big green button
+  // on top, a white arrow pointing down at the button, and the airliner climbing away once it is pressed.
+  const BRASS = [0xc8, 0x9a, 0x48];
+  cockpitIcon("assemble", (x, y) => {
+    const plane = sidePlane(x, y, 23, 8, 20, 0.45);
+    if (plane) return plane;
+    if (onSegment(x, y, [9, 2], [9, 7], 1.3) || inTriangle(x, y, [4.5, 7], [13.5, 7], [9, 11.5])) return INK;
+    if (disc(x, y, 9, 16, 3.4) && y <= 16) return GREEN;
+    if (!rounded(x, y, 2, 17, 16, 29, 1)) return null;
+    if (x === 2 || x === 16 || y === 17 || y === 29) return STEEL_DARK;
+    return y === 21 ? BRASS : STEEL;
+  });
 
   // The announcement panel's glass, for when it is too far off to be drawn live: a dark tile in its grey rim. In the
   // hand: the panel's nine tiles, each in its own colour, on the dark casing.

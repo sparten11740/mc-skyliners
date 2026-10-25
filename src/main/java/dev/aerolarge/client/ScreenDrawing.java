@@ -7,12 +7,13 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 
 /**
- * Drawing on the face of a screen, shared by the renderers of the airliner's screens and boards: flat shapes and
- * text, lit at full brightness as a lit screen is whatever the light around it. Everything is in the face's own
+ * Drawing on the face of a screen, shared by the renderers of the airliner's screens and boards: flat shapes, pictures
+ * and text, lit at full brightness as a lit screen is whatever the light around it. Everything is in the face's own
  * units, blocks with x to the viewer's right and y up, each layer lifted off the one below it by its own z. Shapes go
  * into one buffer and text takes its own, which ends the shapes' buffer, so a renderer draws its shapes first.
  */
@@ -40,6 +41,18 @@ final class ScreenDrawing {
         vertex(shapes, matrix, x1, y0, z, colour);
         vertex(shapes, matrix, x1, y1, z, colour);
         vertex(shapes, matrix, x0, y1, z, colour);
+    }
+
+    /**
+     * A square picture round a middle, this far out each way, tinted (white shows it as it is). It takes its own
+     * buffer, as text does.
+     */
+    static void picture(MultiBufferSource buffers, Matrix4f matrix, ResourceLocation texture, double x, double y, double half, float z, int tint) {
+        VertexConsumer consumer = buffers.getBuffer(RenderType.text(texture));
+        consumer.addVertex(matrix, (float) (x - half), (float) (y - half), z).setColor(tint).setUv(0, 1).setLight(LightTexture.FULL_BRIGHT);
+        consumer.addVertex(matrix, (float) (x + half), (float) (y - half), z).setColor(tint).setUv(1, 1).setLight(LightTexture.FULL_BRIGHT);
+        consumer.addVertex(matrix, (float) (x + half), (float) (y + half), z).setColor(tint).setUv(1, 0).setLight(LightTexture.FULL_BRIGHT);
+        consumer.addVertex(matrix, (float) (x - half), (float) (y + half), z).setColor(tint).setUv(0, 0).setLight(LightTexture.FULL_BRIGHT);
     }
 
     /** A filled disc round a middle, as a fan of this many pieces. */

@@ -22,9 +22,7 @@ import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.client.PanelArt.Icon;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -352,16 +350,8 @@ final class CockpitKeysArt {
 
     /** A picture, square in the middle of a box, so big a share of its smaller side, tinted. */
     private static void picture(MultiBufferSource buffers, Matrix4f matrix, ResourceLocation texture, Box box, double share, int tint) {
-        VertexConsumer consumer = buffers.getBuffer(RenderType.text(texture));
         double half = Math.min(box.x1() - box.x0(), box.y1() - box.y0()) * share / 2;
-        float x = (float) ((box.x0() + box.x1()) / 2);
-        float y = (float) ((box.y0() + box.y1()) / 2);
-        float h = (float) half;
-        float z = 3 * LAYER;
-        consumer.addVertex(matrix, x - h, y - h, z).setColor(tint).setUv(0, 1).setLight(LightTexture.FULL_BRIGHT);
-        consumer.addVertex(matrix, x + h, y - h, z).setColor(tint).setUv(1, 1).setLight(LightTexture.FULL_BRIGHT);
-        consumer.addVertex(matrix, x + h, y + h, z).setColor(tint).setUv(1, 0).setLight(LightTexture.FULL_BRIGHT);
-        consumer.addVertex(matrix, x - h, y + h, z).setColor(tint).setUv(0, 0).setLight(LightTexture.FULL_BRIGHT);
+        ScreenDrawing.picture(buffers, matrix, texture, (box.x0() + box.x1()) / 2, (box.y0() + box.y1()) / 2, half, 3 * LAYER, tint);
     }
 
     private static ResourceLocation picture(String name) {
