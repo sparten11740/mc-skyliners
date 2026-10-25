@@ -29,7 +29,7 @@ import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.GiantRubberDuckRenderer;
-import dev.aerolarge.client.EngineIntakeRenderer;
+import dev.aerolarge.client.EngineRenderer;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
@@ -192,7 +192,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
-        event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineIntakeRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), ControlSurfaceRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

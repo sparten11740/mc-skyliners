@@ -69,7 +69,9 @@ a white tail light and red beacons above and below the fuselage. The engines' na
 and each intake is faceted to match: a polished lip bevelled into the duct, the fan and its spinner at the bottom of it.
 While an engine is at rest an iris shuts its intake; it opens as soon as the engine is asked for thrust, and behind the
 turning fan the engine glows a dull red, brighter the harder it runs, until it has spun down and the iris shuts again.
-Each engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a
+Behind a running engine burns a blue flame, white-hot at its core and flickering, longer and brighter the harder the
+engine runs; you see it with Fancy or Fabulous graphics, not with Fast (`engineFlames` in the server config, see Flying
+it). Each engine is heard spooling up and down with its thrust, quieter from inside the cabin, and high up it leaves a
 contrail. Flying through the cloud layer, the clouds stay outside: while you are inside the hull of an airliner that
 reaches into the clouds, they are not drawn for you, so no slab of cloud cuts through the floor, the walls or the
 seats; out on the wing or the airstairs, or looking through an outside camera, they are back, and from outside the
@@ -1187,11 +1189,14 @@ which is what lets the retractable gear take them away and put them back in flig
 Sable's block masses, so it rests on its nose gear. The wings and tail are built around a layer of Create Propulsion
 wing blocks, and every airframe block is in `#sable:super_light`. Which blocks are used is set in the server config
 (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
-thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default) and what the engines'
-thrusters leave behind them (`enginePlume`): nothing by default, as an airliner's engines show nothing but their glow
-and their contrails, or Create Propulsion's plasma flames, ion glow or smoke plume, which look grand but cost every
-client a good share of each frame in flight and every player near a stream of particles from the server. The control
-jets never leave one.
+thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default) and what the engines
+show behind them (`engineFlames`): by default `LIGHTWEIGHT_FLAME`, the flame each player's game draws itself at next to
+no cost, seen with Fancy or Fabulous graphics; `PROPULSION_PLUME`, Create Propulsion's own plasma plume, built into the
+engines' thrusters when the blueprint is used, which looks grand but costs every client a good share of each frame in
+flight and every player near a stream of particles from the server; or `NONE`, as a real airliner shows nothing but its
+engines' glow and contrails. Only the airliner's own thrusters are set: Create Propulsion's settings and thrusters
+built anywhere else are left alone. The control jets never leave a plume. An airliner built before this setting keeps
+the plumes it was built with, so it may show both until it is built again.
 
 ### First Flight advancements
 
@@ -1244,8 +1249,9 @@ leave out what the camera cannot see themselves, as `Sight` tells them where it 
 a screen only from in front of it, its text laid out once a tick for all of an airliner's screens and faded out as it
 gets too small to read, as `FlightDisplayRenderer` and `AutopilotScreenRenderer` draw theirs only from in front too;
 `ControlSurfaceRenderer` leaves out the panels wholly behind the camera, as `Sight.ahead` tells it;
-`EngineIntakeRenderer` draws the intakes in flat sides over the nacelles' faces, from where each
-engine's core was told they are, what lies inside the duct only from in front of them; `PlugDoorRenderer` draws the
+`EngineRenderer` draws the intakes in flat sides over the nacelles' faces, from where each
+engine's core was told they are, what lies inside the duct only from in front of them, and `ExhaustFlame` the flame
+behind each running engine, a picture on strips turned to the camera; `PlugDoorRenderer` draws the
 hull's doors shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel
 and its lining into, only the quads of it that face the camera; `CockpitDoorRenderer` draws the cockpit door's panel
 the same way, swinging about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and

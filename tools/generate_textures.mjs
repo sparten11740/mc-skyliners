@@ -661,6 +661,9 @@ mkdirSync(miscOutput, { recursive: true });
     pixels.push(row);
   }
   writeFileSync(resolve(miscOutput, "nav_glow.png"), encodePng(pixels));
+  // The same flare across a running engine's nozzle, behind its flame: seen far bigger, so drawn smoothed.
+  writeFileSync(resolve(miscOutput, "exhaust_glow.png"), encodePng(pixels));
+  writeFileSync(resolve(miscOutput, "exhaust_glow.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");
 }
 // The glow deep in a running engine's intake, its renderer's red added over the dark: full round the root of the
 // spinner, fading away to nothing at the duct's wall. The texture spans the mouth; the spinner covers its middle.
@@ -678,6 +681,38 @@ mkdirSync(miscOutput, { recursive: true });
     pixels.push(row);
   }
   writeFileSync(resolve(miscOutput, "intake_glow.png"), encodePng(pixels));
+}
+// The flame behind a running engine, as light its renderer adds over what is behind it: a white-hot core from the
+// nozzle, with the faint bright rings a jet's exhaust shows along it, inside a cyan flame going blue as it swells a
+// little, narrows and fades to nothing at its tip. Across the picture is across the flame, down it away from the
+// nozzle; it is drawn smoothed rather than in pixels, and not repeated past its edges.
+{
+  const WIDTH = 32;
+  const LENGTH = 64;
+  // How much of the flame's length its core reaches, and how many bright rings the core shows along that.
+  const CORE = 0.5;
+  const RINGS = 4;
+  const FLAME = [60, 150, 255];
+  const HOT = [120, 230, 255];
+  const pixels = [];
+  for (let y = 0; y < LENGTH; y++) {
+    const along = (y + 0.5) / LENGTH;
+    // The flame's half-width as a share of the picture's: the nozzle's, swelling a little, then narrowing round to
+    // its tip. The core narrows to a point where it ends.
+    const half = (0.75 + 1.2 * along) * (1 - along);
+    const coreLeft = Math.max(0, 1 - along / CORE);
+    const rings = 0.7 + 0.3 * Math.cos((2 * Math.PI * RINGS * along) / CORE);
+    const row = [];
+    for (let x = 0; x < WIDTH; x++) {
+      const across = Math.abs(((x + 0.5) / WIDTH) * 2 - 1);
+      const flame = Math.max(0, 1 - (across / half) ** 2) * (1 - along) ** 1.5;
+      const core = coreLeft > 0 ? Math.max(0, 1 - (across / (0.35 * coreLeft)) ** 2) * coreLeft * rings : 0;
+      row.push([0, 1, 2].map((i) => clamp(Math.round(FLAME[i] * flame + HOT[i] * flame ** 2 + 255 * core))));
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(miscOutput, "exhaust_flame.png"), encodePng(pixels));
+  writeFileSync(resolve(miscOutput, "exhaust_flame.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");
 }
 
 // A contrail puff: a soft white round blob, see-through toward its edge.

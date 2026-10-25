@@ -19,18 +19,22 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Draws an engine's intake over the face of its nacelle: the cowl standing a little proud of the blocks, in flat sides
+ * Draws an engine from its core, which knows where its intake is (see {@link EngineCoreBlockEntity.Intake}): the
+ * intake, and behind the engine its lightweight flame while it runs, as the server config asks (see
+ * {@link ExhaustFlame}). An engine built before its core knew where its intake is draws neither and keeps its plain
+ * face.
+ *
+ * <p>The intake is drawn over the face of the nacelle: the cowl standing a little proud of the blocks, in flat sides
  * as the nacelle's shell behind it is cut, its polished lip bevelled over into the duct, and at the bottom of the duct
  * the fan round its spinner. At rest an iris shuts the duct; it opens as the engine starts, and behind the turning fan
- * the engine glows a dull red, brighter the harder it runs. It is drawn from the engine's core, which knows where its
- * intake is (see {@link EngineCoreBlockEntity.Intake}) and how its iris and fan stand, in flat colours lit by the
- * light just in front of the intake, and in proportion to the nacelle, so it looks the same at any scale. An engine
- * built before its core knew where its intake is draws nothing and keeps its plain face.
+ * the engine glows a dull red, brighter the harder it runs. It is drawn as the core's iris and fan stand, in flat
+ * colours lit by the light just in front of the intake, and in proportion to the nacelle, so it looks the same at any
+ * scale.
  *
  * <p>The cowl stands proud of the nacelle, so it shows from beside and behind it too and is always drawn; what lies
  * inside the duct is left out with the camera behind the nacelle's face, where the face and the duct's wall hide it.
  */
-public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlockEntity> {
+public class EngineRenderer implements BlockEntityRenderer<EngineCoreBlockEntity> {
     /** Vanilla's plain white texture, painted over in the vertices' colours. */
     private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
     /** Steps round the dark at the bottom of the duct and round the spinner. */
@@ -139,18 +143,29 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
             return;
         }
         Direction nose = engine.getBlockState().getValue(EngineCoreBlock.FACING);
-        // Only while the nacelle's face is there to draw it over.
-        if (level.getBlockState(BlockPos.containing(onAxis(engine, intake, -0.5F))).isAir()) {
-            return;
-        }
-        // The core itself is buried in the nacelle, in the dark: the intake is lit by the air in front of it.
-        int light = SableClient.light(level, BlockPos.containing(onAxis(engine, intake, 0.5F)));
-
         pose.pushPose();
-        // Onto the middle of the intake's face: x to port (to the right, looking into it), y up, z out along the nose.
+        // Onto the engine's axis level with the middle of the core: x to port (to the right, looking into the intake),
+        // y up, z out along the nose.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-nose.toYRot()));
-        pose.translate(-intake.starboard(), intake.up(), intake.ahead());
+        pose.translate(-intake.starboard(), intake.up(), 0);
+        // Only while the nacelle's face is there to draw it over.
+        if (!level.getBlockState(BlockPos.containing(onAxis(engine, intake, -0.5F))).isAir()) {
+            intake(engine, intake, level, partialTick, pose, buffers);
+        }
+        if (ExhaustFlame.burning(engine, level, nose)) {
+            ExhaustFlame.draw(engine, level, intake.radius(), partialTick, pose, buffers);
+        }
+        pose.popPose();
+    }
+
+    /** The intake on the nacelle's face: the cowl, and what lies inside the duct with the camera in front of it. */
+    private static void intake(EngineCoreBlockEntity engine, EngineCoreBlockEntity.Intake intake, Level level, float partialTick,
+                               PoseStack pose, MultiBufferSource buffers) {
+        // The core itself is buried in the nacelle, in the dark: the intake is lit by the air in front of it.
+        int light = SableClient.light(level, BlockPos.containing(onAxis(engine, intake, 0.5F)));
+        pose.pushPose();
+        pose.translate(0, 0, intake.ahead());
         Painter paint = new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(WHITE)), pose.last(), light);
         float radius = intake.radius();
         float mouth = intake.mouth();
@@ -356,7 +371,10 @@ public class EngineIntakeRenderer implements BlockEntityRenderer<EngineCoreBlock
             return core;
         }
         Vec3 middle = onAxis(engine, intake, 0);
-        return core.minmax(new AABB(middle, middle).inflate(intake.radius() * (1 + PROUD)));
+        Vec3 nozzle = onAxis(engine, intake, -intake.ahead() - ExhaustFlame.NOZZLE_BEHIND);
+        Direction back = engine.getBlockState().getValue(EngineCoreBlock.FACING).getOpposite();
+        return core.minmax(new AABB(middle, middle).inflate(intake.radius() * (1 + PROUD)))
+            .minmax(ExhaustFlame.bounds(nozzle, back, intake.radius()));
     }
 
     /** Where the intake's quads go: the buffer, the pose they are drawn in and the light they are lit by. */

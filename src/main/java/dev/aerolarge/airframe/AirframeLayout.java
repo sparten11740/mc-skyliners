@@ -2030,7 +2030,7 @@ public final class AirframeLayout {
             return;
         }
         set(x, y, z, thruster);
-        fullThrust(new BlockPos(x, y, z), EnginePlume.NONE);
+        fullThrust(new BlockPos(x, y, z), EngineFlames.NONE);
         set(x, y, z + 1, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
         jetRelays.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(new BlockPos(x, y, z + 1));
     }
@@ -2066,7 +2066,7 @@ public final class AirframeLayout {
                         if (off <= Math.max(0.85 * radius, 0.5 / scale)) {
                             state = palette.engine().orElse(palette.intake());
                             if (palette.engine().isPresent()) {
-                                fullThrust(new BlockPos(xb, y, z), AerolargeConfig.ENGINE_PLUME.get());
+                                fullThrust(new BlockPos(xb, y, z), AerolargeConfig.ENGINE_FLAMES.get());
                                 // The relay just ahead of the thruster, inside the nacelle, carries its thrust lever's signal.
                                 set(xb, y, z - 1, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
                                 engineRelays.computeIfAbsent(x, ignored -> new ArrayList<>()).add(new BlockPos(xb, y, z - 1));
@@ -2199,12 +2199,13 @@ public final class AirframeLayout {
 
     /**
      * Turns a creative thruster up to the configured setting, the way its value box would: Create keeps a block
-     * entity's scroll value under "ScrollValue". Its plume is set as given, as its own setting would (Create Propulsion
-     * keeps it under "plumeType"): none for the control jets, which stand in for control surfaces, and the engines' as
-     * configured, none unless asked for. A plume's every puff is sent to every player near, many times a second in
-     * flight, and costs each client dearly to draw. Other thrusters have no such settings and keep the values unread.
+     * entity's scroll value under "ScrollValue". Its plume is set for the flames given, as its own setting would
+     * (Create Propulsion keeps it under "plumeType"): plasma only for its own plume, as the server config may ask of
+     * the engines, since a plume's every puff is sent to every player near, many times a second in flight, and costs
+     * each client dearly to draw; the control jets, which stand in for control surfaces, show none. Other thrusters
+     * have no such settings and keep the values unread.
      */
-    private void fullThrust(BlockPos thruster, EnginePlume plume) {
+    private void fullThrust(BlockPos thruster, EngineFlames flames) {
         int setting = AerolargeConfig.THRUST_SETTING.get();
         fittings.put(thruster, (blockEntity, rotation) -> {
             if (blockEntity.getLevel() == null) {
@@ -2213,7 +2214,7 @@ public final class AirframeLayout {
             HolderLookup.Provider registries = blockEntity.getLevel().registryAccess();
             CompoundTag data = blockEntity.saveWithoutMetadata(registries);
             data.putInt("ScrollValue", setting);
-            data.putInt("plumeType", plume.saved());
+            data.putInt("plumeType", flames.thrusterPlume());
             blockEntity.loadWithComponents(data, registries);
         });
     }
