@@ -125,6 +125,12 @@ public class AutopilotSettingsScreen extends Screen {
     private final boolean takeoff;
     /** Whether the airliner is not assembled but engaging has its Physics Assembler assemble it, so it may engage. */
     private final boolean assembles;
+    /**
+     * Whether engaging has just had the Physics Assembler set to assembling the airliner: its button stays greyed out
+     * from the moment it is pressed until the autopilot, moved aboard the assembled airliner, closes the screen, or the
+     * server says it could not assemble it (see {@link #assemblyFailed}).
+     */
+    private boolean assembling;
     private Lateral lateral;
     /** Whether, flying to the pin, it lands near it rather than circling it. */
     private boolean landAtPin;
@@ -166,6 +172,13 @@ public class AutopilotSettingsScreen extends Screen {
     /** Opens the settings as the server sent them, over whatever else is open. */
     public static void open(OpenAutopilotScreen opened) {
         Minecraft.getInstance().setScreen(new AutopilotSettingsScreen(opened));
+    }
+
+    /** The autopilot at a position could not have its airliner assembled: its screen, if open, can engage again. */
+    public static void assemblyFailed(BlockPos pos) {
+        if (Minecraft.getInstance().screen instanceof AutopilotSettingsScreen screen && screen.pos.equals(pos)) {
+            screen.assembling = false;
+        }
     }
 
     /** The rows of settings under the mode, top to bottom. */
@@ -216,7 +229,7 @@ public class AutopilotSettingsScreen extends Screen {
         int buttonY = top + ACTIONS_Y;
         Component engageLabel = Component.translatable(takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage");
         engage = addRenderableWidget(new IconButton(x, buttonY, 2 * buttonWidth + ACTION_GAP, ACTION_HEIGHT, engageLabel,
-            takeoff ? TAKE_OFF : ENGAGE, PanelArt.GREEN, true, () -> send(SetAutopilot.Action.FLY)));
+            takeoff ? TAKE_OFF : ENGAGE, PanelArt.GREEN, true, this::engage));
         apply = addRenderableWidget(new IconButton(x, buttonY, buttonWidth, ACTION_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.apply"),
             APPLY, PanelArt.GREEN, false, () -> send(SetAutopilot.Action.FLY)));
         disengage = addRenderableWidget(new IconButton(x + buttonWidth + ACTION_GAP, buttonY, buttonWidth, ACTION_HEIGHT,
@@ -252,7 +265,7 @@ public class AutopilotSettingsScreen extends Screen {
         boolean toPin = lateral == Lateral.DESTINATION;
         boolean pinned = !toPin || map.pin() != null;
         engage.visible = !on;
-        engage.active = (assembled || assembles) && pinned;
+        engage.active = (assembled || assembles) && pinned && !assembling;
         apply.visible = on;
         // Once down after landing it only brakes to a stop; landing, applying goes around, whatever is set; otherwise
         // only something set anew is worth applying.
@@ -325,6 +338,17 @@ public class AutopilotSettingsScreen extends Screen {
         super.removed();
     }
 
+    /**
+     * Engages the autopilot with the settings as they stand; with the airliner not yet assembled, greys the button out
+     * at once while the Physics Assembler assembles it, so it is not asked twice.
+     */
+    private void engage() {
+        AutopilotBlockEntity autopilot = autopilot();
+        assembling = assembles && (autopilot == null || SableClient.attitude(autopilot, nose(autopilot), 1) == null);
+        refresh();
+        send(SetAutopilot.Action.FLY);
+    }
+
     /** Sends the settings as they stand: to fly them, to land or with the autopilot switched off. */
     private void send(SetAutopilot.Action action) {
         BlockPos pin = map.pin() != null ? map.pin() : BlockPos.ZERO;
@@ -357,9 +381,12 @@ public class AutopilotSettingsScreen extends Screen {
         }
         // Enter, while no button has the keyboard, flies the settings, as the button there would.
         boolean enter = keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER;
-        IconButton fly = apply.visible ? apply : engage;
-        if (enter && fly.active) {
+        if (enter && apply.visible && apply.active) {
             send(SetAutopilot.Action.FLY);
+            return true;
+        }
+        if (enter && engage.visible && engage.active) {
+            engage();
             return true;
         }
         return false;
@@ -411,8 +438,8 @@ public class AutopilotSettingsScreen extends Screen {
                 graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, PanelArt.GREY, false);
             }
         } else if (assembles) {
-            graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings.assemble_hint"), glassTextX(), top + SET_Y,
-                PanelArt.GREY, false);
+            String hint = assembling ? "screen.aerolarge.autopilot_settings.assembling" : "screen.aerolarge.autopilot_settings.assemble_hint";
+            graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, assembling ? PanelArt.AMBER : PanelArt.GREY, false);
         }
 
         // The mode chosen, by name, after its pictures.

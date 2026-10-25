@@ -353,6 +353,12 @@ public class AutopilotBlockEntity extends BlockEntity {
      * is has it looked for, once: the flight deck and a good way round it, as far as the assembler ever stood.
      */
     private static final int ASSEMBLER_SEARCH = 12;
+    /**
+     * How long after it set its Physics Assembler working it waits for the airliner to be assembled before it will try
+     * again, in game ticks: Sable takes a moment to build the new airliner, and asked again meanwhile it would start a
+     * second assembly over the first.
+     */
+    private static final int ASSEMBLY_WAIT = 10 * 20;
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
     /** How long the airliner flies on with nobody aboard before it lands by itself, in ticks: a minute. */
@@ -416,6 +422,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     @Nullable
     private Settings flyOnceAboard;
+    /** When it set its Physics Assembler working for {@link #flyOnceAboard}, in game ticks; not saved. */
+    private long assemblingSince = Long.MIN_VALUE;
     /** Who asked for {@link #flyOnceAboard}, to be told how it goes even before they count as aboard. */
     @Nullable
     private UUID flyOnceAboardFor;
@@ -700,11 +708,15 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel server) || SableFlight.read(this, nose()) != null) {
             return null;
         }
+        if (assembling()) {
+            return Component.translatable("message.aerolarge.autopilot.still_assembling");
+        }
         BlockPos at = assemblerAt(server);
         if (at == null) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
         }
         // Noted before it assembles, so the autopilot takes it along into the new airliner's blocks.
+        assemblingSince = server.getGameTime();
         flyOnceAboard = settings;
         flyOnceAboardFor = player.getUUID();
         BlockPos seat = PilotSeatBlock.seatOf(player);
@@ -719,6 +731,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         flyOnceAboardSeat = null;
         setChanged();
         return Component.translatable("message.aerolarge.autopilot.assembly_failed", failed);
+    }
+
+    /** Whether it has its Physics Assembler assembling the airliner, to fly once aboard, and is waiting for it. */
+    public boolean assembling() {
+        return flyOnceAboard != null && level != null && level.getGameTime() - assemblingSince < ASSEMBLY_WAIT;
     }
 
     /**

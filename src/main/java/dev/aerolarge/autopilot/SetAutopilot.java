@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -47,8 +48,12 @@ public record SetAutopilot(BlockPos pos, Action action, AutopilotBlockEntity.Set
         if (autopilot == null) {
             return;
         }
-        // Asked to fly an airliner not yet assembled, it assembles it first, if it can, and flies once aboard.
+        // Asked to fly an airliner not yet assembled, it assembles it first, if it can, and flies once aboard; where it
+        // cannot, the settings screen, which greyed its button out while waiting, is told so it can be pressed again.
         Component assembling = payload.action() == Action.FLY ? autopilot.assembleToFly(player, payload.settings()) : null;
+        if (assembling != null && !autopilot.assembling()) {
+            PacketDistributor.sendToPlayer(player, new AssemblyFailed(payload.pos()));
+        }
         // In chat, with the autopilot's other messages (engaged, landing, landed, off), to be read again.
         player.displayClientMessage(assembling != null ? assembling : autopilot.set(payload.action(), payload.settings()), false);
         player.level().playSound(null, payload.pos(), SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
