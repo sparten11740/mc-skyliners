@@ -581,6 +581,21 @@ public class AutopilotBlockEntity extends BlockEntity {
         return !player.isSpectator() && Container.stillValidBlockEntity(this, player);
     }
 
+    /** Whether any of the airliner's engines is asked for thrust, by its thrust levers or by the autopilot. */
+    public boolean enginesRunning() {
+        return level != null && Stream.of(ENGINES).anyMatch(this::running);
+    }
+
+    /** Whether an engine is asked for thrust, as the first of its relays says: they all carry the same signal. */
+    private boolean running(Channel engine) {
+        List<BlockPos> offsets = relays.getOrDefault(engine, List.of());
+        if (offsets.isEmpty()) {
+            return false;
+        }
+        BlockState relay = level.getBlockState(worldPosition.offset(offsets.get(0)));
+        return relay.hasProperty(ThrustRelayBlock.POWER) && relay.getValue(ThrustRelayBlock.POWER) > 0;
+    }
+
     /** The autopilot nearest to a position on the server, within {@link #FLIGHT_DECK} of it; null for none. */
     @Nullable
     public static AutopilotBlockEntity nearest(Level level, BlockPos pos) {

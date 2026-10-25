@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import java.util.Comparator;
 import javax.annotation.Nullable;
@@ -42,10 +43,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * bolt is a beam drawn on every client near (see the client's {@code LaserBolts}), with sparks where it strikes and a
  * hiss.
  *
- * <p>Low down it holds its fire at blocks, so it never digs into the runway it stands on or comes in to land on: below
+ * <p>Low down with the engines idle it holds its fire at blocks, so it never digs into the runway it stands on: below
  * {@link #HOLD_BELOW} blocks over the ground it shoots only hostile mobs, until it is above {@link #CLEAR_ABOVE} again
- * (its switch shows which, see {@link LaserSwitchBlockEntity}), and it never vaporises a block standing no higher than
- * the bottom of the airliner's wheels.
+ * or the engines run (its switch shows which, see {@link LaserSwitchBlockEntity}). With the engines pushing the
+ * airliner along, or at whatever stands in its way, it clears the way however low it is. It never vaporises a block
+ * standing no higher than the bottom of the airliner's wheels, so the runway under it is safe either way.
  *
  * <p>It never fires at players, villagers, pets or any mob that is not hostile, nor at anything aboard an airliner. It
  * never vaporises a block with a block entity (a chest, a sign), one that cannot be broken, a liquid, or another
@@ -73,8 +75,8 @@ public class LaserTurretBlockEntity extends BlockEntity {
     /** How loud the hiss of a bolt is: past 1 it carries further, 16 blocks for each unit, so 2 reaches the cabin. */
     private static final float HISS_VOLUME = 2.0F;
     /**
-     * Below this height of the muzzle over the ground, in blocks, it holds its fire at blocks, and it fires at them
-     * again only once above the higher height: apart, so it does not flick on and off at the edge.
+     * Below this height of the muzzle over the ground, in blocks, it holds its fire at blocks while the engines idle,
+     * and it fires at them again only once above the higher height: apart, so it does not flick on and off at the edge.
      */
     private static final double HOLD_BELOW = 15;
     private static final double CLEAR_ABOVE = 25;
@@ -85,7 +87,7 @@ public class LaserTurretBlockEntity extends BlockEntity {
     private static final double MUZZLE_FORWARD = 0.5;
 
     private boolean armed;
-    /** Whether, low down, it holds its fire at blocks, shooting only hostile mobs. */
+    /** Whether, low down with the engines idle, it holds its fire at blocks, shooting only hostile mobs. */
     private boolean holding = true;
     /** How far out of its hatch the turret is, in ticks of {@link #DEPLOY_TICKS}. */
     private int deployed;
@@ -118,7 +120,7 @@ public class LaserTurretBlockEntity extends BlockEntity {
         return armed;
     }
 
-    /** Whether, armed but low down, it holds its fire at blocks, shooting only hostile mobs. */
+    /** Whether, armed but low down with the engines idle, it holds its fire at blocks, shooting only hostile mobs. */
     public boolean holding() {
         return holding;
     }
@@ -153,7 +155,7 @@ public class LaserTurretBlockEntity extends BlockEntity {
             return;
         }
         Vec3 muzzle = muzzle(level);
-        watchHeight(level, muzzle);
+        watchHold(level, muzzle);
         Vec3 path = state.velocity().length() > MIN_SPEED ? state.velocity().normalize() : state.nose();
         double range = AerolargeConfig.LASER_RANGE.get();
         aim.sweep(level, muzzle, path, state.right(), state.up(), range);
@@ -168,16 +170,23 @@ public class LaserTurretBlockEntity extends BlockEntity {
 
     /**
      * Holds the fire at blocks below {@link #HOLD_BELOW} over the ground and lets it go again above
-     * {@link #CLEAR_ABOVE}; over ground not loaded, it holds.
+     * {@link #CLEAR_ABOVE}, over ground not loaded too, but never while the engines run.
      */
-    private void watchHeight(ServerLevel level, Vec3 muzzle) {
+    private void watchHold(ServerLevel level, Vec3 muzzle) {
         BlockPos under = BlockPos.containing(muzzle);
         double ground = level.hasChunkAt(under) ? level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, under.getX(), under.getZ()) : muzzle.y;
-        boolean hold = muzzle.y - ground < (holding ? CLEAR_ABOVE : HOLD_BELOW);
+        boolean low = muzzle.y - ground < (holding ? CLEAR_ABOVE : HOLD_BELOW);
+        boolean hold = low && !enginesRunning(level);
         if (hold != holding) {
             holding = hold;
             changed();
         }
+    }
+
+    /** Whether the airliner's engines run, as its autopilot finds them. */
+    private boolean enginesRunning(ServerLevel level) {
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.nearest(level, worldPosition);
+        return autopilot != null && autopilot.enginesRunning();
     }
 
     /** Measures the airliner round the turret once after arming; whether it is measured. */

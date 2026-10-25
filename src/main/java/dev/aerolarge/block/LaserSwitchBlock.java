@@ -25,10 +25,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The laser path clearer's switch, on the flight deck's centre console: a big button under a flip-up guard, a red laser
- * beam pictured beside it, the button glowing red while the armed laser clears the way and amber while, low down, it
- * holds its fire at blocks and shoots only hostile mobs. Use it to arm the laser, its turret dropping out
- * under the nose with a rising whine, and again to disarm it (see {@link LaserSwitchBlockEntity}). FACING is the way
- * its face looks, toward the pilots.
+ * beam pictured beside it, the button glowing red while the armed laser clears the way and amber while, low down with
+ * the engines idle, it holds its fire at blocks and shoots only hostile mobs. Use it to arm the laser, its turret
+ * dropping out under the nose with a rising whine, and again to disarm it (see {@link LaserSwitchBlockEntity}). FACING
+ * is the way its face looks, toward the pilots.
  */
 public class LaserSwitchBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<LaserSwitchBlock> CODEC = simpleCodec(LaserSwitchBlock::new);

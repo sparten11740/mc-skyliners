@@ -20,9 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * What the laser path clearer's switch works: the turret under the nose (see {@link LaserTurretBlockEntity}), as an
  * offset from the switch, turned with it (see {@link Turning}). Pressed, the switch arms or disarms the turret, its
- * button lit while armed: red while the laser clears the way, amber while, low down, it holds its fire at blocks, with
- * a soft beep down as it starts holding and up as it clears again. With the laser switched off in the server config
- * the switch only buzzes.
+ * button lit while armed: red while the laser clears the way, amber while, low down with the engines idle, it holds its
+ * fire at blocks, with a soft beep down as it starts holding and up as it clears again. With the laser switched off in
+ * the server config the switch only buzzes.
  */
 public class LaserSwitchBlockEntity extends BlockEntity {
     private static final float CLICK_VOLUME = 0.8F;

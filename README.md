@@ -205,10 +205,12 @@ airliner's flight path up to 96 blocks ahead (where it is going, or, standing st
 its wingspan and from under its wheels to the top of its fin: hostile mobs first, each bolt hurting one (two or three
 bolts for a zombie), and otherwise the nearest block in the way, each bolt vaporising a bite of up to 27 blocks round
 it, the clearing spreading from there across whatever stands in the way. Press the button again and the turret folds
-back in. Low down (less than 15 blocks over the ground, until it is 25 blocks up again) it holds its fire at blocks,
-so it never digs into the runway it stands on or comes in to land on, and shoots only hostile mobs; the button then
-glows amber instead of red, with a soft beep down as it starts holding and up as it clears the way again. Nor does it
-ever vaporise anything standing no higher than the bottom of the airliner's wheels.
+back in. Low down (less than 15 blocks over the ground, until it is 25 blocks up again) with the engines idle it holds
+its fire at blocks and shoots only hostile mobs, so a parked airliner never digs into the ground round it; the button
+then glows amber instead of red, with a soft beep down as it starts holding and up as it clears the way again. With
+the engines running it clears the way however low it is, taxiing, taking off, or pushing at something in its way. It
+never vaporises anything standing no higher than the bottom of the airliner's wheels, so the runway under it is safe.
+The laser fires only from an assembled airliner.
 
 It never fires at players, villagers, pets or any mob that is not hostile, nor at anything aboard an airliner. It
 leaves alone blocks with something in them (chests, signs and the like), blocks that cannot be broken, liquids and
