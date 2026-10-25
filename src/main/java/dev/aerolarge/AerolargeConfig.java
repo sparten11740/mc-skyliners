@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import dev.aerolarge.airframe.EnginePlume;
 import dev.aerolarge.airframe.ShellStyle;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -13,6 +14,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.ConfigValue<String> ENGINE_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ASSEMBLER_BLOCK;
     public static final ModConfigSpec.IntValue THRUST_SETTING;
+    public static final ModConfigSpec.EnumValue<EnginePlume> ENGINE_PLUME;
     public static final ModConfigSpec.ConfigValue<String> WHEEL_MOUNT_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> TIRE_ITEM;
     public static final ModConfigSpec.BooleanValue RETRACTABLE_GEAR;
@@ -72,6 +74,13 @@ public final class AerolargeConfig {
                 "99 is its full rated thrust; a thruster placed by hand starts near 7."
             )
             .defineInRange("thrustSetting", 99, 1, 99);
+        ENGINE_PLUME = builder
+            .comment(
+                "What the engines' creative thrusters leave behind them: NONE (as on an airliner: the engines still glow and leave contrails),",
+                "or Create Propulsion's PLASMA flames, ION glow or smoke PLUME. Every plume costs each client a good share of its frame to draw",
+                "and is sent to every player near many times a second in flight. Read when a blueprint is used; the control jets have none."
+            )
+            .defineEnum("enginePlume", EnginePlume.NONE);
         ASSEMBLER_BLOCK = builder
             .comment("Left on the cockpit floor, ready to turn the finished airliner into a flying contraption. Empty for none.")
             .define("assemblerBlock", "simulated:physics_assembler");

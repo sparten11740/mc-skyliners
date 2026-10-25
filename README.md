@@ -1187,7 +1187,11 @@ which is what lets the retractable gear take them away and put them back in flig
 Sable's block masses, so it rests on its nose gear. The wings and tail are built around a layer of Create Propulsion
 wing blocks, and every airframe block is in `#sable:super_light`. Which blocks are used is set in the server config
 (`wingBlock`, `engineBlock`, `assemblerBlock`, `wheelMountBlock`, `tireItem`), and so is how hard the creative
-thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default).
+thrusters push (`thrustSetting`, on their own 1 to 99 scale: 99, their full rating, by default) and what the engines'
+thrusters leave behind them (`enginePlume`): nothing by default, as an airliner's engines show nothing but their glow
+and their contrails, or Create Propulsion's plasma flames, ion glow or smoke plume, which look grand but cost every
+client a good share of each frame in flight and every player near a stream of particles from the server. The control
+jets never leave one.
 
 ### First Flight advancements
 
