@@ -363,14 +363,14 @@ final class ScreenArc {
 
     /**
      * The instrument panel carried on round behind the row: every open block of the floor's row that lies on the
-     * nose's side of the panels, from the row's station back to its outer ends and out to the hull. Facing the nose, so
-     * the instrument panel's screens, shown on its face, stay hidden against the glareshield.
+     * nose's side of the panels, from the row's station back to its outer ends and out to the hull. Blank, the plain
+     * casing, since the glass comes down to the floor in front of it in places.
      */
     private void desk(Plan plan) {
         Panel captainOuter = plan.pairs().get(plan.pairs().size() - 1)[0];
         Panel firstOfficerOuter = plan.pairs().get(plan.pairs().size() - 1)[1];
         int back = Mth.floor(Math.max(captainOuter.leftZ, firstOfficerOuter.rightZ));
-        BlockState desk = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.NORTH);
+        BlockState desk = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.BLANK, true);
         for (BlockPos block : BlockPos.betweenClosed(Mth.floor(captainOuter.leftX) - 1, floor, screenZ, Mth.floor(firstOfficerOuter.rightX) + 1,
             floor, back)) {
             if (layout.isOpen(block.getX(), block.getY(), block.getZ()) && behind(plan, block.getX() + 0.5, block.getZ() + 0.5)) {

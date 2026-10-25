@@ -128,7 +128,7 @@ two screens in the same slim dark casing, each turned further toward the seats t
 wraps round the pilots. Left to right: the captain's primary flight display, the moving map, the systems screen, the
 outside camera and the first officer's primary flight display. Each is as wide as the nose leaves room for, two blocks
 where it can (where the nose is too narrow for the outer pair, the tiller's keys go under the camera). Behind them the
-instrument panel carries on round to the hull. The systems screen holds a tile for each of six switches, three across
+instrument panel carries on round to the hull as plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across
 and two down, each a picture of what its switch does, as it is now, its rim lit while it is on: the cabin lights' dimmer
 (a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; a blue moon and stars at night), the
 seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver

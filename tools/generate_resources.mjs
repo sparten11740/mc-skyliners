@@ -766,9 +766,16 @@ write(`assets/${ID}/models/block/instrument_panel.json`, {
   parent: "minecraft:block/orientable",
   textures: { front: `${ID}:block/instrument_panel`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
 });
+write(`assets/${ID}/models/block/instrument_panel_blank.json`, {
+  parent: "minecraft:block/cube_all",
+  textures: { all: `${ID}:block/panel_side` },
+});
 write(`assets/${ID}/models/item/instrument_panel.json`, { parent: `${ID}:block/instrument_panel` });
 write(`assets/${ID}/blockstates/instrument_panel.json`, {
-  variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }])),
+  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [
+    [`blank=false,facing=${facing}`, { model: `${ID}:block/instrument_panel`, y }],
+    [`blank=true,facing=${facing}`, { model: `${ID}:block/instrument_panel_blank` }],
+  ])),
 });
 
 // Skydiving: the jump light (a lamp, dark, red or green), the jump switch on the centre console (its lamps lit the
