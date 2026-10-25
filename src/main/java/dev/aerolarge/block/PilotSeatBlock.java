@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
+import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -150,6 +151,26 @@ public class PilotSeatBlock extends SeatBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         return super.useItemOn(ItemStack.EMPTY, lower, level, seat, player, hand, hit);
+    }
+
+    /**
+     * The seat someone sits in: the block of the seat they ride, if it is one of these or one of Create's seats; null
+     * if they sit in none.
+     */
+    @Nullable
+    public static BlockPos seatOf(Entity sitter) {
+        if (!(sitter.getVehicle() instanceof SeatEntity seat)) {
+            return null;
+        }
+        BlockPos at = seat.blockPosition();
+        return sitter.level().getBlockState(at).getBlock() instanceof SeatBlock ? at : null;
+    }
+
+    /** Sits someone down in the seat at a position, if one stands there and nobody sits in it. */
+    public static void sitIn(Level level, BlockPos at, Entity sitter) {
+        if (level.getBlockState(at).getBlock() instanceof SeatBlock && !SeatBlock.isSeatOccupied(level, at)) {
+            SeatBlock.sitDown(level, at, sitter);
+        }
     }
 
     /** Nothing that lands in it sits down, and nothing bounces off it as off Create's cushions. */

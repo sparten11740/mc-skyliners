@@ -11,6 +11,7 @@ import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.block.GearLeverBlockEntity;
 import dev.aerolarge.block.Loaded;
 import dev.aerolarge.block.ParkingBrakeBlock;
+import dev.aerolarge.block.PilotSeatBlock;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Stowing;
 import dev.aerolarge.block.ThrustLeverBlock;
@@ -392,6 +393,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Who asked for {@link #flyOnceAboard}, to be told how it goes even before they count as aboard. */
     @Nullable
     private UUID flyOnceAboardFor;
+    /**
+     * The seat they asked from, as an offset from the autopilot: assembling takes the seat out from under them, so
+     * once aboard they are sat down in it again; null if they stood.
+     */
+    @Nullable
+    private BlockPos flyOnceAboardSeat;
     private Phase phase = Phase.OFF;
     private Lateral lateral = Lateral.HEADING;
     /** The heading to hold, as Minecraft yaw; the height to hold, in world blocks; the speed, in blocks a second. */
@@ -674,6 +681,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Noted before it assembles, so the autopilot takes it along into the new airliner's blocks.
         flyOnceAboard = settings;
         flyOnceAboardFor = player.getUUID();
+        BlockPos seat = PilotSeatBlock.seatOf(player);
+        flyOnceAboardSeat = seat == null ? null : seat.subtract(worldPosition);
         setChanged();
         Component failed = PhysicsAssembler.assemble(server, at, player);
         if (failed == null) {
@@ -681,6 +690,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         flyOnceAboard = null;
         flyOnceAboardFor = null;
+        flyOnceAboardSeat = null;
         setChanged();
         return Component.translatable("message.aerolarge.autopilot.assembly_failed", failed);
     }
@@ -706,16 +716,25 @@ public class AutopilotBlockEntity extends BlockEntity {
         return null;
     }
 
-    /** Aboard the airliner just assembled for it: engages as asked, telling who asked and everyone aboard. */
+    /**
+     * Aboard the airliner just assembled for it: sits whoever asked back down in the seat they asked from, and
+     * engages as asked, telling them and everyone aboard.
+     */
     private void flyOnceAboard(ServerLevel level) {
         Settings settings = flyOnceAboard;
         UUID askedBy = flyOnceAboardFor;
+        BlockPos seat = flyOnceAboardSeat;
         flyOnceAboard = null;
         flyOnceAboardFor = null;
+        flyOnceAboardSeat = null;
         setChanged();
+        ServerPlayer asker = askedBy != null && level.getPlayerByUUID(askedBy) instanceof ServerPlayer found ? found : null;
+        if (asker != null && seat != null) {
+            PilotSeatBlock.sitIn(level, worldPosition.offset(seat), asker);
+        }
         Component said = set(SetAutopilot.Action.FLY, settings);
         Set<ServerPlayer> told = new HashSet<>(Aboard.players(this));
-        if (askedBy != null && level.getPlayerByUUID(askedBy) instanceof ServerPlayer asker) {
+        if (asker != null) {
             told.add(asker);
         }
         for (ServerPlayer player : told) {
@@ -1741,6 +1760,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (flyOnceAboardFor != null) {
             tag.putUUID("FlyOnceAboardFor", flyOnceAboardFor);
         }
+        if (flyOnceAboardSeat != null) {
+            tag.putLong("FlyOnceAboardSeat", flyOnceAboardSeat.asLong());
+        }
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
         tag.putBoolean("AwaitingClearance", awaitingClearance);
@@ -1798,6 +1820,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             assembler = tag.contains("Assembler") ? Turning.turn(BlockPos.of(tag.getLong("Assembler")), turn) : null;
             flyOnceAboard = tag.contains("FlyOnceAboard") ? Settings.load(tag.getCompound("FlyOnceAboard")) : null;
             flyOnceAboardFor = tag.hasUUID("FlyOnceAboardFor") ? tag.getUUID("FlyOnceAboardFor") : null;
+            flyOnceAboardSeat = tag.contains("FlyOnceAboardSeat") ? Turning.turn(BlockPos.of(tag.getLong("FlyOnceAboardSeat")), turn) : null;
             governing = tag.getBoolean("Governing");
             climbingOut = tag.getBoolean("ClimbingOut");
             // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.

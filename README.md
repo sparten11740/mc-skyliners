@@ -406,7 +406,8 @@ Numbers.
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them. Engaged on an airliner not yet assembled, the autopilot first has its Physics Assembler assemble it, as a
 Create deployer works the assembler, and engages with the settings once the airliner is assembled, telling everyone
-aboard; with no assembler aboard, or one that cannot assemble it, it says so and why.
+aboard. Whoever engaged it from a seat stays in it: assembling moves the seat, and the autopilot sits them back down.
+With no assembler aboard, or one that cannot assemble it, it says so and why.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the
 airstairs folded away, any evacuation slide packed and the gear down first (down on the ground they would hold the airliner where it
 stands), and once they are and the tower has cleared it (a few seconds on the brakes, see Announcements and the radio;
