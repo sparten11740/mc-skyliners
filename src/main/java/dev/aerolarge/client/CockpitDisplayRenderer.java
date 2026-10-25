@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.network.chat.Component;
@@ -27,16 +26,17 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Draws a panel of the flight deck's curved row from the block holding it (see {@link CockpitDisplayBlockEntity}):
- * a slim dark screen standing a block over the floor, turned toward the seats, on a desk whose top slopes down toward
- * them at 45 degrees, with the touch keys on the slope (see {@link CockpitKeysArt}). On the screen, inside the bezel,
- * what it shows: a pilot's flight display, the same as the one set into the panel in older airliners (see
- * {@link FlightDisplayRenderer}), as large as it fits; the moving map, as the autopilot screen of older airliners
- * draws it, with what the autopilot is doing over it and how the airliner flies under it; the systems page's tiles; or
- * an outside camera's live picture with its buttons, as on the camera display (see {@link TailCameraDisplayRenderer}).
- * The screen and the slope are each only drawn with the camera in front of them; the casing shows from every side.
- * Where the player looks at the screen or the slope from within reach, a little pointer follows the look, and the key
- * under it is outlined in white, so whoever is about to touch it sees what the touch will work.
+ * Draws a panel of the flight deck's curved row from the block holding it (see {@link CockpitDisplayBlockEntity}): a
+ * slim dark screen standing a block over the floor, turned toward the seats, on a desk whose top slopes down toward
+ * them at 45 degrees (see {@link CockpitCasing}), with the touch keys on the slope (see {@link CockpitKeysArt}). On the
+ * screen, inside the bezel, what it shows: a pilot's flight display, the same as the one set into the panel in older
+ * airliners (see {@link FlightDisplayRenderer}), as large as it fits; the moving map, as the autopilot screen of older
+ * airliners draws it, with what the autopilot is doing over it and how the airliner flies under it; the systems page's
+ * tiles; or an outside camera's live picture with its buttons, as on the camera display (see {@link
+ * TailCameraDisplayRenderer}). The screen and the slope are each only drawn with the camera in front of them; the
+ * casing shows from every side. Where the player looks at the screen or the slope from within reach, a little pointer
+ * follows the look, and the key under it is outlined in white, so whoever is about to touch it sees what the touch will
+ * work.
  */
 public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDisplayBlockEntity> {
     /** The casing round the glass, in blocks. */
@@ -57,11 +57,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     private static final int POINTER_DARK = 0xFF05080D;
     private static final int POINTER_LIGHT = 0xFFFFFFFF;
 
-    private static final int CASING = AutopilotScreenRenderer.CASING;
     private static final int GLASS = AutopilotScreenRenderer.GLASS;
-    private static final int EDGE = 0xFF23272E;
-    /** The desk's slope, a shade lighter than its front, as the panels round the keys are. */
-    private static final int SLOPE = 0xFF1D2026;
 
     /** Where the player's look meets the panel, within reach: on its screen or its slope, in blocks from its corner. */
     private record Pointer(boolean onSlope, double across, double up) {
@@ -91,7 +87,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         pose.mulPose(Axis.YP.rotationDegrees(-display.facing().toYRot()));
         pose.translate(panel.leftX(), 0, panel.leftZ());
         pose.mulPose(Axis.YP.rotation((float) -Math.atan2(panel.rightZ() - panel.leftZ(), panel.rightX() - panel.leftX())));
-        casing(ScreenDrawing.shapes(buffers), pose.last().pose(), width, panel);
+        CockpitCasing.draw(buffers, pose.last(), width, panel, light);
         Vector3f eye = Sight.eye(pose.last());
         if (eye.z > 0) {
             pose.pushPose();
@@ -267,50 +263,6 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         pose.translate(0, 0, LAYER);
         TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height);
         pose.popPose();
-    }
-
-    /**
-     * The casing: the screen's face and its slab behind it, and under the screen the desk down to the floor, its top
-     * sloping down toward the seats and its front edge stopping short of either end where it is mitred against the
-     * desk beside it, each side wound to face out.
-     */
-    private static void casing(VertexConsumer shapes, Matrix4f matrix, float width, CockpitDisplayBlockEntity.Panel panel) {
-        float bottom = panel.bottom();
-        ScreenDrawing.rect(shapes, matrix, 0, bottom, width, panel.top(), 0, CASING);
-        box(shapes, matrix, 0, bottom, -CockpitDisplayBlock.DEPTH, width, panel.top(), 0, EDGE);
-        float desk = panel.desk();
-        if (desk <= 0) {
-            return;
-        }
-        float back = -CockpitDisplayBlock.DEPTH;
-        float front = bottom - desk;
-        float left = panel.leftCut();
-        float right = width - panel.rightCut();
-        quad(shapes, matrix, left, 0, desk, right, 0, desk, right, front, desk, left, front, desk, EDGE);
-        quad(shapes, matrix, left, front, desk, right, front, desk, width, bottom, 0, 0, bottom, 0, SLOPE);
-        quad(shapes, matrix, width, 0, back, 0, 0, back, 0, bottom, back, width, bottom, back, EDGE);
-        // The ends: square behind the face, and from the face out along the mitre to the front edge.
-        quad(shapes, matrix, 0, 0, back, 0, 0, 0, 0, bottom, 0, 0, bottom, back, EDGE);
-        quad(shapes, matrix, 0, 0, 0, left, 0, desk, left, front, desk, 0, bottom, 0, EDGE);
-        quad(shapes, matrix, width, 0, 0, width, 0, back, width, bottom, back, width, bottom, 0, EDGE);
-        quad(shapes, matrix, right, 0, desk, width, 0, 0, width, bottom, 0, right, front, desk, EDGE);
-    }
-
-    /** The back and the four sides of a box, all but its front (which the face covers), each facing out of it. */
-    private static void box(VertexConsumer shapes, Matrix4f matrix, float x0, float y0, float z0, float x1, float y1, float z1, int colour) {
-        quad(shapes, matrix, x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0, colour);
-        quad(shapes, matrix, x0, y1, z1, x1, y1, z1, x1, y1, z0, x0, y1, z0, colour);
-        quad(shapes, matrix, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1, colour);
-        quad(shapes, matrix, x0, y0, z1, x0, y1, z1, x0, y1, z0, x0, y0, z0, colour);
-        quad(shapes, matrix, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1, colour);
-    }
-
-    private static void quad(VertexConsumer shapes, Matrix4f matrix, float ax, float ay, float az, float bx, float by, float bz, float cx, float cy,
-                             float cz, float dx, float dy, float dz, int colour) {
-        shapes.addVertex(matrix, ax, ay, az).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
-        shapes.addVertex(matrix, bx, by, bz).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
-        shapes.addVertex(matrix, cx, cy, cz).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
-        shapes.addVertex(matrix, dx, dy, dz).setColor(colour).setLight(LightTexture.FULL_BRIGHT);
     }
 
     /** Text placed against x as aligned, centred on y, in the face's units. */
