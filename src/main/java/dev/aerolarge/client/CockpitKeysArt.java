@@ -131,7 +131,7 @@ final class CockpitKeysArt {
             drawn(shapes, matrix, key, display, level);
         }
         if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
-            tillerWheel(shapes, matrix, (left + right) / 2, length / 2, Math.min((right - left) / 7, length / 2.5), state(display, level, Link.TILLER));
+            tillerWheel(shapes, matrix, (left + right) / 2, length / 2, Math.min((right - left) / 9, length / 2.5), state(display, level, Link.TILLER));
         }
         for (Key key : keys) {
             Icon icon = icon(key.function());

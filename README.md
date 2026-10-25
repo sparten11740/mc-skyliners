@@ -125,9 +125,10 @@ their motors. A closed shade shuts out the daylight; anyone can open or close a 
 In front of the console the screens curve round the seats like an airliner's glass cockpit, a block above the floor on
 a desk whose top slopes down toward the pilots. In the middle, straight, is the systems screen, and either side of it
 two screens in the same slim dark casing, each turned further toward the seats than the one inside it, so the row
-wraps round the pilots. Left to right: the captain's primary flight display, the moving map, the systems screen, the
-outside camera and the first officer's primary flight display. Each is as wide as the nose leaves room for, two blocks
-where it can (where the nose is too narrow for the outer pair, the tiller's keys go under the camera). Behind them the
+wraps round the pilots. Left to right, as on an A380: the moving map, the captain's primary flight display, the systems
+screen, the first officer's primary flight display and the outside camera, each pilot's own flight display straight
+ahead of them. Each is as wide as the nose leaves room for, two blocks where it can (where the nose is too narrow for
+the outer pair, the inner pair shows the map and the camera, and the tiller's keys go under the camera). Behind them the
 instrument panel carries on round to the hull as plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across
 and two down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its
 rim broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
@@ -138,8 +139,8 @@ beside the jump light, its red and green halves both dark while it is off, red o
 on the sky with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its
 light metal turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
 or the doors open and the crate floating down under a parachute, lit red). Touch a tile to work its switch. On the
-slope under the screens are the keys: under the captain's flight display the tiller, an arrow either side of a little
-wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
+slope under the screens are the keys: under each pilot's flight display a tiller, an arrow either side of a little
+wheel turned as the nose wheel is (touch an arrow to steer a notch that way), so either pilot can taxi; under the map the parking brake, a wheel
 gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
 (see Autopilot); and under the camera's screen the cameras' buttons (see below). The desk runs round under the screens
 as one moulded console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim

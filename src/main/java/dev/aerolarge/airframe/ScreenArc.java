@@ -64,8 +64,6 @@ final class ScreenArc {
     private static final float TOP = 2;
     /** How far the desk's slope reaches out toward the pilots from the screens' faces, in blocks, dropping as far. */
     private static final float DESK = 0.5F;
-    /** What the inner pair and then the outer pair show, the captain's side first. */
-    private static final Shows[][] SHOWS = {{Shows.MAP, Shows.CAMERA}, {Shows.FLIGHT, Shows.FLIGHT}};
 
     private final AirframeLayout layout;
     private final int floor;
@@ -162,6 +160,10 @@ final class ScreenArc {
             return new BlockPos(Mth.floor((leftX + rightX) / 2), 0, Mth.floor((leftZ + rightZ) / 2));
         }
 
+        Panel showing(Shows what) {
+            return new Panel(leftX, leftZ, rightX, rightZ, what, desk, leftCut, rightCut, leftEnd, rightEnd);
+        }
+
         Panel holding(Desk to) {
             return new Panel(leftX, leftZ, rightX, rightZ, shows, to, leftCut, rightCut, leftEnd, rightEnd);
         }
@@ -242,23 +244,27 @@ final class ScreenArc {
     }
 
     /**
-     * The panels with their slopes' keys: the autopilot's under the middle screen, the parking brake and the landing
-     * gear under the captain's inner panel, the tiller under the captain's outer one and the cameras' buttons under
-     * the first officer's inner one, the camera's own screen; where the outer pair does not fit, the tiller goes under
-     * the camera's screen instead, and the cameras' buttons stay along the bottom of its picture.
+     * The panels with what they show and their slopes' keys, the autopilot's under the middle screen. With both pairs,
+     * as on an A380, each pilot's flight display stands straight ahead of them with a tiller under it, the captain's
+     * outer screen is the moving map with the parking brake and the landing gear under it, and the first officer's
+     * the outside camera with the cameras' buttons. With the inner pair only, it is the map with the brake and the
+     * gear, and the camera with the tiller, the cameras' buttons along the bottom of its picture.
      */
     private static List<Panel> withDesks(Plan plan) {
         Plan cut = mitred(plan);
         List<Panel> panels = new ArrayList<>();
         panels.add(cut.middle().holding(Desk.AUTOPILOT));
         Panel[] inner = cut.pairs().get(0);
-        boolean outer = cut.pairs().size() > 1;
-        panels.add(inner[0].holding(Desk.GROUND));
-        panels.add(inner[1].holding(outer ? Desk.CAMERA : Desk.TILLER));
-        if (outer) {
-            panels.add(cut.pairs().get(1)[0].holding(Desk.TILLER));
-            panels.add(cut.pairs().get(1)[1]);
+        if (cut.pairs().size() == 1) {
+            panels.add(inner[0].showing(Shows.MAP).holding(Desk.GROUND));
+            panels.add(inner[1].showing(Shows.CAMERA).holding(Desk.TILLER));
+            return panels;
         }
+        Panel[] outer = cut.pairs().get(1);
+        panels.add(inner[0].showing(Shows.FLIGHT).holding(Desk.TILLER));
+        panels.add(inner[1].showing(Shows.FLIGHT).holding(Desk.TILLER));
+        panels.add(outer[0].showing(Shows.MAP).holding(Desk.GROUND));
+        panels.add(outer[1].showing(Shows.CAMERA).holding(Desk.CAMERA));
         return panels;
     }
 
@@ -383,15 +389,18 @@ final class ScreenArc {
         return null;
     }
 
-    /** The pair at this step out from the middle, this wide, hinged on the outer edges of the panels inside it. */
+    /**
+     * The pair at this step out from the middle, this wide, hinged on the outer edges of the panels inside it; what
+     * they show is settled once the row is planned (see {@link #withDesks}).
+     */
     private static Panel[] pair(int step, double turn, double width, Panel captainInside, Panel firstOfficerInside) {
         double angle = Math.toRadians(turn * (step + 1));
         double across = Math.cos(angle) * width;
         double back = Math.sin(angle) * width;
-        Panel captain = new Panel(captainInside.leftX - across, captainInside.leftZ + back, captainInside.leftX, captainInside.leftZ, SHOWS[step][0],
+        Panel captain = new Panel(captainInside.leftX - across, captainInside.leftZ + back, captainInside.leftX, captainInside.leftZ, Shows.FLIGHT,
             Desk.NONE, 0, 0);
         Panel firstOfficer = new Panel(firstOfficerInside.rightX, firstOfficerInside.rightZ, firstOfficerInside.rightX + across,
-            firstOfficerInside.rightZ + back, SHOWS[step][1], Desk.NONE, 0, 0);
+            firstOfficerInside.rightZ + back, Shows.FLIGHT, Desk.NONE, 0, 0);
         return new Panel[]{captain, firstOfficer};
     }
 
