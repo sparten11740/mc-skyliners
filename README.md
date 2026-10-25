@@ -95,7 +95,8 @@ right across the front from the panel up over the crown, running back into side 
 framed by posts round the sides only, so from the seats you see the sky and the horizon ahead.
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
-either side, on a column between floor rails. Each is two blocks tall, and using either half sits you down in it. It
+either side, on a tall column between floor rails, raised so a pilot sits higher than on a Create seat and looks out
+over the screens. Each is two blocks tall, and using either half sits you down in it. It
 is one of Create's seats underneath, so the seatbelts and everything else that knows about seats treat you as
 seated, but villager passengers leave it to the pilots. A Pilot Seat can be crafted and put down in your own builds
 too.
@@ -122,8 +123,9 @@ glow. Turn it off with `nightLights` in the client config; with Iris installed i
 glow. The window shades' tile runs every cabin window's shade down, or up again, the same way, with the whirr of
 their motors. A closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
 
-In front of the console the screens curve round the seats like an airliner's glass cockpit, a block above the floor on
-a desk whose top slopes down toward the pilots. In the middle, straight, is the systems screen, and either side of it
+In front of the console the screens curve round the seats like an airliner's glass cockpit, three quarters of a block
+above the floor on a desk whose top slopes down toward the pilots, their top edges just under a seated pilot's eyes, so
+the pilots look out over them through the windscreen. In the middle, straight, is the systems screen, and either side of it
 two screens in the same slim dark casing, each turned further toward the seats than the one inside it, so the row
 wraps round the pilots. Left to right, as on an A380: the moving map, the captain's primary flight display, the systems
 screen, the first officer's primary flight display and the outside camera, each pilot's own flight display straight

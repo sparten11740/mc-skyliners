@@ -59,9 +59,13 @@ final class ScreenArc {
      */
     private static final double MOST_END = 2.5;
     private static final double END_STEP = 1.0 / 16;
-    /** How high the screens' bottom and top edges stand over the floor, in blocks: from the desk's top up a block. */
-    private static final float BOTTOM = 1;
-    private static final float TOP = 2;
+    /**
+     * How high the screens' bottom and top edges stand over the floor, in blocks: from the desk's top up a block, the
+     * top just under the eyes of a pilot in a raised seat (see {@link dev.aerolarge.block.PilotSeatBlock#RAISE}), who
+     * looks out over it.
+     */
+    private static final float BOTTOM = 0.75F;
+    private static final float TOP = 1.75F;
     /** How far the desk's slope reaches out toward the pilots from the screens' faces, in blocks, dropping as far. */
     private static final float DESK = 0.5F;
 

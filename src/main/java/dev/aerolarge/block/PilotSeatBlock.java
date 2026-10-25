@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -29,6 +30,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -37,8 +40,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A pilot's seat on the flight deck: a high padded back with a headrest, an armrest either side and a harness over
  * the back, on a column between two floor rails. It is two blocks tall: the lower half is the seat, the upper half
- * the top of the back and the headrest, and either half sits whoever uses it down in the seat. Underneath it is one of
- * Create's seats, sat in by Create's own seat entity, so the seatbelts, the pilots' head-up display and the outside
+ * the top of the back and the headrest, and either half sits whoever uses it down in the seat. Its seat stands higher
+ * than a Create seat's (see {@link #RAISE}), so a pilot looks out over the curved row of screens. Underneath it is one
+ * of Create's seats, sat in by Create's own seat entity, so the seatbelts, the pilots' head-up display and the outside
  * cameras treat whoever sits in it as seated, aboard an assembled airliner too. It never takes a sitter on its own,
  * though: nothing sits down in it by landing on it, and villager passengers leave it to the pilots (see
  * {@link dev.aerolarge.cabin.Passengers}); nor does dye turn it into a Create seat. FACING is the way the sitter faces.
@@ -47,29 +51,36 @@ public class PilotSeatBlock extends SeatBlock {
     private static final MapCodec<PilotSeatBlock> CODEC = simpleCodec(PilotSeatBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+    /**
+     * How much higher than on one of Create's seats a pilot sits, in blocks (six pixels, as the seat's model is raised
+     * in tools/generate_resources.mjs): high enough to look out over the curved row of screens.
+     */
+    public static final double RAISE = 6.0 / 16;
     /** The lower half facing north, the sitter's back to the south: the seat on its column, the back, the armrests. */
     private static final VoxelShape LOWER = Shapes.or(
-        Block.box(2, 0, 1, 14, 8, 12),
+        Block.box(2, 0, 1, 14, 14, 12),
         Block.box(2, 0, 11, 14, 16, 15),
-        Block.box(0.5, 5, 3.5, 2, 12, 12),
-        Block.box(14, 5, 3.5, 15.5, 12, 12)
+        Block.box(0.5, 11, 3.5, 2, 16, 12),
+        Block.box(14, 11, 3.5, 15.5, 16, 12)
     );
-    /** The upper half facing north: the top of the back, up to the shoulders, and the headrest over it. */
+    /** The upper half facing north: the armrests' tops, the top of the back, up to the shoulders, and the headrest. */
     private static final VoxelShape UPPER = Shapes.or(
-        Block.box(2, 0, 11, 14, 4.5, 15),
-        Block.box(4, 4.5, 12, 12, 13, 15)
+        Block.box(0.5, 0, 3.5, 2, 2, 12),
+        Block.box(14, 0, 3.5, 15.5, 2, 12),
+        Block.box(2, 0, 11, 14, 10.5, 15),
+        Block.box(4, 10.5, 12, 12, 16, 15)
     );
     /**
      * What is solid of each half: the same but for the padding on the front of the back and of the headrest, as
      * whoever gets up from the seat is set down over its middle, half a block wide, and would be wedged in it.
      */
     private static final VoxelShape LOWER_SOLID = Shapes.or(
-        Block.box(2, 0, 1, 14, 8, 12),
+        Block.box(2, 0, 1, 14, 14, 12),
         Block.box(2, 0, 13, 14, 16, 15),
-        Block.box(0.5, 5, 3.5, 2, 12, 12),
-        Block.box(14, 5, 3.5, 15.5, 12, 12)
+        Block.box(0.5, 11, 3.5, 2, 16, 12),
+        Block.box(14, 11, 3.5, 15.5, 16, 12)
     );
-    private static final VoxelShape UPPER_SOLID = Block.box(2, 0, 13, 14, 13, 15);
+    private static final VoxelShape UPPER_SOLID = Block.box(2, 0, 13, 14, 16, 15);
     private static final Map<Direction, VoxelShape> LOWER_SHAPES = TurnedShapes.of(LOWER);
     private static final Map<Direction, VoxelShape> UPPER_SHAPES = TurnedShapes.of(UPPER);
     private static final Map<Direction, VoxelShape> LOWER_SOLID_SHAPES = TurnedShapes.of(LOWER_SOLID);
@@ -140,17 +151,50 @@ public class PilotSeatBlock extends SeatBlock {
     }
 
     /**
-     * Sits whoever uses either half down in the seat, as Create's seats do, with nothing in hand as far as Create is
-     * concerned, so that no dye turns it into one of Create's.
+     * Sits whoever uses either half down in the seat, as Create's seats do: not someone sneaking, and not where a
+     * player already sits; anyone else sitting there gets up for them. Whatever is in hand, so no dye turns it into
+     * one of Create's.
      */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockPos seat = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
-        BlockState lower = level.getBlockState(seat);
-        if (!lower.is(this)) {
+        if (!level.getBlockState(seat).is(this) || player.isShiftKeyDown() || player instanceof FakePlayer) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        return super.useItemOn(ItemStack.EMPTY, lower, level, seat, player, hand, hit);
+        List<SeatEntity> taken = level.getEntitiesOfClass(SeatEntity.class, new AABB(seat));
+        if (taken.isEmpty()) {
+            sitRaised(level, seat, player);
+            return ItemInteractionResult.SUCCESS;
+        }
+        return takeOver(level, taken.getFirst(), player);
+    }
+
+    /** Someone else's seat for a player: theirs unless a player sits in it, whoever else does getting up. */
+    private static ItemInteractionResult takeOver(Level level, SeatEntity seat, Player player) {
+        List<Entity> sitters = seat.getPassengers();
+        if (!sitters.isEmpty() && sitters.getFirst() instanceof Player) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!level.isClientSide) {
+            seat.ejectPassengers();
+            player.startRiding(seat);
+        }
+        return ItemInteractionResult.SUCCESS;
+    }
+
+    /**
+     * Sits someone down in the pilot's seat at a position, in a new seat entity of Create's as Create's seats do, but
+     * {@link #RAISE} higher in the block. Create's seat entity is never moved for the clients once it is there, so it
+     * starts out where it stays.
+     */
+    private static void sitRaised(Level level, BlockPos at, Entity sitter) {
+        if (level.isClientSide) {
+            return;
+        }
+        SeatEntity seat = new SeatEntity(level);
+        seat.setPos(at.getX() + 0.5, at.getY() + RAISE, at.getZ() + 0.5);
+        level.addFreshEntity(seat);
+        sitter.startRiding(seat, true);
     }
 
     /**
@@ -166,9 +210,18 @@ public class PilotSeatBlock extends SeatBlock {
         return sitter.level().getBlockState(at).getBlock() instanceof SeatBlock ? at : null;
     }
 
-    /** Sits someone down in the seat at a position, if one stands there and nobody sits in it. */
+    /**
+     * Sits someone down in the seat at a position, if one stands there and nobody sits in it, in a pilot's seat as high
+     * as ever.
+     */
     public static void sitIn(Level level, BlockPos at, Entity sitter) {
-        if (level.getBlockState(at).getBlock() instanceof SeatBlock && !SeatBlock.isSeatOccupied(level, at)) {
+        BlockState seat = level.getBlockState(at);
+        if (!(seat.getBlock() instanceof SeatBlock) || SeatBlock.isSeatOccupied(level, at)) {
+            return;
+        }
+        if (seat.getBlock() instanceof PilotSeatBlock) {
+            sitRaised(level, at, sitter);
+        } else {
             SeatBlock.sitDown(level, at, sitter);
         }
     }

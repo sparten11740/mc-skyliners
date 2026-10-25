@@ -3613,43 +3613,60 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
 }
 
 // The flight deck's pilot seats: their models here, their recipe and name in the functions after them, which the
-// shared lists further down take in. The seat is drawn facing north, the sitter's back to the south, in two halves.
-// The lower one: the seat pan on a column, on a plate across two floor rails, chrome piping along its front edge,
-// the back up to the shoulder blades with the harness's shoulder straps down it, and a padded armrest on a post either
-// side. The upper one: the top of the back narrowing at the shoulders, the straps over them, and the headrest with a
-// trim band along its top, right behind a sitter's head. In the hand both halves together, smaller. Only the lower
-// half drops the seat, as with doors.
+// shared lists further down take in. The seat is drawn facing north, the sitter's back to the south, in two halves,
+// standing six pixels higher than a Create seat (PilotSeatBlock.RAISE) so a pilot looks out over the screens.
+// The lower one: the seat pan on a tall column, on a plate across two floor rails, chrome piping along its front edge,
+// the back down to the pan with the harness's shoulder straps down it, and a padded armrest on a post either side,
+// standing up into the upper half. The upper one: the top of the back narrowing at the shoulders, the straps over
+// them, and the headrest with a trim band along its top, right behind a sitter's head. In the hand both halves
+// together, smaller. Only the lower half drops the seat, as with doors.
 {
   const textures = {
     leather: `${ID}:block/pilot_seat_leather`, trim: `${ID}:block/pilot_seat_trim`, frame: `${ID}:block/pilot_seat_frame`,
     harness: `${ID}:block/pilot_seat_harness`, particle: `${ID}:block/pilot_seat_leather`,
   };
+  // The texture a box's face would show by default, moved back inside the texture where the box reaches up past
+  // the block, so the faces over the top of the block do not show the textures next to it on the atlas.
+  const inTexture = (element) => {
+    const [x0, y0, z0] = element.from;
+    const [x1, y1, z1] = element.to;
+    const rects = {
+      north: [16 - x1, 16 - y1, 16 - x0, 16 - y0], south: [x0, 16 - y1, x1, 16 - y0], west: [z0, 16 - y1, z1, 16 - y0],
+      east: [16 - z1, 16 - y1, 16 - z0, 16 - y0], up: [x0, z0, x1, z1], down: [x0, 16 - z1, x1, 16 - z0],
+    };
+    const fit = ([u0, v0, u1, v1]) => {
+      const du = Math.max(0, -u0) - Math.max(0, u1 - 16);
+      const dv = Math.max(0, -v0) - Math.max(0, v1 - 16);
+      return [u0 + du, v0 + dv, u1 + du, v1 + dv];
+    };
+    return { ...element, faces: Object.fromEntries(Object.entries(element.faces).map(([face, value]) => [face, { ...value, uv: fit(rects[face]) }])) };
+  };
   const lower = [
     solid([3, 0, 0.5], [4.5, 1, 15.5], "#frame"),
     solid([11.5, 0, 0.5], [13, 1, 15.5], "#frame"),
     solid([3, 1, 4.5], [13, 2, 11.5], "#frame"),
-    solid([5.5, 2, 5], [10.5, 4.5, 11], "#frame"),
-    solid([2, 4.5, 1], [14, 8, 12], "#leather"),
-    solid([2, 7.5, 0.5], [14, 8.25, 1], "#trim"),
-    solid([2, 4.5, 11], [14, 16, 15], "#leather"),
-    solid([4.5, 8.5, 10.6], [6, 16, 11], "#harness"),
-    solid([10, 8.5, 10.6], [11.5, 16, 11], "#harness"),
-    solid([0.5, 10.5, 3.5], [2, 12, 12], "#leather"),
-    solid([14, 10.5, 3.5], [15.5, 12, 12], "#leather"),
-    solid([1, 4.5, 9.5], [2, 10.5, 11], "#frame"),
-    solid([14, 4.5, 9.5], [15, 10.5, 11], "#frame"),
-  ];
+    solid([5.5, 2, 5], [10.5, 10.5, 11], "#frame"),
+    solid([2, 10.5, 1], [14, 14, 12], "#leather"),
+    solid([2, 13.5, 0.5], [14, 14.25, 1], "#trim"),
+    solid([2, 10.5, 11], [14, 16, 15], "#leather"),
+    solid([4.5, 14.5, 10.6], [6, 16, 11], "#harness"),
+    solid([10, 14.5, 10.6], [11.5, 16, 11], "#harness"),
+    solid([0.5, 16.5, 3.5], [2, 18, 12], "#leather"),
+    solid([14, 16.5, 3.5], [15.5, 18, 12], "#leather"),
+    solid([1, 10.5, 9.5], [2, 16.5, 11], "#frame"),
+    solid([14, 10.5, 9.5], [15, 16.5, 11], "#frame"),
+  ].map(inTexture);
   const upper = [
-    solid([2, 0, 11], [14, 3, 15], "#leather"),
-    solid([3, 3, 11.5], [13, 4.5, 15], "#leather"),
-    solid([4.5, 0, 10.6], [6, 3.5, 11], "#harness"),
-    solid([10, 0, 10.6], [11.5, 3.5, 11], "#harness"),
-    solid([4.5, 3.5, 10.6], [6, 4.75, 13], "#harness"),
-    solid([10, 3.5, 10.6], [11.5, 4.75, 13], "#harness"),
-    solid([4, 4.5, 12], [12, 12.5, 15], "#leather"),
-    solid([5, 6, 11.5], [11, 11.5, 12], "#leather"),
-    solid([4, 12.5, 12], [12, 13, 15], "#trim"),
-  ];
+    solid([2, 0, 11], [14, 9, 15], "#leather"),
+    solid([3, 9, 11.5], [13, 10.5, 15], "#leather"),
+    solid([4.5, 0, 10.6], [6, 9.5, 11], "#harness"),
+    solid([10, 0, 10.6], [11.5, 9.5, 11], "#harness"),
+    solid([4.5, 9.5, 10.6], [6, 10.75, 13], "#harness"),
+    solid([10, 9.5, 10.6], [11.5, 10.75, 13], "#harness"),
+    solid([4, 10.5, 12], [12, 18.5, 15], "#leather"),
+    solid([5, 12, 11.5], [11, 17.5, 12], "#leather"),
+    solid([4, 18.5, 12], [12, 19, 15], "#trim"),
+  ].map(inTexture);
   for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
     write(`assets/${ID}/models/block/pilot_seat_${half}.json`, { parent: "minecraft:block/block", textures, elements });
   }
@@ -3657,11 +3674,13 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => [false, true].map((water) =>
       [`facing=${facing},half=${half},waterlogged=${water}`, { model: `${ID}:block/pilot_seat_${half}`, y }])))),
   });
-  const raised = upper.map((element) => ({ ...element, from: [element.from[0], element.from[1] + 16, element.from[2]], to: [element.to[0], element.to[1] + 16, element.to[2]] }));
+  // In the hand the whole seat stands three pixels lower, so its headrest stays inside what a model may hold.
+  const shifted = (elements, up) => elements.map((element) => ({ ...element, from: [element.from[0], element.from[1] + up, element.from[2]],
+    to: [element.to[0], element.to[1] + up, element.to[2]] }));
   write(`assets/${ID}/models/item/pilot_seat.json`, {
     parent: "minecraft:block/block",
     textures,
-    elements: [...lower, ...raised],
+    elements: [...shifted(lower, -3), ...shifted(upper, 13)],
     display: {
       gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
       ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
