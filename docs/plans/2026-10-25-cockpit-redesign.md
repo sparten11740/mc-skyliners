@@ -212,3 +212,7 @@ Found while play-testing the second round:
 - A pointer: looking at a screen or a slope from within reach, a white dot follows the look and the key under it is
   outlined, so whoever is about to touch sees what the touch will work (Jan's request).
 - The Physics Assembler's spot is measured before the console, whose transponder now stands in that row's middle.
+- Jan: the keys on the angled slopes overlapped their neighbours'. Each slope reaches straight out from its own
+  screen, so where the row turns toward the pilots two slopes run into each other; they are now mitred at every end
+  they share (the front edge stops short by the desk's reach times the tangent of half the turn), with the keys laid
+  out between the cuts and touches and the pointer kept to them.
