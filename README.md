@@ -90,9 +90,10 @@ door in one too small for either): a pale grey panel with rounded top corners, a
 a round chrome handle on each face, which swings out into the aisle about its port side and stands back against the
 WC's wall, leaving the way past it clear. It waits to shut while anyone stands in the doorway; villagers do not open
 it. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look straight out through the
-windscreen: lightly tinted glass cut to the nose's curve like the skin around it, a single pane thick, one wide pane
-right across the front from the panel up over the crown, running back into side windows past the pilots' shoulders,
-framed by posts round the sides only, so from the seats you see the sky and the horizon ahead.
+windscreen: clear, lightly tinted glass cut to the nose's curve like the skin around it, one even tint wherever you
+look through it, inside or out, and solid to walk against, one wide pane right across the front from the panel up
+over the crown, running back into side windows past the pilots' shoulders, framed by posts round the sides only, so
+from the seats you see the sky and the horizon ahead.
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
 either side, on a tall column between floor rails, raised so a pilot sits higher than on a Create seat and looks out
@@ -1296,7 +1297,8 @@ with the upper deck laid round the rooms under it by `UpperDeck` and its stairca
 landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`, the WC signs put up by `WcSigns`, the overhead ones once every room stands (each WC sign's block entity
 looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
-`ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
+`ShellGeometry`'s shapes, which `ShellModel` bakes (the windscreen's as a single pane, only its outer surface
+drawn), and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `ScreenArc` lays out the flight deck's curved row
 of screens (`CockpitDisplayBlock`, whose block entity keeps where each panel stands and what it is linked to, and
 `CockpitKeys` where its touch keys are), whose keys use the switches standing out of sight in the avionics bay as a

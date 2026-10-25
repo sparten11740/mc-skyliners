@@ -349,18 +349,19 @@ function slideLang() {
   };
 }
 // The skin, the windscreen and the moon pool's clear glass cut to the hull's curve: one model each for every shape,
-// baked by the mod's own "shell" loader from the block's corners. They give back the part they are cut from (the
-// clear glass, plain glass). The relay hidden in the
-// nacelles drops nothing.
-for (const [name, skin, renderType, part] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass"],
+// baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
+// thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
+// relay hidden in the nacelles drops nothing.
+for (const [name, skin, renderType, part, singlePane] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
+    ...(singlePane ? { single_pane: true } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
   write(`data/${ID}/loot_table/blocks/${name}.json`, {

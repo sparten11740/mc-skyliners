@@ -8,11 +8,13 @@ import dev.aerolarge.block.CockpitGlassBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -47,6 +49,8 @@ final class SnappedShell {
     private static final int SETTLING = 4;
     /** How many blocks round a sliver of skin the skin it closes over is looked for. */
     private static final int SKIN_SEARCH = 2;
+    /** How many layers of glass inside the windscreen's outer pane are taken away, at most: deeper than it ever is. */
+    private static final int WINDSCREEN_LAYERS = 3;
 
     private final AirframeLayout layout;
     private final double scale;
@@ -183,6 +187,35 @@ final class SnappedShell {
             }
         }
         shaped.forEach((pos, state) -> layout.set(pos.getX(), pos.getY(), pos.getZ(), state));
+        thinWindscreen();
+    }
+
+    /**
+     * Thins the windscreen to the panes the hull's surface runs through: glass with every corner inside the surface,
+     * the skin's inner layer, is taken away from the flight deck's side, a layer at a time, so the pilots look out
+     * through one pane instead of past panes standing inside it, which darken what is seen past them. Blocks sharing a
+     * side share its corners, so the glass left round such a block shows it whole faces, and nothing opens to the sky.
+     */
+    private void thinWindscreen() {
+        for (int layer = 0; layer < WINDSCREEN_LAYERS; layer++) {
+            List<BlockPos> inner = layout.cells().entrySet().stream()
+                .filter(cell -> cell.getValue().is(AerolargeRegistry.COCKPIT_GLASS.get()))
+                .filter(cell -> underSurface(cell.getKey()) && openInside(cell.getKey()))
+                .map(Map.Entry::getKey)
+                .toList();
+            inner.forEach(pos -> layout.set(pos.getX(), pos.getY(), pos.getZ(), Blocks.AIR.defaultBlockState()));
+        }
+    }
+
+    /** Whether every corner of a block lies inside the hull's surface. */
+    private boolean underSurface(BlockPos pos) {
+        return Arrays.stream(outer.pattern(pos)).allMatch(corner -> corner == ShellGeometry.INSIDE);
+    }
+
+    /** Whether a block stands against the cabin's open air on any side. */
+    private boolean openInside(BlockPos pos) {
+        return Arrays.stream(Direction.values()).anyMatch(side -> layout.isOpen(pos.getX() + side.getStepX(), pos.getY() + side.getStepY(),
+            pos.getZ() + side.getStepZ()));
     }
 
     /** A block the hull's surface cuts: whatever stands there cut to it, or a sliver of skin where there is air. */
@@ -228,7 +261,9 @@ final class SnappedShell {
 
     /**
      * A block of the nose the inner surface cuts or lies outside of: skin is cut back to it on the inside where
-     * nothing but skin stands against it, and cabin air is filled out to it.
+     * nothing but skin stands against it, and cabin air is filled out to it. Not the windscreen's glass: cut back on
+     * the inside, a pane would open toward the flight deck and the look through it would skip its tint, so the glass
+     * keeps its inner side whole, and the cabin air in front of it stays open.
      */
     private void inside(BlockPos pos, Map<BlockPos, BlockState> shaped) {
         int shape = inner.shape(pos);
@@ -237,12 +272,17 @@ final class SnappedShell {
         }
         BlockState state = layout.stateAt(pos.getX(), pos.getY(), pos.getZ());
         if (isSkin(state) && layout.inSkin(pos)) {
-            if (shape != ShellGeometry.WHOLE && againstSkinOnly(pos) && !layout.nextToDoor(pos)) {
+            if (shape != ShellGeometry.WHOLE && againstSkinOnly(pos) && !layout.nextToDoor(pos) && !windscreen(state)) {
                 put(shaped, pos, state, shape);
             }
-        } else if (layout.isOpen(pos.getX(), pos.getY(), pos.getZ()) && fillable(pos)) {
+        } else if (layout.isOpen(pos.getX(), pos.getY(), pos.getZ()) && fillable(pos) && !windscreen(material(pos))) {
             put(shaped, pos, material(pos), shape);
         }
+    }
+
+    /** Whether a block is the windscreen's glass. */
+    private static boolean windscreen(BlockState state) {
+        return state.is(AerolargeRegistry.COCKPIT_GLASS.get());
     }
 
     /** Puts the block, of the given kind, cut to the shape; a window pane that cannot take it keeps its fitted cut. */
@@ -324,7 +364,9 @@ final class SnappedShell {
     /**
      * Whether cabin air may be filled out to the surface: only where nothing but skin, the floor or more air stands
      * beside it, and not where the Physics Assembler goes. A filled side against anything else, a door, a light, a
-     * seat or a screen, would bury its face in skin or shut its light in.
+     * seat or a screen, would bury its face in skin or shut its light in. The announcement panel, close under the
+     * crown, faces only down, so air beside it is filled all the same, or the crown would be left open to the sky
+     * there; air under it is not.
      */
     private boolean fillable(BlockPos pos) {
         if (pos.equals(layout.assemblerSpot())) {
@@ -332,7 +374,8 @@ final class SnappedShell {
         }
         for (Direction side : Direction.values()) {
             BlockState next = layout.stateAt(pos.getX() + side.getStepX(), pos.getY() + side.getStepY(), pos.getZ() + side.getStepZ());
-            if (!next.isAir() && !isSkin(next) && !next.is(layout.palette().floor().getBlock())) {
+            boolean besidePanel = next.is(AerolargeRegistry.ANNOUNCEMENT_PANEL.get()) && side != Direction.UP;
+            if (!next.isAir() && !isSkin(next) && !next.is(layout.palette().floor().getBlock()) && !besidePanel) {
                 return false;
             }
         }
