@@ -24,7 +24,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * within the surface gets that much, whatever it was: the skin is cut, the open air just outside gets a sliver of
  * skin, and so does cabin air that reaches out past the surface at a corner, which would otherwise leave a gap in the
  * skin. In the nose the inside of the skin is cut to the curve the same way, by a second surface a skin's thickness
- * in from the first, so the flight deck's walls, ceiling and windscreen are round from inside too.
+ * in from the first, so the flight deck's walls and ceiling are round from inside too; the windscreen keeps its inside
+ * whole and is thinned to the panes the outer surface runs through, so it is drawn as one pane (see
+ * {@link #thinWindscreen}).
  */
 final class SnappedShell {
     /**
@@ -275,8 +277,11 @@ final class SnappedShell {
             if (shape != ShellGeometry.WHOLE && againstSkinOnly(pos) && !layout.nextToDoor(pos) && !windscreen(state)) {
                 put(shaped, pos, state, shape);
             }
-        } else if (layout.isOpen(pos.getX(), pos.getY(), pos.getZ()) && fillable(pos) && !windscreen(material(pos))) {
-            put(shaped, pos, material(pos), shape);
+        } else if (layout.isOpen(pos.getX(), pos.getY(), pos.getZ()) && fillable(pos)) {
+            BlockState material = material(pos);
+            if (!windscreen(material)) {
+                put(shaped, pos, material, shape);
+            }
         }
     }
 
@@ -364,9 +369,7 @@ final class SnappedShell {
     /**
      * Whether cabin air may be filled out to the surface: only where nothing but skin, the floor or more air stands
      * beside it, and not where the Physics Assembler goes. A filled side against anything else, a door, a light, a
-     * seat or a screen, would bury its face in skin or shut its light in. The announcement panel, close under the
-     * crown, faces only down, so air beside it is filled all the same, or the crown would be left open to the sky
-     * there; air under it is not.
+     * seat or a screen, would bury its face in skin or shut its light in.
      */
     private boolean fillable(BlockPos pos) {
         if (pos.equals(layout.assemblerSpot())) {
@@ -374,8 +377,7 @@ final class SnappedShell {
         }
         for (Direction side : Direction.values()) {
             BlockState next = layout.stateAt(pos.getX() + side.getStepX(), pos.getY() + side.getStepY(), pos.getZ() + side.getStepZ());
-            boolean besidePanel = next.is(AerolargeRegistry.ANNOUNCEMENT_PANEL.get()) && side != Direction.UP;
-            if (!next.isAir() && !isSkin(next) && !next.is(layout.palette().floor().getBlock()) && !besidePanel) {
+            if (!next.isAir() && !isSkin(next) && !next.is(layout.palette().floor().getBlock())) {
                 return false;
             }
         }

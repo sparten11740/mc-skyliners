@@ -154,7 +154,8 @@ for (const [joins, up, down] of [["", false, false], ["_bottom", true, false], [
   });
 }
 
-// The windscreen: dark glass edge to edge, thin frame bars along the top and one side.
+// The windscreen as a block of its own: the same lightly tinted glass edge to edge, thin frame bars along the top and
+// one side.
 texture(blockOutput, "cockpit_window", (x, y) => {
   if (y === 0 || x === 0) return FRAME_DARK;
   if (x + y >= 18 && x + y <= 19) return GLASS_SHINE;

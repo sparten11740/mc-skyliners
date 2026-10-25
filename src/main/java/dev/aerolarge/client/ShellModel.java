@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -160,23 +161,39 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         }
 
         /**
-         * A shape's outside, each face drawn facing out and again facing in: by side index its sides whose neighbour
-         * lies beyond its cut (or all of them), and last its cut faces.
+         * A shape cut to the curve as single-pane glass: by side index its sides whose neighbour lies beyond its cut,
+         * and last its cut faces, each both ways round.
          */
-        private List<List<BakedQuad>> pane(int shape, boolean allSides) {
-            List<List<BakedQuad>> baked = allSides ? wholePane : panes.get(shape);
-            if (baked != null) {
-                return baked;
+        private List<List<BakedQuad>> pane(int shape) {
+            List<List<BakedQuad>> baked = panes.get(shape);
+            if (baked == null) {
+                double[] out = ShellGeometry.outward(shape);
+                double[] onCut = onCut(shape);
+                baked = bothWays(shape, face -> face.side() == null || beyondCut(face.side(), onCut, out));
+                panes.set(shape, baked);
             }
+            return baked;
+        }
+
+        /** The whole block's sides as single-pane glass, by side index, each both ways round. */
+        private List<List<BakedQuad>> wholePane() {
+            List<List<BakedQuad>> baked = wholePane;
+            if (baked == null) {
+                baked = bothWays(ShellGeometry.WHOLE, face -> true);
+                wholePane = baked;
+            }
+            return baked;
+        }
+
+        /** The faces of a shape a test picks, by side index and last the cut faces, each drawn facing out and in. */
+        private List<List<BakedQuad>> bothWays(int shape, Predicate<ShellGeometry.Face> drawn) {
             int rest = Direction.values().length;
             List<List<BakedQuad>> bySide = new ArrayList<>();
             for (int k = 0; k <= rest; k++) {
                 bySide.add(new ArrayList<>());
             }
-            double[] out = ShellGeometry.outward(shape);
-            double[] onCut = onCut(shape);
             for (ShellGeometry.Face face : ShellGeometry.faces(shape)) {
-                if (allSides || face.side() == null || beyondCut(face.side(), onCut, out)) {
+                if (drawn.test(face)) {
                     List<BakedQuad> quads = bySide.get(face.side() == null ? rest : face.side().get3DDataValue());
                     quads.addAll(even(face.corners(), face.nx(), face.ny(), face.nz(), face.facing()));
                     List<float[]> back = new ArrayList<>(face.corners());
@@ -184,13 +201,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                     quads.addAll(even(back, -face.nx(), -face.ny(), -face.nz(), face.facing().getOpposite()));
                 }
             }
-            baked = bySide.stream().map(List::copyOf).toList();
-            if (allSides) {
-                wholePane = baked;
-            } else {
-                panes.set(shape, baked);
-            }
-            return baked;
+            return bySide.stream().map(List::copyOf).toList();
         }
 
         /** A point in the middle of a shape's cut: the average of its cut faces' corners. */
@@ -256,7 +267,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * left to right, the texture is laid on the other way round.
          */
         private static List<BakedQuad> bake(ShellGeometry.Face face, TextureAtlasSprite sprite, boolean mirrored) {
-            return quads(face.corners(), face.nx(), face.ny(), face.nz(), face.facing(), face.side() != null, sprite, mirrored);
+            return quads(face.corners(), face.nx(), face.ny(), face.nz(), face.facing(), face.side() != null, true, sprite, mirrored);
         }
 
         /**
@@ -267,12 +278,10 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             return quads(corners, nx, ny, nz, facing, false, false, looks[Lining.Look.SKIN.ordinal()], false);
         }
 
-        private static List<BakedQuad> quads(List<float[]> corners, float nx, float ny, float nz, Direction facing, boolean flat,
-                                             TextureAtlasSprite sprite, boolean mirrored) {
-            return quads(corners, nx, ny, nz, facing, flat, true, sprite, mirrored);
-        }
-
-        /** Quads fanned out from a face's first corner, facing along a unit normal and mostly toward a side. */
+        /**
+         * Quads fanned out from a face's first corner, facing along a unit normal and mostly toward a side: shaded as
+         * the skin is, by the side it lies on (flat) or the way it faces, or evenly lit.
+         */
         private static List<BakedQuad> quads(List<float[]> corners, float nx, float ny, float nz, Direction facing, boolean flat, boolean shaded,
                                              TextureAtlasSprite sprite, boolean mirrored) {
             List<BakedQuad> baked = new ArrayList<>();
@@ -345,11 +354,11 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
             int shape = state != null ? ShellBlock.shape(state) : ShellGeometry.WHOLE;
             if (singlePane && state != null && shape != ShellGeometry.WHOLE) {
-                return pane(shape, false).get(side == null ? Direction.values().length : side.get3DDataValue());
+                return pane(shape).get(side == null ? Direction.values().length : side.get3DDataValue());
             }
             Integer outerSides = singlePane ? extraData.get(OUTER_SIDES) : null;
             if (outerSides != null) {
-                return side != null && (outerSides & 1 << side.get3DDataValue()) != 0 ? pane(ShellGeometry.WHOLE, true).get(side.get3DDataValue()) : List.of();
+                return side != null && (outerSides & 1 << side.get3DDataValue()) != 0 ? wholePane().get(side.get3DDataValue()) : List.of();
             }
             int linedFaces = state != null && lining ? Lining.faces(state) : 0;
             Shape baked;
