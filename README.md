@@ -138,7 +138,8 @@ or the doors open and the crate floating down under a parachute, lit red). Touch
 slope under the screens are the keys: under the captain's flight display the tiller, an arrow either side of a little
 wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
 gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
-(see Autopilot). Looking at the screens or the slope from within reach, a little white
+(see Autopilot); and under the camera's screen the cameras' buttons (see below). Looking at the screens or the slope
+from within reach, a little white
 dot follows your look, and the tile, key or camera button under it is outlined in white, so you see what a touch will
 work before you touch it. The flight displays show attitude, airspeed, altitude, vertical speed
 and heading once the airliner is assembled. The moving map shows what the autopilot is doing over it and how the
@@ -148,8 +149,9 @@ outside cameras, the ones the passenger screens look through (see below), the ca
 whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL and a
 blinking recording light in the corner. Where the nose leaves no room for the camera panel, a tail camera display, a
 wide screen three blocks across, hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward
-them. Four buttons along the bottom left of the camera's picture pick the camera, each a little airliner seen from the
-side with a dot where its camera sits, the one shown lit with a red dot: the fin, the right wing, under the nose by the
+them. Four buttons on the slope under the camera's screen pick the camera (along the bottom left of its picture where
+the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with a
+dot where its camera sits, the one shown lit with a red dot: the fin, the right wing, under the nose by the
 nose gear, and in front of the nose, level with the pilots' eyes and looking fifteen degrees down at the runway coming
 up to meet the airliner. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is
 drawn small, a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen

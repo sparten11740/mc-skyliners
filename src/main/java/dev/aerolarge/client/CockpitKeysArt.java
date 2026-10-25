@@ -40,8 +40,9 @@ import org.joml.Matrix4f;
  * its shade up or down, the laser turret firing, the drop bay shut or dropping), its rim lit in its colour while on.
  * On the sloped panel under the screens: the tiller's arrows either side of a little wheel turned as the tiller is;
  * the parking brake as a wheel gripped red while it is set; the landing gear as a wheel with an arrow the way its
- * lever is thrown and its three lamps; and the autopilot's buttons in its settings' pictures, each with the way it
- * steps, the on/off button and the circling it does lit green.
+ * lever is thrown and its three lamps; the autopilot's buttons in its settings' pictures, each with the way it steps,
+ * the on/off button and the circling it does lit green; and the outside cameras' buttons, each the airliner from the
+ * side with a dot where its camera is, the one on the screen lit.
  * The switches' states are read from their blocks out of sight under the floor.
  */
 final class CockpitKeysArt {
@@ -224,6 +225,8 @@ final class CockpitKeysArt {
             case HEADING_RIGHT -> arrow(shapes, matrix, stepX, cy, size * 0.14, 0, WHITE);
             case ALTITUDE_DOWN, SPEED_DOWN, RADIUS_DOWN -> arrow(shapes, matrix, stepX, cy, size * 0.14, 270, WHITE);
             case ALTITUDE_UP, SPEED_UP, RADIUS_UP -> arrow(shapes, matrix, stepX, cy, size * 0.14, 90, WHITE);
+            case TAIL_CAMERA, WING_CAMERA, NOSE_CAMERA, FRONT_CAMERA -> TailCameraDisplayRenderer.cameraButton(shapes, matrix, key.function().camera,
+                key.function().camera == display.camera(), box.x0() + RIM, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, 2 * LAYER);
             default -> {
             }
         }

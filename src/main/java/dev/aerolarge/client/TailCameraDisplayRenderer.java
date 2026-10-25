@@ -120,15 +120,17 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         BlockState state = screen.getBlockState();
         pose.pushPose();
         WideScreenFace.onto(pose, state);
-        drawFace(screen, pose, buffers, WIDTH, WideScreenFace.height(state));
+        drawFace(screen, pose, buffers, WIDTH, WideScreenFace.height(state), true);
         pose.popPose();
     }
 
     /**
      * Draws a camera screen's face, this wide and tall, from the pose's origin at its bottom left corner, facing out
-     * along its z: the picture or the test card inside the bezel, and the camera buttons along the bottom left.
+     * along its z: the picture or the test card inside the bezel, and, where they are on the screen, the camera
+     * buttons along the bottom left.
      */
-    static <T extends BlockEntity & CameraScreen> void drawFace(T screen, PoseStack pose, MultiBufferSource buffers, double width, double height) {
+    static <T extends BlockEntity & CameraScreen> void drawFace(T screen, PoseStack pose, MultiBufferSource buffers, double width, double height,
+                                                                boolean buttons) {
         ResourceLocation picture = TailCameraFeed.show(screen);
         Matrix4f matrix = pose.last().pose();
         ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, width, height, 0, CASING);
@@ -139,13 +141,17 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             Component label = Component.translatable(KEY + "camera", Component.translatable(screen.camera().label()));
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
             double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.getLevel());
-            cameraButtons(shapes, matrix, screen.camera());
+            if (buttons) {
+                cameraButtons(shapes, matrix, screen.camera());
+            }
             ScreenDrawing.text(font, pose, buffers, label, labelX, height - BEZEL - LABEL_MARGIN - LABEL_HEIGHT / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.LEFT);
         } else {
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
             testCard(shapes, matrix, width, height);
-            cameraButtons(shapes, matrix, screen.camera());
+            if (buttons) {
+                cameraButtons(shapes, matrix, screen.camera());
+            }
             // Text last: it takes its own buffer, which ends the one the shapes went into.
             String status = SableClient.ride(screen) != null ? "no_signal" : "standby";
             double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
@@ -207,35 +213,35 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     /** The camera buttons along the bottom left, the shown camera's lit. */
     private static void cameraButtons(VertexConsumer shapes, Matrix4f matrix, OutsideCamera shown) {
         for (OutsideCamera camera : OutsideCamera.values()) {
-            cameraButton(shapes, matrix, camera, camera == shown);
+            double left = CameraButtons.left(camera);
+            cameraButton(shapes, matrix, camera, camera == shown, left, CameraButtons.INSET, left + CameraButtons.WIDTH,
+                CameraButtons.INSET + CameraButtons.HEIGHT, 0);
         }
     }
 
     /**
-     * A camera's button: the airliner seen from its right side on a dark backing, with a dot where the camera is; lit,
-     * the airliner white, the dot red as a recording light and a white rim round it all.
+     * A camera's button in a box: the airliner seen from its right side on a dark backing, with a dot where the camera
+     * is; lit, the airliner white, the dot red as a recording light and a white rim round it all. Drawn this far off
+     * the face, clear of whatever the box is already drawn on.
      */
-    private static void cameraButton(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, boolean lit) {
-        double x0 = CameraButtons.left(camera);
-        double y0 = CameraButtons.INSET;
-        double x1 = x0 + CameraButtons.WIDTH;
-        double y1 = y0 + CameraButtons.HEIGHT;
+    static void cameraButton(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, boolean lit, double x0, double y0, double x1, double y1,
+                             float lift) {
         if (lit) {
-            ScreenDrawing.rect(shapes, matrix, x0 - BUTTON_RIM, y0 - BUTTON_RIM, x1 + BUTTON_RIM, y1 + BUTTON_RIM, 2 * LAYER, WHITE);
+            ScreenDrawing.rect(shapes, matrix, x0 - BUTTON_RIM, y0 - BUTTON_RIM, x1 + BUTTON_RIM, y1 + BUTTON_RIM, lift + 2 * LAYER, WHITE);
         }
-        ScreenDrawing.rect(shapes, matrix, x0, y0, x1, y1, 3 * LAYER, lit ? BUTTON_LIT : LABEL_BACKING);
+        ScreenDrawing.rect(shapes, matrix, x0, y0, x1, y1, lift + 3 * LAYER, lit ? BUTTON_LIT : LABEL_BACKING);
         SideView view = SideView.in(x0, y0, x1, y1);
         int colour = lit ? WHITE : AIRLINER_DIM;
         for (double[][] quad : OutsideCamera.SIDE_VIEW) {
             // Back to front: the nose to the right turns the quads over, and they keep facing the viewer this way.
             for (int corner = quad.length - 1; corner >= 0; corner--) {
-                ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), 4 * LAYER, colour);
+                ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), lift + 4 * LAYER, colour);
             }
         }
         double x = view.x(camera.back);
         double y = view.y(camera.up);
         double half = CAMERA_DOT / 2;
-        ScreenDrawing.rect(shapes, matrix, x - half, y - half, x + half, y + half, 5 * LAYER, lit ? RECORDING : CAMERA_DIM);
+        ScreenDrawing.rect(shapes, matrix, x - half, y - half, x + half, y + half, lift + 5 * LAYER, lit ? RECORDING : CAMERA_DIM);
     }
 
     /**

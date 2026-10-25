@@ -179,7 +179,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     /** The key under the pointer: a key on the slope, a systems tile, or a camera's button; null for none. */
     @Nullable
     private static Box keyAt(CockpitDisplayBlockEntity display, CockpitDisplayBlockEntity.Panel panel, Pointer pointer) {
-        if (!pointer.onSlope() && display.shows() == CockpitDisplayBlock.Shows.CAMERA) {
+        if (!pointer.onSlope() && display.shows() == CockpitDisplayBlock.Shows.CAMERA && !display.cameraKeysOnSlope()) {
             OutsideCamera camera = CameraButtons.at(pointer.across(), pointer.up());
             double left = camera == null ? 0 : CameraButtons.left(camera);
             return camera == null ? null : new Box(left, CameraButtons.INSET, left + CameraButtons.WIDTH, CameraButtons.INSET + CameraButtons.HEIGHT);
@@ -261,7 +261,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     private static void camera(CockpitDisplayBlockEntity display, PoseStack pose, MultiBufferSource buffers, float width, float height) {
         pose.pushPose();
         pose.translate(0, 0, LAYER);
-        TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height);
+        TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height, !display.cameraKeysOnSlope());
         pose.popPose();
     }
 

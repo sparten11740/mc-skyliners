@@ -187,8 +187,9 @@ final class ScreenArc {
 
     /**
      * The panels with their slopes' keys: the autopilot's under the middle screen, the parking brake and the landing
-     * gear under the captain's inner panel, and the tiller under the captain's outer one, or where there is none,
-     * under the first officer's inner one.
+     * gear under the captain's inner panel, the tiller under the captain's outer one and the cameras' buttons under
+     * the first officer's inner one, the camera's own screen; where the outer pair does not fit, the tiller goes under
+     * the camera's screen instead, and the cameras' buttons stay along the bottom of its picture.
      */
     private static List<Panel> withDesks(Plan plan) {
         Plan cut = mitred(plan);
@@ -197,7 +198,7 @@ final class ScreenArc {
         Panel[] inner = cut.pairs().get(0);
         boolean outer = cut.pairs().size() > 1;
         panels.add(inner[0].holding(Desk.GROUND));
-        panels.add(outer ? inner[1] : inner[1].holding(Desk.TILLER));
+        panels.add(inner[1].holding(outer ? Desk.CAMERA : Desk.TILLER));
         if (outer) {
             panels.add(cut.pairs().get(1)[0].holding(Desk.TILLER));
             panels.add(cut.pairs().get(1)[1]);

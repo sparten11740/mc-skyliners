@@ -1,5 +1,6 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.airframe.OutsideCamera;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Button;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.CockpitDisplayBlockEntity.Desk;
@@ -42,21 +43,35 @@ public final class CockpitKeys {
         DROP(Link.DROP),
         ENGAGE(Button.ENGAGE), HEADING_LEFT(Button.HEADING_LEFT), HEADING_RIGHT(Button.HEADING_RIGHT), ORBIT_LEFT(Button.ORBIT_LEFT),
         ORBIT_RIGHT(Button.ORBIT_RIGHT), ALTITUDE_DOWN(Button.ALTITUDE_DOWN), ALTITUDE_UP(Button.ALTITUDE_UP), SPEED_DOWN(Button.SPEED_DOWN),
-        SPEED_UP(Button.SPEED_UP), RADIUS_DOWN(Button.RADIUS_DOWN), RADIUS_UP(Button.RADIUS_UP);
+        SPEED_UP(Button.SPEED_UP), RADIUS_DOWN(Button.RADIUS_DOWN), RADIUS_UP(Button.RADIUS_UP),
+        TAIL_CAMERA(OutsideCamera.TAIL), WING_CAMERA(OutsideCamera.WING), NOSE_CAMERA(OutsideCamera.NOSE), FRONT_CAMERA(OutsideCamera.FRONT);
 
+        /** What it works, by the panel's link to it; null for a camera's key, which works the panel itself. */
+        @Nullable
         public final Link link;
-        /** The autopilot's button it is; null for a control's key. */
+        /** The autopilot's button it is; null for any other key. */
         @Nullable
         public final Button button;
+        /** The outside camera it shows on the panel; null for any other key. */
+        @Nullable
+        public final OutsideCamera camera;
 
         Function(Link link) {
-            this.link = link;
-            this.button = null;
+            this(link, null, null);
         }
 
         Function(Button button) {
-            this.link = Link.AUTOPILOT;
+            this(Link.AUTOPILOT, button, null);
+        }
+
+        Function(OutsideCamera camera) {
+            this(null, null, camera);
+        }
+
+        Function(@Nullable Link link, @Nullable Button button, @Nullable OutsideCamera camera) {
+            this.link = link;
             this.button = button;
+            this.camera = camera;
         }
     }
 
@@ -101,7 +116,25 @@ public final class CockpitKeys {
                 new Key(Function.BRAKE, new Box(left + MARGIN, MARGIN, left + width / 2 - GAP / 2, length - MARGIN)),
                 new Key(Function.GEAR, new Box(left + width / 2 + GAP / 2, MARGIN, right - MARGIN, length - MARGIN)));
             case AUTOPILOT -> autopilot(left, width, length);
+            case CAMERA -> cameras(left, width, length);
         };
+    }
+
+    /**
+     * The cameras' keys, one for each outside camera, two by two, top row first: wide and low, the shape of the
+     * airliner seen from its side that each key shows, which a row of four across the slope would shrink to a sliver.
+     */
+    private static List<Key> cameras(double left, double width, double length) {
+        Function[] cameras = {Function.TAIL_CAMERA, Function.WING_CAMERA, Function.NOSE_CAMERA, Function.FRONT_CAMERA};
+        double keyWidth = (width - 2 * MARGIN - GAP) / 2;
+        double keyHeight = (length - 2 * MARGIN - GAP) / 2;
+        List<Key> keys = new ArrayList<>();
+        for (int i = 0; i < cameras.length; i++) {
+            double x0 = left + MARGIN + i % 2 * (keyWidth + GAP);
+            double y1 = length - MARGIN - i / 2 * (keyHeight + GAP);
+            keys.add(new Key(cameras[i], new Box(x0, y1 - keyHeight, x0 + keyWidth, y1)));
+        }
+        return keys;
     }
 
     /** The autopilot's keys: on and off at the left, as tall as the slope, then a column of two for each setting. */

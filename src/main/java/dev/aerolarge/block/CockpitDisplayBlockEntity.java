@@ -115,7 +115,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         /** The parking brake, and the landing gear lever with its lamps. */
         GROUND,
         /** The autopilot's buttons. */
-        AUTOPILOT
+        AUTOPILOT,
+        /** The outside cameras' buttons, the screen over it showing the camera picked. */
+        CAMERA
     }
 
     /** What a panel works: the autopilot, or one of the flight deck's switches out of sight under its floor. */
@@ -175,6 +177,11 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
     public List<Key> screenKeys() {
         boolean systems = panel != null && shows() == CockpitDisplayBlock.Shows.SYSTEMS;
         return systems ? CockpitKeys.systems(panel.width(), panel.height(), links.keySet()) : List.of();
+    }
+
+    /** Whether the cameras' buttons are on the slope under the screen, rather than along the bottom of its picture. */
+    public boolean cameraKeysOnSlope() {
+        return desk == Desk.CAMERA;
     }
 
     /** The keys on the slope under the screen, between its mitred ends, for drawing them. */
@@ -376,7 +383,7 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             return work(level, CockpitKeys.at(slopeKeys(), touch.across(), touch.up()), player);
         }
         return switch (shows()) {
-            case CAMERA -> look(CameraButtons.at(touch.across(), touch.up()));
+            case CAMERA -> !cameraKeysOnSlope() && look(CameraButtons.at(touch.across(), touch.up()));
             case MAP -> zoom();
             case SYSTEMS -> work(level, CockpitKeys.at(screenKeys(), touch.across(), touch.up()), player);
             case FLIGHT -> false;
@@ -388,6 +395,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
      * notch either way, or the switch it uses where it stands out of sight. Whether there was a key.
      */
     private boolean work(ServerLevel level, @Nullable Function function, ServerPlayer player) {
+        if (function != null && function.camera != null) {
+            return look(function.camera);
+        }
         BlockPos at = function == null ? null : linked(function.link);
         if (at == null) {
             return false;
