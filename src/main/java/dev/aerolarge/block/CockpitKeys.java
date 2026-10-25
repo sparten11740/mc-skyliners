@@ -23,9 +23,12 @@ public final class CockpitKeys {
     /** The systems page's tiles: across, and down. */
     private static final int TILE_COLUMNS = 3;
     private static final int TILE_ROWS = 2;
-    /** The systems page's tiles, top row first, left to right. */
+    /**
+     * The systems page's tiles, top row first, left to right: the everyday switches along the top, where a pilot's
+     * look rests, and the ones with something to them, the jump lights, the laser and the drop, below.
+     */
     private static final Function[] TILES = {
-        Function.CABIN_LIGHTS, Function.SEATBELTS, Function.JUMP_LIGHTS, Function.SHADES, Function.LASER, Function.DROP
+        Function.CABIN_LIGHTS, Function.SEATBELTS, Function.SHADES, Function.JUMP_LIGHTS, Function.LASER, Function.DROP
     };
     /** The autopilot's keys after its on/off key: each column's lower key (down or left), then its upper. */
     private static final Function[][] AUTOPILOT_COLUMNS = {

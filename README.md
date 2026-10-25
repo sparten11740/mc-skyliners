@@ -140,7 +140,9 @@ seatbelt signs (someone in a seat with an amber belt buckled across their lap, l
 beside the jump light, its red and green halves both dark while it is off, red or green), the window shades (a window
 on the sky with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its
 light metal turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
-or the doors open and the crate floating down under a parachute, lit red). Touch a tile to work its switch. On the
+or the doors open and the crate floating down under a parachute, lit red). The everyday three, the dimmer, the
+seatbelt signs and the shades, run along the top row, where a seated pilot's look rests, and the jump lights, the laser
+and the drop along the bottom, out of the way of a stray touch. Touch a tile to work its switch. On the
 slope under the screens are the keys: under each pilot's flight display a tiller, an arrow either side of a little
 wheel turned as the nose wheel is (touch an arrow to steer a notch that way), so either pilot can taxi; under the map the parking brake, a wheel
 gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
