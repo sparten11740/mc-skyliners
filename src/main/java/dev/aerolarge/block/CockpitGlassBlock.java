@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -20,9 +21,21 @@ public class CockpitGlassBlock extends ShellBlock {
         super(properties, part);
     }
 
+    /**
+     * A pane's side is left out against the next pane only where that pane covers it, so the panes join without a
+     * seam; where the next pane is cut away from part of it, as where the windscreen's facets turn, it shows, or the
+     * hull would have a hole there.
+     */
     @Override
     protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
-        return adjacent.is(this) || super.skipRendering(state, adjacent, direction);
+        return adjacent.is(this) && covers(adjacent, state, direction) || super.skipRendering(state, adjacent, direction);
+    }
+
+    /** Whether a pane covers the whole of the side of the next one that faces it, the way it faces from that one. */
+    private static boolean covers(BlockState pane, BlockState next, Direction direction) {
+        VoxelShape side = ShellGeometry.shape(shape(next)).getFaceShape(direction);
+        VoxelShape facing = ShellGeometry.shape(shape(pane)).getFaceShape(direction.getOpposite());
+        return !Shapes.joinIsNotEmpty(side, facing, BooleanOp.ONLY_FIRST);
     }
 
     @Override
