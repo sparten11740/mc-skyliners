@@ -1663,7 +1663,9 @@ public final class AirframeLayout {
         if (!isOpen(x, y, z) || !isOpen(x, y + 1, z)) {
             return;
         }
-        BlockState seat = AerolargeRegistry.PILOT_SEAT.get().defaultBlockState().setValue(PilotSeatBlock.FACING, Direction.NORTH);
+        // The sidestick at the outboard hand: the captain's left, the first officer's right.
+        BlockState seat = AerolargeRegistry.PILOT_SEAT.get().defaultBlockState().setValue(PilotSeatBlock.FACING, Direction.NORTH)
+            .setValue(PilotSeatBlock.STICK, x < 0 ? PilotSeatBlock.Stick.LEFT : PilotSeatBlock.Stick.RIGHT);
         set(x, y, z, seat);
         set(x, y + 1, z, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.UPPER));
     }

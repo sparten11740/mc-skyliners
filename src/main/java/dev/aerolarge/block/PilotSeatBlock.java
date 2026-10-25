@@ -5,6 +5,7 @@ import com.simibubi.create.content.contraptions.actors.seat.SeatBlock;
 import com.simibubi.create.content.contraptions.actors.seat.SeatEntity;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -45,12 +47,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * of Create's seats, sat in by Create's own seat entity, so the seatbelts, the pilots' head-up display and the outside
  * cameras treat whoever sits in it as seated, aboard an assembled airliner too. It never takes a sitter on its own,
  * though: nothing sits down in it by landing on it, and villager passengers leave it to the pilots (see
- * {@link dev.aerolarge.cabin.Passengers}); nor does dye turn it into a Create seat. FACING is the way the sitter faces.
+ * {@link dev.aerolarge.cabin.Passengers}); nor does dye turn it into a Create seat. FACING is the way the sitter faces;
+ * STICK which armrest carries a sidestick, as an A380's pilot has one at the outboard hand, the flight deck's seats
+ * built with it and a seat put down by hand without.
  */
 public class PilotSeatBlock extends SeatBlock {
     private static final MapCodec<PilotSeatBlock> CODEC = simpleCodec(PilotSeatBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+    public static final EnumProperty<Stick> STICK = EnumProperty.create("stick", Stick.class);
     /**
      * How much higher than on one of Create's seats a pilot sits, in blocks (six pixels, as the seat's model is raised
      * in tools/generate_resources.mjs): high enough to look out over the curved row of screens.
@@ -86,9 +91,24 @@ public class PilotSeatBlock extends SeatBlock {
     private static final Map<Direction, VoxelShape> LOWER_SOLID_SHAPES = TurnedShapes.of(LOWER_SOLID);
     private static final Map<Direction, VoxelShape> UPPER_SOLID_SHAPES = TurnedShapes.of(UPPER_SOLID);
 
+    /** Which of a pilot seat's armrests carries a sidestick, as the sitter sees it. */
+    public enum Stick implements StringRepresentable {
+        NONE, LEFT, RIGHT;
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+
+        /** The other armrest, as a mirrored seat has it. */
+        Stick mirrored() {
+            return this == LEFT ? RIGHT : this == RIGHT ? LEFT : NONE;
+        }
+    }
+
     public PilotSeatBlock(Properties properties) {
         super(properties, DyeColor.BLACK);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(STICK, Stick.NONE));
     }
 
     @Override
@@ -98,7 +118,7 @@ public class PilotSeatBlock extends SeatBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder.add(FACING, HALF));
+        super.createBlockStateDefinition(builder.add(FACING, HALF, STICK));
     }
 
     /** Facing the way whoever puts it there faces, so they sit down in it facing that way; it needs the room above. */
@@ -239,6 +259,7 @@ public class PilotSeatBlock extends SeatBlock {
 
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
-        return state.setValue(FACING, mirror.mirror(state.getValue(FACING)));
+        Stick stick = mirror == Mirror.NONE ? state.getValue(STICK) : state.getValue(STICK).mirrored();
+        return state.setValue(FACING, mirror.mirror(state.getValue(FACING))).setValue(STICK, stick);
     }
 }

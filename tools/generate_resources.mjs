@@ -3617,9 +3617,10 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
 // standing six pixels higher than a Create seat (PilotSeatBlock.RAISE) so a pilot looks out over the screens.
 // The lower one: the seat pan on a tall column, on a plate across two floor rails, chrome piping along its front edge,
 // the back down to the pan with the harness's shoulder straps down it, and a padded armrest on a post either side,
-// standing up into the upper half. The upper one: the top of the back narrowing at the shoulders, the straps over
-// them, and the headrest with a trim band along its top, right behind a sitter's head. In the hand both halves
-// together, smaller. Only the lower half drops the seat, as with doors.
+// standing up into the upper half; on the flight deck one armrest carries a sidestick at its front end, as an A380
+// pilot's outboard hand has, a dark grip on its base with a chrome cap. The upper one: the top of the back narrowing at
+// the shoulders, the straps over them, and the headrest with a trim band along its top, right behind a sitter's head.
+// In the hand both halves together, smaller, without a stick. Only the lower half drops the seat, as with doors.
 {
   const textures = {
     leather: `${ID}:block/pilot_seat_leather`, trim: `${ID}:block/pilot_seat_trim`, frame: `${ID}:block/pilot_seat_frame`,
@@ -3667,12 +3668,22 @@ for (const name of ["airstair_controller", "airstair_call_button", "thrust_lever
     solid([5, 12, 11.5], [11, 17.5, 12], "#leather"),
     solid([4, 18.5, 12], [12, 19, 15], "#trim"),
   ].map(inTexture);
-  for (const [half, elements] of [["lower", lower], ["upper", upper]]) {
-    write(`assets/${ID}/models/block/pilot_seat_${half}.json`, { parent: "minecraft:block/block", textures, elements });
+  // The sidestick on the left armrest's front end, the sitter facing north; the right one mirrored across the seat.
+  const leftStick = [
+    solid([0.25, 18, 4], [2.25, 18.5, 6.5], "#frame"),
+    solid([0.75, 18.5, 4.5], [1.75, 22, 5.75], "#frame"),
+    solid([0.6, 22, 4.35], [1.9, 22.75, 5.9], "#trim"),
+  ].map(inTexture);
+  const rightStick = leftStick.map((element) => ({ ...element, from: [16 - element.to[0], element.from[1], element.from[2]],
+    to: [16 - element.from[0], element.to[1], element.to[2]] })).map(inTexture);
+  const models = { lower, upper, lower_stick_left: [...lower, ...leftStick], lower_stick_right: [...lower, ...rightStick] };
+  for (const [name, elements] of Object.entries(models)) {
+    write(`assets/${ID}/models/block/pilot_seat_${name}.json`, { parent: "minecraft:block/block", textures, elements });
   }
+  const seatModel = (half, stick) => (half === "upper" || stick === "none" ? `pilot_seat_${half}` : `pilot_seat_lower_stick_${stick}`);
   write(`assets/${ID}/blockstates/pilot_seat.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => [false, true].map((water) =>
-      [`facing=${facing},half=${half},waterlogged=${water}`, { model: `${ID}:block/pilot_seat_${half}`, y }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => ["none", "left", "right"].flatMap((stick) =>
+      [false, true].map((water) => [`facing=${facing},half=${half},stick=${stick},waterlogged=${water}`, { model: `${ID}:block/${seatModel(half, stick)}`, y }]))))),
   });
   // In the hand the whole seat stands three pixels lower, so its headrest stays inside what a model may hold.
   const shifted = (elements, up) => elements.map((element) => ({ ...element, from: [element.from[0], element.from[1] + up, element.from[2]],

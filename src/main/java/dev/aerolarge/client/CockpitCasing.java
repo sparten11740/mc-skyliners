@@ -38,6 +38,14 @@ final class CockpitCasing {
      * blank casing behind the row, a block.
      */
     private static final float UPSTAND = 1;
+    /**
+     * The glareshield's hood along the screens' top edge, as on an airliner's panel: how far it reaches out over the
+     * screens toward the seats, how far below the slab's top its underside is, and how far above it its top stands, in
+     * blocks.
+     */
+    private static final float HOOD = 0.14F;
+    private static final float HOOD_BELOW = 0.04F;
+    private static final float HOOD_ABOVE = 0.02F;
 
     private CockpitCasing() {
     }
@@ -47,6 +55,7 @@ final class CockpitCasing {
         VertexConsumer consumer = buffers.getBuffer(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
         Face face = new Face(consumer, pose, light);
         slab(face, sprite(SCREEN_CASING), width, panel);
+        hood(face, sprite(SCREEN_CASING), width, panel);
         if (panel.desk() > 0) {
             Desk desk = new Desk(panel, width);
             desk.body(face, sprite(DESK));
@@ -69,6 +78,39 @@ final class CockpitCasing {
         if (panel.desk() <= 0) {
             face.tiled(sprite, new Vector3f(0, bottom, back), new Vector3f(width, 0, 0), new Vector3f(0, 0, -back));
         }
+    }
+
+    /**
+     * The glareshield's hood over the screen's top edge, from the slab's back out over the face, its front edge cut in
+     * at either end as the desk's slope is, so the hoods of panels turned from each other meet without overlapping.
+     */
+    private static void hood(Face face, TextureAtlasSprite sprite, float width, CockpitDisplayBlockEntity.Panel panel) {
+        float back = -CockpitDisplayBlock.DEPTH;
+        float top = panel.top() + HOOD_ABOVE;
+        float under = panel.top() - HOOD_BELOW;
+        float leftIn = panel.desk() > 0 ? panel.leftCut() * HOOD / panel.desk() : 0;
+        float rightIn = panel.desk() > 0 ? panel.rightCut() * HOOD / panel.desk() : 0;
+        Vector3f backLeft = new Vector3f(0, 0, back);
+        Vector3f backRight = new Vector3f(width, 0, back);
+        Vector3f frontLeft = new Vector3f(leftIn, 0, HOOD);
+        Vector3f frontRight = new Vector3f(width - rightIn, 0, HOOD);
+        float height = top - under;
+        face.quad(sprite, at(backLeft, top), at(frontLeft, top), at(frontRight, top), at(backRight, top), new float[]{0, 0, 0, 1, 1, 1, 1, 0});
+        face.quad(sprite, at(frontLeft, under), at(frontLeft, top), at(new Vector3f(0, 0, 0), top), at(new Vector3f(0, 0, 0), under),
+            new float[]{0, 1, 0, 1 - height, 1, 1 - height, 1, 1});
+        face.quad(sprite, at(new Vector3f(width, 0, 0), under), at(new Vector3f(width, 0, 0), top), at(frontRight, top), at(frontRight, under),
+            new float[]{0, 1, 0, 1 - height, 1, 1 - height, 1, 1});
+        face.quad(sprite, at(frontLeft, under), at(frontRight, under), at(frontRight, top), at(frontLeft, top),
+            new float[]{0, 1, 1, 1, 1, 1 - height, 0, 1 - height});
+        face.quad(sprite, at(new Vector3f(0, 0, 0), under), at(new Vector3f(width, 0, 0), under), at(frontRight, under), at(frontLeft, under),
+            new float[]{0, 0, 1, 0, 1, 1, 0, 1});
+        face.quad(sprite, at(backRight, panel.top()), at(backLeft, panel.top()), at(backLeft, top), at(backRight, top),
+            new float[]{0, 1, 1, 1, 1, 1 - HOOD_ABOVE, 0, 1 - HOOD_ABOVE});
+    }
+
+    /** A point of the floor plan raised to a height. */
+    private static Vector3f at(Vector3f plan, float height) {
+        return new Vector3f(plan.x, height, plan.z);
     }
 
     private static TextureAtlasSprite sprite(ResourceLocation texture) {

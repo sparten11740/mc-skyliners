@@ -96,7 +96,9 @@ framed by posts round the sides only, so from the seats you see the sky and the 
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
 either side, on a tall column between floor rails, raised so a pilot sits higher than on a Create seat and looks out
-over the screens. Each is two blocks tall, and using either half sits you down in it. It
+over the screens. On the flight deck each carries a sidestick at the front of its outboard armrest, the captain's at
+the left hand and the first officer's at the right, as on an A380 (a seat put down by hand has none). Each is two
+blocks tall, and using either half sits you down in it. It
 is one of Create's seats underneath, so the seatbelts and everything else that knows about seats treat you as
 seated, but villager passengers leave it to the pilots. A Pilot Seat can be crafted and put down in your own builds
 too.
@@ -125,7 +127,7 @@ their motors. A closed shade shuts out the daylight; anyone can open or close a 
 
 In front of the console the screens curve round the seats like an airliner's glass cockpit, three quarters of a block
 above the floor on a desk whose top slopes down toward the pilots, their top edges just under a seated pilot's eyes, so
-the pilots look out over them through the windscreen. In the middle, straight, is the systems screen, and either side of it
+the pilots look out over them through the windscreen, a dark glareshield hood running along their top edges. In the middle, straight, is the systems screen, and either side of it
 two screens in the same slim dark casing, each turned further toward the seats than the one inside it, so the row
 wraps round the pilots. Left to right, as on an A380: the moving map, the captain's primary flight display, the systems
 screen, the first officer's primary flight display and the outside camera, each pilot's own flight display straight
