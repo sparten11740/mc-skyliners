@@ -207,6 +207,11 @@ public final class AirframeLayout {
      * low enough that from either pilot's seat it is within reach overhead.
      */
     private static final int ANNOUNCEMENT_PANEL_HEADROOM = 3;
+    /**
+     * The least standing room under the announcement panel, in blocks, where the windscreen comes back over the seats
+     * too far for {@link #ANNOUNCEMENT_PANEL_HEADROOM}: still enough to walk under.
+     */
+    private static final int ANNOUNCEMENT_PANEL_LOW_HEADROOM = 2;
     /** How many rows of open space over the announcement panel, at most, are boxed in up to the crown. */
     private static final int ANNOUNCEMENT_PANEL_MOUNT = 2;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
@@ -1934,37 +1939,71 @@ public final class AirframeLayout {
     }
 
     /**
-     * The announcement panel, hung overhead in the middle like an airliner's overhead panel: from the pilots' seats'
-     * row forward over the centre console, {@link #ANNOUNCEMENT_PANEL_HEADROOM} rows of standing room under it, so from
-     * either seat the pilot looks up at it, and in among the crown's skin, clear of the windscreen ahead and of the
-     * screens under it. Where the crown curves up away from the panel's back, the gap over it is boxed in with the
-     * hull's own panels, as far as {@link #ANNOUNCEMENT_PANEL_MOUNT} rows; nothing where the room under the crown is not
-     * open, or the crown is further up. Linked to the autopilot when the airliner is built.
+     * The announcement panel, hung overhead in the middle like an airliner's overhead panel, always over the pilots'
+     * seats' row so from either seat the pilot looks up at it: from that row forward over the centre console where
+     * the crown leaves room, or else moved back a row at a time until it reaches back behind the seats, where the
+     * windscreen comes back over them. {@link #ANNOUNCEMENT_PANEL_HEADROOM} rows of standing room under it, or
+     * {@link #ANNOUNCEMENT_PANEL_LOW_HEADROOM} where it fits nowhere higher; in among the crown's skin, clear of the
+     * windscreen and of the screens under it. Where the crown curves up away from the panel's back, the gap over it is
+     * boxed in with the hull's own panels, as far as {@link #ANNOUNCEMENT_PANEL_MOUNT} rows; nothing where no such
+     * spot is open. Linked to the autopilot when the airliner is built.
      */
     private void announcementPanel(int deck, int seatZ, BlockPos autopilot) {
-        int y = deck + 1 + ANNOUNCEMENT_PANEL_HEADROOM;
-        int left = -(AnnouncementPanelBlock.COLUMNS / 2);
-        int front = seatZ - AnnouncementPanelBlock.ROWS + 1;
-        if (!fitsOver(left, y, front, AnnouncementPanelBlock.COLUMNS, AnnouncementPanelBlock.ROWS)) {
-            return;
-        }
-        for (int z = front; z <= seatZ; z++) {
-            if (mount(left, y + 1, z, AnnouncementPanelBlock.COLUMNS) > ANNOUNCEMENT_PANEL_MOUNT) {
+        for (int headroom = ANNOUNCEMENT_PANEL_HEADROOM; headroom >= ANNOUNCEMENT_PANEL_LOW_HEADROOM; headroom--) {
+            if (announcementPanelAt(deck + 1 + headroom, seatZ, autopilot)) {
                 return;
             }
         }
-        for (int z = front; z <= seatZ; z++) {
+    }
+
+    /**
+     * Hangs the announcement panel at height y over the seats' row, as far forward as it fits with its back row no
+     * further behind the seats than the panel is long; whether it did.
+     */
+    private boolean announcementPanelAt(int y, int seatZ, BlockPos autopilot) {
+        for (int back = seatZ; back < seatZ + AnnouncementPanelBlock.ROWS; back++) {
+            if (announcementPanelFits(y, back)) {
+                hangAnnouncementPanel(y, back, autopilot);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether the announcement panel fits at height y with its back row at station back: open where it hangs, and
+     * no more than {@link #ANNOUNCEMENT_PANEL_MOUNT} rows of open space over it up to the crown.
+     */
+    private boolean announcementPanelFits(int y, int back) {
+        int left = -(AnnouncementPanelBlock.COLUMNS / 2);
+        int front = back - AnnouncementPanelBlock.ROWS + 1;
+        if (!fitsOver(left, y, front, AnnouncementPanelBlock.COLUMNS, AnnouncementPanelBlock.ROWS)) {
+            return false;
+        }
+        for (int z = front; z <= back; z++) {
+            if (mount(left, y + 1, z, AnnouncementPanelBlock.COLUMNS) > ANNOUNCEMENT_PANEL_MOUNT) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Hangs the announcement panel at height y with its back row at station back, boxed in up to the crown. */
+    private void hangAnnouncementPanel(int y, int back, BlockPos autopilot) {
+        int left = -(AnnouncementPanelBlock.COLUMNS / 2);
+        int front = back - AnnouncementPanelBlock.ROWS + 1;
+        for (int z = front; z <= back; z++) {
             for (int x = left; x < left + AnnouncementPanelBlock.COLUMNS; x++) {
                 boxIn(x, y + 1, z);
             }
         }
-        // Facing the nose, as its viewers do: part 0 is the back row's left, over the seats' row, and the rows go
-        // forward from there, the columns to the right (east, facing north).
+        // Facing the nose, as its viewers do: part 0 is the back row's left and the rows go forward from there, the
+        // columns to the right (east, facing north).
         BlockState panel = AerolargeRegistry.ANNOUNCEMENT_PANEL.get().defaultBlockState().setValue(AnnouncementPanelBlock.FACING, Direction.NORTH);
         for (int part = 0; part < AnnouncementPanelBlock.COLUMNS * AnnouncementPanelBlock.ROWS; part++) {
-            set(left + part % AnnouncementPanelBlock.COLUMNS, y, seatZ - part / AnnouncementPanelBlock.COLUMNS, panel.setValue(AnnouncementPanelBlock.PART, part));
+            set(left + part % AnnouncementPanelBlock.COLUMNS, y, back - part / AnnouncementPanelBlock.COLUMNS, panel.setValue(AnnouncementPanelBlock.PART, part));
         }
-        BlockPos origin = new BlockPos(left, y, seatZ);
+        BlockPos origin = new BlockPos(left, y, back);
         fittings.put(origin, (blockEntity, rotation) -> {
             if (blockEntity instanceof AnnouncementPanelBlockEntity linked) {
                 linked.configure(autopilot.subtract(origin).rotate(rotation));
