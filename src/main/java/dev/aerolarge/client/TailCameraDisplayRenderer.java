@@ -65,13 +65,22 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double CAMERA_LENS_LENGTH = 0.02;
     private static final double CAMERA_LENS_NARROW = 0.008;
     private static final double CAMERA_LENS_WIDE = 0.016;
-    /**
-     * The camera buttons: the airliner's margin inside each, the rim round the lit one, and the size of the dot where
-     * its camera is, in blocks.
-     */
+    /** The camera buttons: the airliner's margin inside each, and the rim round the lit one, in blocks. */
     private static final double BUTTON_PAD = 0.008;
     private static final double BUTTON_RIM = 0.006;
-    private static final double CAMERA_DOT = 0.016;
+    /**
+     * A camera's mark on its button: the size of the dot where it is and the length of the beam it looks along, as
+     * shares of the button's height, how wide the beam opens either side, in degrees, and how opaque it is, of 255.
+     */
+    private static final double CAMERA_MARK = 0.16;
+    private static final double CAMERA_BEAM = 0.55;
+    private static final double BEAM_SPREAD = 22;
+    private static final int BEAM_ALPHA = 0x90;
+    /**
+     * How far round from straight ahead a camera may look and still show its beam on the side view, in degrees; one
+     * looking out further to the side, toward whoever looks at the button, shows a ring round its dot instead.
+     */
+    private static final double BEAM_YAW = 60;
     /** How far the side view and the cameras on it reach, in metres: ahead of the nose, back from it, and up. */
     private static final double VIEW_AHEAD = reach(point -> -point[0], camera -> -camera.back);
     private static final double VIEW_BACK = reach(point -> point[0], camera -> camera.back);
@@ -96,7 +105,6 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final int WHITE = 0xFFF2F6FB;
     private static final int BUTTON_LIT = 0xE0000000;
     private static final int AIRLINER_DIM = 0xFF8A949E;
-    private static final int CAMERA_DIM = 0xFFF2B233;
     /** The test card's bars, left to right: grey, yellow, cyan, green, magenta, red and blue. */
     private static final int[] COLOUR_BARS = {0xFFC0C0C0, 0xFFC0C000, 0xFF00C0C0, 0xFF00C000, 0xFFC000C0, 0xFFC00000, 0xFF0000C0};
 
@@ -140,7 +148,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             // The picture took its own buffer; the shapes over it take theirs back, and the text its own after them.
             Component label = Component.translatable(KEY + "camera", Component.translatable(screen.camera().label()));
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-            double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.getLevel());
+            double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, colour(screen.camera()), screen.getLevel());
             if (buttons) {
                 cameraButtons(shapes, matrix, screen.camera());
             }
@@ -188,7 +196,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
      * The camera's label in the picture's top corner, the way a security camera's picture has one: a blinking red
      * recording light and a camera on a dark backing, wide enough for the name after them. Where the name starts.
      */
-    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double height, double nameWidth, @Nullable Level level) {
+    private static double cameraLabel(VertexConsumer shapes, Matrix4f matrix, double height, double nameWidth, int colour, @Nullable Level level) {
         double top = height - BEZEL - LABEL_MARGIN;
         double bottom = top - LABEL_HEIGHT;
         double middle = (top + bottom) / 2;
@@ -201,12 +209,12 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         if (level == null || level.getGameTime() / BLINK_TICKS % 2 == 0) {
             ScreenDrawing.rect(shapes, matrix, light, middle - RECORDING_LIGHT / 2, light + RECORDING_LIGHT, middle + RECORDING_LIGHT / 2, 3 * LAYER, RECORDING);
         }
-        ScreenDrawing.rect(shapes, matrix, camera, middle - CAMERA_BODY_HEIGHT / 2, lens, middle + CAMERA_BODY_HEIGHT / 2, 3 * LAYER, WHITE);
+        ScreenDrawing.rect(shapes, matrix, camera, middle - CAMERA_BODY_HEIGHT / 2, lens, middle + CAMERA_BODY_HEIGHT / 2, 3 * LAYER, colour);
         // The lens hood, widening away from the body.
-        ScreenDrawing.vertex(shapes, matrix, lens, middle - CAMERA_LENS_NARROW, 3 * LAYER, WHITE);
-        ScreenDrawing.vertex(shapes, matrix, lens + CAMERA_LENS_LENGTH, middle - CAMERA_LENS_WIDE, 3 * LAYER, WHITE);
-        ScreenDrawing.vertex(shapes, matrix, lens + CAMERA_LENS_LENGTH, middle + CAMERA_LENS_WIDE, 3 * LAYER, WHITE);
-        ScreenDrawing.vertex(shapes, matrix, lens, middle + CAMERA_LENS_NARROW, 3 * LAYER, WHITE);
+        ScreenDrawing.vertex(shapes, matrix, lens, middle - CAMERA_LENS_NARROW, 3 * LAYER, colour);
+        ScreenDrawing.vertex(shapes, matrix, lens + CAMERA_LENS_LENGTH, middle - CAMERA_LENS_WIDE, 3 * LAYER, colour);
+        ScreenDrawing.vertex(shapes, matrix, lens + CAMERA_LENS_LENGTH, middle + CAMERA_LENS_WIDE, 3 * LAYER, colour);
+        ScreenDrawing.vertex(shapes, matrix, lens, middle + CAMERA_LENS_NARROW, 3 * LAYER, colour);
         return name;
     }
 
@@ -220,9 +228,9 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     }
 
     /**
-     * A camera's button in a box: the airliner seen from its right side on a dark backing, with a dot where the camera
-     * is; lit, the airliner white, the dot red as a recording light and a white rim round it all. Drawn this far off
-     * the face, clear of whatever the box is already drawn on.
+     * A camera's button in a box: the airliner seen from its right side on a dark backing, with a dot in the camera's
+     * colour where it is and a beam the way it looks; lit, the airliner white and a white rim round it all. Drawn this
+     * far off the face, clear of whatever the box is already drawn on.
      */
     static void cameraButton(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, boolean lit, double x0, double y0, double x1, double y1,
                              float lift) {
@@ -240,8 +248,38 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         }
         double x = view.x(camera.back);
         double y = view.y(camera.up);
-        double half = CAMERA_DOT / 2;
-        ScreenDrawing.rect(shapes, matrix, x - half, y - half, x + half, y + half, lift + 5 * LAYER, lit ? RECORDING : CAMERA_DIM);
+        double mark = (y1 - y0) * CAMERA_MARK;
+        beam(shapes, matrix, camera, x, y, (y1 - y0) * CAMERA_BEAM, mark, lift + 5 * LAYER);
+        ScreenDrawing.rect(shapes, matrix, x - mark / 2, y - mark / 2, x + mark / 2, y + mark / 2, lift + 6 * LAYER, colour(camera));
+    }
+
+    /**
+     * Which way a camera looks, seen from the airliner's right side as its button shows it: a see-through wedge in its
+     * colour out from where it is, ahead to the right; for one looking out to the side, a ring round its dot.
+     */
+    private static void beam(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, double x, double y, double length, double mark, float z) {
+        int seeThrough = BEAM_ALPHA << 24 | colour(camera) & 0xFFFFFF;
+        if (Math.abs(camera.yaw) > BEAM_YAW) {
+            ScreenDrawing.disc(shapes, matrix, x, y, mark * 1.4, 16, z, seeThrough);
+            return;
+        }
+        double angle = Math.atan2(Math.sin(Math.toRadians(camera.pitch)), Math.cos(Math.toRadians(camera.yaw)) * Math.cos(Math.toRadians(camera.pitch)));
+        double spread = Math.toRadians(BEAM_SPREAD);
+        // Anticlockwise, as the button sees it: the tip, the edge below, the edge above.
+        ScreenDrawing.vertex(shapes, matrix, x, y, z, seeThrough);
+        ScreenDrawing.vertex(shapes, matrix, x + Math.cos(angle - spread) * length, y + Math.sin(angle - spread) * length, z, seeThrough);
+        ScreenDrawing.vertex(shapes, matrix, x + Math.cos(angle + spread) * length, y + Math.sin(angle + spread) * length, z, seeThrough);
+        ScreenDrawing.vertex(shapes, matrix, x, y, z, seeThrough);
+    }
+
+    /** Each camera's own colour, on its button and on its picture's label, so the four tell apart at a glance. */
+    static int colour(OutsideCamera camera) {
+        return switch (camera) {
+            case TAIL -> 0xFF46C8F0;
+            case WING -> 0xFF46E070;
+            case NOSE -> 0xFFFF8A3C;
+            case FRONT -> 0xFFFF6FAE;
+        };
     }
 
     /**

@@ -152,10 +152,12 @@ whole airliner from above and behind, its wingtips at the edges, the ground or t
 blinking recording light in the corner. Where the nose leaves no room for the camera panel, a tail camera display, a
 wide screen three blocks across, hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward
 them. Four buttons on the slope under the camera's screen pick the camera (along the bottom left of its picture where
-the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with a
-dot where its camera sits, the one shown lit with a red dot: the fin, the right wing, under the nose by the
-nose gear, and in front of the nose, level with the pilots' eyes and looking fifteen degrees down at the runway coming
-up to meet the airliner. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is
+the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with
+its camera marked in a colour of its own and a see-through beam the way it looks, the one shown lit white with a white
+rim: sky blue on the fin, looking ahead and down; green on the right wing, ringed as it looks out along the wing
+toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
+looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes
+the same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is
 drawn small, a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen
 aboard the same airliner set to the same camera shows the same picture. Without
 one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
