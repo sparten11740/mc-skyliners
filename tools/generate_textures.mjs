@@ -2226,6 +2226,106 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return sidePlane(x, y, 16, 25, 0, 0.7) ?? strip(x, y, 29, 0, 31);
   });
 
+  // The flight deck's systems tiles and keys (see CockpitKeysArt), 32 by 32 like the announcement tiles, each a
+  // picture a child knows without reading. The seatbelt signs: someone sitting in a seat, a big amber belt buckled
+  // across their lap. The cabin lights: a light bulb with long rays (bright), the same in amber with short ones
+  // (dimmed), or a pale blue moon with stars (the night glow). The jump lights: a skydiver under a canopy beside a
+  // lamp, dark, red (stand by) or green (go). The window shades: a cabin window on the sky with its shade rolled up,
+  // or pulled down over it. The laser: the turret under the nose firing a red beam, sparks where it strikes. The drop
+  // bay: a crate on the bay's closed doors, or the doors swung open and the crate floating down under a parachute.
+  const cockpitOutput = resolve(guiOutput, "cockpit");
+  mkdirSync(cockpitOutput, { recursive: true });
+  const cockpitIcon = (name, paint) => texture(cockpitOutput, name, (x, y) => paint(x, y) ?? CLEAR, 0, BIG, BIG);
+  const ellipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+  const NIGHT_MOON = [0xa8, 0xc8, 0xff];
+  const SHADE = [0xb4, 0xba, 0xc4];
+  const SHADE_DARK = [0x86, 0x8d, 0x98];
+
+  cockpitIcon("seatbelts", (x, y) => {
+    if (rounded(x, y, 15, 16, 18, 20, 0.8)) return x >= 16 && x <= 17 && y >= 17 && y <= 19 ? INK : STEEL;
+    if (y >= 17 && y <= 19 && x >= 9 && x <= 23) return AMBER;
+    if (disc(x, y, 14, 6, 3.3)) return y <= 4 ? HAIR : SKIN;
+    if (rounded(x, y, 11, 11, 15, 19, 1.4)) return SHIRT;
+    if (rounded(x, y, 14, 19, 23, 21, 1.4) || rounded(x, y, 22, 21, 23, 27, 1.4)) return TROUSERS;
+    if (rounded(x, y, 21, 28, 27, 28, 1)) return DARK;
+    if (rounded(x, y, 6, 8, 8, 22, 1.2) || rounded(x, y, 7, 23, 22, 24, 0.6)) return STEEL_DARK;
+    return x >= 13 && x <= 15 && y >= 25 && y <= 29 ? STEEL_DARK : null;
+  });
+  // A light bulb, lit in a colour, its rays reaching so far out.
+  const bulb = (x, y, glass, rays) => {
+    const r = Math.hypot(x - 16, y - 12);
+    if (r <= 7) return r <= 3 ? INK : glass;
+    if (x >= 13 && x <= 18 && y >= 18 && y <= 21) return glass;
+    if (x >= 13 && x <= 18 && y >= 22 && y <= 26) return y % 2 === 0 ? STEEL : STEEL_DARK;
+    if (x >= 15 && x <= 16 && y === 27) return DARK;
+    const angle = Math.atan2(y - 12, x - 16);
+    const ray = Math.abs(((angle / (Math.PI / 4)) % 1 + 1) % 1 - 0.5) > 0.38 && angle < 0.6;
+    return ray && r >= 9 && r <= rays ? glass : null;
+  };
+  cockpitIcon("cabin_lights_bright", (x, y) => bulb(x, y, YELLOW, 14.5));
+  cockpitIcon("cabin_lights_dim", (x, y) => bulb(x, y, AMBER, 10.6));
+  cockpitIcon("cabin_lights_night", (x, y) => {
+    if (disc(x, y, 14, 16, 10) && !disc(x, y, 20, 11, 9)) return NIGHT_MOON;
+    const stars = [[24, 6], [27, 18], [20, 26]];
+    return stars.some(([cx, cy]) => (x === cx && Math.abs(y - cy) <= 1) || (y === cy && Math.abs(x - cx) <= 1)) ? INK : null;
+  });
+  // A skydiver under a striped canopy, the lines down to the harness, beside the jump light in its colour.
+  const skydiver = (x, y, lamp, lampLight) => {
+    const lampR = Math.hypot(x - 25, y - 22);
+    if (lampR <= 4.5) return lampR >= 3.6 ? STEEL : disc(x, y, 24, 21, 1.3) ? lampLight : lamp;
+    if (ellipse(x, y, 12, 10, 10, 6.5) && y <= 10) return Math.floor((x + 1) / 4) % 2 === 0 ? ORANGE : INK;
+    if (onSegment(x, y, [3, 10], [11, 20], 0.7) || onSegment(x, y, [21, 10], [13, 20], 0.7) || onSegment(x, y, [12, 10], [12, 19], 0.7)) return PALE;
+    if (disc(x, y, 12, 21, 2)) return SKIN;
+    if (rounded(x, y, 11, 24, 13, 27, 0.9)) return SHIRT;
+    return onSegment(x, y, [11, 28], [9, 31], 1.2) || onSegment(x, y, [13, 28], [15, 31], 1.2) ? TROUSERS : null;
+  };
+  cockpitIcon("jump_lights_off", (x, y) => skydiver(x, y, DARK, STEEL_DARK));
+  cockpitIcon("jump_lights_red", (x, y) => skydiver(x, y, RED, HEART_LIGHT));
+  cockpitIcon("jump_lights_green", (x, y) => skydiver(x, y, GREEN, [0xb4, 0xff, 0xc8]));
+  // The cabin window, its frame round the sky with the sun and a cloud, its shade down to a row.
+  const shadedWindow = (x, y, shadeTo) => {
+    if (!rounded(x, y, 12, 8, 19, 23, 8)) return null;
+    if (!rounded(x, y, 13, 9, 18, 22, 5.5)) return PALE;
+    if (y <= shadeTo) return y === shadeTo ? SHADE_DARK : y % 3 === 0 ? SHADE_DARK : SHADE;
+    if (y === shadeTo + 1 && x >= 15 && x <= 16) return DARK;
+    if (disc(x, y, 19, 13, 2.6)) return YELLOW;
+    if (disc(x, y, 12, 17, 2.4) || disc(x, y, 15, 16, 2.8) || rounded(x, y, 11, 17, 17, 18, 1)) return INK;
+    return y >= 25 ? HILL : SKY;
+  };
+  cockpitIcon("shades_open", (x, y) => shadedWindow(x, y, 6));
+  cockpitIcon("shades_closed", (x, y) => {
+    const window = shadedWindow(x, y, BIG);
+    return window !== null && window !== PALE && y === 26 && x >= 15 && x <= 16 ? DARK : window;
+  });
+  cockpitIcon("laser", (x, y) => {
+    if (y >= 3 && y <= 6 && x >= 1 && x <= 30) return y === 6 ? STEEL : PALE;
+    const sparks = [[29, 26], [27, 29], [30, 23], [26, 27]];
+    if (sparks.some(([cx, cy]) => x === cx && y === cy)) return YELLOW;
+    if (onSegment(x, y, [19, 16], [28, 25], 0.9)) return HEART_LIGHT;
+    if (onSegment(x, y, [19, 16], [28, 25], 2.4)) return RED;
+    if (onSegment(x, y, [13, 10], [19, 16], 2.6)) return STEEL_DARK;
+    return disc(x, y, 11, 7, 6) && y >= 7 ? (disc(x, y, 9, 9, 1.5) ? STEEL : DARK) : null;
+  });
+  // A care package: a wooden crate, its straps across it.
+  const crate = (x, y, x0, y0, x1, y1) => {
+    if (!rounded(x, y, x0, y0, x1, y1, 0.8)) return null;
+    const midX = Math.round((x0 + x1) / 2);
+    const midY = Math.round((y0 + y1) / 2);
+    return x === midX || y === midY ? CHIP : x === x0 || y === y0 ? COOKIE_LIGHT : COOKIE;
+  };
+  cockpitIcon("drop_safe", (x, y) => {
+    if (y >= 3 && y <= 5 && x >= 2 && x <= 29) return PALE;
+    if (y >= 22 && y <= 24 && x >= 5 && x <= 26) return x === 15 || x === 16 ? DARK : STEEL;
+    return crate(x, y, 10, 9, 21, 20);
+  });
+  cockpitIcon("drop_armed", (x, y) => {
+    if (y >= 3 && y <= 5 && x >= 2 && x <= 29) return PALE;
+    if (onSegment(x, y, [6, 6], [10, 13], 2) || onSegment(x, y, [25, 6], [21, 13], 2)) return STEEL;
+    if (ellipse(x, y, 16, 17, 7, 4.5) && y <= 17) return Math.floor((x + 1) / 3) % 2 === 0 ? RED : INK;
+    if (onSegment(x, y, [9.5, 17], [14, 23], 0.6) || onSegment(x, y, [22.5, 17], [18, 23], 0.6)) return PALE;
+    return crate(x, y, 13, 23, 19, 29);
+  });
+
   // The announcement panel's glass, for when it is too far off to be drawn live: a dark tile in its grey rim. In the
   // hand: the panel's nine tiles, each in its own colour, on the dark casing.
   texture(blockOutput, "announcement_panel", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? [0x4a, 0x51, 0x5b] : [0x0b, 0x10, 0x17]), 1);

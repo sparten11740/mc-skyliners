@@ -35,11 +35,13 @@ import org.joml.Matrix4f;
 
 /**
  * Draws the touch keys of the flight deck's curved row (see {@link dev.aerolarge.block.CockpitKeys}), each a picture,
- * so that whoever cannot read can still work them. The systems screen's tiles show the switch each works the way that
- * switch shows itself, its rim lit in its colour while it is on. On the sloped panel under the screens: the tiller's
- * arrows either side of a little wheel turned as the tiller is; the parking brake as a wheel gripped red while it is
- * set; the landing gear as a wheel with an arrow the way its lever is thrown and its three lamps; and the autopilot's
- * buttons in its settings' pictures, each with the way it steps, the on/off button and the circling it does lit green.
+ * so that whoever cannot read can still work them. The systems screen's tiles show a picture of what each works, as
+ * it is now (a seated passenger buckled in, a light bulb or the moon, a skydiver beside the jump light, a window with
+ * its shade up or down, the laser turret firing, the drop bay shut or dropping), its rim lit in its colour while on.
+ * On the sloped panel under the screens: the tiller's arrows either side of a little wheel turned as the tiller is;
+ * the parking brake as a wheel gripped red while it is set; the landing gear as a wheel with an arrow the way its
+ * lever is thrown and its three lamps; and the autopilot's buttons in its settings' pictures, each with the way it
+ * steps, the on/off button and the circling it does lit green.
  * The switches' states are read from their blocks out of sight under the floor.
  */
 final class CockpitKeysArt {
@@ -69,15 +71,15 @@ final class CockpitKeysArt {
     private static final int PICTURE_ON = 0xFFFFFFFF;
     private static final int PICTURE_OFF = 0xFF8A8A8A;
 
-    private static final ResourceLocation SEATBELTS_OFF = block("seatbelt_switch");
-    private static final ResourceLocation SEATBELTS_ON = block("seatbelt_switch_on");
-    private static final ResourceLocation SHADES_OPEN = block("window_shades_open");
-    private static final ResourceLocation SHADES_CLOSED = block("window_shades_closed");
-    private static final ResourceLocation LASER = block("laser_switch_top");
-    private static final ResourceLocation DROP_SAFE = block("drop_release_safe");
-    private static final ResourceLocation DROP_ARMED = block("drop_release_armed");
-    private static final ResourceLocation[] CABIN_LIGHTS = {block("cabin_lights_bright"), block("cabin_lights_dim"), block("cabin_lights_night")};
-    private static final ResourceLocation[] JUMP_LIGHTS = {block("jump_switch_off"), block("jump_switch_red"), block("jump_switch_green")};
+    /** The systems tiles' pictures (from tools/generate_textures.mjs), by the switch and its state. */
+    private static final ResourceLocation SEATBELTS = picture("seatbelts");
+    private static final ResourceLocation SHADES_OPEN = picture("shades_open");
+    private static final ResourceLocation SHADES_CLOSED = picture("shades_closed");
+    private static final ResourceLocation LASER = picture("laser");
+    private static final ResourceLocation DROP_SAFE = picture("drop_safe");
+    private static final ResourceLocation DROP_ARMED = picture("drop_armed");
+    private static final ResourceLocation[] CABIN_LIGHTS = {picture("cabin_lights_bright"), picture("cabin_lights_dim"), picture("cabin_lights_night")};
+    private static final ResourceLocation[] JUMP_LIGHTS = {picture("jump_lights_off"), picture("jump_lights_red"), picture("jump_lights_green")};
     private static final Icon ENGAGE = Icon.of("autopilot/engage");
     private static final Icon HEADING = Icon.of("autopilot/heading");
     private static final Icon ORBIT_LEFT = Icon.of("autopilot/orbit_left");
@@ -147,12 +149,12 @@ final class CockpitKeysArt {
     private static Look look(Function function, BlockState state) {
         return switch (function) {
             case CABIN_LIGHTS -> cabinLights(state);
-            case SEATBELTS -> on(state, SeatbeltSwitchBlock.ON) ? new Look(SEATBELTS_ON, AMBER) : new Look(SEATBELTS_OFF, 0);
+            case SEATBELTS -> new Look(SEATBELTS, on(state, SeatbeltSwitchBlock.ON) ? AMBER : 0);
             case JUMP_LIGHTS -> jumpLights(state);
             case SHADES -> on(state, WindowShadesBlock.SHADED) ? new Look(SHADES_CLOSED, AMBER) : new Look(SHADES_OPEN, 0);
             case LASER -> new Look(LASER, on(state, LaserSwitchBlock.ARMED) ? RED : 0);
             case DROP -> on(state, DropReleaseBlock.ARMED) ? new Look(DROP_ARMED, RED) : new Look(DROP_SAFE, 0);
-            default -> new Look(SEATBELTS_OFF, 0);
+            default -> new Look(SEATBELTS, 0);
         };
     }
 
@@ -320,7 +322,7 @@ final class CockpitKeysArt {
         consumer.addVertex(matrix, x - h, y + h, z).setColor(tint).setUv(0, 0).setLight(LightTexture.FULL_BRIGHT);
     }
 
-    private static ResourceLocation block(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/block/" + name + ".png");
+    private static ResourceLocation picture(String name) {
+        return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/cockpit/" + name + ".png");
     }
 }

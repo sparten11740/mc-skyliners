@@ -129,13 +129,16 @@ wraps round the pilots. Left to right: the captain's primary flight display, the
 outside camera and the first officer's primary flight display. Each is as wide as the nose leaves room for, two blocks
 where it can (where the nose is too narrow for the outer pair, the tiller's keys go under the camera). Behind them the
 instrument panel carries on round to the hull. The systems screen holds a tile for each of six switches, three across
-and two down, each showing its switch the way that switch shows itself, its rim lit while it is on: the cabin lights'
-dimmer (lit pale yellow, amber dimmed, blue at night), the seatbelt signs (amber), the jump lights (red, then green), the
-window shades (amber closed), the laser (red) and the drop release (red while the bay doors are open). Touch a tile to
-work its switch. On the slope under the screens are the keys: under the captain's flight display the tiller, an arrow
-either side of a little wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map
-the parking brake, a wheel gripped red while it is set, and the landing gear (see Landing gear); under the systems
-screen the autopilot's buttons (see Autopilot). Looking at the screens or the slope from within reach, a little white
+and two down, each a picture of what its switch does, as it is now, its rim lit while it is on: the cabin lights' dimmer
+(a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; a blue moon and stars at night), the
+seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver
+beside the jump light, dark, red or green), the window shades (a window on the sky with its shade up, or pulled down,
+lit amber), the laser (its turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
+or the doors open and the crate floating down under a parachute, lit red). Touch a tile to work its switch. On the
+slope under the screens are the keys: under the captain's flight display the tiller, an arrow either side of a little
+wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
+gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
+(see Autopilot). Looking at the screens or the slope from within reach, a little white
 dot follows your look, and the tile, key or camera button under it is outlined in white, so you see what a touch will
 work before you touch it. The flight displays show attitude, airspeed, altitude, vertical speed
 and heading once the airliner is assembled. The moving map shows what the autopilot is doing over it and how the
