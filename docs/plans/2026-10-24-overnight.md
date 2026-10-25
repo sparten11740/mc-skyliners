@@ -152,7 +152,79 @@ each measured before and after.
 | 3 | Landing with the gear up | Warning horn only; belly landings allowed | Jan |
 | 4 | How retracting looks | Animated legs, doors flush with the hull, no wells cut into the hold | Jan |
 | 5 | New features' config default | On | Jan |
+| 6 | Laser near the ground (it dug the runway it stood on and would dig the one it lands on) | Hold block fire while low (below 15 blocks over the ground, until 25 again), never cut below the wheels, mobs always; the switch glows amber while holding, with a beep | Panel: design A, engineering refined A, realism preferred a level aim |
+| 7 | Engines' plasma plume (46% of the render thread in flight) | Server setting `enginePlume`, default none; control jets always none | Panel: unanimous |
 
 ## Outcome
 
-To be filled in as the work lands.
+Everything planned landed on `feat/overnight-gear-weather-laser` (never pushed), alpha.66 to alpha.71, one commit per
+feature or fix, and every feature was play-tested: headless over RCON on a dev server, and in the dev client with
+blockpilot (screenshots, frame bursts, camera placement, the sound log, per-tick samples, perf capture).
+
+### 1. Retractable landing gear: done, verified in game
+- Lever on the panel right of the autopilot screen, lamps green/red/dark; legs fold in 8 s, lower in 6; refused on
+  the ground with a buzz; gear horn and flashing lamps coming down with the gear up; belly landings allowed and the
+  legs lock once there is room again.
+- Verified: blocks taken away and restored with their NBT (tires, suspension, relays, call button), no item drops;
+  refusing on the ground; belly landing (3.2 blocks lower) and recovery; autopilot take-off raises the gear at 10
+  blocks, Land lowers it and the airliner lands, brakes and parks on it; animation frames (legs swing in, belly clean);
+  lever and lamps from the seat; layout at scales 1 to 4 (scale 1 has no flight deck, so no lever).
+- Fixed after play-testing: the lamps were hidden behind the knob from the seats; the gear sounds never reached the
+  cabin (the server sends a sound only 16 blocks per unit of volume; found with blockpilot's sound log); a belly-landed
+  airliner counted as flying (nose up, radio altitude 3.26) and "landed" itself unattended, sliding a kilometre.
+- Not done: a "gear down" voice callout (the voices need Windows' speech synthesis); the autopilot's lever movement
+  and the hydraulics are the cue instead.
+
+### 2. Gear sounds: done
+- `gear_retract` (8.6 s) and `gear_extend` (6.8 s) synthesised: uplock clunk, air roar, hydraulic moan, wheels braked
+  to a stop, thumps into the bays, doors shutting; `gear_horn`. Checked by their loudness over time and frequency
+  bands, and that the client plays them from the legs at volume 3. Not listened to: Jan, please judge by ear.
+- Tooling: Homebrew's FFmpeg 9 has no libvorbis, so the generator falls back to `oggenc` (installed vorbis-tools) and
+  takes sound names to write only those.
+
+### 3. Air pockets: done, verified in game
+- Above 60 blocks: a sudden drop of a few blocks with the cabin's rattle and a thud, standing players float up, the
+  view dips (10.6 degrees in a storm), the autopilot recovers. Verified with the airliner's vertical speed (-8 to -16
+  blocks a second), the player's upward kick, the camera pitch and the sound in the client.
+
+### 4. Lightning strikes: done, verified in game
+- In a thunderstorm, about once a minute (twice above 150 blocks): a visual-only bolt at the hull, mostly at the
+  extremities; white flash, two dark flickers, static on the flight displays, radio crackle. Verified with frame bursts
+  (flash, static, flicker) and the sound log (thunder 5 blocks over the airliner).
+- Fixed in testing: the screens' static drew into a finished buffer and crashed the client ("Not building!").
+
+### 5. Laser path clearer: done, verified in game (standing and lifted high, physics paused)
+- Switch on the console (red while clearing, amber while holding low), turret drops out under the nose, five bolts a
+  second with beams, sparks and a hiss; hostile mobs first, then blocks, the clearing spreading across the obstacle.
+- Verified: zombies killed, villager unharmed, a chest set in the wall left standing (alone, in mid-air), mobGriefing
+  and claims honoured in code, nothing cut on the ground (holding, amber), a floating wall cleared from 40 blocks up
+  (1,038 blocks in 15 s, red).
+- Fixed in testing: the lowest rays started inside the ground and dug lines along the runway; rays alone only drilled
+  tunnels (now the clearing spreads, with whole-cube bites); the spread reached below the wheels (now bounded by the
+  airliner's real outline).
+- Not tested: firing at real terrain while flying at speed.
+
+### 6. Performance review: done, three fixes
+Measured with blockpilot's perf capture and Java Flight Recorder: a furnished airliner parked, assembled, and cruising
+at 50 blocks a second with the player in the cabin.
+
+| Finding | Cost before | Fix | After |
+|---------|-------------|-----|-------|
+| Engines' plasma particles (Create Propulsion default) | 46% of the render thread; 1,806 particle packets/s (~300 KB/s per player aboard) | `enginePlume` setting, default none; control jets none | no particle packets; cruise 70 to 90 FPS |
+| Control jets flicking a signal step every tick | 613 block entity packets/s | ignore one-step wobbles | about 250/s (engines' thrust) |
+| Control surface panels drawn behind the camera | ~10% of the render thread; 0.25 ms/frame from the cabin | skip panels wholly behind the camera | 0 ms/frame from the cabin |
+
+- Server side is cheap: parked, every Aerolarge block entity costs 0.02 ms a tick or less; cruising, the autopilot
+  0.44 to 0.77 ms a tick, everything else 0.05 or less.
+- What remains is mostly not Aerolarge's: streaming new terrain at 50 blocks a second (1,700 to 2,300 section rebuilds
+  a second, server ticks of 14 to 17 ms with spikes, 1% lows near 12 FPS). Next candidates on the client: passenger
+  screens (0.3 to 0.55 ms a frame), plug doors (0.2 to 0.3), Offroad's wheel mounts (0.3 to 0.5), engine intakes.
+
+### Worth knowing
+- New features only appear on airliners built tonight or later (gear, laser, plumes): build a new one to try them.
+- The gear bay and the laser turret replace single skin blocks after the shell pass, as the gear legs always have,
+  rather than going in before it as AGENTS.md asks of hull features.
+- Seen while testing, not caused tonight: a heavy furnished airliner holds its cruise some 10 to 20 blocks below the
+  height set (it did so before the jet change too); probably its climb limit in thin air.
+- Dev setup left in place (all gitignored): `run/server.properties` with RCON on localhost, `run/eula.txt` accepted,
+  the mods and blockpilot in `run/mods`. Installed with Homebrew: ffmpeg and vorbis-tools.
