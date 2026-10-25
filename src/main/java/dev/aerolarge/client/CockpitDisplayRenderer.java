@@ -105,7 +105,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
             // Onto the slope's front left corner: x along it, y up the slope toward the screen, z out of it.
             pose.translate(0, panel.bottom() - panel.desk(), panel.desk());
             pose.mulPose(Axis.XP.rotationDegrees(-45));
-            CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), width, panel.slope());
+            CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), panel.leftCut(), width - panel.rightCut(), panel.slope());
             pose.popPose();
         }
         Pointer pointer = pointer(pose.last(), panel);
@@ -145,7 +145,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         double facing = (look.y + look.z) / Math.sqrt(2);
         t = facing < 0 ? -((eye.y - frontY) + (eye.z - panel.desk())) / Math.sqrt(2) / facing : -1;
         double up = ((eye.y + look.y * t - frontY) - (eye.z + look.z * t - panel.desk())) / Math.sqrt(2);
-        if (t > 0 && t < nearest && within(eye.x + look.x * t, up, panel.width(), panel.slope())) {
+        if (t > 0 && t < nearest && panel.onSlope(eye.x + look.x * t, up)) {
             best = new Pointer(true, eye.x + look.x * t, up);
         }
         return best;
@@ -271,7 +271,8 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
 
     /**
      * The casing: the screen's face and its slab behind it, and under the screen the desk down to the floor, its top
-     * sloping down toward the seats, each side wound to face out.
+     * sloping down toward the seats and its front edge stopping short of either end where it is mitred against the
+     * desk beside it, each side wound to face out.
      */
     private static void casing(VertexConsumer shapes, Matrix4f matrix, float width, CockpitDisplayBlockEntity.Panel panel) {
         float bottom = panel.bottom();
@@ -283,22 +284,16 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         }
         float back = -CockpitDisplayBlock.DEPTH;
         float front = bottom - desk;
-        quad(shapes, matrix, 0, 0, desk, width, 0, desk, width, front, desk, 0, front, desk, EDGE);
-        quad(shapes, matrix, 0, front, desk, width, front, desk, width, bottom, 0, 0, bottom, 0, SLOPE);
+        float left = panel.leftCut();
+        float right = width - panel.rightCut();
+        quad(shapes, matrix, left, 0, desk, right, 0, desk, right, front, desk, left, front, desk, EDGE);
+        quad(shapes, matrix, left, front, desk, right, front, desk, width, bottom, 0, 0, bottom, 0, SLOPE);
         quad(shapes, matrix, width, 0, back, 0, 0, back, 0, bottom, back, width, bottom, back, EDGE);
-        end(shapes, matrix, 0, back, desk, front, bottom, false);
-        end(shapes, matrix, width, back, desk, front, bottom, true);
-    }
-
-    /** One end of the desk: seen from the side, a block of it with its top cut away at 45 degrees, facing out of it. */
-    private static void end(VertexConsumer shapes, Matrix4f matrix, float x, float back, float desk, float front, float bottom, boolean right) {
-        if (right) {
-            quad(shapes, matrix, x, front, back, x, front, desk, x, 0, desk, x, 0, back, EDGE);
-            quad(shapes, matrix, x, bottom, back, x, bottom, 0, x, front, desk, x, front, back, EDGE);
-        } else {
-            quad(shapes, matrix, x, 0, back, x, 0, desk, x, front, desk, x, front, back, EDGE);
-            quad(shapes, matrix, x, front, back, x, front, desk, x, bottom, 0, x, bottom, back, EDGE);
-        }
+        // The ends: square behind the face, and from the face out along the mitre to the front edge.
+        quad(shapes, matrix, 0, 0, back, 0, 0, 0, 0, bottom, 0, 0, bottom, back, EDGE);
+        quad(shapes, matrix, 0, 0, 0, left, 0, desk, left, front, desk, 0, bottom, 0, EDGE);
+        quad(shapes, matrix, width, 0, 0, width, 0, back, width, bottom, back, width, bottom, 0, EDGE);
+        quad(shapes, matrix, right, 0, desk, width, 0, 0, width, bottom, 0, right, front, desk, EDGE);
     }
 
     /** The back and the four sides of a box, all but its front (which the face covers), each facing out of it. */

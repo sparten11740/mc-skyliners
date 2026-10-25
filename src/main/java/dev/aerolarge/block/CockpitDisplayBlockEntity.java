@@ -60,11 +60,13 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
     /**
      * Where the panel stands, from the middle of the floor of the block holding it, in the frame of the way the row
      * faces: x to the right of whoever looks at it, z toward them, in blocks. The bottom corners of its screen's face,
-     * left and right as they see it, and how high its bottom and top edges are; and how far the sloped touch panel
-     * under the screen reaches out toward them from the face, dropping as far at 45 degrees, with the desk under it
-     * down to the floor (none where it is 0). Measured that way, it holds however the airliner is turned.
+     * left and right as they see it, and how high its bottom and top edges are; how far the sloped touch panel under
+     * the screen reaches out toward them from the face, dropping as far at 45 degrees, with the desk under it down to
+     * the floor (none where it is 0); and how far in from each end the slope's front edge stops, where it meets the
+     * slope of the panel beside it turned further toward them, mitred so the two meet without one overlapping the
+     * other. Measured that way, it holds however the airliner is turned.
      */
-    public record Panel(float leftX, float leftZ, float rightX, float rightZ, float bottom, float top, float desk) {
+    public record Panel(float leftX, float leftZ, float rightX, float rightZ, float bottom, float top, float desk, float leftCut, float rightCut) {
         public float width() {
             return (float) Math.hypot(rightX - leftX, rightZ - leftZ);
         }
@@ -78,6 +80,12 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             return (float) (desk * Math.sqrt(2));
         }
 
+        /** Whether a place on the slope, in blocks from its front left corner as it would be uncut, is on it. */
+        public boolean onSlope(double across, double up) {
+            double cutShare = 1 - up / slope();
+            return up >= 0 && up <= slope() && across >= leftCut * cutShare && across <= width() - rightCut * cutShare;
+        }
+
         CompoundTag save() {
             CompoundTag tag = new CompoundTag();
             tag.putFloat("LeftX", leftX);
@@ -87,12 +95,14 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             tag.putFloat("Bottom", bottom);
             tag.putFloat("Top", top);
             tag.putFloat("Desk", desk);
+            tag.putFloat("LeftCut", leftCut);
+            tag.putFloat("RightCut", rightCut);
             return tag;
         }
 
         static Panel load(CompoundTag tag) {
             return new Panel(tag.getFloat("LeftX"), tag.getFloat("LeftZ"), tag.getFloat("RightX"), tag.getFloat("RightZ"), tag.getFloat("Bottom"),
-                tag.getFloat("Top"), tag.getFloat("Desk"));
+                tag.getFloat("Top"), tag.getFloat("Desk"), tag.getFloat("LeftCut"), tag.getFloat("RightCut"));
         }
     }
 
@@ -167,9 +177,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         return systems ? CockpitKeys.systems(panel.width(), panel.height(), links.keySet()) : List.of();
     }
 
-    /** The keys on the slope under the screen, for drawing them. */
+    /** The keys on the slope under the screen, between its mitred ends, for drawing them. */
     public List<Key> slopeKeys() {
-        return panel == null ? List.of() : CockpitKeys.desk(desk, panel.width(), panel.slope());
+        return panel == null ? List.of() : CockpitKeys.desk(desk, panel.leftCut(), panel.width() - panel.rightCut(), panel.slope());
     }
 
     @Override
@@ -251,32 +261,36 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         Vec3 look = through.subtract(eye);
         Vec3 out = faceOut();
         Vec3 corner = point(panel.leftX, panel.bottom, panel.leftZ);
-        Touch screen = onPlane(eye, look, corner, new Vec3(0, 1, 0), out, panel.height(), false);
+        Touch screen = onPlane(eye, look, corner, new Vec3(0, 1, 0), out, false);
+        if (screen != null && (screen.across() < 0 || screen.across() > panel.width() || screen.up() < 0 || screen.up() > panel.height())) {
+            screen = null;
+        }
         if (panel.desk <= 0) {
             return screen;
         }
         // Up the slope it runs back toward the screen and up, at 45 degrees; it faces up and out.
         Vec3 front = corner.add(out.scale(panel.desk)).add(0, -panel.desk, 0);
         Vec3 up = out.scale(-1).add(0, 1, 0).normalize();
-        Touch slope = onPlane(eye, look, front, up, out.add(0, 1, 0).normalize(), panel.slope(), true);
+        Touch slope = onPlane(eye, look, front, up, out.add(0, 1, 0).normalize(), true);
+        if (slope != null && !panel.onSlope(slope.across(), slope.up())) {
+            slope = null;
+        }
         return screen == null || slope != null && slope.along() < screen.along() ? slope : screen;
     }
 
     /**
-     * Where a look meets a rectangle of the panel as wide as it is, from its bottom left corner this far up the given
-     * way, facing out; null from behind, or past its edges.
+     * Where a look meets a plane of the panel, across it and up it the given way from a corner, the plane facing out;
+     * null from behind.
      */
     @Nullable
-    private Touch onPlane(Vec3 eye, Vec3 look, Vec3 corner, Vec3 up, Vec3 out, double height, boolean onSlope) {
+    private Touch onPlane(Vec3 eye, Vec3 look, Vec3 corner, Vec3 up, Vec3 out, boolean onSlope) {
         double facing = look.dot(out);
         if (facing >= 0) {
             return null;
         }
         double along = corner.subtract(eye).dot(out) / facing;
         Vec3 at = eye.add(look.scale(along)).subtract(corner);
-        double across = at.dot(faceAcross());
-        double rise = at.dot(up);
-        return across < 0 || across > panel.width() || rise < 0 || rise > height ? null : new Touch(onSlope, across, rise, along);
+        return new Touch(onSlope, at.dot(faceAcross()), at.dot(up), along);
     }
 
     /**

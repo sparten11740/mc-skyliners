@@ -108,8 +108,11 @@ final class CockpitKeysArt {
         }
     }
 
-    /** The keys on the sloped panel under the screen, on the slope from its front left corner. */
-    static void slope(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix, float width, float length) {
+    /**
+     * The keys on the sloped panel under the screen, on the slope from its front left corner as it would be uncut,
+     * between its mitred ends, the slope this long.
+     */
+    static void slope(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix, float left, float right, float length) {
         List<Key> keys = display.slopeKeys();
         AutopilotBlockEntity autopilot = display.autopilot();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
@@ -118,14 +121,14 @@ final class CockpitKeysArt {
             drawn(shapes, matrix, key, display, level);
         }
         if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
-            tillerWheel(shapes, matrix, width / 2, length / 2, Math.min(width / 7, length / 2.5), state(display, level, Link.TILLER));
+            tillerWheel(shapes, matrix, (left + right) / 2, length / 2, Math.min((right - left) / 7, length / 2.5), state(display, level, Link.TILLER));
         }
         for (Key key : keys) {
             Icon icon = icon(key.function());
             if (icon != null) {
                 Box box = key.box();
-                Box left = new Box(box.x0(), box.y0(), box.x0() + (box.x1() - box.x0()) * 0.7, box.y1());
-                picture(buffers, matrix, icon.texture(), left, 0.85, autopilot != null && AutopilotScreenRenderer.engaged(autopilot) ? PICTURE_ON : PICTURE_OFF);
+                Box beside = new Box(box.x0(), box.y0(), box.x0() + (box.x1() - box.x0()) * 0.7, box.y1());
+                picture(buffers, matrix, icon.texture(), beside, 0.85, autopilot != null && AutopilotScreenRenderer.engaged(autopilot) ? PICTURE_ON : PICTURE_OFF);
             }
         }
     }

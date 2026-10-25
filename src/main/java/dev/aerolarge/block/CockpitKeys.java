@@ -86,29 +86,33 @@ public final class CockpitKeys {
         return keys;
     }
 
-    /** A sloped panel's keys, on a slope this wide and this long from its front edge up to the screen over it. */
-    public static List<Key> desk(Desk desk, double width, double length) {
+    /**
+     * A sloped panel's keys, on a slope this long from its front edge up to the screen over it, between these two
+     * places across it (inside its mitred ends).
+     */
+    public static List<Key> desk(Desk desk, double left, double right, double length) {
+        double width = right - left;
         return switch (desk) {
             case NONE -> List.of();
             case TILLER -> List.of(
-                new Key(Function.TILLER_LEFT, new Box(MARGIN, MARGIN, width / 3, length - MARGIN)),
-                new Key(Function.TILLER_RIGHT, new Box(2 * width / 3, MARGIN, width - MARGIN, length - MARGIN)));
+                new Key(Function.TILLER_LEFT, new Box(left + MARGIN, MARGIN, left + width / 3, length - MARGIN)),
+                new Key(Function.TILLER_RIGHT, new Box(left + 2 * width / 3, MARGIN, right - MARGIN, length - MARGIN)));
             case GROUND -> List.of(
-                new Key(Function.BRAKE, new Box(MARGIN, MARGIN, width / 2 - GAP / 2, length - MARGIN)),
-                new Key(Function.GEAR, new Box(width / 2 + GAP / 2, MARGIN, width - MARGIN, length - MARGIN)));
-            case AUTOPILOT -> autopilot(width, length);
+                new Key(Function.BRAKE, new Box(left + MARGIN, MARGIN, left + width / 2 - GAP / 2, length - MARGIN)),
+                new Key(Function.GEAR, new Box(left + width / 2 + GAP / 2, MARGIN, right - MARGIN, length - MARGIN)));
+            case AUTOPILOT -> autopilot(left, width, length);
         };
     }
 
     /** The autopilot's keys: on and off at the left, as tall as the slope, then a column of two for each setting. */
-    private static List<Key> autopilot(double width, double length) {
+    private static List<Key> autopilot(double left, double width, double length) {
         int columns = AUTOPILOT_COLUMNS.length + 1;
         double columnWidth = (width - 2 * MARGIN - (columns - 1) * GAP) / columns;
         double rowHeight = (length - 2 * MARGIN - GAP) / 2;
         List<Key> keys = new ArrayList<>();
-        keys.add(new Key(Function.ENGAGE, new Box(MARGIN, MARGIN, MARGIN + columnWidth, length - MARGIN)));
+        keys.add(new Key(Function.ENGAGE, new Box(left + MARGIN, MARGIN, left + MARGIN + columnWidth, length - MARGIN)));
         for (int column = 0; column < AUTOPILOT_COLUMNS.length; column++) {
-            double x0 = MARGIN + (column + 1) * (columnWidth + GAP);
+            double x0 = left + MARGIN + (column + 1) * (columnWidth + GAP);
             keys.add(new Key(AUTOPILOT_COLUMNS[column][0], new Box(x0, MARGIN, x0 + columnWidth, MARGIN + rowHeight)));
             keys.add(new Key(AUTOPILOT_COLUMNS[column][1], new Box(x0, length - MARGIN - rowHeight, x0 + columnWidth, length - MARGIN)));
         }

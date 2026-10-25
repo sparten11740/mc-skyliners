@@ -64,9 +64,9 @@ final class ScreenArc {
 
     /**
      * A panel of the row, planned: the bottom corners of its screen's face, left and right as the pilots see it, what
-     * it shows and what its slope holds.
+     * it shows, what its slope holds, and how far in from each end its slope's front edge stops (see {@link #mitred}).
      */
-    private record Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk) {
+    private record Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk, double leftCut, double rightCut) {
         double width() {
             return Math.hypot(rightX - leftX, rightZ - leftZ);
         }
@@ -115,12 +115,20 @@ final class ScreenArc {
         }
 
         Panel holding(Desk to) {
-            return new Panel(leftX, leftZ, rightX, rightZ, shows, to);
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, to, leftCut, rightCut);
+        }
+
+        /** With its slope's front edge stopping so far in from either end. */
+        Panel cut(double left, double right) {
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, desk, left, right);
         }
     }
 
-    /** A row planned: the middle screen, and the pairs either side of it that fit, inner pair first, each captain first. */
-    private record Plan(Panel middle, List<Panel[]> pairs) {
+    /**
+     * A row planned: the middle screen, the pairs either side of it that fit, inner pair first, each captain first, and
+     * how far each pair turns from the one inside it, in degrees.
+     */
+    private record Plan(Panel middle, List<Panel[]> pairs, double turn) {
         double width() {
             double width = middle.width();
             for (Panel[] pair : pairs) {
@@ -183,17 +191,34 @@ final class ScreenArc {
      * under the first officer's inner one.
      */
     private static List<Panel> withDesks(Plan plan) {
+        Plan cut = mitred(plan);
         List<Panel> panels = new ArrayList<>();
-        panels.add(plan.middle().holding(Desk.AUTOPILOT));
-        Panel[] inner = plan.pairs().get(0);
-        boolean outer = plan.pairs().size() > 1;
+        panels.add(cut.middle().holding(Desk.AUTOPILOT));
+        Panel[] inner = cut.pairs().get(0);
+        boolean outer = cut.pairs().size() > 1;
         panels.add(inner[0].holding(Desk.GROUND));
         panels.add(outer ? inner[1] : inner[1].holding(Desk.TILLER));
         if (outer) {
-            panels.add(plan.pairs().get(1)[0].holding(Desk.TILLER));
-            panels.add(plan.pairs().get(1)[1]);
+            panels.add(cut.pairs().get(1)[0].holding(Desk.TILLER));
+            panels.add(cut.pairs().get(1)[1]);
         }
         return panels;
+    }
+
+    /**
+     * The row with its slopes mitred where they meet: turned toward the pilots, each panel's slope would run into its
+     * neighbour's, so at every end a panel shares with one turned further, its slope's front edge stops short by as
+     * much as cuts the two along the line halfway between them.
+     */
+    private static Plan mitred(Plan plan) {
+        double cut = DESK * Math.tan(Math.toRadians(plan.turn() / 2));
+        List<Panel[]> pairs = new ArrayList<>();
+        for (int step = 0; step < plan.pairs().size(); step++) {
+            Panel[] pair = plan.pairs().get(step);
+            double outer = step + 1 < plan.pairs().size() ? cut : 0;
+            pairs.add(new Panel[]{pair[0].cut(outer, cut), pair[1].cut(cut, outer)});
+        }
+        return new Plan(plan.middle().cut(cut, cut), pairs, plan.turn());
     }
 
     /** The row that fits best: the most pairs, then the widest; of equals, the widest middle and the gentlest turn. */
@@ -224,11 +249,11 @@ final class ScreenArc {
     private Plan plan(double middleWidth, double turn) {
         double faceZ = screenZ + FACE_BACK;
         double left = 0.5 - middleWidth / 2;
-        Panel middle = new Panel(left, faceZ, left + middleWidth, faceZ, Shows.SYSTEMS, Desk.NONE);
+        Panel middle = new Panel(left, faceZ, left + middleWidth, faceZ, Shows.SYSTEMS, Desk.NONE, 0, 0);
         if (!fits(middle, Set.of())) {
             return null;
         }
-        Plan best = new Plan(middle, List.of());
+        Plan best = new Plan(middle, List.of(), turn);
         for (double inner = WIDEST; inner > NARROWEST - NARROWER / 2; inner -= NARROWER) {
             Plan plan = withPairs(middle, turn, inner);
             best = better(plan, best) ? plan : best;
@@ -244,12 +269,12 @@ final class ScreenArc {
         Set<BlockPos> taken = new HashSet<>(blocks(middle));
         Panel[] inner = pair(0, turn, innerWidth, middle, middle);
         if (!fits(inner[0], taken) || !fits(inner[1], taken)) {
-            return new Plan(middle, List.of());
+            return new Plan(middle, List.of(), turn);
         }
         taken.addAll(blocks(inner[0]));
         taken.addAll(blocks(inner[1]));
         Panel[] outer = widestPair(1, turn, inner[0], inner[1], taken);
-        return new Plan(middle, outer == null ? List.<Panel[]>of(inner) : List.of(inner, outer));
+        return new Plan(middle, outer == null ? List.<Panel[]>of(inner) : List.of(inner, outer), turn);
     }
 
     /**
@@ -273,9 +298,9 @@ final class ScreenArc {
         double across = Math.cos(angle) * width;
         double back = Math.sin(angle) * width;
         Panel captain = new Panel(captainInside.leftX - across, captainInside.leftZ + back, captainInside.leftX, captainInside.leftZ, SHOWS[step][0],
-            Desk.NONE);
+            Desk.NONE, 0, 0);
         Panel firstOfficer = new Panel(firstOfficerInside.rightX, firstOfficerInside.rightZ, firstOfficerInside.rightX + across,
-            firstOfficerInside.rightZ + back, SHOWS[step][1], Desk.NONE);
+            firstOfficerInside.rightZ + back, SHOWS[step][1], Desk.NONE, 0, 0);
         return new Panel[]{captain, firstOfficer};
     }
 
@@ -320,7 +345,7 @@ final class ScreenArc {
         double middleX = holder.getX() + 0.5;
         double middleZ = holder.getZ() + 0.5;
         CockpitDisplayBlockEntity.Panel where = new CockpitDisplayBlockEntity.Panel((float) (panel.leftX - middleX), (float) (panel.leftZ - middleZ),
-            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), BOTTOM, TOP, DESK);
+            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), BOTTOM, TOP, DESK, (float) panel.leftCut, (float) panel.rightCut);
         layout.fit(holder, (blockEntity, rotation) -> {
             if (blockEntity instanceof CockpitDisplayBlockEntity display) {
                 display.configure(where, panel.desk(), turned(controls, holder, rotation));
