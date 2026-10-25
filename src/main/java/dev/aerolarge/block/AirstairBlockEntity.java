@@ -64,6 +64,14 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     private static final float LATCH_VOLUME = 1.0F;
     /** The latch clunks higher coming free than going home. */
     private static final float UNLATCH_PITCH = 1.25F;
+    /**
+     * How far over the ground the foot's plate stands at least, in blocks: lower, and the bottom tread is within a step
+     * of the ground anyway, and the airliner might come to rest on the plate.
+     */
+    private static final double FOOT_CLEARANCE = 0.05;
+    /** What stands in the stairs' way, in the world or aboard: anything solid but their own steps. */
+    private static final Predicate<BlockState> IN_THE_WAY =
+        state -> !state.isAir() && !state.canBeReplaced() && !(state.getBlock() instanceof AirstairStepBlock);
 
     /** How many blocks the flight comes down from the sill to the wheels' ground, and in how many sections. */
     private int rise;
@@ -83,6 +91,8 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     private int cooldown;
     /** Whether the steps are laid, and the hatch's skin is off. */
     private boolean laid;
+    /** Whether a foot was laid with them, below the bottom step (see {@link #layFoot}). */
+    private boolean foot;
     private boolean hatchOpen;
     /**
      * Going away, the door is still to be shut: once the flight has swung up off the sill and dropped to the bay's
@@ -305,7 +315,6 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
 
     /** How far down the stairs could come this time: blocks clear all the way from the door, up to their whole rise. */
     private int reach(ServerLevel level) {
-        Predicate<BlockState> solid = state -> !state.isAir() && !state.canBeReplaced() && !(state.getBlock() instanceof AirstairStepBlock);
         for (int down = 1; down <= rise; down++) {
             for (int column = 0; column < AirstairFlight.WIDTH; column++) {
                 BlockPos step = step(down, column);
@@ -313,7 +322,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
                     return 0;
                 }
                 for (BlockPos cell : new BlockPos[]{step, step.above()}) {
-                    if (SableFlight.find(level, SableFlight.toWorld(level, Vec3.atCenterOf(cell)), solid) != null) {
+                    if (SableFlight.find(level, SableFlight.toWorld(level, Vec3.atCenterOf(cell)), IN_THE_WAY) != null) {
                         return down - 1;
                     }
                 }
@@ -342,7 +351,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         if (!laid || level != this.level) {
             return false;
         }
-        for (int down = 1; down <= length; down++) {
+        for (int down = 1; down <= laidDown(); down++) {
             for (int column = 0; column < AirstairFlight.WIDTH; column++) {
                 if (pos.equals(step(down, column))) {
                     return true;
@@ -368,20 +377,58 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
                 place(level, step.above(), AirstairStepBlock.guard(block, up, edge));
             }
         }
+        foot = layFoot(level, AirstairStepBlock.foot(block, up));
         laid = true;
     }
 
-    /** Puts a block where there is room for it: air, or something as easily replaced as grass. */
-    private static void place(ServerLevel level, BlockPos at, BlockState state) {
+    /**
+     * Lays the foot below the bottom step in each column where it is wanted (see {@link AirstairStepBlock}): an
+     * assembled airliner rides on its suspension, which can stand the bottom tread higher over the ground than anyone
+     * steps up without a jump, and the foot's plate, half way between them, bridges it. Only where the ground fills the
+     * middle of the foot's block but stays below its top, the plate at least {@link #FOOT_CLEARANCE} over it; never on
+     * the ground's own blocks, under stairs that stand on them. Gives whether any was laid.
+     */
+    private boolean layFoot(ServerLevel level, BlockState foot) {
+        boolean laidAny = false;
+        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+            BlockPos at = step(length + 1, column);
+            if (at != null && wantsFoot(level, at)) {
+                laidAny |= place(level, at, foot);
+            }
+        }
+        return laidAny;
+    }
+
+    /** Whether the ground under the foot's block, in the world, stands high enough and low enough for its plate. */
+    private static boolean wantsFoot(ServerLevel level, BlockPos at) {
+        Vec3 plate = SableFlight.toWorld(level, Vec3.atCenterOf(at).add(0, 0.5, 0));
+        BlockPos below = BlockPos.containing(plate.x, plate.y - 0.5, plate.z);
+        BlockState ground = level.getBlockState(below);
+        if (!IN_THE_WAY.test(ground)) {
+            return false;
+        }
+        double top = below.getY() + ground.getCollisionShape(level, below).max(Direction.Axis.Y);
+        return plate.y - top >= FOOT_CLEARANCE;
+    }
+
+    /** How far down the laid steps reach, the foot below the bottom step included. */
+    private int laidDown() {
+        return length + (foot ? 1 : 0);
+    }
+
+    /** Puts a block where there is room for it: air, or something as easily replaced as grass. Gives whether it did. */
+    private static boolean place(ServerLevel level, BlockPos at, BlockState state) {
         BlockState there = level.getBlockState(at);
         if (there.isAir() || there.canBeReplaced()) {
             level.setBlock(at, state, Block.UPDATE_ALL);
+            return true;
         }
+        return false;
     }
 
     /** Takes the steps up, and the guards with them; only the steps' own blocks, whatever stands in their place. */
     private void takeUp(ServerLevel level) {
-        for (int down = 1; down <= length; down++) {
+        for (int down = 1; down <= laidDown(); down++) {
             for (int column = 0; column < AirstairFlight.WIDTH; column++) {
                 BlockPos step = step(down, column);
                 for (BlockPos cell : step == null ? new BlockPos[0] : new BlockPos[]{step.above(), step}) {
@@ -392,6 +439,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
             }
         }
         laid = false;
+        foot = false;
     }
 
     /** Whether anyone is on the steps, or in the way just over them. */
@@ -551,6 +599,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         tag.putInt("Length", length);
         tag.putBoolean("Held", held);
         tag.putBoolean("Laid", laid);
+        tag.putBoolean("Foot", foot);
         tag.putBoolean("HatchOpen", hatchOpen);
         tag.putBoolean("DoorToShut", doorToShut);
     }
@@ -580,6 +629,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         length = Math.clamp(tag.getInt("Length"), 0, rise);
         held = tag.getBoolean("Held");
         laid = tag.getBoolean("Laid");
+        foot = tag.getBoolean("Foot");
         hatchOpen = tag.getBoolean("HatchOpen");
         doorToShut = tag.getBoolean("DoorToShut");
     }

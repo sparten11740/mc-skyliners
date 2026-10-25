@@ -29,9 +29,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * draws (see {@link AirstairBlockEntity}), so the stairs are walked like any others. A STEP is shaped like a stair,
  * its two half steps rising toward FACING, the way up to the door; a GUARD stands on a step at either side of the
  * flight and holds the handrail's thin wall along its EDGE (left or right, seen climbing), so nobody walks off the
- * side. Both are drawn by nothing and cannot be aimed at, mined or blown up: only the controller places them and takes
- * them away. A step no controller holds any more (left standing in the world when an airliner was assembled and flew
- * off with its stairs out) takes itself away, and the guard on it goes with it.
+ * side; a FOOT, under an assembled airliner, is a thin plate one block further out and down than the bottom step, at
+ * the top of its block, half way between the ground and the bottom tread (see {@link AirstairBlockEntity}). All are
+ * drawn by nothing and cannot be aimed at, mined or blown up: only the controller places them and takes them away. A
+ * step or foot no controller holds any more (left standing in the world when an airliner was assembled and flew off
+ * with its stairs out) takes itself away, and the guard on a step goes with it.
  */
 public class AirstairStepBlock extends Block {
     private static final MapCodec<AirstairStepBlock> CODEC = simpleCodec(AirstairStepBlock::new);
@@ -43,14 +45,19 @@ public class AirstairStepBlock extends Block {
     private static final Map<Direction, VoxelShape> STEP = TurnedShapes.of(Shapes.or(box(0, 0, 0, 16, 8, 16), box(0, 8, 0, 16, 16, 8)));
     private static final Map<Direction, VoxelShape> LEFT_RAIL = TurnedShapes.of(box(0, 0, 0, RAIL, 16, 16));
     private static final Map<Direction, VoxelShape> RIGHT_RAIL = TurnedShapes.of(box(16 - RAIL, 0, 0, 16, 16, 16));
+    /**
+     * The foot's plate, at the top of its block: as thin as it may be, half a sixteenth, so that it stands clear of the
+     * ground under it and the airliner never comes to rest on it.
+     */
+    private static final VoxelShape FOOT = box(0, 15.5, 0, 16, 16, 16);
     /** How far a lone step looks up the flight for its top, in blocks: further than any airliner's stairs reach. */
     private static final int LONGEST_FLIGHT = 64;
     /** How far from the doorway at the top of the flight it looks for the controller, in blocks. */
     private static final int CONTROLLER_REACH = 3;
 
-    /** A step of the flight, or the guard over one at its side. */
+    /** A step of the flight, the guard over one at its side, or the foot below the bottom step. */
     public enum Part implements StringRepresentable {
-        STEP, GUARD;
+        STEP, GUARD, FOOT;
 
         @Override
         public String getSerializedName() {
@@ -80,6 +87,11 @@ public class AirstairStepBlock extends Block {
     /** A step of a flight climbing toward {@code up}. */
     public static BlockState step(BlockState base, Direction up) {
         return base.setValue(FACING, up).setValue(PART, Part.STEP).setValue(EDGE, Edge.NONE);
+    }
+
+    /** The foot below the bottom step of a flight climbing toward {@code up}. */
+    public static BlockState foot(BlockState base, Direction up) {
+        return base.setValue(FACING, up).setValue(PART, Part.FOOT).setValue(EDGE, Edge.NONE);
     }
 
     /** The guard over a step of a flight climbing toward {@code up}, its wall on the given side. */
@@ -114,6 +126,9 @@ public class AirstairStepBlock extends Block {
         if (state.getValue(PART) == Part.STEP) {
             return STEP.get(facing);
         }
+        if (state.getValue(PART) == Part.FOOT) {
+            return FOOT;
+        }
         return switch (state.getValue(EDGE)) {
             case LEFT -> LEFT_RAIL.get(facing);
             case RIGHT -> RIGHT_RAIL.get(facing);
@@ -122,8 +137,8 @@ public class AirstairStepBlock extends Block {
     }
 
     /**
-     * A step is solid ground to anything finding its way, as a stair is, so villagers walk up the flight to the door;
-     * a guard is open air but for its wall at the edge.
+     * A step or the foot is solid ground to anything finding its way, as a stair is, so villagers walk up the flight to
+     * the door; a guard is open air but for its wall at the edge.
      */
     @Override
     protected boolean isPathfindable(BlockState state, PathComputationType type) {
@@ -151,14 +166,14 @@ public class AirstairStepBlock extends Block {
 
     @Override
     protected boolean isRandomlyTicking(BlockState state) {
-        return state.getValue(PART) == Part.STEP;
+        return state.getValue(PART) != Part.GUARD;
     }
 
     /**
-     * Now and then a step makes sure it is still some controller's: it follows the flight up to its top and looks
-     * round the doorway there for an airstair controller that has its stairs down; with none, it is a leftover, and
-     * goes. Where that part of the world is not loaded it waits: the box round the doorway spans at most two chunks
-     * each way, so its four corners say whether all of it is.
+     * Now and then a step or the foot makes sure it is still some controller's: it follows the flight up to its top
+     * and looks round the doorway there for an airstair controller that has its stairs down; with none, it is a
+     * leftover, and goes. Where that part of the world is not loaded it waits: the box round the doorway spans at most
+     * two chunks each way, so its four corners say whether all of it is.
      */
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
