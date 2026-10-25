@@ -90,11 +90,26 @@ public class ControlSurfaceRenderer implements BlockEntityRenderer<AutopilotBloc
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-nose.toYRot()));
         for (ControlSurfaces.Panel panel : panels) {
+            if (!inSight(pose, panel)) {
+                continue;
+            }
             float swung = (float) (MOST_SWING * panel.way() * swing.shown.getOrDefault(panel.axis(), 0.0));
             int light = SableClient.light(level, BlockPos.containing(behind(autopilot, nose, panel)));
             panel(pose, buffers, panel, swung, light);
         }
         pose.popPose();
+    }
+
+    /**
+     * Whether any of a panel can be in front of the camera: Sable draws the airliner's block entities whichever way the
+     * camera looks, and from the cabin the wings and the tail are mostly behind it. Judged by a ball round the middle of
+     * the panel's hinge as wide as the panel, its rows and its swing.
+     */
+    private static boolean inSight(PoseStack pose, ControlSurfaces.Panel panel) {
+        float middleX = (float) -(panel.inner().x + panel.outer().x) / 2;
+        float width = (float) Math.abs(panel.outer().x - panel.inner().x);
+        float radius = (width + panel.rows()) / 2 + 1;
+        return Sight.ahead(pose.last(), middleX, (float) panel.inner().y, (float) panel.inner().z - panel.rows() / 2F, radius);
     }
 
     /** Eases the autopilot's panels toward how far its surfaces are deflected, as far as the time since last drawn goes. */

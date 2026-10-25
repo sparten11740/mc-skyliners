@@ -1243,6 +1243,7 @@ Sable draws an assembled airliner's block entities every frame wherever the came
 leave out what the camera cannot see themselves, as `Sight` tells them where it stands: `PassengerScreenRenderer` draws
 a screen only from in front of it, its text laid out once a tick for all of an airliner's screens and faded out as it
 gets too small to read, as `FlightDisplayRenderer` and `AutopilotScreenRenderer` draw theirs only from in front too;
+`ControlSurfaceRenderer` leaves out the panels wholly behind the camera, as `Sight.ahead` tells it;
 `EngineIntakeRenderer` draws the intakes in flat sides over the nacelles' faces, from where each
 engine's core was told they are, what lies inside the duct only from in front of them; `PlugDoorRenderer` draws the
 hull's doors shut, swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel

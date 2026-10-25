@@ -34,6 +34,17 @@ final class Sight {
         return dx * facing.getStepX() + dy * facing.getStepY() + dz * facing.getStepZ() > face && dx * dx + dy * dy + dz * dz < reach * reach;
     }
 
+    /**
+     * Whether anything of a ball this big round a point of the frame a pose draws in can be in front of the camera:
+     * whatever lies wholly behind it is never seen, whichever way the airliner lies. Tested in the view's own frame,
+     * the pose followed by the view's turn, where the camera looks down the negative z axis.
+     */
+    static boolean ahead(PoseStack.Pose pose, float x, float y, float z, float radius) {
+        Vector3f inView = pose.pose().transformPosition(x, y, z, new Vector3f());
+        RenderSystem.getModelViewMatrix().transformPosition(inView);
+        return inView.z < radius;
+    }
+
     /** Where the camera is in the frame a pose draws in. */
     static Vector3f eye(PoseStack.Pose pose) {
         return pose.pose().invertAffine(new Matrix4f()).getTranslation(new Vector3f());
