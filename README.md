@@ -129,7 +129,8 @@ wraps round the pilots. Left to right: the captain's primary flight display, the
 outside camera and the first officer's primary flight display. Each is as wide as the nose leaves room for, two blocks
 where it can (where the nose is too narrow for the outer pair, the tiller's keys go under the camera). Behind them the
 instrument panel carries on round to the hull as plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across
-and two down, each a picture of what its switch does, as it is now, its rim lit while it is on: the cabin lights' dimmer
+and two down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its
+rim broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
 (a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; a blue moon and stars at night), the
 seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver
 beside the jump light, dark, red or green), the window shades (a window on the sky with its shade up, or pulled down,
@@ -367,7 +368,8 @@ real airliner it comes through unharmed: nothing aboard is hurt and nothing is s
 Use the autopilot's control head on the centre console (or the big screen in the middle of the instrument panel of an
 older airliner) to open the autopilot's settings. Under the systems screen, on the sloped panel, are its buttons: on
 and off, and a pair for each of the heading, circling, the altitude, the speed and the circle's size, each pair in
-the setting's picture with an arrow the way it steps. While it flies they step what it flies (the heading 15 degrees
+the setting's picture with a big arrow the way it steps, the on/off button's picture always bright so it is the first
+to find, the rest dimmed until the autopilot flies. While it flies they step what it flies (the heading 15 degrees
 either way, circling left or right, the altitude 20 blocks, the speed 5 blocks a second, the circle 50 blocks), and
 the on/off button switches it off; switched off, any of them opens the settings. The control head's own small display shows what the autopilot is set to, in the same
 pictures and colours as the settings, turned to face whoever looks at it: a lamp (green while it flies the airliner,

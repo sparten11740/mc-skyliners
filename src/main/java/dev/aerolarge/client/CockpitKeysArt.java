@@ -50,6 +50,16 @@ final class CockpitKeysArt {
     private static final float LAYER = 0.002F;
     /** A key's rim, in blocks. */
     private static final double RIM = 0.012;
+    /**
+     * A lit systems tile: how much of its colour its face takes on, how many times an unlit rim's width its rim is,
+     * and how tall the light along its bottom is, as a share of the tile's height (lit, on an airliner's push button,
+     * dark while off).
+     */
+    private static final float LIT_TINT = 0.3F;
+    private static final double LIT_RIM = 2.5;
+    private static final double ON_LIGHT = 0.12;
+    /** How big the autopilot keys' step arrows are, as a share of the key's smaller side. */
+    private static final double STEP_ARROW = 0.22;
     /** Segments a ring is drawn with. */
     private static final int RING_SEGMENTS = 20;
     /** How far the little tiller wheel turns for each notch the tiller is turned, in degrees. */
@@ -101,13 +111,12 @@ final class CockpitKeysArt {
         List<Key> keys = display.screenKeys();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         for (Key key : keys) {
-            Look look = look(key.function(), state(display, level, key.function().link));
-            tile(shapes, matrix, key.box(), look.lit() != 0 ? look.lit() : EDGE, KEY);
+            systemsTile(shapes, matrix, key.box(), look(key.function(), state(display, level, key.function().link)).lit());
         }
         // Pictures last: each takes its own buffer, which ends the one the shapes went into.
         for (Key key : keys) {
             Look look = look(key.function(), state(display, level, key.function().link));
-            picture(buffers, matrix, look.picture(), key.box(), 0.8, look.lit() != 0 ? PICTURE_ON : PICTURE_OFF);
+            picture(buffers, matrix, look.picture(), overLight(key.box()), 0.8, look.lit() != 0 ? PICTURE_ON : PICTURE_OFF);
         }
     }
 
@@ -131,7 +140,7 @@ final class CockpitKeysArt {
             if (icon != null) {
                 Box box = key.box();
                 Box beside = new Box(box.x0(), box.y0(), box.x0() + (box.x1() - box.x0()) * 0.7, box.y1());
-                picture(buffers, matrix, icon.texture(), beside, 0.85, autopilot != null && AutopilotScreenRenderer.engaged(autopilot) ? PICTURE_ON : PICTURE_OFF);
+                picture(buffers, matrix, icon.texture(), beside, 0.85, bright(key.function(), autopilot) ? PICTURE_ON : PICTURE_OFF);
             }
         }
     }
@@ -194,6 +203,14 @@ final class CockpitKeysArt {
         };
     }
 
+    /**
+     * Whether an autopilot key's picture is drawn bright: every one while the autopilot flies, and its on/off key
+     * always, the one to find first.
+     */
+    private static boolean bright(Function function, @Nullable AutopilotBlockEntity autopilot) {
+        return function == Function.ENGAGE || autopilot != null && AutopilotScreenRenderer.engaged(autopilot);
+    }
+
     /** An autopilot key's picture from its settings; null for the keys drawn in shapes. */
     @Nullable
     private static Icon icon(Function function) {
@@ -221,10 +238,10 @@ final class CockpitKeysArt {
             case TILLER_RIGHT -> arrow(shapes, matrix, cx, cy, size * 0.3, 0, WHITE);
             case BRAKE -> brake(shapes, matrix, cx, cy, size * 0.32, on(state(display, level, Link.BRAKE), ParkingBrakeBlock.SET));
             case GEAR -> gear(shapes, matrix, box, state(display, level, Link.GEAR));
-            case HEADING_LEFT -> arrow(shapes, matrix, stepX, cy, size * 0.14, 180, WHITE);
-            case HEADING_RIGHT -> arrow(shapes, matrix, stepX, cy, size * 0.14, 0, WHITE);
-            case ALTITUDE_DOWN, SPEED_DOWN, RADIUS_DOWN -> arrow(shapes, matrix, stepX, cy, size * 0.14, 270, WHITE);
-            case ALTITUDE_UP, SPEED_UP, RADIUS_UP -> arrow(shapes, matrix, stepX, cy, size * 0.14, 90, WHITE);
+            case HEADING_LEFT -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 180, WHITE);
+            case HEADING_RIGHT -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 0, WHITE);
+            case ALTITUDE_DOWN, SPEED_DOWN, RADIUS_DOWN -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 270, WHITE);
+            case ALTITUDE_UP, SPEED_UP, RADIUS_UP -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 90, WHITE);
             case TAIL_CAMERA, WING_CAMERA, NOSE_CAMERA, FRONT_CAMERA -> TailCameraDisplayRenderer.cameraButton(shapes, matrix, key.function().camera,
                 key.function().camera == display.camera(), box.x0() + RIM, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, 2 * LAYER);
             default -> {
@@ -233,6 +250,28 @@ final class CockpitKeysArt {
     }
 
     /** A key's tile: its rim, and inside it its face. */
+    /**
+     * A systems tile in a colour, 0 while off: lit, its face tinted and its rim broad in the colour and the light along
+     * its bottom on, so on and off differ at a glance, not by the rim alone.
+     */
+    private static void systemsTile(VertexConsumer shapes, Matrix4f matrix, Box box, int lit) {
+        boolean on = lit != 0;
+        double rim = on ? RIM * LIT_RIM : RIM;
+        ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x1(), box.y1(), LAYER, on ? lit : EDGE);
+        ScreenDrawing.rect(shapes, matrix, box.x0() + rim, box.y0() + rim, box.x1() - rim, box.y1() - rim, 2 * LAYER,
+            on ? PanelArt.blend(KEY, lit, LIT_TINT) : KEY);
+        double light = (box.y1() - box.y0()) * ON_LIGHT;
+        double inset = (box.x1() - box.x0()) * 0.25;
+        double bottom = box.y0() + RIM * LIT_RIM + light * 0.4;
+        ScreenDrawing.rect(shapes, matrix, box.x0() + inset, bottom, box.x1() - inset, bottom + light, 3 * LAYER, on ? lit : LAMP_OFF);
+    }
+
+    /** The part of a systems tile over the light along its bottom, for its picture. */
+    private static Box overLight(Box box) {
+        double light = (box.y1() - box.y0()) * ON_LIGHT;
+        return new Box(box.x0(), box.y0() + RIM * LIT_RIM + light * 1.6, box.x1(), box.y1());
+    }
+
     private static void tile(VertexConsumer shapes, Matrix4f matrix, Box box, int rim, int face) {
         ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x1(), box.y1(), LAYER, rim);
         ScreenDrawing.rect(shapes, matrix, box.x0() + RIM, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, 2 * LAYER, face);
