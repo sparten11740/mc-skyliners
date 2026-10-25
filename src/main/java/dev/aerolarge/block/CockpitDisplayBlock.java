@@ -35,14 +35,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the moving map, the systems page or an outside camera, over a sloped touch panel with a desk under it (see
  * {@link CockpitDisplayBlockEntity}). Turned, it runs across blocks at a slant; every block it passes through is this
  * block, standing where the panel does, and the one holding the panel (HOLDER), on the floor under it, draws all of it
- * and keeps what it knows. FACING is the way the row faces, toward the seats; SHOWS what is on the screen. Using any
- * part touches the panel where the look meets it, on the screen or on the slope. Broken by a player, the whole panel
- * goes.
+ * and keeps what it knows. FACING is the way the row faces, toward the seats; SHOWS what is on the screen; SOLID
+ * whether the row fills enough of the block to stop whoever walks into it, or only grazes it. Using any part touches
+ * the panel where the look meets it, on the screen or on the slope. Broken by a player, the whole panel goes.
  */
 public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<CockpitDisplayBlock> CODEC = simpleCodec(CockpitDisplayBlock::new);
     public static final BooleanProperty HOLDER = BooleanProperty.create("holder");
     public static final EnumProperty<Shows> SHOWS = EnumProperty.create("shows", Shows.class);
+    public static final BooleanProperty SOLID = BooleanProperty.create("solid");
     /** How far round a part the block holding its panel is looked for, in blocks: further than a panel ever runs. */
     static final int HOLDER_REACH = 4;
     /** How many rows of blocks a panel stands in at most: the desk's, and the screen's over it. */
@@ -62,7 +63,8 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
 
     public CockpitDisplayBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(HOLDER, false).setValue(SHOWS, Shows.FLIGHT));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH).setValue(HOLDER, false).setValue(SHOWS, Shows.FLIGHT)
+            .setValue(SOLID, true));
     }
 
     @Override
@@ -72,7 +74,7 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HOLDER, SHOWS);
+        builder.add(FACING, HOLDER, SHOWS, SOLID);
     }
 
     /** Drawn by the block holding the panel, all of it at once, not block by block. */
@@ -81,10 +83,22 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
         return RenderShape.INVISIBLE;
     }
 
-    /** The whole block, to aim at and stand clear of: the panel runs through it at a slant. */
+    /** The whole block, to aim at: the panel runs through it at a slant. */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.block();
+    }
+
+    /** The whole block to stand clear of where the row fills it, none where it only grazes it. */
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return state.getValue(SOLID) ? Shapes.block() : Shapes.empty();
+    }
+
+    /** No shadow on the floor round it: the row drawn in it is smaller than the block. */
+    @Override
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return 1.0F;
     }
 
     @Override

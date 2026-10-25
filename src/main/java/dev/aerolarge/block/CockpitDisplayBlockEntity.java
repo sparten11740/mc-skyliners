@@ -64,9 +64,11 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
      * the screen reaches out toward them from the face, dropping as far at 45 degrees, with the desk under it down to
      * the floor (none where it is 0); and how far in from each end the slope's front edge stops, where it meets the
      * slope of the panel beside it turned further toward them, mitred so the two meet without one overlapping the
-     * other. Measured that way, it holds however the airliner is turned.
+     * other; and how far past each end its desk carries on without the screen, out to the hull at the row's ends.
+     * Measured that way, it holds however the airliner is turned.
      */
-    public record Panel(float leftX, float leftZ, float rightX, float rightZ, float bottom, float top, float desk, float leftCut, float rightCut) {
+    public record Panel(float leftX, float leftZ, float rightX, float rightZ, float bottom, float top, float desk, float leftCut, float rightCut,
+                        float leftEnd, float rightEnd) {
         public float width() {
             return (float) Math.hypot(rightX - leftX, rightZ - leftZ);
         }
@@ -97,12 +99,15 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             tag.putFloat("Desk", desk);
             tag.putFloat("LeftCut", leftCut);
             tag.putFloat("RightCut", rightCut);
+            tag.putFloat("LeftEnd", leftEnd);
+            tag.putFloat("RightEnd", rightEnd);
             return tag;
         }
 
         static Panel load(CompoundTag tag) {
             return new Panel(tag.getFloat("LeftX"), tag.getFloat("LeftZ"), tag.getFloat("RightX"), tag.getFloat("RightZ"), tag.getFloat("Bottom"),
-                tag.getFloat("Top"), tag.getFloat("Desk"), tag.getFloat("LeftCut"), tag.getFloat("RightCut"));
+                tag.getFloat("Top"), tag.getFloat("Desk"), tag.getFloat("LeftCut"), tag.getFloat("RightCut"), tag.getFloat("LeftEnd"),
+                tag.getFloat("RightEnd"));
         }
     }
 

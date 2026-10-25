@@ -33,6 +33,11 @@ final class CockpitCasing {
     private static final float TRIM_WIDTH = 0.04F;
     /** How far the trim stands off the slope, in blocks, so it is drawn over it. */
     private static final float TRIM_LIFT = 0.0015F;
+    /**
+     * How high the desk's back stands where it carries on past the screen, in blocks over the floor: as high as the
+     * blank casing behind the row, a block.
+     */
+    private static final float UPSTAND = 1;
 
     private CockpitCasing() {
     }
@@ -47,6 +52,7 @@ final class CockpitCasing {
             desk.body(face, sprite(DESK));
             desk.slope(face, sprite(SLOPE));
             desk.trim(face, sprite(TRIM));
+            desk.upstand(face, sprite(DESK));
         }
     }
 
@@ -74,14 +80,16 @@ final class CockpitCasing {
     }
 
     /**
-     * The desk under a panel's screen, down to the floor: where its sloped top's front edge stops short of either end,
+     * The desk under a panel's screen, down to the floor, from where it starts along the panel to where it ends (past
+     * the screen's ends where it carries on to the hull): where its sloped top's front edge stops short of either end,
      * mitred against the desk beside it, and how far its neighbours are turned from it there, read back from the
      * mitre (none where it has no neighbour).
      */
-    private record Desk(CockpitDisplayBlockEntity.Panel panel, float width, float left, float right, double leftTurn, double rightTurn) {
+    private record Desk(CockpitDisplayBlockEntity.Panel panel, float width, float start, float end, float left, float right, double leftTurn,
+                        double rightTurn) {
         Desk(CockpitDisplayBlockEntity.Panel panel, float width) {
-            this(panel, width, panel.leftCut(), width - panel.rightCut(), 2 * Math.atan(panel.leftCut() / panel.desk()),
-                2 * Math.atan(panel.rightCut() / panel.desk()));
+            this(panel, width, -panel.leftEnd(), width + panel.rightEnd(), panel.leftCut() - panel.leftEnd(),
+                width + panel.rightEnd() - panel.rightCut(), 2 * Math.atan(panel.leftCut() / panel.desk()), 2 * Math.atan(panel.rightCut() / panel.desk()));
         }
 
         float reach() {
@@ -108,15 +116,43 @@ final class CockpitCasing {
                     new Vector3f(x0, front(), reach()), new float[]{0, 1, x1 - x0, 1, x1 - x0, 1 - front(), 0, 1 - front()},
                     new Vector3f[]{atLeft, atRight, atRight, atLeft});
             }
-            face.tiled(sprite, new Vector3f(width, 0, back), new Vector3f(-width, 0, 0), new Vector3f(0, bottom, 0));
-            face.tiled(sprite, new Vector3f(0, 0, back), new Vector3f(0, 0, -back), new Vector3f(0, bottom, 0));
-            face.tiled(sprite, new Vector3f(width, 0, 0), new Vector3f(0, 0, back), new Vector3f(0, bottom, 0));
-            float mitre = (float) Math.hypot(panel.leftCut(), reach());
-            face.quad(sprite, new Vector3f(0, 0, 0), new Vector3f(left, 0, reach()), new Vector3f(left, front(), reach()), new Vector3f(0, bottom, 0),
-                new float[]{0, 1, mitre, 1, mitre, 1 - front(), 0, 1 - bottom});
-            float rightMitre = (float) Math.hypot(panel.rightCut(), reach());
-            face.quad(sprite, new Vector3f(right, 0, reach()), new Vector3f(width, 0, 0), new Vector3f(width, bottom, 0), new Vector3f(right, front(), reach()),
+            face.tiled(sprite, new Vector3f(end, 0, back), new Vector3f(start - end, 0, 0), new Vector3f(0, bottom, 0));
+            face.tiled(sprite, new Vector3f(start, 0, back), new Vector3f(0, 0, -back), new Vector3f(0, bottom, 0));
+            face.tiled(sprite, new Vector3f(end, 0, 0), new Vector3f(0, 0, back), new Vector3f(0, bottom, 0));
+            float mitre = (float) Math.hypot(left - start, reach());
+            face.quad(sprite, new Vector3f(start, 0, 0), new Vector3f(left, 0, reach()), new Vector3f(left, front(), reach()),
+                new Vector3f(start, bottom, 0), new float[]{0, 1, mitre, 1, mitre, 1 - front(), 0, 1 - bottom});
+            float rightMitre = (float) Math.hypot(end - right, reach());
+            face.quad(sprite, new Vector3f(right, 0, reach()), new Vector3f(end, 0, 0), new Vector3f(end, bottom, 0), new Vector3f(right, front(), reach()),
                 new float[]{0, 1, rightMitre, 1, rightMitre, 1 - bottom, 0, 1 - front()});
+        }
+
+        /**
+         * The back of the desk where it carries on past the screen, stood up as high as the blank casing behind it, so
+         * that does not show over it.
+         */
+        void upstand(Face face, TextureAtlasSprite sprite) {
+            if (panel.bottom() >= UPSTAND) {
+                return;
+            }
+            if (start < 0) {
+                box(face, sprite, start, 0);
+            }
+            if (end > width) {
+                box(face, sprite, width, end);
+            }
+        }
+
+        /** A box behind the slope's top edge, up to the upstand's height, between two places along the panel. */
+        private void box(Face face, TextureAtlasSprite sprite, float x0, float x1) {
+            float back = -CockpitDisplayBlock.DEPTH;
+            float bottom = panel.bottom();
+            float height = UPSTAND - bottom;
+            face.tiled(sprite, new Vector3f(x0, bottom, 0), new Vector3f(x1 - x0, 0, 0), new Vector3f(0, height, 0));
+            face.tiled(sprite, new Vector3f(x1, bottom, back), new Vector3f(x0 - x1, 0, 0), new Vector3f(0, height, 0));
+            face.tiled(sprite, new Vector3f(x0, UPSTAND, 0), new Vector3f(x1 - x0, 0, 0), new Vector3f(0, 0, back));
+            face.tiled(sprite, new Vector3f(x0, bottom, back), new Vector3f(0, 0, -back), new Vector3f(0, height, 0));
+            face.tiled(sprite, new Vector3f(x1, bottom, 0), new Vector3f(0, 0, back), new Vector3f(0, height, 0));
         }
 
         /**
@@ -129,15 +165,16 @@ final class CockpitCasing {
             Vector3f leftUp = blended(up, slopeNormal(leftTurn));
             Vector3f rightUp = blended(up, slopeNormal(-rightTurn));
             float top = 1 - panel.slope();
-            for (int tile = 0; tile < Math.ceil(width - 1e-4); tile++) {
-                float frontLeft = Math.max(tile, left);
-                float frontRight = Math.max(frontLeft, Math.min(tile + 1, right));
-                float backRight = Math.min(tile + 1, width);
+            for (int tile = 0; tile < Math.ceil(end - start - 1e-4); tile++) {
+                float x0 = start + tile;
+                float frontLeft = Math.max(x0, left);
+                float frontRight = Math.max(frontLeft, Math.min(x0 + 1, right));
+                float backRight = Math.min(x0 + 1, end);
                 Vector3f atLeft = tile == 0 ? leftUp : up;
-                Vector3f atRight = backRight == width ? rightUp : up;
+                Vector3f atRight = backRight == end ? rightUp : up;
                 face.quad(sprite, new Vector3f(frontLeft, front(), reach()), new Vector3f(frontRight, front(), reach()),
-                    new Vector3f(backRight, panel.bottom(), 0), new Vector3f(tile, panel.bottom(), 0),
-                    new float[]{frontLeft - tile, 1, frontRight - tile, 1, backRight - tile, top, 0, top}, new Vector3f[]{atLeft, atRight, atRight, atLeft});
+                    new Vector3f(backRight, panel.bottom(), 0), new Vector3f(x0, panel.bottom(), 0),
+                    new float[]{frontLeft - x0, 1, frontRight - x0, 1, backRight - x0, top, 0, top}, new Vector3f[]{atLeft, atRight, atRight, atLeft});
             }
         }
 
@@ -151,14 +188,28 @@ final class CockpitCasing {
             band(face, sprite, 1 - share, 1);
         }
 
-        /** A band of the trim across the slope, between two shares of the way up it from its front edge. */
+        /**
+         * A band of the trim across the slope, between two shares of the way up it from its front edge, a block's
+         * width of the texture to each block along it, as the slope is, so it looks the same on every panel.
+         */
         private void band(Face face, TextureAtlasSprite sprite, float from, float to) {
             Vector3f lift = slopeNormal(0).mul(TRIM_LIFT);
-            Vector3f a = onSlope(left * (1 - from), from).add(lift);
-            Vector3f b = onSlope(right + (width - right) * from, from).add(lift);
-            Vector3f c = onSlope(right + (width - right) * to, to).add(lift);
-            Vector3f d = onSlope(left * (1 - to), to).add(lift);
-            face.quad(sprite, a, b, c, d, new float[]{0, 1, 1, 1, 1, 0, 0, 0});
+            float lowLeft = left + (start - left) * from;
+            float lowRight = right + (end - right) * from;
+            float highLeft = left + (start - left) * to;
+            float highRight = right + (end - right) * to;
+            for (int tile = 0; tile < Math.ceil(end - start - 1e-4); tile++) {
+                float x0 = start + tile;
+                float low0 = Math.max(x0, lowLeft);
+                float low1 = Math.max(low0, Math.min(x0 + 1, lowRight));
+                float high0 = Math.max(x0, highLeft);
+                float high1 = Math.max(high0, Math.min(x0 + 1, highRight));
+                if (low1 - low0 < 1e-4 && high1 - high0 < 1e-4) {
+                    continue;
+                }
+                face.quad(sprite, onSlope(low0, from).add(lift), onSlope(low1, from).add(lift), onSlope(high1, to).add(lift),
+                    onSlope(high0, to).add(lift), new float[]{low0 - x0, 1, low1 - x0, 1, high1 - x0, 0, high0 - x0, 0});
+            }
         }
 
         /** A point of the slope: so far along it, a share of the way up it from its front edge. */

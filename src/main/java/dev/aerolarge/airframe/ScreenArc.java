@@ -8,7 +8,9 @@ import dev.aerolarge.block.CockpitDisplayBlockEntity.Desk;
 import dev.aerolarge.block.CockpitDisplayBlockEntity.Link;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,6 +48,17 @@ final class ScreenArc {
     private static final double NARROWER = 0.25;
     /** How far into the row's blocks the screens' faces stand from their front edge, in blocks: the slab behind them. */
     private static final double FACE_BACK = 0.2;
+    /**
+     * How much of a block's square the panels' desks and slabs must cover, at least, as a share of it, for the block
+     * to stop whoever walks into it: one they only graze is left open to walk through.
+     */
+    private static final double SOLID_SHARE = 0.25;
+    /**
+     * How far past the row's outer ends, at most, the outer panels' desks carry on toward the hull without a screen,
+     * and in what steps that is measured, in blocks.
+     */
+    private static final double MOST_END = 2.5;
+    private static final double END_STEP = 1.0 / 16;
     /** How high the screens' bottom and top edges stand over the floor, in blocks: from the desk's top up a block. */
     private static final float BOTTOM = 1;
     private static final float TOP = 2;
@@ -64,11 +77,24 @@ final class ScreenArc {
 
     /**
      * A panel of the row, planned: the bottom corners of its screen's face, left and right as the pilots see it, what
-     * it shows, what its slope holds, and how far in from each end its slope's front edge stops (see {@link #mitred}).
+     * it shows, what its slope holds, how far in from each end its slope's front edge stops (see {@link #mitred}), and
+     * how far past each end its desk carries on without the screen, out to the hull at the row's ends (see
+     * {@link #withEnds}).
      */
-    private record Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk, double leftCut, double rightCut) {
+    private record Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk, double leftCut, double rightCut,
+                         double leftEnd, double rightEnd) {
+        Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk, double leftCut, double rightCut) {
+            this(leftX, leftZ, rightX, rightZ, shows, desk, leftCut, rightCut, 0, 0);
+        }
+
         double width() {
             return Math.hypot(rightX - leftX, rightZ - leftZ);
+        }
+
+        /** The place along its face's bottom edge so far from its left end (past it where negative). */
+        double[] at(double across) {
+            double width = width();
+            return new double[]{leftX + (rightX - leftX) / width * across, leftZ + (rightZ - leftZ) / width * across};
         }
 
         /** Out of the face toward the pilots, across the floor plan, this far (back into the slab where negative). */
@@ -90,16 +116,19 @@ final class ScreenArc {
         }
 
         /**
-         * The blocks its desk runs through, across the floor plan: the band from the slab's back out to the slope's
-         * front edge, found by its edges (it is never wide enough to hold a whole block).
+         * The blocks its desk runs through, across the floor plan, past its ends as far as it carries on: the band from
+         * the slab's back out to the slope's front edge, found by its edges (it is never wide enough to hold a whole
+         * block).
          */
         Set<BlockPos> under() {
             double[] back = out(-CockpitDisplayBlock.DEPTH);
             double[] front = out(DESK);
-            Set<BlockPos> room = new LinkedHashSet<>(along(-CockpitDisplayBlock.DEPTH));
-            room.addAll(along(DESK));
-            room.addAll(squares(leftX + back[0], leftZ + back[1], leftX + front[0], leftZ + front[1]));
-            room.addAll(squares(rightX + back[0], rightZ + back[1], rightX + front[0], rightZ + front[1]));
+            double[] start = at(-leftEnd);
+            double[] finish = at(width() + rightEnd);
+            Set<BlockPos> room = new LinkedHashSet<>(squares(start[0] + back[0], start[1] + back[1], finish[0] + back[0], finish[1] + back[1]));
+            room.addAll(squares(start[0] + front[0], start[1] + front[1], finish[0] + front[0], finish[1] + front[1]));
+            room.addAll(squares(start[0] + back[0], start[1] + back[1], start[0] + front[0], start[1] + front[1]));
+            room.addAll(squares(finish[0] + back[0], finish[1] + back[1], finish[0] + front[0], finish[1] + front[1]));
             return room;
         }
 
@@ -109,18 +138,42 @@ final class ScreenArc {
             return squares(leftX + by[0], leftZ + by[1], rightX + by[0], rightZ + by[1]);
         }
 
+        /**
+         * Its outline across the floor plan: from its slab's back to its slope's front edge, inside the mitres and past
+         * its ends as far as its desk carries on.
+         */
+        double[][] footprint() {
+            double[] back = out(-CockpitDisplayBlock.DEPTH);
+            double[] front = out(DESK);
+            double[] start = at(-leftEnd);
+            double[] finish = at(width() + rightEnd);
+            double[] frontStart = at(-leftEnd + leftCut);
+            double[] frontFinish = at(width() + rightEnd - rightCut);
+            return new double[][]{
+                {start[0] + back[0], start[1] + back[1]},
+                {finish[0] + back[0], finish[1] + back[1]},
+                {frontFinish[0] + front[0], frontFinish[1] + front[1]},
+                {frontStart[0] + front[0], frontStart[1] + front[1]}
+            };
+        }
+
         /** The block holding it, across the floor plan: the one the middle of its face stands in. */
         BlockPos holder() {
             return new BlockPos(Mth.floor((leftX + rightX) / 2), 0, Mth.floor((leftZ + rightZ) / 2));
         }
 
         Panel holding(Desk to) {
-            return new Panel(leftX, leftZ, rightX, rightZ, shows, to, leftCut, rightCut);
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, to, leftCut, rightCut, leftEnd, rightEnd);
         }
 
         /** With its slope's front edge stopping so far in from either end. */
         Panel cut(double left, double right) {
-            return new Panel(leftX, leftZ, rightX, rightZ, shows, desk, left, right);
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, desk, left, right, leftEnd, rightEnd);
+        }
+
+        /** With its desk carrying on so far past either end. */
+        Panel ending(double left, double right) {
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, desk, leftCut, rightCut, left, right);
         }
     }
 
@@ -175,11 +228,14 @@ final class ScreenArc {
         if (plan == null || plan.pairs().isEmpty()) {
             return false;
         }
-        List<Panel> panels = withDesks(plan);
+        List<Panel> panels = withEnds(withDesks(plan));
+        Map<BlockPos, Double> covered = covered(panels);
         // Every block a panel runs through first, then the blocks holding them, so none is taken over by another panel.
-        panels.forEach(this::standUp);
         for (Panel panel : panels) {
-            hold(panel, controls);
+            standUp(panel, covered);
+        }
+        for (Panel panel : panels) {
+            hold(panel, controls, covered);
         }
         desk(plan);
         return true;
@@ -204,6 +260,40 @@ final class ScreenArc {
             panels.add(cut.pairs().get(1)[1]);
         }
         return panels;
+    }
+
+    /**
+     * The panels with the desks of the row's two outer ones carried on past its ends across the open floor, as far as
+     * the hull, so the console runs on to the wall instead of stopping short of it.
+     */
+    private List<Panel> withEnds(List<Panel> panels) {
+        Panel port = panels.stream().min(Comparator.comparingDouble(Panel::leftX)).orElseThrow();
+        Panel starboard = panels.stream().max(Comparator.comparingDouble(Panel::rightX)).orElseThrow();
+        return panels.stream().map(panel -> panel.ending(panel == port ? endRoom(panel, -1) : 0, panel == starboard ? endRoom(panel, 1) : 0)).toList();
+    }
+
+    /** How far past one of its ends (-1 its left, 1 its right) a panel's desk can carry on across open floor. */
+    private double endRoom(Panel panel, int side) {
+        double room = 0;
+        while (room + END_STEP <= MOST_END && clearPast(panel, side, room + END_STEP)) {
+            room += END_STEP;
+        }
+        return room;
+    }
+
+    /**
+     * Whether a panel's desk, carried on so far past one of its ends, would stand on open floor all across its
+     * depth.
+     */
+    private boolean clearPast(Panel panel, int side, double past) {
+        double[] end = panel.at(side < 0 ? -past : panel.width() + past);
+        for (double depth : new double[]{-CockpitDisplayBlock.DEPTH, 0, DESK}) {
+            double[] by = panel.out(depth);
+            if (!layout.isOpen(Mth.floor(end[0] + by[0]), floor, Mth.floor(end[1] + by[1]))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -328,11 +418,61 @@ final class ScreenArc {
         return blocks;
     }
 
-    /** The panel's blocks: every one its desk runs through, and every one its screen's face runs through over that. */
-    private void standUp(Panel panel) {
-        BlockState part = part(panel);
-        panel.under().forEach(square -> layout.set(square.getX(), floor, square.getZ(), part));
-        panel.face().forEach(square -> layout.set(square.getX(), floor + 1, square.getZ(), part));
+    /**
+     * The panel's blocks: every one its desk runs through, and every one its screen's face runs through over that,
+     * each solid as much as the panels cover its square.
+     */
+    private void standUp(Panel panel, Map<BlockPos, Double> covered) {
+        panel.under().forEach(square -> layout.set(square.getX(), floor, square.getZ(), part(panel, square, covered)));
+        panel.face().forEach(square -> layout.set(square.getX(), floor + 1, square.getZ(), part(panel, square, covered)));
+    }
+
+    /** How much of each square across the floor plan the panels' desks and slabs cover, all of them together. */
+    private static Map<BlockPos, Double> covered(List<Panel> panels) {
+        Map<BlockPos, Double> covered = new HashMap<>();
+        for (Panel panel : panels) {
+            double[][] footprint = panel.footprint();
+            panel.under().forEach(square -> covered.merge(square, coverage(footprint, square.getX(), square.getZ()), Double::sum));
+        }
+        return covered;
+    }
+
+    /** How much of a block's square a convex outline across the floor plan covers, as a share of it. */
+    private static double coverage(double[][] outline, int squareX, int squareZ) {
+        List<double[]> inside = List.of(outline);
+        inside = clip(inside, 0, squareX, 1);
+        inside = clip(inside, 0, squareX + 1, -1);
+        inside = clip(inside, 1, squareZ, 1);
+        inside = clip(inside, 1, squareZ + 1, -1);
+        double area = 0;
+        for (int i = 0; i < inside.size(); i++) {
+            double[] from = inside.get(i);
+            double[] to = inside.get((i + 1) % inside.size());
+            area += from[0] * to[1] - to[0] * from[1];
+        }
+        return Math.abs(area) / 2;
+    }
+
+    /**
+     * An outline cut along a line across the floor plan where one of its coordinates (0 for x, 1 for z) is {@code at},
+     * keeping the side where it is greater (keep 1) or smaller (keep -1).
+     */
+    private static List<double[]> clip(List<double[]> outline, int axis, double at, int keep) {
+        List<double[]> kept = new ArrayList<>();
+        for (int i = 0; i < outline.size(); i++) {
+            double[] from = outline.get(i);
+            double[] to = outline.get((i + 1) % outline.size());
+            double fromSide = (from[axis] - at) * keep;
+            double toSide = (to[axis] - at) * keep;
+            if (fromSide >= 0) {
+                kept.add(from);
+            }
+            if (fromSide >= 0 != toSide >= 0) {
+                double share = fromSide / (fromSide - toSide);
+                kept.add(new double[]{from[0] + (to[0] - from[0]) * share, from[1] + (to[1] - from[1]) * share});
+            }
+        }
+        return kept;
     }
 
     /**
@@ -340,13 +480,14 @@ final class ScreenArc {
      * panel stands from it (in the frame of the way the row faces, which with the row facing south is the layout's
      * own), what its slope holds, and where what it works is, turned with the airliner.
      */
-    private void hold(Panel panel, Map<Link, BlockPos> controls) {
+    private void hold(Panel panel, Map<Link, BlockPos> controls, Map<BlockPos, Double> covered) {
         BlockPos holder = panel.holder().offset(0, floor, 0);
-        layout.set(holder.getX(), holder.getY(), holder.getZ(), part(panel).setValue(CockpitDisplayBlock.HOLDER, true));
+        layout.set(holder.getX(), holder.getY(), holder.getZ(), part(panel, panel.holder(), covered).setValue(CockpitDisplayBlock.HOLDER, true));
         double middleX = holder.getX() + 0.5;
         double middleZ = holder.getZ() + 0.5;
         CockpitDisplayBlockEntity.Panel where = new CockpitDisplayBlockEntity.Panel((float) (panel.leftX - middleX), (float) (panel.leftZ - middleZ),
-            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), BOTTOM, TOP, DESK, (float) panel.leftCut, (float) panel.rightCut);
+            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), BOTTOM, TOP, DESK, (float) panel.leftCut, (float) panel.rightCut,
+            (float) panel.leftEnd, (float) panel.rightEnd);
         layout.fit(holder, (blockEntity, rotation) -> {
             if (blockEntity instanceof CockpitDisplayBlockEntity display) {
                 display.configure(where, panel.desk(), turned(controls, holder, rotation));
@@ -400,10 +541,12 @@ final class ScreenArc {
         return false;
     }
 
-    private static BlockState part(Panel panel) {
+    /** A block of the panel, over a square of the floor plan the panels cover so much of. */
+    private static BlockState part(Panel panel, BlockPos square, Map<BlockPos, Double> covered) {
         return AerolargeRegistry.COCKPIT_DISPLAY.get().defaultBlockState()
             .setValue(CockpitDisplayBlock.FACING, Direction.SOUTH)
-            .setValue(CockpitDisplayBlock.SHOWS, panel.shows());
+            .setValue(CockpitDisplayBlock.SHOWS, panel.shows())
+            .setValue(CockpitDisplayBlock.SOLID, covered.getOrDefault(square, 0.0) >= SOLID_SHARE);
     }
 
     /** The blocks a line across the floor plan runs through, not only along their edges (at height 0). */

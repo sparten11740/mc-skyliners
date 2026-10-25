@@ -618,6 +618,7 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CockpitDisplayBlock> COCKPIT_DISPLAY = BLOCKS.registerBlock(
         "cockpit_display", CockpitDisplayBlock::new,
         metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable().lightLevel(state -> state.getValue(CockpitDisplayBlock.HOLDER) ? 7 : 0)
+            .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CockpitDisplayBlockEntity>> COCKPIT_DISPLAY_ENTITY =
         BLOCK_ENTITIES.register("cockpit_display", () -> BlockEntityType.Builder.of(CockpitDisplayBlockEntity::new, COCKPIT_DISPLAY.get()).build(null));

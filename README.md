@@ -139,7 +139,8 @@ slope under the screens are the keys: under the captain's flight display the til
 wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
 gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
 (see Autopilot); and under the camera's screen the cameras' buttons (see below). The desk runs round under the screens
-as one moulded console, its sloped top brushed dark grey between a steel trim along its front lip and its top edge.
+as one moulded console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim
+along its front lip and its top edge, and past the outer screens it carries on without a screen out to the hull.
 Looking at the screens or the slope from within reach, a little white dot follows your look, and the tile, key or
 camera button under it is outlined in white, so you see what a touch will work before you touch it. The flight
 displays show attitude, airspeed, altitude, vertical speed
