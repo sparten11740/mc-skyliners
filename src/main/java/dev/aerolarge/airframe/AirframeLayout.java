@@ -1474,7 +1474,10 @@ public final class AirframeLayout {
         if (panelZ < 0) {
             return;
         }
-        BlockState panel = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.SOUTH);
+        // Behind the row of screens the panel turns its own screens away into the nose, out of sight; without them it
+        // shows them to the pilots.
+        BlockState panel = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState()
+            .setValue(InstrumentPanelBlock.FACING, console ? Direction.NORTH : Direction.SOUTH);
         int panelWidth = openHalfWidth(deck + 1, panelZ);
         // The panel, and the glareshield: the nose ahead of it filled to the panel's height under the windscreen.
         for (int z = 0; z <= panelZ; z++) {
