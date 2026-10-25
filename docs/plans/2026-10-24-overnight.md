@@ -154,6 +154,7 @@ each measured before and after.
 | 5 | New features' config default | On | Jan |
 | 6 | Laser near the ground (it dug the runway it stood on and would dig the one it lands on) | Hold block fire while low (below 15 blocks over the ground, until 25 again), never cut below the wheels, mobs always; the switch glows amber while holding, with a beep | Panel: design A, engineering refined A, realism preferred a level aim |
 | 7 | Engines' plasma plume (46% of the render thread in flight) | Server setting `enginePlume`, default none; control jets always none | Panel: unanimous |
+| 8 | Engines without flames looked bare (follow-up to #7) | `engineFlames`: `LIGHTWEIGHT_FLAME` (default; drawn by each client from the engine, Fancy or Fabulous graphics only), `PROPULSION_PLUME` (Create Propulsion's particles), `NONE`; only the airliner's own thrusters are set | Jan |
 
 ## Outcome
 
@@ -210,7 +211,7 @@ at 50 blocks a second with the player in the cabin.
 
 | Finding | Cost before | Fix | After |
 |---------|-------------|-----|-------|
-| Engines' plasma particles (Create Propulsion default) | 46% of the render thread; 1,806 particle packets/s (~300 KB/s per player aboard) | `enginePlume` setting, default none; control jets none | no particle packets; cruise 70 to 90 FPS |
+| Engines' plasma particles (Create Propulsion default) | 46% of the render thread; 1,806 particle packets/s (~300 KB/s per player aboard) | `enginePlume` setting, default none; control jets none (since replaced by `engineFlames`, decision 8) | no particle packets; cruise 70 to 90 FPS |
 | Control jets flicking a signal step every tick | 613 block entity packets/s | ignore one-step wobbles | about 250/s (engines' thrust) |
 | Control surface panels drawn behind the camera | ~10% of the render thread; 0.25 ms/frame from the cabin | skip panels wholly behind the camera | 0 ms/frame from the cabin |
 
