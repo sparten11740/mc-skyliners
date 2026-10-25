@@ -44,8 +44,11 @@ public class AnnouncementPanelBlock extends HorizontalDirectionalBlock implement
     public static final int COLUMNS = 3;
     public static final int ROWS = 3;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
-    /** How deep the panel hangs from the top of its blocks, in pixels: its face, the tiles, is its underside. */
-    public static final int DEPTH = 12;
+    /**
+     * How deep the panel hangs from the top of its blocks, in pixels: a quarter block, a slim panel close under the
+     * ceiling, its face, the tiles, its underside.
+     */
+    public static final int DEPTH = 4;
     private static final VoxelShape SHAPE = Block.box(0, 16 - DEPTH, 0, 16, 16, 16);
     /** The middle part, which goes where the panel is put up. */
     private static final int MIDDLE = COLUMNS * ROWS / 2;

@@ -3515,7 +3515,7 @@ function wideScreen(name, model) {
 // the tiles over all of it from part 0. One model for every part and facing, turned with the facing all the same.
 // Only part 0 drops the panel, so the whole panel gives back one.
 {
-  const depth = 12;
+  const depth = 4;
   write(`assets/${ID}/models/block/announcement_panel.json`, boxes(
     { screen: `${ID}:block/announcement_panel`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
     [[[0, 16 - depth, 0], [16, 16, 16], { down: "#screen", all: "#casing" }]],

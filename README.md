@@ -271,8 +271,8 @@ on with the take-off and landing announcements (which opens the curtains), and o
 so everyone can get up. Announcements never talk over each other: one asked for while another plays waits for it to
 end, and the same one is not made again within twenty seconds, however often the buttons are pressed.
 
-Overhead, hung from the ceiling over the centre console between the seats, is the announcement panel: nine tiles,
-three by three, each making one announcement in the same voice when pressed (use it), for young pilots too, since every
+Overhead, hung close under the ceiling over the centre console between the seats, is the announcement panel, a slim
+quarter of a block deep: nine tiles, three by three, each making one announcement in the same voice when pressed (use it), for young pilots too, since every
 tile is a big picture first and its name only small under it. Read from the seats, row by row in the order of a flight:
 Welcome (someone waving hello), Take-off (the airliner climbing off a runway; the autopilot's own announcement),
 Seatbelts (a cloud over bumpy air and a buckled belt: bumpy air ahead, seatbelt signs on), Snacks (a cup and a
