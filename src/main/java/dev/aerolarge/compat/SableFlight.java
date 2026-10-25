@@ -1,9 +1,13 @@
 package dev.aerolarge.compat;
 
 import dev.aerolarge.Aboard;
+import dev.aerolarge.block.AirstairStepBlock;
+import dev.aerolarge.block.SlideStepBlock;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
+import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
+import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
@@ -31,6 +35,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
@@ -343,8 +348,62 @@ public final class SableFlight {
         return closest;
     }
 
+    /**
+     * The airstairs' steps: with Sable installed, steps whose contacts Sable's physics lets through (see {@link
+     * Access#PASS_THROUGH}), so stairs let down to the ground from an assembled airliner never prop it up and tilt it;
+     * without it, the plain steps.
+     */
+    public static AirstairStepBlock airstairStep(BlockBehaviour.Properties properties) {
+        return SABLE ? Access.airstairStep(properties) : new AirstairStepBlock(properties);
+    }
+
+    /** An evacuation slide's steps, letting the ground through as the airstairs' do (see {@link #airstairStep}). */
+    public static SlideStepBlock slideStep(BlockBehaviour.Properties properties) {
+        return SABLE ? Access.slideStep(properties) : new SlideStepBlock(properties);
+    }
+
     /** Kept apart so its Sable references are only loaded when Sable is there. */
     private static final class Access {
+        /**
+         * What Sable's physics does with a step reaching down to the ground as it touches the ground, or anything else
+         * not aboard: drops the contact, so the airliner never comes to rest on its stairs or slides. Players still
+         * stand on the steps, their collision with an airliner being worked out apart from its physics.
+         */
+        private static final BlockSubLevelCollisionCallback PASS_THROUGH =
+            (pos, other, contact, impactVelocity) -> new BlockSubLevelCollisionCallback.CollisionResult(new Vector3d(), true);
+
+        static AirstairStepBlock airstairStep(BlockBehaviour.Properties properties) {
+            return new PassingAirstairStep(properties);
+        }
+
+        static SlideStepBlock slideStep(BlockBehaviour.Properties properties) {
+            return new PassingSlideStep(properties);
+        }
+
+        /** An airstairs' step the ground passes through, to Sable's physics. */
+        private static final class PassingAirstairStep extends AirstairStepBlock implements BlockWithSubLevelCollisionCallback {
+            PassingAirstairStep(BlockBehaviour.Properties properties) {
+                super(properties);
+            }
+
+            @Override
+            public BlockSubLevelCollisionCallback sable$getCallback() {
+                return PASS_THROUGH;
+            }
+        }
+
+        /** A slide's step the ground passes through, to Sable's physics. */
+        private static final class PassingSlideStep extends SlideStepBlock implements BlockWithSubLevelCollisionCallback {
+            PassingSlideStep(BlockBehaviour.Properties properties) {
+                super(properties);
+            }
+
+            @Override
+            public BlockSubLevelCollisionCallback sable$getCallback() {
+                return PASS_THROUGH;
+            }
+        }
+
         @Nullable
         static Boolean rides(Entity entity, BlockEntity blockEntity) {
             SubLevel airliner = Sable.HELPER.getContaining(blockEntity);

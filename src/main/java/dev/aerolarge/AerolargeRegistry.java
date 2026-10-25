@@ -187,6 +187,7 @@ import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
 import dev.aerolarge.item.PilotHelmetItem;
 import dev.aerolarge.item.TrolleyItem;
+import dev.aerolarge.compat.SableFlight;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -466,7 +467,7 @@ public final class AerolargeRegistry {
      * by the controller only, so they cannot be mined, blown up or moved, and drop nothing.
      */
     public static final DeferredBlock<AirstairStepBlock> AIRSTAIR_STEP = BLOCKS.registerBlock(
-        "airstair_step", AirstairStepBlock::new,
+        "airstair_step", SableFlight::airstairStep,
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
@@ -488,7 +489,7 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("slide_control", () -> BlockEntityType.Builder.of(SlideControlBlockEntity::new, SLIDE_CONTROL.get()).build(null));
     public static final DeferredItem<BlockItem> SLIDE_CONTROL_ITEM = ITEMS.registerSimpleBlockItem(SLIDE_CONTROL);
     public static final DeferredBlock<SlideStepBlock> SLIDE_STEP = BLOCKS.registerBlock(
-        "slide_step", SlideStepBlock::new,
+        "slide_step", SableFlight::slideStep,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)

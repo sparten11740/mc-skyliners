@@ -1030,7 +1030,8 @@ The Airstair Controller set into the hull just aft of the door brings them out: 
 folded flight slides out of its bay, rises to the sill and tips down to its slope, its lower sections run out down to
 the ground and the handrails rise, to the hum of their hydraulics and the clunk of their latches, in under five
 seconds. They reach as far down as the ground lets them, so on uneven ground, or over something in the way, they end
-where it meets them, and they are walked up and down like any stairs. An assembled airliner rides higher on its
+where it meets them, and they are walked up and down like any stairs; the airliner never comes to rest on them, so
+let down onto the ground they do not tilt it. An assembled airliner rides higher on its
 suspension than the stairs' steps reach, so there they also lay an unseen plate at the foot of the flight, half way
 between the ground and the bottom tread, and you walk up from the ground without a jump. Worked again, they go back the same way once
 nobody is on them (a chime says they are waiting), and the door shuts behind them. They only come out while the
