@@ -88,8 +88,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     /** How much of the test card's height the colour bars take, over the dark band. */
     private static final double BARS = 2 / 3.0;
     /**
-     * How far out each way the picture of the Physics Assembler in the band reaches while waiting to be assembled, as
-     * a share of the band's height, for whoever cannot read the words beside it.
+     * How far out each way the autopilot's start picture in the band reaches while waiting to be assembled, as a share
+     * of the band's height, for whoever cannot read the words beside it.
      */
     private static final double STANDBY_PICTURE = 0.4;
     /** The badge with the airliner on it: its height, as a share of the bars', and its width over its height. */

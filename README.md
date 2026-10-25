@@ -150,8 +150,8 @@ along its front lip and its top edge, and past the outer screens it carries on w
 Looking at the screens or the slope from within reach, a little white dot follows your look, and the tile, key or
 camera button under it is outlined in white, so you see what a touch will work before you touch it. The flight
 displays show attitude, airspeed, altitude, vertical speed
-and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY under a picture that says the same
-without words: the Physics Assembler's big green button with an arrow pointing at it, and the airliner climbing away. The moving map shows what the autopilot is doing over it and how the
+and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY under the green airliner of the
+autopilot's on/off key, the key that has the Physics Assembler assemble the airliner and takes off. The moving map shows what the autopilot is doing over it and how the
 airliner flies under it, the way it is heading always up, the track it has flown, and the circle it flies round or
 the heading it turns to; touch it to zoom out a step, round to the closest again. The camera panel, like an A380's taxiing camera screen, shows the live picture from one of the airliner's
 outside cameras, the ones the passenger screens look through (see below), the camera on top of the fin at first: the
@@ -168,7 +168,7 @@ the same colour. Use one to switch; everyone sees the camera picked, and the scr
 drawn small, a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen
 aboard the same airliner set to the same camera shows the same picture. Without
 one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
-beside the Physics Assembler's picture while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
+beside the same green airliner while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
 graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
 `tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It is drawn at most ten
 times a second by default (1 to 30), and reaches 12 chunks (2 to 32), never further than your own render distance,
