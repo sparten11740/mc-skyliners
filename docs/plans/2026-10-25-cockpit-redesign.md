@@ -160,3 +160,24 @@ One per feature, each followed by its own `chore(release)` version bump, `README
 - The side consoles take the laser switch, window shades, gear lever and drop release. If the nose is too narrow there
   at scale 2, the gear lever moves to the console's legs row in place of the tiller, which then goes beside the
   throttle quadrant.
+
+## Changed while play-testing
+
+- The angled panels are one block tall, level with the instrument panel, not two. Seated, a pilot's eyes are about
+  1.4 blocks over the floor, so two-block panels hid the windscreen; and the nose at scale 2 is two blocks narrower a
+  row up, where the outer pair would not fit at all. The panels stand in a single row of blocks, and their "cells" are
+  only those the face runs through (the slab's back only needs to be open).
+- The panel block is one block type with FACING, HOLDER and SHOWS (FLIGHT, MAP, CAMERA); the block holding a panel
+  keeps its corners in the facing's frame, so it needs no `Turning`, and finds the autopilot screen beside it by a
+  bounded search instead of a link.
+- The station is the one that leaves the arc the most width (the first of equals), not the first that fits: at scale 2
+  that is three rows further back than before, where the whole arc fits at full width. The door stays where it was.
+- The instrument panel carries on round behind the arc to the hull (facing the nose, so its screens stay hidden).
+- The console's first two rows swapped: the thrust levers right in front of the seats (the pilots look over them at
+  the screens; two rows ahead they hid the inner panels), the tiller and switches just behind the screens.
+- The side consoles: laser switch and window shades by the captain, the transponder behind them; gear lever and drop
+  release by the first officer.
+- The autopilot unit's display uses the settings window's own pictures (`PanelArt`'s icons) and turns a quarter at a
+  time to face whoever looks at it, since the pilots sit either side of it.
+- Engaging from a seat: assembling takes the seat block out from under the pilot (Create's seat entity removes itself
+  without its block), so the autopilot sits the pilot who asked back down in the same seat once aboard.
