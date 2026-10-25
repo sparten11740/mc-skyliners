@@ -168,6 +168,8 @@ import dev.aerolarge.block.WcSignBlockEntity;
 import dev.aerolarge.block.WindSockBlock;
 import dev.aerolarge.block.WindSockBlockEntity;
 import dev.aerolarge.block.WindowShadesBlock;
+import dev.aerolarge.block.CockpitDisplayBlock;
+import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.BlueIceChunk;
@@ -612,6 +614,13 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AutopilotScreenBlockEntity>> AUTOPILOT_SCREEN_ENTITY =
         BLOCK_ENTITIES.register("autopilot_screen", () -> BlockEntityType.Builder.of(AutopilotScreenBlockEntity::new, AUTOPILOT_SCREEN.get()).build(null));
+    /** The screens of the flight deck's curved row either side of the autopilot screen, turned toward the seats. */
+    public static final DeferredBlock<CockpitDisplayBlock> COCKPIT_DISPLAY = BLOCKS.registerBlock(
+        "cockpit_display", CockpitDisplayBlock::new,
+        metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable().lightLevel(state -> state.getValue(CockpitDisplayBlock.HOLDER) ? 7 : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CockpitDisplayBlockEntity>> COCKPIT_DISPLAY_ENTITY =
+        BLOCK_ENTITIES.register("cockpit_display", () -> BlockEntityType.Builder.of(CockpitDisplayBlockEntity::new, COCKPIT_DISPLAY.get()).build(null));
     /** The wide screen over the autopilot screen showing the picture from the camera on top of the fin. */
     public static final DeferredBlock<TailCameraDisplayBlock> TAIL_CAMERA_DISPLAY = BLOCKS.registerBlock(
         "tail_camera_display", TailCameraDisplayBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 5)

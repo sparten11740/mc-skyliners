@@ -6,8 +6,7 @@ import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.airframe.OutsideCamera;
-import dev.aerolarge.block.TailCameraDisplayBlock;
-import dev.aerolarge.block.TailCameraDisplayBlockEntity;
+import dev.aerolarge.block.CameraScreen;
 import foundry.veil.api.client.render.VeilLevelPerspectiveRenderer;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
 import java.lang.reflect.Method;
@@ -26,13 +25,11 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
@@ -47,9 +44,10 @@ import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
 /**
- * The live pictures on the flight deck's camera displays: the world drawn from one of each assembled airliner's outside
- * cameras (see {@link OutsideCamera}), whichever a display is set to, into a small picture of its own, which every
- * display aboard that airliner set to that camera shows. A picture is drawn only while one of its displays was in view
+ * The live pictures on the flight deck's camera displays (any {@link CameraScreen}: the camera display, and the camera
+ * panel of the curved row of screens): the world drawn from one of each assembled airliner's outside cameras (see
+ * {@link OutsideCamera}), whichever a display is set to, into a small picture of its own, which every display aboard
+ * that airliner set to that camera shows. A picture is drawn only while one of its displays was in view
  * and within {@link #REACH} blocks in the frame before, at most {@code tailCameraFps} times a second and one picture a
  * frame. It reaches as far as the {@code tailCameraRenderDistance} setting or the player's own render distance,
  * whichever is less. Once none of its displays has been seen for a while, the picture is thrown away; with no display
@@ -162,7 +160,7 @@ public final class TailCameraFeed {
      * display in view within reach asks for that picture to be drawn before the next frame.
      */
     @Nullable
-    static ResourceLocation show(TailCameraDisplayBlockEntity screen) {
+    static <T extends BlockEntity & CameraScreen> ResourceLocation show(T screen) {
         Level level = screen.getLevel();
         if (drawing || level == null || !available()) {
             return null;
@@ -196,30 +194,19 @@ public final class TailCameraFeed {
      * Its block entity is drawn whenever it is anywhere near, so being drawn says nothing of being seen: standing
      * right by the display with its back to it, a player would otherwise pay for a picture nobody looks at.
      */
-    private static boolean inSight(Level level, TailCameraDisplayBlockEntity screen) {
+    private static boolean inSight(Level level, CameraScreen screen) {
         Minecraft minecraft = Minecraft.getInstance();
         Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
-        BlockState state = screen.getBlockState();
-        Direction facing = state.getValue(TailCameraDisplayBlock.FACING);
-        BlockPos origin = screen.getBlockPos();
-        BlockPos last = origin.relative(TailCameraDisplayBlock.right(facing), TailCameraDisplayBlock.COLUMNS - 1)
-            .above(TailCameraDisplayBlock.ROWS - 1);
-        Vec3 middle = Vec3.atCenterOf(origin).add(Vec3.atCenterOf(last)).scale(0.5);
+        Vec3 middle = screen.faceMiddle();
         Vec3 here = SableClient.toWorld(level, middle);
         if (here.distanceToSqr(camera) > REACH * REACH) {
             return false;
         }
-        // The way its face looks, among the airliner's blocks: out of the wall, or down and out when it hangs tilted.
-        Vec3 out = Vec3.atLowerCornerOf(facing.getNormal());
-        if (state.getValue(TailCameraDisplayBlock.TILTED)) {
-            out = out.add(0, -1, 0).normalize();
-        }
-        if (camera.subtract(here).dot(SableClient.toWorld(level, middle.add(out)).subtract(here)) <= 0) {
+        if (camera.subtract(here).dot(SableClient.toWorld(level, middle.add(screen.faceOut())).subtract(here)) <= 0) {
             return false;
         }
-        // Just round the screen's blocks, wide enough for all of them however the airliner lies.
-        double size = Math.sqrt(TailCameraDisplayBlock.COLUMNS * TailCameraDisplayBlock.COLUMNS
-            + TailCameraDisplayBlock.ROWS * TailCameraDisplayBlock.ROWS + 1);
+        // Just round the screen, wide enough for all of it however the airliner lies.
+        double size = 2 * screen.faceReach();
         return minecraft.levelRenderer.getFrustum().isVisible(AABB.ofSize(here, size, size, size));
     }
 

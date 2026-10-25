@@ -162,15 +162,20 @@ public final class AirframeLayout {
         AutopilotBlockEntity.Channel.PITCH_UP, AutopilotBlockEntity.Channel.PITCH_DOWN
     };
     /**
-     * How far either side of the middle the pilots' seats stand: right beside the centre console, close enough together
-     * that from either seat the whole console is within reach, but for the far thrust lever (any lever moves all four).
+     * How far either side of the middle the pilots' seats stand: right beside the centre console, three blocks across,
+     * close enough together that from either seat the whole console is within reach.
      */
-    private static final int SEAT_X = 3;
+    private static final int SEAT_X = 2;
+    /**
+     * How far either side of the middle the pilots' seats stand where the nose leaves no room for the centre console:
+     * the throttle quadrant between them, five blocks across.
+     */
+    private static final int NARROW_SEAT_X = 3;
     /** How many rows up from the lowest a column is looked up for the airframe's underside, in blocks. */
     private static final int COLUMN_SEARCH = 64;
     /**
-     * Rows between the instrument panel and the pilots' seats, where their legs stretch out beside the centre console's
-     * front row and its throttle quadrant.
+     * Rows between the screens in front of the instrument panel and the pilots' seats: the centre console's front row,
+     * and right in front of the seats its throttle quadrant.
      */
     private static final int LEGROOM = 2;
     /** The four engines' span stations, engines 1 to 4 from left to right, as their thrust levers stand. */
@@ -1406,12 +1411,13 @@ public final class AirframeLayout {
     /**
      * The flight deck: a raised floor in the nose at the height where the pilots look straight out through the
      * windscreen, steps up to it from the main deck, and the instrument panel across the nose with the glareshield
-     * filling the nose ahead of it, a flight display in it in front of each of the two pilot seats. In the middle of
-     * the panel, standing just in front of it, is the autopilot screen, and on top of the screen, as one sheet of glass
-     * with it, the tail camera display. From the panel back between the seats runs the centre console the pilots share
-     * (see {@link #centreConsole}). The panel stands at the first station where the nose leaves room for all that,
-     * ahead of the cockpit door with room behind the seats for the Physics Assembler; in a nose too small for it, at
-     * the first station where two pilots fit side by side at all, with the controls fitted round them (see
+     * filling the nose ahead of it. In the middle of the panel, standing just in front of it, is the autopilot screen,
+     * and either side of it the curved row of screens round the pilots' seats (see {@link ScreenArc}). From the screens
+     * back between the seats runs the centre console the pilots share (see {@link #centreConsole}). The panel stands
+     * where the nose leaves room for all that and the most room for the row of screens, ahead of the cockpit door with
+     * room behind the seats for the Physics Assembler. In a nose too small for the console, it stands at the first
+     * station where two pilots fit side by side at all, a flight display in the panel in front of each and the tail
+     * camera display on top of the autopilot screen, with the controls fitted round them (see
      * {@link #narrowControls}), and the door moves back if it has to, but no further than the raised floor's back edge.
      * Behind the door, on the same raised floor at the top of the steps, are the WC and the crew room.
      */
@@ -1443,12 +1449,8 @@ public final class AirframeLayout {
             }
         }
 
-        // Rather without the camera display on the screen than without the centre console.
         int doorStation = (int) Math.round(COCKPIT_DOOR * scale);
-        int screenZ = consoleStation(deck, doorStation - 1, true);
-        if (screenZ < 0) {
-            screenZ = consoleStation(deck, doorStation - 1, false);
-        }
+        int screenZ = consoleStation(deck, doorStation - 1);
         boolean console = screenZ >= 0;
         // With the console the screen stands just in front of the panel, without it set into the panel.
         int panelZ = console ? screenZ - 1 : panelStation(deck, deckEnd + 1);
@@ -1472,18 +1474,16 @@ public final class AirframeLayout {
                 set(x, deck + 1, z, panel);
             }
         }
-        // A flight display in the panel in front of each seat.
-        for (int side : new int[]{1, -1}) {
-            int displayX = side * Math.min(SEAT_X, panelWidth);
-            if (stateAt(displayX, deck + 1, panelZ).is(panel.getBlock())) {
-                set(displayX, deck + 1, panelZ, AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH));
-            }
+        int seatX = console ? SEAT_X : NARROW_SEAT_X;
+        if (!console) {
+            panelFlightDisplays(deck + 1, panelZ, panelWidth);
         }
-        pilotSeat(-SEAT_X, deck + 1, seatZ);
-        pilotSeat(SEAT_X, deck + 1, seatZ);
+        pilotSeat(-seatX, deck + 1, seatZ);
+        pilotSeat(seatX, deck + 1, seatZ);
         BlockPos autopilot = console ? centreConsole(deck + 1, screenZ, seatZ) : narrowControls(deck + 1, panelZ, seatZ);
         autopilotScreen(deck + 1, screenZ, autopilot);
-        if (!cameraOnScreen(deck + 1, screenZ)) {
+        boolean camera = console ? new ScreenArc(this, deck + 1, screenZ).apply() : cameraOnScreen(deck + 1, screenZ);
+        if (!camera) {
             tailCameraDisplay(deck, seatZ - 1);
         }
         announcementPanel(deck, seatZ, autopilot);
@@ -1493,28 +1493,42 @@ public final class AirframeLayout {
     }
 
     /**
-     * The first station along the nose where the autopilot screen stands in front of the instrument panel with the
-     * centre console and the seats behind it: the panel, the row ahead, wide enough for a flight display in front of
-     * each seat; the screen's rows open (and, with {@code camera}, the row over them for the tail camera display), a
-     * block clear either side so the glass stands free of the windscreen; room beside the console's front rows for the
-     * pilots' legs; the seats' row a step wider than the seats, the tops of their backs open over them; and the Physics
-     * Assembler's spot behind the seats no further back than {@code last}. -1 if there is none.
+     * The station along the nose where the autopilot screen stands in front of the instrument panel, with the centre
+     * console and the seats behind it, that leaves the most room for the screens round the seats (see
+     * {@link ScreenArc}), the first of those that leave as much; with the Physics Assembler's spot behind the seats no
+     * further back than {@code last}. -1 if there is none.
      */
-    private int consoleStation(int deck, int last, boolean camera) {
-        int screen = AutopilotScreenBlock.COLUMNS / 2;
+    private int consoleStation(int deck, int last) {
+        int best = -1;
+        double bestWidth = -1;
         for (int z = 1; z + LEGROOM + 3 <= last; z++) {
-            int seatZ = z + LEGROOM + 1;
-            boolean fits = openHalfWidth(deck + 1, z - 1) >= SEAT_X && openHalfWidth(deck + 1, z) > screen
-                && openHalfWidth(deck + 2, z) > screen && (!camera || openHalfWidth(deck + 3, z) > screen)
-                && openHalfWidth(deck + 1, seatZ) > SEAT_X && openHalfWidth(deck + 2, seatZ) >= SEAT_X;
-            for (int k = 1; fits && k <= LEGROOM; k++) {
-                fits = openHalfWidth(deck + 1, z + k) >= SEAT_X;
+            if (!consoleFits(deck, z)) {
+                continue;
             }
-            if (fits) {
-                return z;
+            double width = new ScreenArc(this, deck + 1, z).width();
+            if (width > bestWidth) {
+                best = z;
+                bestWidth = width;
             }
         }
-        return -1;
+        return best;
+    }
+
+    /**
+     * Whether the autopilot screen fits at station z in front of the instrument panel, with the centre console and the
+     * seats behind it: the panel, the row ahead, as wide as the screen; the screen's rows open, a block clear either
+     * side so the glass stands free of the windscreen; the throttle quadrant's row and the pilots' legroom as wide as
+     * the seats; and the seats' row a step wider than the seats, the tops of their backs open over them.
+     */
+    private boolean consoleFits(int deck, int z) {
+        int screen = AutopilotScreenBlock.COLUMNS / 2;
+        int seatZ = z + LEGROOM + 1;
+        boolean fits = openHalfWidth(deck + 1, z - 1) >= screen && openHalfWidth(deck + 1, z) > screen && openHalfWidth(deck + 2, z) > screen
+            && openHalfWidth(deck + 1, seatZ) > SEAT_X && openHalfWidth(deck + 2, seatZ) >= SEAT_X;
+        for (int k = 1; fits && k <= LEGROOM; k++) {
+            fits = openHalfWidth(deck + 1, z + k) >= SEAT_X;
+        }
+        return fits;
     }
 
     /**
@@ -1524,11 +1538,24 @@ public final class AirframeLayout {
      */
     private int panelStation(int deck, int last) {
         for (int z = 0; z + 4 <= last; z++) {
-            if (openHalfWidth(deck + 1, z) >= SEAT_X && openHalfWidth(deck + 1, z + 2) >= SEAT_X) {
+            if (openHalfWidth(deck + 1, z) >= NARROW_SEAT_X && openHalfWidth(deck + 1, z + 2) >= NARROW_SEAT_X) {
                 return z;
             }
         }
         return -1;
+    }
+
+    /**
+     * Where there is no room for the screens round the seats, a flight display in the instrument panel in front of each
+     * pilot's seat, or as near it as the panel reaches.
+     */
+    private void panelFlightDisplays(int y, int panelZ, int panelWidth) {
+        for (int side : new int[]{1, -1}) {
+            int displayX = side * Math.min(NARROW_SEAT_X, panelWidth);
+            if (stateAt(displayX, y, panelZ).getBlock() instanceof InstrumentPanelBlock) {
+                set(displayX, y, panelZ, AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH));
+            }
+        }
     }
 
     /**
@@ -1545,37 +1572,40 @@ public final class AirframeLayout {
     }
 
     /**
-     * The centre console, from the autopilot screen back between the pilots' seats, a module of it for each control,
-     * low enough to see the screen over: everything on it within reach from either seat but for the far thrust lever
-     * (any lever moves all four), and the window shades' control and the drop release, each beside the seat that works
-     * it. Across its front, as wide as the screen just ahead of it, the autopilot's control head between the seatbelt
-     * switch and the jump light switch, and the transponder outboard of the seatbelt switch. Behind them, in front of the seats, the throttle quadrant: the four thrust
-     * levers with the parking brake in the middle of them. Between the seats the nose wheel tiller in the middle, the
-     * cabin lights' dimmer and the captain's handset either side of it, and at the seats' sides the window shades'
-     * control by the captain and the drop release by the first officer, each facing the one beside it. Gives where the
+     * The centre console, from the screens back between the pilots' seats, a module of it for each control, low enough
+     * to see the screens over, everything on it within reach from either seat. Across its front, just behind the
+     * screens, the nose wheel tiller with the seatbelt switch and the jump light switch either side of it, all low.
+     * Behind them, right in front of the seats and as wide as them, the throttle quadrant: the four thrust levers with
+     * the parking brake in the middle of them, so close that the pilots look over the levers at the screens. Between
+     * the seats the autopilot's control head, with the cabin lights' dimmer and the captain's handset either side of
+     * it. Outboard of the seats, each facing the seat beside it: the laser's switch, the window shades' control and the
+     * transponder by the captain, and the landing gear lever and the drop release by the first officer. Gives where the
      * autopilot went.
      */
     private BlockPos centreConsole(int y, int screenZ, int seatZ) {
         int front = screenZ + 1;
-        int quadrant = screenZ + 2;
+        int quadrant = seatZ - 1;
         List<BlockPos> controls = new ArrayList<>(thrustLevers(y, quadrant));
-        BlockPos tiller = new BlockPos(0, y, seatZ);
+        BlockPos tiller = new BlockPos(0, y, front);
         BlockPos brake = new BlockPos(0, y, quadrant);
         groundControls(tiller, brake);
         controls.add(tiller);
         controls.add(brake);
         seatbeltSwitch = control(-1, y, front, AerolargeRegistry.SEATBELT_SWITCH.get(), Direction.SOUTH);
         jumpSwitch = control(1, y, front, AerolargeRegistry.JUMP_SWITCH.get(), Direction.SOUTH);
-        transponder(control(-2, y, front, AerolargeRegistry.TRANSPONDER.get(), Direction.SOUTH));
         cabinLights = control(-1, y, seatZ, AerolargeRegistry.CABIN_LIGHTS.get(), Direction.SOUTH);
         control(1, y, seatZ, AerolargeRegistry.HANDSET.get(), Direction.SOUTH);
-        windowShades = control(-(SEAT_X - 1), y, seatZ, AerolargeRegistry.WINDOW_SHADES.get(), Direction.WEST);
-        dropRelease = control(SEAT_X - 1, y, seatZ, AerolargeRegistry.DROP_RELEASE.get(), Direction.EAST);
-        gearLever(2, y, screenZ - 1);
+        int outboard = SEAT_X + 1;
         if (AerolargeConfig.LASER_PATH_CLEARER.get()) {
-            laserSwitch = control(2, y, front, AerolargeRegistry.LASER_SWITCH.get(), Direction.SOUTH);
+            laserSwitch = control(-outboard, y, quadrant, AerolargeRegistry.LASER_SWITCH.get(), Direction.EAST);
         }
-        BlockPos autopilot = new BlockPos(0, y, front);
+        windowShades = control(-outboard, y, seatZ, AerolargeRegistry.WINDOW_SHADES.get(), Direction.EAST);
+        transponder(control(-outboard, y, seatZ + 1, AerolargeRegistry.TRANSPONDER.get(), Direction.EAST));
+        if (retractableGear()) {
+            gearLever = control(outboard, y, quadrant, AerolargeRegistry.GEAR_LEVER.get(), Direction.WEST);
+        }
+        dropRelease = control(outboard, y, seatZ, AerolargeRegistry.DROP_RELEASE.get(), Direction.WEST);
+        BlockPos autopilot = new BlockPos(0, y, seatZ);
         autopilot(autopilot, controls);
         return autopilot;
     }
@@ -1590,22 +1620,24 @@ public final class AirframeLayout {
      */
     private BlockPos narrowControls(int y, int panelZ, int seatZ) {
         List<BlockPos> controls = new ArrayList<>(thrustLevers(y, seatZ));
-        BlockPos tiller = new BlockPos(-SEAT_X - 1, y, seatZ);
-        BlockPos brake = new BlockPos(SEAT_X + 1, y, seatZ);
+        BlockPos tiller = new BlockPos(-NARROW_SEAT_X - 1, y, seatZ);
+        BlockPos brake = new BlockPos(NARROW_SEAT_X + 1, y, seatZ);
         if (isOpen(tiller.getX(), tiller.getY(), tiller.getZ()) && isOpen(brake.getX(), brake.getY(), brake.getZ())) {
             groundControls(tiller, brake);
             controls.add(tiller);
             controls.add(brake);
         }
-        windowShades = control(-SEAT_X - 1, y, seatZ + 1, AerolargeRegistry.WINDOW_SHADES.get(), Direction.EAST);
-        dropRelease = control(SEAT_X + 1, y, seatZ + 1, AerolargeRegistry.DROP_RELEASE.get(), Direction.WEST);
+        windowShades = control(-NARROW_SEAT_X - 1, y, seatZ + 1, AerolargeRegistry.WINDOW_SHADES.get(), Direction.EAST);
+        dropRelease = control(NARROW_SEAT_X + 1, y, seatZ + 1, AerolargeRegistry.DROP_RELEASE.get(), Direction.WEST);
         int beside = AutopilotScreenBlock.COLUMNS / 2 + 1;
         seatbeltSwitch = onPanel(-beside, y, panelZ, AerolargeRegistry.SEATBELT_SWITCH.get());
         onPanel(-beside - 1, y, panelZ, AerolargeRegistry.HANDSET.get());
         jumpSwitch = onPanel(beside, y, panelZ, AerolargeRegistry.JUMP_SWITCH.get());
         cabinLights = onPanel(beside + 1, y, panelZ, AerolargeRegistry.CABIN_LIGHTS.get());
         transponder(onPanel(-beside - 2, y, panelZ, AerolargeRegistry.TRANSPONDER.get()));
-        gearLever(beside + 2, y, panelZ);
+        if (retractableGear()) {
+            gearLever = onPanel(beside + 2, y, panelZ, AerolargeRegistry.GEAR_LEVER.get());
+        }
         if (AerolargeConfig.LASER_PATH_CLEARER.get()) {
             laserSwitch = onPanel(-beside - 3, y, panelZ, AerolargeRegistry.LASER_SWITCH.get());
         }
@@ -2979,11 +3011,12 @@ public final class AirframeLayout {
         gearLegs.add(new GearLeg(at, parts));
     }
 
-    /** The landing gear lever on the panel's top at the spot, with retractable gear and room for it. */
-    private void gearLever(int x, int y, int panelZ) {
-        if (AerolargeConfig.RETRACTABLE_GEAR.get() && palette.wheelMount().isPresent() && palette.tireItem().isPresent()) {
-            gearLever = onPanel(x, y, panelZ, AerolargeRegistry.GEAR_LEVER.get());
-        }
+    /**
+     * Whether the airliner gets retractable landing gear, and with it the gear lever on the flight deck: when the
+     * config asks for it and the wheel mounts and tyres it is built with are there.
+     */
+    private boolean retractableGear() {
+        return AerolargeConfig.RETRACTABLE_GEAR.get() && palette.wheelMount().isPresent() && palette.tireItem().isPresent();
     }
 
     /**

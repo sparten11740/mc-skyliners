@@ -280,6 +280,7 @@
   "screen.aerolarge.announcement_panel.landing": "Landing",
   "screen.aerolarge.announcement_panel.arrival": "Arrival",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
+  "block.aerolarge.cockpit_display": "Cockpit Display",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",
   "screen.aerolarge.autopilot.on": "ON",

@@ -3446,6 +3446,12 @@ write(`assets/${ID}/blockstates/autopilot_screen.json`, {
     [0, 1, 2, 3, 4, 5].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/autopilot_screen`, y }]))),
 });
 cubes.autopilot_screen = null;
+// The flight deck's curved row of screens either side of the autopilot screen, each panel drawn whole by its
+// renderer from the block holding it (see CockpitDisplayRenderer), so the model gives only the particles of breaking
+// one. Built only into the airliner: no item and no loot.
+write(`assets/${ID}/blockstates/cockpit_display.json`, { variants: { "": { model: `${ID}:block/cockpit_display` } } });
+write(`assets/${ID}/models/block/cockpit_display.json`, { textures: { particle: `${ID}:block/passenger_screen_casing` } });
+cubes.cockpit_display = null;
 
 // The flight display: a plain dark panel, its screen drawn live by its renderer; facing the pilot.
 write(`assets/${ID}/models/block/flight_display.json`, {
@@ -5169,6 +5175,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.announcement_panel.landing": "Landing",
   "screen.aerolarge.announcement_panel.arrival": "Arrival",
   "block.aerolarge.autopilot_screen": "Autopilot Screen",
+  "block.aerolarge.cockpit_display": "Cockpit Display",
   "message.aerolarge.autopilot_screen.unlinked": "This screen is not linked to an autopilot.",
   "screen.aerolarge.autopilot.engage": "AP %s",
   "screen.aerolarge.autopilot.on": "ON",

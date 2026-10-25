@@ -20,6 +20,7 @@ import dev.aerolarge.client.BlueprintPreview;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CarriedAboard;
 import dev.aerolarge.client.CloudlessCabin;
+import dev.aerolarge.client.CockpitDisplayRenderer;
 import dev.aerolarge.client.CockpitDoorRenderer;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.ControlSurfaceRenderer;
@@ -97,6 +98,7 @@ public final class AerolargeClient {
         container.registerConfig(ModConfig.Type.CLIENT, AerolargeClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
+        NeoForge.EVENT_BUS.addListener(CockpitDisplayRenderer::hideOutline);
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);
@@ -191,6 +193,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.LASER_TURRET_ENTITY.get(), context -> new LaserTurretRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_DISPLAY_ENTITY.get(), context -> new FlightDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_SCREEN_ENTITY.get(), context -> new AutopilotScreenRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DISPLAY_ENTITY.get(), context -> new CockpitDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), ControlSurfaceRenderer::new);

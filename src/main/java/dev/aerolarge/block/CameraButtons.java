@@ -4,7 +4,7 @@ import dev.aerolarge.airframe.OutsideCamera;
 import javax.annotation.Nullable;
 
 /**
- * The buttons along the bottom left of the flight deck's camera display (see {@link TailCameraDisplayBlock}), one for
+ * The buttons along the bottom left of the flight deck's camera screens (see {@link CameraScreen}), one for
  * each outside camera in a row, each a little airliner seen from the side with a dot where its camera is; the one the
  * display shows is lit. Touching one shows its camera. Laid out on the display's face, in blocks from its bottom left
  * corner: the server finds the button touched by the same layout its renderer draws them by.

@@ -43,6 +43,7 @@
     "aerolarge:window_shades",
     "aerolarge:cabin_window_shell",
     "aerolarge:autopilot_screen",
+    "aerolarge:cockpit_display",
     "aerolarge:flight_display",
     "aerolarge:tail_camera_display",
     "aerolarge:announcement_panel",

@@ -145,11 +145,7 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
     void touch(double across, double up, ServerPlayer player) {
         mendLink();
         if (MAP.contains(across, up)) {
-            range = (range + 1) % RANGES.length;
-            setChanged();
-            if (level != null) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            }
+            zoom();
             return;
         }
         AutopilotBlockEntity target = autopilot();
@@ -157,6 +153,15 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
             target.openScreen(player);
         } else {
             player.displayClientMessage(Component.translatable("message.aerolarge.autopilot_screen.unlinked"), true);
+        }
+    }
+
+    /** Zooms the map out a step, round to the closest again, for everyone looking at it. */
+    public void zoom() {
+        range = (range + 1) % RANGES.length;
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 

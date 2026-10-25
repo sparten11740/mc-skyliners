@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.airframe.OutsideCamera;
 import dev.aerolarge.block.CameraButtons;
+import dev.aerolarge.block.CameraScreen;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
@@ -30,7 +32,8 @@ import org.joml.Matrix4f;
  * test card, the way a screen with no signal does: colour bars over a dark band, the airliner seen from behind in the
  * middle, and a word under them on why: the airliner is not assembled, or no picture is coming. Either way, along the
  * bottom left, the buttons that pick the camera (see {@link CameraButtons}): each the airliner seen from its right side,
- * nose to the right, with a dot where its camera is, the one shown lit.
+ * nose to the right, with a dot where its camera is, the one shown lit. The camera panel of the curved row of screens
+ * draws its face the same way (see {@link #drawFace}).
  */
 public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCameraDisplayBlockEntity> {
     /** The whole face's width, in blocks (see {@link WideScreenFace}). */
@@ -41,7 +44,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
      * The picture's width over its height as the fin camera draws it: the tilted face's, as the airliner's own display
      * hangs; an upright face, wider, shows the middle of it.
      */
-    static final double ASPECT = pictureAspect(WideScreenFace.TILTED_HEIGHT);
+    static final double ASPECT = pictureAspect(WIDTH, WideScreenFace.TILTED_HEIGHT);
     /**
      * The camera's label in the picture's top left corner, in blocks: its margin from the corner, its height, the
      * padding inside it and the gap between what is in it.
@@ -115,15 +118,23 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     @Override
     public void render(TailCameraDisplayBlockEntity screen, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         BlockState state = screen.getBlockState();
-        double height = WideScreenFace.height(state);
-        ResourceLocation picture = TailCameraFeed.show(screen);
         pose.pushPose();
         WideScreenFace.onto(pose, state);
+        drawFace(screen, pose, buffers, WIDTH, WideScreenFace.height(state));
+        pose.popPose();
+    }
+
+    /**
+     * Draws a camera screen's face, this wide and tall, from the pose's origin at its bottom left corner, facing out
+     * along its z: the picture or the test card inside the bezel, and the camera buttons along the bottom left.
+     */
+    static <T extends BlockEntity & CameraScreen> void drawFace(T screen, PoseStack pose, MultiBufferSource buffers, double width, double height) {
+        ResourceLocation picture = TailCameraFeed.show(screen);
         Matrix4f matrix = pose.last().pose();
-        ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, WIDTH, height, 0, CASING);
+        ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, width, height, 0, CASING);
         Font font = Minecraft.getInstance().font;
         if (picture != null) {
-            picture(buffers.getBuffer(RenderType.text(picture)), matrix, height);
+            picture(buffers.getBuffer(RenderType.text(picture)), matrix, width, height);
             // The picture took its own buffer; the shapes over it take theirs back, and the text its own after them.
             Component label = Component.translatable(KEY + "camera", Component.translatable(screen.camera().label()));
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
@@ -133,20 +144,19 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
                 ScreenDrawing.Align.LEFT);
         } else {
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-            testCard(shapes, matrix, height);
+            testCard(shapes, matrix, width, height);
             cameraButtons(shapes, matrix, screen.camera());
             // Text last: it takes its own buffer, which ends the one the shapes went into.
             String status = SableClient.ride(screen) != null ? "no_signal" : "standby";
             double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + status), WIDTH / 2, (BEZEL + band) / 2, TEXT_LIFT, TEXT, WHITE,
+            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + status), width / 2, (BEZEL + band) / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.CENTRE);
         }
-        pose.popPose();
     }
 
-    /** The picture's width over its height on a face this tall. */
-    private static double pictureAspect(double height) {
-        return (WIDTH - 2 * BEZEL) / (height - 2 * BEZEL);
+    /** The picture's width over its height on a face this wide and tall. */
+    private static double pictureAspect(double width, double height) {
+        return (width - 2 * BEZEL) / (height - 2 * BEZEL);
     }
 
     /**
@@ -154,12 +164,12 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
      * the face is not the shape the picture is drawn in. The framebuffer it was drawn into starts at its bottom row, so
      * the picture's bottom edge takes the texture's first row.
      */
-    private static void picture(VertexConsumer image, Matrix4f matrix, double height) {
+    private static void picture(VertexConsumer image, Matrix4f matrix, double width, double height) {
         float x0 = (float) BEZEL;
-        float x1 = (float) (WIDTH - BEZEL);
+        float x1 = (float) (width - BEZEL);
         float y0 = (float) BEZEL;
         float y1 = (float) (height - BEZEL);
-        double aspect = pictureAspect(height);
+        double aspect = pictureAspect(width, height);
         float u0 = (float) Math.max(0, (1 - aspect / ASPECT) / 2);
         float v0 = (float) Math.max(0, (1 - ASPECT / aspect) / 2);
         image.addVertex(matrix, x0, y0, LAYER).setColor(-1).setUv(u0, v0).setLight(LightTexture.FULL_BRIGHT);
@@ -257,9 +267,9 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     }
 
     /** The test card over the picture: the colour bars over the dark band, and the airliner on its badge over the bars. */
-    private static void testCard(VertexConsumer shapes, Matrix4f matrix, double height) {
+    private static void testCard(VertexConsumer shapes, Matrix4f matrix, double width, double height) {
         double x0 = BEZEL;
-        double x1 = WIDTH - BEZEL;
+        double x1 = width - BEZEL;
         double y0 = BEZEL;
         double y1 = height - BEZEL;
         double band = y0 + (y1 - y0) * (1 - BARS);
@@ -269,7 +279,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             ScreenDrawing.rect(shapes, matrix, x0 + i * bar, band, x0 + (i + 1) * bar, y1, LAYER, COLOUR_BARS[i]);
         }
         double size = (y1 - band) * BADGE;
-        double cx = WIDTH / 2;
+        double cx = width / 2;
         double cy = (band + y1) / 2;
         ScreenDrawing.rect(shapes, matrix, cx - size * BADGE_SHAPE / 2, cy - size / 2, cx + size * BADGE_SHAPE / 2, cy + size / 2, 2 * LAYER, BADGE_BACKING);
         for (double[] box : AIRLINER) {

@@ -8,6 +8,7 @@ import dev.aerolarge.block.FlightDisplayBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,8 +28,8 @@ import org.joml.Matrix4f;
  */
 public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayBlockEntity> {
     /** The screen's half width and half height on the block face, in blocks. */
-    private static final float HALF_WIDTH = 0.44F;
-    private static final float HALF_HEIGHT = 0.36F;
+    static final float HALF_WIDTH = 0.44F;
+    static final float HALF_HEIGHT = 0.36F;
     /** The attitude indicator's half size, how far it sits up from the screen's middle, and blocks per degree of pitch. */
     private static final float ADI = 0.2F;
     private static final float ADI_RAISE = 0.04F;
@@ -66,6 +67,17 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
         pose.translate(0, 0, SURFACE);
+        long staticSeed = display.getLevel() == null ? 0 : display.getBlockPos().asLong() + display.getLevel().getGameTime();
+        draw(pose, buffers, attitude, staticSeed);
+        pose.popPose();
+    }
+
+    /**
+     * Draws the display round the pose's origin, {@link #HALF_WIDTH} and {@link #HALF_HEIGHT} out each way and facing
+     * out along its z: the standby screen without an attitude to show, and static over it all just after lightning
+     * struck, its specks picked by the seed.
+     */
+    static void draw(PoseStack pose, MultiBufferSource buffers, @Nullable SableClient.Attitude attitude, long staticSeed) {
         Matrix4f matrix = pose.last().pose();
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(fill, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BLACK);
@@ -74,7 +86,6 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         if (attitude == null) {
             text(font, pose, buffers, "STBY", 0, 0, GREEN);
             text(font, pose, buffers, "ASSEMBLE TO FLY", 0, -0.12F, WHITE);
-            pose.popPose();
             return;
         }
         attitudeIndicator(fill, matrix, attitude);
@@ -85,11 +96,10 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         text(font, pose, buffers, "ALT", 0.34F, ADI_RAISE + 0.08F, GREEN);
         text(font, pose, buffers, String.format(Locale.ROOT, "%+d", Math.round(attitude.verticalSpeed())), 0.34F, ADI_RAISE - 0.09F, GREEN);
         text(font, pose, buffers, String.format(Locale.ROOT, "HDG %03d", Math.round(attitude.heading()) % 360), 0, -0.29F, WHITE);
-        if (LightningFlash.screensStatic() && display.getLevel() != null) {
+        if (LightningFlash.screensStatic()) {
             // A buffer of its own: drawing the text has moved the buffers on from the one the screen was drawn into.
-            noise(ScreenDrawing.shapes(buffers), matrix, display.getBlockPos().asLong() + display.getLevel().getGameTime());
+            noise(ScreenDrawing.shapes(buffers), matrix, staticSeed);
         }
-        pose.popPose();
     }
 
     /**
