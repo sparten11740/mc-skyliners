@@ -131,10 +131,12 @@ where it can (where the nose is too narrow for the outer pair, the tiller's keys
 instrument panel carries on round to the hull as plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across
 and two down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its
 rim broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
-(a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; a blue moon and stars at night), the
+(a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at
+night), the
 seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver
-beside the jump light, dark, red or green), the window shades (a window on the sky with its shade up, or pulled down,
-lit amber), the laser (its turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
+beside the jump light, its red and green halves both dark while it is off, red or green), the window shades (a window
+on the sky with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its
+light metal turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
 or the doors open and the crate floating down under a parachute, lit red). Touch a tile to work its switch. On the
 slope under the screens are the keys: under the captain's flight display the tiller, an arrow either side of a little
 wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
@@ -177,9 +179,9 @@ an assembled airliner with an autopilot it shows that airliner's cameras. Agains
 seat is the Physics Assembler. Right behind each pilot's seat stands that pilot's Flight Crew Locker, its door toward
 the back of the flight deck, with a Pilot Helmet and a Pilot Cap in it when the airliner is built (see Souvenirs).
 
-A Flight Crew Locker is a slim cabinet of brushed grey panels for the crew's things, its white door hinged on one side
-with a small chrome handle on the other, and on the door the pilot's helmet, white with its blue stripe and gold visor,
-so even someone who cannot read yet knows what is inside. Use it and its door swings open with the clank of a light
+A Flight Crew Locker is a slim cabinet of brushed grey-blue panels for the crew's things, its pale door hinged on one
+side with a small chrome handle on the other, and on the door a pilot's peaked cap, navy with its gold wings badge and
+black peak, so even someone who cannot read yet knows what is inside. Use it and its door swings open with the clank of a light
 metal cabinet onto a row of nine slots; it swings shut again once nobody is looking in. It can be crafted (a chest and
 an iron trapdoor in iron) and put down anywhere, its door toward you; broken, it gives itself back and spills what is
 in it.

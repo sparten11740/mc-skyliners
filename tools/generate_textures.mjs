@@ -594,45 +594,45 @@ texture(blockOutput, "thrust_relay", (x, y) => (y === 7 || y === 8 ? [0xb0, 0x20
   texture(blockOutput, "pilot_seat_harness", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? [0x4a, 0x5c, 0x80] : [0x24, 0x33, 0x52]), 2);
 }
 
-// The flight crew's locker. Its cabinet: brushed grey panels, streaked up and down, catching the light along their top.
-// Its door, the face the model lays from column 1 (the hinge) to 14 and down to row 14: brushed white in a grey edge,
-// and on it, so that someone who cannot read yet knows what is inside, the pilot's helmet as its icon shows it,
-// outlined dark: white with the livery's blue stripe over the crown, seen from its left side, the gold visor down over
-// the eyes under its dark cover, the airline's roundel on the ear cup and the shell coming down to the nape. Under it
-// a vent slot; by the free edge, where the model's handle stands, a shadow under the handle. Inside: dark, the same
-// streaks fainter, darkest along the floor. The handle: chrome.
+// The flight crew's locker. Its cabinet: brushed grey-blue panels, streaked up and down, catching the light along their
+// top, quiet enough beside the instruments that the door's picture stands out rather than the box. Its door, the face
+// the model lays from column 1 (the hinge) to 14 and down to row 14: brushed pale grey-blue in a grey edge, and on it,
+// so that someone who cannot read yet knows what is inside, a pilot's peaked cap seen from the front, outlined dark:
+// its navy crown with the gold wings badge, the black band with its gold braid and the black peak. Under it a vent
+// slot; by the free edge, where the model's handle stands, a shadow under the handle. Inside: dark, the same streaks
+// fainter, darkest along the floor. The handle: chrome.
 {
   const brushed = (base, depth) => (x, y) => {
     const streak = Math.round(depth * (Math.sin(x * 2.3) + 0.6 * Math.sin(x * 5.1 + y * 0.15)));
     return base.map((v) => v + streak);
   };
-  const cabinet = brushed([0xb8, 0xbf, 0xc6], 3);
-  texture(blockOutput, "crew_locker_side", (x, y) => (y === 0 ? [0xd8, 0xdd, 0xe2] : cabinet(x, y)), 2);
+  const cabinet = brushed([0x96, 0xa2, 0xb0], 3);
+  texture(blockOutput, "crew_locker_side", (x, y) => (y === 0 ? [0xb6, 0xc0, 0xcc] : cabinet(x, y)), 2);
   const inside = brushed([0x2e, 0x31, 0x36], 1);
   texture(blockOutput, "crew_locker_inside", (x, y) => (y === 15 ? [0x1c, 0x1e, 0x22] : inside(x, y)), 2);
   texture(blockOutput, "crew_locker_handle", (x) => (x % 2 === 0 ? CHROME : [0xb4, 0xbb, 0xc2]), 1);
-  // The helmet, from column 2 and row 1 of the door.
-  const HELMET = [
-    "...ooooo...",
-    "..obbbbbo..",
-    ".owwbbbwwo.",
-    "owwwwwwwwwo",
-    "owwwwwwdddo",
-    "owwbbwwGyGo",
-    "owwbbwwGGGo",
-    "owwwwwwgggo",
-    "osswwwsooo.",
-    ".ossssso...",
+  // The pilot's cap, from column 2 and row 1 of the door.
+  const CAP = [
+    "..ooooooo..",
+    ".onnnnnnno.",
+    "onnnnnnnnno",
+    "onnnnGnnnno",
+    "onnGGyGGnno",
+    "onnnnGnnnno",
+    "obbbbbbbbbo",
+    "oGGGGGGGGGo",
+    ".oppppppho.",
+    "..ooooooo..",
   ];
-  const HELMET_COLOURS = {
-    o: [0x3a, 0x40, 0x48], w: [0xf8, 0xf9, 0xfb], s: [0xc4, 0xcb, 0xd5], b: BLUE, d: [0x26, 0x29, 0x2f],
-    G: [0xf0, 0xc0, 0x48], y: [0xfc, 0xe8, 0xa8], g: [0xa8, 0x74, 0x24],
+  const CAP_COLOURS = {
+    o: [0x2a, 0x2e, 0x36], n: [0x1e, 0x2e, 0x5c], b: [0x16, 0x18, 0x1c], p: [0x22, 0x25, 0x2b], h: [0x4a, 0x50, 0x5a],
+    G: [0xf0, 0xc0, 0x48], y: [0xfc, 0xe8, 0xa8],
   };
-  const door = brushed([0xe6, 0xe9, 0xec], 1.5);
+  const door = brushed([0xc4, 0xcc, 0xd6], 1.5);
   texture(blockOutput, "crew_locker_door", (x, y) => {
-    if (x === 1 || x === 14 || y === 0 || y === 14) return [0xc4, 0xc9, 0xcf];
-    const pixel = HELMET[y - 1]?.[x - 2];
-    if (pixel !== undefined && pixel !== ".") return HELMET_COLOURS[pixel];
+    if (x === 1 || x === 14 || y === 0 || y === 14) return [0xa8, 0xb2, 0xbe];
+    const pixel = CAP[y - 1]?.[x - 2];
+    if (pixel !== undefined && pixel !== ".") return CAP_COLOURS[pixel];
     if (y === 12 && x >= 4 && x <= 11) return [0x5c, 0x62, 0x6a];
     if (x === 13 && y === 9) return [0xb0, 0xb6, 0xbd];
     return door(x, y);
@@ -2239,15 +2239,20 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // The flight deck's systems tiles and keys (see CockpitKeysArt), 32 by 32 like the announcement tiles, each a
   // picture a child knows without reading. The seatbelt signs: someone sitting in a seat, a big amber belt buckled
   // across their lap. The cabin lights: a light bulb with long rays (bright), the same in amber with short ones
-  // (dimmed), or a pale blue moon with stars (the night glow). The jump lights: a skydiver under a canopy beside a
-  // lamp, dark, red (stand by) or green (go). The window shades: a cabin window on the sky with its shade rolled up,
-  // or pulled down over it. The laser: the turret under the nose firing a red beam, sparks where it strikes. The drop
-  // bay: a crate on the bay's closed doors, or the doors swung open and the crate floating down under a parachute.
+  // (dimmed), or the bulb dim blue under a crescent moon (the night glow). The jump lights: a skydiver under a canopy
+  // beside a lamp, its red and green halves both dark (off), red (stand by) or green (go). The window shades: a cabin
+  // window on the sky with its striped shade a third of the way down, or pulled all the way down over it. The laser:
+  // the turret under the nose, light metal, firing a red beam, sparks where it strikes. The drop bay: a crate on the
+  // bay's closed doors, or the doors swung open and the crate floating down under a parachute.
   const cockpitOutput = resolve(guiOutput, "cockpit");
   mkdirSync(cockpitOutput, { recursive: true });
   const cockpitIcon = (name, paint) => texture(cockpitOutput, name, (x, y) => paint(x, y) ?? CLEAR, 0, BIG, BIG);
   const ellipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
   const NIGHT_MOON = [0xa8, 0xc8, 0xff];
+  const NIGHT_GLASS = [0x5c, 0x7e, 0xd0];
+  const LAMP_RED_OFF = [0x6a, 0x26, 0x26];
+  const LAMP_RED_OFF_LIGHT = [0x8c, 0x3c, 0x3c];
+  const LAMP_GREEN_OFF = [0x22, 0x58, 0x34];
   const SHADE = [0xb4, 0xba, 0xc4];
   const SHADE_DARK = [0x86, 0x8d, 0x98];
 
@@ -2275,21 +2280,21 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   cockpitIcon("cabin_lights_bright", (x, y) => bulb(x, y, YELLOW, 14.5));
   cockpitIcon("cabin_lights_dim", (x, y) => bulb(x, y, AMBER, 10.6));
   cockpitIcon("cabin_lights_night", (x, y) => {
-    if (disc(x, y, 14, 16, 10) && !disc(x, y, 20, 11, 9)) return NIGHT_MOON;
-    const stars = [[24, 6], [27, 18], [20, 26]];
-    return stars.some(([cx, cy]) => (x === cx && Math.abs(y - cy) <= 1) || (y === cy && Math.abs(x - cx) <= 1)) ? INK : null;
+    if (disc(x, y, 26, 6, 4.5) && !disc(x, y, 28.5, 4, 3.8)) return NIGHT_MOON;
+    return bulb(x, y, NIGHT_GLASS, 0);
   });
-  // A skydiver under a striped canopy, the lines down to the harness, beside the jump light in its colour.
-  const skydiver = (x, y, lamp, lampLight) => {
+  // A skydiver under a striped canopy, the lines down to the harness, beside the jump light in its colour, or in two
+  // colours, its upper half's and its lower half's.
+  const skydiver = (x, y, lamp, lampLight, lampBelow = lamp) => {
     const lampR = Math.hypot(x - 25, y - 22);
-    if (lampR <= 4.5) return lampR >= 3.6 ? STEEL : disc(x, y, 24, 21, 1.3) ? lampLight : lamp;
+    if (lampR <= 4.5) return lampR >= 3.6 ? STEEL : disc(x, y, 24, 21, 1.3) ? lampLight : y <= 22 ? lamp : lampBelow;
     if (ellipse(x, y, 12, 10, 10, 6.5) && y <= 10) return Math.floor((x + 1) / 4) % 2 === 0 ? ORANGE : INK;
     if (onSegment(x, y, [3, 10], [11, 20], 0.7) || onSegment(x, y, [21, 10], [13, 20], 0.7) || onSegment(x, y, [12, 10], [12, 19], 0.7)) return PALE;
     if (disc(x, y, 12, 21, 2)) return SKIN;
     if (rounded(x, y, 11, 24, 13, 27, 0.9)) return SHIRT;
     return onSegment(x, y, [11, 28], [9, 31], 1.2) || onSegment(x, y, [13, 28], [15, 31], 1.2) ? TROUSERS : null;
   };
-  cockpitIcon("jump_lights_off", (x, y) => skydiver(x, y, DARK, STEEL_DARK));
+  cockpitIcon("jump_lights_off", (x, y) => skydiver(x, y, LAMP_RED_OFF, LAMP_RED_OFF_LIGHT, LAMP_GREEN_OFF));
   cockpitIcon("jump_lights_red", (x, y) => skydiver(x, y, RED, HEART_LIGHT));
   cockpitIcon("jump_lights_green", (x, y) => skydiver(x, y, GREEN, [0xb4, 0xff, 0xc8]));
   // The cabin window, its frame round the sky with the sun and a cloud, its shade down to a row.
@@ -2302,7 +2307,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (disc(x, y, 12, 17, 2.4) || disc(x, y, 15, 16, 2.8) || rounded(x, y, 11, 17, 17, 18, 1)) return INK;
     return y >= 25 ? HILL : SKY;
   };
-  cockpitIcon("shades_open", (x, y) => shadedWindow(x, y, 6));
+  cockpitIcon("shades_open", (x, y) => shadedWindow(x, y, 12));
   cockpitIcon("shades_closed", (x, y) => {
     const window = shadedWindow(x, y, BIG);
     return window !== null && window !== PALE && y === 26 && x >= 15 && x <= 16 ? DARK : window;
@@ -2313,8 +2318,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (sparks.some(([cx, cy]) => x === cx && y === cy)) return YELLOW;
     if (onSegment(x, y, [19, 16], [28, 25], 0.9)) return HEART_LIGHT;
     if (onSegment(x, y, [19, 16], [28, 25], 2.4)) return RED;
-    if (onSegment(x, y, [13, 10], [19, 16], 2.6)) return STEEL_DARK;
-    return disc(x, y, 11, 7, 6) && y >= 7 ? (disc(x, y, 9, 9, 1.5) ? STEEL : DARK) : null;
+    if (onSegment(x, y, [13, 10], [19, 16], 2.6)) return STEEL;
+    return disc(x, y, 11, 7, 6) && y >= 7 ? (disc(x, y, 9, 9, 1.5) ? DARK : PALE) : null;
   });
   // A care package: a wooden crate, its straps across it.
   const crate = (x, y, x0, y0, x1, y1) => {

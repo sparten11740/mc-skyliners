@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The flight crew's locker on the flight deck: a slim cabinet of brushed grey and white panels with a helmet on its
+ * The flight crew's locker on the flight deck: a slim cabinet of brushed grey-blue panels with a pilot's cap on its
  * door, where the pilots stow their helmets and caps. A small container, its door shown swung open while anyone looks
  * in (see {@link CrewLockerBlockEntity}). FACING is the way its door faces, its back to the wall.
  */
