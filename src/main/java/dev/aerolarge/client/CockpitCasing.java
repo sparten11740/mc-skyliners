@@ -17,15 +17,22 @@ import org.joml.Vector3f;
 /**
  * The casing of a panel of the flight deck's curved row (see {@link CockpitDisplayRenderer}): the screen's slab and the
  * desk under it with its sloped top, in the panel's own frame (x along it, y up from the floor, z out toward the
- * seats). Each face is tiled with a block texture, a block to a tile, the same the centre console's modules are made
- * of: the screen casing round the screen, the console's plate on the slope, its casing on the desk. And each is lit as
- * a block is, by the light where the panel stands and shaded by the way it faces, so the panels, turned each a step
- * further toward the seats, and their slopes stand apart from one another instead of reading as one flat grey.
+ * seats). Each face is tiled with a block texture, a block to a tile, and lit as a block is, by the light where the
+ * panel stands and shaded by the way it faces, so the panels, turned each a step further toward the seats, stand
+ * apart. The desks of neighbouring panels are drawn as one moulded console round the seats: their textures plain, the
+ * slope's brushed along its length, so nothing breaks off where one desk meets the next; their shading blended across
+ * each join, so the light rolls round the turn instead of creasing at it; and a steel trim along the slope's front lip
+ * and its top edge, where it meets the screen, which runs on unbroken from panel to panel.
  */
 final class CockpitCasing {
     private static final ResourceLocation SCREEN_CASING = block("passenger_screen_casing");
-    private static final ResourceLocation DESK = block("flight_console");
-    private static final ResourceLocation SLOPE = block("panel_side");
+    private static final ResourceLocation DESK = block("cockpit_desk");
+    private static final ResourceLocation SLOPE = block("cockpit_desk_top");
+    private static final ResourceLocation TRIM = block("cockpit_trim");
+    /** How wide the trim along the slope's edges is, up the slope, in blocks. */
+    private static final float TRIM_WIDTH = 0.04F;
+    /** How far the trim stands off the slope, in blocks, so it is drawn over it. */
+    private static final float TRIM_LIFT = 0.0015F;
 
     private CockpitCasing() {
     }
@@ -36,7 +43,10 @@ final class CockpitCasing {
         Face face = new Face(consumer, pose, light);
         slab(face, sprite(SCREEN_CASING), width, panel);
         if (panel.desk() > 0) {
-            desk(face, sprite(DESK), sprite(SLOPE), width, panel);
+            Desk desk = new Desk(panel, width);
+            desk.body(face, sprite(DESK));
+            desk.slope(face, sprite(SLOPE));
+            desk.trim(face, sprite(TRIM));
         }
     }
 
@@ -55,54 +65,116 @@ final class CockpitCasing {
         }
     }
 
-    /**
-     * The desk under the screen, down to the floor: its front, its back, its sloped top, cut short at either end where
-     * it is mitred against the desk beside it, and its ends, square behind the screen and along the mitre in front.
-     */
-    private static void desk(Face face, TextureAtlasSprite desk, TextureAtlasSprite slope, float width, CockpitDisplayBlockEntity.Panel panel) {
-        float back = -CockpitDisplayBlock.DEPTH;
-        float bottom = panel.bottom();
-        float reach = panel.desk();
-        float front = bottom - reach;
-        float left = panel.leftCut();
-        float right = width - panel.rightCut();
-        face.tiled(desk, new Vector3f(left, 0, reach), new Vector3f(right - left, 0, 0), new Vector3f(0, front, 0));
-        face.tiled(desk, new Vector3f(width, 0, back), new Vector3f(-width, 0, 0), new Vector3f(0, bottom, 0));
-        face.tiled(desk, new Vector3f(0, 0, back), new Vector3f(0, 0, -back), new Vector3f(0, bottom, 0));
-        face.tiled(desk, new Vector3f(width, 0, 0), new Vector3f(0, 0, back), new Vector3f(0, bottom, 0));
-        float mitre = (float) Math.hypot(panel.leftCut(), reach);
-        face.quad(desk, new Vector3f(0, 0, 0), new Vector3f(left, 0, reach), new Vector3f(left, front, reach), new Vector3f(0, bottom, 0),
-            new float[]{0, 1, mitre, 1, mitre, 1 - front, 0, 1 - bottom});
-        float rightMitre = (float) Math.hypot(panel.rightCut(), reach);
-        face.quad(desk, new Vector3f(right, 0, reach), new Vector3f(width, 0, 0), new Vector3f(width, bottom, 0), new Vector3f(right, front, reach),
-            new float[]{0, 1, rightMitre, 1, rightMitre, 1 - bottom, 0, 1 - front});
-        for (int tile = 0; tile < Math.ceil(width - 1e-4); tile++) {
-            slopeTile(face, slope, tile, width, panel);
-        }
-    }
-
-    /**
-     * A block's width of the slope, from its front edge up to the screen, cut where the slope is mitred: along the
-     * slope a tile's height of the texture is a block, so the slope, shorter than that, shows the bottom of it.
-     */
-    private static void slopeTile(Face face, TextureAtlasSprite sprite, int tile, float width, CockpitDisplayBlockEntity.Panel panel) {
-        float reach = panel.desk();
-        float front = panel.bottom() - reach;
-        float frontLeft = Math.max(tile, panel.leftCut());
-        float frontRight = Math.max(frontLeft, Math.min(tile + 1, width - panel.rightCut()));
-        float backLeft = tile;
-        float backRight = Math.min(tile + 1, width);
-        float top = 1 - panel.slope();
-        face.quad(sprite, new Vector3f(frontLeft, front, reach), new Vector3f(frontRight, front, reach), new Vector3f(backRight, panel.bottom(), 0),
-            new Vector3f(backLeft, panel.bottom(), 0), new float[]{frontLeft - tile, 1, frontRight - tile, 1, backRight - tile, top, backLeft - tile, top});
-    }
-
     private static TextureAtlasSprite sprite(ResourceLocation texture) {
         return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
     }
 
     private static ResourceLocation block(String name) {
         return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "block/" + name);
+    }
+
+    /**
+     * The desk under a panel's screen, down to the floor: where its sloped top's front edge stops short of either end,
+     * mitred against the desk beside it, and how far its neighbours are turned from it there, read back from the
+     * mitre (none where it has no neighbour).
+     */
+    private record Desk(CockpitDisplayBlockEntity.Panel panel, float width, float left, float right, double leftTurn, double rightTurn) {
+        Desk(CockpitDisplayBlockEntity.Panel panel, float width) {
+            this(panel, width, panel.leftCut(), width - panel.rightCut(), 2 * Math.atan(panel.leftCut() / panel.desk()),
+                2 * Math.atan(panel.rightCut() / panel.desk()));
+        }
+
+        float reach() {
+            return panel.desk();
+        }
+
+        float front() {
+            return panel.bottom() - panel.desk();
+        }
+
+        /** Its front, its shading blended at its ends toward the fronts beside it; its back; and its ends. */
+        void body(Face face, TextureAtlasSprite sprite) {
+            float back = -CockpitDisplayBlock.DEPTH;
+            float bottom = panel.bottom();
+            Vector3f out = new Vector3f(0, 0, 1);
+            Vector3f leftOut = blended(out, new Vector3f((float) Math.sin(leftTurn), 0, (float) Math.cos(leftTurn)));
+            Vector3f rightOut = blended(out, new Vector3f((float) -Math.sin(rightTurn), 0, (float) Math.cos(rightTurn)));
+            for (int tile = 0; tile < Math.ceil(right - left - 1e-4); tile++) {
+                float x0 = left + tile;
+                float x1 = Math.min(x0 + 1, right);
+                Vector3f atLeft = tile == 0 ? leftOut : out;
+                Vector3f atRight = x1 == right ? rightOut : out;
+                face.quad(sprite, new Vector3f(x0, 0, reach()), new Vector3f(x1, 0, reach()), new Vector3f(x1, front(), reach()),
+                    new Vector3f(x0, front(), reach()), new float[]{0, 1, x1 - x0, 1, x1 - x0, 1 - front(), 0, 1 - front()},
+                    new Vector3f[]{atLeft, atRight, atRight, atLeft});
+            }
+            face.tiled(sprite, new Vector3f(width, 0, back), new Vector3f(-width, 0, 0), new Vector3f(0, bottom, 0));
+            face.tiled(sprite, new Vector3f(0, 0, back), new Vector3f(0, 0, -back), new Vector3f(0, bottom, 0));
+            face.tiled(sprite, new Vector3f(width, 0, 0), new Vector3f(0, 0, back), new Vector3f(0, bottom, 0));
+            float mitre = (float) Math.hypot(panel.leftCut(), reach());
+            face.quad(sprite, new Vector3f(0, 0, 0), new Vector3f(left, 0, reach()), new Vector3f(left, front(), reach()), new Vector3f(0, bottom, 0),
+                new float[]{0, 1, mitre, 1, mitre, 1 - front(), 0, 1 - bottom});
+            float rightMitre = (float) Math.hypot(panel.rightCut(), reach());
+            face.quad(sprite, new Vector3f(right, 0, reach()), new Vector3f(width, 0, 0), new Vector3f(width, bottom, 0), new Vector3f(right, front(), reach()),
+                new float[]{0, 1, rightMitre, 1, rightMitre, 1 - bottom, 0, 1 - front()});
+        }
+
+        /**
+         * The sloped top, a block's width at a time, cut where it is mitred, its shading blended at either end toward
+         * the slope beside it. Along the slope a tile's height of the texture is a block, so the slope, shorter, shows
+         * the bottom of it.
+         */
+        void slope(Face face, TextureAtlasSprite sprite) {
+            Vector3f up = slopeNormal(0);
+            Vector3f leftUp = blended(up, slopeNormal(leftTurn));
+            Vector3f rightUp = blended(up, slopeNormal(-rightTurn));
+            float top = 1 - panel.slope();
+            for (int tile = 0; tile < Math.ceil(width - 1e-4); tile++) {
+                float frontLeft = Math.max(tile, left);
+                float frontRight = Math.max(frontLeft, Math.min(tile + 1, right));
+                float backRight = Math.min(tile + 1, width);
+                Vector3f atLeft = tile == 0 ? leftUp : up;
+                Vector3f atRight = backRight == width ? rightUp : up;
+                face.quad(sprite, new Vector3f(frontLeft, front(), reach()), new Vector3f(frontRight, front(), reach()),
+                    new Vector3f(backRight, panel.bottom(), 0), new Vector3f(tile, panel.bottom(), 0),
+                    new float[]{frontLeft - tile, 1, frontRight - tile, 1, backRight - tile, top, 0, top}, new Vector3f[]{atLeft, atRight, atRight, atLeft});
+            }
+        }
+
+        /**
+         * The trim along the slope's edges: a band up from its front edge, between the mitres, and a band down from its
+         * top edge along the screen, end to end, each lifted a little off the slope.
+         */
+        void trim(Face face, TextureAtlasSprite sprite) {
+            float share = TRIM_WIDTH / panel.slope();
+            band(face, sprite, 0, share);
+            band(face, sprite, 1 - share, 1);
+        }
+
+        /** A band of the trim across the slope, between two shares of the way up it from its front edge. */
+        private void band(Face face, TextureAtlasSprite sprite, float from, float to) {
+            Vector3f lift = slopeNormal(0).mul(TRIM_LIFT);
+            Vector3f a = onSlope(left * (1 - from), from).add(lift);
+            Vector3f b = onSlope(right + (width - right) * from, from).add(lift);
+            Vector3f c = onSlope(right + (width - right) * to, to).add(lift);
+            Vector3f d = onSlope(left * (1 - to), to).add(lift);
+            face.quad(sprite, a, b, c, d, new float[]{0, 1, 1, 1, 1, 0, 0, 0});
+        }
+
+        /** A point of the slope: so far along it, a share of the way up it from its front edge. */
+        private Vector3f onSlope(float x, float share) {
+            return new Vector3f(x, front() + reach() * share, reach() * (1 - share));
+        }
+
+        /** Which way a slope faces, turned about the upright by an angle from this one's: up and out at 45 degrees. */
+        private static Vector3f slopeNormal(double turn) {
+            return new Vector3f((float) Math.sin(turn), 1, (float) Math.cos(turn)).normalize();
+        }
+
+        /** Halfway between two ways of facing, where two faces meet, for shading that runs on across the join. */
+        private static Vector3f blended(Vector3f own, Vector3f neighbour) {
+            return new Vector3f(own).add(neighbour).normalize();
+        }
     }
 
     /** Drawing faces into a buffer, posed, lit with one light. */
@@ -144,12 +216,17 @@ final class CockpitCasing {
         void quad(TextureAtlasSprite sprite, Vector3f a, Vector3f b, Vector3f c, Vector3f d, float[] uv) {
             // Across its diagonals, which holds where one of its sides has shrunk to nothing.
             Vector3f normal = new Vector3f(c).sub(a).cross(new Vector3f(d).sub(b)).normalize();
+            quad(sprite, a, b, c, d, uv, new Vector3f[]{normal, normal, normal, normal});
+        }
+
+        /** A quad as above, each corner lit as facing its own way, so the shading runs on smoothly across it. */
+        void quad(TextureAtlasSprite sprite, Vector3f a, Vector3f b, Vector3f c, Vector3f d, float[] uv, Vector3f[] normals) {
             Vector3f[] corners = {a, b, c, d};
             for (int k = 0; k < 4; k++) {
                 float u = sprite.getU0() + (sprite.getU1() - sprite.getU0()) * uv[2 * k];
                 float v = sprite.getV0() + (sprite.getV1() - sprite.getV0()) * uv[2 * k + 1];
                 consumer.addVertex(pose, corners[k].x, corners[k].y, corners[k].z).setColor(-1).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY)
-                    .setLight(light).setNormal(pose, normal.x, normal.y, normal.z);
+                    .setLight(light).setNormal(pose, normals[k].x, normals[k].y, normals[k].z);
             }
         }
     }

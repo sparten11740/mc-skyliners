@@ -138,10 +138,11 @@ or the doors open and the crate floating down under a parachute, lit red). Touch
 slope under the screens are the keys: under the captain's flight display the tiller, an arrow either side of a little
 wheel turned as the nose wheel is (touch an arrow to steer a notch that way); under the map the parking brake, a wheel
 gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
-(see Autopilot); and under the camera's screen the cameras' buttons (see below). Looking at the screens or the slope
-from within reach, a little white
-dot follows your look, and the tile, key or camera button under it is outlined in white, so you see what a touch will
-work before you touch it. The flight displays show attitude, airspeed, altitude, vertical speed
+(see Autopilot); and under the camera's screen the cameras' buttons (see below). The desk runs round under the screens
+as one moulded console, its sloped top brushed dark grey between a steel trim along its front lip and its top edge.
+Looking at the screens or the slope from within reach, a little white dot follows your look, and the tile, key or
+camera button under it is outlined in white, so you see what a touch will work before you touch it. The flight
+displays show attitude, airspeed, altitude, vertical speed
 and heading once the airliner is assembled. The moving map shows what the autopilot is doing over it and how the
 airliner flies under it, the way it is heading always up, the track it has flown, and the circle it flies round or
 the heading it turns to; touch it to zoom out a step, round to the closest again. The camera panel, like an A380's taxiing camera screen, shows the live picture from one of the airliner's

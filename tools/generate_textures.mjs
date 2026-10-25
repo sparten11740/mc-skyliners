@@ -545,6 +545,16 @@ texture(blockOutput, "flight_console", (x, y) => {
   if (y === 15) return [0x16, 0x18, 0x1c];
   return x === 0 ? PANEL_EDGE : PANEL_DARK;
 }, 3);
+// The flight deck's curved desk under its screens (see CockpitCasing), drawn as one moulded console round the seats:
+// its body plain dark with no seams, so it runs on unbroken round the turns; its sloped top a shade lighter, brushed
+// along its length in fine streaks that carry on from one panel to the next; and the light steel trim along the
+// slope's edges.
+texture(blockOutput, "cockpit_desk", () => PANEL_DARK, 3);
+texture(blockOutput, "cockpit_desk_top", (x, y) => {
+  const streak = y % 3 === 0 ? 6 : y % 3 === 1 ? 0 : -3;
+  return [PANEL_DARK[0] + 8 + streak, PANEL_DARK[1] + 8 + streak, PANEL_DARK[2] + 9 + streak];
+}, 2);
+texture(blockOutput, "cockpit_trim", (x, y) => (y % 4 === 1 ? [0xb4, 0xba, 0xc2] : [0x8e, 0x95, 0x9e]), 2);
 const NOTCHES = [3, 5, 8, 10, 12];
 texture(blockOutput, "thrust_lever_base", (x, y) => {
   if (x >= 7 && x <= 8 && y >= 2 && y <= 13) return PANEL_EDGE;
