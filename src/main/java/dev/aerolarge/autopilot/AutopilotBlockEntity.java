@@ -327,8 +327,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     public static final int MAX_RADIUS = 1000;
     private static final double DEFAULT_RADIUS = 600;
     private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
+    /** How far a control jet's signal may wander, in steps of the 15, before the jet is set to it (see {@link #steady}). */
+    private static final int JET_STEADY = 1;
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
+    /** The control jets' signals as last set, not saved: set afresh on the first tick after loading. */
+    private final Map<Channel, Integer> jetSignals = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -1413,6 +1417,8 @@ public class AutopilotBlockEntity extends BlockEntity {
                 .collect(Collectors.partitioningBy(relay -> Integer.signum(relay.getX() * right.getStepX() + relay.getZ() * right.getStepZ()) == under));
             Relays.drive(level, worldPosition, lifting.get(true), 15, roll.synced());
             Relays.drive(level, worldPosition, lifting.get(false), 0, roll.synced());
+            // Split between its jets, the channel no longer has the one signal noted for it.
+            jetSignals.remove(roll);
         }
         int tail = hop.tail(state.pitch());
         drive(level, Channel.PITCH_DOWN, Mth.clamp(tail, 0, 15));
@@ -1520,7 +1526,24 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     private void drive(ServerLevel level, Channel channel, int power) {
         mendLinks(level);
+        if (!channel.synced() && steady(channel, power)) {
+            return;
+        }
         Relays.drive(level, worldPosition, relays.getOrDefault(channel, List.of()), power, channel.synced());
+    }
+
+    /**
+     * Whether a control jet's signal is left as it is, only a step of {@link #JET_STEADY} off what it was last set to:
+     * as the autopilot trims, its jets would flick between neighbouring steps every tick, and each change sends the
+     * thruster to every client near. Off is always off. Notes the signal set otherwise.
+     */
+    private boolean steady(Channel jet, int power) {
+        Integer last = jetSignals.get(jet);
+        if (last != null && power != 0 && Math.abs(power - last) <= JET_STEADY) {
+            return true;
+        }
+        jetSignals.put(jet, power);
+        return false;
     }
 
     /** Once after loading, as it first works its relays or the controls, mends its links to them if they lead nowhere. */
