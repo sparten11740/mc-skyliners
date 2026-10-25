@@ -181,3 +181,34 @@ One per feature, each followed by its own `chore(release)` version bump, `README
   time to face whoever looks at it, since the pilots sit either side of it.
 - Engaging from a seat: assembling takes the seat block out from under the pilot (Create's seat entity removes itself
   without its block), so the autopilot sits the pilot who asked back down in the same seat once aboard.
+
+## Second round (2026-10-25): raised screens over a sloped touch panel
+
+Jan's feedback on alpha.79 to 81: a single-block centre console, the screens higher, and the console's switches as
+touch controls on a sloped panel under the screens; the middle screen used for controls rather than a second map.
+Decided, each control in exactly one place:
+
+| Where | What |
+|-------|------|
+| Middle console, one block wide, the seats right beside it | One throttle block showing all four levers (one lever wired to all four engines, as they moved together anyway), the autopilot unit with its display between the seats, the handset behind it, the transponder behind that |
+| Screens, 1 to 2 blocks over the floor | Captain's flight display, moving map, systems screen (middle, straight), outside camera, first officer's flight display |
+| Middle screen: systems page | Touch tiles, each showing its control's state in that control's own picture: cabin lights, seatbelt signs, jump lights, window shades, laser, drop release |
+| Sloped touch panel (45 degrees) under the screens | Under the captain's flight display the tiller (left, right); under the map the parking brake and the landing gear with its lamps; under the systems screen the autopilot's buttons (on/off, heading, circle, altitude, speed, circle size) |
+
+- The switches' blocks stay as they are, with all their wiring, but out of sight: in an avionics bay under the raised
+  flight deck floor (two rows high at scale 2), as on the A380. A touch on a tile or a key uses the block there for
+  whoever touched it, sneaking passed on (the drop release closes the bay on a sneaking touch, as before); the tiles
+  and keys show the blocks' states, which the client reads from the blocks.
+- The autopilot buttons step a setting while it flies (heading 15 degrees, altitude 20, speed 5, circle 50, circling
+  either way); switched off, any of them opens the settings window, as the old screen did.
+- The autopilot screen block is no longer built into new airliners; the map panel keeps its own track and zoom.
+- The arc: the systems screen 3 or 2 blocks wide, the pairs turning 22.5, 30 or 37.5 degrees a step (the outer pair
+  twice that) and 2 to 1.25 blocks wide, whatever fits widest where the nose is narrowest a row up.
+
+Found while play-testing the second round:
+
+- At scale 2 the outer pair only fits with the inner pair narrowed (1.25 blocks at 22.5 degrees, then 1.25 at 45):
+  the row tries every inner width rather than the widest first.
+- A pointer: looking at a screen or a slope from within reach, a white dot follows the look and the key under it is
+  outlined, so whoever is about to touch sees what the touch will work (Jan's request).
+- The Physics Assembler's spot is measured before the console, whose transponder now stands in that row's middle.
