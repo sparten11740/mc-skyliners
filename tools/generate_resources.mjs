@@ -761,7 +761,7 @@ function laserLang() {
   cubes.nav_light = null;
 }
 
-// The instrument panel: screens on the front, plain panel elsewhere.
+// The instrument panel: screens on the front, plain panel elsewhere; blank, plain panel all round.
 write(`assets/${ID}/models/block/instrument_panel.json`, {
   parent: "minecraft:block/orientable",
   textures: { front: `${ID}:block/instrument_panel`, side: `${ID}:block/panel_side`, top: `${ID}:block/panel_side` },
