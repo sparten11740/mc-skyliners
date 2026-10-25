@@ -1,6 +1,8 @@
 package dev.aerolarge.client;
 
 import dev.aerolarge.Aerolarge;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -83,6 +85,18 @@ final class PanelArt {
     private static final float LAMP_GLINT = 0.6F;
 
     private static final ResourceLocation BEZEL = texture("panel/bezel");
+    /** The autopilot's pictures: what it is doing, and how it steers. */
+    private static final Icon OFF_PICTURE = Icon.of("autopilot/disengage");
+    private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
+    private static final Icon CLIMB = Icon.of("autopilot/climb");
+    private static final Icon CRUISE = Icon.of("autopilot/engage");
+    private static final Icon DESCEND = Icon.of("autopilot/descend");
+    private static final Icon LAND = Icon.of("autopilot/land");
+    private static final Icon ROLL_OUT = Icon.of("autopilot/roll_out");
+    private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
+    private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
+    private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
+    private static final Icon PIN = Icon.of("autopilot/destination");
     private static final int BEZEL_TILE = 16;
 
     private PanelArt() {
@@ -98,6 +112,29 @@ final class PanelArt {
 
         static Icon of(String name) {
             return new Icon(PanelArt.texture(name));
+        }
+
+        /** The picture of what the autopilot is doing: the settings' buttons' pictures where it has one, else its own. */
+        static Icon phase(Phase phase) {
+            return switch (phase) {
+                case OFF -> OFF_PICTURE;
+                case TAKEOFF -> TAKE_OFF;
+                case CLIMB -> CLIMB;
+                case CRUISE -> CRUISE;
+                case DESCENT -> DESCEND;
+                case LAND -> LAND;
+                case ROLLOUT -> ROLL_OUT;
+            };
+        }
+
+        /** The picture of how the autopilot steers, as on the settings' mode buttons. */
+        static Icon lateral(Lateral lateral) {
+            return switch (lateral) {
+                case HEADING -> STRAIGHT;
+                case ORBIT_LEFT -> CIRCLE_LEFT;
+                case ORBIT_RIGHT -> CIRCLE_RIGHT;
+                case DESTINATION -> PIN;
+            };
         }
 
         /** Draws it, darkened while what it stands for cannot be used. */

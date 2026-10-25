@@ -3547,19 +3547,19 @@ function wideScreen(name, model) {
   cubes.announcement_panel = null;
 }
 
-// The autopilot's control head: a module of the centre console with a raised head on it, its panel (the AP badge
-// and a row of mode lamps) facing the pilots, away from the nose it points with, and four knobs along its front edge.
+// The autopilot's control head: a module of the centre console with a raised head on it, its top the panel (the AP
+// badge and a row of mode lamps), which in the world its renderer covers with the display of what the autopilot is
+// set to (see AutopilotRenderer); as wide as AutopilotBlock.HEAD_HALF_WIDTH says and HEAD_TOP high.
 consoleModule("autopilot", {
-  plate: `${ID}:block/panel_side`, panel: `${ID}:block/autopilot`, side: `${ID}:block/panel_side`, knob: `${ID}:block/thrust_lever_knob`,
+  plate: `${ID}:block/panel_side`, panel: `${ID}:block/autopilot`, side: `${ID}:block/panel_side`,
 }, "#plate", true, [
   {
-    from: [2, CONSOLE_HEIGHT, 3], to: [14, 7.5, 13],
+    from: [1, CONSOLE_HEIGHT, 1], to: [15, 7.5, 15],
     faces: {
       north: { texture: "#side" }, south: { texture: "#side" }, east: { texture: "#side" }, west: { texture: "#side" },
       up: { texture: "#panel", uv: [0, 0, 16, 16], rotation: 180 }, down: { texture: "#side" },
     },
   },
-  ...[3.25, 6, 8.75, 11.5].map((x) => solid([x, 7.5, 3.75], [x + 1.25, 8.5, 5], "#knob")),
 ]);
 write(`assets/${ID}/models/item/autopilot.json`, { parent: `${ID}:block/autopilot` });
 write(`assets/${ID}/blockstates/autopilot.json`, {

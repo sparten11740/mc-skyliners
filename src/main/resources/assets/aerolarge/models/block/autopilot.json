@@ -5,8 +5,7 @@
     "particle": "aerolarge:block/flight_console",
     "plate": "aerolarge:block/panel_side",
     "panel": "aerolarge:block/autopilot",
-    "side": "aerolarge:block/panel_side",
-    "knob": "aerolarge:block/thrust_lever_knob"
+    "side": "aerolarge:block/panel_side"
   },
   "elements": [
     {
@@ -45,14 +44,14 @@
     },
     {
       "from": [
-        2,
+        1,
         6,
-        3
+        1
       ],
       "to": [
-        14,
+        15,
         7.5,
-        13
+        15
       ],
       "faces": {
         "north": {
@@ -79,134 +78,6 @@
         },
         "down": {
           "texture": "#side"
-        }
-      }
-    },
-    {
-      "from": [
-        3.25,
-        7.5,
-        3.75
-      ],
-      "to": [
-        4.5,
-        8.5,
-        5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#knob"
-        },
-        "south": {
-          "texture": "#knob"
-        },
-        "east": {
-          "texture": "#knob"
-        },
-        "west": {
-          "texture": "#knob"
-        },
-        "up": {
-          "texture": "#knob"
-        },
-        "down": {
-          "texture": "#knob"
-        }
-      }
-    },
-    {
-      "from": [
-        6,
-        7.5,
-        3.75
-      ],
-      "to": [
-        7.25,
-        8.5,
-        5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#knob"
-        },
-        "south": {
-          "texture": "#knob"
-        },
-        "east": {
-          "texture": "#knob"
-        },
-        "west": {
-          "texture": "#knob"
-        },
-        "up": {
-          "texture": "#knob"
-        },
-        "down": {
-          "texture": "#knob"
-        }
-      }
-    },
-    {
-      "from": [
-        8.75,
-        7.5,
-        3.75
-      ],
-      "to": [
-        10,
-        8.5,
-        5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#knob"
-        },
-        "south": {
-          "texture": "#knob"
-        },
-        "east": {
-          "texture": "#knob"
-        },
-        "west": {
-          "texture": "#knob"
-        },
-        "up": {
-          "texture": "#knob"
-        },
-        "down": {
-          "texture": "#knob"
-        }
-      }
-    },
-    {
-      "from": [
-        11.5,
-        7.5,
-        3.75
-      ],
-      "to": [
-        12.75,
-        8.5,
-        5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#knob"
-        },
-        "south": {
-          "texture": "#knob"
-        },
-        "east": {
-          "texture": "#knob"
-        },
-        "west": {
-          "texture": "#knob"
-        },
-        "up": {
-          "texture": "#knob"
-        },
-        "down": {
-          "texture": "#knob"
         }
       }
     }

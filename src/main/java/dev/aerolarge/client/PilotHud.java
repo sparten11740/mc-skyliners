@@ -217,17 +217,6 @@ public final class PilotHud {
     private static final int WARNING = AutopilotScreenRenderer.AMBER;
 
     private static final Icon GROUND_HEIGHT = Icon.of("autopilot/ground_height");
-    private static final Icon OFF = Icon.of("autopilot/disengage");
-    private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
-    private static final Icon CLIMB = Icon.of("autopilot/climb");
-    private static final Icon CRUISE = Icon.of("autopilot/engage");
-    private static final Icon DESCEND = Icon.of("autopilot/descend");
-    private static final Icon LAND = Icon.of("autopilot/land");
-    private static final Icon ROLL_OUT = Icon.of("autopilot/roll_out");
-    private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
-    private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
-    private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
-    private static final Icon PIN = Icon.of("autopilot/destination");
     private static final String PHASE_KEY = "message.aerolarge.autopilot.phase.";
     private static final String COMPASS_KEY = "screen.aerolarge.passenger_screen.compass.";
     private static final Component AP_OFF = Component.translatable("screen.aerolarge.pilot_hud.off");
@@ -550,7 +539,7 @@ public final class PilotHud {
 
         float middle = (left + tape.spine() - TAPE_NUMBERS - COLUMN_GAP) / 2;
         canvas.flush();
-        canvas.icon(phaseIcon(phase), middle - Icon.SIZE / 2F, -Icon.SIZE);
+        canvas.icon(Icon.phase(phase), middle - Icon.SIZE / 2F, -Icon.SIZE);
         canvas.text(phaseName(phase), middle, ICON_GAP + TEXT_MIDDLE, phase == Phase.OFF ? WARNING : HUD, Align.CENTRE);
     }
 
@@ -569,19 +558,6 @@ public final class PilotHud {
 
     private static Component phaseName(Phase phase) {
         return phase == Phase.OFF ? AP_OFF : Component.translatable(PHASE_KEY + phase.name().toLowerCase(Locale.ROOT));
-    }
-
-    /** The picture of what the autopilot is doing: the buttons' pictures where it has one, else the HUD's own. */
-    private static Icon phaseIcon(Phase phase) {
-        return switch (phase) {
-            case OFF -> OFF;
-            case TAKEOFF -> TAKE_OFF;
-            case CLIMB -> CLIMB;
-            case CRUISE -> CRUISE;
-            case DESCENT -> DESCEND;
-            case LAND -> LAND;
-            case ROLLOUT -> ROLL_OUT;
-        };
     }
 
     /**
@@ -655,7 +631,7 @@ public final class PilotHud {
         if (autopilot.phase() != Phase.OFF) {
             float middle = -LONG_TICK;
             canvas.flush();
-            canvas.icon(lateralIcon(autopilot.lateral()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
+            canvas.icon(Icon.lateral(autopilot.lateral()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
             String set = autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))
                 : !Double.isNaN(target) ? String.format(Locale.ROOT, "%03d", Math.round(target) % 360) : "";
             canvas.text(set, HEADING_HALF_WIDTH + ICON_GAP, middle, TARGET, Align.LEFT);
@@ -665,16 +641,6 @@ public final class PilotHud {
     /** A heading scale's number: the compass point at north, east, south and west, else the tens of degrees. */
     private static Component headingLabel(int bearing) {
         return bearing % 90 == 0 ? Component.translatable(COMPASS_KEY + bearing / 45) : Component.literal(String.valueOf(bearing / 10));
-    }
-
-    /** The mode's picture, as on the settings' mode buttons. */
-    private static Icon lateralIcon(Lateral lateral) {
-        return switch (lateral) {
-            case HEADING -> STRAIGHT;
-            case ORBIT_LEFT -> CIRCLE_LEFT;
-            case ORBIT_RIGHT -> CIRCLE_RIGHT;
-            case DESTINATION -> PIN;
-        };
     }
 
     /** A colour with its alpha scaled by a share, kept between none and all of it. */

@@ -345,7 +345,11 @@ real airliner it comes through unharmed: nothing aboard is hurt and nothing is s
 ### Autopilot
 
 Use the autopilot's control head on the centre console, or the big screen in the middle of the instrument panel, to
-open the autopilot's settings. At the top they show what the autopilot is doing, with a lamp (green engaged, amber
+open the autopilot's settings. The control head's own small display shows what the autopilot is set to, in the same
+pictures and colours as the settings, turned to face whoever looks at it: a lamp (green while it flies the airliner,
+amber while it is stuck, dark while it is off), what it is doing (take-off, climb, cruise, descent, landing, rolling
+out or off) and how it steers, and the height, speed and heading (or circle) it is set to, each a picture beside its
+number, greyed out while it is off. At the top the settings show what the autopilot is doing, with a lamp (green engaged, amber
 off), how the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the
 settings: hold a heading (a straight arrow), circle left or right round a point beside the airliner (arrows round
 to the left or right), or fly to a pin (a red map pin); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above

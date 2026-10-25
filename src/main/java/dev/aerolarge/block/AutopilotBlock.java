@@ -31,14 +31,22 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The autopilot's control head on the flight deck's centre console: use it to open the autopilot's settings, to take
- * off and climb to cruising height, change what it flies, or hand back to the levers. FACING is the way the nose
- * points; its panel faces the pilots.
+ * off and climb to cruising height, change what it flies, or hand back to the levers. On top of it a small display,
+ * drawn by its renderer, shows what the autopilot is set to. FACING is the way the nose points, the top of the
+ * display toward it.
  */
 public class AutopilotBlock extends BaseEntityBlock {
     private static final MapCodec<AutopilotBlock> CODEC = simpleCodec(AutopilotBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    /** A module of the console with the control head and its knobs on it. */
-    private static final VoxelShape SHAPE = ConsoleModule.with(6, 2.5);
+    /**
+     * The control head raised on the console's module, how far it reaches either way from the middle of the block and
+     * how high it stands over the module, in pixels: its top is the display.
+     */
+    public static final double HEAD_HALF_WIDTH = 7;
+    private static final double HEAD_HEIGHT = 1.5;
+    /** How high the top of the control head stands, in pixels. */
+    public static final double HEAD_TOP = ConsoleModule.HEIGHT + HEAD_HEIGHT;
+    private static final VoxelShape SHAPE = ConsoleModule.with(HEAD_HALF_WIDTH, HEAD_HEIGHT);
 
     public AutopilotBlock(Properties properties) {
         super(properties);
