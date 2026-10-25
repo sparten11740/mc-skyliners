@@ -14,13 +14,13 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
- * The flight deck's voice over the cabin PA, each announcement opening with the cabin chime (see {@link Announcement}):
- * cabin crew to their seats when the autopilot is set to take off, and again when it is set to land, and a word for the
- * passengers once it has landed and stopped; and whatever the announcement panel asks for. Everyone aboard hears it,
- * wherever they are in the cabin, as they move about. Crews switch the seatbelt signs on for take-off and landing,
- * which here also opens the curtains (see {@link SeatbeltSwitchBlockEntity}), and off again once parked, letting
- * everyone up; the announcements that call for it do the same at the airliner's seatbelt switch, and the one for a
- * sleep turns its cabin lights down.
+ * A calm British woman's voice over the cabin PA, as on an airline's recorded announcements, each opening with the
+ * cabin chime (see {@link Announcement}): cabin crew to their seats when the autopilot is set to take off, and again
+ * when it is set to land, and a word for the passengers once it has landed and stopped; and whatever the announcement
+ * panel asks for. Everyone aboard hears it, wherever they are in the cabin, as they move about. Crews switch the
+ * seatbelt signs on for take-off and landing, which here also opens the curtains (see
+ * {@link SeatbeltSwitchBlockEntity}), and off again once parked, letting everyone up; the announcements that call for
+ * it do the same at the airliner's seatbelt switch, and the one for a sleep turns its cabin lights down.
  *
  * <p>One at a time, and not over and over: one asked for while anything else is said on the flight deck (another
  * announcement, a callout or air traffic control, all sharing its {@link Airtime}) waits for it to end (only the latest

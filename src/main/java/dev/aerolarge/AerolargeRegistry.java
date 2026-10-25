@@ -286,8 +286,9 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
     /**
-     * The same voice over the cabin PA, after the chime: crew seated for take-off, for landing, and arrival; and the
-     * ones only the announcement panel makes: welcome, bumpy air, snacks, the view, the pool and gym open, and sleep.
+     * A calm British woman's voice over the cabin PA, after the chime: crew seated for take-off, for landing, and
+     * arrival; and the ones only the announcement panel makes: welcome, bumpy air, snacks, the view, the pool and gym
+     * open, and sleep.
      */
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_WELCOME = sound("announcement_welcome");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_TAKEOFF = sound("announcement_takeoff");

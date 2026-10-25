@@ -9,9 +9,13 @@ import { execFileSync } from "node:child_process";
 // no libvorbis, as Homebrew's FFmpeg 9 has not, oggenc from vorbis-tools, the same encoder). Given sound names, it
 // writes only those and leaves the rest as they are:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
-// - the flight deck's voice, its callouts and cabin announcements, and air traffic control over the radio, spoken by
-//   Windows' own speech synthesis (System.Speech) and then reworked (see VOICE and RADIO), so those parts run on
-//   Windows only. Deterministic apart from the voices, which are whatever Windows ships.
+// - the flight deck's callouts and air traffic control over the radio, spoken by Windows' own speech synthesis
+//   (System.Speech) and then reworked (see VOICE and RADIO), so those parts run on Windows only;
+// - the cabin announcements, spoken by Kokoro, an open speech synthesis model, and played through the cabin's
+//   loudspeakers (see ANNOUNCER), on any system once kokoro-js is installed with npm install --prefix tools (the model
+//   itself is fetched on the first run).
+// Deterministic apart from the voices: Windows' are whatever it ships, and Kokoro's may differ by a hair from one kind
+// of processor to another.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(ROOT, "src/main/resources/assets/aerolarge/sounds");
 mkdirSync(output, { recursive: true });
@@ -27,7 +31,8 @@ function random() {
   return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
 }
 
-function writeWav(path, samples) {
+/** Writes samples, from -1 to 1, as a 16-bit mono PCM WAV at the generator's rate or the one given, in hertz. */
+function writeWav(path, samples, rate = RATE) {
   const data = Buffer.alloc(samples.length * 2);
   samples.forEach((s, i) => data.writeInt16LE(Math.round(Math.max(-1, Math.min(1, s)) * 32767), i * 2));
   const header = Buffer.alloc(44);
@@ -38,8 +43,8 @@ function writeWav(path, samples) {
   header.writeUInt32LE(16, 16);
   header.writeUInt16LE(1, 20);
   header.writeUInt16LE(1, 22);
-  header.writeUInt32LE(RATE, 24);
-  header.writeUInt32LE(RATE * 2, 28);
+  header.writeUInt32LE(rate, 24);
+  header.writeUInt32LE(rate * 2, 28);
   header.writeUInt16LE(2, 32);
   header.writeUInt16LE(16, 34);
   header.write("data", 36);
@@ -938,11 +943,11 @@ const laserNoise = (() => {
   writeSound("laser_charge", samples);
 }
 
-// The flight deck's voice, for the callouts and the cabin announcements: a calm, very even, faintly synthetic woman's
-// voice, the deadpan politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line;
-// its intonation is then mostly flattened and pulled to the semitones around one note, as if tuned by machine (see
-// tunePitch), and FFmpeg colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids,
-// a faint metallic sweep, the short echo of a hard little room and a touch of digital sheen. Tune it all here.
+// The flight deck's voice, for the callouts: a calm, very even, faintly synthetic woman's voice, the deadpan
+// politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line; its intonation is then
+// mostly flattened and pulled to the semitones around one note, as if tuned by machine (see tunePitch), and FFmpeg
+// colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids, a faint metallic sweep,
+// the short echo of a hard little room and a touch of digital sheen. Tune it all here.
 const VOICE = {
   // The speech synthesis voice. Windows PowerShell's System.Speech sees only the desktop voices; Zira is the woman's.
   name: "Microsoft Zira Desktop",
@@ -986,8 +991,38 @@ const CALLOUTS = {
   callout_bank_angle: "Bank angle. Please do not do that.",
   callout_pull_up: "Pull up. This is not a test.",
 };
-// The cabin announcements (see Announcement), each opening with the cabin chime. A "|" is a pause. The ones only the
-// flight deck's announcement panel makes are for the youngest passengers: short, plain words, and nothing to worry about.
+// The cabin announcements' voice: a calm, warm British woman's, as an airline's recorded announcements are, so they
+// sound like a real cabin rather than the flight deck's machine. Kokoro (see announce) says each stretch of a line
+// between its pauses, and FFmpeg plays it through the cabin's loudspeakers: their band and the bright middle they give
+// a voice, the speakers further along the cabin overlapping it softly, and a broadcaster's even level. Tune it here.
+const ANNOUNCER = {
+  // Kokoro's model on Hugging Face, fetched once into tools/node_modules.
+  model: "onnx-community/Kokoro-82M-v1.0-ONNX",
+  // Kokoro's voice: Emma, its clearest British woman's.
+  voice: "bf_emma",
+  // How fast she speaks, Kokoro's own pace being 1: unhurried, as an announcement is.
+  speed: 0.92,
+  // The pause a "|" in a line makes, in milliseconds.
+  pause: 500,
+  // FFmpeg's filters, in order.
+  filters: [
+    // The cabin loudspeakers' band.
+    "highpass=f=220:poles=2",
+    "lowpass=f=7500:poles=2",
+    // Their bright middle.
+    "equalizer=f=2500:t=q:w=1.2:g=3",
+    // The speakers further along the cabin, each a little later and quieter.
+    "aecho=0.85:0.8:19|38|61:0.22|0.13|0.07",
+    // A broadcaster's even level, the same from one announcement to the next, its peaks held well under.
+    "loudnorm=I=-18:TP=-6:LRA=6",
+  ],
+  // The peak each announcement is written at, under the other sounds' as its levelled speech is denser, so that it
+  // sounds no louder beside them.
+  level: 0.72,
+};
+// The cabin announcements (see Announcement), each opening with the cabin chime, in ANNOUNCER's voice. A "|" is a
+// pause. The ones only the flight deck's announcement panel makes are for the youngest passengers: short, plain words,
+// and nothing to worry about.
 const ANNOUNCEMENTS = {
   announcement_welcome: "Hello, and welcome aboard. | This is your captain speaking. | Please sit back, relax, and enjoy the flight.",
   announcement_takeoff: "Welcome aboard. | Cabin crew, please be seated for take-off.",
@@ -1164,11 +1199,14 @@ function colour(input, output) {
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-filter_complex", graph, "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", output]);
 }
 
-/** The line with the quiet before and after it cut away, but for a moment either side, and its tail faded out. */
-function trim(samples) {
+/**
+ * The line, at the generator's rate or the one given in hertz, with the quiet before and after it cut away, but for a
+ * moment either side, and its tail faded out.
+ */
+function trim(samples, rate = RATE) {
   let peak = 0;
   samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
-  const margin = Math.round(QUIET_KEPT * RATE);
+  const margin = Math.round(QUIET_KEPT * rate);
   const start = Math.max(0, samples.findIndex((s) => Math.abs(s) > QUIET * peak) - margin);
   const end = Math.min(samples.length, samples.findLastIndex((s) => Math.abs(s) > QUIET * peak) + margin);
   const kept = samples.slice(start, end);
@@ -1232,21 +1270,70 @@ function speak(lines, voice, what) {
   }
 }
 
+/**
+ * Says every line with Kokoro in ANNOUNCER's voice, each stretch between its pauses on its own with the quiet round it
+ * trimmed and the pause put between, and plays it through ANNOUNCER's filters into a WAV at the generator's rate in the
+ * scratch folder; false, saying what is left as it is, if kokoro-js is not installed.
+ */
+async function announce(lines) {
+  let KokoroTTS;
+  try {
+    ({ KokoroTTS } = await import("kokoro-js"));
+  } catch (error) {
+    if (error.code !== "ERR_MODULE_NOT_FOUND") {
+      throw error;
+    }
+    console.log("Kokoro is not installed (npm install --prefix tools): leaving the cabin announcements as they are");
+    return false;
+  }
+  const kokoro = await KokoroTTS.from_pretrained(ANNOUNCER.model, { dtype: "fp32", device: "cpu" });
+  for (const [name, text] of Object.entries(lines)) {
+    let rate = RATE;
+    const parts = [];
+    for (const part of text.split("|")) {
+      const spoken = await kokoro.generate(part.trim(), { voice: ANNOUNCER.voice, speed: ANNOUNCER.speed });
+      rate = spoken.sampling_rate;
+      parts.push(trim(Float64Array.from(spoken.audio), rate));
+    }
+    const pause = Math.round((ANNOUNCER.pause / 1000) * rate);
+    const joined = new Float64Array(parts.reduce((sum, p) => sum + p.length, 0) + pause * (parts.length - 1));
+    let at = 0;
+    for (const p of parts) {
+      joined.set(p, at);
+      at += p.length + pause;
+    }
+    let peak = 0;
+    joined.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+    const said = join(scratch, `${name}.said.wav`);
+    writeWav(said, Array.from(joined, (s) => (s / peak) * 0.5), rate);
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", ANNOUNCER.filters.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", join(scratch, `${name}.announced.wav`)]);
+  }
+  return true;
+}
+
 if (process.platform !== "win32") {
-  console.log("Not on Windows: leaving the callouts and announcements as they are");
-} else if (speak({ ...CALLOUTS, ...ANNOUNCEMENTS }, VOICE, "the callouts and announcements")) {
-  for (const name of [...Object.keys(CALLOUTS), ...Object.keys(ANNOUNCEMENTS)]) {
+  console.log("Not on Windows: leaving the callouts as they are");
+} else if (speak(CALLOUTS, VOICE, "the callouts")) {
+  for (const name of Object.keys(CALLOUTS)) {
     const tuned = join(scratch, `${name}.tuned.wav`);
     const coloured = join(scratch, `${name}.coloured.wav`);
     writeWav(tuned, tunePitch(readWav(join(scratch, `${name}.said.wav`))));
     colour(tuned, coloured);
     const voice = trim(readWav(coloured));
-    const samples = name in ANNOUNCEMENTS ? announcement(voice) : voice;
-    const longest = name === "announcement_takeoff" ? TAKEOFF_LONGEST : name in ANNOUNCEMENTS ? ANNOUNCEMENT_LONGEST : CALLOUT_LONGEST;
+    if (voice.length > CALLOUT_LONGEST * RATE) {
+      throw new Error(`${name} runs ${(voice.length / RATE).toFixed(1)} s, longer than ${CALLOUT_LONGEST} s: shorten it or speed the voice up`);
+    }
+    writeSound(name, voice);
+  }
+}
+if (await announce(ANNOUNCEMENTS)) {
+  for (const name of Object.keys(ANNOUNCEMENTS)) {
+    const samples = announcement(trim(readWav(join(scratch, `${name}.announced.wav`))));
+    const longest = name === "announcement_takeoff" ? TAKEOFF_LONGEST : ANNOUNCEMENT_LONGEST;
     if (samples.length > longest * RATE) {
       throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
     }
-    writeSound(name, samples);
+    writeSound(name, samples, ANNOUNCER.level);
   }
 }
 

@@ -3,6 +3,9 @@
 build/
 /bin/
 
+# The asset generators' npm packages and the speech model they fetch
+tools/node_modules/
+
 # Development worlds, logs, and generated launch files
 run/
 run-*/

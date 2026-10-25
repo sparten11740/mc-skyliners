@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "The asset generators' own dependencies: Kokoro speaks the cabin announcements for generate_sounds.mjs. Install with npm install --prefix tools.",
+  "dependencies": {
+    "kokoro-js": "1.2.1"
+  }
+}
