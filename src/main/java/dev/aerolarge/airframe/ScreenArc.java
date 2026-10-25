@@ -1,252 +1,371 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
-import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.CockpitDisplayBlock;
+import dev.aerolarge.block.CockpitDisplayBlock.Shows;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
+import dev.aerolarge.block.CockpitDisplayBlockEntity.Desk;
+import dev.aerolarge.block.CockpitDisplayBlockEntity.Link;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The flight deck's curved row of screens either side of the autopilot screen, as in an airliner's glass cockpit:
- * from each side edge of the autopilot screen a panel turned a step toward the pilots' seats, and from its outer edge
+ * The flight deck's curved row of screens, as in an airliner's glass cockpit: in the middle, straight, the systems
+ * screen, and from each of its side edges a panel turned a step toward the pilots' seats, and from its outer edge
  * another turned a step further, so the row curves round the seats (see {@link CockpitDisplayBlock}). Left to right as
- * the pilots see it: the captain's flight display, the moving map, the autopilot screen, an outside camera and the
- * first officer's flight display. Each panel stands on the floor with its face lined up with the autopilot screen's,
- * as high as the instrument panel behind it, so the pilots look out over it through the windscreen. It is as wide as
- * {@link #WIDEST} where the nose leaves room and narrower where it closes in, down to {@link #NARROWEST}; a pair that
- * does not fit even then is left out, and the outer pair with it. Behind the panels the instrument panel carries on
- * round to the hull, so they stand in front of a desk rather than over bare floor. Panels and desk only go into open
- * space. Corners are measured in block edges across the floor plan, the layout's nose north.
+ * the pilots see it: the captain's flight display, the moving map, the systems screen, an outside camera and the first
+ * officer's flight display. The screens stand a block over the floor, on a desk whose top slopes down toward the pilots
+ * at 45 degrees, and on the slope are the touch keys: the tiller under the captain's flight display, the parking brake
+ * and the landing gear under the map, the autopilot's buttons under the systems screen. The middle screen is as wide
+ * as {@link #MIDDLE_WIDTHS} allow and the others as wide as {@link #WIDEST}, narrower where the nose closes in, down to
+ * {@link #NARROWEST}, the pairs turning as little as lets them fit; a pair that does not fit even then is left out, and
+ * the outer pair with it. The row stays ahead of the seats. Behind it the instrument panel carries on round to the
+ * hull. Panels and desk only go into open space. Corners are measured in block edges across the floor plan, the
+ * layout's nose north.
  */
 final class ScreenArc {
-    /** How much further each panel along the row turns toward the seats than the one inside it, in degrees. */
-    private static final double TURN = 22.5;
-    /** The widest a panel is, the narrowest, and the step between the widths tried, in blocks. */
+    /** How much further each pair turns toward the seats than the one inside it, in degrees: the gentlest that fits. */
+    private static final double[] TURNS = {22.5, 30, 37.5};
+    /** How wide the middle screen is, the widest that fits first, in blocks. */
+    private static final double[] MIDDLE_WIDTHS = {3, 2};
+    /** The widest the other panels are, the narrowest, and the step between the widths tried, in blocks. */
     private static final double WIDEST = 2;
     private static final double NARROWEST = 1.25;
     private static final double NARROWER = 0.25;
-    /**
-     * How high a panel's top edge stands over the floor, in blocks: as high as the instrument panel, below the seated
-     * pilots' eyes, so the panels hide no more of the windscreen than the instrument panel does.
-     */
-    private static final float TOP = 1;
-    /** How many rows of blocks a panel stands in. */
-    private static final int ROWS = (int) Math.ceil(TOP);
-    /** How many pairs of panels the row has at most, either side of the autopilot screen. */
-    private static final int PAIRS = 2;
+    /** How far into the row's blocks the screens' faces stand from their front edge, in blocks: the slab behind them. */
+    private static final double FACE_BACK = 0.2;
+    /** How high the screens' bottom and top edges stand over the floor, in blocks: from the desk's top up a block. */
+    private static final float BOTTOM = 1;
+    private static final float TOP = 2;
+    /** How far the desk's slope reaches out toward the pilots from the screens' faces, in blocks, dropping as far. */
+    private static final float DESK = 0.5F;
     /** What the inner pair and then the outer pair show, the captain's side first. */
-    private static final CockpitDisplayBlock.Shows[][] SHOWS = {
-        {CockpitDisplayBlock.Shows.MAP, CockpitDisplayBlock.Shows.CAMERA},
-        {CockpitDisplayBlock.Shows.FLIGHT, CockpitDisplayBlock.Shows.FLIGHT}
-    };
+    private static final Shows[][] SHOWS = {{Shows.MAP, Shows.CAMERA}, {Shows.FLIGHT, Shows.FLIGHT}};
 
     private final AirframeLayout layout;
-    private final int bottom;
+    private final int floor;
     private final int screenZ;
+    /** How far back from the row's station its desks may reach, in blocks: short of the seats. */
+    private final double deepest;
+    /** The blocks across the floor plan the row keeps clear of (at height 0): the centre console's, and the legs'. */
+    private final Set<BlockPos> clear;
 
     /**
-     * A panel of the row, planned: the bottom corners of its face, left and right as the pilots see it, and what it
-     * shows.
+     * A panel of the row, planned: the bottom corners of its screen's face, left and right as the pilots see it, what
+     * it shows and what its slope holds.
      */
-    private record Panel(double leftX, double leftZ, double rightX, double rightZ, CockpitDisplayBlock.Shows shows) {
+    private record Panel(double leftX, double leftZ, double rightX, double rightZ, Shows shows, Desk desk) {
         double width() {
             return Math.hypot(rightX - leftX, rightZ - leftZ);
         }
 
-        /** The blocks its face runs through, across the floor plan (at height 0). */
-        List<BlockPos> face() {
-            return squares(leftX, leftZ, rightX, rightZ);
+        /** Out of the face toward the pilots, across the floor plan, this far (back into the slab where negative). */
+        double[] out(double distance) {
+            double width = width();
+            return new double[]{-(rightZ - leftZ) / width * distance, (rightX - leftX) / width * distance};
         }
 
-        /** The blocks its face and the back of its slab run through, across the floor plan: those it needs open. */
-        Set<BlockPos> room() {
-            double width = width();
-            double backX = (rightZ - leftZ) / width * CockpitDisplayBlock.DEPTH;
-            double backZ = -(rightX - leftX) / width * CockpitDisplayBlock.DEPTH;
-            Set<BlockPos> room = new LinkedHashSet<>(face());
-            room.addAll(squares(leftX + backX, leftZ + backZ, rightX + backX, rightZ + backZ));
+        /** The blocks its face runs through, across the floor plan (at height 0). */
+        Set<BlockPos> face() {
+            return new LinkedHashSet<>(along(0));
+        }
+
+        /** The blocks its screen needs open, across the floor plan: its face, and its slab's back. */
+        Set<BlockPos> screen() {
+            Set<BlockPos> room = face();
+            room.addAll(along(-CockpitDisplayBlock.DEPTH));
             return room;
+        }
+
+        /**
+         * The blocks its desk runs through, across the floor plan: the band from the slab's back out to the slope's
+         * front edge, found by its edges (it is never wide enough to hold a whole block).
+         */
+        Set<BlockPos> under() {
+            double[] back = out(-CockpitDisplayBlock.DEPTH);
+            double[] front = out(DESK);
+            Set<BlockPos> room = new LinkedHashSet<>(along(-CockpitDisplayBlock.DEPTH));
+            room.addAll(along(DESK));
+            room.addAll(squares(leftX + back[0], leftZ + back[1], leftX + front[0], leftZ + front[1]));
+            room.addAll(squares(rightX + back[0], rightZ + back[1], rightX + front[0], rightZ + front[1]));
+            return room;
+        }
+
+        /** The blocks the line along the face runs through, out from it so far. */
+        List<BlockPos> along(double distance) {
+            double[] by = out(distance);
+            return squares(leftX + by[0], leftZ + by[1], rightX + by[0], rightZ + by[1]);
         }
 
         /** The block holding it, across the floor plan: the one the middle of its face stands in. */
         BlockPos holder() {
             return new BlockPos(Mth.floor((leftX + rightX) / 2), 0, Mth.floor((leftZ + rightZ) / 2));
         }
+
+        Panel holding(Desk to) {
+            return new Panel(leftX, leftZ, rightX, rightZ, shows, to);
+        }
     }
 
-    /** The row on the floor of row bottom, the autopilot screen standing in station screenZ. */
-    ScreenArc(AirframeLayout layout, int bottom, int screenZ) {
-        this.layout = layout;
-        this.bottom = bottom;
-        this.screenZ = screenZ;
-    }
-
-    /** Puts up the panels that fit; whether any did, the outside camera's among them. */
-    boolean apply() {
-        List<Panel[]> pairs = plan();
-        // Every block a panel runs through first, then the blocks holding them, so none is taken over by another panel.
-        for (Panel[] pair : pairs) {
-            for (Panel panel : pair) {
-                standUp(panel);
+    /** A row planned: the middle screen, and the pairs either side of it that fit, inner pair first, each captain first. */
+    private record Plan(Panel middle, List<Panel[]> pairs) {
+        double width() {
+            double width = middle.width();
+            for (Panel[] pair : pairs) {
+                width += pair[0].width() + pair[1].width();
             }
+            return width;
         }
-        for (Panel[] pair : pairs) {
-            for (Panel panel : pair) {
-                hold(panel);
-            }
-        }
-        if (!pairs.isEmpty()) {
-            desk(pairs);
-        }
-        return !pairs.isEmpty();
-    }
 
-    /** How wide the panels that fit are, all of them together, in blocks: the more of the row fits, the wider. */
-    double width() {
-        double width = 0;
-        for (Panel[] pair : plan()) {
-            width += pair[0].width() + pair[1].width();
+        /** Every panel, the middle one first. */
+        List<Panel> panels() {
+            List<Panel> panels = new ArrayList<>(List.of(middle));
+            pairs.forEach(pair -> panels.addAll(List.of(pair)));
+            return panels;
         }
-        return width;
-    }
-
-    /** The pairs of panels that fit, from the inner pair out, each the captain's side first. */
-    private List<Panel[]> plan() {
-        List<Panel[]> pairs = new ArrayList<>();
-        Set<BlockPos> taken = new HashSet<>();
-        double faceZ = screenZ + AutopilotScreenBlock.DEPTH / 16.0;
-        double left = -(AutopilotScreenBlock.COLUMNS / 2);
-        // The autopilot screen, standing straight, as the panel the first pair hinges on.
-        Panel[] inside = {
-            new Panel(left, faceZ, left, faceZ, SHOWS[0][0]),
-            new Panel(left + AutopilotScreenBlock.COLUMNS, faceZ, left + AutopilotScreenBlock.COLUMNS, faceZ, SHOWS[0][1])
-        };
-        for (int step = 0; step < PAIRS; step++) {
-            Panel[] pair = widestPair(step, inside[0], inside[1], taken);
-            if (pair == null) {
-                break;
-            }
-            pairs.add(pair);
-            taken.addAll(blocks(pair[0]));
-            taken.addAll(blocks(pair[1]));
-            inside = pair;
-        }
-        return pairs;
     }
 
     /**
-     * The widest pair that fits at this step out from the middle, hinged on the outer edges of the pair inside it;
-     * null for none.
+     * The row on the floor of row floor, its faces in station screenZ, its desks reaching back from there so far at
+     * most, and clear of the given blocks across the floor plan.
+     */
+    ScreenArc(AirframeLayout layout, int floor, int screenZ, double deepest, Set<BlockPos> clear) {
+        this.layout = layout;
+        this.floor = floor;
+        this.screenZ = screenZ;
+        this.deepest = deepest;
+        this.clear = clear;
+    }
+
+    /**
+     * How much of the row fits, the more of it the more: a hundred for each pair either side of the middle screen, and
+     * the panels' widths, all of them together, in blocks. 0 where not even the inner pair fits.
+     */
+    double fit() {
+        Plan plan = best();
+        return plan == null || plan.pairs().isEmpty() ? 0 : plan.pairs().size() * 100 + plan.width();
+    }
+
+    /**
+     * Puts up the row and the desk behind it, the panels linked to the autopilot and the switches out of sight, at
+     * their places in the layout; whether it went up, with the inner pair at least.
+     */
+    boolean apply(Map<Link, BlockPos> controls) {
+        Plan plan = best();
+        if (plan == null || plan.pairs().isEmpty()) {
+            return false;
+        }
+        List<Panel> panels = withDesks(plan);
+        // Every block a panel runs through first, then the blocks holding them, so none is taken over by another panel.
+        panels.forEach(this::standUp);
+        for (Panel panel : panels) {
+            hold(panel, controls);
+        }
+        desk(plan);
+        return true;
+    }
+
+    /**
+     * The panels with their slopes' keys: the autopilot's under the middle screen, the parking brake and the landing
+     * gear under the captain's inner panel, and the tiller under the captain's outer one, or where there is none,
+     * under the first officer's inner one.
+     */
+    private static List<Panel> withDesks(Plan plan) {
+        List<Panel> panels = new ArrayList<>();
+        panels.add(plan.middle().holding(Desk.AUTOPILOT));
+        Panel[] inner = plan.pairs().get(0);
+        boolean outer = plan.pairs().size() > 1;
+        panels.add(inner[0].holding(Desk.GROUND));
+        panels.add(outer ? inner[1] : inner[1].holding(Desk.TILLER));
+        if (outer) {
+            panels.add(plan.pairs().get(1)[0].holding(Desk.TILLER));
+            panels.add(plan.pairs().get(1)[1]);
+        }
+        return panels;
+    }
+
+    /** The row that fits best: the most pairs, then the widest; of equals, the widest middle and the gentlest turn. */
+    @Nullable
+    private Plan best() {
+        Plan best = null;
+        for (double middleWidth : MIDDLE_WIDTHS) {
+            for (double turn : TURNS) {
+                Plan plan = plan(middleWidth, turn);
+                best = plan != null && better(plan, best) ? plan : best;
+            }
+        }
+        return best;
+    }
+
+    private static boolean better(Plan plan, @Nullable Plan than) {
+        if (than == null || plan.pairs().size() != than.pairs().size()) {
+            return than == null || plan.pairs().size() > than.pairs().size();
+        }
+        return plan.width() > than.width() + 1e-6;
+    }
+
+    /**
+     * The row with a middle screen this wide and pairs turning this many degrees a step that fits best: the inner pair
+     * as wide as leaves the outer pair the room to fit too, if it can; null where not even the middle screen fits.
      */
     @Nullable
-    private Panel[] widestPair(int step, Panel captainInside, Panel firstOfficerInside, Set<BlockPos> taken) {
-        double turn = Math.toRadians(TURN * (step + 1));
+    private Plan plan(double middleWidth, double turn) {
+        double faceZ = screenZ + FACE_BACK;
+        double left = 0.5 - middleWidth / 2;
+        Panel middle = new Panel(left, faceZ, left + middleWidth, faceZ, Shows.SYSTEMS, Desk.NONE);
+        if (!fits(middle, Set.of())) {
+            return null;
+        }
+        Plan best = new Plan(middle, List.of());
+        for (double inner = WIDEST; inner > NARROWEST - NARROWER / 2; inner -= NARROWER) {
+            Plan plan = withPairs(middle, turn, inner);
+            best = better(plan, best) ? plan : best;
+        }
+        return best;
+    }
+
+    /**
+     * The middle screen with an inner pair this wide, if it fits, turned this many degrees, and outside it the widest
+     * outer pair that fits, turned as far again.
+     */
+    private Plan withPairs(Panel middle, double turn, double innerWidth) {
+        Set<BlockPos> taken = new HashSet<>(blocks(middle));
+        Panel[] inner = pair(0, turn, innerWidth, middle, middle);
+        if (!fits(inner[0], taken) || !fits(inner[1], taken)) {
+            return new Plan(middle, List.of());
+        }
+        taken.addAll(blocks(inner[0]));
+        taken.addAll(blocks(inner[1]));
+        Panel[] outer = widestPair(1, turn, inner[0], inner[1], taken);
+        return new Plan(middle, outer == null ? List.<Panel[]>of(inner) : List.of(inner, outer));
+    }
+
+    /**
+     * The widest pair that fits at this step out from the middle, hinged on the outer edges of the panels inside it
+     * and turned so many degrees a step; null for none.
+     */
+    @Nullable
+    private Panel[] widestPair(int step, double turn, Panel captainInside, Panel firstOfficerInside, Set<BlockPos> taken) {
         for (double width = WIDEST; width > NARROWEST - NARROWER / 2; width -= NARROWER) {
-            double across = Math.cos(turn) * width;
-            double back = Math.sin(turn) * width;
-            Panel captain = new Panel(captainInside.leftX - across, captainInside.leftZ + back, captainInside.leftX, captainInside.leftZ,
-                SHOWS[step][0]);
-            Panel firstOfficer = new Panel(firstOfficerInside.rightX, firstOfficerInside.rightZ, firstOfficerInside.rightX + across,
-                firstOfficerInside.rightZ + back, SHOWS[step][1]);
-            if (fits(captain, taken) && fits(firstOfficer, taken)) {
-                return new Panel[]{captain, firstOfficer};
+            Panel[] pair = pair(step, turn, width, captainInside, firstOfficerInside);
+            if (fits(pair[0], taken) && fits(pair[1], taken)) {
+                return pair;
             }
         }
         return null;
     }
 
-    /** Whether every block the panel needs is open, or another panel of the row's. */
+    /** The pair at this step out from the middle, this wide, hinged on the outer edges of the panels inside it. */
+    private static Panel[] pair(int step, double turn, double width, Panel captainInside, Panel firstOfficerInside) {
+        double angle = Math.toRadians(turn * (step + 1));
+        double across = Math.cos(angle) * width;
+        double back = Math.sin(angle) * width;
+        Panel captain = new Panel(captainInside.leftX - across, captainInside.leftZ + back, captainInside.leftX, captainInside.leftZ, SHOWS[step][0],
+            Desk.NONE);
+        Panel firstOfficer = new Panel(firstOfficerInside.rightX, firstOfficerInside.rightZ, firstOfficerInside.rightX + across,
+            firstOfficerInside.rightZ + back, SHOWS[step][1], Desk.NONE);
+        return new Panel[]{captain, firstOfficer};
+    }
+
+    /** Whether every block the panel needs is open or another panel's, and its desk stays ahead of the seats. */
     private boolean fits(Panel panel, Set<BlockPos> taken) {
+        double[] front = panel.out(DESK);
+        if (Math.max(panel.leftZ, panel.rightZ) + Math.max(front[1], 0) > screenZ + deepest) {
+            return false;
+        }
         for (BlockPos block : blocks(panel)) {
-            if (!taken.contains(block) && !layout.isOpen(block.getX(), block.getY(), block.getZ())) {
+            boolean free = taken.contains(block) || layout.isOpen(block.getX(), block.getY(), block.getZ());
+            if (!free || clear.contains(new BlockPos(block.getX(), 0, block.getZ()))) {
                 return false;
             }
         }
         return true;
     }
 
-    /** Every block the panel needs, its rows over the floor plan. */
+    /** Every block the panel needs: its desk's in the floor's row, its screen's in the row over it. */
     private List<BlockPos> blocks(Panel panel) {
         List<BlockPos> blocks = new ArrayList<>();
-        for (BlockPos square : panel.room()) {
-            for (int row = 0; row < ROWS; row++) {
-                blocks.add(square.offset(0, bottom + row, 0));
-            }
-        }
+        panel.under().forEach(square -> blocks.add(square.offset(0, floor, 0)));
+        panel.screen().forEach(square -> blocks.add(square.offset(0, floor + 1, 0)));
         return blocks;
     }
 
-    /** The panel's blocks, every one its face runs through. */
+    /** The panel's blocks: every one its desk runs through, and every one its screen's face runs through over that. */
     private void standUp(Panel panel) {
         BlockState part = part(panel);
-        for (BlockPos square : panel.face()) {
-            for (int row = 0; row < ROWS; row++) {
-                layout.set(square.getX(), bottom + row, square.getZ(), part);
-            }
-        }
+        panel.under().forEach(square -> layout.set(square.getX(), floor, square.getZ(), part));
+        panel.face().forEach(square -> layout.set(square.getX(), floor + 1, square.getZ(), part));
     }
 
     /**
-     * The block holding the panel, at the floor, told when the airliner is built where the panel stands from it: in
-     * the frame of the way the row faces, which with the row facing south is the layout's own.
+     * The block holding the panel, on the floor under the middle of its face, told when the airliner is built where the
+     * panel stands from it (in the frame of the way the row faces, which with the row facing south is the layout's
+     * own), what its slope holds, and where what it works is, turned with the airliner.
      */
-    private void hold(Panel panel) {
-        BlockPos holder = panel.holder().offset(0, bottom, 0);
+    private void hold(Panel panel, Map<Link, BlockPos> controls) {
+        BlockPos holder = panel.holder().offset(0, floor, 0);
         layout.set(holder.getX(), holder.getY(), holder.getZ(), part(panel).setValue(CockpitDisplayBlock.HOLDER, true));
         double middleX = holder.getX() + 0.5;
         double middleZ = holder.getZ() + 0.5;
         CockpitDisplayBlockEntity.Panel where = new CockpitDisplayBlockEntity.Panel((float) (panel.leftX - middleX), (float) (panel.leftZ - middleZ),
-            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), 0, TOP);
+            (float) (panel.rightX - middleX), (float) (panel.rightZ - middleZ), BOTTOM, TOP, DESK);
         layout.fit(holder, (blockEntity, rotation) -> {
             if (blockEntity instanceof CockpitDisplayBlockEntity display) {
-                display.configure(where);
+                display.configure(where, panel.desk(), turned(controls, holder, rotation));
             }
         });
     }
 
+    /** Where what a panel works is, as offsets from the block holding it, turned with the airliner. */
+    private static Map<Link, BlockPos> turned(Map<Link, BlockPos> controls, BlockPos holder, Rotation rotation) {
+        Map<Link, BlockPos> links = new EnumMap<>(Link.class);
+        controls.forEach((link, at) -> links.put(link, at.subtract(holder).rotate(rotation)));
+        return links;
+    }
+
     /**
-     * The instrument panel carried on round behind the panels: every open block of the floor's row that lies on the
+     * The instrument panel carried on round behind the row: every open block of the floor's row that lies on the
      * nose's side of the panels, from the row's station back to its outer ends and out to the hull. Facing the nose, so
      * the instrument panel's screens, shown on its face, stay hidden against the glareshield.
      */
-    private void desk(List<Panel[]> pairs) {
-        Panel captainOuter = pairs.get(pairs.size() - 1)[0];
-        Panel firstOfficerOuter = pairs.get(pairs.size() - 1)[1];
+    private void desk(Plan plan) {
+        Panel captainOuter = plan.pairs().get(plan.pairs().size() - 1)[0];
+        Panel firstOfficerOuter = plan.pairs().get(plan.pairs().size() - 1)[1];
         int back = Mth.floor(Math.max(captainOuter.leftZ, firstOfficerOuter.rightZ));
         BlockState desk = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.NORTH);
-        for (BlockPos block : BlockPos.betweenClosed(Mth.floor(captainOuter.leftX) - 1, bottom, screenZ, Mth.floor(firstOfficerOuter.rightX) + 1,
-            bottom, back)) {
-            if (layout.isOpen(block.getX(), block.getY(), block.getZ()) && behind(pairs, block.getX() + 0.5, block.getZ() + 0.5)) {
+        for (BlockPos block : BlockPos.betweenClosed(Mth.floor(captainOuter.leftX) - 1, floor, screenZ, Mth.floor(firstOfficerOuter.rightX) + 1,
+            floor, back)) {
+            if (layout.isOpen(block.getX(), block.getY(), block.getZ()) && behind(plan, block.getX() + 0.5, block.getZ() + 0.5)) {
                 layout.set(block.getX(), block.getY(), block.getZ(), desk);
             }
         }
     }
 
     /**
-     * Whether a point of the floor plan lies on the nose's side of the panels on its side of the autopilot screen, or
-     * past their outer end and ahead of it; not if it lies between the screen's edges.
+     * Whether a point of the floor plan lies on the nose's side of the row: behind a panel, or past the row's outer
+     * end and ahead of it.
      */
-    private static boolean behind(List<Panel[]> pairs, double x, double z) {
-        double hinge = pairs.get(0)[0].rightX;
-        int side = x < hinge ? 0 : 1;
-        Panel outer = pairs.get(pairs.size() - 1)[side];
-        double outerX = side == 0 ? outer.leftX : outer.rightX;
-        double outerZ = side == 0 ? outer.leftZ : outer.rightZ;
-        if (side == 0 ? x < outerX : x > outerX) {
+    private static boolean behind(Plan plan, double x, double z) {
+        boolean captainSide = x < plan.middle().leftX;
+        Panel outer = plan.pairs().get(plan.pairs().size() - 1)[captainSide ? 0 : 1];
+        double outerX = captainSide ? outer.leftX : outer.rightX;
+        double outerZ = captainSide ? outer.leftZ : outer.rightZ;
+        if (captainSide ? x < outerX : x > outerX) {
             return z < outerZ;
         }
-        for (Panel[] pair : pairs) {
-            Panel panel = pair[side];
+        for (Panel panel : plan.panels()) {
             double share = (x - panel.leftX) / (panel.rightX - panel.leftX);
             if (share >= 0 && share <= 1) {
                 return z < panel.leftZ + share * (panel.rightZ - panel.leftZ);

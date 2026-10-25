@@ -135,6 +135,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         HEADING, ORBIT_LEFT, ORBIT_RIGHT, DESTINATION
     }
 
+    /** Its buttons on the flight deck's sloped touch panel, under the middle screen (see {@link #press}). */
+    public enum Button {
+        ENGAGE, HEADING_LEFT, HEADING_RIGHT, ORBIT_LEFT, ORBIT_RIGHT, ALTITUDE_DOWN, ALTITUDE_UP, SPEED_DOWN, SPEED_UP, RADIUS_DOWN, RADIUS_UP
+    }
+
     /**
      * What the settings screen sets: the speed in blocks a second, the height to hold in world blocks, the heading as
      * a compass bearing (0 north, 90 east), whether to hold that heading, circle or fly to a destination, the circle's
@@ -156,6 +161,27 @@ public class AutopilotBlockEntity extends BlockEntity {
         /** Whether these settings fly to the pin to land near it. */
         public boolean landsAtPin() {
             return lateral == Lateral.DESTINATION && landAtPin;
+        }
+
+        Settings withSpeed(int to) {
+            return new Settings(to, altitude, heading, lateral, radius, destination, landAtPin);
+        }
+
+        Settings withAltitude(int to) {
+            return new Settings(speed, to, heading, lateral, radius, destination, landAtPin);
+        }
+
+        /** Holding this heading, straight on. */
+        Settings withHeading(int to) {
+            return new Settings(speed, altitude, to, Lateral.HEADING, radius, destination, landAtPin);
+        }
+
+        Settings withLateral(Lateral to) {
+            return new Settings(speed, altitude, heading, to, radius, destination, landAtPin);
+        }
+
+        Settings withRadius(int to) {
+            return new Settings(speed, altitude, heading, lateral, to, destination, landAtPin);
         }
 
         CompoundTag save() {
@@ -741,6 +767,42 @@ public class AutopilotBlockEntity extends BlockEntity {
             player.displayClientMessage(said, false);
         }
         level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
+    }
+
+    /**
+     * A press of one of its buttons on the flight deck's sloped touch panel, on the server. Flying, the on/off button
+     * switches it off and the others step what it flies: the heading a step either way (flying straight on from the
+     * way it is going, if it was circling), circling either way, or the altitude, the speed or the circle's size a step
+     * up or down. Switched off, any of them opens the settings screen, where it is engaged. Says what it did.
+     */
+    public void press(Button button, ServerPlayer player) {
+        if (phase == Phase.OFF) {
+            openScreen(player);
+            return;
+        }
+        Settings now = flying();
+        Settings next = switch (button) {
+            case ENGAGE -> now;
+            case HEADING_LEFT -> now.withHeading(now.heading() - HEADING_STEP);
+            case HEADING_RIGHT -> now.withHeading(now.heading() + HEADING_STEP);
+            case ORBIT_LEFT -> now.withLateral(Lateral.ORBIT_LEFT);
+            case ORBIT_RIGHT -> now.withLateral(Lateral.ORBIT_RIGHT);
+            case ALTITUDE_DOWN -> now.withAltitude(now.altitude() - ALTITUDE_STEP);
+            case ALTITUDE_UP -> now.withAltitude(now.altitude() + ALTITUDE_STEP);
+            case SPEED_DOWN -> now.withSpeed(now.speed() - SPEED_STEP);
+            case SPEED_UP -> now.withSpeed(now.speed() + SPEED_STEP);
+            case RADIUS_DOWN -> now.withRadius(now.radius() - RADIUS_STEP);
+            case RADIUS_UP -> now.withRadius(now.radius() + RADIUS_STEP);
+        };
+        player.displayClientMessage(set(button == Button.ENGAGE ? SetAutopilot.Action.OFF : SetAutopilot.Action.FLY, next), true);
+    }
+
+    /** What it flies now, as its settings screen shows it: circling, the heading is the way it is going. */
+    private Settings flying() {
+        SableFlight.State state = SableFlight.read(this, nose());
+        double heading = lateral == Lateral.HEADING || state == null ? targetHeading : state.heading();
+        return new Settings((int) Math.round(targetSpeed), (int) Math.round(targetAltitude), bearing(heading), lateral, (int) Math.round(orbitRadius),
+            BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
     }
 
     /**

@@ -3579,10 +3579,20 @@ for (let thrust = 0; thrust <= 4; thrust++) {
     solid([6, 12, 6.75], [10, 14.5, 9.25], "#knob", rotation),
   ]);
 }
+// The whole throttle in one block, for the single-block centre console: the four levers side by side, moving as one.
+for (let thrust = 0; thrust <= 4; thrust++) {
+  const rotation = { origin: [8, CONSOLE_HEIGHT, 8], axis: "x", angle: 45 - 22.5 * thrust };
+  consoleModule(`thrust_lever_all_engines_${thrust}`, {
+    plate: `${ID}:block/thrust_lever_base`, handle: `${ID}:block/thrust_lever_handle`, knob: `${ID}:block/thrust_lever_knob`,
+  }, "#plate", false, [3.5, 6.5, 9.5, 12.5].flatMap((x) => [
+    solid([x - 0.5, CONSOLE_HEIGHT, 7.5], [x + 0.5, 13, 8.5], "#handle", rotation),
+    solid([x - 1.25, 12, 6.75], [x + 1.25, 14.5, 9.25], "#knob", rotation),
+  ]));
+}
 write(`assets/${ID}/models/item/thrust_lever.json`, { parent: `${ID}:block/thrust_lever_2` });
 write(`assets/${ID}/blockstates/thrust_lever.json`, {
-  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-    [0, 1, 2, 3, 4].map((thrust) => [`facing=${facing},thrust=${thrust}`, { model: `${ID}:block/thrust_lever_${thrust}`, y }]))),
+  variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4].flatMap((thrust) => [false, true].map((all) =>
+    [`all_engines=${all},facing=${facing},thrust=${thrust}`, { model: `${ID}:block/thrust_lever_${all ? "all_engines_" : ""}${thrust}`, y }])))),
 });
 cubes.thrust_lever = null;
 cubes.instrument_panel = null;

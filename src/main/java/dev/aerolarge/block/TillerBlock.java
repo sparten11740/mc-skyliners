@@ -72,18 +72,32 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         Direction right = state.getValue(FACING).getClockWise();
         Vec3 touch = hit.getLocation().subtract(Vec3.atCenterOf(pos));
-        boolean rightHalf = touch.x * right.getStepX() + touch.z * right.getStepZ() > 0;
-        int steer = Math.clamp(state.getValue(STEER) + (rightHalf ? 1 : -1), 0, 4);
-        if (!level.isClientSide && steer != state.getValue(STEER)) {
-            level.setBlock(pos, state.setValue(STEER, steer), Block.UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4F, 0.9F);
-            if (level.getBlockEntity(pos) instanceof Control control) {
-                control.resync();
-            }
-            String way = steer == CENTRE ? "centre" : steer < CENTRE ? "left" : "right";
-            player.displayClientMessage(Component.translatable("message.aerolarge.tiller." + way), true);
+        if (!level.isClientSide) {
+            steer(level, pos, player, touch.x * right.getStepX() + touch.z * right.getStepZ() > 0);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * Turns the tiller at a position a notch to the right or the left, on the server, as its right or left half does
+     * (or the flight deck's touch keys for it), telling whoever turned it.
+     */
+    public static void steer(Level level, BlockPos pos, Player player, boolean toRight) {
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof TillerBlock)) {
+            return;
+        }
+        int steer = Math.clamp(state.getValue(STEER) + (toRight ? 1 : -1), 0, 4);
+        if (steer == state.getValue(STEER)) {
+            return;
+        }
+        level.setBlock(pos, state.setValue(STEER, steer), Block.UPDATE_ALL);
+        level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4F, 0.9F);
+        if (level.getBlockEntity(pos) instanceof Control control) {
+            control.resync();
+        }
+        String way = steer == CENTRE ? "centre" : steer < CENTRE ? "left" : "right";
+        player.displayClientMessage(Component.translatable("message.aerolarge.tiller." + way), true);
     }
 
     @Nullable

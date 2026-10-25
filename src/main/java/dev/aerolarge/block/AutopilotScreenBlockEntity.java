@@ -157,7 +157,7 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
     }
 
     /** Zooms the map out a step, round to the closest again, for everyone looking at it. */
-    public void zoom() {
+    private void zoom() {
         range = (range + 1) % RANGES.length;
         setChanged();
         if (level != null) {

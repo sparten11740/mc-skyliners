@@ -31,12 +31,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A screen of the flight deck's curved row, either side of the autopilot screen: a panel turned toward the pilots'
- * seats, showing a pilot's flight display, the moving map or an outside camera (see {@link CockpitDisplayBlockEntity}).
- * Turned, it runs across blocks at a slant; every block it passes through is this block, standing where the panel
- * does, and the one holding the panel (HOLDER) draws all of it and keeps what it knows. FACING is the way the row
- * faces, toward the seats; SHOWS what is on it. Using any part touches the panel where the look meets it. Broken by a
- * player, the whole panel goes.
+ * A screen of the flight deck's curved row: a panel turned toward the pilots' seats, showing a pilot's flight display,
+ * the moving map, the systems page or an outside camera, over a sloped touch panel with a desk under it (see
+ * {@link CockpitDisplayBlockEntity}). Turned, it runs across blocks at a slant; every block it passes through is this
+ * block, standing where the panel does, and the one holding the panel (HOLDER), on the floor under it, draws all of it
+ * and keeps what it knows. FACING is the way the row faces, toward the seats; SHOWS what is on the screen. Using any
+ * part touches the panel where the look meets it, on the screen or on the slope. Broken by a player, the whole panel
+ * goes.
  */
 public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<CockpitDisplayBlock> CODEC = simpleCodec(CockpitDisplayBlock::new);
@@ -44,12 +45,14 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
     public static final EnumProperty<Shows> SHOWS = EnumProperty.create("shows", Shows.class);
     /** How far round a part the block holding its panel is looked for, in blocks: further than a panel ever runs. */
     static final int HOLDER_REACH = 4;
+    /** How many rows of blocks a panel stands in at most: the desk's, and the screen's over it. */
+    static final int ROWS = 2;
     /** How deep a panel's slab is behind its face, in blocks. */
     public static final float DEPTH = 0.1F;
 
-    /** What a panel shows. */
+    /** What a panel's screen shows. */
     public enum Shows implements StringRepresentable {
-        FLIGHT, MAP, CAMERA;
+        FLIGHT, MAP, CAMERA, SYSTEMS;
 
         @Override
         public String getSerializedName() {
@@ -132,6 +135,15 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
             }
         }
         return from < to;
+    }
+
+    /**
+     * Whether a band across the floor plan, from a line out by an offset to the line parallel to it, passes through a
+     * block's square: one of its four edges does (the band is never wide enough to hold a whole square).
+     */
+    public static boolean crossesBand(double x0, double z0, double x1, double z1, double outX, double outZ, int squareX, int squareZ) {
+        return crossesSquare(x0, z0, x1, z1, squareX, squareZ) || crossesSquare(x0 + outX, z0 + outZ, x1 + outX, z1 + outZ, squareX, squareZ)
+            || crossesSquare(x0, z0, x0 + outX, z0 + outZ, squareX, squareZ) || crossesSquare(x1, z1, x1 + outX, z1 + outZ, squareX, squareZ);
     }
 
     @Nullable

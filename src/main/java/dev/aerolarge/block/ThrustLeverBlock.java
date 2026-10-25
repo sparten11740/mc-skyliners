@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,11 +35,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * moves them, so the engines never pull the airliner off to one side: using any of them pushes them all a notch
  * forward (more thrust), using it while sneaking pulls them all a notch back. Each engine's thrusters follow its
  * lever through the relays in the nacelle. FACING is the way the nose points, and the lever pushes toward it.
+ * ALL_ENGINES makes it the whole throttle in one block, as on the single-block centre console: four levers drawn side
+ * by side, moving as one, wired to every engine's relays.
  */
 public class ThrustLeverBlock extends BaseEntityBlock {
     private static final MapCodec<ThrustLeverBlock> CODEC = simpleCodec(ThrustLeverBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty THRUST = IntegerProperty.create("thrust", 0, 4);
+    public static final BooleanProperty ALL_ENGINES = BooleanProperty.create("all_engines");
     /** The redstone signal each notch sends the thrusters: idle, then quarters up to full. */
     private static final int[] POWER = {0, 4, 8, 12, 15};
     /**
@@ -52,13 +56,16 @@ public class ThrustLeverBlock extends BaseEntityBlock {
      * A module of the throttle quadrant, by thrust: its slab and the lever's grip where the lever stands. The slim
      * handle between them is left out, so that the quadrant stands in the way of nothing beyond it on the console.
      */
-    private static final List<Map<Direction, VoxelShape>> SHAPES = THRUST.getPossibleValues().stream().map(thrust -> TurnedShapes.of(gripShape(thrust))).toList();
+    private static final List<Map<Direction, VoxelShape>> SHAPES = THRUST.getPossibleValues().stream().map(thrust -> TurnedShapes.of(gripShape(thrust, 2))).toList();
+    /** The same with the four levers of the whole throttle, their grips side by side across the block. */
+    private static final List<Map<Direction, VoxelShape>> ALL_ENGINES_SHAPES = THRUST.getPossibleValues().stream()
+        .map(thrust -> TurnedShapes.of(gripShape(thrust, 6))).toList();
     /** How far along the quadrant, either way, the other levers moved with this one are looked for. */
     private static final int QUADRANT = 4;
 
     public ThrustLeverBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(THRUST, 0));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(THRUST, 0).setValue(ALL_ENGINES, false));
     }
 
     @Override
@@ -68,7 +75,7 @@ public class ThrustLeverBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, THRUST);
+        builder.add(FACING, THRUST, ALL_ENGINES);
     }
 
     @Override
@@ -76,17 +83,17 @@ public class ThrustLeverBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
-    /** The slab and the grip, drawn facing north, at this thrust. */
-    private static VoxelShape gripShape(int thrust) {
+    /** The slab and the grips, drawn facing north, at this thrust, reaching this many pixels either way of the middle. */
+    private static VoxelShape gripShape(int thrust, double halfWidth) {
         double angle = Math.toRadians(IDLE_ANGLE - NOTCH_ANGLE * thrust);
         double y = ConsoleModule.HEIGHT + GRIP_REACH * Math.cos(angle);
         double z = 8 + GRIP_REACH * Math.sin(angle);
-        return Shapes.or(ConsoleModule.SLAB, Block.box(6, y - 1.5, z - 1.5, 10, y + 1.5, z + 1.5));
+        return Shapes.or(ConsoleModule.SLAB, Block.box(8 - halfWidth, y - 1.5, z - 1.5, 8 + halfWidth, y + 1.5, z + 1.5));
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(THRUST)).get(state.getValue(FACING));
+        return (state.getValue(ALL_ENGINES) ? ALL_ENGINES_SHAPES : SHAPES).get(state.getValue(THRUST)).get(state.getValue(FACING));
     }
 
     @Override
