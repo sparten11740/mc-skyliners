@@ -90,9 +90,9 @@ door in one too small for either): a pale grey panel with rounded top corners, a
 a round chrome handle on each face, which swings out into the aisle about its port side and stands back against the
 WC's wall, leaving the way past it clear. It waits to shut while anyone stands in the doorway; villagers do not open
 it. Behind the cockpit door the flight deck is a room of its own, raised so the pilots look straight out through the
-windscreen: tinted glass cut to the nose's curve like the skin around it, one wide pane right across the front from
-the panel up over the crown, running back into side windows past the pilots' shoulders, framed by posts round the
-sides only.
+windscreen: lightly tinted glass cut to the nose's curve like the skin around it, a single pane thick, one wide pane
+right across the front from the panel up over the crown, running back into side windows past the pilots' shoulders,
+framed by posts round the sides only, so from the seats you see the sky and the horizon ahead.
 
 The two pilot seats are real airliner seats: a padded black leather back with a headrest and a harness, an armrest
 either side, on a column between floor rails. Each is two blocks tall, and using either half sits you down in it. It

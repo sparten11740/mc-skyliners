@@ -377,6 +377,8 @@ public final class AirframeLayout {
         // The airstairs' bay, behind the hull's skin, which the shell pass then cuts as ever: shut, the hatch is skin.
         layout.stairBay();
         layout.shell();
+        // Once the shell pass has filled the windscreen out to the inner surface.
+        layout.thinWindscreen();
         layout.landingGear();
         layout.trimTail();
         // The control surfaces are picked once the tail's trim has turned its blocks the way they rest.
@@ -1026,6 +1028,41 @@ public final class AirframeLayout {
                 }
             }
         }
+    }
+
+    /**
+     * Thins the windscreen to its outer pane: glass the shell pass left inside it, between the flight deck and more
+     * glass, out of the outside's reach, is taken away, so the pilots look out through one pane instead of past panes
+     * hanging inside it like tinted boxes. Only glass with no skin but glass round it goes, so no skin is laid open.
+     */
+    private void thinWindscreen() {
+        List<BlockPos> inner = cells.entrySet().stream()
+            .filter(cell -> cell.getValue().is(AerolargeRegistry.COCKPIT_GLASS.get()) && innerPane(cell.getKey()))
+            .map(Map.Entry::getKey)
+            .toList();
+        inner.forEach(pos -> set(pos.getX(), pos.getY(), pos.getZ(), Blocks.AIR.defaultBlockState()));
+    }
+
+    /**
+     * Whether a block of glass is inside the windscreen: open to the flight deck, and against no outside air or other
+     * skin.
+     */
+    private boolean innerPane(BlockPos pos) {
+        boolean open = false;
+        for (Direction side : Direction.values()) {
+            BlockState state = cells.get(pos.relative(side));
+            if (state == null || otherSkin(state)) {
+                return false;
+            }
+            open |= state.isAir();
+        }
+        return open;
+    }
+
+    /** Whether a block is the hull's skin, cut or whole, but not the windscreen's glass. */
+    private boolean otherSkin(BlockState state) {
+        return state.getBlock() instanceof ShellBlock && !state.is(AerolargeRegistry.COCKPIT_GLASS.get()) || state.is(palette.hull().getBlock())
+            || state.is(palette.light().getBlock()) || state.is(AerolargeRegistry.AIRFRAME_PANEL.get());
     }
 
     /**

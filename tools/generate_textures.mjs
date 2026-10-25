@@ -22,7 +22,7 @@ const BLUE_SEAM = [0x15, 0x2e, 0x6b];
 const BLUE_RIVET = [0x2b, 0x52, 0xa8];
 const GLASS = [0x2a, 0x3c, 0x55, 0xb0];
 const GLASS_SHINE = [0x8f, 0xb4, 0xd6, 0xc8];
-const COCKPIT_GLASS = [0x1b, 0x24, 0x33, 0xc8];
+const COCKPIT_GLASS = [0x1b, 0x24, 0x33, 0x70];
 const FRAME_DARK = [0x3a, 0x40, 0x48];
 const CARPET = [0x5a, 0x63, 0x73];
 const CARPET_DARK = [0x4b, 0x53, 0x62];
@@ -161,12 +161,11 @@ texture(blockOutput, "cockpit_window", (x, y) => {
   return COCKPIT_GLASS;
 });
 
-// The windscreen cut to the nose's curve: dark glass with no frame, its own posts being the hull, lighter toward
-// the top with a faint sheen across it, so each facet catches the light a little differently.
+// The windscreen cut to the nose's curve: lightly tinted glass with no frame, its own posts being the hull, a shade
+// lighter toward the top, clear enough to see out of from the pilots' seats.
 texture(blockOutput, "cockpit_glass", (x, y) => {
-  const lift = Math.round((15 - y) * 1.2);
-  const sheen = x + y >= 6 && x + y <= 8 ? 26 : 0;
-  return [COCKPIT_GLASS[0] + lift + sheen, COCKPIT_GLASS[1] + lift + sheen, COCKPIT_GLASS[2] + lift + sheen, COCKPIT_GLASS[3]];
+  const lift = Math.round((15 - y) * 0.5);
+  return [COCKPIT_GLASS[0] + lift, COCKPIT_GLASS[1] + lift, COCKPIT_GLASS[2] + lift, COCKPIT_GLASS[3]];
 });
 
 // Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.
