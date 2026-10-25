@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CargoNetBlock;
 import dev.aerolarge.block.CockpitGlassBlock;
+import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.RubberDuckBlock;
@@ -33,7 +34,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * they are found aboard it apart from any other's. Their spots are found from the finished layout, from what the
  * rooms hold, rather than laid by each room, so they follow however the rooms are fitted out:
  * <ol>
- * <li>on the flight deck's glareshield, where real pilots keep a mascot;</li>
+ * <li>on the flight deck, perched on the captain's locker behind their seat, or where there is none on the glareshield,
+ * where real pilots keep a mascot;</li>
  * <li>in the WC behind the flight deck, on the floor beside its basin;</li>
  * <li>sitting on the balls of the kids' den's ball pit;</li>
  * <li>on top of a luggage pile in the hold;</li>
@@ -58,13 +60,19 @@ final class DuckHunt {
         this.floor = layout.floorY();
     }
 
-    /** Where a duck goes, or the giant duck's origin, and the way its beak points. */
-    private record Spot(BlockPos pos, Direction facing) {
+    /**
+     * Where a duck goes, or the giant duck's origin, the way its beak points, and whether it sits back on its block
+     * (see {@link RubberDuckBlock#PERCHED}).
+     */
+    private record Spot(BlockPos pos, Direction facing, boolean perched) {
+        Spot(BlockPos pos, Direction facing) {
+            this(pos, facing, false);
+        }
     }
 
     void apply() {
         List<Spot> hidden = new ArrayList<>();
-        hide(1, glareshield(), hidden);
+        hide(1, flightDeck(), hidden);
         hide(2, washroom(), hidden);
         hide(3, ballPit(), hidden);
         hide(4, luggage(), hidden);
@@ -96,7 +104,8 @@ final class DuckHunt {
         layout.set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.RUBBER_DUCK.get().defaultBlockState()
             .setValue(RubberDuckBlock.FACING, spot.facing())
             .setValue(RubberDuckBlock.DUCK, duck)
-            .setValue(RubberDuckBlock.WATERLOGGED, afloat));
+            .setValue(RubberDuckBlock.WATERLOGGED, afloat)
+            .setValue(RubberDuckBlock.PERCHED, spot.perched()));
         hidden.add(spot);
     }
 
@@ -174,6 +183,27 @@ final class DuckHunt {
     /** Whether any of the positions is in the spot's column, or the one beside it. */
     private static boolean nearAny(BlockPos pos, List<BlockPos> others) {
         return others.stream().anyMatch(other -> Math.abs(other.getX() - pos.getX()) <= 1 && Math.abs(other.getZ() - pos.getZ()) <= 1);
+    }
+
+    /** The flight deck's duck: on the captain's locker (see {@link #onLocker}), or on the glareshield. */
+    @Nullable
+    private Spot flightDeck() {
+        Spot onLocker = onLocker();
+        return onLocker != null ? onLocker : glareshield();
+    }
+
+    /**
+     * Perched on top of the captain's locker behind their seat, the one to port, facing the way its door does: seen by
+     * everyone coming up to the flight deck, and by the pilots as they turn round. It sits back on the locker's top,
+     * which is only half a block deep.
+     */
+    @Nullable
+    private Spot onLocker() {
+        return where(state -> state.is(AerolargeRegistry.CREW_LOCKER.get())).stream()
+            .filter(pos -> open(pos.above()))
+            .min(Comparator.comparingInt(BlockPos::getX))
+            .map(pos -> new Spot(pos.above(), layout.stateAt(pos.getX(), pos.getY(), pos.getZ()).getValue(CrewLockerBlock.FACING), true))
+            .orElse(null);
     }
 
     /**

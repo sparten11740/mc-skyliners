@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -67,8 +68,10 @@ public class RubberDuckRenderer implements BlockEntityRenderer<RubberDuckBlockEn
             yaw = WIGGLE * Mth.sin(age * WIGGLE_SPEED) * fade;
             lift += HOP * Math.abs(Mth.sin(age * WIGGLE_SPEED)) * fade;
         }
+        Direction back = state.getValue(RubberDuckBlock.FACING).getOpposite();
+        float perch = RubberDuckBlock.sitsBack(state) ? (float) (RubberDuckBlock.PERCH / 16) : 0;
         pose.pushPose();
-        pose.translate(0.5, lift, 0.5);
+        pose.translate(0.5 + back.getStepX() * perch, lift, 0.5 + back.getStepZ() * perch);
         pose.mulPose(Axis.YP.rotationDegrees(yaw));
         pose.mulPose(Axis.ZP.rotationDegrees(roll));
         pose.translate(-0.5, 0, -0.5);

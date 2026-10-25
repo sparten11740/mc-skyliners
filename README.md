@@ -170,9 +170,8 @@ can be crafted and put up in your own builds too: against a wall it stands uprig
 of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as you face it,
 and needs the room there; it comes down whole. On
 an assembled airliner with an autopilot it shows that airliner's cameras. Against the wall behind the captain's
-seat is the Physics Assembler, and across from it, against the wall behind the first officer's, the flight crew's
-locker, with a Pilot Helmet and a Pilot Cap in it for each pilot when the airliner is built (see Souvenirs): within
-reach of the first officer's seat at the default scale, a few steps from either seat on the larger flight decks.
+seat is the Physics Assembler. Right behind each pilot's seat stands that pilot's Flight Crew Locker, its door toward
+the back of the flight deck, with a Pilot Helmet and a Pilot Cap in it when the airliner is built (see Souvenirs).
 
 A Flight Crew Locker is a slim cabinet of brushed grey panels for the crew's things, its white door hinged on one side
 with a small chrome handle on the other, and on the door the pilot's helmet, white with its blue stripe and gold visor,
@@ -757,7 +756,8 @@ it floats, bobbing and rocking gently. Use it, or hit it, and it squeaks, with a
 under an orange dye makes two.
 
 The furnished airliner hides five of them, a secret best left for children to find, so it works without reading: one
-on the flight deck's glareshield, where pilots keep their mascots, one in the WC behind the flight deck by the basin,
+on the flight deck, perched on top of the captain's locker behind their seat (on the glareshield, where pilots keep
+their mascots, where there is no locker), one in the WC behind the flight deck by the basin,
 one sitting on the balls of the den's ball pit, one on the luggage in the hold, and one bobbing on the moon pool's
 water by the steps out, in plain sight, to show what to look for. (At the smallest scale the airliner has none of
 these rooms, and no ducks.) Within a few blocks of one you have not found yet, it squeaks softly every few seconds
@@ -966,7 +966,7 @@ roundel over each ear, a gold visor down over the eyes and a microphone on a boo
 the same way as the cap, and protects as much as a leather cap. On the flight deck its visor shows the pilots'
 head-up display (see Autopilot). Craft it from five iron ingots round a black stained glass pane, with two black wool
 under them for the ear cups, or buy it at a duty-free counter for 10 emeralds. Every airliner with pilots' seats is
-built with two helmets and two caps in the flight crew's locker on its flight deck (see Flight deck).
+built with a helmet and a cap in each pilot's locker on its flight deck (see Flight deck).
 
 ### Skydiving
 

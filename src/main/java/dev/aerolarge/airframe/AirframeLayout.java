@@ -389,7 +389,6 @@ public final class AirframeLayout {
         // Once the skin is cut and lined and everything by the doors stands, so they only go on whole panels.
         layout.doorButtons();
         layout.assembler();
-        layout.crewLocker();
         layout.cabinControls();
         // Once everything hanging on the gear legs stands (the call button), each leg knows its blocks.
         layout.wireGear();
@@ -1428,12 +1427,12 @@ public final class AirframeLayout {
      * over the sloped touch panel with its keys (see {@link ScreenArc}), and from the screens back between the seats
      * runs the single-block centre console the pilots share, the switches out of sight under the floor (see {@link
      * #centreConsole}). The panel stands where the nose leaves room for all that and the most room for the row of
-     * screens, ahead of the cockpit door with room behind the seats for the Physics Assembler. In a nose too small for
-     * it, it stands at the first station where two pilots fit side by side at all, the autopilot screen set into it
-     * between them, a flight display in it in front of each and the tail camera display on top of the autopilot screen,
-     * with the controls fitted round them (see {@link #narrowControls}), and the door moves back if it has to, but no
-     * further than the raised floor's back edge. Behind the door, on the same raised floor at the top of the steps, are
-     * the WC and the crew room.
+     * screens, ahead of the cockpit door with room behind the seats for the pilots' lockers and the Physics Assembler.
+     * In a nose too small for it, it stands at the first station where two pilots fit side by side at all, the autopilot
+     * screen set into it between them, a flight display in it in front of each and the tail camera display on top of
+     * the autopilot screen, with the controls fitted round them (see {@link #narrowControls}), and the door moves back
+     * if it has to, but no further than the raised floor's back edge. Behind the door, on the same raised floor at the
+     * top of the steps, are the WC and the crew room.
      */
     private void flightDeck() {
         int deck = Math.max(floorY + 1, Windscreen.deckRow(scale));
@@ -1509,6 +1508,8 @@ public final class AirframeLayout {
             tailCameraDisplay(deck, seatZ - 1);
         }
         announcementPanel(deck, seatZ, autopilot);
+        crewLocker(-seatX, deck + 1, seatZ);
+        crewLocker(seatX, deck + 1, seatZ);
     }
 
     /**
@@ -1629,6 +1630,25 @@ public final class AirframeLayout {
         BlockState seat = AerolargeRegistry.PILOT_SEAT.get().defaultBlockState().setValue(PilotSeatBlock.FACING, Direction.NORTH);
         set(x, y, z, seat);
         set(x, y + 1, z, seat.setValue(PilotSeatBlock.HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * A pilot's locker, right behind their seat: its back to the seat's back and its door facing the rest of the flight
+     * deck, stocked when the airliner is built with a pilot helmet and a pilot cap. Only behind a seat that stands, on
+     * the flight deck's floor.
+     */
+    private void crewLocker(int x, int y, int seatZ) {
+        int z = seatZ + 1;
+        if (!stateAt(x, y, seatZ).is(AerolargeRegistry.PILOT_SEAT.get()) || !isOpen(x, y, z) || !isCabinFloor(x, y - 1, z)) {
+            return;
+        }
+        set(x, y, z, AerolargeRegistry.CREW_LOCKER.get().defaultBlockState().setValue(CrewLockerBlock.FACING, Direction.SOUTH));
+        fittings.put(new BlockPos(x, y, z), (blockEntity, rotation) -> {
+            if (blockEntity instanceof CrewLockerBlockEntity locker) {
+                locker.setItem(0, new ItemStack(AerolargeRegistry.PILOT_HELMET.get()));
+                locker.setItem(1, new ItemStack(AerolargeRegistry.PILOT_CAP.get()));
+            }
+        });
     }
 
     /**
@@ -3230,35 +3250,6 @@ public final class AirframeLayout {
                     set(0, floorY + 1, z, state);
                     assemblerAt = new BlockPos(0, floorY + 1, z);
                     return;
-                }
-            }
-        });
-    }
-
-    /**
-     * The flight crew's locker on the flight deck, across from the Physics Assembler: its back to the wall behind the
-     * first officer's seat and its door facing in, stocked when the airliner is built with a pilot helmet and a pilot
-     * cap for each pilot. It goes in once the skin is cut, against the wall as the cut left it, so the skin and the
-     * glass round it are cut to the curve as they are without it; only on the flight deck's floor.
-     */
-    private void crewLocker() {
-        if (assemblerSpot == null) {
-            return;
-        }
-        int y = assemblerSpot.getY();
-        int z = assemblerSpot.getZ();
-        int x = openHalfWidth(y, z);
-        if (x <= 0 || !isCabinFloor(x, y - 1, z)) {
-            return;
-        }
-        BlockPos spot = new BlockPos(x, y, z);
-        set(x, y, z, AerolargeRegistry.CREW_LOCKER.get().defaultBlockState().setValue(CrewLockerBlock.FACING, Direction.WEST));
-        fittings.put(spot, (blockEntity, rotation) -> {
-            if (blockEntity instanceof CrewLockerBlockEntity locker) {
-                List<Item> kit = List.of(AerolargeRegistry.PILOT_HELMET.get(), AerolargeRegistry.PILOT_HELMET.get(),
-                    AerolargeRegistry.PILOT_CAP.get(), AerolargeRegistry.PILOT_CAP.get());
-                for (int slot = 0; slot < kit.size(); slot++) {
-                    locker.setItem(slot, new ItemStack(kit.get(slot)));
                 }
             }
         });

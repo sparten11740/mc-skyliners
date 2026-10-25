@@ -58,6 +58,11 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
     public static final IntegerProperty DUCK = IntegerProperty.create("duck", 0, HIDDEN_DUCKS);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     /**
+     * Whether the duck sits back on the back half of its block, {@link #PERCH} pixels behind the middle: perched on
+     * the edge of something only half a block deep, such as a locker's top, instead of hanging over the air in front.
+     */
+    public static final BooleanProperty PERCHED = BooleanProperty.create("perched");
+    /**
      * The duck drawn facing north, as boxes from one corner to the other in pixels: its body, its head on the front of
      * it, its beak out of the front of the head, and its tail cocked up at the back. The model is drawn from the same
      * boxes (tools/generate_resources.mjs).
@@ -70,10 +75,13 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
     );
     /** How far up its block a duck afloat sits, in pixels: the water stands a little over 14 high in it. */
     public static final double FLOAT = 13;
+    /** How far back from the middle of its block a perched duck sits, in pixels. */
+    public static final double PERCH = 4;
     /** A block's width in pixels, what the boxes turn about the middle of. */
     private static final double BLOCK = 16;
-    private static final Map<Direction, VoxelShape> SITTING = shapes(0);
-    private static final Map<Direction, VoxelShape> AFLOAT = shapes(FLOAT);
+    private static final Map<Direction, VoxelShape> SITTING = shapes(0, 0);
+    private static final Map<Direction, VoxelShape> AFLOAT = shapes(FLOAT, 0);
+    private static final Map<Direction, VoxelShape> SITTING_BACK = shapes(0, PERCH);
     /** The hearts as it squeaks, how far they spread and how high over its block they start. */
     private static final int HEARTS = 3;
     private static final double HEART_SPREAD = 0.25;
@@ -84,7 +92,8 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     public RubberDuckBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(DUCK, 0));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(DUCK, 0)
+            .setValue(PERCHED, false));
     }
 
     @Override
@@ -94,7 +103,7 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, WATERLOGGED, DUCK);
+        builder.add(FACING, WATERLOGGED, DUCK, PERCHED);
     }
 
     /**
@@ -110,13 +119,14 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
         };
     }
 
-    /** The duck's shape facing each way, its boxes lifted this many pixels. */
-    private static Map<Direction, VoxelShape> shapes(double lift) {
+    /** The duck's shape facing each way, its boxes lifted this many pixels and moved this many back. */
+    private static Map<Direction, VoxelShape> shapes(double lift, double back) {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
             for (double[] box : BOXES) {
-                double[] turned = turn(box, facing, BLOCK);
+                // Facing north, the duck's back is to the south, along z.
+                double[] turned = turn(new double[]{box[0], box[1], box[2] + back, box[3], box[4], box[5] + back}, facing, BLOCK);
                 shape = Shapes.or(shape, Block.box(turned[0], turned[1] + lift, turned[2], turned[3], turned[4] + lift, turned[5]));
             }
             shapes.put(facing, shape.optimize());
@@ -132,7 +142,13 @@ public class RubberDuckBlock extends HorizontalDirectionalBlock implements Simpl
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return (state.getValue(WATERLOGGED) ? AFLOAT : SITTING).get(state.getValue(FACING));
+        Map<Direction, VoxelShape> shapes = state.getValue(WATERLOGGED) ? AFLOAT : sitsBack(state) ? SITTING_BACK : SITTING;
+        return shapes.get(state.getValue(FACING));
+    }
+
+    /** Whether the duck sits back on its block, perched: not afloat, which drifts it to the middle. */
+    public static boolean sitsBack(BlockState state) {
+        return state.getValue(PERCHED) && !state.getValue(WATERLOGGED);
     }
 
     @Override
