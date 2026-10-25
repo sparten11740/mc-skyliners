@@ -244,6 +244,14 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * pack), so a hull this size still weighs little enough to fly once Create Aeronautics assembles it.
  */
 public final class AerolargeRegistry {
+    /**
+     * How hard to mine the blocks only the airliner itself places and takes away (the airstairs' and slides' steps
+     * and the control surfaces' plates, none of which can be aimed at either): as hard as a block can be, so never
+     * mined, but not unbreakable (-1), which Create Aeronautics' Physics Assembler leaves behind when it assembles
+     * the airliner, in its way as it takes off.
+     */
+    private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
+
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Aerolarge.MOD_ID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Aerolarge.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Aerolarge.MOD_ID);
@@ -459,7 +467,7 @@ public final class AerolargeRegistry {
      */
     public static final DeferredBlock<AirstairStepBlock> AIRSTAIR_STEP = BLOCKS.registerBlock(
         "airstair_step", AirstairStepBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
     );
@@ -481,7 +489,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SLIDE_CONTROL_ITEM = ITEMS.registerSimpleBlockItem(SLIDE_CONTROL);
     public static final DeferredBlock<SlideStepBlock> SLIDE_STEP = BLOCKS.registerBlock(
         "slide_step", SlideStepBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
     );
@@ -561,11 +569,11 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("autopilot", () -> BlockEntityType.Builder.of(AutopilotBlockEntity::new, AUTOPILOT.get()).build(null));
     /**
      * What the control surfaces' panels, drawn by the autopilot, are walked on: invisible plates laid with the wings, so
-     * they cannot be mined, blown up or moved, and drop nothing.
+     * they cannot be mined, blown up or pushed, and drop nothing; they move with the airliner when it is assembled.
      */
     public static final DeferredBlock<SurfacePanelBlock> SURFACE_PANEL = BLOCKS.registerBlock(
         "surface_panel", SurfacePanelBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(ONLY_EVER_PLACED, 3600000.0F).noLootTable().noOcclusion()
             .sound(SoundType.METAL).isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos) -> false).pushReaction(PushReaction.BLOCK)
     );
