@@ -272,7 +272,7 @@ public final class AerolargeRegistry {
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
-    /** The flight deck's synthetic voice: take-off and landing callouts and warnings. */
+    /** The flight deck's voice, a calm British woman's: take-off and landing callouts and warnings. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_V1 = sound("callout_v1");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_ROTATE = sound("callout_rotate");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_POSITIVE_RATE = sound("callout_positive_rate");
@@ -286,9 +286,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_BANK_ANGLE = sound("callout_bank_angle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_PULL_UP = sound("callout_pull_up");
     /**
-     * A calm British woman's voice over the cabin PA, after the chime: crew seated for take-off, for landing, and
-     * arrival; and the ones only the announcement panel makes: welcome, bumpy air, snacks, the view, the pool and gym
-     * open, and sleep.
+     * The same voice over the cabin PA, after the chime: crew seated for take-off, for landing, and arrival; and the
+     * ones only the announcement panel makes: welcome, bumpy air, snacks, the view, the pool and gym open, and sleep.
      */
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_WELCOME = sound("announcement_welcome");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_TAKEOFF = sound("announcement_takeoff");

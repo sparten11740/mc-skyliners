@@ -9,11 +9,11 @@ import { execFileSync } from "node:child_process";
 // no libvorbis, as Homebrew's FFmpeg 9 has not, oggenc from vorbis-tools, the same encoder). Given sound names, it
 // writes only those and leaves the rest as they are:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
-// - the flight deck's callouts and air traffic control over the radio, spoken by Windows' own speech synthesis
-//   (System.Speech) and then reworked (see VOICE and RADIO), so those parts run on Windows only;
-// - the cabin announcements, spoken by Kokoro, an open speech synthesis model, and played through the cabin's
-//   loudspeakers (see ANNOUNCER), on any system once kokoro-js is installed with npm install --prefix tools (the model
-//   itself is fetched on the first run).
+// - the flight deck's voice, its callouts and cabin announcements, spoken by Kokoro, an open speech synthesis model,
+//   and played through the cabin's loudspeakers (see VOICE), on any system once kokoro-js is installed with npm
+//   install --prefix tools (the model itself is fetched on the first run);
+// - air traffic control over the radio, spoken by Windows' own speech synthesis (System.Speech) and then reworked (see
+//   RADIO), so that part runs on Windows only.
 // Deterministic apart from the voices: Windows' are whatever it ships, and Kokoro's may differ by a hair from one kind
 // of processor to another.
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -943,38 +943,40 @@ const laserNoise = (() => {
   writeSound("laser_charge", samples);
 }
 
-// The flight deck's voice, for the callouts: a calm, very even, faintly synthetic woman's voice, the deadpan
-// politeness of a laboratory's AI test instructor. Windows' own speech synthesis says each line; its intonation is then
-// mostly flattened and pulled to the semitones around one note, as if tuned by machine (see tunePitch), and FFmpeg
-// colours it: a quiet monotone buzz on that note under it, as from a vocoder, crisp high-mids, a faint metallic sweep,
-// the short echo of a hard little room and a touch of digital sheen. Tune it all here.
+// The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
+// recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
+// through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along
+// the cabin overlapping it softly, and evens its level as a broadcaster's. Tune it all here.
 const VOICE = {
-  // The speech synthesis voice. Windows PowerShell's System.Speech sees only the desktop voices; Zira is the woman's.
-  name: "Microsoft Zira Desktop",
-  // How fast it speaks, as SSML prosody: unhurried.
-  rate: "-5%",
+  // Kokoro's model on Hugging Face, fetched once into tools/node_modules.
+  model: "onnx-community/Kokoro-82M-v1.0-ONNX",
+  // Kokoro's voice: Emma, its clearest British woman's.
+  voice: "bf_emma",
   // The pause a "|" in a line makes, in milliseconds.
-  pause: 650,
-  // The note its pitch is centred on, in hertz: B flat below middle C, a little above the voice's own.
-  note: 233.08,
-  // How much of the voice's own rise and fall is taken out: 0 none, 1 all of it, leaving a robot's monotone.
-  flatten: 0.75,
-  // How far what is left of it is pulled to the nearest semitone: 0 not at all, 1 into hard steps.
-  quantise: 0.7,
-  // How loud the monotone buzz is under the voice.
-  buzz: 0.35,
-  // FFmpeg's filters after the buzz, in order.
-  filters: [
-    "highpass=f=140",
-    // Crisp high-mids.
-    "equalizer=f=2800:t=q:w=1.4:g=3",
-    // A faint metallic sweep.
-    "flanger=delay=0.8:depth=0.5:regen=30:width=35:speed=0.25",
-    // A hard little room.
-    "aecho=0.9:0.5:13|29:0.18|0.1",
-    // Digital sheen.
-    "aexciter=amount=1:drive=5:blend=0:freq=6500:ceil=14000",
+  pause: 500,
+  // FFmpeg's filters for the cabin's loudspeakers, in order.
+  loudspeakers: [
+    // The cabin loudspeakers' band.
+    "highpass=f=220:poles=2",
+    "lowpass=f=7500:poles=2",
+    // Their bright middle.
+    "equalizer=f=2500:t=q:w=1.2:g=3",
+    // The speakers further along the cabin, each a little later and quieter.
+    "aecho=0.85:0.8:19|38|61:0.22|0.13|0.07",
   ],
+  // How each kind of line is said: how fast, Kokoro's own pace being 1; FFmpeg's filters after the loudspeakers', for
+  // an even level; and the peak it is written at, under the other sounds' as levelled speech is denser, so that it
+  // sounds no louder beside them.
+  // A callout crisply, compressed hard and limited, loud and even as a warning: too short for the loudness normaliser,
+  // which levels only from three seconds long.
+  callout: {
+    pace: 1,
+    levelling: ["acompressor=threshold=-30dB:ratio=3:attack=3:release=100:makeup=12dB", "alimiter=limit=0.4:attack=2:release=50:level=false"],
+    level: 0.8,
+  },
+  // An announcement unhurried, through FFmpeg's loudness normaliser, the same from one to the next, its peaks held
+  // well under.
+  announcement: { pace: 0.92, levelling: ["loudnorm=I=-18:TP=-6:LRA=6"], level: 0.72 },
 };
 // The callouts: short and clear, the warnings with a word of manners. Each must be said within CALLOUT_LONGEST.
 const CALLOUTS = {
@@ -991,38 +993,8 @@ const CALLOUTS = {
   callout_bank_angle: "Bank angle. Please do not do that.",
   callout_pull_up: "Pull up. This is not a test.",
 };
-// The cabin announcements' voice: a calm, warm British woman's, as an airline's recorded announcements are, so they
-// sound like a real cabin rather than the flight deck's machine. Kokoro (see announce) says each stretch of a line
-// between its pauses, and FFmpeg plays it through the cabin's loudspeakers: their band and the bright middle they give
-// a voice, the speakers further along the cabin overlapping it softly, and a broadcaster's even level. Tune it here.
-const ANNOUNCER = {
-  // Kokoro's model on Hugging Face, fetched once into tools/node_modules.
-  model: "onnx-community/Kokoro-82M-v1.0-ONNX",
-  // Kokoro's voice: Emma, its clearest British woman's.
-  voice: "bf_emma",
-  // How fast she speaks, Kokoro's own pace being 1: unhurried, as an announcement is.
-  speed: 0.92,
-  // The pause a "|" in a line makes, in milliseconds.
-  pause: 500,
-  // FFmpeg's filters, in order.
-  filters: [
-    // The cabin loudspeakers' band.
-    "highpass=f=220:poles=2",
-    "lowpass=f=7500:poles=2",
-    // Their bright middle.
-    "equalizer=f=2500:t=q:w=1.2:g=3",
-    // The speakers further along the cabin, each a little later and quieter.
-    "aecho=0.85:0.8:19|38|61:0.22|0.13|0.07",
-    // A broadcaster's even level, the same from one announcement to the next, its peaks held well under.
-    "loudnorm=I=-18:TP=-6:LRA=6",
-  ],
-  // The peak each announcement is written at, under the other sounds' as its levelled speech is denser, so that it
-  // sounds no louder beside them.
-  level: 0.72,
-};
-// The cabin announcements (see Announcement), each opening with the cabin chime, in ANNOUNCER's voice. A "|" is a
-// pause. The ones only the flight deck's announcement panel makes are for the youngest passengers: short, plain words,
-// and nothing to worry about.
+// The cabin announcements (see Announcement), each opening with the cabin chime. A "|" is a pause. The ones only the
+// flight deck's announcement panel makes are for the youngest passengers: short, plain words, and nothing to worry about.
 const ANNOUNCEMENTS = {
   announcement_welcome: "Hello, and welcome aboard. | This is your captain speaking. | Please sit back, relax, and enjoy the flight.",
   announcement_takeoff: "Welcome aboard. | Cabin crew, please be seated for take-off.",
@@ -1087,119 +1059,6 @@ function readWav(path) {
 }
 
 /**
- * The voice's pitch tuned by machine: its own rise and fall mostly taken out and what is left pulled to the semitones
- * round VOICE.note, keeping how long it takes to say and where its formants sit (pitch-synchronous overlap-add). The
- * pitch is found through each voiced stretch as the lag the speech best repeats at, a pitch mark is put on each
- * period's largest peak, and each period, cut out two periods long under a Hann window, is laid down again at the
- * period of the pitch wanted. Unvoiced sounds go through at a steady spacing as they are.
- */
-function tunePitch(x) {
-  const hop = Math.round(0.01 * RATE);
-  const frame = Math.round(0.03 * RATE);
-  const shortest = Math.floor(RATE / 450);
-  const longest = Math.ceil(RATE / 90);
-  let peak = 0;
-  x.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
-  const found = [];
-  for (let start = 0; start + frame + longest < x.length; start += hop) {
-    let energy = 0;
-    for (let i = 0; i < frame; i++) {
-      energy += x[start + i] ** 2;
-    }
-    let best = 0;
-    let bestLag = 0;
-    if (Math.sqrt(energy / frame) > 0.03 * peak) {
-      for (let lag = shortest; lag <= longest; lag++) {
-        let cross = 0;
-        let lagged = 0;
-        for (let i = 0; i < frame; i++) {
-          cross += x[start + i] * x[start + i + lag];
-          lagged += x[start + i + lag] ** 2;
-        }
-        const r = cross / Math.sqrt(energy * lagged + 1e-12);
-        if (r > best) {
-          best = r;
-          bestLag = lag;
-        }
-      }
-    }
-    found.push(best > 0.7 ? bestLag : 0);
-  }
-  // The middle of five neighbouring voiced frames, against slips of an octave.
-  const periods = found.map((period, i) => {
-    const near = found.slice(Math.max(0, i - 2), i + 3).filter((p) => p).sort((a, b) => a - b);
-    return period && near[Math.floor(near.length / 2)];
-  });
-  const voiced = periods.filter((p) => p).sort((a, b) => a - b);
-  if (voiced.length === 0) {
-    return x;
-  }
-  const middle = RATE / voiced[Math.floor(voiced.length / 2)];
-  const periodAt = (at) => periods[Math.min(periods.length - 1, Math.max(0, Math.floor((at - frame / 2) / hop)))] ?? 0;
-
-  const unvoicedStep = Math.round(0.006 * RATE);
-  const marks = [];
-  for (let at = 0; at < x.length;) {
-    const period = periodAt(at);
-    if (!period) {
-      marks.push({ at, period: unvoicedStep, voiced: false });
-      at += unvoicedStep;
-      continue;
-    }
-    let mark = at;
-    const reach = Math.round(0.3 * period);
-    for (let i = Math.max(0, at - reach); i <= Math.min(x.length - 1, at + reach); i++) {
-      if (Math.abs(x[i]) > Math.abs(x[mark])) {
-        mark = i;
-      }
-    }
-    const last = marks[marks.length - 1];
-    if (last && mark <= last.at) {
-      mark = last.at + Math.round(period / 2);
-    }
-    marks.push({ at: mark, period, voiced: true });
-    at = mark + period;
-  }
-
-  const tuned = new Float64Array(x.length);
-  const weight = new Float64Array(x.length);
-  let k = 0;
-  for (let at = marks[0].at; at < x.length;) {
-    while (k + 1 < marks.length && Math.abs(marks[k + 1].at - at) <= Math.abs(marks[k].at - at)) {
-      k++;
-    }
-    const mark = marks[k];
-    for (let i = -mark.period; i <= mark.period; i++) {
-      const from = mark.at + i;
-      const to = at + i;
-      if (from >= 0 && from < x.length && to >= 0 && to < x.length) {
-        const w = 0.5 + 0.5 * Math.cos((Math.PI * i) / (mark.period + 1));
-        tuned[to] += w * x[from];
-        weight[to] += w;
-      }
-    }
-    let step = mark.period;
-    if (mark.voiced) {
-      const semitones = Math.max(-8, Math.min(8, 12 * Math.log2(RATE / mark.period / middle))) * (1 - VOICE.flatten);
-      const stepped = semitones + VOICE.quantise * (Math.round(semitones) - semitones);
-      step = Math.round(RATE / (VOICE.note * 2 ** (stepped / 12)));
-    }
-    at += step;
-  }
-  // Divided by the windows' overlap, so a period laid down more often than it came does not come out louder.
-  return tuned.map((s, i) => s / Math.max(1, weight[i]));
-}
-
-/** The voice's colouring (see VOICE): the monotone buzz under it on VOICE.note, then the filters. */
-function colour(input, output) {
-  // A phase vocoder's frames with their phases zeroed ring at the frame rate: hop the frames at the note.
-  const hop = Math.round(RATE / VOICE.note);
-  const buzz = `afftfilt=real='hypot(re,im)':imag='0':win_size=${4 * hop}:overlap=0.75`;
-  const graph = `asplit[voice][robot];[robot]${buzz}[buzz];[voice][buzz]amix=inputs=2:weights='1 ${VOICE.buzz}':normalize=0,${VOICE.filters.join(",")}`;
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-filter_complex", graph, "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", output]);
-}
-
-/**
  * The line, at the generator's rate or the one given in hertz, with the quiet before and after it cut away, but for a
  * moment either side, and its tail faded out.
  */
@@ -1232,8 +1091,8 @@ function announcement(voice) {
 }
 
 /**
- * Says every line with the speech synthesis in the given voice (its name, rate and pause, as in VOICE), all in one go,
- * into WAVs in the scratch folder; false, saying what is left as it is, if the voice is not installed.
+ * Says every line with the speech synthesis in the given voice (its name, rate and pause, as in RADIO.voice), all in
+ * one go, into WAVs in the scratch folder; false, saying what is left as it is, if the voice is not installed.
  */
 function speak(lines, voice, what) {
   const ssml = (text) => {
@@ -1270,12 +1129,8 @@ function speak(lines, voice, what) {
   }
 }
 
-/**
- * Says every line with Kokoro in ANNOUNCER's voice, each stretch between its pauses on its own with the quiet round it
- * trimmed and the pause put between, and plays it through ANNOUNCER's filters into a WAV at the generator's rate in the
- * scratch folder; false, saying what is left as it is, if kokoro-js is not installed.
- */
-async function announce(lines) {
+/** Kokoro, ready to speak; null, saying what is left as it is, if kokoro-js is not installed. */
+async function kokoro() {
   let KokoroTTS;
   try {
     ({ KokoroTTS } = await import("kokoro-js"));
@@ -1283,19 +1138,27 @@ async function announce(lines) {
     if (error.code !== "ERR_MODULE_NOT_FOUND") {
       throw error;
     }
-    console.log("Kokoro is not installed (npm install --prefix tools): leaving the cabin announcements as they are");
-    return false;
+    console.log("Kokoro is not installed (npm install --prefix tools): leaving the callouts and announcements as they are");
+    return null;
   }
-  const kokoro = await KokoroTTS.from_pretrained(ANNOUNCER.model, { dtype: "fp32", device: "cpu" });
+  return KokoroTTS.from_pretrained(VOICE.model, { dtype: "fp32", device: "cpu" });
+}
+
+/**
+ * Says every line with Kokoro in VOICE as the kind of line given (VOICE.callout or VOICE.announcement), each stretch
+ * between its pauses on its own with the quiet round it trimmed and the pause put between, and plays it through the
+ * loudspeakers and that kind's levelling into a WAV at the generator's rate in the scratch folder.
+ */
+async function say(speaker, lines, kind) {
   for (const [name, text] of Object.entries(lines)) {
     let rate = RATE;
     const parts = [];
     for (const part of text.split("|")) {
-      const spoken = await kokoro.generate(part.trim(), { voice: ANNOUNCER.voice, speed: ANNOUNCER.speed });
+      const spoken = await speaker.generate(part.trim(), { voice: VOICE.voice, speed: kind.pace });
       rate = spoken.sampling_rate;
       parts.push(trim(Float64Array.from(spoken.audio), rate));
     }
-    const pause = Math.round((ANNOUNCER.pause / 1000) * rate);
+    const pause = Math.round((VOICE.pause / 1000) * rate);
     const joined = new Float64Array(parts.reduce((sum, p) => sum + p.length, 0) + pause * (parts.length - 1));
     let at = 0;
     for (const p of parts) {
@@ -1306,34 +1169,31 @@ async function announce(lines) {
     joined.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
     const said = join(scratch, `${name}.said.wav`);
     writeWav(said, Array.from(joined, (s) => (s / peak) * 0.5), rate);
-    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", ANNOUNCER.filters.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", join(scratch, `${name}.announced.wav`)]);
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", [...VOICE.loudspeakers, ...kind.levelling].join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", join(scratch, `${name}.voiced.wav`)]);
   }
-  return true;
 }
 
-if (process.platform !== "win32") {
-  console.log("Not on Windows: leaving the callouts as they are");
-} else if (speak(CALLOUTS, VOICE, "the callouts")) {
-  for (const name of Object.keys(CALLOUTS)) {
-    const tuned = join(scratch, `${name}.tuned.wav`);
-    const coloured = join(scratch, `${name}.coloured.wav`);
-    writeWav(tuned, tunePitch(readWav(join(scratch, `${name}.said.wav`))));
-    colour(tuned, coloured);
-    const voice = trim(readWav(coloured));
-    if (voice.length > CALLOUT_LONGEST * RATE) {
-      throw new Error(`${name} runs ${(voice.length / RATE).toFixed(1)} s, longer than ${CALLOUT_LONGEST} s: shorten it or speed the voice up`);
-    }
-    writeSound(name, voice);
+/**
+ * Writes a line said in VOICE as the named sound at the kind of line's level, refusing one that runs longer than the
+ * seconds given.
+ */
+function writeVoiced(name, samples, kind, longest) {
+  if (samples.length > longest * RATE) {
+    throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
   }
+  writeSound(name, samples, kind.level);
 }
-if (await announce(ANNOUNCEMENTS)) {
+
+const speaker = await kokoro();
+if (speaker) {
+  await say(speaker, CALLOUTS, VOICE.callout);
+  for (const name of Object.keys(CALLOUTS)) {
+    writeVoiced(name, trim(readWav(join(scratch, `${name}.voiced.wav`))), VOICE.callout, CALLOUT_LONGEST);
+  }
+  await say(speaker, ANNOUNCEMENTS, VOICE.announcement);
   for (const name of Object.keys(ANNOUNCEMENTS)) {
-    const samples = announcement(trim(readWav(join(scratch, `${name}.announced.wav`))));
     const longest = name === "announcement_takeoff" ? TAKEOFF_LONGEST : ANNOUNCEMENT_LONGEST;
-    if (samples.length > longest * RATE) {
-      throw new Error(`${name} runs ${(samples.length / RATE).toFixed(1)} s, longer than ${longest} s: shorten it or speed the voice up`);
-    }
-    writeSound(name, samples, ANNOUNCER.level);
+    writeVoiced(name, announcement(trim(readWav(join(scratch, `${name}.voiced.wav`)))), VOICE.announcement, longest);
   }
 }
 

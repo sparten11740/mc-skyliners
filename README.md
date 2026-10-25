@@ -203,11 +203,11 @@ to open the settings). There a flight display in the panel stands in front of ea
 on top of the autopilot screen, as one glass unit with it. Airliners built before keep the flight deck they were
 built with.
 
-The flight deck's voice, a calm, very even, faintly synthetic woman's voice, unfailingly polite and not easily
-impressed, calls out the take-off (V1, rotate, positive rate) and the landing (the height above the ground from a
-hundred down to ten, then retard), and warns of too much bank ("Bank angle. Please do not do that.") or sinking too
-fast too low ("Pull up. This is not a test."), whoever flies. The cabin announcements (see below) are a voice of
-their own: a calm, warm British woman's, as on an airline's recorded announcements, over the cabin's loudspeakers.
+The flight deck's voice, a calm, warm British woman's voice, unfailingly polite and not easily impressed, calls out
+the take-off (V1, rotate, positive rate) and the landing (the height above the ground from a hundred down to ten, then
+retard), and warns of too much bank ("Bank angle. Please do not do that.") or sinking too fast too low ("Pull up. This
+is not a test."), whoever flies. The same voice makes the autopilot's cabin announcements (see below), as on an
+airline's recorded announcements, over the cabin's loudspeakers.
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
 off with `cameraShake` in the client config.
 
@@ -305,7 +305,7 @@ is a radio call instead. A Tower Radio (craftable) is for the airfield: whatever
 radio. A radio call crackles in for everyone near any radio within 4096 blocks, the handsets of airliners in flight
 included. Either way the message is left out of ordinary chat; use the handset or radio again to put it down.
 
-The autopilot makes announcements of its own, in a British woman's voice after the same chime, and everyone aboard
+The autopilot makes announcements of its own, in the flight deck's voice after the same chime, and everyone aboard
 hears them wherever they are in the cabin. Set to take off (Take Off, on the ground), it welcomes everyone aboard and
 asks the cabin crew to be seated for take-off; set to land (Land), it asks everyone back to their seats and the crew to
 be seated for landing; and once the airliner has landed and stopped, however it was flown (on the autopilot or on the
@@ -1344,19 +1344,18 @@ blockstates, models, loot tables, tags, recipes and lang file. The door and the 
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
 `node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any) with FFmpeg, and with
-`oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is synthesised, and the flight deck's
-voice (the callouts) is spoken by Windows' own speech synthesis ("Microsoft Zira"), so that part runs on Windows only.
-The script then flattens the voice's intonation and tunes it to the semitones around one note, and FFmpeg adds a faint
-vocoder buzz on that note, a metallic sweep and the echo of a small hard room; the settings for all of it are together
-in `VOICE`, to tune it. The cabin announcements are spoken by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an
-open speech synthesis model under the Apache License 2.0, in its British woman's voice Emma, on any system: install it
-once with `npm install --prefix tools` (the model, some 300 MB, is fetched into `tools/node_modules` on the first
-run), or the announcements are left as they are. FFmpeg plays them through the cabin's loudspeakers: their band, a
-bright middle, the speakers further along the cabin and a broadcaster's even level, all set in `ANNOUNCER`. Air
-traffic control is Windows' man's voice ("Microsoft David"), through a VHF radio: FFmpeg squeezes it into the radio's
-band (about 300 to 3000 Hz), compresses, clips and bit-crushes it a little, and the script lays it over the carrier's
-hiss with the odd crackle, between the squelch's click as the button is pressed and the burst of noise as it is let
-go; other aircraft are the same voice pitched up or down. Its settings and every line said are in `RADIO` and `ATC`.
+`oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is
+synthesised, and the flight deck's voice (the callouts and the cabin announcements) is spoken by
+[Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open speech synthesis model under the Apache License 2.0, in
+its British woman's voice Emma, on any system: install it once with `npm install --prefix tools` (the model, some
+300 MB, is fetched into `tools/node_modules` on the first run), or the voice is left as it is. FFmpeg plays it through
+the cabin's loudspeakers, their band, a bright middle and the speakers further along the cabin, and evens its level:
+the callouts compressed hard, crisp as warnings, the announcements through a loudness normaliser. The settings for all
+of it are together in `VOICE`, to tune it. Air traffic control is Windows' own speech synthesis, its man's voice
+("Microsoft David"), so that part runs on Windows only, through a VHF radio: FFmpeg squeezes it into the radio's band
+(about 300 to 3000 Hz), compresses, clips and bit-crushes it a little, and the script lays it over the carrier's hiss
+with the odd crackle, between the squelch's click as the button is pressed and the burst of noise as it is let go;
+other aircraft are the same voice pitched up or down. Its settings and every line said are in `RADIO` and `ATC`.
 
 ## License
 

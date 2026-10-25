@@ -449,8 +449,8 @@ function heardAboard(name) {
   return { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}`, attenuation_distance: HEARD_ABOARD }] };
 }
 
-// The flight deck's voice and the cabin announcer's (see tools/generate_sounds.mjs): each callout and cabin
-// announcement, subtitled with what it says, the announcements' gist.
+// The flight deck's voice (see tools/generate_sounds.mjs): each callout and cabin announcement, subtitled with what it
+// says, the announcements' gist.
 const VOICE_SUBTITLES = {
   callout_v1: "Callout: V one",
   callout_rotate: "Callout: Rotate",
