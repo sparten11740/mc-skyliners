@@ -22,11 +22,15 @@ import dev.aerolarge.cabin.AirPockets;
 import dev.aerolarge.cabin.Decompression;
 import dev.aerolarge.cabin.LightningStrikes;
 import dev.aerolarge.cabin.Turbulence;
+import dev.aerolarge.compat.PhysicsAssembler;
 import dev.aerolarge.compat.SableFlight;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -151,6 +155,24 @@ public class AutopilotBlockEntity extends BlockEntity {
         /** Whether these settings fly to the pin to land near it. */
         public boolean landsAtPin() {
             return lateral == Lateral.DESTINATION && landAtPin;
+        }
+
+        CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("Speed", speed);
+            tag.putInt("Altitude", altitude);
+            tag.putInt("Heading", heading);
+            tag.putString("Lateral", lateral.name());
+            tag.putInt("Radius", radius);
+            tag.putLong("Destination", destination.asLong());
+            tag.putBoolean("LandAtPin", landAtPin);
+            return tag;
+        }
+
+        static Settings load(CompoundTag tag) {
+            return new Settings(tag.getInt("Speed"), tag.getInt("Altitude"), tag.getInt("Heading"),
+                parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING), tag.getInt("Radius"),
+                BlockPos.of(tag.getLong("Destination")), tag.getBoolean("LandAtPin"));
         }
     }
 
@@ -299,6 +321,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double GEAR_UP_HEIGHT = 10;
     /** Set to take off with its gear not down, the longest it holds the brakes for the gear to come down, in ticks. */
     private static final int GEAR_WAIT = 20 * 20;
+    /**
+     * How far either way from it, in blocks, an airliner built before the autopilot knew where its Physics Assembler
+     * is has it looked for, once: the flight deck and a good way round it, as far as the assembler ever stood.
+     */
+    private static final int ASSEMBLER_SEARCH = 12;
     /** Slower than this, in blocks a second, it has stopped. */
     private static final double STOPPED = 0.5;
     /** How long the airliner flies on with nobody aboard before it lands by itself, in ticks: a minute. */
@@ -353,6 +380,18 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean gearRaised;
     /** Set to take off, until when it holds the brakes for the gear to come down, in game ticks. */
     private long gearWaitUntil;
+    /** The airliner's Physics Assembler, as an offset from it; null while not known (see {@link #assemblerAt}). */
+    @Nullable
+    private BlockPos assembler;
+    /**
+     * What to fly once aboard, asked for before the airliner was assembled: kept as it assembles and goes with the
+     * autopilot into the new airliner's blocks, there to engage with on its first tick (see {@link #assembleToFly}).
+     */
+    @Nullable
+    private Settings flyOnceAboard;
+    /** Who asked for {@link #flyOnceAboard}, to be told how it goes even before they count as aboard. */
+    @Nullable
+    private UUID flyOnceAboardFor;
     private Phase phase = Phase.OFF;
     private Lateral lateral = Lateral.HEADING;
     /** The heading to hold, as Minecraft yaw; the height to hold, in world blocks; the speed, in blocks a second. */
@@ -437,6 +476,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Wired when the airliner is built: the landing gear lever, as an offset from it; null without retractable gear. */
     public void wireGear(@Nullable BlockPos lever) {
         gearLever = lever;
+        setChanged();
+    }
+
+    /** Wired when the airliner is built: its Physics Assembler, as an offset from it; null without one. */
+    public void wireAssembler(@Nullable BlockPos at) {
+        assembler = at;
         setChanged();
     }
 
@@ -598,6 +643,73 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
+     * Fly asked for while the airliner is not assembled: its Physics Assembler assembles it, worked as a Create
+     * deployer works it (see {@link PhysicsAssembler}), and the autopilot, aboard then, flies the settings on its first
+     * tick there. Says what happens, or why it cannot; null when the airliner is assembled already, for {@link #set}.
+     */
+    @Nullable
+    public Component assembleToFly(ServerPlayer player, Settings settings) {
+        if (!(level instanceof ServerLevel server) || SableFlight.read(this, nose()) != null) {
+            return null;
+        }
+        BlockPos at = assemblerAt(server);
+        if (at == null) {
+            return Component.translatable("message.aerolarge.autopilot.not_assembled");
+        }
+        // Noted before it assembles, so the autopilot takes it along into the new airliner's blocks.
+        flyOnceAboard = settings;
+        flyOnceAboardFor = player.getUUID();
+        setChanged();
+        Component failed = PhysicsAssembler.assemble(server, at, player);
+        if (failed == null) {
+            return Component.translatable("message.aerolarge.autopilot.assembling");
+        }
+        flyOnceAboard = null;
+        flyOnceAboardFor = null;
+        setChanged();
+        return Component.translatable("message.aerolarge.autopilot.assembly_failed", failed);
+    }
+
+    /**
+     * Where the airliner's Physics Assembler is: as wired when it was built or, for an airliner built before, the first
+     * found round the autopilot, remembered from then on; null for none.
+     */
+    @Nullable
+    private BlockPos assemblerAt(ServerLevel level) {
+        if (assembler != null && PhysicsAssembler.is(level.getBlockState(worldPosition.offset(assembler)))) {
+            return worldPosition.offset(assembler);
+        }
+        BlockPos from = worldPosition.offset(-ASSEMBLER_SEARCH, -ASSEMBLER_SEARCH, -ASSEMBLER_SEARCH);
+        BlockPos to = worldPosition.offset(ASSEMBLER_SEARCH, ASSEMBLER_SEARCH, ASSEMBLER_SEARCH);
+        for (BlockPos at : BlockPos.betweenClosed(from, to)) {
+            if (level.isLoaded(at) && PhysicsAssembler.is(level.getBlockState(at))) {
+                assembler = at.subtract(worldPosition);
+                setChanged();
+                return at.immutable();
+            }
+        }
+        return null;
+    }
+
+    /** Aboard the airliner just assembled for it: engages as asked, telling who asked and everyone aboard. */
+    private void flyOnceAboard(ServerLevel level) {
+        Settings settings = flyOnceAboard;
+        UUID askedBy = flyOnceAboardFor;
+        flyOnceAboard = null;
+        flyOnceAboardFor = null;
+        setChanged();
+        Component said = set(SetAutopilot.Action.FLY, settings);
+        Set<ServerPlayer> told = new HashSet<>(Aboard.players(this));
+        if (askedBy != null && level.getPlayerByUUID(askedBy) instanceof ServerPlayer asker) {
+            told.add(asker);
+        }
+        for (ServerPlayer player : told) {
+            player.displayClientMessage(said, false);
+        }
+        level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
+    }
+
+    /**
      * Opens the settings screen for a player, filled in with what the autopilot flies now or, switched off, what
      * engaging it now would fly, and the lowest and highest heights it can be set to hold.
      */
@@ -617,7 +729,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
             phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius), BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
         double floor = floor(plan.runway());
-        PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF,
+        boolean assembles = state == null && level instanceof ServerLevel server && assemblerAt(server) != null;
+        PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF, assembles,
             Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level)))));
     }
 
@@ -874,6 +987,9 @@ public class AutopilotBlockEntity extends BlockEntity {
             autopilot.surfaces.rest(serverLevel, pos);
             autopilot.showSurfaces(serverLevel);
             return;
+        }
+        if (autopilot.flyOnceAboard != null) {
+            autopilot.flyOnceAboard(serverLevel);
         }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
         double radio = autopilot.radioAltitude(serverLevel, flight);
@@ -1568,6 +1684,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         relays.replaceAll((channel, offsets) -> Turning.turn(offsets, turn));
         controls = Turning.turn(controls, turn);
         gearLever = Turning.turn(gearLever, turn);
+        assembler = Turning.turn(assembler, turn);
         surfaces.turn(turn);
         setChanged();
     }
@@ -1599,6 +1716,15 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putInt("WheelsBelow", wheelsBelow);
         if (gearLever != null) {
             tag.putLong("GearLever", gearLever.asLong());
+        }
+        if (assembler != null) {
+            tag.putLong("Assembler", assembler.asLong());
+        }
+        if (flyOnceAboard != null) {
+            tag.put("FlyOnceAboard", flyOnceAboard.save());
+        }
+        if (flyOnceAboardFor != null) {
+            tag.putUUID("FlyOnceAboardFor", flyOnceAboardFor);
         }
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
@@ -1653,6 +1779,10 @@ public class AutopilotBlockEntity extends BlockEntity {
             wheelsBelow = tag.getInt("WheelsBelow");
             // Saved without one by an airliner built before the gear retracted.
             gearLever = tag.contains("GearLever") ? Turning.turn(BlockPos.of(tag.getLong("GearLever")), turn) : null;
+            // Saved without one by an airliner built before it could assemble its airliner: looked for when wanted.
+            assembler = tag.contains("Assembler") ? Turning.turn(BlockPos.of(tag.getLong("Assembler")), turn) : null;
+            flyOnceAboard = tag.contains("FlyOnceAboard") ? Settings.load(tag.getCompound("FlyOnceAboard")) : null;
+            flyOnceAboardFor = tag.hasUUID("FlyOnceAboardFor") ? tag.getUUID("FlyOnceAboardFor") : null;
             governing = tag.getBoolean("Governing");
             climbingOut = tag.getBoolean("ClimbingOut");
             // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.

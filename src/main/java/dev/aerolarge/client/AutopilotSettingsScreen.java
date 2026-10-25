@@ -123,6 +123,8 @@ public class AutopilotSettingsScreen extends Screen {
     private final BlockPos pos;
     /** Whether engaging takes off, so the button says so. */
     private final boolean takeoff;
+    /** Whether the airliner is not assembled but engaging has its Physics Assembler assemble it, so it may engage. */
+    private final boolean assembles;
     private Lateral lateral;
     /** Whether, flying to the pin, it lands near it rather than circling it. */
     private boolean landAtPin;
@@ -150,6 +152,7 @@ public class AutopilotSettingsScreen extends Screen {
         Settings settings = opened.settings();
         pos = opened.pos();
         takeoff = opened.takeoff();
+        assembles = opened.assembles();
         lateral = settings.lateral();
         landAtPin = settings.landAtPin();
         heading = new Setting("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, AutopilotBlockEntity.HEADING_STEP, HEADING_DETENT, true);
@@ -249,7 +252,7 @@ public class AutopilotSettingsScreen extends Screen {
         boolean toPin = lateral == Lateral.DESTINATION;
         boolean pinned = !toPin || map.pin() != null;
         engage.visible = !on;
-        engage.active = assembled && pinned;
+        engage.active = (assembled || assembles) && pinned;
         apply.visible = on;
         // Once down after landing it only brakes to a stop; landing, applying goes around, whatever is set; otherwise
         // only something set anew is worth applying.
@@ -407,6 +410,9 @@ public class AutopilotSettingsScreen extends Screen {
                 String hint = takeoff ? "screen.aerolarge.autopilot_settings.take_off_hint" : "screen.aerolarge.autopilot_settings.engage_hint";
                 graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, PanelArt.GREY, false);
             }
+        } else if (assembles) {
+            graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings.assemble_hint"), glassTextX(), top + SET_Y,
+                PanelArt.GREY, false);
         }
 
         // The mode chosen, by name, after its pictures.

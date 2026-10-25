@@ -10,16 +10,19 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Sent to a player who used the autopilot or its screen: open the autopilot's settings screen, filled in with what it
- * flies now (or would fly if engaged now), whether engaging it would take off, and the lowest and highest heights it
- * can be set to hold there.
+ * flies now (or would fly if engaged now), whether engaging it would take off, whether the airliner is not assembled
+ * but engaging has its Physics Assembler assemble it first, and the lowest and highest heights it can be set to hold
+ * there.
  */
-public record OpenAutopilotScreen(BlockPos pos, AutopilotBlockEntity.Settings settings, boolean takeoff, int minAltitude, int maxAltitude)
+public record OpenAutopilotScreen(BlockPos pos, AutopilotBlockEntity.Settings settings, boolean takeoff, boolean assembles, int minAltitude,
+                                  int maxAltitude)
     implements CustomPacketPayload {
     public static final Type<OpenAutopilotScreen> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "open_autopilot_screen"));
     public static final StreamCodec<FriendlyByteBuf, OpenAutopilotScreen> STREAM_CODEC = StreamCodec.composite(
         BlockPos.STREAM_CODEC, OpenAutopilotScreen::pos,
         AutopilotBlockEntity.Settings.STREAM_CODEC, OpenAutopilotScreen::settings,
         ByteBufCodecs.BOOL, OpenAutopilotScreen::takeoff,
+        ByteBufCodecs.BOOL, OpenAutopilotScreen::assembles,
         ByteBufCodecs.VAR_INT, OpenAutopilotScreen::minAltitude,
         ByteBufCodecs.VAR_INT, OpenAutopilotScreen::maxAltitude,
         OpenAutopilotScreen::new

@@ -3,6 +3,7 @@ package dev.aerolarge.autopilot;
 import dev.aerolarge.Aerolarge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -46,8 +47,10 @@ public record SetAutopilot(BlockPos pos, Action action, AutopilotBlockEntity.Set
         if (autopilot == null) {
             return;
         }
+        // Asked to fly an airliner not yet assembled, it assembles it first, if it can, and flies once aboard.
+        Component assembling = payload.action() == Action.FLY ? autopilot.assembleToFly(player, payload.settings()) : null;
         // In chat, with the autopilot's other messages (engaged, landing, landed, off), to be read again.
-        player.displayClientMessage(autopilot.set(payload.action(), payload.settings()), false);
+        player.displayClientMessage(assembling != null ? assembling : autopilot.set(payload.action(), payload.settings()), false);
         player.level().playSound(null, payload.pos(), SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.6F, 1.4F);
     }
 }

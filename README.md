@@ -389,7 +389,9 @@ down just past the threshold and braking to a stop on the centre line. Everyone 
 Numbers.
 
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
-flies them.
+flies them. Engaged on an airliner not yet assembled, the autopilot first has its Physics Assembler assemble it, as a
+Create deployer works the assembler, and engages with the settings once the airliner is assembled, telling everyone
+aboard; with no assembler aboard, or one that cannot assemble it, it says so and why.
 Engaged on an assembled airliner standing on the ground (the button says Take Off), it takes off: it has the
 airstairs folded away, any evacuation slide packed and the gear down first (down on the ground they would hold the airliner where it
 stands), and once they are and the tower has cleared it (a few seconds on the brakes, see Announcements and the radio;
@@ -1240,7 +1242,8 @@ looks into its WC, in the airliner's frame through `SableFlight` once it is asse
 `ShellGeometry`'s shapes, which `ShellModel` bakes, and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `AutopilotBlockEntity`
 flies (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks
-`ControlSurfaces` turns over), reading the airliner from Sable
+`ControlSurfaces` turns over), assembling its airliner when engaged on one not yet assembled through
+`PhysicsAssembler`, which works the assembler as a Create deployer does, reading the airliner from Sable
 through `SableFlight`, which also keeps the cabin's trolleys, basketballs and
 paper planes among an assembled airliner's blocks while they are inside its hull (`#sable:retain_in_sub_level`) and
 puts them out into the world at the airliner's speed once they leave it; the controls, slides, airstairs and other

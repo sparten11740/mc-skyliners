@@ -31,7 +31,8 @@ feature as a player meets it, and its Building section says which classes do wha
   payloads. The client draws its screens in `client/` (`AutopilotSettingsScreen`, `DestinationMap`,
   `AutopilotScreenRenderer`).
 - `client/`: everything that only runs on the client: renderers, screens, maps, the HUD, `SableClient`.
-- `compat/`: `SableFlight`, the server's only way into Sable; `Ultrasplosive`.
+- `compat/`: `SableFlight`, the server's only way into Sable; `PhysicsAssembler`, which works the Physics Assembler
+  as a Create deployer does; `Ultrasplosive`.
 - `cabin/`, `airport/`, `radar/`, `radio/`, `entity/`, `item/`, `parachute/`: features by area, each with its own
   payload records.
 - `mixin/`: mixins, as a last resort (see below).

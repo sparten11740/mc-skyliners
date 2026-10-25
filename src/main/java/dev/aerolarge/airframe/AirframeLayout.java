@@ -259,6 +259,9 @@ public final class AirframeLayout {
     private BlockPos laserSwitch;
     /** Where the flight deck leaves room for the Physics Assembler, by the wall behind the captain; null without a flight deck. */
     private BlockPos assemblerSpot;
+    /** Where the Physics Assembler went, which the autopilot is told; null without one. */
+    @Nullable
+    private BlockPos assemblerAt;
     /** The jump light switch in the instrument panel; null without a flight deck. */
     private BlockPos jumpSwitch;
     /** The seatbelt switch in the instrument panel; null without a flight deck. */
@@ -1925,6 +1928,7 @@ public final class AirframeLayout {
                 channels.forEach((channel, relays) -> turned.put(channel, offsets(at, relays, rotation)));
                 autopilot.configure(turned, offsets(at, controls, rotation), at.getY() - ground);
                 autopilot.wireGear(gearLever == null ? null : gearLever.subtract(at).rotate(rotation));
+                autopilot.wireAssembler(assemblerAt == null ? null : assemblerAt.subtract(at).rotate(rotation));
                 List<BlockPos> frame = offsets(at, frameCorners(), rotation);
                 autopilot.frame(frame.get(0), frame.get(1));
                 Map<AutopilotBlockEntity.Channel, List<BlockPos>> turnedSurfaces = new EnumMap<>(AutopilotBlockEntity.Channel.class);
@@ -3065,11 +3069,13 @@ public final class AirframeLayout {
         palette.assembler().ifPresent(state -> {
             if (assemblerSpot != null && isOpen(assemblerSpot.getX(), assemblerSpot.getY(), assemblerSpot.getZ())) {
                 set(assemblerSpot.getX(), assemblerSpot.getY(), assemblerSpot.getZ(), state);
+                assemblerAt = assemblerSpot;
                 return;
             }
             for (int z = (int) Math.round(0.7 * NOSE_LENGTH * scale); z < LENGTH * scale; z++) {
                 if (isOpen(0, floorY + 1, z) && isCabinFloor(0, floorY, z)) {
                     set(0, floorY + 1, z, state);
+                    assemblerAt = new BlockPos(0, floorY + 1, z);
                     return;
                 }
             }
