@@ -318,7 +318,8 @@ Welcome (someone waving hello), Take-off (the airliner climbing off a runway; th
 Seatbelts (a cloud over bumpy air and a buckled belt: bumpy air ahead, seatbelt signs on), Snacks (a cup and a
 cookie: drinks and snacks are coming), Look out (a cabin window onto the sky and mountains), Pool & gym (a basketball
 over the pool: seatbelt signs off, the pool and the gym open), Sleep (the moon and stars: the cabin lights go down to
-their night glow), Landing (the airliner coming down to a runway) and Arrival (a heart over the parked airliner). A
+their night glow), Landing (the airliner coming down to a runway) and Arrival (a heart over the parked airliner). Where the panel reaches back behind the seats its rows run the other way, so the
+first row, Welcome, Take-off and Seatbelts, hangs right over the seats, within a seated pilot's reach. A
 tile glows in its colour while it can be pressed, lights up and pulses while its announcement plays, blinks while it
 waits for the flight deck's voice to be free, and greys out while another is playing and for twenty seconds after its
 own. An Announcement Panel can be crafted and put up in your own builds too, against the underside of a block, its

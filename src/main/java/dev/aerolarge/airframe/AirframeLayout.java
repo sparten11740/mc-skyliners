@@ -2019,7 +2019,7 @@ public final class AirframeLayout {
     private boolean announcementPanelAt(int y, int seatZ, BlockPos autopilot) {
         for (int back = seatZ; back < seatZ + AnnouncementPanelBlock.ROWS; back++) {
             if (announcementPanelFits(y, back)) {
-                hangAnnouncementPanel(y, back, autopilot);
+                hangAnnouncementPanel(y, back, back > seatZ, autopilot);
                 return true;
             }
         }
@@ -2044,8 +2044,12 @@ public final class AirframeLayout {
         return true;
     }
 
-    /** Hangs the announcement panel at height y with its back row at station back, boxed in up to the crown. */
-    private void hangAnnouncementPanel(int y, int back, BlockPos autopilot) {
+    /**
+     * Hangs the announcement panel at height y with its back row at station back, boxed in up to the crown; its rows
+     * reversed where it reaches back behind the seats, so the flight's first row, the calls before departure, hangs
+     * over them (see {@link AnnouncementPanelBlock#REVERSED}).
+     */
+    private void hangAnnouncementPanel(int y, int back, boolean reversed, BlockPos autopilot) {
         int left = -(AnnouncementPanelBlock.COLUMNS / 2);
         int front = back - AnnouncementPanelBlock.ROWS + 1;
         for (int z = front; z <= back; z++) {
@@ -2055,7 +2059,8 @@ public final class AirframeLayout {
         }
         // Facing the nose, as its viewers do: part 0 is the back row's left and the rows go forward from there, the
         // columns to the right (east, facing north).
-        BlockState panel = AerolargeRegistry.ANNOUNCEMENT_PANEL.get().defaultBlockState().setValue(AnnouncementPanelBlock.FACING, Direction.NORTH);
+        BlockState panel = AerolargeRegistry.ANNOUNCEMENT_PANEL.get().defaultBlockState().setValue(AnnouncementPanelBlock.FACING, Direction.NORTH)
+            .setValue(AnnouncementPanelBlock.REVERSED, reversed);
         for (int part = 0; part < AnnouncementPanelBlock.COLUMNS * AnnouncementPanelBlock.ROWS; part++) {
             set(left + part % AnnouncementPanelBlock.COLUMNS, y, back - part / AnnouncementPanelBlock.COLUMNS, panel.setValue(AnnouncementPanelBlock.PART, part));
         }

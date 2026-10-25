@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -35,6 +36,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@link AnnouncementPanelBlockEntity}). Every block of it is this block; PART says which, counting along the row
  * nearest the viewer from their left and then on, row by row, away from them, as the tiles read from the top; part 0
  * holds the block entity and draws the whole of it. FACING is the way whoever looks up at it faces, toward the nose.
+ * REVERSED runs the rows the other way, the flight's first row furthest from the viewer: on a flight deck where the
+ * panel reaches back behind the pilots' seats, that row hangs over the seats, within the seated pilots' reach.
  * Put up by hand against the underside of a block, it hangs there with the middle tile where it was put, facing the
  * way whoever puts it there faces, if there is room for all of it; every part goes up at once. Taking any part away
  * takes the whole panel, which drops one panel from part 0.
@@ -44,6 +47,7 @@ public class AnnouncementPanelBlock extends HorizontalDirectionalBlock implement
     public static final int COLUMNS = 3;
     public static final int ROWS = 3;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
+    public static final BooleanProperty REVERSED = BooleanProperty.create("reversed");
     /**
      * How deep the panel hangs from the top of its blocks, in pixels: a quarter block, a slim panel close under the
      * ceiling, its face, the tiles, its underside.
@@ -55,7 +59,7 @@ public class AnnouncementPanelBlock extends HorizontalDirectionalBlock implement
 
     public AnnouncementPanelBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, 0));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, 0).setValue(REVERSED, false));
     }
 
     @Override
@@ -65,12 +69,28 @@ public class AnnouncementPanelBlock extends HorizontalDirectionalBlock implement
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, PART);
+        builder.add(FACING, PART, REVERSED);
     }
 
     /** The viewer's right, looking up at the panel facing this way. */
     public static Direction right(Direction facing) {
         return facing.getClockWise();
+    }
+
+    /** The announcement a part of the panel shows. */
+    public static Announcement announcement(BlockState state) {
+        int part = state.getValue(PART);
+        return Announcement.values()[state.getValue(REVERSED) ? flipped(part) : part];
+    }
+
+    /** The part of the panel that shows an announcement. */
+    public static int part(Announcement announcement, BlockState state) {
+        return state.getValue(REVERSED) ? flipped(announcement.ordinal()) : announcement.ordinal();
+    }
+
+    /** The place on the panel with the rows the other way round. */
+    private static int flipped(int part) {
+        return (ROWS - 1 - part / COLUMNS) * COLUMNS + part % COLUMNS;
     }
 
     /** Where a part of the panel is, from the part holding it. */
@@ -154,7 +174,7 @@ public class AnnouncementPanelBlock extends HorizontalDirectionalBlock implement
             return InteractionResult.PASS;
         }
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(origin(state, pos)) instanceof AnnouncementPanelBlockEntity panel) {
-            panel.press(Announcement.values()[state.getValue(PART)], serverPlayer);
+            panel.press(announcement(state), serverPlayer);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

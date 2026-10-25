@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -91,15 +92,16 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(fill, matrix, 0, -AnnouncementPanelBlock.ROWS, AnnouncementPanelBlock.COLUMNS, 0, 0, CASING);
         Announcement[] announcements = Announcement.values();
+        BlockState state = panel.getBlockState();
         for (Announcement announcement : announcements) {
-            tile(fill, matrix, announcement, panel.standing(announcement));
+            tile(fill, matrix, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
         }
         // The pictures each take their own buffer, ending the shapes', and the names theirs after them.
         for (Announcement announcement : announcements) {
-            picture(buffers, matrix, announcement, panel.standing(announcement));
+            picture(buffers, matrix, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
         }
         for (Announcement announcement : announcements) {
-            label(pose, buffers, announcement, panel.standing(announcement));
+            label(pose, buffers, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
         }
         pose.popPose();
     }
@@ -109,19 +111,19 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
         return standing != Announcement.Standing.HUSHED && standing != Announcement.Standing.RESTING;
     }
 
-    /** Where a tile's left and top edges are on the face, inside its margin. */
-    private static double left(Announcement announcement) {
-        return announcement.ordinal() % AnnouncementPanelBlock.COLUMNS + MARGIN;
+    /** Where the left and top edges of the tile on a part of the panel are on the face, inside its margin. */
+    private static double left(int part) {
+        return part % AnnouncementPanelBlock.COLUMNS + MARGIN;
     }
 
-    private static double top(Announcement announcement) {
-        return -(announcement.ordinal() / AnnouncementPanelBlock.COLUMNS) - MARGIN;
+    private static double top(int part) {
+        return -(part / AnnouncementPanelBlock.COLUMNS) - MARGIN;
     }
 
     /** A tile's glass in its rim, lit or greyed for where it stands, and the glow round it while it is being made. */
-    private static void tile(VertexConsumer fill, Matrix4f matrix, Announcement announcement, Announcement.Standing standing) {
-        double x0 = left(announcement);
-        double y1 = top(announcement);
+    private static void tile(VertexConsumer fill, Matrix4f matrix, Announcement announcement, int part, Announcement.Standing standing) {
+        double x0 = left(part);
+        double y1 = top(part);
         double x1 = x0 + 1 - 2 * MARGIN;
         double y0 = y1 - 1 + 2 * MARGIN;
         int colour = COLOURS[announcement.ordinal()];
@@ -150,9 +152,9 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
     }
 
     /** A tile's picture, in its own colours, or greyed out. */
-    private static void picture(MultiBufferSource buffers, Matrix4f matrix, Announcement announcement, Announcement.Standing standing) {
-        double cx = left(announcement) + 0.5 - MARGIN;
-        double cy = top(announcement) - 0.5 + MARGIN + PICTURE_UP;
+    private static void picture(MultiBufferSource buffers, Matrix4f matrix, Announcement announcement, int part, Announcement.Standing standing) {
+        double cx = left(part) + 0.5 - MARGIN;
+        double cy = top(part) - 0.5 + MARGIN + PICTURE_UP;
         double half = PICTURE / 2;
         int tint = usable(standing) ? 0xFFFFFFFF : PICTURE_OFF;
         ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/announcement/" + announcement.key() + ".png");
@@ -169,9 +171,9 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
     }
 
     /** A tile's name, small under its picture: for those who can read it. */
-    private static void label(PoseStack pose, MultiBufferSource buffers, Announcement announcement, Announcement.Standing standing) {
-        double x = left(announcement) + 0.5 - MARGIN;
-        double y = top(announcement) - 1 + 2 * MARGIN + LABEL_UP;
+    private static void label(PoseStack pose, MultiBufferSource buffers, Announcement announcement, int part, Announcement.Standing standing) {
+        double x = left(part) + 0.5 - MARGIN;
+        double y = top(part) - 1 + 2 * MARGIN + LABEL_UP;
         Component name = Component.translatable("screen.aerolarge.announcement_panel." + announcement.key());
         ScreenDrawing.text(Minecraft.getInstance().font, pose, buffers, name, x, y, TEXT_LIFT, TEXT, usable(standing) ? LABEL : LABEL_OFF, ScreenDrawing.Align.CENTRE);
     }
