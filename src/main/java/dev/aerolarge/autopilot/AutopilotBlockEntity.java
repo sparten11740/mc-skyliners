@@ -382,13 +382,21 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double APPROACH_SPEED_RATE = 0.005;
     private static final double APPROACH_SLOWEST = 0.75;
     /**
-     * Landing: the rate it sinks at, in blocks a second; how much less it sinks per block nearer the ground, from the
-     * height the flare starts at; and the rate it touches down at, half what a butter landing has to stay under.
+     * Landing: the rate it sinks at lower down, in blocks a second; how much less it sinks per block nearer the ground,
+     * from the height the flare starts at; and the rate it touches down at, half what a butter landing has to stay
+     * under.
      */
     static final double LANDING_SINK_RATE = 3;
     static final double FLARE_GAIN = 0.2;
     static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
     static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
+    /**
+     * Landing from high up: above the first height, in blocks above the ground, it sinks as fast as it descends
+     * anywhere ({@link #MAX_SINK_RATE}), easing to {@link #LANDING_SINK_RATE} by the second, so that coming down from
+     * cruising height does not take minutes of waiting; from there it sinks gently down to the flare.
+     */
+    private static final double LANDING_STEEP_HEIGHT = 60;
+    private static final double LANDING_SETTLE_HEIGHT = 30;
     /**
      * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
      * take-off or landing, its long wings must stay clear of the ground.
@@ -1111,10 +1119,10 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Lands the airliner ahead, engaging the autopilot if it is off. Out of any circle onto the heading it is on, it
-     * comes down gently, slowing to the speed it flies nose level at, and flares over the ground to touch down softly;
-     * then it idles the engines and brakes to a stop, parks and hands back to the flight deck (see {@link #fly}). Only
-     * in the air, and not while it comes in to land already, where it would give up the runway near the pin for
-     * whatever lies ahead.
+     * comes down, quickly from high up and gently lower down (see {@link #landingSink}), slowing to the speed it flies
+     * nose level at, and flares over the ground to touch down softly; then it idles the engines and brakes to a stop,
+     * parks and hands back to the flight deck (see {@link #fly}). Only in the air, and not while it comes in to land
+     * already, where it would give up the runway near the pin for whatever lies ahead.
      */
     private Component land(Level level, SableFlight.State state) {
         double radio = radioAltitude(level, state);
@@ -1638,20 +1646,31 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The rate to climb at, in blocks a second, in the air (not taking off or rolling out). Landing, it sinks gently,
-     * and ever more gently the nearer the ground below: the flare; on a runway near the pin, flared over whichever is
-     * nearer, the ground below or the runway, so it does not sink below the runway over a dip before it. Down the glide
-     * path to such a runway, the rate the path asks for; else the rate the height still to go asks for.
+     * The rate to climb at, in blocks a second, in the air (not taking off or rolling out). Landing, it sinks (see
+     * {@link #landingSink}); on a runway near the pin, over whichever is nearer, the ground below or the runway, so it
+     * does not sink below the runway over a dip before it. Down the glide path to such a runway, the rate the path asks
+     * for; else the rate the height still to go asks for.
      */
     private static double wantedClimb(boolean landing, @Nullable PinLanding.Guide guide, double heightToGo, double radio) {
         if (landing) {
-            double above = guide != null ? Math.min(radio, guide.aboveRunway()) : radio;
-            return -Mth.clamp(FLARE_GAIN * above, TOUCHDOWN_SINK, LANDING_SINK_RATE);
+            return -landingSink(guide != null ? Math.min(radio, guide.aboveRunway()) : radio);
         }
         if (guide != null && !Double.isNaN(guide.climb())) {
             return guide.climb();
         }
         return Mth.clamp(HEIGHT_GAIN * heightToGo, -MAX_SINK_RATE, MAX_CLIMB_RATE);
+    }
+
+    /**
+     * The rate it sinks at landing, in blocks a second, this high above the ground: fast from high up, easing to a
+     * gentle sink between {@link #LANDING_STEEP_HEIGHT} and {@link #LANDING_SETTLE_HEIGHT}, and ever more gently the
+     * nearer the ground below the flare's height.
+     */
+    private static double landingSink(double above) {
+        if (above > LANDING_SETTLE_HEIGHT) {
+            return Mth.clampedMap(above, LANDING_SETTLE_HEIGHT, LANDING_STEEP_HEIGHT, LANDING_SINK_RATE, MAX_SINK_RATE);
+        }
+        return Mth.clamp(FLARE_GAIN * above, TOUCHDOWN_SINK, LANDING_SINK_RATE);
     }
 
     /**

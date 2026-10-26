@@ -496,8 +496,9 @@ land), and Disengage hands the airliner back to the thrust levers, the tiller an
 shows on the pilots' head-up display (see below).
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
-the heading it is on, slows until it flies with its nose level and sinks 3 blocks a second, banking less the lower it
-gets; from 15 blocks above the ground it flares, sinking ever more slowly, to touch down at half a block a second.
+the heading it is on and slows until it flies with its nose level, banking less the lower it gets. High up it comes
+down 6 blocks a second, as fast as it ever descends, easing to 3 blocks a second between 60 and 30 blocks above the
+ground; from 15 blocks above the ground it flares, sinking ever more slowly, to touch down at half a block a second.
 How fast it flies nose level depends on how heavily it is loaded and how thin the air is, so it finds that speed on
 the way down, starting from a tenth above the rotation speed (`rotateSpeed`): furnishing it or loading it up needs
 no new settings. Down, it idles the engines, lowers the nose and brakes to a stop, steering along the heading
