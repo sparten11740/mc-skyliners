@@ -3392,4 +3392,41 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   writeFileSync(resolve(particleOutput, "blast_puff.png"), encodePng(pixels));
 }
 
+// The zeppelin. Its cover is cotton doped silver with aluminium powder, as the Hindenburg's was: a soft pale grey with
+// the seams of its panels running across it and a faint sheen down the middle of each, finer than the airliner's
+// plating. Its rings and struts are duralumin girders lacquered blue, seen through as a lattice: a frame round each
+// face braced corner to corner. Its catwalks are aluminium grating, square holes in a plate, open to look down
+// through. The propeller's hub is polished steel round a darker boss.
+{
+  const SILVER = [0xc6, 0xcb, 0xd1];
+  const SILVER_SEAM = [0xa9, 0xaf, 0xb7];
+  const SILVER_SHEEN = [0xd6, 0xda, 0xdf];
+  texture(blockOutput, "zeppelin_fabric", (x, y) => {
+    if (y === 0 || y === 8) return SILVER_SEAM;
+    if (x === 0) return SILVER_SEAM;
+    if (x >= 6 && x <= 9) return SILVER_SHEEN;
+    return SILVER;
+  }, 3);
+  const GIRDER = [0x2f, 0x5f, 0xb3];
+  const GIRDER_DARK = [0x23, 0x48, 0x8a];
+  texture(blockOutput, "zeppelin_girder", (x, y) => {
+    if (x <= 1 || y <= 1 || x >= 14 || y >= 14) return x === 0 || y === 0 ? GIRDER_DARK : GIRDER;
+    if (Math.abs(x - y) <= 1 || Math.abs(x + y - 15) <= 1) return GIRDER;
+    return CLEAR;
+  }, 3);
+  const GRATING = [0xa8, 0xae, 0xb4];
+  const GRATING_EDGE = [0x8c, 0x92, 0x99];
+  texture(blockOutput, "zeppelin_catwalk", (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return GRATING_EDGE;
+    if (x % 4 === 0 || y % 4 === 0) return GRATING;
+    return CLEAR;
+  }, 2);
+  texture(blockOutput, "propeller_hub", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    if (r < 3) return STEEL_DARK;
+    if (r < 3.8) return STEEL;
+    return x === 0 || y === 0 ? STEEL : CHROME;
+  }, 3);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

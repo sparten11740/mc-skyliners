@@ -4,7 +4,7 @@ import dev.aerolarge.airframe.EngineFlames;
 import dev.aerolarge.airframe.ShellStyle;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-/** Server settings: how big the airliner is built and which other mods' blocks make it fly. */
+/** Server settings: how big the airliner is built and which other mods' blocks make it and the zeppelin fly. */
 public final class AerolargeConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.DoubleValue SCALE;
@@ -33,6 +33,8 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.IntValue LASER_RANGE;
     public static final ModConfigSpec.IntValue LASER_BOLTS_PER_SECOND;
     public static final ModConfigSpec.BooleanValue SELF_DESTRUCT;
+    public static final ModConfigSpec.ConfigValue<String> BURNER_BLOCK;
+    public static final ModConfigSpec.ConfigValue<String> ENVELOPE_BLOCK;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -205,6 +207,21 @@ public final class AerolargeConfig {
                 "hurt. Off, the button only thuds. Only airliners built while it is on have the button; one placed by hand works too."
             )
             .define("selfDestruct", true);
+        builder.pop();
+
+        builder.push("zeppelin");
+        BURNER_BLOCK = builder
+            .comment(
+                "The hot air burner standing in each of the zeppelin's gas cells, lifting it with the hot air it fills the cell with.",
+                "The relay beside each sets how hard it burns. Left out (or not installed) the cells hold no hot air and the zeppelin is a building."
+            )
+            .define("burnerBlock", "aeronautics:adjustable_burner");
+        ENVELOPE_BLOCK = builder
+            .comment(
+                "The envelope the zeppelin's gas cells are made of, one cell in each colour: {colour} stands for the dye's name",
+                "(red, light_blue, ...). Left out (or not installed) the cells are made of the zeppelin's own fabric and hold no gas."
+            )
+            .define("envelopeBlock", "aeronautics:{colour}_envelope");
         builder.pop();
 
         SPEC = builder.build();

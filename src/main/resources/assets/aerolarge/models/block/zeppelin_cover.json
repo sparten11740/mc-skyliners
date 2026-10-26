@@ -1,0 +1,8 @@
+{
+  "loader": "aerolarge:shell",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "skin": "aerolarge:block/zeppelin_fabric",
+    "particle": "aerolarge:block/zeppelin_fabric"
+  }
+}

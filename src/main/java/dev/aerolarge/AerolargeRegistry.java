@@ -131,6 +131,8 @@ import dev.aerolarge.block.PlugDoorBlockEntity;
 import dev.aerolarge.block.PoolCopingBlock;
 import dev.aerolarge.block.PoolMosaicBlock;
 import dev.aerolarge.block.PoolStepsBlock;
+import dev.aerolarge.block.PropellerBlock;
+import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
@@ -1447,6 +1449,29 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DUTY_FREE_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(DUTY_FREE_DISPLAY);
     public static final DeferredItem<BlockItem> AWNING_ITEM = ITEMS.registerSimpleBlockItem(AWNING);
 
+    /**
+     * The zeppelin's airframe: the silver fabric its cover and fins are made of, as the Hindenburg's cotton was doped
+     * with aluminium; the cover cut to the hull's curve, placed only when a zeppelin is built, which gives back fabric;
+     * the blue duralumin girders of its rings and struts; and the open grating of its catwalks, seen through as a real
+     * one is. Nothing spawns on any of them, so the hull's great dark inside stays empty.
+     */
+    public static final DeferredBlock<Block> ZEPPELIN_FABRIC = BLOCKS.registerSimpleBlock("zeppelin_fabric", fabric());
+    public static final DeferredBlock<ShellBlock> ZEPPELIN_COVER = BLOCKS.registerBlock(
+        "zeppelin_cover", properties -> new ShellBlock(properties, AerolargeRegistry.ZEPPELIN_FABRIC), fabric()
+    );
+    public static final DeferredBlock<Block> ZEPPELIN_GIRDER = BLOCKS.registerSimpleBlock("zeppelin_girder", metal(MapColor.COLOR_BLUE).noOcclusion());
+    public static final DeferredBlock<Block> ZEPPELIN_CATWALK = BLOCKS.registerSimpleBlock(
+        "zeppelin_catwalk", metal(MapColor.METAL).noOcclusion().isViewBlocking((state, level, pos) -> false)
+    );
+    /** The hub of an engine car's propeller, a relay that spins the propeller drawn behind it with its engine's thrust. */
+    public static final DeferredBlock<PropellerBlock> PROPELLER = BLOCKS.registerBlock("propeller", PropellerBlock::new, metal(MapColor.METAL));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PropellerBlockEntity>> PROPELLER_ENTITY =
+        BLOCK_ENTITIES.register("propeller", () -> BlockEntityType.Builder.of(PropellerBlockEntity::new, PROPELLER.get()).build(null));
+    public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);
+    public static final DeferredItem<BlockItem> ZEPPELIN_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_GIRDER);
+    public static final DeferredItem<BlockItem> ZEPPELIN_CATWALK_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_CATWALK);
+    public static final DeferredItem<BlockItem> PROPELLER_ITEM = ITEMS.registerSimpleBlockItem(PROPELLER);
+
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
         "airliner_blueprint",
@@ -1502,6 +1527,7 @@ public final class AerolargeRegistry {
             HIDE_AND_SEEK_BUTTON_ITEM, WALL_BARS_ITEM, CLIMBING_ROPE_ITEM, GYM_RINGS_ITEM, GYM_BENCH_ITEM, SPRINGBOARD_ITEM,
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
+        new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
@@ -1557,6 +1583,11 @@ public final class AerolargeRegistry {
     private static BlockBehaviour.Properties carpet() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.1F).sound(SoundType.WOOL).ignitedByLava()
             .isValidSpawn(AerolargeRegistry::never);
+    }
+
+    /** Doped fabric over a light frame: as quick to cut as wool, and nothing spawns on it. */
+    private static BlockBehaviour.Properties fabric() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8F, 6.0F).sound(SoundType.WOOL).isValidSpawn(AerolargeRegistry::never);
     }
 
     private static BlockBehaviour.Properties glass() {

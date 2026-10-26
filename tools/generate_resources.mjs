@@ -33,6 +33,9 @@ const cubes = {
   cabin_window: "minecraft:translucent",
   cockpit_window: "minecraft:translucent",
   cabin_light: null,
+  zeppelin_fabric: null,
+  zeppelin_girder: "minecraft:cutout",
+  zeppelin_catwalk: "minecraft:cutout",
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
@@ -362,6 +365,7 @@ for (const [name, skin, renderType, part, singlePane] of [
   ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false],
   ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true],
   ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false],
+  ["zeppelin_cover", "zeppelin_fabric", "minecraft:solid", `${ID}:zeppelin_fabric`, false],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
@@ -408,6 +412,39 @@ function hullLiningLang() {
 write(`assets/${ID}/blockstates/thrust_relay.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 write(`assets/${ID}/models/block/thrust_relay.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/thrust_relay` } });
 cubes.thrust_relay = null;
+// The zeppelin's propeller hub: a polished steel block, its blades drawn behind it by its renderer (see
+// PropellerRenderer), the same model whichever way it faces and whatever its signal.
+write(`assets/${ID}/blockstates/propeller.json`, { variants: { "": { model: `${ID}:block/propeller` } } });
+write(`assets/${ID}/models/block/propeller.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/propeller_hub` } });
+write(`assets/${ID}/models/item/propeller.json`, { parent: `${ID}:block/propeller` });
+write(`data/${ID}/loot_table/blocks/propeller.json`, {
+  type: "minecraft:block",
+  pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:propeller` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+  random_sequence: `${ID}:blocks/propeller`,
+});
+cubes.propeller = null;
+// The zeppelin's fabric is far lighter than the airliner's aluminium: its cover and fins weigh a tenth of a block,
+// against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size.
+write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`] });
+write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
+  priority: 1002,
+  selector: `#${ID}:zeppelin_fabric`,
+  properties: { "sable:mass": 0.1 },
+});
+function zeppelinLang() {
+  return {
+    "itemGroup.aerolarge.zeppelin": "Zeppelin",
+    "block.aerolarge.zeppelin_fabric": "Zeppelin Fabric",
+    "block.aerolarge.zeppelin_cover": "Zeppelin Cover",
+    "block.aerolarge.zeppelin_girder": "Zeppelin Girder",
+    "block.aerolarge.zeppelin_catwalk": "Zeppelin Catwalk",
+    "block.aerolarge.propeller": "Propeller",
+    "message.aerolarge.zeppelin_building": "Building the zeppelin… %s%%",
+    "message.aerolarge.zeppelin_built": "The zeppelin is ready, its burners' pilot flames lit.",
+    "message.aerolarge.zeppelin_too_high": "The zeppelin would reach past the build height here; build it lower down.",
+  };
+}
+
 // The relay behind a lamp in the cabin wall shows the cabin plain skin.
 write(`assets/${ID}/blockstates/hull_relay.json`, { variants: { "": { model: `${ID}:block/airframe_panel` } } });
 cubes.hull_relay = null;
@@ -5405,6 +5442,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.discoLights": "Disco Ball Spots",
   "aerolarge.configuration.cloudlessCabin": "Cloudless Cabin",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
+  "commands.aerolarge.build_zeppelin": "Building a zeppelin of %s blocks, %s of them over blocks that were in the way",
   "item.aerolarge.airliner_blueprint": "Airliner Blueprint",
   "item.aerolarge.furnished_airliner_blueprint": "Furnished Airliner Blueprint",
   "item.aerolarge.airliner_blueprint.tooltip": "A double-deck airliner with an empty cabin, ready to build in",
@@ -5512,6 +5550,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...dutyFreeKioskLang(),
   ...laserPointerLang(),
   ...towerInstrumentsLang(),
+  ...zeppelinLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

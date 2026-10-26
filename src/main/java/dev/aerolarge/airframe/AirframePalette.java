@@ -50,6 +50,21 @@ public record AirframePalette(
         );
     }
 
+    /**
+     * What a zeppelin is built from besides its own blocks: Create Aeronautics' hot air burner and envelopes, and the
+     * thruster its engines push it with, looked up by the ids in the config as the airliner's flight hardware is.
+     */
+    public record Balloon(Optional<BlockState> burner, String envelope, Optional<BlockState> engine) {
+        /** The envelope in a dye's colour, or the zeppelin's own fabric without one. */
+        BlockState envelope(String colour) {
+            return block(envelope.replace("{colour}", colour)).orElse(AerolargeRegistry.ZEPPELIN_FABRIC.get().defaultBlockState());
+        }
+    }
+
+    static Balloon balloon() {
+        return new Balloon(block(AerolargeConfig.BURNER_BLOCK.get()), AerolargeConfig.ENVELOPE_BLOCK.get(), block(AerolargeConfig.ENGINE_BLOCK.get()));
+    }
+
     /** The lifting surface turned so its face is square to the given direction, or the fallback without one. */
     BlockState lift(Direction normal, BlockState fallback) {
         return lift.map(state -> with(state, "facing", normal.getSerializedName())).orElse(fallback);

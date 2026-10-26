@@ -46,6 +46,9 @@ public final class AirframeBuild {
     private final Map<BlockPos, Fitting> fittings;
     private final Rotation rotation;
     private final boolean glued;
+    /** The keys of the messages it shows while it builds and once it stands, as its layout says them. */
+    private final String building;
+    private final String built;
     @Nullable
     private final UUID builder;
     private int next;
@@ -56,6 +59,8 @@ public final class AirframeBuild {
         this.fittings = placement.fittings();
         this.rotation = placement.rotation();
         this.glued = placement.glued();
+        this.building = placement.building();
+        this.built = placement.built();
         this.builder = builder;
     }
 
@@ -64,8 +69,8 @@ public final class AirframeBuild {
      * its tires on nose's y. Its positions are packed as {@link BlockPos#asLong} does, each beside its block's state.
      */
     public record Placement(
-        long[] positions, BlockState[] states, Map<BlockPos, Fitting> fittings, Rotation rotation, boolean glued, int blocked,
-        BlockPos firstBlocked, int top
+        long[] positions, BlockState[] states, Map<BlockPos, Fitting> fittings, Rotation rotation, boolean glued, String building, String built,
+        int blocked, BlockPos firstBlocked, int top
     ) {
         public static Placement of(ServerLevel level, Layout layout, BlockPos nose, Direction along) {
             // The layout's tail runs south; turning that onto `along` turns every position and block state with it.
@@ -80,7 +85,7 @@ public final class AirframeBuild {
             Map<BlockPos, Fitting> fittings = new HashMap<>();
             layout.fittings().forEach((pos, fitting) -> fittings.put(nose.offset(pos.rotate(rotation)), fitting));
             return new Placement(Arrays.copyOf(laying.positions, laying.count), Arrays.copyOf(laying.states, laying.count), fittings, rotation,
-                layout.glued(), laying.blocked, laying.firstBlocked, laying.top);
+                layout.glued(), layout.message("building"), layout.message("built"), laying.blocked, laying.firstBlocked, laying.top);
         }
     }
 
@@ -219,9 +224,9 @@ public final class AirframeBuild {
         }
         if (builder != null && level.getPlayerByUUID(builder) instanceof ServerPlayer player) {
             if (done) {
-                player.displayClientMessage(Component.translatable("message.aerolarge.built"), false);
+                player.displayClientMessage(Component.translatable(built), false);
             } else if (level.getGameTime() % 10 == 0) {
-                player.displayClientMessage(Component.translatable("message.aerolarge.building", (int) (100L * next / positions.length)), true);
+                player.displayClientMessage(Component.translatable(building, (int) (100L * next / positions.length)), true);
             }
         }
         return done;

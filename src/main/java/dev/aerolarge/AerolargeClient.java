@@ -54,6 +54,7 @@ import dev.aerolarge.client.PassengerCameras;
 import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
+import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.SelfDestructButtonRenderer;
@@ -211,6 +212,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DISPLAY_ENTITY.get(), context -> new CockpitDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.PROPELLER_ENTITY.get(), context -> new PropellerRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

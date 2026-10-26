@@ -1,10 +1,10 @@
 # Aerolarge
 
 A Minecraft mod for NeoForge 1.21.1: an A380-style double-deck airliner big enough to build in, that rolls on real
-wheels and is flown from its own cockpit. One blueprint lays the whole airframe down: a single long hollow hull with
-a main deck and an upper deck over a cargo hold with a hatch down to it, six passenger doors and a cargo door, a
-flight deck behind a wrap-around windscreen, swept wings with four engines, the tail, landing gear, folding airstairs
-and evacuation slides.
+wheels and is flown from its own cockpit, and a gigantic Hindenburg-style zeppelin that floats on real hot air (see The
+zeppelin). One blueprint lays the whole airframe down: a single long hollow hull with a main deck and an upper deck over
+a cargo hold with a hatch down to it, six passenger doors and a cargo door, a flight deck behind a wrap-around
+windscreen, swept wings with four engines, the tail, landing gear, folding airstairs and evacuation slides.
 
 ## Requirements
 
@@ -1369,6 +1369,51 @@ the ground (Blue Ice), the five rubber ducks hidden aboard (Duck Hunt), and an e
 taken from a coffee machine (Barista), and aboard as the autopilot lands on a runway laid down from its blueprint and
 stops there (On the Numbers).
 
+### The zeppelin
+
+A rigid airship in the Hindenburg's style, as big as the real one at the airliner's scale: about 490 blocks long and 82
+across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is always
+built at that size, whatever `scale` the server config sets for the airliner. Operators build one with `/aerolarge build
+<pos> <north|east|south|west> zeppelin`, its nose tip at the position and its tail stretching away the way given,
+through whatever stands there; it takes a few tens of seconds to go up.
+
+Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
+nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
+car hangs under the bow on a short neck, and four streamlined engine cars stand out on girder struts along the flanks,
+two to each side, each with a big four-bladed wooden propeller with brass tips behind it that winds up when its engine
+runs and spins down slowly when it stops. The zeppelin rests on a wheel under the control car and another under the
+lower fin.
+
+Inside, the cover is held up by seventeen rings of blue lattice girders, and in the sixteen bays between them hang its
+sixteen gas cells, huge balloons of Create Aeronautics' envelope, every one a colour of its own from red at the bow
+through orange, yellow, green and blue to black at the stern, so a cell is told by its colour alone. Under the cells an
+axial gangway, an open aluminium grating with glass rails and lamps along its edges, runs from the second ring to the
+second last, nearly the whole length of the hull. In the belly below lie the passenger decks: a lower deck, and over it
+an upper deck with long promenade windows down both sides, slanting with the hull's curve. Stairs climb from the lower
+deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
+climbs from the control car up its neck to a corridor running aft to the decks.
+
+How it flies: the zeppelin is lifted by real hot air. Each cell holds hot air burners, and the hot air they fill it with
+lifts it, as Create Aeronautics' balloons do, the more the harder they burn and the less the thinner the air, so the
+zeppelin rises until the thinning air balances it and floats there, at a height the burners set. Sable flies only what
+touches the rest of a body, and a cell standing free in its bay would float off on its own, so the cells hang from the
+crown on girders, the burners and their relays stand on girder posts down to the cells' floors, the gangway stands on
+posts down to the rings, and the decks' floors run out to the cover. The fabric weighs a tenth of a block (its own
+`physics_block_properties`, over the airframe's `#sable:super_light`), so a ship of this size, some 27,000 of Sable's
+units, is carried by a few dozen burners. The burners are built with their pilot flames lit, and the relay beside each
+sets how hard it burns. The engines' creative thrusters (Create Propulsion's, as the airliner's) sit in the engine cars
+round the propellers' hubs, eight pushing ahead and two astern in each, without flames: an airship's engines turn
+propellers. Without Create Aeronautics the cells are made of the zeppelin's own fabric and it is a building;
+`burnerBlock` and `envelopeBlock` in the server config's `zeppelin` section name the blocks it is built with.
+
+Too big for the Physics Assembler, the zeppelin is not glued. For now it stands as a building until it is assembled with
+Sable's own `/sable assemble area` over its box; it then rests on its wheels, its pilot flames lifting little, and
+floats up once its relays are set higher.
+
+The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk grating
+and the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
+strongest redstone signal beside it).
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
@@ -1439,8 +1484,12 @@ gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only place
 mixin `mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil; the other
 mixin, `mixin/GirderBlockMixin`, turns Create's metal girders a quarter turn without losing their beams, which
 Create's own turn does (the gym hall's trusses of an airliner built facing east or west);
-`CloudlessCabin` leaves the clouds out of the player's view while the camera is inside a hull in the cloud layer. Assets
-are generated: `node tools/generate_textures.mjs` writes the textures
+`CloudlessCabin` leaves the clouds out of the player's view while the camera is inside a hull in the cloud layer. The
+zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in metres, fixed at two blocks a metre) and
+is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
+as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
+`PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
+engine's signal. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

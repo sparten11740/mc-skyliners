@@ -2566,26 +2566,9 @@ public final class AirframeLayout implements Layout {
         return ShellGeometry.cut(nx, ny, nz, 0.5 + nx * skin, 0.5 + ny * skin, 0.5 + nz * skin);
     }
 
-    /**
-     * Turns a creative thruster up to the configured setting, the way its value box would: Create keeps a block
-     * entity's scroll value under "ScrollValue". Its plume is set for the flames given, as its own setting would
-     * (Create Propulsion keeps it under "plumeType"): plasma only for its own plume, as the server config may ask of
-     * the engines, since a plume's every puff is sent to every player near, many times a second in flight, and costs
-     * each client dearly to draw; the control jets, which stand in for control surfaces, show none. Other thrusters
-     * have no such settings and keep the values unread.
-     */
+    /** Turns a creative thruster up to the configured setting, its plume set for the flames given (see {@link Thrusters}). */
     private void fullThrust(BlockPos thruster, EngineFlames flames) {
-        int setting = AerolargeConfig.THRUST_SETTING.get();
-        fittings.put(thruster, (blockEntity, rotation) -> {
-            if (blockEntity.getLevel() == null) {
-                return;
-            }
-            HolderLookup.Provider registries = blockEntity.getLevel().registryAccess();
-            CompoundTag data = blockEntity.saveWithoutMetadata(registries);
-            data.putInt("ScrollValue", setting);
-            data.putInt("plumeType", flames.thrusterPlume());
-            blockEntity.loadWithComponents(data, registries);
-        });
+        fittings.put(thruster, Thrusters.fullThrust(flames));
     }
 
     /**

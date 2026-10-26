@@ -30,4 +30,12 @@ public interface Layout {
     default boolean glued() {
         return true;
     }
+
+    /**
+     * The key of a message about building it ({@code building}, {@code built} or {@code too_high}), saying it as
+     * this airframe: the airliner's, unless it says otherwise.
+     */
+    default String message(String what) {
+        return "message.aerolarge." + what;
+    }
 }
