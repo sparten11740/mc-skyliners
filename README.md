@@ -165,8 +165,8 @@ blinking recording light in the corner. Where the nose leaves no room for the ca
 wide screen three blocks across, hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward
 them. Four buttons on the slope under the camera's screen pick the camera (along the bottom left of its picture where
 the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with
-its camera marked in a colour of its own and a see-through beam the way it looks, the one shown lit white with a white
-rim: sky blue on the fin, looking ahead and down; green on the right wing, ringed as it looks out along the wing
+a big dot where its camera is, in a colour of its own, the one shown lit white with a white
+rim: sky blue on the fin, looking ahead and down; green on the right wing, looking out along the wing
 toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
 looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes
 the same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is

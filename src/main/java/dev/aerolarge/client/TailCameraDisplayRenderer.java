@@ -69,18 +69,14 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double BUTTON_PAD = 0.008;
     private static final double BUTTON_RIM = 0.006;
     /**
-     * A camera's mark on its button: the size of the dot where it is and the length of the beam it looks along, as
-     * shares of the button's height, how wide the beam opens either side, in degrees, and how opaque it is, of 255.
+     * A camera's mark on its button: the radius of the big dot where it is, as a share of the button's height, and of
+     * the dark ring round it that sets it off the airliner, as a share of the dot's.
      */
-    private static final double CAMERA_MARK = 0.16;
-    private static final double CAMERA_BEAM = 0.55;
-    private static final double BEAM_SPREAD = 22;
-    private static final int BEAM_ALPHA = 0x90;
-    /**
-     * How far round from straight ahead a camera may look and still show its beam on the side view, in degrees; one
-     * looking out further to the side, toward whoever looks at the button, shows a ring round its dot instead.
-     */
-    private static final double BEAM_YAW = 60;
+    private static final double CAMERA_DOT = 0.2;
+    private static final double DOT_RING = 1.3;
+    private static final int DOT_RING_COLOUR = 0xFF0A0C0F;
+    /** Pieces the dot and its ring are drawn round in. */
+    private static final int DOT_PIECES = 20;
     /** How far the side view and the cameras on it reach, in metres: ahead of the nose, back from it, and up. */
     private static final double VIEW_AHEAD = reach(point -> -point[0], camera -> -camera.back);
     private static final double VIEW_BACK = reach(point -> point[0], camera -> camera.back);
@@ -237,9 +233,9 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     }
 
     /**
-     * A camera's button in a box: the airliner seen from its right side on a dark backing, with a dot in the camera's
-     * colour where it is and a beam the way it looks; lit, the airliner white and a white rim round it all. Drawn this
-     * far off the face, clear of whatever the box is already drawn on.
+     * A camera's button in a box: the airliner seen from its right side on a dark backing, with a big dot in the
+     * camera's colour where it is, kept inside the box; lit, the airliner white and a white rim round it all. Drawn
+     * this far off the face, clear of whatever the box is already drawn on.
      */
     static void cameraButton(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, boolean lit, double x0, double y0, double x1, double y1,
                              float lift) {
@@ -255,30 +251,12 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
                 ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), lift + 4 * LAYER, colour);
             }
         }
-        double x = view.x(camera.back);
-        double y = view.y(camera.up);
-        double mark = (y1 - y0) * CAMERA_MARK;
-        beam(shapes, matrix, camera, x, y, (y1 - y0) * CAMERA_BEAM, mark, lift + 5 * LAYER);
-        ScreenDrawing.rect(shapes, matrix, x - mark / 2, y - mark / 2, x + mark / 2, y + mark / 2, lift + 6 * LAYER, colour(camera));
-    }
-
-    /**
-     * Which way a camera looks, seen from the airliner's right side as its button shows it: a see-through wedge in its
-     * colour out from where it is, ahead to the right; for one looking out to the side, a ring round its dot.
-     */
-    private static void beam(VertexConsumer shapes, Matrix4f matrix, OutsideCamera camera, double x, double y, double length, double mark, float z) {
-        int seeThrough = BEAM_ALPHA << 24 | colour(camera) & 0xFFFFFF;
-        if (Math.abs(camera.yaw) > BEAM_YAW) {
-            ScreenDrawing.disc(shapes, matrix, x, y, mark * 1.4, 16, z, seeThrough);
-            return;
-        }
-        double angle = Math.atan2(Math.sin(Math.toRadians(camera.pitch)), Math.cos(Math.toRadians(camera.yaw)) * Math.cos(Math.toRadians(camera.pitch)));
-        double spread = Math.toRadians(BEAM_SPREAD);
-        // Anticlockwise, as the button sees it: the tip, the edge below, the edge above.
-        ScreenDrawing.vertex(shapes, matrix, x, y, z, seeThrough);
-        ScreenDrawing.vertex(shapes, matrix, x + Math.cos(angle - spread) * length, y + Math.sin(angle - spread) * length, z, seeThrough);
-        ScreenDrawing.vertex(shapes, matrix, x + Math.cos(angle + spread) * length, y + Math.sin(angle + spread) * length, z, seeThrough);
-        ScreenDrawing.vertex(shapes, matrix, x, y, z, seeThrough);
+        double dot = (y1 - y0) * CAMERA_DOT;
+        double ring = dot * DOT_RING;
+        double x = Math.max(x0 + ring, Math.min(x1 - ring, view.x(camera.back)));
+        double y = Math.max(y0 + ring, Math.min(y1 - ring, view.y(camera.up)));
+        ScreenDrawing.disc(shapes, matrix, x, y, ring, DOT_PIECES, lift + 5 * LAYER, DOT_RING_COLOUR);
+        ScreenDrawing.disc(shapes, matrix, x, y, dot, DOT_PIECES, lift + 6 * LAYER, colour(camera));
     }
 
     /** Each camera's own colour, on its button and on its picture's label, so the four tell apart at a glance. */
