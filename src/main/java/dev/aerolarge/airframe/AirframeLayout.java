@@ -1600,6 +1600,19 @@ public final class AirframeLayout {
         return bay;
     }
 
+    /**
+     * Boxes the avionics bay in, once its switches stand in it: the rest of its rows, and the row under them, filled
+     * with the floor's own blocks, so the space under the raised floor sees a thicker floor there and nothing of the
+     * switches, which otherwise stood in it in a row like an old panel's.
+     */
+    private void encloseBay(int deck, int seatZ) {
+        for (int y = deck - 1; y >= deck - 2 && y > floorY; y--) {
+            for (int z : new int[]{seatZ, seatZ + 1, seatZ - 1, seatZ + 2}) {
+                openAcross(y, z).forEach(open -> set(open.getX(), open.getY(), open.getZ(), palette.floor()));
+            }
+        }
+    }
+
     /** The open blocks across a row at a station, out from the middle, nearest first, as far as {@link #BAY_SWITCHES}. */
     private List<BlockPos> openAcross(int y, int z) {
         List<BlockPos> open = new ArrayList<>();
@@ -1703,6 +1716,7 @@ public final class AirframeLayout {
         if (AerolargeConfig.LASER_PATH_CLEARER.get()) {
             laserSwitch = hidden(bay.get(8), AerolargeRegistry.LASER_SWITCH.get(), Link.LASER, switches);
         }
+        encloseBay(deck, seatZ);
         BlockPos throttle = throttle(y, screenZ + 1);
         control(0, y, seatZ + 1, AerolargeRegistry.HANDSET.get(), Direction.SOUTH);
         transponder(control(0, y, seatZ + 2, AerolargeRegistry.TRANSPONDER.get(), Direction.SOUTH));
