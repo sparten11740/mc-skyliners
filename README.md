@@ -1084,6 +1084,14 @@ lights and the control tower's glass, lights, panels and seats are, break as any
 by hand, a nav light or a panel added to a finished airliner say, glued in or flying; a Create deployer places by hand
 too, a schematicannon does not. An airliner taken apart again forgets which of its blocks were placed by hand.
 
+Put down by hand, the frame's blocks sit the way they do aboard. An Airframe Fairing, the skin with its outer edge cut
+away at 45 degrees, goes down as stairs do: its cut faces you, along its top edge put on top of a block or against
+the lower half of a block's side, and along its bottom edge put against the underside of a block or the upper half of
+a block's side. A Nav Light shines out from the face it is put against. What a pilot sits behind (the thrust levers,
+the autopilot's control head, the tiller and the parking brake) goes down with its nose the way you face, as a
+Landing Gear Bay's leg swings up and a Laser Turret fires that way; what faces the pilots (the instrument panel, a
+flight display, the gear lever and the laser, jump light and seatbelt switches) faces you, as a parachute rack does.
+
 ### Doors
 
 The six passenger doors and the cargo door are plug doors, one panel over each doorway as on the real airliner: white

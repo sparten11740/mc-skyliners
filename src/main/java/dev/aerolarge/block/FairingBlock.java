@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Airframe skin with its outer edge cut away at 45 degrees, laid on the outer steps of the hull, nacelles and wings
  * so their stepped curves read as smooth facets. FACING is the side the cut faces and HALF whether it is the top or
  * the bottom edge; the cut runs along the block, across FACING. The two inner faces are whole, so from inside the
- * cabin it is an ordinary wall.
+ * cabin it is an ordinary wall. Put down by hand it sits as stairs do (see {@link #getStateForPlacement}).
  */
 public class FairingBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<FairingBlock> CODEC = simpleCodec(FairingBlock::new);
@@ -43,6 +44,21 @@ public class FairingBlock extends HorizontalDirectionalBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, HALF);
+    }
+
+    /**
+     * Put down the way stairs are. Its cut faces whoever puts it down, as the airliner's face out of the skin toward
+     * whoever stands beside it, so skinning a wing or a nacelle from outside cuts the edges facing out. It rests cut
+     * along its top edge, put on top of a block or against the lower half of a block's side, and hangs cut along its
+     * bottom edge, put against the underside of a block or the upper half of a block's side, for the underside of a
+     * curve.
+     */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction clicked = context.getClickedFace();
+        boolean upperHalf = context.getClickLocation().y - context.getClickedPos().getY() > 0.5;
+        boolean hangs = clicked == Direction.DOWN || clicked != Direction.UP && upperHalf;
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(HALF, hangs ? Half.BOTTOM : Half.TOP);
     }
 
     @Override
