@@ -291,9 +291,16 @@ public class LaserTurretBlockEntity extends BlockEntity {
 
     /** Where the bolts leave from, in the world: the turret's muzzle, out under the nose. */
     private Vec3 muzzle(Level level) {
-        Direction nose = nose();
-        Vec3 inPlot = Vec3.atCenterOf(worldPosition).add(nose.getStepX() * MUZZLE_FORWARD, -MUZZLE_DROP - 0.5, nose.getStepZ() * MUZZLE_FORWARD);
-        return SableFlight.toWorld(level, inPlot);
+        return SableFlight.toWorld(level, muzzle(worldPosition, nose()));
+    }
+
+    /**
+     * Where a turret's bolts leave from among its airliner's blocks, the turret at a position there with its nose
+     * pointing the given way: its muzzle, out under the nose. A client tells a turret's bolts from others' by it, and
+     * draws them from the tip of its barrel as it is turned instead.
+     */
+    public static Vec3 muzzle(BlockPos turret, Direction nose) {
+        return Vec3.atCenterOf(turret).add(nose.getStepX() * MUZZLE_FORWARD, -MUZZLE_DROP - 0.5, nose.getStepZ() * MUZZLE_FORWARD);
     }
 
     private Direction nose() {

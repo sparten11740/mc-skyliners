@@ -1,35 +1,51 @@
 {
   "variants": {
-    "facing=north,gun=false": {
+    "facing=north,part=hatch": {
       "model": "aerolarge:block/laser_turret",
       "y": 0
     },
-    "facing=north,gun=true": {
-      "model": "aerolarge:block/laser_turret_gun",
+    "facing=north,part=head": {
+      "model": "aerolarge:block/laser_turret_head",
       "y": 0
     },
-    "facing=east,gun=false": {
+    "facing=north,part=barrel": {
+      "model": "aerolarge:block/laser_turret_barrel",
+      "y": 0
+    },
+    "facing=east,part=hatch": {
       "model": "aerolarge:block/laser_turret",
       "y": 90
     },
-    "facing=east,gun=true": {
-      "model": "aerolarge:block/laser_turret_gun",
+    "facing=east,part=head": {
+      "model": "aerolarge:block/laser_turret_head",
       "y": 90
     },
-    "facing=south,gun=false": {
+    "facing=east,part=barrel": {
+      "model": "aerolarge:block/laser_turret_barrel",
+      "y": 90
+    },
+    "facing=south,part=hatch": {
       "model": "aerolarge:block/laser_turret",
       "y": 180
     },
-    "facing=south,gun=true": {
-      "model": "aerolarge:block/laser_turret_gun",
+    "facing=south,part=head": {
+      "model": "aerolarge:block/laser_turret_head",
       "y": 180
     },
-    "facing=west,gun=false": {
+    "facing=south,part=barrel": {
+      "model": "aerolarge:block/laser_turret_barrel",
+      "y": 180
+    },
+    "facing=west,part=hatch": {
       "model": "aerolarge:block/laser_turret",
       "y": 270
     },
-    "facing=west,gun=true": {
-      "model": "aerolarge:block/laser_turret_gun",
+    "facing=west,part=head": {
+      "model": "aerolarge:block/laser_turret_head",
+      "y": 270
+    },
+    "facing=west,part=barrel": {
+      "model": "aerolarge:block/laser_turret_barrel",
       "y": 270
     }
   }

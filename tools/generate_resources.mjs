@@ -677,11 +677,15 @@ function gearLang() {
 }
 
 // The laser path clearer (see LaserTurretBlock and LaserSwitchBlock). The turret's block: the belly's skin with the
-// round hatch it drops out of underneath. The turret itself, out of its hatch (gun=true, drawn by its renderer a block
-// lower): a dark housing hanging from a stalk, a steel barrel pointing ahead (north in the model) and the barrel's
-// glowing red emitter at its tip. The switch, a module of the flight deck drawn with the pilots at its north side: its
-// top pictured with a turret firing a red beam, a big red button, dark until armed and glowing once it is, and the
-// button's guard, shut over it while safe and flipped up behind it when armed.
+// round hatch it drops out of underneath. The turret itself, out of its hatch, drawn by its renderer a block lower in
+// two parts that turn toward where it fires: its head (part=head), a dark housing hanging from a stalk, which swings
+// round, and its barrel (part=barrel), steel pointing ahead (north in the model) with the glowing red emitter at its
+// tip, which swings with the head and tilts up and down about the housing's middle. The barrel reaches back to that
+// middle, so tilted any way it still comes out of the housing; as barrel and emitter reach out of the block, their
+// faces take their texture from inside its 16 pixels, the emitter's front the bright middle of its glow. The item is
+// the whole turret, both parts together. The switch, a module of the flight deck drawn with the pilots at its north
+// side: its top pictured with a turret firing a red beam, a big red button, dark until armed and glowing once it is,
+// and the button's guard, shut over it while safe and flipped up behind it when armed.
 {
   write(`assets/${ID}/models/block/laser_turret.json`, {
     parent: "minecraft:block/cube",
@@ -692,19 +696,22 @@ function gearLang() {
   });
   const glowing = (element) => ({ ...element, faces: Object.fromEntries(Object.entries(element.faces).map(([face, value]) =>
     [face, { ...value, neoforge_data: { block_light: 15, sky_light: 15 } }])) });
-  write(`assets/${ID}/models/block/laser_turret_gun.json`, {
-    parent: "minecraft:block/block",
-    textures: { body: `${ID}:block/flight_console`, barrel: `${ID}:block/landing_gear`, emitter: `${ID}:block/laser_emitter`, particle: `${ID}:block/flight_console` },
-    elements: [
-      solid([7, 14, 7], [9, 16, 9], "#barrel"),
-      solid([4, 8, 4], [12, 14, 12], "#body"),
-      solid([7, 10, -4], [9, 12, 4], "#barrel"),
-      glowing(solid([6.5, 9.5, -5], [9.5, 12.5, -4], "#emitter")),
-    ],
-  });
+  const turretTextures = { body: `${ID}:block/flight_console`, barrel: `${ID}:block/landing_gear`, emitter: `${ID}:block/laser_emitter`, particle: `${ID}:block/flight_console` };
+  const head = [solid([7, 14, 7], [9, 16, 9], "#barrel"), solid([4, 8, 4], [12, 14, 12], "#body")];
+  const faced = (texture, ends, sides, tops) => ({ north: { texture, uv: ends }, south: { texture, uv: ends }, east: { texture, uv: sides },
+    west: { texture, uv: sides }, up: { texture, uv: tops }, down: { texture, uv: tops } });
+  const barrel = [
+    { from: [7, 10, -4], to: [9, 12, 8], faces: faced("#barrel", [7, 4, 9, 6], [2, 4, 14, 6], [7, 2, 9, 14]) },
+    glowing({ from: [6.5, 9.5, -5], to: [9.5, 12.5, -4], faces: faced("#emitter", [6.5, 6.5, 9.5, 9.5], [7.5, 6.5, 8.5, 9.5], [6.5, 7.5, 9.5, 8.5]) }),
+  ];
+  const turretModel = (name, elements) => write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/block", textures: turretTextures, elements });
+  turretModel("laser_turret_head", head);
+  turretModel("laser_turret_barrel", barrel);
+  turretModel("laser_turret_gun", [...head, ...barrel]);
+  const partModels = { hatch: "laser_turret", head: "laser_turret_head", barrel: "laser_turret_barrel" };
   write(`assets/${ID}/blockstates/laser_turret.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-      [false, true].map((gun) => [`facing=${facing},gun=${gun}`, { model: `${ID}:block/laser_turret${gun ? "_gun" : ""}`, y }]))),
+      Object.entries(partModels).map(([part, model]) => [`facing=${facing},part=${part}`, { model: `${ID}:block/${model}`, y }]))),
   });
   write(`assets/${ID}/models/item/laser_turret.json`, { parent: `${ID}:block/laser_turret_gun` });
   dropsItself("laser_turret");
