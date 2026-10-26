@@ -5076,7 +5076,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.pin.found": "Landing site found %s blocks from the pin: flying the approach, to land heading %s.",
   "message.aerolarge.autopilot.pin.nowhere": "Nowhere clear to land near the pin yet: flying over it again and again, looking as more of the land comes into view.",
   "message.aerolarge.autopilot.pin.go_around": "Not lined up with the landing site: going around to try again.",
-  "message.aerolarge.autopilot.pin.too_low": "Too low to go around: landing on the site near the pin.",
+  "message.aerolarge.autopilot.coming_in": "The autopilot is landing; disengage it to take over.",
   "message.aerolarge.autopilot.landing": "Autopilot landing: down ahead on heading %s, slowing until the nose sits level; once down it brakes to a stop and parks.",
   "message.aerolarge.autopilot.on_ground": "The autopilot lands from the air: the airliner is on the ground already.",
   "message.aerolarge.autopilot.rolling_out": "The autopilot is braking to a stop after landing; disengage it to take over.",

@@ -348,19 +348,19 @@ man's voice, so it is never taken for the flight deck's own, crackling through a
 take off, the autopilot holds the brakes until the tower has cleared it for take-off, a few seconds, and the cabin
 hears the take-off announcement as they come off. Climbing away past 20 blocks above the ground, on the autopilot or
 by hand, the tower hands it to departure, which has it on radar and climbing. Set to land, the tower clears it to
-land, with the wind and the runway, before the cabin hears the landing announcement; going around (Apply while
-landing) has it climb straight ahead. Down and stopped, ground welcomes it home and sends it to the gate. In flight,
-30 blocks or more above the ground and not landing, it chatters every two to five minutes: first the hand-over to the
-next controller, then traffic to look out for, the ride ahead, a flock of geese or a hot air balloon to spot out of the
-window, and other aircraft on the frequency, one of them saying hello; now and then someone presses the button and
-says nothing. Everyone on the flight deck hears it (within 24 blocks of the autopilot, as far as it tells the flight
-deck what it does), and so does whoever wears a pilot helmet anywhere aboard: its ear cups are a headset. It never
-talks over a callout or an announcement: it waits for them to end, and keeps clear of a callout about to be made.
-What has waited too long, or no longer fits what the airliner is doing, is left unsaid. Each transmission has its own
-subtitle ("ATC: Cleared for take-off"), and while it talks a little radio panel shows in the top left corner of the
-screen of whoever hears it: a pilot's headset with the radio's green lamp lit, gently pulsing, so that those who
-cannot read yet know the radio is talking too. Turn it off with `atcChatter` in the server config, or make it quieter
-with `atcVolume`; each player's Voice/Speech slider turns it down too.
+land, with the wind and the runway, before the cabin hears the landing announcement; going around (not lined up with
+the runway near the pin) has it climb straight ahead. Down and stopped, ground welcomes it home and sends it to the
+gate. In flight, 30 blocks or more above the ground and not landing, it chatters every two to five minutes: first the
+hand-over to the next controller, then traffic to look out for, the ride ahead, a flock of geese or a hot air balloon
+to spot out of the window, and other aircraft on the frequency, one of them saying hello; now and then someone presses
+the button and says nothing. Everyone on the flight deck hears it (within 24 blocks of the autopilot, as far as it
+tells the flight deck what it does), and so does whoever wears a pilot helmet anywhere aboard: its ear cups are a
+headset. It never talks over a callout or an announcement: it waits for them to end, and keeps clear of a callout
+about to be made. What has waited too long, or no longer fits what the airliner is doing, is left unsaid. Each
+transmission has its own subtitle ("ATC: Cleared for take-off"), and while it talks a little radio panel shows in the
+top left corner of the screen of whoever hears it: a pilot's headset with the radio's green lamp lit, gently pulsing,
+so that those who cannot read yet know the radio is talking too. Turn it off with `atcChatter` in the server config,
+or make it quieter with `atcVolume`; each player's Voice/Speech slider turns it down too.
 
 ### Seatbelts and turbulence
 
@@ -414,7 +414,7 @@ number, before you touch; and small windows give the speed, heading and height s
 sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A pin lamp in the dial's corner lights
 while it flies to a pin (see below). While the autopilot is off the controls only thud, and the on/off key opens the
 settings, where it is engaged; while it flies, the on/off key switches it off. A touch it cannot take thuds too: while
-it rolls out after landing, or once too low to go around from landing near the pin.
+it comes in to land, so nothing touched by accident calls the landing off, and while it rolls out after landing.
 
 The control head's own small display shows what the autopilot is set to, in the same pictures and colours, turned to
 face whoever looks at it: a lamp (green while it flies the airliner, amber while it is stuck, dark while it is off),
@@ -463,9 +463,9 @@ toward it, cleared to land by the tower, the cabin hearing the landing announcem
 along the strip's middle all the way, touches down, brakes to a stop steering along the line, and parks. If nowhere
 near the pin is quite clear, it picks the strip with the fewest things under its wings (never under its body); if
 there is nowhere at all, it says so once and keeps flying over the pin, looking again as more land comes into view.
-Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way in
-goes around too: with Land at the Pin still lit it looks again and comes back round; switched off, it circles the pin
-instead, though below the flare's 15 blocks switching it off is too late: it lands.
+Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way
+there starts it afresh: with Land at the Pin still lit it looks again and comes back round; switched off, it circles
+the pin instead. Once it turns onto final it takes no new settings, as when it lands ahead (see below).
 
 Where a runway laid down from its blueprint (see Runways) lies in the circle round the pin, it has nothing to look for:
 as soon as it has measured itself it lands on that runway, from whichever end it comes to with less turning, touching
@@ -491,9 +491,9 @@ heading or circle set, banking no steeper than its height allows (it never banks
 more than 25 degrees), and it climbs on to the altitude set and holds height and speed there. The altitude starts at
 the cruising height (`climbHeight`, 80 blocks above the runway by default) and the speed at `cruiseSpeed`. Engaged
 in the air, they start from the height, speed and heading it finds. While it is engaged, Apply flies the settings as
-changed (it stays dark until something on the panel differs from what the autopilot flies, but while it lands,
-when it goes around), and Disengage hands the airliner back to the thrust levers, the tiller and the parking brake. How it is
-flying shows on the pilots' head-up display (see below).
+changed (it stays dark until something on the panel differs from what the autopilot flies, and while it comes in to
+land), and Disengage hands the airliner back to the thrust levers, the tiller and the parking brake. How it is flying
+shows on the pilots' head-up display (see below).
 
 In the air, Land puts the airliner down ahead, engaging the autopilot if it is off. It rolls out of any circle onto
 the heading it is on, slows until it flies with its nose level and sinks 3 blocks a second, banking less the lower it
@@ -503,8 +503,10 @@ the way down, starting from a tenth above the rotation speed (`rotateSpeed`): fu
 no new settings. Down, it idles the engines, lowers the nose and brakes to a stop, steering along the heading
 with the nose wheel; then it pulls the thrust levers to idle, centres the tiller, sets the parking brake and
 switches itself off. It lowers the gear as it starts down, and on a landing at the pin as it turns onto final. It lands
-on whatever lies below, so line it up over open, level ground first. Applying the
-settings while it comes down goes around, climbing away to the altitude set.
+on whatever lies below, so line it up over open, level ground first. While it comes down it takes no new settings,
+so nothing pressed by accident calls the landing off: Apply stays dark and the flight deck's controls thud. Disengage
+still switches it off, handing the airliner back to the thrust levers; engaged again in the air, it flies on from
+there.
 
 An airliner left flying with nobody aboard (everyone jumped out with a parachute, say) lands by itself after a minute,
 as if Land had been pressed, so it does not fly on for ever. The minute stops and starts over as soon as anyone is

@@ -221,11 +221,6 @@ public class AutopilotBlockEntity extends BlockEntity {
             Settings::new
         );
 
-        /** Whether these settings fly to the pin to land near it. */
-        public boolean landsAtPin() {
-            return lateral == Lateral.DESTINATION && landAtPin;
-        }
-
         Settings withSpeed(int to) {
             return new Settings(to, altitude, heading, lateral, circle, destination, landAtPin);
         }
@@ -908,7 +903,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         Settings touched = touched(button, along, flying(), state.heading());
-        if (refusal(level, state, touched) != null) {
+        if (refusal() != null) {
             thud();
         } else if (button == Button.SPEED || button == Button.ALTITUDE) {
             float note = Mth.lerp((float) Mth.clamp(along, 0, 1), NOTE_LOW, NOTE_HIGH);
@@ -1010,8 +1005,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Sets the autopilot from its settings screen: flies the settings, engaging it first if it is off (to take off, or
      * to fly on from where it is in the air), lands, or switches it off. Each setting is held to what the autopilot
      * flies, and only one that differs from what it flies now is taken, so settings sent back as they were neither
-     * round a target off nor start an orbit's circle afresh. Flying the settings while landing goes around; once down
-     * it only stops. Says what it does, or why it cannot.
+     * round a target off nor start an orbit's circle afresh. Coming in to land, and once down, it takes none (see
+     * {@link #refusal}). Says what it does, or why it cannot.
      */
     public Component set(SetAutopilot.Action action, Settings settings) {
         if (action == SetAutopilot.Action.OFF) {
@@ -1027,7 +1022,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (action == SetAutopilot.Action.LAND) {
             return land(level, state);
         }
-        Component refused = refusal(level, state, settings);
+        Component refused = refusal();
         if (refused != null) {
             return refused;
         }
@@ -1046,15 +1041,6 @@ public class AutopilotBlockEntity extends BlockEntity {
                     announcements.announce(Announcement.TAKEOFF, this);
                 }
             }
-        } else if (phase == Phase.LAND) {
-            // A go-around: it climbs away again, and the next tick finds whether to climb, descend or hold.
-            phase = Phase.CLIMB;
-            if (level instanceof ServerLevel serverLevel) {
-                atc.goAround(serverLevel, this, state, radioAltitude(level, state));
-            }
-        } else if (pinLanding.onFinal() && level instanceof ServerLevel serverLevel) {
-            // On final to a runway near the pin, not yet flaring: it goes around too, climbing away off the glide path.
-            atc.goAround(serverLevel, this, state, radioAltitude(level, state));
         }
         // Whatever is set, a runway near the pin is given up; still set to land there, it looks for one afresh.
         pinLanding.abandon();
@@ -1098,39 +1084,45 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Why the autopilot will not fly new settings now, or null if it will: rolling out after landing, or too low to go
-     * around from landing near the pin. The flight deck's controls thud instead of sounding a setting it would refuse.
+     * Why the autopilot will not fly new settings now, or null if it will: coming in to land, so that nothing pressed
+     * by accident, as young pilots press everything, calls the landing off and climbs away again (switched off, it
+     * stops landing); or rolling out after landing. The flight deck's controls thud instead of sounding a setting it
+     * would refuse.
      */
     @Nullable
-    private Component refusal(Level level, SableFlight.State state, Settings settings) {
+    private Component refusal() {
         if (phase == Phase.ROLLOUT) {
             return Component.translatable("message.aerolarge.autopilot.rolling_out");
         }
-        if (tooLowToGoAround(level, state, settings)) {
-            return Component.translatable("message.aerolarge.autopilot.pin.too_low");
+        if (comingIn()) {
+            return Component.translatable("message.aerolarge.autopilot.coming_in");
         }
         return null;
     }
 
     /**
-     * Whether it is landing on the runway near the pin, below the height the flare starts at, and the settings would
-     * stop it landing there: too low to go around then, it lands, and the settings are not taken. Settings that still
-     * land there go around, as they do for the plain landing.
+     * Whether it is coming in to land: landing ahead, or on final to the runway near the pin and landing on it. It
+     * takes no new settings then (see {@link #refusal}) and is not told to land again, and its settings screen leaves
+     * Apply and Land dark.
      */
-    private boolean tooLowToGoAround(Level level, SableFlight.State state, Settings settings) {
-        return phase == Phase.LAND && pinLanding.landing() && !settings.landsAtPin() && radioAltitude(level, state) < FLARE_HEIGHT;
+    public boolean comingIn() {
+        return phase == Phase.LAND || pinLanding.onFinal();
     }
 
     /**
      * Lands the airliner ahead, engaging the autopilot if it is off. Out of any circle onto the heading it is on, it
      * comes down gently, slowing to the speed it flies nose level at, and flares over the ground to touch down softly;
      * then it idles the engines and brakes to a stop, parks and hands back to the flight deck (see {@link #fly}). Only
-     * in the air.
+     * in the air, and not while it comes in to land already, where it would give up the runway near the pin for
+     * whatever lies ahead.
      */
     private Component land(Level level, SableFlight.State state) {
         double radio = radioAltitude(level, state);
         if (radio <= AIRBORNE) {
             return Component.translatable("message.aerolarge.autopilot.on_ground");
+        }
+        if (comingIn()) {
+            return Component.translatable("message.aerolarge.autopilot.coming_in");
         }
         if (phase == Phase.OFF) {
             engage(level, state);

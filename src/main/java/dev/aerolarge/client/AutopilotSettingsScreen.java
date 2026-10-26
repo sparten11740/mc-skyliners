@@ -379,12 +379,13 @@ public class AutopilotSettingsScreen extends Screen {
         engage.visible = !on;
         engage.active = (assembled || assembles) && pinned && !assembling;
         apply.visible = on;
-        // Once down after landing it only brakes to a stop; landing, applying goes around, whatever is set; otherwise
-        // only something set anew is worth applying.
-        apply.active = phase != Phase.ROLLOUT && pinned && (phase == Phase.LAND || autopilot != null && setAnew(autopilot));
+        // Coming in to land, and once down braking to a stop, it takes no new settings; otherwise only something set
+        // anew is worth applying.
+        apply.active = phase != Phase.ROLLOUT && pinned && autopilot != null && !autopilot.comingIn() && setAnew(autopilot);
         disengage.visible = on;
-        // Only in the air, and not while it lands already.
-        land.active = assembled && (on ? phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE : !takeoff);
+        // Only in the air, and not while it comes in to land already.
+        boolean flying = phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE;
+        land.active = assembled && (on ? flying && !autopilot.comingIn() : !takeoff);
         // Stuck on the ground with its engines running, where landing is no use, it can be hopped free instead.
         unstuck.visible = hopping || assembled && autopilot.stuck();
         land.visible = !unstuck.visible;
