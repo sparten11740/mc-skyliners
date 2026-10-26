@@ -144,8 +144,14 @@ function plugDoorLang() {
 write(`assets/${ID}/blockstates/cockpit_door.json`, { variants: { "": { model: `${ID}:block/cockpit_door` } } });
 write(`assets/${ID}/models/block/cockpit_door.json`, { textures: { particle: `${ID}:block/cockpit_door_edge` } });
 cubes.cockpit_door = null;
+// Locked from the flight deck (see CockpitDoorBlockEntity), it says so to whoever locks it or tries it from the aisle.
 function cockpitDoorLang() {
-  return { "block.aerolarge.cockpit_door": "Cockpit Door" };
+  return {
+    "block.aerolarge.cockpit_door": "Cockpit Door",
+    "message.aerolarge.cockpit_door.locked": "Cockpit door locked: it opens only from the flight deck",
+    "message.aerolarge.cockpit_door.unlocked": "Cockpit door unlocked",
+    "message.aerolarge.cockpit_door.locked_out": "Locked from the flight deck",
+  };
 }
 
 // The airstair controller is a plain cube; the call button is vanilla's stone button, retextured.

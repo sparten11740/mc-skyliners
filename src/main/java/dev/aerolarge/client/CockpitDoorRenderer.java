@@ -11,6 +11,7 @@ import dev.aerolarge.block.CockpitDoorBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -58,6 +59,17 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
     private static final float LEVER_LONG = 0.32F;
     private static final float LEVER_TALL = 0.07F;
     private static final float LEVER_STANDS = 0.1F;
+    /**
+     * The lock's lamp over the handle on each face: how far over the handle's middle, how big, in blocks, and how far
+     * it stands out of the face; red while the door is locked from the flight deck, green while it is not, and lit
+     * whatever the light round it.
+     */
+    private static final float LAMP_OVER = 0.22F;
+    private static final float LAMP_SIZE = 0.09F;
+    private static final float LAMP_STANDS = 0.02F;
+    private static final int LAMP_LOCKED = 0xE02424;
+    private static final int LAMP_OPEN = 0x2EC24A;
+    private static final ResourceLocation LAMP = ResourceLocation.withDefaultNamespace("block/white_concrete");
     private static final ResourceLocation EDGE = texture("cockpit_door_edge");
     private static final ResourceLocation LEVER = texture("landing_gear");
     private static final ResourceLocation GLASS_PICTURE = texture("plug_door_glass");
@@ -111,6 +123,7 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
         float turn = (left ? -SWING : SWING) * ease(progress);
         pose.rotateAround(Axis.YP.rotationDegrees(turn), hingeX, 0, 1);
         panel(buffers, pose.last(), lights, rows, jamb, left);
+        lamps(buffers, pose.last(), jamb, left, door.locked() ? LAMP_LOCKED : LAMP_OPEN);
         pose.popPose();
     }
 
@@ -322,6 +335,43 @@ public class CockpitDoorRenderer implements BlockEntityRenderer<CockpitDoorBlock
         int row = Math.clamp((int) ((ay + by) / 2), 0, lights.rows() - 1);
         quad(consumer, pose, sprite, lights.at(column, row, true), shade, nx, ny, 0,
             ax, ay, 1, 0, 1, bx, by, 1, 1, 1, bx, by, back, 1, 0, ax, ay, back, 0, 0);
+    }
+
+    /**
+     * The lock's lamps over the handle, on both faces of the panel, glowing this colour: red while it is locked, so
+     * whoever cannot read sees it from the aisle, and green while it is not.
+     */
+    private static void lamps(MultiBufferSource buffers, PoseStack.Pose pose, float jamb, boolean left, int colour) {
+        VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
+        TextureAtlasSprite white = sprite(LAMP);
+        float x = jamb + (left ? HANDLE_X : WIDE - HANDLE_X);
+        float y = HANDLE_Y + LAMP_OVER;
+        float back = 1 - THICK;
+        lamp(solid, pose, white, colour, x - LAMP_SIZE / 2, y - LAMP_SIZE / 2, 1, x + LAMP_SIZE / 2, y + LAMP_SIZE / 2, 1 + LAMP_STANDS);
+        lamp(solid, pose, white, colour, x - LAMP_SIZE / 2, y - LAMP_SIZE / 2, back - LAMP_STANDS, x + LAMP_SIZE / 2, y + LAMP_SIZE / 2, back);
+    }
+
+    /** A small lit box from one corner to the other, in one colour on every face. */
+    private static void lamp(VertexConsumer consumer, PoseStack.Pose pose, TextureAtlasSprite sprite, int colour,
+                             float x0, float y0, float z0, float x1, float y1, float z1) {
+        float[][] faces = {
+            {0, 0, 1, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1},
+            {0, 0, -1, x1, y0, z0, x0, y0, z0, x0, y1, z0, x1, y1, z0},
+            {0, 1, 0, x0, y1, z1, x1, y1, z1, x1, y1, z0, x0, y1, z0},
+            {0, -1, 0, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1},
+            {1, 0, 0, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1},
+            {-1, 0, 0, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0},
+        };
+        for (float[] face : faces) {
+            for (int i = 0; i < 4; i++) {
+                consumer.addVertex(pose, face[3 + i * 3], face[4 + i * 3], face[5 + i * 3])
+                    .setColor(0xFF000000 | colour)
+                    .setUv(sprite.getU(0.5F), sprite.getV(0.5F))
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(pose, face[0], face[1], face[2]);
+            }
+        }
     }
 
     /** A box from one corner to the other, every face showing the whole sprite. */

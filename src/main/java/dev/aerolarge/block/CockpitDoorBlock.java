@@ -48,8 +48,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * doorway is clear: from the moment the door starts to open until it is shut again. FRAMED is whether the doorway has
  * its frame: doors built before it had one are two blocks wide, the panel right across them, and stay so.
  *
- * <p>Using any part of it, from either side, opens or shuts the whole door. Villagers do not open it: the passengers
- * have no business on the flight deck. Only the blueprints place it, so it has no item and drops nothing.
+ * <p>Using any part of it, from either side, opens or shuts the whole door. Sneaking and using it from the flight deck
+ * locks or unlocks it; locked, it does not open from the aisle, though it still shuts from there, and opens from the
+ * flight deck as ever. Villagers do not open it: the passengers have no business on the flight deck. Only the
+ * blueprints place it, so it has no item and drops nothing.
  */
 public class CockpitDoorBlock extends BaseEntityBlock {
     private static final MapCodec<CockpitDoorBlock> CODEC = simpleCodec(CockpitDoorBlock::new);
@@ -196,9 +198,29 @@ public class CockpitDoorBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide) {
-            door.use();
+            press(door, state, player, hit);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * Used, on the server: sneaking from the flight deck, it locks or unlocks; locked and shut, from the aisle, it
+     * rattles; else it opens or shuts.
+     */
+    private static void press(CockpitDoorBlockEntity door, BlockState state, Player player, BlockHitResult hit) {
+        boolean inside = fromFlightDeck(state, hit);
+        if (inside && player.isShiftKeyDown()) {
+            door.toggleLock(player);
+        } else if (door.locked() && !inside && !door.opening()) {
+            door.rattle(player);
+        } else {
+            door.use();
+        }
+    }
+
+    /** Whether the door was used from the flight deck: on a face looking back into it, away from the aisle. */
+    private static boolean fromFlightDeck(BlockState state, BlockHitResult hit) {
+        return hit.getDirection() == state.getValue(FACING).getOpposite();
     }
 
     /** Taken apart on purpose (see {@link dev.aerolarge.FrameProtection}), the whole door goes, not just the part. */
