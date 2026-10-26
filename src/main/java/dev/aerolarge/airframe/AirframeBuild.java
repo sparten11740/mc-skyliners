@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import dev.aerolarge.AerolargeConfig;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 /**
- * An airliner going up: its layout turned to face the right way and set at a spot in the world, then placed a few
+ * An airframe going up: its layout turned to face the right way and set at a spot in the world, then placed a few
  * thousand blocks a tick. Blocks are set without updating their neighbours: the layout already holds each one's
  * final state (both halves of every door, the curtains and tall windows joined up, the water at rest), and a
  * neighbour update halfway through would tear down a door whose other half is not placed yet.
@@ -39,10 +40,12 @@ public final class AirframeBuild {
     private static final int GLUE_ACROSS = 24;
     private static final int GLUE_UP = 16;
 
-    private final List<BlockPos> positions;
-    private final List<BlockState> states;
+    /** Where each block goes, packed as {@link BlockPos#asLong} does, beside the state it gets: a big airframe has millions. */
+    private final long[] positions;
+    private final BlockState[] states;
     private final Map<BlockPos, Fitting> fittings;
     private final Rotation rotation;
+    private final boolean glued;
     @Nullable
     private final UUID builder;
     private int next;
@@ -52,18 +55,19 @@ public final class AirframeBuild {
         this.states = placement.states();
         this.fittings = placement.fittings();
         this.rotation = placement.rotation();
+        this.glued = placement.glued();
         this.builder = builder;
     }
 
     /**
      * Where a layout lands in the world: its nose tip at {@code nose}, the tail stretching away along {@code along},
-     * its tires on nose's y.
+     * its tires on nose's y. Its positions are packed as {@link BlockPos#asLong} does, each beside its block's state.
      */
     public record Placement(
-        List<BlockPos> positions, List<BlockState> states, Map<BlockPos, Fitting> fittings, Rotation rotation, int blocked, BlockPos firstBlocked,
-        int top
+        long[] positions, BlockState[] states, Map<BlockPos, Fitting> fittings, Rotation rotation, boolean glued, int blocked,
+        BlockPos firstBlocked, int top
     ) {
-        public static Placement of(ServerLevel level, AirframeLayout layout, BlockPos nose, Direction along) {
+        public static Placement of(ServerLevel level, Layout layout, BlockPos nose, Direction along) {
             // The layout's tail runs south; turning that onto `along` turns every position and block state with it.
             Rotation rotation = switch (along) {
                 case WEST -> Rotation.CLOCKWISE_90;
@@ -71,36 +75,55 @@ public final class AirframeBuild {
                 case EAST -> Rotation.COUNTERCLOCKWISE_90;
                 default -> Rotation.NONE;
             };
-            List<BlockPos> positions = new ArrayList<>(layout.cells().size());
-            List<BlockState> states = new ArrayList<>(layout.cells().size());
-            int blocked = 0;
-            BlockPos firstBlocked = null;
-            int top = Integer.MIN_VALUE;
-            // Air first, so the cabin is cleared before anything goes in it, then bottom to top.
-            List<Map.Entry<BlockPos, BlockState>> cells = new ArrayList<>(layout.cells().entrySet());
-            cells.sort((a, b) -> a.getValue().isAir() != b.getValue().isAir()
-                ? (a.getValue().isAir() ? -1 : 1)
-                : Integer.compare(a.getKey().getY(), b.getKey().getY()));
-            for (Map.Entry<BlockPos, BlockState> cell : cells) {
-                BlockPos pos = nose.offset(cell.getKey().rotate(rotation));
-                positions.add(pos);
-                // Through the level, so blocks that turn themselves with their surroundings in mind (other mods') can.
-                states.add(cell.getValue().rotate(level, pos, rotation));
-                top = Math.max(top, pos.getY());
-                if (!level.isInWorldBounds(pos)) {
-                    continue;
-                }
-                BlockState there = level.getBlockState(pos);
-                if (!there.isAir() && !there.canBeReplaced()) {
-                    blocked++;
-                    if (firstBlocked == null) {
-                        firstBlocked = pos;
-                    }
-                }
-            }
+            Laying laying = new Laying(level, nose, rotation, layout.size());
+            layout.inOrder(laying::add);
             Map<BlockPos, Fitting> fittings = new HashMap<>();
             layout.fittings().forEach((pos, fitting) -> fittings.put(nose.offset(pos.rotate(rotation)), fitting));
-            return new Placement(positions, states, fittings, rotation, blocked, firstBlocked, top);
+            return new Placement(Arrays.copyOf(laying.positions, laying.count), Arrays.copyOf(laying.states, laying.count), fittings, rotation,
+                layout.glued(), laying.blocked, laying.firstBlocked, laying.top);
+        }
+    }
+
+    /** A placement being worked out: each block turned and set at its spot in the world, and what stands in its way. */
+    private static final class Laying {
+        private final ServerLevel level;
+        private final BlockPos nose;
+        private final Rotation rotation;
+        private final long[] positions;
+        private final BlockState[] states;
+        private final BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        private int count;
+        private int blocked;
+        @Nullable
+        private BlockPos firstBlocked;
+        private int top = Integer.MIN_VALUE;
+
+        Laying(ServerLevel level, BlockPos nose, Rotation rotation, int size) {
+            this.level = level;
+            this.nose = nose;
+            this.rotation = rotation;
+            this.positions = new long[size];
+            this.states = new BlockState[size];
+        }
+
+        void add(BlockPos cell, BlockState state) {
+            BlockPos turned = cell.rotate(rotation);
+            at.set(nose.getX() + turned.getX(), nose.getY() + turned.getY(), nose.getZ() + turned.getZ());
+            positions[count] = at.asLong();
+            // Through the level, so blocks that turn themselves with their surroundings in mind (other mods') can.
+            states[count] = state.rotate(level, at, rotation);
+            count++;
+            top = Math.max(top, at.getY());
+            if (!level.isInWorldBounds(at)) {
+                return;
+            }
+            BlockState there = level.getBlockState(at);
+            if (!there.isAir() && !there.canBeReplaced()) {
+                blocked++;
+                if (firstBlocked == null) {
+                    firstBlocked = at.immutable();
+                }
+            }
         }
     }
 
@@ -135,9 +158,9 @@ public final class AirframeBuild {
     private void glue(ServerLevel level) {
         BlockPos min = null;
         BlockPos max = null;
-        for (int i = 0; i < positions.size(); i++) {
-            if (!states.get(i).isAir()) {
-                BlockPos pos = positions.get(i);
+        for (int i = 0; i < positions.length; i++) {
+            if (!states[i].isAir()) {
+                BlockPos pos = BlockPos.of(positions[i]);
                 min = min == null ? pos : BlockPos.min(min, pos);
                 max = max == null ? pos : BlockPos.max(max, pos);
             }
@@ -146,9 +169,9 @@ public final class AirframeBuild {
             return;
         }
         Set<BlockPos> stretches = new HashSet<>();
-        for (int i = 0; i < positions.size(); i++) {
-            if (!states.get(i).isAir()) {
-                BlockPos pos = positions.get(i).subtract(min);
+        for (int i = 0; i < positions.length; i++) {
+            if (!states[i].isAir()) {
+                BlockPos pos = BlockPos.of(positions[i]).subtract(min);
                 for (int x : stretchesOver(pos.getX(), GLUE_ACROSS)) {
                     for (int y : stretchesOver(pos.getY(), GLUE_UP)) {
                         for (int z : stretchesOver(pos.getZ(), GLUE_ACROSS)) {
@@ -174,13 +197,13 @@ public final class AirframeBuild {
         return stretch > 0 && offset % (size - 1) == 0 ? new int[]{stretch - 1, stretch} : new int[]{stretch};
     }
 
-    /** Places the next batch; true once the whole airliner stands. */
+    /** Places the next batch; true once the whole airframe stands. */
     private boolean step(ServerLevel level) {
-        int end = Math.min(positions.size(), next + AerolargeConfig.BLOCKS_PER_TICK.get());
+        int end = Math.min(positions.length, next + AerolargeConfig.BLOCKS_PER_TICK.get());
         for (; next < end; next++) {
-            BlockPos pos = positions.get(next);
+            BlockPos pos = BlockPos.of(positions[next]);
             if (level.isInWorldBounds(pos)) {
-                level.setBlock(pos, states.get(next), FLAGS);
+                level.setBlock(pos, states[next], FLAGS);
                 Fitting fitting = fittings.get(pos);
                 BlockEntity blockEntity = fitting != null ? level.getBlockEntity(pos) : null;
                 if (blockEntity != null) {
@@ -190,15 +213,15 @@ public final class AirframeBuild {
                 }
             }
         }
-        boolean done = next >= positions.size();
-        if (done) {
+        boolean done = next >= positions.length;
+        if (done && glued) {
             glue(level);
         }
         if (builder != null && level.getPlayerByUUID(builder) instanceof ServerPlayer player) {
             if (done) {
                 player.displayClientMessage(Component.translatable("message.aerolarge.built"), false);
             } else if (level.getGameTime() % 10 == 0) {
-                player.displayClientMessage(Component.translatable("message.aerolarge.building", 100 * next / positions.size()), true);
+                player.displayClientMessage(Component.translatable("message.aerolarge.building", (int) (100L * next / positions.length)), true);
             }
         }
         return done;

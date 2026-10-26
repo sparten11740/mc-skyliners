@@ -45,7 +45,7 @@ final class AerolargeCommand {
             return 0;
         }
         AirframeBuild.start(level, placement, source.getPlayer());
-        source.sendSuccess(() -> Component.translatable("commands.aerolarge.build", placement.positions().size(), placement.blocked()), true);
-        return placement.positions().size();
+        source.sendSuccess(() -> Component.translatable("commands.aerolarge.build", placement.positions().length, placement.blocked()), true);
+        return placement.positions().length;
     }
 }

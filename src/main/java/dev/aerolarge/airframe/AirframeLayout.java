@@ -75,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -115,7 +116,7 @@ import net.minecraft.world.phys.Vec3;
  * starboard (east), y up from the ground under the wheels, z back toward the tail (south). Block states are drawn
  * the same way, so turning the whole thing to face another way is one rotation of positions and states.
  */
-public final class AirframeLayout {
+public final class AirframeLayout implements Layout {
     /** Stations between cabin lights along the fuselage. */
     static final int LIGHT_SPACING = 6;
     /** How many blocks tall a cabin window is. */
@@ -413,6 +414,21 @@ public final class AirframeLayout {
 
     public Map<BlockPos, BlockState> cells() {
         return cells;
+    }
+
+    /** Air first, so the cabin is cleared before anything goes in it, then bottom to top. */
+    @Override
+    public void inOrder(BiConsumer<BlockPos, BlockState> cell) {
+        List<Map.Entry<BlockPos, BlockState>> sorted = new ArrayList<>(cells.entrySet());
+        sorted.sort((a, b) -> a.getValue().isAir() != b.getValue().isAir()
+            ? (a.getValue().isAir() ? -1 : 1)
+            : Integer.compare(a.getKey().getY(), b.getKey().getY()));
+        sorted.forEach(entry -> cell.accept(entry.getKey(), entry.getValue()));
+    }
+
+    @Override
+    public int size() {
+        return cells.size();
     }
 
     double scale() {
@@ -2962,6 +2978,7 @@ public final class AirframeLayout {
     }
 
 
+    @Override
     public Map<BlockPos, Fitting> fittings() {
         return fittings;
     }
