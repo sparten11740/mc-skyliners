@@ -704,14 +704,16 @@ plain cream bulkhead panel to build walls with, a Cabin Arch a white archway in 
 backlit sign set into one, and an Exit Sign a green running man heading out through a doorway. All five can be
 crafted. A Cabin Arch puts up a whole archway like the airliner's: a round white arch over an opening three blocks
 wide, on white jambs three blocks tall either side of it, smooth white panelling round the opening with a moulding
-along its edge, a bead and a groove behind it, set into cream panels like the partition's and the same from either
-side. It goes up across the way you face, the foot of its left-hand jamb where you put it and the rest to your right
-and up, five blocks wide and five tall; sneak to put up a wide one, over an opening five blocks wide, seven blocks
-wide and six tall with partition panels in its top corners. It only goes up where there is room for all of it and
-nobody stands in its way. Breaking any piece of it takes the whole archway down, panels and all, and gives back the
-one Cabin Arch, as picking it does. The airliner's own archways are built a piece at a time and come down a piece at
-a time: taken down, or picked, such a piece keeps which piece it is, and goes down alone, the right-hand side of an
-archway as you face it or the left-hand side sneaking, for building archways of other shapes, with taller jambs say.
+along its edge, a bead and a groove behind it, the arch, its moulding and the panelling's edge all running smoothly
+round the curve as the cockpit door's arch does, without a step, set into cream panels like the partition's and the
+same from either side. It goes up across the way you face, the foot of its left-hand jamb where you put it and the
+rest to your right and up, five blocks wide and five tall; sneak to put up a wide one, over an opening five blocks
+wide, seven blocks wide and six tall with partition panels in its top corners. It only goes up where there is room
+for all of it and nobody stands in its way. Breaking any piece of it takes the whole archway down, panels and all,
+and gives back the one Cabin Arch, as picking it does. The airliner's own archways are built a piece at a time and
+come down a piece at a time: taken down, or picked, such a piece keeps which piece it is, and goes down alone, the
+right-hand side of an archway as you face it or the left-hand side sneaking, for building archways of other shapes,
+with taller jambs say.
 A Bulkhead Sign is a block of the partition's cream panelling with a lightbox in its face: a picture printed on white
 behind a slim brushed steel bezel, glowing whatever the light around (though it lights nothing), so it shows with the
 cabin lights set for the night. Each picture says what lies beyond without a word, in its room's colour: a seat, a
@@ -1387,9 +1389,10 @@ The geometry lives in `AirframeShape` (real A380 measurements in metres), is cut
 with the upper deck laid round the rooms under it by `UpperDeck` and its staircases, step by step and landing by
 landing, by `DeckStairs`, and fitted out by `CabinFitOut`, `TailDen` and
 `HoldFitOut`, the WC signs put up by `WcSigns`, the overhead ones once every room stands (each WC sign's block entity
-looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the skin follows the curve in
-`ShellGeometry`'s shapes, which `ShellModel` bakes (the windscreen's as a single pane, only its outer surface
-drawn), and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
+looks into its WC, in the airliner's frame through `SableFlight` once it is assembled); the cabin archways' arches are
+drawn round by `CabinArchModel` from the faces `ArchwayFaces` works out, baked once as the models load; the skin
+follows the curve in `ShellGeometry`'s shapes, which `ShellModel` bakes (the windscreen's as a single pane, only its
+outer surface drawn), and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `ScreenArc` lays out the flight deck's curved row
 of screens (`CockpitDisplayBlock`, whose block entity keeps where each panel stands and what it is linked to, and
 `CockpitKeys` where its touch keys are, and the shape of the autopilot's speedometer, steering dial and sky and of the

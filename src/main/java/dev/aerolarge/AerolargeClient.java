@@ -20,6 +20,7 @@ import dev.aerolarge.client.BlastFlash;
 import dev.aerolarge.client.BlastPuffParticle;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.BlueprintPreview;
+import dev.aerolarge.client.CabinArchModel;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CarriedAboard;
 import dev.aerolarge.client.CloudlessCabin;
@@ -181,6 +182,7 @@ public final class AerolargeClient {
 
     private static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register(ShellModel.LOADER, ShellModel.READER);
+        event.register(CabinArchModel.LOADER, CabinArchModel.READER);
     }
 
     private static void onAddLayers(EntityRenderersEvent.AddLayers event) {

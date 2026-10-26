@@ -40,10 +40,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * arch reads as one moulded piece set into the wall; the wall's two faces look the same.
  *
  * <p>PART is which block of the archway it is (see {@link Part}), and FACING points along the wall from the archway's
- * middle out to the side the piece is on; the middle column's look the same either way. Its model draws the curve a
- * pixel at a time, and its outline and what bumps into it follow the curve the same way. It sits in the cabin,
- * between rooms already open to each other through the archway under it, so it keeps no light out, and the curved
- * faces inside its block are lit as the cabin round it is.
+ * middle out to the side the piece is on; the middle column's look the same either way. Its model draws the curve
+ * round and smooth (the client's CabinArchModel), while its outline and what bumps into it step round the curve a
+ * pixel at a time. It sits in the cabin, between rooms already open to each other through the archway under it, so it
+ * keeps no light out, and the curved faces inside its block are lit as the cabin round it is.
  *
  * <p>Put down by hand, a whole archway goes up at once, like the airliner's at its default scale (see
  * {@link #getStateForPlacement}); WHOLE marks its pieces, which stand and fall together, and taken down it gives back
@@ -64,7 +64,7 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
      * How many rows tall the jambs of an archway put up by hand are: as the airliner's are at its default scale, a
      * head's height clear right across the opening.
      */
-    private static final int JAMB_ROWS = 3;
+    public static final int JAMB_ROWS = 3;
     /** How many blocks either side of its middle the opening of an archway put up by hand reaches: narrow or wide. */
     private static final int NARROW = 1;
     private static final int WIDE = 2;
@@ -80,8 +80,8 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
      * The blocks of the archways that the curve or its band passes through: the jambs either side of the opening, the
      * same for both sizes, and for each size the arch's blocks on one side of the middle and up the middle, named for
      * how many columns out from the middle they are and how many rows over the opening. The rest of the archway's
-     * blocks are open (inside the curve) or plain bulkhead (beyond the band). The models are generated for these same
-     * blocks, from the same curve (tools/generate_resources.mjs).
+     * blocks are open (inside the curve) or plain bulkhead (beyond the band). The models are drawn for these same
+     * blocks from the same curve (the client's CabinArchModel; tools/generate_resources.mjs checks the list).
      */
     public enum Part implements StringRepresentable {
         JAMB(0, 0, 0),
@@ -105,6 +105,21 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
             return name().toLowerCase(Locale.ROOT);
         }
 
+        /** How many blocks either side of the middle the opening of the archway it is a piece of reaches. */
+        public int span() {
+            return span;
+        }
+
+        /** How many columns out from the archway's middle it is. */
+        public int out() {
+            return out;
+        }
+
+        /** How many rows over the top of the opening's sides it is, the first row resting on them. */
+        public int over() {
+            return over;
+        }
+
         /** The top of the middle column, the arch's crown: of an archway put up whole, the piece it comes down as. */
         boolean crown() {
             return this != JAMB && out == 0;
@@ -117,8 +132,8 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
 
         /**
          * The outline drawn facing north (out to the north, the wall's faces east and west), a pixel at a time across
-         * the wall's face: a pixel is in it where its middle is out of the opening, just as the model draws it, so the
-         * outline steps round the curve with the arch and never over the open archway. The jamb is the whole block.
+         * the wall's face: a pixel is in it where its middle is out of the opening, so the outline steps round the
+         * curve the model draws, never as much as a pixel off it either way. The jamb is the whole block.
          */
         private VoxelShape shapeFacingNorth() {
             if (this == JAMB) {

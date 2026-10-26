@@ -2675,15 +2675,15 @@ const ROOM_DIVIDER_LANG = {
 // archway is worked out a pixel at a time across the wall, from how far the pixel's middle is from the edge's middle
 // line (round the arch's middle over the opening's sides, straight out to the side below them): inside the radius it
 // is open; the first pixel out is the moulding's bead, flush with the wall's faces; the next its groove, set back half
-// a pixel into both; then white panelling out to BAND; then the bulkhead's own cream panels. Each block is the pixels
-// of each kind in it merged into boxes, showing a face only where a box meets the open archway or something set back
-// further, so the arch's underside steps round its curve a pixel at a time. In the hand, a narrow archway whole, as one
-// goes up put down by hand.
+// a pixel into both; then white panelling out to BAND; then the bulkhead's own cream panels. That finds the blocks
+// the curve passes through, checked against CabinArchBlock.Part. The jamb, straight, is the pixels of each kind in it
+// merged into boxes, showing a face only where a box meets the open archway or something set back further. The arch's
+// pieces, and in the hand a narrow archway whole as one goes up put down by hand, are drawn round by the mod's own
+// "cabin_arch" loader, from the same rings round the same curve (see CabinArchModel), so the arch's underside and its
+// moulding follow the circle instead of stepping round it a pixel at a time.
 {
   // How far out from the opening's edge the white reaches, in pixels: CabinArchBlock.BAND.
   const BAND = 6;
-  // How many rows tall the jambs of an archway put up by hand are: CabinArchBlock.JAMB_ROWS.
-  const JAMB_ROWS = 3;
   // CabinArchBlock.Part: the jamb (the same for both sizes), then each size's arch blocks, by columns out from the
   // middle and rows over the opening, the opening reaching that many blocks either side of the middle.
   const SPANS = { narrow: 1, wide: 2 };
@@ -2774,52 +2774,28 @@ const ROOM_DIVIDER_LANG = {
     }
   }
   if (found.join() !== PARTS.join()) throw new Error(`cabin_arch: the curve passes through ${found}, CabinArchBlock.Part lists ${PARTS}`);
-  for (const part of PARTS) {
-    const [size, out, over] = part.split("_");
-    const span = SPANS[size] ?? 1;
-    // The jamb is the column beside the opening, a row below its top.
-    const [u0, v0] = part === "jamb" ? [radius(span), -16] : [16 * Number(out) - 8, 16 * (Number(over) - 1)];
-    write(`assets/${ID}/models/block/cabin_arch_${part}.json`, { parent: "minecraft:block/block", textures, elements: elements(span, u0, v0) });
+  // The jamb is the column beside the opening, a row below its top, the same for both sizes.
+  write(`assets/${ID}/models/block/cabin_arch_jamb.json`, { parent: "minecraft:block/block", textures, elements: elements(SPANS.narrow, radius(SPANS.narrow), -16) });
+  for (const part of PARTS.filter((part) => part !== "jamb")) {
+    write(`assets/${ID}/models/block/cabin_arch_${part}.json`, { loader: `${ID}:cabin_arch`, part, textures });
   }
   write(`assets/${ID}/blockstates/cabin_arch.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => PARTS.map((part) =>
       [`facing=${facing},part=${part}`, { model: `${ID}:block/cabin_arch_${part}`, ...(y ? { y } : {}) }]))),
   });
-  // In the hand, a narrow archway whole as it goes up put down by hand, seen from the front: the wall a fifth of its
-  // size, each kind's boxes over all of it in one flat colour of its texture.
-  {
-    const span = SPANS.narrow;
-    const width = 16 * (2 * span + 3);
-    const height = 16 * (JAMB_ROWS + rows(span));
-    const scale = 16 / width;
-    const left = -width / 2;
-    const bottom = -16 * JAMB_ROWS;
-    const lift = (16 - height * scale) / 2;
-    const flat = [4, 4, 5, 5];
-    const elements = merge(span, left, bottom, width, height).map((box) => {
-      const { texture, inset } = KINDS[box.kind];
-      const faces = { north: { texture, uv: flat }, south: { texture, uv: flat } };
-      for (const side of ["out", "in", "up", "down"]) {
-        if (exposed(span, left, bottom, box, side)) faces[{ out: "east", in: "west", up: "up", down: "down" }[side]] = { texture, uv: flat };
-      }
-      return {
-        from: [box.u * scale, lift + box.v * scale, 8 - (8 - inset) * scale],
-        to: [(box.u + box.w) * scale, lift + (box.v + box.h) * scale, 8 + (8 - inset) * scale],
-        faces,
-      };
-    });
-    write(`assets/${ID}/models/item/cabin_arch.json`, {
-      parent: "minecraft:block/block", textures, elements,
-      display: {
-        gui: { rotation: [15, -25, 0], translation: [0, 0, 0], scale: [0.9, 0.9, 0.9] },
-        ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
-        fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
-        thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.375, 0.375, 0.375] },
-        firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
-        firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
-      },
-    });
-  }
+  // In the hand, a narrow archway whole as it goes up put down by hand, seen from the front: the wall shrunk to fit the
+  // block, each face in one flat colour of its texture (see CabinArchModel).
+  write(`assets/${ID}/models/item/cabin_arch.json`, {
+    parent: "minecraft:block/block", loader: `${ID}:cabin_arch`, span: SPANS.narrow, textures,
+    display: {
+      gui: { rotation: [15, -25, 0], translation: [0, 0, 0], scale: [0.9, 0.9, 0.9] },
+      ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.5, 0.5, 0.5] },
+      fixed: { rotation: [0, 0, 0], translation: [0, 0, 0], scale: [1, 1, 1] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.375, 0.375, 0.375] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4] },
+    },
+  });
   // A piece standing alone, as the airliner's do, comes down as itself, kept as the block state to put it down as (as
   // picking one does, see CabinArchBlock). An archway put up whole comes down whole, as the one Cabin Arch it went up
   // from, which only its crown gives back, so taking it down never gives back more than went into it.
