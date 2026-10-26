@@ -559,6 +559,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     private int wheelsBelow;
     /** Whether the protection has taken the engines from the levers, to slow an airliner going too fast or too high. */
     private boolean governing;
+    /**
+     * Whether the set parking brake holds the engines at idle, on the ground with the autopilot off (see
+     * {@link #holdOnBrake}). Not saved: looked at every tick.
+     */
+    private boolean heldOnBrake;
     /** Whether, set to take off, it still holds the brakes for the tower's clearance (see {@link AtcRadio#clearing}). */
     private boolean awaitingClearance;
     /**
@@ -1429,7 +1434,8 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * With the autopilot off, in the air: the jets damp quick pitching and rolling, and push the nose and the wings
-     * back inside the safe attitude once they go past it. On the ground they stay quiet.
+     * back inside the safe attitude once they go past it. On the ground they stay quiet, and the set parking brake
+     * holds the engines at idle (see {@link #holdOnBrake}).
      */
     private void protect(ServerLevel level, SableFlight.State state) {
         double pitch = state.pitch();
@@ -1445,7 +1451,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         lastRoll = roll;
         double pitchCommand = 0;
         double rollCommand = 0;
-        if (radioAltitude(level, state) > AIRBORNE) {
+        double radio = radioAltitude(level, state);
+        if (radio > AIRBORNE) {
             double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
             double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
             double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
@@ -1470,6 +1477,38 @@ public class AutopilotBlockEntity extends BlockEntity {
             resyncControls(level);
             setChanged();
         }
+        holdOnBrake(level, radio);
+    }
+
+    /**
+     * On the ground with the parking brake set, the engines stay at idle whatever the thrust levers say: the wheels'
+     * brakes cannot hold the airliner against any thrust, and a set brake should keep it where it stands. Released, or
+     * once in the air, the engines follow the levers again.
+     */
+    private void holdOnBrake(ServerLevel level, double radio) {
+        if (radio <= AIRBORNE && parkingBrakeSet(level)) {
+            heldOnBrake = true;
+            // Every tick, so a lever moved meanwhile does not get the engines back.
+            for (Channel engine : ENGINES) {
+                drive(level, engine, 0);
+            }
+        } else if (heldOnBrake) {
+            heldOnBrake = false;
+            if (!governing) {
+                resyncControls(level);
+            }
+        }
+    }
+
+    /** Whether the airliner's parking brake is set; false for one built without a parking brake. */
+    private boolean parkingBrakeSet(ServerLevel level) {
+        for (BlockPos offset : controls) {
+            BlockState control = level.getBlockState(worldPosition.offset(offset));
+            if (control.getBlock() instanceof ParkingBrakeBlock) {
+                return control.getValue(ParkingBrakeBlock.SET);
+            }
+        }
+        return false;
     }
 
     /**

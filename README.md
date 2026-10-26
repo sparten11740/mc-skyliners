@@ -115,7 +115,9 @@ clearer) and the drop release (see The hold) as tiles on the middle screen, and 
 brake and the landing gear as keys on the sloped panel under the screens. Each shows its switch's state in a picture
 and a colour. The switches themselves stand out of sight in the avionics bay under the flight deck's floor, as on the
 A380, and a touch works them just as using them would, sneaking or not. The parking brake is set when the airliner is
-built. The dimmer steps every light in the cabin from bright
+built. While it is set on the ground and the autopilot is off, the engines stay at idle whatever the thrust levers
+say, since the wheels' brakes cannot hold the airliner against any thrust: release it to taxi or take off by hand. The
+dimmer steps every light in the cabin from bright
 to dimmed (as for take-off and landing) to a blue night glow and back, the change running down the cabin front to
 back; at night the lounge's starlit ceiling goes dark but for its stars, which glow whatever the light, and the WC,
 the crew room and the lavatories keep their lights on as dimmed, as an airliner's lavatories do. Where Veil is
