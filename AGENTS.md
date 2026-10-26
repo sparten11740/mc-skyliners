@@ -106,3 +106,21 @@ feature as a player meets it, and its Building section says which classes do wha
 - Target airliners by uuid. Never run `sable teleport` or `sable remove` on `@e`: those hit every sub-level, the
   wheels of Create Aeronautics' vehicles included.
 - Stay aboard a flying airliner. One that outruns the loaded chunks round the player unloads where it is.
+- Play-test with Blockpilot (github.com/sparten11740/blockpilot-mcp), a client mod that lets an agent drive the game:
+  real clicks and keys, screenshots, waits on conditions, the integrated server's commands with their output, and
+  the sounds and messages heard. Put its jar in `run/mods`; every start writes the launcher `run/blockpilot/blockpilot`
+  (`blockpilot --wait-ready 300 --wait-world "status"`; `help <command>` gives any command's syntax), and it also
+  serves MCP (`--mcp`). On macOS start the client in the background after `caffeinate -u -t 3600`, or with the display
+  asleep its window cannot open, and close it with `quit`, which saves the world and waits for the game to exit.
+  - Aboard an assembled airliner, positions for `use`, `block` and `nbt` are plot positions: find them with
+    `sable:find <sub> <block id>`. `sable:info <sub> brief` reads pitch, speed, climb and height above the ground, and
+    `sample sable:info <sub> brief every 20t x60` records a landing a second at a time.
+  - `server ...` runs as the server console at the world's spawn, so selectors and `distance=` there count from
+    spawn: wrap them in `execute at @p`.
+  - Taking off from the autopilot's screen leaves a standing player behind, and an airliner flying away from the
+    player unloads within seconds. Board it straight away, in the same shell command: find its uuid with
+    `server sable info @e`, then `server execute positioned <plot pos> out_sub_level <uuid> run tp @p ~ ~ ~`.
+  - Sneaking and using a block with something in hand places that instead (a thrust lever pulled back, a button's
+    cover shut): `select` an empty slot first. `use <pos> hold=40t` holds the use key down.
+  - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
+    screenshot taken.
