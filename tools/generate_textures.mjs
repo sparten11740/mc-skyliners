@@ -1855,10 +1855,11 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 // The control panels' pictures, in the glass cockpit's colours: every setting and button has one, so the panels work
 // for players who cannot read yet. The panel's bezel: brushed dark metal, each row of it a little lighter or darker.
 // Its close button: an X, white so it can be drawn in any colour. The autopilot's: the airliner from above for its
-// title; a compass for the heading (cyan, its needle red to the north); a green hill with an up-and-down arrow for
-// the altitude; a speedometer for the speed (green, amber and red, the needle well round); a magenta circle with its
-// radius drawn in for the circle's radius. For the mode, a cyan arrow straight ahead to hold the heading and magenta
-// arrows round a circle to the left or right, in the colours of the settings each flies. Then the buttons: a green
+// title, and from the side, white so it can be drawn in any colour, to fly in the sky the altitude is set on; a compass
+// for the heading (cyan, its needle red to the north); a green hill with an up-and-down arrow for the altitude; a
+// speedometer for the speed (green, amber and red, the needle well round). For the way it flies, like road signs, the
+// path flown from the nose of a small airliner: straight on in cyan, or round a half circle to the left or right in
+// magenta, gently or tightly, an arrowhead at its end. Then the buttons: a green
 // airliner climbing off a runway to take off, or flying on level to engage in the air; an amber one settling onto
 // the runway to land; a green tick to apply; a red power symbol to switch the autopilot off. For the pilot's HUD, the
 // phases those buttons leave out: a green airliner climbing or descending beside a white arrow up or down, and an
@@ -1945,28 +1946,40 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (y === 13 && x >= 2 && x <= 13) return RUNWAY;
     return null;
   });
-  icon(autopilotOutput, "radius", (x, y) => {
-    const r = Math.hypot(x - 7.5, y - 7.5);
-    if (r >= 5.9 && r <= 7.3) return MAGENTA;
-    if (r <= 1.6 || onSegment(x, y, [7.5, 7.5], [11.2, 3.8], 1.8)) return INK;
+  icon(autopilotOutput, "airliner_side", (x, y) => {
+    const fin = y >= 2 && y <= 6 && x >= 1 && x <= y - 1;
+    const fuselage = y >= 7 && y <= 9 && x >= 1 && x <= (y === 8 ? 14 : 13);
+    const wing = y === 10 && x >= 5 && x <= 9;
+    if (fin || fuselage || wing) return y === 9 || wing ? PALE : INK;
     return null;
   });
-  icon(autopilotOutput, "hold_heading", (x, y) => {
-    const half = Math.abs(x - 7.5);
-    const head = y >= 1 && y <= 7 && half <= y - 0.5;
-    const shaft = y >= 8 && y <= 14 && half <= 1.5;
-    return head || shaft ? (x < 8 ? CYAN : CYAN_DARK) : null;
+  // The way it flies: the path from the nose of a small airliner at the bottom, an arrowhead at its end. Straight on;
+  // or round a half circle of a radius, to the right, or mirrored to the left. The airliner is drawn pixel by pixel,
+  // too small for the shape the larger pictures share to hold together.
+  const SMALL_AIRLINER = ["..##..", ".####.", "######", "..##..", ".####."];
+  const smallAirliner = (x, y, cx) => SMALL_AIRLINER[y - 11]?.[x - Math.round(cx - 3)] === "#";
+  const path = (x, y, points) => points.slice(1).some((point, i) => onSegment(x, y, points[i], point, 1.7));
+  icon(autopilotOutput, "straight_on", (x, y) => {
+    if (smallAirliner(x, y, 7.5)) return INK;
+    return path(x, y, [[7.5, 10], [7.5, 4]]) || inTriangle(x, y, [4.6, 4.8], [10.4, 4.8], [7.5, 0.6]) ? CYAN : null;
   });
-  // Round to the left: an arc most of the way round, its arrowhead at the top pointing left; to the right, mirrored.
-  for (const [name, mirror] of [["orbit_left", false], ["orbit_right", true]]) {
-    icon(autopilotOutput, name, (px, y) => {
-      const x = mirror ? 15 - px : px;
-      const r = Math.hypot(x - 7.5, y - 8.5);
-      const angle = (Math.atan2(8.5 - y, x - 7.5) * 180) / Math.PI;
-      if (inTriangle(x, y, [2.2, 3.3], [8, -0.6], [8, 7.2])) return MAGENTA;
-      if (r >= 4.2 && r <= 6.3 && !(angle > 92 && angle < 160)) return MAGENTA;
-      return null;
-    });
+  const TURN_FROM = 3.5;
+  const TURN_MIDDLE = 6.5;
+  for (const [size, radius] of [["gentle", 4], ["tight", 2.5]]) {
+    for (const [side, mirror] of [["left", true], ["right", false]]) {
+      const end = TURN_FROM + 2 * radius;
+      const arc = Array.from({ length: 13 }, (_, k) => {
+        const angle = Math.PI - (Math.PI * k) / 12;
+        return [TURN_FROM + radius + radius * Math.cos(angle), TURN_MIDDLE - radius * Math.sin(angle)];
+      });
+      const points = [[TURN_FROM, 10], [TURN_FROM, TURN_MIDDLE], ...arc, [end, TURN_MIDDLE + 1.5]];
+      icon(autopilotOutput, `turn_${size}_${side}`, (px, y) => {
+        const x = mirror ? 15 - px : px;
+        if (smallAirliner(x, y, TURN_FROM)) return INK;
+        const head = inTriangle(x, y, [end - 2.6, TURN_MIDDLE + 1.4], [end + 2.6, TURN_MIDDLE + 1.4], [end, TURN_MIDDLE + 4.6]);
+        return path(x, y, points) || head ? MAGENTA : null;
+      });
+    }
   }
   // A runway along the bottom, with its centre line.
   const runway = (x, y, from, to) => (y === 14 && x >= from && x <= to ? (x % 3 === 0 ? INK : RUNWAY) : null);

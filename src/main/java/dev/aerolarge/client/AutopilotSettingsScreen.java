@@ -1,26 +1,34 @@
 package dev.aerolarge.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.Button;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.CircleSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Settings;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.UnstickAirliner;
-import dev.aerolarge.client.PanelArt.ArrowButton;
+import dev.aerolarge.block.CockpitKeys;
+import dev.aerolarge.block.CockpitKeys.Dial;
 import dev.aerolarge.client.PanelArt.CloseButton;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.PanelArt.IconButton;
 import dev.aerolarge.client.PanelArt.Look;
 import dev.aerolarge.client.PanelArt.ValueBox;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -28,7 +36,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -38,48 +45,58 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * The autopilot's settings, opened by using the autopilot or its screen on the flight deck: a panel in the flight
- * deck's glass-cockpit colours (see {@link PanelArt}) on which every setting and button has a picture and a colour of
- * its own, so that a player who cannot read yet can fly too. In the title bar, what the autopilot is doing, with a
- * lamp: green while engaged, amber while off, dark until the airliner is assembled. Under it, on glass, how the
- * airliner flies now and what the autopilot is set to fly. Then the settings: hold a heading, circle left or right, or
- * fly to a pin, then the heading, altitude, speed and circle radius, each slid, stepped with the arrows either side of
- * its slider or typed into the box after it, and kept to what the autopilot flies. Along the bottom the big buttons: switched off,
- * engaging flies the settings (taking off first on the ground); engaged, they can be applied, or the autopilot
- * switched off. In the air it can also be told to land; stuck on the ground with its engines running, the airliner can
- * be hopped free in that button's place instead, for as long as it is held. The server checks it all again (see
- * {@link SetAutopilot} and {@link UnstickAirliner}). The game goes on behind it, and it closes only with the close button
- * in its title bar (or once the autopilot is gone), so it can stay open to watch the autopilot fly. Set to fly to a
- * pin, the rows give way to a map to drop the pin on (see {@link DestinationMap}).
+ * deck's glass-cockpit colours (see {@link PanelArt}) shaped as the flight deck's own controls are (see
+ * {@link AutopilotDeskArt}), so that a player who cannot read yet can fly too. In the title bar, what the autopilot is
+ * doing, with a lamp: green while engaged, amber while off, dark until the airliner is assembled. Under it, on glass,
+ * how the airliner flies now, or what engaging does. Then the controls, in the order the pilots' flight displays
+ * read: a speedometer, its needle at the speed now, set by clicking or dragging round it; the steering, a fan seen
+ * from above with the airliner nose up, clicked where to fly, over the turns, like road signs, tight and gentle either
+ * way round a circle and straight on, the one chosen lit; and the sky from the side, clicked or dragged to set the
+ * height the airliner flies at, faintly where it flies now. Pointed at, each shows a ghost of what a click there would
+ * set. Each also has a box to type its number into. Under the steering, the pin: chosen, the fan and the turns give
+ * way to a map to drop the pin on (see {@link DestinationMap}), with how tightly to circle it and whether to land at
+ * it beside; the height and speed stay. Along the bottom the big buttons: switched off, engaging flies the settings
+ * (taking off first on the ground); engaged, they can be applied, or the autopilot switched off. In the air it can
+ * also be told to land; stuck on the ground with its engines running, the airliner can be hopped free in that button's
+ * place instead, for as long as it is held. The server checks it all again (see {@link SetAutopilot} and
+ * {@link UnstickAirliner}). The game goes on behind it, and it closes only with the close button in its title bar (or
+ * once the autopilot is gone), so it can stay open to watch the autopilot fly.
  */
 public class AutopilotSettingsScreen extends Screen {
     /** The panel's size, the space inside its bezel, and the width of what is on its face. */
-    private static final int WIDTH = 328;
+    private static final int WIDTH = 360;
     private static final int HEIGHT = 232;
     private static final int PADDING = 8;
     private static final int CONTENT = WIDTH - 2 * (PanelArt.BORDER + PADDING);
-    /** From the panel's top: the glass, its lines of how it flies, the first row of settings and the big buttons. */
+    /** From the panel's top: the glass with its line, the controls, and the big buttons. */
     private static final int GLASS_Y = 34;
-    private static final int GLASS_HEIGHT = 24;
-    private static final int NOW_Y = GLASS_Y + 4;
-    private static final int SET_Y = GLASS_Y + 14;
-    private static final int ROWS_Y = 64;
+    private static final int GLASS_HEIGHT = 14;
+    private static final int LINE_Y = GLASS_Y + 3;
+    private static final int CONTROLS_Y = 54;
     private static final int ACTIONS_Y = 182;
-    /** Inside the glass: the space before a line of how it flies, and how far along it its values start. */
+    /** Inside the glass: the space before its line, and how far along it its values start. */
     private static final int GLASS_INSET = 4;
     private static final int VALUE_X = 50;
-    /** A row of settings: how far apart, a control's height, and across it the picture, arrows, slider and box. */
-    private static final int ROW = 23;
-    private static final int CONTROL_HEIGHT = 20;
-    private static final int ICON_GAP = 4;
-    private static final int STEP_WIDTH = 14;
-    private static final int STEP_GAP = 2;
-    private static final int BOX_GAP = 6;
-    private static final int BOX_WIDTH = 40;
-    private static final int SLIDER_WIDTH = CONTENT - Icon.SIZE - ICON_GAP - 2 * STEP_WIDTH - 2 * STEP_GAP - BOX_GAP - BOX_WIDTH;
-    /** The modes' pictures: their width, the space between them, and before the name of the one chosen. */
-    private static final int SEGMENT = 32;
-    private static final int SEGMENT_GAP = 2;
-    private static final int MODE_NAME_GAP = 8;
+    /** The controls: the speedometer's width and the sky's, the gap between columns, and the height of both. */
+    private static final int SPEEDOMETER_WIDTH = 84;
+    private static final int SKY_WIDTH = 72;
+    private static final int COLUMN_GAP = 8;
+    private static final int GAUGE_HEIGHT = 88;
+    /**
+     * The steering: the fan's height, the row of turns under it, how far down it starts, how tall it is and the gap
+     * between turns; the strip under them, for the pin, how far down it starts and how tall it is.
+     */
+    private static final int FAN_HEIGHT = 64;
+    private static final int TURNS_Y = 68;
+    private static final int TURN_HEIGHT = 22;
+    private static final int TURN_GAP = 2;
+    private static final int STRIP_Y = 94;
+    private static final int STRIP_HEIGHT = 18;
+    private static final int STRIP_TILE = 26;
+    /** The boxes the numbers are typed into: their width and height, and the gap over them. */
+    private static final int BOX_WIDTH = 44;
+    private static final int BOX_HEIGHT = 16;
+    private static final int BOX_GAP = 4;
     /** The big buttons along the bottom: their height and the space between them. */
     private static final int ACTION_HEIGHT = 36;
     private static final int ACTION_GAP = 6;
@@ -91,11 +108,6 @@ public class AutopilotSettingsScreen extends Screen {
     private static final float LAMP_OUT = 0.35F;
     private static final float LAMP_LOW = 0.7F;
     private static final float LAMP_PERIOD = 2000;
-    /** The steps a slider clicks into; typed in, any whole number goes. */
-    private static final int HEADING_DETENT = 5;
-    private static final int ALTITUDE_DETENT = 5;
-    private static final int SPEED_DETENT = 1;
-    private static final int RADIUS_DETENT = 10;
     /** What can be typed into a setting: a whole number of up to four digits, perhaps below zero. */
     private static final Pattern NUMBER = Pattern.compile("-?\\d{0,4}");
     private static final int MAX_LENGTH = 5;
@@ -104,21 +116,97 @@ public class AutopilotSettingsScreen extends Screen {
     private static final int UNREADABLE = 0xFFFF5555;
     /** The highest compass bearing; bearings go round past it. */
     private static final int LAST_BEARING = 359;
+    /**
+     * The speedometer in its control, in pixels: its middle, how far down, and its radius; how thick its band is; how
+     * long its ticks are, the numbered ones and the rest; how far in from the band its numbers are; and the bug's size.
+     * Its scale is the flight deck's (see {@link AutopilotDeskArt}).
+     */
+    private static final int DIAL_MIDDLE = 46;
+    private static final int DIAL_RADIUS = 34;
+    private static final int BAND = 5;
+    private static final int LONG_TICK = 6;
+    private static final int SHORT_TICK = 3;
+    private static final int SPEED_NUMBERS_IN = 13;
+    private static final int BUG = 5;
+    /**
+     * The speedometer's bug: how far apart its strokes fan, in radians for each pixel out from the band; and the room
+     * under its number at the dial's foot, in pixels.
+     */
+    private static final double BUG_SPREAD = 0.035;
+    private static final int SPEED_NUMBER_UP = 12;
+    /**
+     * The steering fan, in pixels: its radius; its ticks' lengths, the long ones and the rest; north's mark, how far in
+     * from the rim it starts and ends; the bug's radius; and how far up from the fan's foot the airliner's nose is.
+     */
+    private static final int FAN_RADIUS = 60;
+    private static final int FAN_LONG = 8;
+    private static final int FAN_SHORT = 4;
+    private static final int NORTH_FROM = 14;
+    private static final int NORTH_TO = 5;
+    private static final int FAN_BUG = 4;
+    private static final int NOSE = 16;
+    /** The path from the nose to the bug: how far up the fan it bends, as a share of its radius, and its pieces. */
+    private static final double PATH_BEND = 0.7;
+    private static final int PATH_PIECES = 16;
+    /**
+     * The sky in its control, in pixels: its frame, the ground along its bottom, the room above and below its scale,
+     * where across it its airliners fly, and how far from the height set the airliner must be for the climb or
+     * descent to it to be drawn.
+     */
+    private static final int SKY_FRAME = 2;
+    private static final int GROUND = 8;
+    private static final int SKY_ROOM = 6;
+    private static final int SKY_AIRLINER_X = 8;
+    private static final int CLIMB_DRAWN = 6;
+    /**
+     * The sky's ticks up its side, the numbered ones and the rest, and the gap between a number and its tick, in
+     * pixels.
+     */
+    private static final int HEIGHT_LONG = 5;
+    private static final int HEIGHT_SHORT = 3;
+    private static final int HEIGHT_NUMBER_GAP = 7;
+    /** How bright the airliner where a click in the sky would put it is, as a share of the one set. */
+    private static final float SKY_GHOST = 0.55F;
+    /** How loud the notes and the whoosh of setting the autopilot here are, as a share of full. */
+    private static final float SET_VOLUME = 0.4F;
+
+    private static final int GLASS = 0xFF05080D;
+    private static final int PICTURE_FAINT = 0xFF6A7380;
 
     private static final Icon AIRLINER = Icon.of("autopilot/airliner");
+    private static final Icon AIRLINER_SIDE = Icon.of("autopilot/airliner_side");
     private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
     private static final Icon ENGAGE = Icon.of("autopilot/engage");
     private static final Icon APPLY = Icon.of("autopilot/apply");
     private static final Icon DISENGAGE = Icon.of("autopilot/disengage");
     private static final Icon LAND = Icon.of("autopilot/land");
     private static final Icon UNSTUCK = Icon.of("autopilot/unstuck");
-    private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
-    private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
-    private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
     private static final Icon PIN = Icon.of("autopilot/destination");
     private static final Icon LAND_AT_PIN = Icon.of("autopilot/land_at_pin");
-    private static final Lateral[] MODES = Lateral.values();
-    private static final Component MODE = Component.translatable("screen.aerolarge.autopilot_settings.mode");
+
+    /**
+     * The ways it can fly, along the bottom of the steering, like road signs, hardest left out to hardest right: the
+     * flight deck's turns (see {@link AutopilotBlockEntity.Button}), with their pictures.
+     */
+    private enum Turn {
+        TIGHT_LEFT(Button.TIGHT_LEFT, PanelArt.TURN_TIGHT_LEFT),
+        GENTLE_LEFT(Button.GENTLE_LEFT, PanelArt.TURN_GENTLE_LEFT),
+        STRAIGHT(Button.STRAIGHT, PanelArt.STRAIGHT_ON),
+        GENTLE_RIGHT(Button.GENTLE_RIGHT, PanelArt.TURN_GENTLE_RIGHT),
+        TIGHT_RIGHT(Button.TIGHT_RIGHT, PanelArt.TURN_TIGHT_RIGHT);
+
+        final Button button;
+        final Icon icon;
+
+        Turn(Button button, Icon icon) {
+            this.button = button;
+            this.icon = icon;
+        }
+
+        Component label() {
+            return Component.translatable("screen.aerolarge.autopilot_settings.turn." + name().toLowerCase(Locale.ROOT));
+        }
+    }
 
     private final BlockPos pos;
     /** Whether engaging takes off, so the button says so. */
@@ -126,22 +214,30 @@ public class AutopilotSettingsScreen extends Screen {
     /** Whether the airliner is not assembled but engaging has its Physics Assembler assemble it, so it may engage. */
     private final boolean assembles;
     /**
+     * How hard gravity pulls where the autopilot is, in blocks a second each second: the size of a circle follows from
+     * it.
+     */
+    private final float gravity;
+    /**
      * Whether engaging has just had the Physics Assembler set to assembling the airliner: its button stays greyed out
      * from the moment it is pressed until the autopilot, moved aboard the assembled airliner, closes the screen, or the
      * server says it could not assemble it (see {@link #assemblyFailed}).
      */
     private boolean assembling;
     private Lateral lateral;
+    private CircleSize circle;
     /** Whether, flying to the pin, it lands near it rather than circling it. */
     private boolean landAtPin;
-    private final Setting heading;
-    private final Setting altitude;
-    private final Setting speed;
-    private final Setting radius;
+    private final Typed speed;
+    private final Typed heading;
+    private final Typed altitude;
     /** The panel's top left corner on the screen. */
     private int left;
     private int top;
-    private ModeSelector mode;
+    private SteeringFan fan;
+    private final List<TurnTile> turns = new ArrayList<>();
+    private PinTile pinTile;
+    private PinCircle pinCircle;
     private LandToggle landToggle;
     private IconButton engage;
     private IconButton apply;
@@ -150,7 +246,7 @@ public class AutopilotSettingsScreen extends Screen {
     private IconButton unstuck;
     /** Whether Unstuck is held down, keeping the control jets firing. */
     private boolean hopping;
-    /** The map the pin is dropped on, in the rows' place while the mode flies to it. */
+    /** The map the pin is dropped on, in the steering's place while it flies to the pin. */
     private final DestinationMap map;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
@@ -159,14 +255,15 @@ public class AutopilotSettingsScreen extends Screen {
         pos = opened.pos();
         takeoff = opened.takeoff();
         assembles = opened.assembles();
+        gravity = opened.gravity();
         lateral = settings.lateral();
+        circle = settings.circle();
         landAtPin = settings.landAtPin();
-        heading = new Setting("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, AutopilotBlockEntity.HEADING_STEP, HEADING_DETENT, true);
-        altitude = new Setting("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), AutopilotBlockEntity.ALTITUDE_STEP, ALTITUDE_DETENT, false);
-        speed = new Setting("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, AutopilotBlockEntity.SPEED_STEP, SPEED_DETENT, false);
-        radius = new Setting("radius", PanelArt.MAGENTA, settings.radius(), AutopilotBlockEntity.MIN_RADIUS, AutopilotBlockEntity.MAX_RADIUS, AutopilotBlockEntity.RADIUS_STEP, RADIUS_DETENT, false);
+        speed = new Typed("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, false);
+        heading = new Typed("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, true);
+        altitude = new Typed("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), false);
         BlockPos pin = lateral == Lateral.DESTINATION ? settings.destination() : null;
-        map = new DestinationMap(CONTENT, rowY(rows().size()) - rowY(1) + CONTROL_HEIGHT, pos, this::autopilot, pin, radius::value);
+        map = new DestinationMap(steeringWidth(), TURNS_Y + TURN_HEIGHT, pos, this::autopilot, pin, this::circleRadius);
     }
 
     /** Opens the settings as the server sent them, over whatever else is open. */
@@ -181,47 +278,42 @@ public class AutopilotSettingsScreen extends Screen {
         }
     }
 
-    /** The rows of settings under the mode, top to bottom. */
-    private List<Setting> rows() {
-        return List.of(heading, altitude, speed, radius);
+    private static int steeringWidth() {
+        return CONTENT - SPEEDOMETER_WIDTH - SKY_WIDTH - 2 * COLUMN_GAP;
     }
 
-    private int rowY(int row) {
-        return top + ROWS_Y + row * ROW;
-    }
-
-    private static Component modeName(Lateral mode) {
-        return Component.translatable("screen.aerolarge.autopilot_settings.mode." + mode.name().toLowerCase(Locale.ROOT));
-    }
-
-    /** A mode's picture and colour: straight ahead in the heading's cyan, round a circle in the radius's magenta. */
-    private static Icon modeIcon(Lateral mode) {
-        return switch (mode) {
-            case HEADING -> STRAIGHT;
-            case ORBIT_LEFT -> CIRCLE_LEFT;
-            case ORBIT_RIGHT -> CIRCLE_RIGHT;
-            case DESTINATION -> PIN;
-        };
-    }
-
-    private static int modeColour(Lateral mode) {
-        return mode == Lateral.HEADING ? PanelArt.CYAN : PanelArt.MAGENTA;
+    /** The circle round the pin as chosen, at the speed set, in blocks, for the map to draw. */
+    private int circleRadius() {
+        return (int) Math.round(circle.radius(speed.value(), gravity));
     }
 
     @Override
     protected void init() {
         left = (width - WIDTH) / 2;
         top = (height - HEIGHT) / 2;
+        turns.clear();
         int x = left + PanelArt.BORDER + PADDING;
-        mode = addRenderableWidget(new ModeSelector(x, rowY(0)));
-        // At the far end of the mode's row, over the map: whether to land at the pin.
-        landToggle = addRenderableWidget(new LandToggle(x + CONTENT - SEGMENT, rowY(0)));
-        List<Setting> rows = rows();
-        for (int i = 0; i < rows.size(); i++) {
-            rows.get(i).place(x, rowY(i + 1));
+        int y = top + CONTROLS_Y;
+        int boxY = y + GAUGE_HEIGHT + BOX_GAP;
+        addRenderableWidget(new SpeedDial(x, y));
+        speed.place(x + (SPEEDOMETER_WIDTH - BOX_WIDTH) / 2, boxY);
+        int steeringX = x + SPEEDOMETER_WIDTH + COLUMN_GAP;
+        int steering = steeringWidth();
+        fan = addRenderableWidget(new SteeringFan(steeringX, y, steering));
+        int turnWidth = (steering - (Turn.values().length - 1) * TURN_GAP) / Turn.values().length;
+        for (Turn turn : Turn.values()) {
+            turns.add(addRenderableWidget(new TurnTile(steeringX + turn.ordinal() * (turnWidth + TURN_GAP), y + TURNS_Y, turnWidth, turn)));
         }
-        map.setPosition(x, rowY(1));
+        map.setPosition(steeringX, y);
         addRenderableWidget(map);
+        int stripY = y + STRIP_Y;
+        pinTile = addRenderableWidget(new PinTile(steeringX, stripY));
+        pinCircle = addRenderableWidget(new PinCircle(steeringX + STRIP_TILE + TURN_GAP, stripY));
+        landToggle = addRenderableWidget(new LandToggle(steeringX + steering - STRIP_TILE, stripY));
+        heading.place(steeringX + (steering - BOX_WIDTH) / 2, stripY + (STRIP_HEIGHT - BOX_HEIGHT) / 2);
+        int skyX = steeringX + steering + COLUMN_GAP;
+        addRenderableWidget(new SkyColumn(skyX, y));
+        altitude.place(skyX + (SKY_WIDTH - BOX_WIDTH) / 2, boxY);
 
         // Along the bottom in three places: engage across the first two, or apply and disengage in them once engaged;
         // then land, or hop the airliner free. Closing is the close button in the title bar.
@@ -255,7 +347,27 @@ public class AutopilotSettingsScreen extends Screen {
         return autopilot.getBlockState().getValue(AutopilotBlock.FACING);
     }
 
-    /** Shows the buttons for the autopilot as it is now, and the settings the chosen mode flies. */
+    /** How the airliner flies now, while it is assembled; null otherwise. */
+    @Nullable
+    private SableClient.Attitude attitude(float partialTick) {
+        AutopilotBlockEntity autopilot = autopilot();
+        return autopilot != null ? SableClient.attitude(autopilot, nose(autopilot), partialTick) : null;
+    }
+
+    /**
+     * The compass bearing the airliner flies on now, or, until it is assembled, the way its nose points, as engaging
+     * takes off on: never the heading set, which the steering fan sets from it.
+     */
+    private double bearingNow(float partialTick) {
+        SableClient.Attitude attitude = attitude(partialTick);
+        if (attitude != null) {
+            return attitude.heading();
+        }
+        AutopilotBlockEntity autopilot = autopilot();
+        return autopilot != null ? AutopilotBlockEntity.bearing(nose(autopilot).toYRot()) : heading.value();
+    }
+
+    /** Shows the buttons for the autopilot as it is now, and the steering or the map for the way it flies. */
     private void refresh() {
         AutopilotBlockEntity autopilot = autopilot();
         boolean assembled = autopilot != null && SableClient.attitude(autopilot, nose(autopilot), 1) != null;
@@ -276,20 +388,20 @@ public class AutopilotSettingsScreen extends Screen {
         // Stuck on the ground with its engines running, where landing is no use, it can be hopped free instead.
         unstuck.visible = hopping || assembled && autopilot.stuck();
         land.visible = !unstuck.visible;
-        heading.setActive(lateral == Lateral.HEADING);
-        radius.setActive(lateral != Lateral.HEADING);
-        // Flying to a pin, the map takes the rows' place; the height, speed and circle stay as they were set.
+        // Flying to a pin, the map takes the steering's place, with how to circle it and whether to land there beside;
+        // the height and speed stay.
         map.visible = toPin;
+        pinCircle.visible = toPin;
         landToggle.visible = toPin;
-        for (Setting row : rows()) {
-            row.setVisible(!toPin);
-        }
+        fan.visible = !toPin;
+        turns.forEach(turn -> turn.visible = !toPin);
+        heading.setVisible(!toPin);
     }
 
     /**
      * Whether anything on the panel differs from what the autopilot flies now, as the server would take it (see
-     * {@link AutopilotBlockEntity#set}): the mode, the height or the speed, and then what the mode flies: the heading, the
-     * circle's radius, or the pin, its circle and whether it lands there.
+     * {@link AutopilotBlockEntity#set}): the way it steers, the height or the speed, and then what that way flies: the
+     * heading, how tightly it circles, or the pin, how tightly it circles it and whether it lands there.
      */
     private boolean setAnew(AutopilotBlockEntity autopilot) {
         boolean same = lateral == autopilot.lateral() && altitude.value() == Math.round(autopilot.targetAltitude())
@@ -299,8 +411,8 @@ public class AutopilotSettingsScreen extends Screen {
         }
         return switch (lateral) {
             case HEADING -> heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
-            case ORBIT_LEFT, ORBIT_RIGHT -> radius.value() != Math.round(autopilot.orbitRadius());
-            case DESTINATION -> pinMoved(autopilot) || radius.value() != Math.round(autopilot.orbitRadius()) || landAtPin != autopilot.landAtPin();
+            case ORBIT_LEFT, ORBIT_RIGHT -> circle != autopilot.circle();
+            case DESTINATION -> pinMoved(autopilot) || circle != autopilot.circle() || landAtPin != autopilot.landAtPin();
         };
     }
 
@@ -352,7 +464,7 @@ public class AutopilotSettingsScreen extends Screen {
     /** Sends the settings as they stand: to fly them, to land or with the autopilot switched off. */
     private void send(SetAutopilot.Action action) {
         BlockPos pin = map.pin() != null ? map.pin() : BlockPos.ZERO;
-        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, radius.value(), pin, landAtPin);
+        Settings settings = new Settings(speed.value(), altitude.value(), heading.value(), lateral, circle, pin, landAtPin);
         PacketDistributor.sendToServer(new SetAutopilot(pos, action, settings));
     }
 
@@ -405,9 +517,6 @@ public class AutopilotSettingsScreen extends Screen {
         PanelArt.drawTitleBar(graphics, font, AIRLINER, title, left, top, left + WIDTH);
         int x = left + PanelArt.BORDER + PADDING;
         PanelArt.drawGlass(graphics, x, top + GLASS_Y, x + CONTENT, top + GLASS_Y + GLASS_HEIGHT);
-        for (Setting row : rows()) {
-            row.drawIcon(graphics);
-        }
     }
 
     @Override
@@ -417,7 +526,7 @@ public class AutopilotSettingsScreen extends Screen {
         // What it is doing, as its screen on the flight deck says it, by a lamp, at the end of the title bar.
         AutopilotBlockEntity autopilot = autopilot();
         Level level = autopilot != null ? autopilot.getLevel() : null;
-        SableClient.Attitude attitude = autopilot != null ? SableClient.attitude(autopilot, nose(autopilot), partialTick) : null;
+        SableClient.Attitude attitude = attitude(partialTick);
         boolean on = AutopilotScreenRenderer.engaged(autopilot);
         Component state = AutopilotScreenRenderer.state(autopilot, attitude);
         int stateColour = attitude == null ? PanelArt.GREY : on ? PanelArt.GREEN : PanelArt.AMBER;
@@ -427,217 +536,85 @@ public class AutopilotSettingsScreen extends Screen {
         float brightness = attitude == null ? LAMP_OUT : on ? Mth.lerp(PanelArt.pulse(LAMP_PERIOD), LAMP_LOW, 1F) : 1F;
         PanelArt.drawLamp(graphics, stateX - LAMP_GAP, titleMiddle, stateColour, brightness);
 
-        // On the glass, how the airliner flies, and what it is set to fly or what engaging does.
-        if (attitude != null && level != null) {
+        // On the glass, how the airliner flies, or what engaging does.
+        int textX = left + PanelArt.BORDER + PADDING + GLASS_INSET;
+        if (attitude != null && level != null && on) {
             Vec3 here = SableClient.toWorld(level, Vec3.atCenterOf(pos));
-            line(graphics, "now", AutopilotScreenRenderer.now(attitude, here), NOW_Y, PanelArt.WHITE);
-            if (on) {
-                line(graphics, "set", AutopilotScreenRenderer.targets(autopilot), SET_Y, PanelArt.MAGENTA);
-            } else {
-                String hint = takeoff ? "screen.aerolarge.autopilot_settings.take_off_hint" : "screen.aerolarge.autopilot_settings.engage_hint";
-                graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, PanelArt.GREY, false);
-            }
+            graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings.now"), textX, top + LINE_Y, PanelArt.GREY, false);
+            graphics.drawString(font, AutopilotScreenRenderer.now(attitude, here), textX + VALUE_X, top + LINE_Y, PanelArt.WHITE, false);
+        } else if (attitude != null) {
+            String hint = takeoff ? "screen.aerolarge.autopilot_settings.take_off_hint" : "screen.aerolarge.autopilot_settings.engage_hint";
+            graphics.drawString(font, Component.translatable(hint), textX, top + LINE_Y, PanelArt.GREY, false);
         } else if (assembles) {
             String hint = assembling ? "screen.aerolarge.autopilot_settings.assembling" : "screen.aerolarge.autopilot_settings.assemble_hint";
-            graphics.drawString(font, Component.translatable(hint), glassTextX(), top + SET_Y, assembling ? PanelArt.AMBER : PanelArt.GREY, false);
-        }
-
-        // The mode chosen, by name, after its pictures.
-        int modeY = rowY(0) + (CONTROL_HEIGHT - PanelArt.GLYPH_HEIGHT) / 2;
-        graphics.drawString(font, modeName(lateral), mode.getRight() + MODE_NAME_GAP, modeY, modeColour(lateral), false);
-        for (Setting row : rows()) {
-            if (row.iconHovered(mouseX, mouseY)) {
-                setTooltipForNextRenderPass(row.tooltip());
-            }
+            graphics.drawString(font, Component.translatable(hint), textX, top + LINE_Y, assembling ? PanelArt.AMBER : PanelArt.GREY, false);
         }
     }
 
-    /** Where a line on the glass starts. */
-    private int glassTextX() {
-        return left + PanelArt.BORDER + PADDING + GLASS_INSET;
+    /** A note for setting a share of the way from the least to the most, higher the more. */
+    private static void note(double share) {
+        float pitch = Mth.lerp((float) Mth.clamp(share, 0, 1), AutopilotBlockEntity.NOTE_LOW, AutopilotBlockEntity.NOTE_HIGH);
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), pitch, SET_VOLUME));
     }
 
-    /** A line of how it flies: its name, then its values. */
-    private void line(GuiGraphics graphics, String key, Component values, int y, int colour) {
-        int x = glassTextX();
-        graphics.drawString(font, Component.translatable("screen.aerolarge.autopilot_settings." + key), x, top + y, PanelArt.GREY, false);
-        graphics.drawString(font, values, x + VALUE_X, top + y, colour, false);
+    /** The whoosh of choosing a way to fly. */
+    private static void whoosh() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(AerolargeRegistry.PAPER_PLANE_WHOOSH.get(), 1F, SET_VOLUME));
     }
 
-    /**
-     * The mode: a picture for each, the one chosen lit, its name as the label. A click picks the picture clicked;
-     * pressed from the keyboard or from code, or scrolled, it steps to the next (back with shift), as the cycle button
-     * it took the place of did.
-     */
-    private final class ModeSelector extends PanelArt.PanelButton {
-        ModeSelector(int x, int y) {
-            super(x, y, MODES.length * (SEGMENT + SEGMENT_GAP) - SEGMENT_GAP, CONTROL_HEIGHT, modeName(lateral));
+    /** A line from one point to another, so many pixels wide, drawn in small squares along it. */
+    private static void line(GuiGraphics graphics, double x0, double y0, double x1, double y1, int width, int colour) {
+        int steps = (int) Math.ceil(Math.hypot(x1 - x0, y1 - y0) * 2) + 1;
+        int half = width / 2;
+        for (int k = 0; k <= steps; k++) {
+            int x = (int) Math.round(Mth.lerp((double) k / steps, x0, x1));
+            int y = (int) Math.round(Mth.lerp((double) k / steps, y0, y1));
+            graphics.fill(x - half, y - half, x - half + width, y - half + width, colour);
         }
+    }
 
-        @Override
-        public void onPress() {
-            step(hasShiftDown() ? -1 : 1);
-        }
-
-        @Override
-        public void onClick(double mouseX, double mouseY, int button) {
-            choose(MODES[segment(mouseX)]);
-        }
-
-        @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-            if (scrollY != 0) {
-                step(scrollY > 0 ? -1 : 1);
-            }
-            return true;
-        }
-
-        @Override
-        public void playDownSound(SoundManager sounds) {
-            sounds.play(SimpleSoundInstance.forUI(SoundEvents.LEVER_CLICK, 1.4F, 0.5F));
-        }
-
-        private void step(int by) {
-            choose(MODES[Math.floorMod(lateral.ordinal() + by, MODES.length)]);
-        }
-
-        private void choose(Lateral chosen) {
-            lateral = chosen;
-            setMessage(modeName(chosen));
-            refresh();
-        }
-
-        /** The picture at a place across the selector (the one before, in the gap after it). */
-        private int segment(double mouseX) {
-            return Mth.clamp((int) ((mouseX - getX()) / (SEGMENT + SEGMENT_GAP)), 0, MODES.length - 1);
-        }
-
-        @Override
-        protected MutableComponent createNarrationMessage() {
-            return wrapDefaultNarrationMessage(CommonComponents.optionNameValue(MODE, getMessage()));
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int pointedAt = isHovered() ? segment(mouseX) : -1;
-            for (int i = 0; i < MODES.length; i++) {
-                Lateral each = MODES[i];
-                int x0 = getX() + i * (SEGMENT + SEGMENT_GAP);
-                Look look = look(i == pointedAt);
-                if (look == Look.IDLE && isFocused() && each == lateral) {
-                    look = Look.HOT;
-                }
-                PanelArt.drawTile(graphics, x0, getY(), x0 + SEGMENT, getBottom(), modeColour(each), look, each == lateral);
-                int sink = look == Look.PRESSED ? 1 : 0;
-                modeIcon(each).draw(graphics, x0 + (SEGMENT - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
-            }
-            if (pointedAt >= 0) {
-                AutopilotSettingsScreen.this.setTooltipForNextRenderPass(modeName(MODES[pointedAt]));
-            }
+    /** A dotted line from one point to another, a dot every few pixels. */
+    private static void dotted(GuiGraphics graphics, double x0, double y0, double x1, double y1, int colour) {
+        int dots = (int) (Math.hypot(x1 - x0, y1 - y0) / 3);
+        for (int k = 0; k <= dots; k++) {
+            int x = (int) Math.round(Mth.lerp((double) k / Math.max(1, dots), x0, x1));
+            int y = (int) Math.round(Mth.lerp((double) k / Math.max(1, dots), y0, y1));
+            graphics.fill(x, y, x + 1, y + 1, colour);
         }
     }
 
     /**
-     * Whether, flying to the pin, it lands near it: a tile with an airliner touching down on a runway by a pin, edged
-     * in the landing's amber, lit green while it is on. Pointed at, it says what it does and whether it is on. It is
-     * there only while the mode flies to a pin, and pressed it only changes the settings, to be engaged or applied.
+     * One setting's number, as typed into its box: kept to its range, a bearing going round, and what it was last set
+     * to while what is typed cannot be read.
      */
-    private final class LandToggle extends PanelArt.PanelButton {
-        LandToggle(int x, int y) {
-            super(x, y, SEGMENT, CONTROL_HEIGHT, label(landAtPin));
-        }
-
-        private static Component label(boolean on) {
-            return Component.translatable(on ? "screen.aerolarge.autopilot_settings.land_at_pin.on" : "screen.aerolarge.autopilot_settings.land_at_pin.off");
-        }
-
-        @Override
-        public void onPress() {
-            landAtPin = !landAtPin;
-            setMessage(label(landAtPin));
-        }
-
-        @Override
-        public void playDownSound(SoundManager sounds) {
-            sounds.play(SimpleSoundInstance.forUI(SoundEvents.LEVER_CLICK, 1.4F, 0.5F));
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            Look look = look();
-            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, look, landAtPin);
-            int sink = look == Look.PRESSED ? 1 : 0;
-            LAND_AT_PIN.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
-            if (isHovered()) {
-                AutopilotSettingsScreen.this.setTooltipForNextRenderPass(getMessage());
-            }
-        }
-    }
-
-    /**
-     * One setting: its picture, a slider between arrows that step it down and up, and a box it can be typed into, all
-     * kept to its range and to each other; a bearing goes round.
-     */
-    private final class Setting {
+    private final class Typed {
         private final String key;
-        private final Icon icon;
         private final int colour;
         private final int min;
         private final int max;
-        private final int step;
-        private final int detent;
         private final boolean bearing;
-        /** What it was last set to, for when what is typed cannot be read. */
         private int value;
-        private boolean active = true;
-        private boolean visible = true;
-        /** Where its picture is. */
-        private int iconX;
-        private int iconY;
-        @Nullable
-        private Knob slider;
         @Nullable
         private ValueBox box;
-        @Nullable
-        private ArrowButton down;
-        @Nullable
-        private ArrowButton up;
 
-        Setting(String key, int colour, int value, int min, int max, int step, int detent, boolean bearing) {
+        Typed(String key, int colour, int value, int min, int max, boolean bearing) {
             this.key = key;
-            this.icon = Icon.of("autopilot/" + key);
             this.colour = colour;
             this.min = min;
             this.max = max;
-            this.step = step;
-            this.detent = detent;
             this.bearing = bearing;
             this.value = fit(value);
         }
 
-        /** Lays its controls out along a row from x, keeping what was typed into them before. */
+        /** Puts its box at a place, keeping what was typed into it before. */
         void place(int x, int y) {
             value = value();
-            iconX = x;
-            iconY = y + (CONTROL_HEIGHT - Icon.SIZE) / 2;
-            int downX = x + Icon.SIZE + ICON_GAP;
-            int sliderX = downX + STEP_WIDTH + STEP_GAP;
-            int upX = sliderX + SLIDER_WIDTH + STEP_GAP;
-            down = addRenderableWidget(new ArrowButton(downX, y, STEP_WIDTH, CONTROL_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.down", step),
-                false, colour, () -> show(value() - step)));
-            slider = addRenderableWidget(new Knob(this, sliderX, y, position(value)));
-            up = addRenderableWidget(new ArrowButton(upX, y, STEP_WIDTH, CONTROL_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.up", step),
-                true, colour, () -> show(value() + step)));
-            ValueBox typed = addRenderableWidget(new ValueBox(font, upX + STEP_WIDTH + BOX_GAP, y, BOX_WIDTH, CONTROL_HEIGHT, name(), colour));
+            ValueBox typed = addRenderableWidget(new ValueBox(font, x, y, BOX_WIDTH, BOX_HEIGHT, name(), colour));
             typed.setMaxLength(MAX_LENGTH);
             typed.setFilter(text -> NUMBER.matcher(text).matches());
             typed.setValue(format(value));
-            typed.setResponder(text -> {
-                typed.setTextColor(readable(text) ? TYPED : UNREADABLE);
-                if (slider != null) {
-                    slider.moveTo(position(value()));
-                }
-            });
+            typed.setResponder(text -> typed.setTextColor(readable(text) ? TYPED : UNREADABLE));
+            typed.setTooltip(Tooltip.create(tooltip()));
             box = typed;
         }
 
@@ -653,24 +630,25 @@ public class AutopilotSettingsScreen extends Screen {
             }
         }
 
-        private void show(int set) {
+        /** Sets it, showing the number in its box. */
+        void show(int set) {
             value = fit(set);
             if (box != null) {
                 box.setValue(format(value));
             }
         }
 
-        /** Sets it from where its slider is, in the slider's detents. */
-        private void slid(double position) {
-            int set = Mth.clamp((int) Math.round((min + position * (max - min)) / detent) * detent, min, max);
-            if (set != value()) {
-                show(set);
-            }
+        int min() {
+            return min;
         }
 
-        /** Where a value sits along the slider. */
-        private double position(int set) {
-            return max > min ? (double) (set - min) / (max - min) : 0;
+        int max() {
+            return max;
+        }
+
+        /** The share of the way from its least to its most a value is. */
+        double share(double set) {
+            return max > min ? Mth.clamp((set - min) / (max - min), 0, 1) : 0;
         }
 
         private boolean readable(String text) {
@@ -686,93 +664,519 @@ public class AutopilotSettingsScreen extends Screen {
             return bearing ? Math.floorMod(set, max + 1) : Mth.clamp(set, min, max);
         }
 
-        private String format(int set) {
+        String format(int set) {
             return bearing ? String.format(Locale.ROOT, "%03d", set) : Integer.toString(set);
         }
 
-        /** Greys the setting out while the mode chosen does not fly it. */
-        void setActive(boolean active) {
-            this.active = active;
-            if (box != null && slider != null && down != null && up != null) {
-                box.setEditable(active);
-                box.active = active;
-                slider.active = active;
-                down.active = active;
-                up.active = active;
-            }
-        }
-
-        private Component name() {
+        Component name() {
             return Component.translatable("screen.aerolarge.autopilot_settings." + key);
         }
 
-        /** Its name and its value, for its slider to be narrated by. */
-        private Component describe() {
-            return CommonComponents.optionNameValue(name(), Component.literal(format(value())));
-        }
-
-        /** Shows the setting's row, or hides it while the map takes its place. */
-        void setVisible(boolean visible) {
-            this.visible = visible;
-            if (box != null && slider != null && down != null && up != null) {
-                box.visible = visible;
-                slider.visible = visible;
-                down.visible = visible;
-                up.visible = visible;
-            }
-        }
-
-        void drawIcon(GuiGraphics graphics) {
-            if (visible) {
-                icon.draw(graphics, iconX, iconY, 1, active);
-            }
-        }
-
-        boolean iconHovered(int mouseX, int mouseY) {
-            return visible && mouseX >= iconX && mouseX < iconX + Icon.SIZE && mouseY >= iconY && mouseY < iconY + Icon.SIZE;
-        }
-
-        /** Its name and its range, shown over its picture. */
+        /** Its name and its range, shown over its box. */
         Component tooltip() {
             return CommonComponents.optionNameValue(name(), Component.translatable("screen.aerolarge.autopilot_settings.range." + key, format(min), format(max)));
+        }
+
+        void setVisible(boolean visible) {
+            if (box != null) {
+                box.visible = visible;
+            }
         }
     }
 
     /**
-     * A setting's slider. Slid, it sets the setting in the steps it clicks into; the arrow keys move it a step at a
-     * time, where the slider's own would move it a pixel, too little to reach the next step.
+     * A control set by where it is clicked or dragged to, as the flight deck's are touched: a step at a time by the
+     * arrow keys or the scroll wheel, sounding a note higher the more it sets. Pointed at, it shows a ghost of what a
+     * click there would set.
      */
-    private static final class Knob extends PanelArt.Slider {
-        private final Setting setting;
+    private abstract class Gauge extends AbstractWidget {
+        private final Typed setting;
+        private final int step;
 
-        Knob(Setting setting, int x, int y, double position) {
-            super(x, y, SLIDER_WIDTH, CONTROL_HEIGHT, setting.name(), setting.colour, position);
+        Gauge(int x, int y, int width, int height, Typed setting, int step) {
+            super(x, y, width, height, setting.name());
             this.setting = setting;
-            updateMessage();
+            this.step = step;
+        }
+
+        /** What a click at a place on it sets, before it is rounded to its step. */
+        abstract double valueAt(double mouseX, double mouseY);
+
+        /** What a click at a place on it sets, rounded to its step and kept to its range. */
+        int stepped(double mouseX, double mouseY) {
+            return Mth.clamp((int) Math.round(valueAt(mouseX, mouseY) / step) * step, setting.min(), setting.max());
         }
 
         @Override
-        protected void updateMessage() {
-            setMessage(setting.describe());
+        public void onClick(double mouseX, double mouseY) {
+            set(stepped(mouseX, mouseY));
         }
 
         @Override
-        protected void applyValue() {
-            setting.slid(position());
+        protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
+            set(stepped(mouseX, mouseY));
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+            if (scrollY != 0) {
+                set(setting.value() + (scrollY > 0 ? step : -step));
+            }
+            return true;
         }
 
         @Override
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            // A slider greyed out while it has the keyboard would still take the keys.
-            if (!active) {
-                return false;
+            boolean more = keyCode == InputConstants.KEY_UP || keyCode == InputConstants.KEY_RIGHT;
+            boolean less = keyCode == InputConstants.KEY_DOWN || keyCode == InputConstants.KEY_LEFT;
+            if (more || less) {
+                set(setting.value() + (more ? step : -step));
+                return true;
             }
-            int before = setting.value();
-            boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
-            if (handled && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
-                setting.show(before + (keyCode == InputConstants.KEY_LEFT ? -setting.detent : setting.detent));
+            return false;
+        }
+
+        private void set(int value) {
+            if (value != setting.value()) {
+                setting.show(value);
+                changed();
             }
-            return handled;
+        }
+
+        /** Set to something new: a note, higher the more it sets. */
+        void changed() {
+            note(setting.share(setting.value()));
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+        }
+
+        /** The value a ghost shows, where the pointer is on it; null while it is not pointed at. */
+        @Nullable
+        Integer ghost(int mouseX, int mouseY) {
+            return isHovered() ? stepped(mouseX, mouseY) : null;
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            setMessage(CommonComponents.optionNameValue(setting.name(), Component.literal(setting.format(setting.value()))));
+            defaultButtonNarrationText(output);
+        }
+    }
+
+    /**
+     * The speed: a speedometer, its band green, amber and red from slow to fast, ticked and numbered round it; the
+     * needle at the speed now, the magenta bug on its rim at the speed set, and a ghost of one where it is pointed at.
+     */
+    private final class SpeedDial extends Gauge {
+        SpeedDial(int x, int y) {
+            super(x, y, SPEEDOMETER_WIDTH, GAUGE_HEIGHT, speed, AutopilotBlockEntity.SPEED_STEP);
+        }
+
+        private int middleX() {
+            return getX() + width / 2;
+        }
+
+        private int middleY() {
+            return getY() + DIAL_MIDDLE;
+        }
+
+        /** Where a speed lies round the dial, in radians anticlockwise from the right, as on the flight deck's. */
+        private double angle(double set) {
+            return new Dial(0, 0, 1).angle(speed.share(set));
+        }
+
+        @Override
+        double valueAt(double mouseX, double mouseY) {
+            double share = new Dial(middleX(), -middleY(), DIAL_RADIUS).share(mouseX, -mouseY);
+            return Mth.lerp(share, speed.min(), speed.max());
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, isHovered() ? Look.HOT : Look.IDLE, false);
+            PanelArt.drawDisc(graphics, middleX(), middleY(), DIAL_RADIUS + 2, GLASS);
+            band(graphics, speed.min(), AutopilotDeskArt.AMBER_FROM, PanelArt.GREEN);
+            band(graphics, AutopilotDeskArt.AMBER_FROM, AutopilotDeskArt.RED_FROM, PanelArt.AMBER);
+            band(graphics, AutopilotDeskArt.RED_FROM, speed.max(), PanelArt.RED);
+            for (int each = speed.min(); each <= speed.max(); each += AutopilotDeskArt.SPEED_TICK) {
+                int length = each % AutopilotDeskArt.SPEED_NUMBER == 0 ? LONG_TICK : SHORT_TICK;
+                spoke(graphics, each, DIAL_RADIUS - BAND - length, DIAL_RADIUS - BAND, 1, PanelArt.WHITE);
+            }
+            for (int each = speed.min(); each <= speed.max(); each += AutopilotDeskArt.SPEED_NUMBER) {
+                String number = String.valueOf(each);
+                double a = angle(each);
+                int x = (int) Math.round(middleX() + Math.cos(a) * (DIAL_RADIUS - BAND - SPEED_NUMBERS_IN)) - font.width(number) / 2;
+                int y = (int) Math.round(middleY() - Math.sin(a) * (DIAL_RADIUS - BAND - SPEED_NUMBERS_IN)) - PanelArt.GLYPH_HEIGHT / 2;
+                graphics.drawString(font, number, x, y, PanelArt.GREY, false);
+            }
+            bug(graphics, speed.value(), PanelArt.MAGENTA);
+            Integer ghost = ghost(mouseX, mouseY);
+            if (ghost != null) {
+                bug(graphics, ghost, AutopilotDeskArt.GHOST & PanelArt.MAGENTA);
+            }
+            SableClient.Attitude attitude = attitude(partialTick);
+            if (attitude != null) {
+                spoke(graphics, Mth.clamp(attitude.airspeed(), speed.min(), speed.max()), 0, DIAL_RADIUS - BAND - 2, 2, PanelArt.WHITE);
+            }
+            PanelArt.drawDisc(graphics, middleX(), middleY(), 3, PanelArt.GREY);
+            // Pointed at, its number shows in white what a click there would set.
+            String set = String.valueOf(ghost != null ? ghost : speed.value());
+            graphics.drawString(font, set, middleX() - font.width(set) / 2, getBottom() - SPEED_NUMBER_UP, ghost != null ? PanelArt.WHITE : PanelArt.MAGENTA, false);
+        }
+
+        private void band(GuiGraphics graphics, int from, int to, int colour) {
+            for (double each = from; each < to; each += 0.5) {
+                spoke(graphics, each, DIAL_RADIUS - BAND, DIAL_RADIUS, 2, colour);
+            }
+        }
+
+        private void spoke(GuiGraphics graphics, double set, double from, double to, int width, int colour) {
+            double a = angle(set);
+            line(graphics, middleX() + Math.cos(a) * from, middleY() - Math.sin(a) * from, middleX() + Math.cos(a) * to, middleY() - Math.sin(a) * to, width,
+                colour);
+        }
+
+        /** The bug: a small triangle outside the rim, pointing in. */
+        private void bug(GuiGraphics graphics, double set, int colour) {
+            for (int out = 0; out < BUG; out++) {
+                double a = angle(set);
+                double spread = out * BUG_SPREAD;
+                line(graphics, middleX() + Math.cos(a - spread) * (DIAL_RADIUS + 2 + out), middleY() - Math.sin(a - spread) * (DIAL_RADIUS + 2 + out),
+                    middleX() + Math.cos(a + spread) * (DIAL_RADIUS + 2 + out), middleY() - Math.sin(a + spread) * (DIAL_RADIUS + 2 + out), 1, colour);
+            }
+        }
+    }
+
+    /**
+     * The steering fan, seen from above: the airliner at its foot nose up, as on the moving map; its rim cyan while it
+     * holds a heading, ticked every so many degrees, north faintly on it; holding a heading, the magenta bug where it
+     * is set to fly and a path from the nose to it; and a ghost of the bug where it is pointed at. Clicked, it holds
+     * the heading clicked, straight on.
+     */
+    private final class SteeringFan extends Gauge {
+        SteeringFan(int x, int y, int width) {
+            super(x, y, width, FAN_HEIGHT, heading, AutopilotBlockEntity.HEADING_STEP);
+        }
+
+        private int footX() {
+            return getX() + width / 2;
+        }
+
+        private int footY() {
+            return getBottom() - 1;
+        }
+
+        /** How far right of the nose a compass bearing lies, in degrees, kept to the fan's half. */
+        private double turnTo(double bearing) {
+            return Mth.clamp(Mth.wrapDegrees(bearing - bearingNow(1)), -90, 90);
+        }
+
+        @Override
+        double valueAt(double mouseX, double mouseY) {
+            double turn = Math.toDegrees(Math.atan2(mouseX - footX(), Math.max(0, footY() - mouseY)));
+            return Math.round(bearingNow(1)) + Mth.clamp(turn, -90, 90);
+        }
+
+        @Override
+        int stepped(double mouseX, double mouseY) {
+            return Math.floorMod((int) Math.round(valueAt(mouseX, mouseY) / AutopilotBlockEntity.HEADING_STEP) * AutopilotBlockEntity.HEADING_STEP, 360);
+        }
+
+        /** Clicked, it whooshes, as a turn chosen does; dragged round, it only moves its bug. */
+        @Override
+        public void onClick(double mouseX, double mouseY) {
+            super.onClick(mouseX, mouseY);
+            lateral = Lateral.HEADING;
+            whoosh();
+        }
+
+        /** Set to a heading, it holds it, straight on, whatever way it was set to fly. */
+        @Override
+        void changed() {
+            lateral = Lateral.HEADING;
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            boolean steering = lateral == Lateral.HEADING;
+            for (int dy = 0; dy <= FAN_RADIUS; dy++) {
+                int half = (int) Math.floor(Math.sqrt(FAN_RADIUS * FAN_RADIUS - dy * dy));
+                graphics.fill(footX() - half, footY() - dy, footX() + half + 1, footY() - dy + 1, GLASS);
+            }
+            int rim = steering ? PanelArt.CYAN : AutopilotDeskArt.RIM_IDLE;
+            for (double turn = -90; turn <= 90; turn += 1) {
+                mark(graphics, turn, FAN_RADIUS - 1, FAN_RADIUS, 2, rim);
+            }
+            for (int turn = -90; turn <= 90; turn += AutopilotDeskArt.FAN_TICK) {
+                mark(graphics, turn, FAN_RADIUS - (turn % AutopilotDeskArt.FAN_LONG_TICK == 0 ? FAN_LONG : FAN_SHORT), FAN_RADIUS, 1, rim);
+            }
+            double north = Mth.wrapDegrees(-bearingNow(partialTick));
+            if (Math.abs(north) <= 90) {
+                mark(graphics, north, FAN_RADIUS - NORTH_FROM, FAN_RADIUS - NORTH_TO, 2, AutopilotDeskArt.NORTH);
+            }
+            if (steering) {
+                double turn = turnTo(heading.value());
+                path(graphics, turn);
+                bug(graphics, turn, PanelArt.MAGENTA);
+            }
+            Integer ghost = ghost(mouseX, mouseY);
+            if (ghost != null) {
+                bug(graphics, turnTo(ghost), AutopilotDeskArt.GHOST & PanelArt.MAGENTA);
+            }
+            AIRLINER.draw(graphics, footX() - Icon.SIZE / 2, footY() - Icon.SIZE, 1, true);
+            String set = String.format(Locale.ROOT, "%03d°", ghost != null ? ghost : heading.value());
+            int colour = ghost != null ? PanelArt.WHITE : steering ? PanelArt.CYAN : PanelArt.GREY;
+            graphics.drawString(font, set, getRight() - font.width(set) - 4, getY() + 4, colour, false);
+        }
+
+        /** The path from the airliner's nose round to the bug, so many degrees right of the nose: a magenta curve. */
+        private void path(GuiGraphics graphics, double turn) {
+            double r = FAN_RADIUS - FAN_BUG;
+            double endX = footX() + Math.sin(Math.toRadians(turn)) * r;
+            double endY = footY() - Math.cos(Math.toRadians(turn)) * r;
+            double bendY = footY() - FAN_RADIUS * PATH_BEND;
+            for (int k = 0; k < PATH_PIECES; k++) {
+                double t0 = (double) k / PATH_PIECES;
+                double t1 = (double) (k + 1) / PATH_PIECES;
+                line(graphics, CockpitKeys.curve(footX(), footX(), endX, t0), CockpitKeys.curve(footY() - NOSE, bendY, endY, t0),
+                    CockpitKeys.curve(footX(), footX(), endX, t1), CockpitKeys.curve(footY() - NOSE, bendY, endY, t1), 2, PanelArt.MAGENTA);
+            }
+        }
+
+        /** A line out from the fan's foot, so many degrees right of the nose, between two distances. */
+        private void mark(GuiGraphics graphics, double turn, double from, double to, int width, int colour) {
+            double a = Math.toRadians(turn);
+            line(graphics, footX() + Math.sin(a) * from, footY() - Math.cos(a) * from, footX() + Math.sin(a) * to, footY() - Math.cos(a) * to, width, colour);
+        }
+
+        private void bug(GuiGraphics graphics, double turn, int colour) {
+            double a = Math.toRadians(turn);
+            PanelArt.drawDisc(graphics, (int) Math.round(footX() + Math.sin(a) * FAN_RADIUS), (int) Math.round(footY() - Math.cos(a) * FAN_RADIUS), FAN_BUG,
+                colour);
+        }
+
+    }
+
+    /**
+     * The height: the sky from the side, darkening upward over the earth and its grass, heights ticked and numbered up
+     * its side; the airliner in green at the height set, faintly at the height now, a dotted climb or descent between,
+     * and a ghost of it where the sky is pointed at.
+     */
+    private final class SkyColumn extends Gauge {
+        SkyColumn(int x, int y) {
+            super(x, y, SKY_WIDTH, GAUGE_HEIGHT, altitude, AutopilotBlockEntity.ALTITUDE_STEP);
+        }
+
+        private int ground() {
+            return getBottom() - SKY_FRAME - GROUND;
+        }
+
+        private int lowest() {
+            return ground() - SKY_ROOM;
+        }
+
+        private int highest() {
+            return getY() + SKY_FRAME + SKY_ROOM;
+        }
+
+        /** How far down the panel a height lies in the sky. */
+        private int yOf(double set) {
+            return (int) Math.round(Mth.lerp(altitude.share(set), lowest(), highest()));
+        }
+
+        @Override
+        double valueAt(double mouseX, double mouseY) {
+            double share = Mth.clamp((lowest() - mouseY) / (double) (lowest() - highest()), 0, 1);
+            return Mth.lerp(share, altitude.min(), altitude.max());
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.GREEN, isHovered() ? Look.HOT : Look.IDLE, false);
+            int x0 = getX() + SKY_FRAME;
+            int x1 = getRight() - SKY_FRAME;
+            graphics.fillGradient(x0, getY() + SKY_FRAME, x1, ground(), AutopilotDeskArt.SKY_HIGH, AutopilotDeskArt.SKY_LOW);
+            graphics.fill(x0, ground(), x1, getBottom() - SKY_FRAME, AutopilotDeskArt.EARTH);
+            graphics.fill(x0, ground(), x1, ground() + 1, AutopilotDeskArt.GRASS);
+            int first = (int) Math.ceil(altitude.min() / (double) AutopilotDeskArt.HEIGHT_TICK) * AutopilotDeskArt.HEIGHT_TICK;
+            for (int each = first; each <= altitude.max(); each += AutopilotDeskArt.HEIGHT_TICK) {
+                int length = each % AutopilotDeskArt.HEIGHT_NUMBER == 0 ? HEIGHT_LONG : HEIGHT_SHORT;
+                graphics.fill(x1 - length, yOf(each), x1, yOf(each) + 1, AutopilotDeskArt.HEIGHT_TICKS);
+            }
+            int firstNumber = (int) Math.ceil(altitude.min() / (double) AutopilotDeskArt.HEIGHT_NUMBER) * AutopilotDeskArt.HEIGHT_NUMBER;
+            for (int each = firstNumber; each <= altitude.max(); each += AutopilotDeskArt.HEIGHT_NUMBER) {
+                String number = String.valueOf(each);
+                int y = yOf(each) - PanelArt.GLYPH_HEIGHT / 2;
+                graphics.drawString(font, number, x1 - HEIGHT_NUMBER_GAP - font.width(number), y, AutopilotDeskArt.HEIGHT_NUMBERS, false);
+            }
+            int planeX = x0 + SKY_AIRLINER_X;
+            int set = yOf(altitude.value());
+            for (int dash = x0; dash < x1 - 6; dash += 3) {
+                graphics.fill(dash, set, dash + 2, set + 1, PanelArt.GREEN);
+            }
+            AutopilotBlockEntity autopilot = autopilot();
+            Level level = autopilot != null ? autopilot.getLevel() : null;
+            if (attitude(partialTick) != null && level != null) {
+                int now = yOf(SableClient.toWorld(level, Vec3.atCenterOf(pos)).y);
+                if (Math.abs(now - set) > CLIMB_DRAWN) {
+                    dotted(graphics, planeX + Icon.SIZE / 2.0, now, planeX + Icon.SIZE / 2.0, set, PanelArt.WHITE);
+                }
+                AIRLINER_SIDE.draw(graphics, planeX, now - Icon.SIZE / 2, 1, PICTURE_FAINT);
+            }
+            AIRLINER_SIDE.draw(graphics, planeX, set - Icon.SIZE / 2, 1, PanelArt.GREEN);
+            Integer ghost = ghost(mouseX, mouseY);
+            if (ghost != null) {
+                AIRLINER_SIDE.draw(graphics, planeX, yOf(ghost) - Icon.SIZE / 2, 1, PanelArt.shade(PanelArt.GREEN, SKY_GHOST));
+            }
+            String number = String.valueOf(ghost != null ? ghost : altitude.value());
+            graphics.drawString(font, number, x0 + 3, getY() + SKY_FRAME + 3, ghost != null ? PanelArt.WHITE : PanelArt.GREEN, true);
+        }
+    }
+
+    /**
+     * One of the ways to fly, along the bottom of the steering: its picture, lit cyan for straight on or magenta for a
+     * circle while chosen. Pressed, it is chosen, to be engaged or applied; straight on holds the heading set.
+     */
+    private final class TurnTile extends PanelArt.PanelButton {
+        private final Turn turn;
+
+        TurnTile(int x, int y, int width, Turn turn) {
+            super(x, y, width, TURN_HEIGHT, turn.label());
+            this.turn = turn;
+            showLabel();
+        }
+
+        /**
+         * Chosen: a circle that way, that tightly; or straight on the way the airliner goes now, as on the flight deck.
+         */
+        @Override
+        public void onPress() {
+            if (turn == Turn.STRAIGHT) {
+                heading.show((int) Math.round(bearingNow(1)));
+            }
+            lateral = turn.button.way;
+            if (turn != Turn.STRAIGHT) {
+                circle = turn.button.size;
+            }
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            whoosh();
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            Look look = look();
+            boolean chosen = turn.button.flies(lateral, circle);
+            int colour = turn == Turn.STRAIGHT ? PanelArt.CYAN : PanelArt.MAGENTA;
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), colour, chosen && look == Look.IDLE ? Look.HOT : look, false);
+            int sink = look == Look.PRESSED ? 1 : 0;
+            turn.icon.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+        }
+    }
+
+    /**
+     * The pin: chosen, it flies to the pin dropped on the map, which takes the steering's place; pressed again, it
+     * holds the heading set instead. Lit while chosen.
+     */
+    private final class PinTile extends PanelArt.PanelButton {
+        PinTile(int x, int y) {
+            super(x, y, STRIP_TILE, STRIP_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.mode.destination"));
+            showLabel();
+        }
+
+        @Override
+        public void onPress() {
+            lateral = lateral == Lateral.DESTINATION ? Lateral.HEADING : Lateral.DESTINATION;
+            refresh();
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            whoosh();
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            Look look = look();
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.MAGENTA, look, lateral == Lateral.DESTINATION);
+            int sink = look == Look.PRESSED ? 1 : 0;
+            PIN.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+        }
+    }
+
+    /**
+     * How tightly it circles the pin, beside the pin while it flies to one: the tight or the gentle turn to the right,
+     * the way it goes round the pin, pressed to swap them. The map's ring shows the circle's size.
+     */
+    private final class PinCircle extends PanelArt.PanelButton {
+        PinCircle(int x, int y) {
+            super(x, y, STRIP_TILE, STRIP_HEIGHT, label(circle));
+            showLabel();
+        }
+
+        private static Component label(CircleSize size) {
+            return (size == CircleSize.TIGHT ? Turn.TIGHT_RIGHT : Turn.GENTLE_RIGHT).label();
+        }
+
+        @Override
+        public void onPress() {
+            circle = circle == CircleSize.TIGHT ? CircleSize.GENTLE : CircleSize.TIGHT;
+            setMessage(label(circle));
+            showLabel();
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            whoosh();
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            Look look = look();
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.MAGENTA, look, false);
+            int sink = look == Look.PRESSED ? 1 : 0;
+            Icon icon = circle == CircleSize.TIGHT ? PanelArt.TURN_TIGHT_RIGHT : PanelArt.TURN_GENTLE_RIGHT;
+            icon.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+        }
+    }
+
+    /**
+     * Whether, flying to the pin, it lands near it: a tile with an airliner touching down on a runway by a pin, edged
+     * in the landing's amber, lit green while it is on. Pointed at, it says what it does and whether it is on. It is
+     * there only while it flies to a pin, and pressed it only changes the settings, to be engaged or applied.
+     */
+    private final class LandToggle extends PanelArt.PanelButton {
+        LandToggle(int x, int y) {
+            super(x, y, STRIP_TILE, STRIP_HEIGHT, label(landAtPin));
+            showLabel();
+        }
+
+        private static Component label(boolean on) {
+            return Component.translatable(on ? "screen.aerolarge.autopilot_settings.land_at_pin.on" : "screen.aerolarge.autopilot_settings.land_at_pin.off");
+        }
+
+        @Override
+        public void onPress() {
+            landAtPin = !landAtPin;
+            setMessage(label(landAtPin));
+            showLabel();
+        }
+
+        @Override
+        public void playDownSound(SoundManager sounds) {
+            sounds.play(SimpleSoundInstance.forUI(SoundEvents.LEVER_CLICK, 1.4F, 0.5F));
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            Look look = look();
+            PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, look, landAtPin);
+            int sink = look == Look.PRESSED ? 1 : 0;
+            LAND_AT_PIN.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
         }
     }
 }

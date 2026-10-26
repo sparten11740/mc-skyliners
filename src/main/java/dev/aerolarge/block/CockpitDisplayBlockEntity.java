@@ -119,7 +119,7 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         TILLER,
         /** The parking brake, and the landing gear lever with its lamps. */
         GROUND,
-        /** The autopilot's buttons. */
+        /** The autopilot's controls: its on/off key, speedometer, steering with its turns, and sky. */
         AUTOPILOT,
         /** The outside cameras' buttons, the screen over it showing the camera picked. */
         CAMERA
@@ -377,7 +377,8 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
 
     /**
      * A touch on the panel, on the server: on the slope, its key works what it is for; on the screen, a camera's button
-     * shows that camera, the map zooms out a step, and a systems tile works its switch. Whether it did anything.
+     * shows that camera, the map zooms out a step, and a systems tile works its switch. Whether it did anything that
+     * clicks: the autopilot's controls sound for themselves.
      */
     boolean touch(ServerLevel level, Vec3 eye, Vec3 through, ServerPlayer player) {
         Touch touch = touchAt(eye, through);
@@ -385,21 +386,23 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             return false;
         }
         if (touch.onSlope()) {
-            return work(level, CockpitKeys.at(slopeKeys(), touch.across(), touch.up()), player);
+            return work(level, CockpitKeys.at(slopeKeys(), touch.across(), touch.up()), touch, player);
         }
         return switch (shows()) {
             case CAMERA -> !cameraKeysOnSlope() && look(CameraButtons.at(touch.across(), touch.up()));
             case MAP -> zoom();
-            case SYSTEMS -> work(level, CockpitKeys.at(screenKeys(), touch.across(), touch.up()), player);
+            case SYSTEMS -> work(level, CockpitKeys.at(screenKeys(), touch.across(), touch.up()), touch, player);
             case FLIGHT -> false;
         };
     }
 
     /**
-     * Works what a key is for, as whoever touched it, sneaking or not: one of the autopilot's buttons, the tiller a
-     * notch either way, or the switch it uses where it stands out of sight. Whether there was a key.
+     * Works what a key is for, as whoever touched it, sneaking or not: one of the autopilot's controls, where it was
+     * touched along it, the tiller a notch either way, or the switch it uses where it stands out of sight. Whether there
+     * was a key that clicks: the autopilot's controls sound for themselves.
      */
-    private boolean work(ServerLevel level, @Nullable Function function, ServerPlayer player) {
+    private boolean work(ServerLevel level, @Nullable Key key, Touch touch, ServerPlayer player) {
+        Function function = key == null ? null : key.function();
         if (function != null && function.camera != null) {
             return look(function.camera);
         }
@@ -409,9 +412,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         }
         if (function.button != null) {
             if (level.getBlockEntity(at) instanceof AutopilotBlockEntity found) {
-                found.press(function.button, player);
+                found.press(function.button, CockpitKeys.along(key, touch.across(), touch.up()), player);
             }
-            return true;
+            return false;
         }
         if (function == Function.TILLER_LEFT || function == Function.TILLER_RIGHT) {
             TillerBlock.steer(level, at, player, function == Function.TILLER_RIGHT);

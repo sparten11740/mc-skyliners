@@ -28,15 +28,15 @@ import org.joml.Vector3f;
 /**
  * Draws a panel of the flight deck's curved row from the block holding it (see {@link CockpitDisplayBlockEntity}): a
  * slim dark screen standing a block over the floor, turned toward the seats, on a desk whose top slopes down toward
- * them at 45 degrees (see {@link CockpitCasing}), with the touch keys on the slope (see {@link CockpitKeysArt}). On the
- * screen, inside the bezel, what it shows: a pilot's flight display, the same as the one set into the panel in older
- * airliners (see {@link FlightDisplayRenderer}), as large as it fits; the moving map, as the autopilot screen of older
- * airliners draws it, with what the autopilot is doing over it and how the airliner flies under it; the systems page's
- * tiles; or an outside camera's live picture with its buttons, as on the camera display (see {@link
- * TailCameraDisplayRenderer}). The screen and the slope are each only drawn with the camera in front of them; the
- * casing shows from every side. Where the player looks at the screen or the slope from within reach, a little pointer
- * follows the look, and the key under it is outlined in white, so whoever is about to touch it sees what the touch will
- * work.
+ * them at 45 degrees (see {@link CockpitCasing}), with the touch keys on the slope (see {@link CockpitKeysArt} and
+ * {@link AutopilotDeskArt}). On the screen, inside the bezel, what it shows: a pilot's flight display,
+ * the same as the one set into the panel in older airliners (see {@link FlightDisplayRenderer}), as large as it fits;
+ * the moving map, as the autopilot screen of older airliners draws it, with what the autopilot is doing over it and how
+ * the airliner flies under it; the systems page's tiles; or an outside camera's live picture with its buttons, as on
+ * the camera display (see {@link TailCameraDisplayRenderer}). The screen and the slope are each only drawn with the
+ * camera in front of them; the casing shows from every side. Where the player looks at the screen or the slope from
+ * within reach, a little pointer follows the look, and the key under it is outlined in white, so whoever is about to
+ * touch it sees what the touch will work.
  */
 public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDisplayBlockEntity> {
     /** The casing round the glass, in blocks. */
@@ -60,7 +60,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     private static final int GLASS = AutopilotScreenRenderer.GLASS;
 
     /** Where the player's look meets the panel, within reach: on its screen or its slope, in blocks from its corner. */
-    private record Pointer(boolean onSlope, double across, double up) {
+    record Pointer(boolean onSlope, double across, double up) {
     }
 
     /** Records the airliner's track for the map as long as the panel is near, seen or not. */
@@ -95,16 +95,20 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
             face(display, level, pose, buffers, width, panel.height(), partialTick);
             pose.popPose();
         }
+        Pointer pointer = pointer(pose.last(), panel);
         // The slope faces up and out at 45 degrees, through its front edge.
         if (panel.desk() > 0 && eye.y - (panel.bottom() - panel.desk()) + eye.z - panel.desk() > 0) {
             pose.pushPose();
             // Onto the slope's front left corner: x along it, y up the slope toward the screen, z out of it.
             pose.translate(0, panel.bottom() - panel.desk(), panel.desk());
             pose.mulPose(Axis.XP.rotationDegrees(-45));
-            CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), panel.leftCut(), width - panel.rightCut(), panel.slope());
+            if (display.desk() == CockpitDisplayBlockEntity.Desk.AUTOPILOT) {
+                AutopilotDeskArt.draw(display, level, buffers, pose, partialTick, pointer);
+            } else {
+                CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), panel.leftCut(), width - panel.rightCut(), panel.slope());
+            }
             pose.popPose();
         }
-        Pointer pointer = pointer(pose.last(), panel);
         if (pointer != null) {
             pointer(display, pose, buffers, panel, pointer);
         }
@@ -171,8 +175,9 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
             ScreenDrawing.rect(shapes, matrix, key.x0() - OUTLINE, key.y0(), key.x0(), key.y1(), z, POINTER_LIGHT);
             ScreenDrawing.rect(shapes, matrix, key.x1(), key.y0(), key.x1() + OUTLINE, key.y1(), z, POINTER_LIGHT);
         }
-        ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER_RING, 12, 13 * LAYER, POINTER_DARK);
-        ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER, 12, 14 * LAYER, POINTER_LIGHT);
+        // Over everything a key shows, the autopilot's numbers and ghosts too (see AutopilotDeskArt).
+        ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER_RING, 12, 15 * LAYER, POINTER_DARK);
+        ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER, 12, 16 * LAYER, POINTER_LIGHT);
         pose.popPose();
     }
 

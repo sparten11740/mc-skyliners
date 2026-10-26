@@ -631,7 +631,7 @@ public final class PilotHud {
         if (autopilot.phase() != Phase.OFF) {
             float middle = -LONG_TICK;
             canvas.flush();
-            canvas.icon(Icon.lateral(autopilot.lateral()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
+            canvas.icon(Icon.lateral(autopilot.lateral(), autopilot.circle()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
             String set = autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))
                 : !Double.isNaN(target) ? String.format(Locale.ROOT, "%03d", Math.round(target) % 360) : "";
             canvas.text(set, HEADING_HALF_WIDTH + ICON_GAP, middle, TARGET, Align.LEFT);

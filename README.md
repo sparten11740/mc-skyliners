@@ -128,65 +128,64 @@ their motors. A closed shade shuts out the daylight; anyone can open or close a 
 
 In front of the console the screens curve round the seats like an airliner's glass cockpit, three quarters of a block
 above the floor on a desk whose top slopes down toward the pilots, their top edges just under a seated pilot's eyes, so
-the pilots look out over them through the windscreen, a dark glareshield hood running along their top edges. In the middle, straight, is the systems screen, and either side of it
-two screens in the same slim dark casing, each turned further toward the seats than the one inside it, so the row
-wraps round the pilots. Left to right, as on an A380: the moving map, the captain's primary flight display, the systems
-screen, the first officer's primary flight display and the outside camera, each pilot's own flight display straight
-ahead of them. Each is as wide as the nose leaves room for, two blocks where it can (where the nose is too narrow for
-the outer pair, the inner pair shows the map and the camera, and the tiller's keys go under the camera). Behind them the
-instrument panel carries on round to the hull as plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across
-and two down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its
-rim broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
-(a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at
-night), the
-seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver
-beside the jump light, its red and green halves both dark while it is off, red or green), the window shades (a window
-on the sky with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its
-light metal turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
-or the doors open and the crate floating down under a parachute, lit red). The everyday three, the dimmer, the
-seatbelt signs and the shades, run along the top row, where a seated pilot's look rests, and the jump lights, the laser
-and the drop along the bottom, out of the way of a stray touch. Touch a tile to work its switch. On the
-slope under the screens are the keys: under each pilot's flight display a tiller, an arrow either side of a little
-wheel turned as the nose wheel is (touch an arrow to steer a notch that way), so either pilot can taxi; under the map the parking brake, a wheel
-gripped red while it is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons
-(see Autopilot); and under the camera's screen the cameras' buttons (see below). The desk runs round under the screens
-as one moulded console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim
-along its front lip and its top edge, and past the outer screens it carries on without a screen out to the hull.
-Looking at the screens or the slope from within reach, a little white dot follows your look, and the tile, key or
-camera button under it is outlined in white, so you see what a touch will work before you touch it. The flight
-displays show attitude, airspeed, altitude, vertical speed
-and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY under the green airliner of the
-autopilot's on/off key, the key that has the Physics Assembler assemble the airliner and takes off. The moving map shows what the autopilot is doing over it and how the
-airliner flies under it, the way it is heading always up, the track it has flown, and the circle it flies round or
-the heading it turns to; touch it to zoom out a step, round to the closest again. The camera panel, like an A380's taxiing camera screen, shows the live picture from one of the airliner's
+the pilots look out over them through the windscreen, a dark glareshield hood running along their top edges. In the
+middle, straight, is the systems screen, and either side of it two screens in the same slim dark casing, each turned
+further toward the seats than the one inside it, so the row wraps round the pilots. Left to right, as on an A380: the
+moving map, the captain's primary flight display, the systems screen, the first officer's primary flight display and the
+outside camera, each pilot's own flight display straight ahead of them. Each is as wide as the nose leaves room for, two
+blocks where it can (where the nose is too narrow for the outer pair, the inner pair shows the map and the camera, and
+the tiller's keys go under the camera). Behind them the instrument panel carries on round to the hull as plain casing,
+its own screens left off. The systems screen holds a tile for each of six switches, three across and two down, each a
+picture of what its switch does, as it is now; while it is on its face takes on its colour, its rim broadens in it and
+the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer (a light bulb with
+long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at night), the seatbelt
+signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver beside the
+jump light, its red and green halves both dark while it is off, red or green), the window shades (a window on the sky
+with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its light metal
+turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors, or the doors open and the
+crate floating down under a parachute, lit red). The everyday three, the dimmer, the seatbelt signs and the shades, run
+along the top row, where a seated pilot's look rests, and the jump lights, the laser and the drop along the bottom, out
+of the way of a stray touch. Touch a tile to work its switch. On the slope under the screens are the keys: under each
+pilot's flight display a tiller, an arrow either side of a little wheel turned as the nose wheel is (touch an arrow to
+steer a notch that way), so either pilot can taxi; under the map the parking brake, a wheel gripped red while it is set,
+and the landing gear (see Landing gear); under the systems screen the autopilot's buttons (see Autopilot); and under the
+camera's screen the cameras' buttons (see below). The desk runs round under the screens as one moulded console in a
+blue-grey a step lighter than the screens, its sloped top brushed between a steel trim along its front lip and its top
+edge, and past the outer screens it carries on without a screen out to the hull. Looking at the screens or the slope
+from within reach, a little white dot follows your look, and the tile, key or camera button under it is outlined in
+white, so you see what a touch will work before you touch it. The flight displays show attitude, airspeed, altitude,
+vertical speed and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY under the green airliner
+of the autopilot's on/off key, the key that has the Physics Assembler assemble the airliner and takes off. The moving
+map shows what the autopilot is doing over it and how the airliner flies under it, the way it is heading always up, the
+track it has flown, and the circle it flies round or the heading it turns to; touch it to zoom out a step, round to the
+closest again. The camera panel, like an A380's taxiing camera screen, shows the live picture from one of the airliner's
 outside cameras, the ones the passenger screens look through (see below), the camera on top of the fin at first: the
 whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL and a
 blinking recording light in the corner. Where the nose leaves no room for the camera panel, a tail camera display, a
 wide screen three blocks across, hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward
 them. Four buttons on the slope under the camera's screen pick the camera (along the bottom left of its picture where
-the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with
-a big dot where its camera is, in a colour of its own, the one shown lit white with a white
-rim: sky blue on the fin, looking ahead and down; green on the right wing, looking out along the wing
-toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
-looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes
-the same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is
-drawn small, a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen
-aboard the same airliner set to the same camera shows the same picture. Without
+the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with a big
+dot where its camera is, in a colour of its own, the one shown lit white with a white rim: sky blue on the fin, looking
+ahead and down; green on the right wing, looking out along the wing toward you; orange under the nose by the nose gear;
+and pink in front of the nose, level with the pilots' eyes and looking fifteen degrees down at the runway coming up to
+meet the airliner. The camera on the picture's label takes the same colour. Use one to switch; everyone sees the camera
+picked, and the screen keeps it. The picture is drawn small, a few times a second, and only while a screen showing it is
+in sight within 32 blocks; every screen aboard the same airliner set to the same camera shows the same picture. Without
 one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
-beside the same green airliner while the airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous
-graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
-`tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It is drawn at most ten
-times a second by default (1 to 30), and reaches 12 chunks (2 to 32), never further than your own render distance,
-since the world is only loaded that far round you, and the fog closes in at its edge as it does at the edge of your own
-view. That is far enough for the whole airliner at the default scale to stand clear of the fog; at scale 3 it takes 18
-chunks, at scale 4 24. The further it reaches, the more each picture costs: what the camera sees is worked out afresh
-every time it is drawn, while the game waits, about four times as much at twice the distance. A Tail Camera Display
-can be crafted and put up in your own builds too: against a wall it stands upright, and put up against the underside
-of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as you face it,
-and needs the room there; it comes down whole. On
-an assembled airliner with an autopilot it shows that airliner's cameras. Against the wall behind the captain's
-seat is the Physics Assembler. Right behind each pilot's seat stands that pilot's Flight Crew Locker, its door toward
-the back of the flight deck, with a Pilot Helmet and a Pilot Cap in it when the airliner is built (see Souvenirs).
+beside the same green airliner while the airliner stands as blocks. That is also what it shows with a shader pack (Iris,
+Oculus) or Fabulous graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`,
+`tailCameraResolution` and `tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It
+is drawn at most ten times a second by default (1 to 30), and reaches 12 chunks (2 to 32), never further than your own
+render distance, since the world is only loaded that far round you, and the fog closes in at its edge as it does at the
+edge of your own view. That is far enough for the whole airliner at the default scale to stand clear of the fog; at
+scale 3 it takes 18 chunks, at scale 4 24. The further it reaches, the more each picture costs: what the camera sees is
+worked out afresh every time it is drawn, while the game waits, about four times as much at twice the distance. A Tail
+Camera Display can be crafted and put up in your own builds too: against a wall it stands upright, and put up against
+the underside of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as
+you face it, and needs the room there; it comes down whole. On an assembled airliner with an autopilot it shows that
+airliner's cameras. Against the wall behind the captain's seat is the Physics Assembler. Right behind each pilot's seat
+stands that pilot's Flight Crew Locker, its door toward the back of the flight deck, with a Pilot Helmet and a Pilot Cap
+in it when the airliner is built (see Souvenirs).
 
 A Flight Crew Locker is a slim cabinet of brushed grey-blue panels for the crew's things, its pale door hinged on one
 side with a small chrome handle on the other, and on the door a pilot's peaked cap, navy with its gold wings badge and
@@ -378,51 +377,68 @@ real airliner it comes through unharmed: nothing aboard is hurt and nothing is s
 ### Autopilot
 
 Use the autopilot's control head on the centre console (or the big screen in the middle of the instrument panel of an
-older airliner) to open the autopilot's settings. Under the systems screen, on the sloped panel, are its buttons: on
-and off, and a pair for each of the heading, circling, the altitude, the speed and the circle's size, each pair in
-the setting's picture with a big arrow the way it steps, the on/off button's picture always bright so it is the first
-to find, the rest dimmed until the autopilot flies. While it flies they step what it flies (the heading 15 degrees
-either way, circling left or right, the altitude 20 blocks, the speed 5 blocks a second, the circle 50 blocks), and
-the on/off button switches it off; switched off, any of them opens the settings. The control head's own small display shows what the autopilot is set to, in the same
-pictures and colours as the settings, turned to face whoever looks at it: a lamp (green while it flies the airliner,
-amber while it is stuck, dark while it is off), what it is doing (take-off, climb, cruise, descent, landing, rolling
-out or off) and how it steers, and the height, speed and heading (or circle) it is set to, each a picture beside its
-number, greyed out while it is off. At the top the settings show what the autopilot is doing, with a lamp (green
-engaged, amber off), how the airliner flies now (speed, height and heading) and, once engaged, what it is set to fly. Below are the
-settings: hold a heading (a straight arrow), circle left or right round a point beside the airliner (arrows round
-to the left or right), or fly to a pin (a red map pin); the heading (a compass, a compass bearing); the altitude to hold (a hill, from 40 blocks above
-the runway to 30 below the top of the world); the speed (a speedometer, 30 to 120 blocks a second); and the circle's
-radius (a circle, 150 to 1000 blocks; a circle too tight to fly at the speed set is flown wider round the same
-middle, so it never banks more than 20 degrees going round). Slide each one, step it with the arrows either side of
-its slider (15 degrees, 20 blocks, 5 blocks a second, 50 blocks), or type it into the box after it. Every setting
-and button has a picture and a colour of its own, so that players who cannot read yet can fly too; point at one to
-see its name. The game goes on behind the settings, and they stay open, to watch the autopilot fly, until you press
-the X in their title bar (neither the buttons nor Escape close them).
+older airliner) to open the autopilot's settings. Under the systems screen, on the sloped panel, are its controls,
+each a picture of what it sets, in the order the pilots' flight displays read. At the left is the on/off key, the
+green airliner: lit while the autopilot flies, pulsing while it is off, the first to find. Then a speedometer, its
+band green, amber and red from slow to fast, its white needle at the speed now and a magenta marker on its rim at the
+speed set: touch the rim where you want the speed (30 to 120 blocks a second, in steps of 5). In the middle the
+steering: a half dial seen from above, the airliner at its foot nose up as on the moving map, a magenta marker on its
+rim where it is set to fly and a magenta path from the nose curving round to it, north a faint red mark; touch the
+dial where you want to go and it flies that way, straight on (in steps of 5 degrees; touch it again further round to
+turn more than a quarter). Under the dial, like road signs, the ways to fly: a tight circle left, a gentle circle
+left, straight on, a gentle circle right and a tight circle right, each the path flown from a little airliner's nose,
+the one flown lit (cyan straight on, magenta round a circle). Straight on flies on the way the airliner is going. A
+tight circle is flown as steeply as the autopilot banks round a circle, 20 degrees; a gentle one at half that, about
+twice as wide, but no wider than 2500 blocks where the tight one leaves room. How big that is follows from the speed
+set: a radius of about 625 blocks at the cruising speed, more the faster (set faster or slower while circling,
+it comes round a new circle beside it). At the right, the sky from the side, over the ground: the airliner in green at
+the height set, faintly at the height it flies now, a dotted climb or descent between them, heights up its side; touch
+the sky where you want the airliner to fly (from 40 blocks above the runway to 30 below the top of the world, in steps
+of 10). Pointed at, the speedometer, the dial and the sky show a ghost of what a touch there would set, with its
+number, before you touch; and small windows give the speed, heading and height set. A touch on the speedometer or the
+sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A pin lamp in the dial's corner lights
+while it flies to a pin (see below). While the autopilot is off the controls only thud, and the on/off key opens the
+settings, where it is engaged; while it flies, the on/off key switches it off. A touch it cannot take thuds too: while
+it rolls out after landing, or once too low to go around from landing near the pin.
 
-Set to fly to a pin, the rows of settings give way to a map: the land and the villages as the route map on the
-passenger screens has them (see Passenger screens), the airliner as a gold arrow, and the pin, once dropped, as a red
-dot in a red ring, the circle it will be flown round. Drag the map to look about, scroll to zoom out and in, and click
-to drop the pin: a click close to a village drops it right on the village. Every transponder shows on the map too
-(see Control tower and transponders), by its picture in its colour on a dark disc, as a beacon shows in Subnautica,
-other airliners with a few dots the way they fly; point at one to see what it is, where and how far, and click on one
-to drop the pin right on it. Every other player in the dimension shows on it as well, however far off, as their face
-in a white frame, where they were a second ago (those riding this airliner are left out, its arrow standing for them);
-point at a face to see who it is, where and how far, and click on it to drop the pin where they stand. The pin stays
-where it was dropped; it does not follow them. A small cross marks the middle of the map,
-whose X and Z show in its bottom left corner (and the pin's in the bottom right once dropped), so you can find your
-way about even where the land has not been seen yet. Engaged, the airliner turns for the circle
-round the pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and
-flies round it clockwise at the radius set (150 blocks at least, banking no more than 20 degrees), until set to fly
-something else or told to land. The height and speed fly as set.
+The control head's own small display shows what the autopilot is set to, in the same pictures and colours, turned to
+face whoever looks at it: a lamp (green while it flies the airliner, amber while it is stuck, dark while it is off),
+what it is doing (take-off, climb, cruise, descent, landing, rolling out or off) and the way it flies (the road sign,
+or the pin), and the height, speed and heading (or the circle's radius) it is set to, each a picture beside its
+number, greyed out while it is off. The settings have the same controls as the panel: at the top what the autopilot is
+doing, with a lamp (green engaged, amber off), and on the glass how the airliner flies now (speed, height and heading)
+or what engaging does; then the speedometer, the steering dial over the five ways to fly, and the sky, each clicked,
+or dragged, where you want it, stepped with the arrow keys or the scroll wheel, or its number typed into the box under
+it; and under the steering the pin (see below). Every setting and button has a picture and a colour of its own, so
+that players who cannot read yet can fly too; point at one to see its name. The game goes on behind the settings, and
+they stay open, to watch the autopilot fly, until you press the X in their title bar (neither the buttons nor Escape
+close them).
 
-Beside the mode, while it flies to a pin, is Land at the Pin: an amber airliner settling onto a runway by a little red
+Press the pin (a red map pin, under the steering) and the steering gives way to a map: the land and the villages as
+the route map on the passenger screens has them (see Passenger screens), the airliner as a gold arrow, and the pin,
+once dropped, as a red dot in a red ring, the circle it will be flown round. Drag the map to look about, scroll to
+zoom out and in, and click to drop the pin: a click close to a village drops it right on the village. Every
+transponder shows on the map too (see Control tower and transponders), by its picture in its colour on a dark disc, as
+a beacon shows in Subnautica, other airliners with a few dots the way they fly; point at one to see what it is, where
+and how far, and click on one to drop the pin right on it. Every other player in the dimension shows on it as well,
+however far off, as their face in a white frame, where they were a second ago (those riding this airliner are left
+out, its arrow standing for them); point at a face to see who it is, where and how far, and click on it to drop the
+pin where they stand. The pin stays where it was dropped; it does not follow them. A small cross marks the middle of
+the map, whose X and Z show in its bottom left corner (and the pin's in the bottom right once dropped), so you can
+find your way about even where the land has not been seen yet. Engaged, the airliner turns for the circle round the
+pin, heading for it along the line that just touches it, so it comes onto the circle already turning, and flies round
+it clockwise, tightly or gently as set beside the pin (the tight or the gentle circle right: press it to swap them,
+the ring on the map growing or shrinking), until set to fly something else or told to land. The height and speed fly
+as set, and stay on the settings beside the map. Press the pin again to steer instead.
+
+Beside them, while it flies to a pin, is Land at the Pin: an amber airliner settling onto a runway by a little red
 pin, its tile lit green while it is on (point at it to see whether it is). Like every button, it has its picture and
 its colour so that players who cannot read yet can use it: pick the pin on the map, light the button, engage. Then the
 airliner does not circle the pin but lands near it, on its own, somewhere clear of buildings and trees. It flies
 straight to the pin and on over it, back and forth, looking at the land below: the server only has the land near the
-players aboard to look at, so it has to fly over it first. Meanwhile it measures itself, wingtip to wingtip and nose to
-tail, and looks for a strip of land within 320 blocks of the pin, nearest first and every 15 degrees round, where it
-fits: dry, level ground (no more than 2 blocks above or below where it touches down, and no step higher than 1) for
+players aboard to look at, so it has to fly over it first. Meanwhile it measures itself, wingtip to wingtip and nose
+to tail, and looks for a strip of land within 320 blocks of the pin, nearest first and every 15 degrees round, where
+it fits: dry, level ground (no more than 2 blocks above or below where it touches down, and no step higher than 1) for
 its wheels all the way from touchdown until it has braked to a stop, a good 400 blocks with room either end; nothing
 taller under its wings and engines than they stand above the ground; and nothing under the end of its glide down that
 it would not pass over. Once it finds one it says so on the flight deck, and the strip shows on the map as a white
@@ -432,9 +448,9 @@ toward it, cleared to land by the tower, the cabin hearing the landing announcem
 along the strip's middle all the way, touches down, brakes to a stop steering along the line, and parks. If nowhere
 near the pin is quite clear, it picks the strip with the fewest things under its wings (never under its body); if
 there is nowhere at all, it says so once and keeps flying over the pin, looking again as more land comes into view.
-Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way
-in goes around too: with Land at the Pin still lit it looks again and comes back round; switched off, it circles the
-pin instead, though below the flare's 15 blocks switching it off is too late: it lands.
+Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way in
+goes around too: with Land at the Pin still lit it looks again and comes back round; switched off, it circles the pin
+instead, though below the flare's 15 blocks switching it off is too late: it lands.
 
 Where a runway laid down from its blueprint (see Runways) lies in the circle round the pin, it has nothing to look for:
 as soon as it has measured itself it lands on that runway, from whichever end it comes to with less turning, touching
@@ -499,32 +515,32 @@ flown or the heading being turned to, and north; touch the map to zoom it out, a
 back in.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
-either pilot's seat, or standing at the console), its visor shows a head-up display: thin, see-through green lines
-and figures, as a real HUD's, edged with a thin dark line so they read against bright sky, with whatever the
-autopilot is set to fly in magenta; without the helmet there is none. Putting the helmet on there switches it on with
-a beep, and it fades in. It comes in parts, kept clear of the rest of the HUD and of the middle of the view. Close
-round the crosshair are a short horizon line and a faint pitch ladder, about 15 degrees of it either way, tilting
-with the bank and dropping as the nose comes up (the horizon amber past 35 degrees of bank), and the flight path
-marker, a small ring with wings showing where the airliner is going. Left of the hotbar is the speed on a narrow
-moving tape, the speed set as a magenta mark beside it and an arrow to where the speed will be in ten seconds; beside
-that a picture of what the autopilot is doing over its name: taking off, climbing, cruising, descending, landing,
-braking to a stop after landing, or a red power symbol while it is off. Right of the hotbar is the height on a moving
-tape (the autopilot's own, as it holds it), the height set as a magenta mark and, once it is near, the ground rising
-up the tape as an amber line; beyond it a bar that climbs green or sinks amber, and beside that the wheels' height
-above the ground over the climb or sink with an arrow. At the top of the screen, under any boss bars, is a heading
-scale with the heading in a box, the heading set as a magenta mark and the mode beside it (straight on, or circling
-left or right with the circle's radius). The speed and the height stand out against the screen's left and right
+either pilot's seat, or standing at the console), its visor shows a head-up display: thin, see-through green lines and
+figures, as a real HUD's, edged with a thin dark line so they read against bright sky, with whatever the autopilot is
+set to fly in magenta; without the helmet there is none. Putting the helmet on there switches it on with a beep, and
+it fades in. It comes in parts, kept clear of the rest of the HUD and of the middle of the view. Close round the
+crosshair are a short horizon line and a faint pitch ladder, about 15 degrees of it either way, tilting with the bank
+and dropping as the nose comes up (the horizon amber past 35 degrees of bank), and the flight path marker, a small
+ring with wings showing where the airliner is going. Left of the hotbar is the speed on a narrow moving tape, the
+speed set as a magenta mark beside it and an arrow to where the speed will be in ten seconds; beside that a picture of
+what the autopilot is doing over its name: taking off, climbing, cruising, descending, landing, braking to a stop
+after landing, or a red power symbol while it is off. Right of the hotbar is the height on a moving tape (the
+autopilot's own, as it holds it), the height set as a magenta mark and, once it is near, the ground rising up the tape
+as an amber line; beyond it a bar that climbs green or sinks amber, and beside that the wheels' height above the
+ground over the climb or sink with an arrow. At the top of the screen, under any boss bars, is a heading scale with
+the heading in a box, the heading set as a magenta mark and the way it flies beside it (the road sign of the panel,
+with the circle's radius while it circles). The speed and the height stand out against the screen's left and right
 edges, 40 pixels in from them, level with the crosshair, or both higher to keep the speed above the chat and the
 height above the subtitles. On a short screen the chat can reach up past the crosshair; it is drawn over the horizon
 there. Each part curves with the visor where it sits: the visor bulges out in front of the eyes, so what is on it is
 drawn in toward the middle of the view, the more the further out it is. The heading at the top arches, its ends
 curving down and away; out at the sides the tapes bow outward; everything narrows a little toward the edges; and the
-horizon in the middle stays straight. The head-up display is drawn about half the size of the rest of the HUD and grows with the
-GUI scale; `pilotHudScale` in the client config makes it bigger or smaller (smaller again on a small screen). Being on
-the visor, it shows only in first person. It hides with the rest of the HUD (F1), behind any screen, under the debug
-screen and while you look through an outside camera; turn it off with `pilotHud` in the client config. While you wear
-the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold, darkens it
-faintly toward the edges and catches a little light along its top.
+horizon in the middle stays straight. The head-up display is drawn about half the size of the rest of the HUD and
+grows with the GUI scale; `pilotHudScale` in the client config makes it bigger or smaller (smaller again on a small
+screen). Being on the visor, it shows only in first person. It hides with the rest of the HUD (F1), behind any screen,
+under the debug screen and while you look through an outside camera; turn it off with `pilotHud` in the client config.
+While you wear the helmet and look out through your own eyes, its visor also tints the view a touch toward its gold,
+darkens it faintly toward the edges and catches a little light along its top.
 
 The airliner has no control surfaces that move, so the autopilot flies with thrusters: besides the engines there are
 control jets on top of and under the outer tailplane (to pitch it) and the outer wings (to roll it). It turns by
@@ -1301,9 +1317,10 @@ looks into its WC, in the airliner's frame through `SableFlight` once it is asse
 drawn), and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `ScreenArc` lays out the flight deck's curved row
 of screens (`CockpitDisplayBlock`, whose block entity keeps where each panel stands and what it is linked to, and
-`CockpitKeys` where its touch keys are), whose keys use the switches standing out of sight in the avionics bay as a
-player would, and `CockpitDisplayRenderer` and `CockpitKeysArt` draw it, with the pointer that follows the look, as
-`AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity`
+`CockpitKeys` where its touch keys are, and the shape of the autopilot's speedometer, steering dial and sky that a
+touch is read by), whose keys use the switches standing out of sight in the avionics bay as a player would, and
+`CockpitDisplayRenderer`, `CockpitKeysArt` and `AutopilotDeskArt` (the autopilot's controls) draw it, with the pointer
+that follows the look, as `AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity`
 flies (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks
 `ControlSurfaces` turns over), assembling its airliner when engaged on one not yet assembled through
 `PhysicsAssembler`, which works the assembler as a Create deployer does, reading the airliner from Sable

@@ -74,7 +74,6 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
     private static final Icon ALTITUDE = Icon.of("autopilot/altitude");
     private static final Icon SPEED = Icon.of("autopilot/speed");
     private static final Icon HEADING = Icon.of("autopilot/heading");
-    private static final Icon RADIUS = Icon.of("autopilot/radius");
 
     private final ControlSurfaceRenderer surfaces;
 
@@ -115,10 +114,10 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
         boolean circling = autopilot.lateral() == Lateral.ORBIT_LEFT || autopilot.lateral() == Lateral.ORBIT_RIGHT;
         // Pictures before text: text takes its own buffer, which ends the one the shapes went into.
         picture(buffers, matrix, Icon.phase(autopilot.phase()), PHASE_X, TOP_ROW, BIG_PICTURE, tint);
-        picture(buffers, matrix, Icon.lateral(autopilot.lateral()), LATERAL_X, TOP_ROW, BIG_PICTURE, tint);
+        picture(buffers, matrix, Icon.lateral(autopilot.lateral(), autopilot.circle()), LATERAL_X, TOP_ROW, BIG_PICTURE, tint);
         picture(buffers, matrix, ALTITUDE, LAMP_X, ROWS[0], SMALL_PICTURE, tint);
         picture(buffers, matrix, SPEED, LAMP_X, ROWS[1], SMALL_PICTURE, tint);
-        picture(buffers, matrix, circling ? RADIUS : HEADING, LAMP_X, ROWS[2], SMALL_PICTURE, tint);
+        picture(buffers, matrix, circling ? Icon.lateral(autopilot.lateral(), autopilot.circle()) : HEADING, LAMP_X, ROWS[2], SMALL_PICTURE, tint);
         Font font = Minecraft.getInstance().font;
         boolean set = autopilot.targetSpeed() > 0;
         String heading = circling ? String.valueOf(Math.round(autopilot.orbitRadius()))

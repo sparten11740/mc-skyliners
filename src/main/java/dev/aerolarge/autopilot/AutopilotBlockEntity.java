@@ -135,24 +135,87 @@ public class AutopilotBlockEntity extends BlockEntity {
         HEADING, ORBIT_LEFT, ORBIT_RIGHT, DESTINATION
     }
 
-    /** Its buttons on the flight deck's sloped touch panel, under the middle screen (see {@link #press}). */
+    /**
+     * How tightly it circles: as steeply as it ever banks round a circle, or gently, at half that bank, about twice as
+     * wide. The circle's size follows from the bank and the speed set, as a pilot's does, so the two always differ in
+     * the sky: a circle set in blocks would be flown no tighter than the bank allows, and at the speeds it cruises at
+     * most sizes would come out the same.
+     */
+    public enum CircleSize {
+        TIGHT(ORBIT_BANK), GENTLE(ORBIT_BANK / 2);
+
+        /** The bank it circles at, in degrees. */
+        public final double bank;
+
+        CircleSize(double bank) {
+            this.bank = bank;
+        }
+
+        /**
+         * The circle's radius, in blocks, at a speed in blocks a second where gravity pulls this hard, in blocks a
+         * second each second: the circle that bank turns it round. A gentle circle is kept from growing past
+         * {@link #GENTLE_WIDEST}, where the tight one leaves room, so it still comes round in a few minutes; it is
+         * always a good share wider than the tight one.
+         */
+        public double radius(double speed, double gravity) {
+            double tight = turning(speed, gravity, TIGHT.bank);
+            if (this == TIGHT) {
+                return tight;
+            }
+            return Math.max(tight * GENTLE_WIDER, Math.min(turning(speed, gravity, bank), GENTLE_WIDEST));
+        }
+
+        /** The radius a bank in degrees turns at a speed round, no tighter than the tightest circle it flies. */
+        private static double turning(double speed, double gravity, double bank) {
+            return Math.max(MIN_RADIUS, speed * speed / (Math.max(1, gravity) * Math.tan(Math.toRadians(bank))));
+        }
+    }
+
+    /**
+     * Its controls on the flight deck's sloped touch panel, under the middle screen (see {@link #press}): the on/off
+     * key, the speedometer, the steering fan and the sky, which are set by where they are touched, and the five turns
+     * along the bottom of the steering, tight and gentle either way round a circle and straight on between them.
+     */
     public enum Button {
-        ENGAGE, HEADING_LEFT, HEADING_RIGHT, ORBIT_LEFT, ORBIT_RIGHT, ALTITUDE_DOWN, ALTITUDE_UP, SPEED_DOWN, SPEED_UP, RADIUS_DOWN, RADIUS_UP
+        ENGAGE, SPEED, HEADING, ALTITUDE, TIGHT_LEFT(Lateral.ORBIT_LEFT, CircleSize.TIGHT), GENTLE_LEFT(Lateral.ORBIT_LEFT, CircleSize.GENTLE),
+        STRAIGHT(Lateral.HEADING, CircleSize.TIGHT), GENTLE_RIGHT(Lateral.ORBIT_RIGHT, CircleSize.GENTLE), TIGHT_RIGHT(Lateral.ORBIT_RIGHT, CircleSize.TIGHT);
+
+        /**
+         * For a turn, the way it flies and how tightly it circles (straight on, holding a heading); null for the rest.
+         */
+        @Nullable
+        public final Lateral way;
+        @Nullable
+        public final CircleSize size;
+
+        Button() {
+            this(null, null);
+        }
+
+        Button(@Nullable Lateral way, @Nullable CircleSize size) {
+            this.way = way;
+            this.size = size;
+        }
+
+        /** Whether it is a turn, and the one that flying this way, this tightly, is: straight on holds any heading. */
+        public boolean flies(Lateral lateral, CircleSize circle) {
+            return way != null && way == lateral && (way == Lateral.HEADING || size == circle);
+        }
     }
 
     /**
      * What the settings screen sets: the speed in blocks a second, the height to hold in world blocks, the heading as
-     * a compass bearing (0 north, 90 east), whether to hold that heading, circle or fly to a destination, the circle's
-     * radius in blocks, the destination (its x and z in the world; y unused), and whether to land near the destination
+     * a compass bearing (0 north, 90 east), whether to hold that heading, circle or fly to a destination, how tightly
+     * it circles, the destination (its x and z in the world; y unused), and whether to land near the destination
      * rather than circle it; whole numbers, as the screen shows them.
      */
-    public record Settings(int speed, int altitude, int heading, Lateral lateral, int radius, BlockPos destination, boolean landAtPin) {
+    public record Settings(int speed, int altitude, int heading, Lateral lateral, CircleSize circle, BlockPos destination, boolean landAtPin) {
         public static final StreamCodec<FriendlyByteBuf, Settings> STREAM_CODEC = NeoForgeStreamCodecs.composite(
             ByteBufCodecs.VAR_INT, Settings::speed,
             ByteBufCodecs.VAR_INT, Settings::altitude,
             ByteBufCodecs.VAR_INT, Settings::heading,
             NeoForgeStreamCodecs.enumCodec(Lateral.class), Settings::lateral,
-            ByteBufCodecs.VAR_INT, Settings::radius,
+            NeoForgeStreamCodecs.enumCodec(CircleSize.class), Settings::circle,
             BlockPos.STREAM_CODEC, Settings::destination,
             ByteBufCodecs.BOOL, Settings::landAtPin,
             Settings::new
@@ -164,24 +227,21 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
 
         Settings withSpeed(int to) {
-            return new Settings(to, altitude, heading, lateral, radius, destination, landAtPin);
+            return new Settings(to, altitude, heading, lateral, circle, destination, landAtPin);
         }
 
         Settings withAltitude(int to) {
-            return new Settings(speed, to, heading, lateral, radius, destination, landAtPin);
+            return new Settings(speed, to, heading, lateral, circle, destination, landAtPin);
         }
 
         /** Holding this heading, straight on. */
         Settings withHeading(int to) {
-            return new Settings(speed, altitude, to, Lateral.HEADING, radius, destination, landAtPin);
+            return new Settings(speed, altitude, to, Lateral.HEADING, circle, destination, landAtPin);
         }
 
-        Settings withLateral(Lateral to) {
-            return new Settings(speed, altitude, heading, to, radius, destination, landAtPin);
-        }
-
-        Settings withRadius(int to) {
-            return new Settings(speed, altitude, heading, lateral, to, destination, landAtPin);
+        /** Circling this way, this tightly. */
+        Settings withCircle(Lateral way, CircleSize size) {
+            return new Settings(speed, altitude, heading, way, size, destination, landAtPin);
         }
 
         CompoundTag save() {
@@ -190,15 +250,16 @@ public class AutopilotBlockEntity extends BlockEntity {
             tag.putInt("Altitude", altitude);
             tag.putInt("Heading", heading);
             tag.putString("Lateral", lateral.name());
-            tag.putInt("Radius", radius);
+            tag.putString("Circle", circle.name());
             tag.putLong("Destination", destination.asLong());
             tag.putBoolean("LandAtPin", landAtPin);
             return tag;
         }
 
+        /** Saved with a radius in blocks before circles were tight or gentle: those circle tightly. */
         static Settings load(CompoundTag tag) {
             return new Settings(tag.getInt("Speed"), tag.getInt("Altitude"), tag.getInt("Heading"),
-                parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING), tag.getInt("Radius"),
+                parse(Lateral.class, tag.getString("Lateral"), Lateral.HEADING), parse(CircleSize.class, tag.getString("Circle"), CircleSize.TIGHT),
                 BlockPos.of(tag.getLong("Destination")), tag.getBoolean("LandAtPin"));
         }
     }
@@ -373,19 +434,39 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private static final Loaded<AutopilotBlockEntity> LOADED = new Loaded<>(AutopilotBlockEntity.class, true);
     /**
-     * How the settings screen's buttons step the targets: degrees, blocks of height, blocks a second, and blocks of
-     * radius per press.
+     * The steps the targets are set in by touch, on the flight deck's controls and the settings screen's: degrees of
+     * heading, blocks of height and blocks a second. Typed into the screen, any whole number goes.
      */
-    public static final int HEADING_STEP = 15;
-    public static final int ALTITUDE_STEP = 20;
+    public static final int HEADING_STEP = 5;
+    public static final int ALTITUDE_STEP = 10;
     public static final int SPEED_STEP = 5;
-    public static final int RADIUS_STEP = 50;
-    /** The speeds and orbit radii it flies; the height it holds is kept between {@link #floor} and {@link #ceiling}. */
+    /**
+     * The speeds it flies, and the tightest circle it flies, in blocks; the height it holds is kept between
+     * {@link #lowestAltitude} and {@link #highestAltitude}.
+     */
     public static final int MIN_SPEED = 30;
     public static final int MAX_SPEED = 120;
     public static final int MIN_RADIUS = 150;
-    public static final int MAX_RADIUS = 1000;
+    /**
+     * A gentle circle: the widest it grows to, in blocks, and the least it is wider than a tight one, as a share of
+     * that (see {@link CircleSize#radius}).
+     */
+    private static final double GENTLE_WIDEST = 2500;
+    private static final double GENTLE_WIDER = 1.3;
     private static final double DEFAULT_RADIUS = 600;
+    /** How far above the runway the lowest height it can be set to hold is, in blocks. */
+    private static final int LOWEST_ABOVE_RUNWAY = 40;
+    /**
+     * The note a touch on the flight deck's speedometer or sky sounds: its pitch at the slowest or lowest setting, and
+     * at the fastest or highest; and the pitch of the thud a control gives with the autopilot off.
+     */
+    public static final float NOTE_LOW = 0.6F;
+    public static final float NOTE_HIGH = 1.8F;
+    private static final float THUD_PITCH = 0.6F;
+    /** How loud the note, the whoosh of a turn and the thud are. */
+    private static final float NOTE_VOLUME = 0.5F;
+    private static final float WHOOSH_VOLUME = 0.5F;
+    private static final float THUD_VOLUME = 0.8F;
     private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
     /** How far a control jet's signal may wander, in steps of the 15, before the jet is set to it (see {@link #steady}). */
     private static final int JET_STEADY = 1;
@@ -443,10 +524,14 @@ public class AutopilotBlockEntity extends BlockEntity {
     private double runwayAltitude;
     /** The heading it took off on, held down the runway whatever heading is set for after the take-off. */
     private double runwayHeading;
-    /** The point an orbit circles, in world blocks, and its radius. */
+    /**
+     * The point an orbit circles, in world blocks, its radius, and how tightly it was set to circle, which the radius
+     * follows from at the speed set (see {@link CircleSize#radius}).
+     */
     private double orbitX;
     private double orbitZ;
     private double orbitRadius = DEFAULT_RADIUS;
+    private CircleSize circle = CircleSize.TIGHT;
     /** The pitch that holds the height at this speed, and the engines' signal that holds the speed, learnt as it flies. */
     private double trim;
     private double thrustTrim = CRUISE_THRUST;
@@ -600,6 +685,10 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     public double orbitRadius() {
         return orbitRadius;
+    }
+
+    public CircleSize circle() {
+        return circle;
     }
 
     /** Whether the airliner is stuck with its engines running, and the jets ready to hop it free. */
@@ -787,38 +876,107 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * A press of one of its buttons on the flight deck's sloped touch panel, on the server. Flying, the on/off button
-     * switches it off and the others step what it flies: the heading a step either way (flying straight on from the
-     * way it is going, if it was circling), circling either way, or the altitude, the speed or the circle's size a step
-     * up or down. Switched off, any of them opens the settings screen, where it is engaged. Says what it did.
+     * A touch on one of its controls on the flight deck's sloped touch panel, on the server, at a place along it (see
+     * {@link dev.aerolarge.block.CockpitKeys#along}): for the speedometer and the sky, how far up their scale, 0 the
+     * slowest or lowest and 1 the fastest or highest; for the steering fan, how far right of the nose, in degrees;
+     * nothing for the keys. Flying, the on/off key switches it off; the speedometer and the sky set the speed and the
+     * height touched, and the fan the way touched, flown straight on; the turns circle that way, tightly or gently, and
+     * straight on flies on the way it is going. A touch sounds as it does: a note, higher the faster or higher it sets,
+     * or a whoosh for a turn. Switched off, the on/off key opens the settings screen, where it is engaged, and the
+     * others only thud, as they do while the airliner is not assembled or the setting touched would be refused. Says
+     * what it did, or why not.
      */
-    public void press(Button button, ServerPlayer player) {
-        if (phase == Phase.OFF) {
-            openScreen(player);
+    public void press(Button button, double along, ServerPlayer player) {
+        if (level == null) {
             return;
         }
-        Settings now = flying();
-        Settings next = switch (button) {
+        if (phase == Phase.OFF) {
+            if (button == Button.ENGAGE) {
+                openScreen(player);
+            } else {
+                thud();
+            }
+            return;
+        }
+        if (button == Button.ENGAGE) {
+            player.displayClientMessage(set(SetAutopilot.Action.OFF, flying()), true);
+            return;
+        }
+        SableFlight.State state = SableFlight.read(this, nose());
+        if (state == null) {
+            thud();
+            return;
+        }
+        Settings touched = touched(button, along, flying(), state.heading());
+        if (refusal(level, state, touched) != null) {
+            thud();
+        } else if (button == Button.SPEED || button == Button.ALTITUDE) {
+            float note = Mth.lerp((float) Mth.clamp(along, 0, 1), NOTE_LOW, NOTE_HIGH);
+            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, note);
+        } else {
+            level.playSound(null, worldPosition, AerolargeRegistry.PAPER_PLANE_WHOOSH.get(), SoundSource.BLOCKS, WHOOSH_VOLUME, 1.0F);
+        }
+        player.displayClientMessage(set(SetAutopilot.Action.FLY, touched), true);
+    }
+
+    /** The thud of a control touched with nothing it can do. */
+    private void thud() {
+        if (level != null) {
+            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, THUD_VOLUME, THUD_PITCH);
+        }
+    }
+
+    /**
+     * The settings a touch on one of the flight deck's controls asks for: what it flies now, with what was touched set,
+     * in the steps a touch sets it in; the way is reckoned from the way the airliner is going, heading up as the
+     * steering fan shows it.
+     */
+    private Settings touched(Button button, double along, Settings now, double heading) {
+        return switch (button) {
+            case SPEED -> now.withSpeed(touchedSpeed(along));
+            case ALTITUDE -> now.withAltitude(touchedAltitude(along, runwayAltitude, highestAltitude(level)));
+            case HEADING -> now.withHeading(touchedBearing(bearing(heading), along));
+            case STRAIGHT -> now.withHeading(bearing(heading));
+            case TIGHT_LEFT, GENTLE_LEFT, GENTLE_RIGHT, TIGHT_RIGHT -> now.withCircle(button.way, button.size);
             case ENGAGE -> now;
-            case HEADING_LEFT -> now.withHeading(now.heading() - HEADING_STEP);
-            case HEADING_RIGHT -> now.withHeading(now.heading() + HEADING_STEP);
-            case ORBIT_LEFT -> now.withLateral(Lateral.ORBIT_LEFT);
-            case ORBIT_RIGHT -> now.withLateral(Lateral.ORBIT_RIGHT);
-            case ALTITUDE_DOWN -> now.withAltitude(now.altitude() - ALTITUDE_STEP);
-            case ALTITUDE_UP -> now.withAltitude(now.altitude() + ALTITUDE_STEP);
-            case SPEED_DOWN -> now.withSpeed(now.speed() - SPEED_STEP);
-            case SPEED_UP -> now.withSpeed(now.speed() + SPEED_STEP);
-            case RADIUS_DOWN -> now.withRadius(now.radius() - RADIUS_STEP);
-            case RADIUS_UP -> now.withRadius(now.radius() + RADIUS_STEP);
         };
-        player.displayClientMessage(set(button == Button.ENGAGE ? SetAutopilot.Action.OFF : SetAutopilot.Action.FLY, next), true);
+    }
+
+    /**
+     * The speed a touch a share of the way round the flight deck's speedometer sets, in blocks a second, in the steps a
+     * touch sets it in; the same for the server and for the ghost the panel shows before the touch.
+     */
+    public static int touchedSpeed(double along) {
+        return step(Mth.lerp(along, MIN_SPEED, MAX_SPEED), SPEED_STEP);
+    }
+
+    /**
+     * The height a touch a share of the way up the flight deck's sky sets, in world blocks, in the steps a touch sets
+     * it in, within the heights it can be set to hold for a runway this high and the highest it is let go.
+     */
+    public static int touchedAltitude(double along, double runway, double highest) {
+        double lowest = lowestAltitude(runway);
+        int stepped = step(Mth.lerp(along, lowest, highest), ALTITUDE_STEP);
+        return Mth.clamp(stepped, Mth.ceil(lowest), Mth.floor(Math.max(lowest, highest)));
+    }
+
+    /**
+     * The compass bearing a touch on the flight deck's steering fan sets: so many degrees right of a bearing, stepped.
+     */
+    public static int touchedBearing(int bearing, double along) {
+        return Math.floorMod(step(bearing + along, HEADING_STEP), 360);
+    }
+
+    /** A value to the nearest whole step. */
+    private static int step(double value, int step) {
+        return (int) Math.round(value / step) * step;
     }
 
     /** What it flies now, as its settings screen shows it: circling, the heading is the way it is going. */
     private Settings flying() {
         SableFlight.State state = SableFlight.read(this, nose());
         double heading = lateral == Lateral.HEADING || state == null ? targetHeading : state.heading();
-        return new Settings((int) Math.round(targetSpeed), (int) Math.round(targetAltitude), bearing(heading), lateral, (int) Math.round(orbitRadius),
+        return new Settings((int) Math.round(targetSpeed), (int) Math.round(targetAltitude), bearing(heading), lateral, circle,
             BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
     }
 
@@ -840,11 +998,12 @@ public class AutopilotBlockEntity extends BlockEntity {
             plan = plan(level, state);
         }
         Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
-            phase != Phase.OFF ? lateral : Lateral.HEADING, (int) Math.round(orbitRadius), BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
-        double floor = floor(plan.runway());
+            phase != Phase.OFF ? lateral : Lateral.HEADING, circle, BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
+        double floor = lowestAltitude(plan.runway());
         boolean assembles = state == null && level instanceof ServerLevel server && assemblerAt(server) != null;
+        double gravity = state != null ? state.gravity() : SableFlight.gravity(level, Vec3.atCenterOf(worldPosition));
         PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF, assembles,
-            Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level)))));
+            Mth.ceil(floor), Mth.floor(Math.max(floor, highestAltitude(level))), (float) gravity));
     }
 
     /**
@@ -868,11 +1027,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (action == SetAutopilot.Action.LAND) {
             return land(level, state);
         }
-        if (phase == Phase.ROLLOUT) {
-            return Component.translatable("message.aerolarge.autopilot.rolling_out");
-        }
-        if (tooLowToGoAround(level, state, settings)) {
-            return Component.translatable("message.aerolarge.autopilot.pin.too_low");
+        Component refused = refusal(level, state, settings);
+        if (refused != null) {
+            return refused;
         }
         boolean engaging = phase == Phase.OFF;
         if (engaging) {
@@ -903,10 +1060,13 @@ public class AutopilotBlockEntity extends BlockEntity {
         pinLanding.abandon();
         landAtPin = settings.landAtPin();
         targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
-        double floor = floor(runwayAltitude);
-        targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, ceiling(level)));
-        double radius = Mth.clamp(unlessSame(orbitRadius, settings.radius()), MIN_RADIUS, MAX_RADIUS);
-        boolean resized = radius != orbitRadius;
+        double floor = lowestAltitude(runwayAltitude);
+        targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, highestAltitude(level)));
+        // The circle's size follows from how tightly it is set to circle at the speed set: set faster or slower while
+        // circling, it comes round a new circle beside it, as it would picked afresh.
+        circle = settings.circle();
+        double radius = circle.radius(targetSpeed, state.gravity());
+        boolean resized = Math.abs(radius - orbitRadius) >= 1;
         orbitRadius = radius;
         int bearing = Math.floorMod(settings.heading(), 360);
         if (settings.lateral() == Lateral.HEADING) {
@@ -935,6 +1095,21 @@ public class AutopilotBlockEntity extends BlockEntity {
             return Component.translatable("message.aerolarge.autopilot.mode.destination_land");
         }
         return Component.translatable("message.aerolarge.autopilot.mode." + lateral.name().toLowerCase(Locale.ROOT), Math.round(orbitRadius));
+    }
+
+    /**
+     * Why the autopilot will not fly new settings now, or null if it will: rolling out after landing, or too low to go
+     * around from landing near the pin. The flight deck's controls thud instead of sounding a setting it would refuse.
+     */
+    @Nullable
+    private Component refusal(Level level, SableFlight.State state, Settings settings) {
+        if (phase == Phase.ROLLOUT) {
+            return Component.translatable("message.aerolarge.autopilot.rolling_out");
+        }
+        if (tooLowToGoAround(level, state, settings)) {
+            return Component.translatable("message.aerolarge.autopilot.pin.too_low");
+        }
+        return null;
     }
 
     /**
@@ -1051,13 +1226,13 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         double runway = state != null ? state.position().y : Vec3.atCenterOf(worldPosition).y;
         double heading = state != null ? state.heading() : nose().toYRot();
-        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + AerolargeConfig.AUTOPILOT_CLIMB.get(), ceiling(level)),
+        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + AerolargeConfig.AUTOPILOT_CLIMB.get(), highestAltitude(level)),
             Mth.clamp(AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get(), MIN_SPEED, MAX_SPEED), heading);
     }
 
-    /** The lowest height it can be set to hold: two of the screen's steps above the runway. */
-    private static double floor(double runway) {
-        return runway + 2 * ALTITUDE_STEP;
+    /** The lowest height it can be set to hold, in world blocks: a little above the runway it took off from. */
+    public static double lowestAltitude(double runway) {
+        return runway + LOWEST_ABOVE_RUNWAY;
     }
 
     /** Circles a point beside the airliner, on the side it turns to, so it banks straight into the circle. */
@@ -1271,7 +1446,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double pitchCommand = 0;
         double rollCommand = 0;
         if (radioAltitude(level, state) > AIRBORNE) {
-            double climbLimit = state.apex() > ceiling(level) ? 0 : PROTECT_CLIMB;
+            double climbLimit = state.apex() > highestAltitude(level) ? 0 : PROTECT_CLIMB;
             double pitchBack = Mth.clamp(pitch, -PROTECT_DIVE, climbLimit) - pitch;
             double rollBack = Mth.clamp(roll, -PROTECT_BANK, PROTECT_BANK) - roll;
             pitchCommand = PITCH_GAIN * pitchBack - PITCH_DAMPING * pitchRate;
@@ -1281,7 +1456,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
         double speed = state.airspeed();
         double apex = state.apex();
-        if (speed > MAX_SAFE_SPEED || apex > ceiling(level)) {
+        if (speed > MAX_SAFE_SPEED || apex > highestAltitude(level)) {
             if (!governing) {
                 governing = true;
                 setChanged();
@@ -1290,15 +1465,18 @@ public class AutopilotBlockEntity extends BlockEntity {
             for (Channel engine : ENGINES) {
                 drive(level, engine, 0);
             }
-        } else if (governing && speed < MAX_SAFE_SPEED - GOVERNOR_MARGIN && apex < ceiling(level) - CEILING_MARGIN) {
+        } else if (governing && speed < MAX_SAFE_SPEED - GOVERNOR_MARGIN && apex < highestAltitude(level) - CEILING_MARGIN) {
             governing = false;
             resyncControls(level);
             setChanged();
         }
     }
 
-    /** The highest the airliner is let go: some way below the top of the world. */
-    private static double ceiling(Level level) {
+    /**
+     * The highest the airliner is let go, and the highest height it can be set to hold: some way below the top of the
+     * world.
+     */
+    public static double highestAltitude(Level level) {
         return level.getMaxBuildHeight() - CEILING_MARGIN;
     }
 
@@ -1869,6 +2047,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         tag.putDouble("OrbitX", orbitX);
         tag.putDouble("OrbitZ", orbitZ);
         tag.putDouble("OrbitRadius", orbitRadius);
+        tag.putString("Circle", circle.name());
     }
 
     @Override
@@ -1918,6 +2097,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         orbitX = tag.getDouble("OrbitX");
         orbitZ = tag.getDouble("OrbitZ");
         orbitRadius = tag.contains("OrbitRadius") ? tag.getDouble("OrbitRadius") : DEFAULT_RADIUS;
+        // Saved with only a radius before circles were tight or gentle: it flies on round that, called tight.
+        circle = parse(CircleSize.class, tag.getString("Circle"), CircleSize.TIGHT);
         // Saved before it could land at the pin: it circles it.
         landAtPin = tag.getBoolean("LandAtPin");
         loadRunway(tag);

@@ -2,8 +2,6 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.Aerolarge;
-import dev.aerolarge.autopilot.AutopilotBlockEntity;
-import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
@@ -19,9 +17,7 @@ import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.WindowShadesBlock;
-import dev.aerolarge.client.PanelArt.Icon;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -38,9 +34,9 @@ import org.joml.Matrix4f;
  * its shade up or down, the laser turret firing, the drop bay shut or dropping), its rim lit in its colour while on.
  * On the sloped panel under the screens: the tiller's arrows either side of a little wheel turned as the tiller is;
  * the parking brake as a wheel gripped red while it is set; the landing gear as a wheel with an arrow the way its
- * lever is thrown and its three lamps; the autopilot's buttons in its settings' pictures, each with the way it steps,
- * the on/off button and the circling it does lit green; and the outside cameras' buttons, each the airliner from the
- * side with a dot where its camera is, the one on the screen lit.
+ * lever is thrown and its three lamps; and the outside cameras' buttons, each the airliner from the side with a big
+ * dot where its camera is, the one on the screen lit. The autopilot's desk has a drawing of its own (see {@link
+ * AutopilotDeskArt}).
  * The switches' states are read from their blocks out of sight under the floor.
  */
 final class CockpitKeysArt {
@@ -56,15 +52,12 @@ final class CockpitKeysArt {
     private static final float LIT_TINT = 0.3F;
     private static final double LIT_RIM = 2.5;
     private static final double ON_LIGHT = 0.12;
-    /** How big the autopilot keys' step arrows are, as a share of the key's smaller side. */
-    private static final double STEP_ARROW = 0.22;
     /** Segments a ring is drawn with. */
     private static final int RING_SEGMENTS = 20;
     /** How far the little tiller wheel turns for each notch the tiller is turned, in degrees. */
     private static final double STEER_TURN = 30;
 
     private static final int KEY = AutopilotScreenRenderer.BUTTON;
-    private static final int KEY_LIT = AutopilotScreenRenderer.BUTTON_LIT;
     private static final int EDGE = AutopilotScreenRenderer.BUTTON_EDGE;
     private static final int WHITE = AutopilotScreenRenderer.WHITE;
     private static final int GREY = AutopilotScreenRenderer.GREY;
@@ -89,13 +82,6 @@ final class CockpitKeysArt {
     private static final ResourceLocation DROP_ARMED = picture("drop_armed");
     private static final ResourceLocation[] CABIN_LIGHTS = {picture("cabin_lights_bright"), picture("cabin_lights_dim"), picture("cabin_lights_night")};
     private static final ResourceLocation[] JUMP_LIGHTS = {picture("jump_lights_off"), picture("jump_lights_red"), picture("jump_lights_green")};
-    private static final Icon ENGAGE = Icon.of("autopilot/engage");
-    private static final Icon HEADING = Icon.of("autopilot/heading");
-    private static final Icon ORBIT_LEFT = Icon.of("autopilot/orbit_left");
-    private static final Icon ORBIT_RIGHT = Icon.of("autopilot/orbit_right");
-    private static final Icon ALTITUDE = Icon.of("autopilot/altitude");
-    private static final Icon SPEED = Icon.of("autopilot/speed");
-    private static final Icon RADIUS = Icon.of("autopilot/radius");
 
     /** A systems tile's look: the picture of its switch as it is now, and the colour it is lit in, or 0 while off. */
     private record Look(ResourceLocation picture, int lit) {
@@ -123,23 +109,13 @@ final class CockpitKeysArt {
      * between its mitred ends, the slope this long.
      */
     static void slope(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix, float left, float right, float length) {
-        List<Key> keys = display.slopeKeys();
-        AutopilotBlockEntity autopilot = display.autopilot();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-        for (Key key : keys) {
-            tile(shapes, matrix, key.box(), EDGE, lit(key.function(), autopilot) ? KEY_LIT : KEY);
+        for (Key key : display.slopeKeys()) {
+            tile(shapes, matrix, key.box(), EDGE, KEY);
             drawn(shapes, matrix, key, display, level);
         }
         if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
             tillerWheel(shapes, matrix, (left + right) / 2, length / 2, Math.min((right - left) / 9, length / 2.5), state(display, level, Link.TILLER));
-        }
-        for (Key key : keys) {
-            Icon icon = icon(key.function());
-            if (icon != null) {
-                Box box = key.box();
-                Box beside = new Box(box.x0(), box.y0(), box.x0() + (box.x1() - box.x0()) * 0.7, box.y1());
-                picture(buffers, matrix, icon.texture(), beside, 0.85, bright(key.function(), autopilot) ? PICTURE_ON : PICTURE_OFF);
-            }
         }
     }
 
@@ -188,58 +164,17 @@ final class CockpitKeysArt {
         return new Look(JUMP_LIGHTS[signal.ordinal()], lit);
     }
 
-    /** Whether one of the autopilot's keys is lit: the on/off key while it flies, a circling key while it circles so. */
-    private static boolean lit(Function function, @Nullable AutopilotBlockEntity autopilot) {
-        if (autopilot == null || !AutopilotScreenRenderer.engaged(autopilot)) {
-            return false;
-        }
-        return switch (function) {
-            case ENGAGE -> true;
-            case ORBIT_LEFT -> autopilot.lateral() == Lateral.ORBIT_LEFT;
-            case ORBIT_RIGHT -> autopilot.lateral() == Lateral.ORBIT_RIGHT;
-            default -> false;
-        };
-    }
-
-    /**
-     * Whether an autopilot key's picture is drawn bright: every one while the autopilot flies, and its on/off key
-     * always, the one to find first.
-     */
-    private static boolean bright(Function function, @Nullable AutopilotBlockEntity autopilot) {
-        return function == Function.ENGAGE || autopilot != null && AutopilotScreenRenderer.engaged(autopilot);
-    }
-
-    /** An autopilot key's picture from its settings; null for the keys drawn in shapes. */
-    @Nullable
-    private static Icon icon(Function function) {
-        return switch (function) {
-            case ENGAGE -> ENGAGE;
-            case HEADING_LEFT, HEADING_RIGHT -> HEADING;
-            case ORBIT_LEFT -> ORBIT_LEFT;
-            case ORBIT_RIGHT -> ORBIT_RIGHT;
-            case ALTITUDE_DOWN, ALTITUDE_UP -> ALTITUDE;
-            case SPEED_DOWN, SPEED_UP -> SPEED;
-            case RADIUS_DOWN, RADIUS_UP -> RADIUS;
-            default -> null;
-        };
-    }
-
-    /** What a key shows in shapes: the tiller's arrows, the brake, the gear, and the way the autopilot's keys step. */
+    /** What a key shows in shapes: the tiller's arrows, the brake, the gear, and the outside cameras. */
     private static void drawn(VertexConsumer shapes, Matrix4f matrix, Key key, CockpitDisplayBlockEntity display, Level level) {
         Box box = key.box();
         double cx = (box.x0() + box.x1()) / 2;
         double cy = (box.y0() + box.y1()) / 2;
         double size = Math.min(box.x1() - box.x0(), box.y1() - box.y0());
-        double stepX = box.x0() + (box.x1() - box.x0()) * 0.84;
         switch (key.function()) {
             case TILLER_LEFT -> arrow(shapes, matrix, cx, cy, size * 0.3, 180, WHITE);
             case TILLER_RIGHT -> arrow(shapes, matrix, cx, cy, size * 0.3, 0, WHITE);
             case BRAKE -> brake(shapes, matrix, cx, cy, size * 0.32, on(state(display, level, Link.BRAKE), ParkingBrakeBlock.SET));
             case GEAR -> gear(shapes, matrix, box, state(display, level, Link.GEAR));
-            case HEADING_LEFT -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 180, WHITE);
-            case HEADING_RIGHT -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 0, WHITE);
-            case ALTITUDE_DOWN, SPEED_DOWN, RADIUS_DOWN -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 270, WHITE);
-            case ALTITUDE_UP, SPEED_UP, RADIUS_UP -> arrow(shapes, matrix, stepX, cy, size * STEP_ARROW, 90, WHITE);
             case TAIL_CAMERA, WING_CAMERA, NOSE_CAMERA, FRONT_CAMERA -> TailCameraDisplayRenderer.cameraButton(shapes, matrix, key.function().camera,
                 key.function().camera == display.camera(), box.x0() + RIM, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, 2 * LAYER);
             default -> {

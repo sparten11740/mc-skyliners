@@ -57,6 +57,8 @@ import org.joml.Vector3d;
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
+    /** How hard Sable's gravity pulls where nothing else is set, in blocks a second each second. */
+    private static final double DEFAULT_GRAVITY = 11;
 
     private SableFlight() {
     }
@@ -362,8 +364,20 @@ public final class SableFlight {
         return SABLE ? Access.slideStep(properties) : new SlideStepBlock(properties);
     }
 
+    /**
+     * How hard gravity pulls at a point in the world, in blocks a second each second, as Sable's physics has it there;
+     * without Sable, as hard as Sable pulls by default.
+     */
+    public static double gravity(Level level, Vec3 at) {
+        return SABLE ? Access.gravity(level, at) : DEFAULT_GRAVITY;
+    }
+
     /** Kept apart so its Sable references are only loaded when Sable is there. */
     private static final class Access {
+        static double gravity(Level level, Vec3 at) {
+            return DimensionPhysicsData.getGravity(level, new Vector3d(at.x, at.y, at.z)).length();
+        }
+
         /**
          * What Sable's physics does with a step reaching down to the ground as it touches the ground, or anything else
          * not aboard: drops the contact, so the airliner never comes to rest on its stairs or slides. Players still
@@ -660,7 +674,7 @@ public final class SableFlight {
             Vec3 up = direction(level, centre, position, Direction.UP);
             Vec3 velocity = Sable.HELPER.getVelocity(level, centre);
             Vector3d at = new Vector3d(position.x, position.y, position.z);
-            double gravity = DimensionPhysicsData.getGravity(level, at).length();
+            double gravity = gravity(level, position);
             return new State(position, forward, right, up, velocity, gravity, DimensionPhysicsData.getAirPressure(level, at));
         }
 

@@ -1,6 +1,7 @@
 package dev.aerolarge.client;
 
 import dev.aerolarge.Aerolarge;
+import dev.aerolarge.autopilot.AutopilotBlockEntity.CircleSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import net.minecraft.Util;
@@ -8,23 +9,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
 /**
  * Drawing for the mod's control panels, in the flight deck's glass-cockpit colours (see
  * {@link AutopilotScreenRenderer}): a dark face in a bezel of brushed metal with a screw in each corner, a title bar,
- * black glass for readouts, and the panels' own controls (picture buttons, sliders, number boxes and the close
- * button), so that no vanilla button shows. Every control has a picture and a colour of its own, and its label only
+ * black glass for readouts, and the panels' own controls (picture buttons, number boxes and the close button), so
+ * that no vanilla button shows. Every control has a picture and a colour of its own, and its label only
  * as a caption or a tooltip, so the panels work for players who cannot read yet.
  */
 final class PanelArt {
@@ -64,9 +61,6 @@ final class PanelArt {
     /** Faint lines across the face, so it reads as a lit display rather than flat paint, and how far apart. */
     private static final int SCANLINE = 0x14000000;
     private static final int SCANLINE_PITCH = 3;
-    private static final int KNOB = 0xFFB8C2CC;
-    private static final int KNOB_HOT = 0xFFE8EDF2;
-    private static final int TICK = 0x40FFFFFF;
 
     /** How much of its colour a button's face takes on under the pointer, and while held down. */
     private static final float HOT_TINT = 0.2F;
@@ -93,10 +87,17 @@ final class PanelArt {
     private static final Icon DESCEND = Icon.of("autopilot/descend");
     private static final Icon LAND = Icon.of("autopilot/land");
     private static final Icon ROLL_OUT = Icon.of("autopilot/roll_out");
-    private static final Icon STRAIGHT = Icon.of("autopilot/hold_heading");
-    private static final Icon CIRCLE_LEFT = Icon.of("autopilot/orbit_left");
-    private static final Icon CIRCLE_RIGHT = Icon.of("autopilot/orbit_right");
     private static final Icon PIN = Icon.of("autopilot/destination");
+    /**
+     * The ways it flies, like road signs: the path from a small airliner's nose, straight on or round a half circle to
+     * the left or right, tightly or gently; on the flight deck's controls, the settings screen and wherever it says how
+     * it steers.
+     */
+    static final Icon STRAIGHT_ON = Icon.of("autopilot/straight_on");
+    static final Icon TURN_TIGHT_LEFT = Icon.of("autopilot/turn_tight_left");
+    static final Icon TURN_GENTLE_LEFT = Icon.of("autopilot/turn_gentle_left");
+    static final Icon TURN_GENTLE_RIGHT = Icon.of("autopilot/turn_gentle_right");
+    static final Icon TURN_TIGHT_RIGHT = Icon.of("autopilot/turn_tight_right");
     private static final int BEZEL_TILE = 16;
 
     private PanelArt() {
@@ -127,12 +128,13 @@ final class PanelArt {
             };
         }
 
-        /** The picture of how the autopilot steers, as on the settings' mode buttons. */
-        static Icon lateral(Lateral lateral) {
+        /** The picture of how the autopilot steers, and how tightly it circles, as on its controls. */
+        static Icon lateral(Lateral lateral, CircleSize circle) {
+            boolean tight = circle == CircleSize.TIGHT;
             return switch (lateral) {
-                case HEADING -> STRAIGHT;
-                case ORBIT_LEFT -> CIRCLE_LEFT;
-                case ORBIT_RIGHT -> CIRCLE_RIGHT;
+                case HEADING -> STRAIGHT_ON;
+                case ORBIT_LEFT -> tight ? TURN_TIGHT_LEFT : TURN_GENTLE_LEFT;
+                case ORBIT_RIGHT -> tight ? TURN_TIGHT_RIGHT : TURN_GENTLE_RIGHT;
                 case DESTINATION -> PIN;
             };
         }
@@ -285,11 +287,6 @@ final class PanelArt {
         return colour & 0xFF000000 | r << 16 | g << 8 | b;
     }
 
-    /** The game's own click, at a pitch and volume of the panel's choosing. */
-    static void click(SoundManager sounds, float pitch, float volume) {
-        sounds.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), pitch, volume));
-    }
-
     /**
      * A panel button. What it does is in {@link #onPress}, so that pressing it from the keyboard, or from code, does
      * what a click does; its label is what is narrated, and where it only shows a picture, its tooltip.
@@ -383,47 +380,6 @@ final class PanelArt {
         }
     }
 
-    /** A small button with an arrow on it, in its colour, pointing the way it moves the slider beside it. */
-    static final class ArrowButton extends PanelButton {
-        /** The arrow's length; it is twice as tall, and one more. */
-        private static final int ARROW = 4;
-        private final boolean right;
-        private final int colour;
-        private final Runnable action;
-
-        ArrowButton(int x, int y, int width, int height, Component message, boolean right, int colour, Runnable action) {
-            super(x, y, width, height, message);
-            this.right = right;
-            this.colour = colour;
-            this.action = action;
-            showLabel();
-        }
-
-        @Override
-        public void onPress() {
-            action.run();
-        }
-
-        @Override
-        public void playDownSound(SoundManager sounds) {
-            // A light tick, as it is pressed again and again.
-            click(sounds, 1.6F, 0.5F);
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            Look look = look();
-            drawTile(graphics, getX(), getY(), getRight(), getBottom(), colour, look, false);
-            int cx = getX() + width / 2;
-            int cy = getY() + height / 2 + (look == Look.PRESSED ? 1 : 0);
-            for (int i = 0; i <= ARROW; i++) {
-                int column = right ? cx - ARROW / 2 + i : cx + ARROW / 2 - i;
-                int half = ARROW - i;
-                graphics.fill(column, cy - half, column + 1, cy + half + 1, active ? colour : OFF);
-            }
-        }
-    }
-
     /** The close button in a panel's title bar: an X, white on red under the pointer. Its label is Cancel. */
     static final class CloseButton extends PanelButton {
         static final int SIZE = Icon.SIZE;
@@ -449,61 +405,6 @@ final class PanelArt {
                 graphics.fill(getX(), getY(), getRight(), getBottom(), look == Look.PRESSED ? shade(RED, EDGE_DIM) : RED);
             }
             CROSS.draw(graphics, getX(), getY(), 1, hot ? WHITE : GREY);
-        }
-    }
-
-    /**
-     * A slider: a glass channel with its name in it, filled in its colour from the left up to a steel knob, with marks
-     * along it. Keeping its message (what is narrated) up to date is left to the slider.
-     */
-    abstract static class Slider extends AbstractSliderButton {
-        private static final int CHANNEL = 12;
-        private static final int KNOB_WIDTH = 8;
-        private static final int MARKS = 8;
-        private static final float FILL_TOP = 0.7F;
-        private static final float FILL_BOTTOM = 0.4F;
-        private final Component name;
-        private final int colour;
-
-        Slider(int x, int y, int width, int height, Component name, int colour, double position) {
-            super(x, y, width, height, name, Mth.clamp(position, 0, 1));
-            this.name = name;
-            this.colour = colour;
-        }
-
-        /** Where the knob is, from 0 at the left to 1 at the right. */
-        double position() {
-            return value;
-        }
-
-        /** Moves the knob, as when what it sets was set some other way, without setting that again. */
-        void moveTo(double position) {
-            value = Mth.clamp(position, 0, 1);
-            updateMessage();
-        }
-
-        @Override
-        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int x0 = getX();
-            int x1 = getRight();
-            int top = getY() + (height - CHANNEL) / 2;
-            int bottom = top + CHANNEL;
-            boolean hot = active && isHoveredOrFocused();
-            graphics.fill(x0, top, x1, bottom, !active ? OFF : hot ? colour : shade(colour, EDGE_DIM));
-            graphics.fill(x0 + 1, top + 1, x1 - 1, bottom - 1, GLASS);
-            int knob = x0 + (int) Math.round(value * (width - KNOB_WIDTH));
-            if (active) {
-                graphics.fillGradient(x0 + 1, top + 1, knob + KNOB_WIDTH / 2, bottom - 1, shade(colour, FILL_TOP), shade(colour, FILL_BOTTOM));
-            }
-            for (int i = 1; i < MARKS; i++) {
-                int mark = x0 + KNOB_WIDTH / 2 + i * (width - KNOB_WIDTH) / MARKS;
-                graphics.fill(mark, bottom - 3, mark + 1, bottom - 1, TICK);
-            }
-            Font font = Minecraft.getInstance().font;
-            graphics.drawString(font, name, x0 + 4, top + (CHANNEL - GLYPH_HEIGHT) / 2, active ? WHITE : OFF, true);
-            graphics.fill(knob - 1, getY() + 1, knob + KNOB_WIDTH + 1, getBottom() - 1, SOCKET);
-            graphics.fill(knob, getY() + 2, knob + KNOB_WIDTH, getBottom() - 2, !active ? OFF : hot ? KNOB_HOT : KNOB);
-            graphics.fill(knob + 3, getY() + 5, knob + KNOB_WIDTH - 3, getBottom() - 5, active ? shade(colour, FILL_TOP) : TILE_OFF);
         }
     }
 
