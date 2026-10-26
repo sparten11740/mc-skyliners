@@ -2687,10 +2687,12 @@ public final class AirframeLayout {
 
     /**
      * How far down the stairs can be laid as built: blocks down from the sill, each a block further out, as far as
-     * nothing of the airliner stands in their way, at most the whole rise.
+     * nothing of the airliner stands in their way, at most to the row over the ground, where the controller stops them
+     * too. Laid into the ground row, they would take the place of the ground's own blocks, and the glue reaching down
+     * to them would glue the ground under the whole airliner to it, to be carried off when it is assembled.
      */
     private int laidStairs(HullDoor served, int rise) {
-        for (int down = 1; down <= rise; down++) {
+        for (int down = 1; down < rise; down++) {
             for (int column = 0; column < AirstairFlight.WIDTH; column++) {
                 BlockPos step = stairStep(served, down, column);
                 if (has(step.getX(), step.getY(), step.getZ()) || has(step.getX(), step.getY() + 1, step.getZ())) {
@@ -2698,7 +2700,7 @@ public final class AirframeLayout {
                 }
             }
         }
-        return rise;
+        return rise - 1;
     }
 
     /** The stairs' steps down this far, each with the guard over it holding its side's handrail. */
