@@ -4,11 +4,14 @@ import dev.aerolarge.Aboard;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.api.sublevel.ClientSubLevelContainer;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.EntityMovementExtension;
+import dev.ryanhcode.sable.network.client.SubLevelSnapshotInterpolator.Snapshot;
 import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -236,6 +240,8 @@ public final class SableClient {
     private static final class Access {
         /** False once Sable's water occlusion switch was found missing, as a later Sable might move it. */
         static boolean waterOcclusionReachable = true;
+        /** False once Sable's store of the places the server sent was found missing, as a later Sable might move it. */
+        static boolean sentReachable = true;
 
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
@@ -452,9 +458,56 @@ public final class SableClient {
             return new Ride(new Vector3d(middle), velocity(airliner), middle.y() - ground);
         }
 
-        /** Blocks a second, from where the airliner was last tick and is now. */
+        /**
+         * Blocks a second, from the places the server sent for the airliner either side of the moment the client
+         * shows it at, or else from where it was shown last tick and is now. The client shows the airliner a little
+         * behind the server and runs its replay faster or slower to keep that lag as the server's ticks come quicker
+         * or slower, so how far it is shown moving in one tick swings even while it flies steadily, and a speed taken
+         * from that swung the speedometer's needle back and forth.
+         */
         private static Vector3d velocity(SubLevel airliner) {
-            return new Vector3d(airliner.logicalPose().position()).sub(airliner.lastPose().position()).mul(20);
+            Vector3d sent = sentReachable && airliner instanceof ClientSubLevel shown ? sentVelocity(shown) : null;
+            return sent != null ? sent : new Vector3d(airliner.logicalPose().position()).sub(airliner.lastPose().position())
+                .mul(SharedConstants.TICKS_PER_SECOND);
+        }
+
+        /**
+         * Blocks a second, from the places the server sent either side of the moment shown; null before two came, or
+         * with a Sable that keeps them elsewhere.
+         */
+        @Nullable
+        private static Vector3d sentVelocity(ClientSubLevel airliner) {
+            try {
+                ClientSubLevelContainer container = SubLevelContainer.getContainer(airliner.getLevel());
+                return container == null ? null : between(airliner.getInterpolator().buffer, container.getInterpolation().getTickPointer());
+            } catch (LinkageError notThere) {
+                sentReachable = false;
+                return null;
+            }
+        }
+
+        /**
+         * Blocks a second between the two places sent either side of a moment in the server's ticks, the last two
+         * once it is past them all: the server sends one a tick, but one can go missing on the way.
+         */
+        @Nullable
+        private static Vector3d between(List<Snapshot> sent, double tick) {
+            Snapshot from;
+            Snapshot to;
+            synchronized (sent) {
+                if (sent.size() < 2) {
+                    return null;
+                }
+                int after = 1;
+                while (after < sent.size() - 1 && sent.get(after).gameTick() <= tick) {
+                    after++;
+                }
+                from = sent.get(after - 1);
+                to = sent.get(after);
+            }
+            int ticks = to.gameTick() - from.gameTick();
+            return ticks <= 0 ? null : new Vector3d(to.pose().position()).sub(from.pose().position())
+                .mul((double) SharedConstants.TICKS_PER_SECOND / ticks);
         }
     }
 }
