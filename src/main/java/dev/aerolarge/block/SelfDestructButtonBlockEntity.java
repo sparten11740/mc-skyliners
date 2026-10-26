@@ -1,5 +1,6 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
@@ -62,6 +63,13 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     private static final int SETTLE = SharedConstants.TICKS_PER_SECOND;
     /** How long it waits for a parked airliner to assemble, once pressed to arm on one, in ticks: ten seconds. */
     private static final int ASSEMBLY_WAIT = 10 * SharedConstants.TICKS_PER_SECOND;
+    /**
+     * The longest it waits, once a parked airliner it was pressed to arm on has assembled, for whoever pressed it to be
+     * aboard before arming, in ticks: three seconds. Sable counts someone standing in it as riding it only once they
+     * have moved on its blocks, a few ticks after it assembles, and the siren and the warning that everyone will get a
+     * parachute go only to those riding it; someone who has stepped off by then does not hold it up.
+     */
+    private static final int BOARDING_WAIT = 3 * SharedConstants.TICKS_PER_SECOND;
 
     /** Where the autopilot is, from this block; null until linked. */
     @Nullable
@@ -80,6 +88,8 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     @Nullable
     private UUID armFor;
     private long armAskedAt;
+    /** The game time it first found the airliner it was asked to arm on assembled, or -1 before then; not saved. */
+    private long assembledAt = -1;
 
     public SelfDestructButtonBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.SELF_DESTRUCT_BUTTON_ENTITY.get(), pos, state);
@@ -181,6 +191,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         // Noted before it assembles, so the button takes it along into the new airliner's blocks.
         armFor = player.getUUID();
         armAskedAt = level.getGameTime();
+        assembledAt = -1;
         setChanged();
         if (!linked.startAssembly(asker)) {
             armFor = null;
@@ -192,14 +203,21 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Asked to arm on a parked airliner: arms for whoever asked once it has assembled, or gives up after a while. */
+    /**
+     * Asked to arm on a parked airliner: arms for whoever asked once it has assembled and they are aboard it (or have
+     * not come aboard within {@link #BOARDING_WAIT}), or gives up after a while.
+     */
     private void armOnceAssembled(ServerLevel level) {
         ServerPlayer asker = level.getServer().getPlayerList().getPlayer(armFor);
+        long now = level.getGameTime();
         if (mayBlowUp() && asker != null) {
-            armFor = null;
-            setChanged();
-            armNow(level, asker);
-        } else if (level.getGameTime() - armAskedAt > ASSEMBLY_WAIT) {
+            assembledAt = assembledAt < 0 ? now : assembledAt;
+            if (Aboard.isAboard(asker, this) || now - assembledAt > BOARDING_WAIT) {
+                armFor = null;
+                setChanged();
+                armNow(level, asker);
+            }
+        } else if (now - armAskedAt > ASSEMBLY_WAIT) {
             armFor = null;
             setChanged();
         }
