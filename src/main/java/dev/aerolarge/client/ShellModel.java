@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -28,10 +29,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
+import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
@@ -71,6 +74,11 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
      * each side's index): those that face open space out of the hull (see {@link Baked#outerSides}).
      */
     private static final ModelProperty<Integer> OUTER_SIDES = new ModelProperty<>();
+    /**
+     * For a block cut to the curve that shuts all light out of itself, the light just outside its cut, packed as the
+     * lightmap has it, which its cut faces are drawn with (see {@link Baked#outsideLight}).
+     */
+    private static final ModelProperty<Integer> OUTSIDE_LIGHT = new ModelProperty<>();
     /**
      * How far a side of a whole block of single-pane glass has to look the way the cuts next to it face to count as
      * out of the hull: the cosine of the widest angle between the two.
@@ -329,13 +337,18 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
 
         /**
          * What is round a block with lined faces, for the look of its walls; for whole single-pane glass next to glass
-         * cut to the curve, which of its sides face out of the hull; nothing for any other.
+         * cut to the curve, which of its sides face out of the hull; for a block cut to the curve that shuts all light
+         * out of itself, the light outside its cut; nothing for any other.
          */
         @Override
         public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
             if (singlePane) {
                 int outer = outerSides(level, pos, state);
                 return outer < 0 ? modelData : modelData.derive().with(OUTER_SIDES, outer).build();
+            }
+            int outside = outsideLight(level, pos, state);
+            if (outside >= 0) {
+                return modelData.derive().with(OUTSIDE_LIGHT, outside).build();
             }
             if (!lining) {
                 return modelData;
@@ -371,7 +384,36 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
                 baked = lined.computeIfAbsent(key, ignored -> bake(shape, linedFaces, context));
             }
             List<List<BakedQuad>> culled = state != null && state.canOcclude() ? baked.wholeCulled() : baked.quads();
-            return culled.get(side == null ? Direction.values().length : side.get3DDataValue());
+            List<BakedQuad> quads = culled.get(side == null ? Direction.values().length : side.get3DDataValue());
+            Integer outside = extraData.get(OUTSIDE_LIGHT);
+            return side == null && outside != null ? QuadTransformers.applyingLightmap(outside).process(quads) : quads;
+        }
+
+        /**
+         * The light just outside a block's cut, packed as the lightmap has it: the brightest of its neighbours beyond
+         * the cut, out of the hull, block light and sky light each. A face cut across a block takes the light of the
+         * block's own place, as the game lights any face that does not lie on one of its sides, and a block that shuts
+         * all light out of itself (a curved cabin window with its shade down) has none there: its cut faces, the
+         * outside of the hull, would be black in broad daylight. The game draws a face with the brighter of its own
+         * light and the light baked into it, so these faces are baked with this. -1 for a block not cut to the curve
+         * or one that lets light into itself, whose faces are lit as any block's.
+         */
+        private static int outsideLight(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+            int shape = ShellBlock.shape(state);
+            if (shape == ShellGeometry.WHOLE || state.getLightBlock(level, pos) < level.getMaxLightLevel()) {
+                return -1;
+            }
+            double[] out = ShellGeometry.outward(shape);
+            double[] onCut = onCut(shape);
+            int block = 0;
+            int sky = 0;
+            for (Direction side : Direction.values()) {
+                if (beyondCut(side, onCut, out)) {
+                    block = Math.max(block, level.getBrightness(LightLayer.BLOCK, pos.relative(side)));
+                    sky = Math.max(sky, level.getBrightness(LightLayer.SKY, pos.relative(side)));
+                }
+            }
+            return LightTexture.pack(block, sky);
         }
 
         /**
