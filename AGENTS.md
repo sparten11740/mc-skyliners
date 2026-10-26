@@ -113,19 +113,24 @@ feature as a player meets it, and its Building section says which classes do wha
   serves MCP (`--mcp`). On macOS start the client in the background after `caffeinate -u -t 3600`, or with the display
   asleep its window cannot open, and close it with `quit`, which saves the world and waits for the game to exit.
   - Aboard an assembled airliner, positions for `use`, `block` and `nbt` are plot positions: find them with
-    `sable:find <sub> <block id>` (plain `find` sees only the world's blocks, and no further than 128).
-    `sable:info <sub> brief` reads pitch, speed, climb and height above the ground, and
-    `sample sable:info <sub> brief every 20t x60` records a landing a second at a time.
-  - `use <pos>` on a block aboard fails with `obstructed` when something stands in the way; `any` skips that check, so
-    keep it for the big multi-block panels and never use it on a block buried behind others, where it clicks whatever
-    is in front.
-  - `server ...` runs as the server console at the world's spawn, so selectors and `distance=` there count from
-    spawn: `server as=player <command>` runs it at and as the player.
+    `sable:find <sub> <block id>` (plain `find` sees only the world's blocks, within the radius it is given, as in
+    `find <block id> 128`, and no further than 128). `sable:info <sub> brief` reads pitch, speed, climb and height
+    above the ground, and `sample sable:info <sub> brief every 20t x60` records a landing a second at a time.
+  - `use <pos>` and `use e<id>` click only once the crosshair rests on the target, and fail with `obstructed <what>`
+    when something stands in the way or `out_of_reach`; `any` clicks whatever is in front, naming it as
+    `off_target=` when it is not the target, so keep it for the big multi-block panels and never use it on a block
+    buried behind others.
+  - `server ...` runs as the server console at the player's position, rotation and dimension, so `~`, `@p` and
+    `distance=` count from the player, but `@s` matches no one: `server as=player <command>` runs it as the player.
   - Taking off from the autopilot's screen leaves a standing player behind, and an airliner flying away from the
-    player unloads within seconds. Note a plot position aboard first (`sable:find`); plot positions stay put in
-    flight, so `sable:tp <plot pos>` puts the player back aboard beside it straight away, while it is still loaded.
-  - Sneaking and using a block with something in hand places that instead (a thrust lever pulled back, a button's
-    cover shut): `select` an empty slot first. `use <pos> hold=40t` holds the use key down.
+    player unloads within seconds. `sable:tp <sub> <block id or *pattern>` puts the player back aboard beside the
+    nearest such block straight away, from the server's copy of the airliner, even once the client has dropped it;
+    `sable:tp <plot pos>` boards beside a plot position noted before (`sable:find`), which stays put in flight.
+  - Sneaking and using a block with something in hand uses that instead (a thrust lever pulled back, a button's
+    cover shut), and the reply names it as `sneak_item=`: `select` an empty slot first. `use <pos> hold=40t` holds
+    the use key down.
+  - Each run of the launcher waits for the agent's next step, seconds after the last: anything against the clock
+    (arming the self-destruct and pressing it again within its ten seconds) goes in one script, `a; wait 40t; b`.
   - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
     screenshot taken. `option gamma 1` brightens dark spaces, and the reply says `inside` when the camera is in a
     solid block.
