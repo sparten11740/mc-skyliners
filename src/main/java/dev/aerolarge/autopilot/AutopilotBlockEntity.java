@@ -391,12 +391,16 @@ public class AutopilotBlockEntity extends BlockEntity {
     static final double FLARE_HEIGHT = LANDING_SINK_RATE / FLARE_GAIN;
     static final double TOUCHDOWN_SINK = Callouts.BUTTER_SINK / 2;
     /**
-     * Landing from high up: above the first height, in blocks above the ground, it sinks as fast as it descends
-     * anywhere ({@link #MAX_SINK_RATE}), easing to {@link #LANDING_SINK_RATE} by the second, so that coming down from
-     * cruising height does not take minutes of waiting; from there it sinks gently down to the flare.
+     * Landing from high up: above the first height, in blocks above the ground, it sinks at the faster rate, in blocks
+     * a second, easing to {@link #LANDING_SINK_RATE} by the second height, so that coming down from cruising height
+     * does not take minutes of waiting; from there it sinks gently down to the flare. However it is to sink, it sinks
+     * faster by no more than the last, in blocks a second every second, so the nose goes down gently rather than all
+     * at once as it starts to land.
      */
     private static final double LANDING_STEEP_HEIGHT = 60;
     private static final double LANDING_SETTLE_HEIGHT = 30;
+    private static final double LANDING_FAST_SINK = 4.5;
+    private static final double LANDING_SINK_EASE = 0.5;
     /**
      * The steepest bank it flies, in degrees per block above the ground, up to {@link #MAX_BANK}: low down, after
      * take-off or landing, its long wings must stay clear of the ground.
@@ -551,6 +555,12 @@ public class AutopilotBlockEntity extends BlockEntity {
      * than {@link #MAX_ACCELERATION}.
      */
     private double speedCommand;
+    /**
+     * Landing, the rate it is set to sink at this tick, in blocks a second, eased into (see
+     * {@link #LANDING_SINK_EASE}); NaN while it is not landing. Not saved: landing on after the world loads, it starts
+     * from the rate it sinks at.
+     */
+    private double sinkCommand = Double.NaN;
     /** Whether it is still climbing out after take-off, below {@link #TURN_HEIGHT}, holding the runway's heading. */
     private boolean climbingOut;
     /** Whether last tick's readings are real; false after loading, so the first tick does not see a jump. */
@@ -1592,7 +1602,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             boolean landing = phase == Phase.LAND;
             boolean onFinal = guide != null && guide.onFinal();
             double heightToGo = (guide != null ? guide.altitude() : targetAltitude) - state.position().y;
-            double wantedClimb = wantedClimb(landing, guide, heightToGo, radio);
+            double wantedClimb = wantedClimb(landing, guide, heightToGo, radio, climb);
             double climbError = wantedClimb - climb;
             // Landing, the nose comes up no further than at rotation, so the tail stays clear of the ground.
             double maxPitch = landing ? ROTATION_PITCH : MAX_PITCH;
@@ -1685,15 +1695,16 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The rate to climb at, in blocks a second, in the air (not taking off or rolling out). Landing, it sinks (see
-     * {@link #landingSink}); on a runway near the pin, over whichever is nearer, the ground below or the runway, so it
-     * does not sink below the runway over a dip before it. Down the glide path to such a runway, the rate the path asks
-     * for; else the rate the height still to go asks for.
+     * The rate to climb at, in blocks a second, in the air (not taking off or rolling out), climbing at the rate given
+     * now. Landing, it sinks (see {@link #easedSink}); on a runway near the pin, over whichever is nearer, the ground
+     * below or the runway, so it does not sink below the runway over a dip before it. Down the glide path to such a
+     * runway, the rate the path asks for; else the rate the height still to go asks for.
      */
-    private static double wantedClimb(boolean landing, @Nullable PinLanding.Guide guide, double heightToGo, double radio) {
+    private double wantedClimb(boolean landing, @Nullable PinLanding.Guide guide, double heightToGo, double radio, double climb) {
         if (landing) {
-            return -landingSink(guide != null ? Math.min(radio, guide.aboveRunway()) : radio);
+            return -easedSink(guide != null ? Math.min(radio, guide.aboveRunway()) : radio, climb);
         }
+        sinkCommand = Double.NaN;
         if (guide != null && !Double.isNaN(guide.climb())) {
             return guide.climb();
         }
@@ -1701,13 +1712,25 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The rate it sinks at landing, in blocks a second, this high above the ground: fast from high up, easing to a
+     * The rate it sinks at landing this tick, in blocks a second, this high above the ground and climbing at the rate
+     * given: the rate for its height (see {@link #landingSink}), but rising to it from the rate it sank at as it
+     * started landing no faster than {@link #LANDING_SINK_EASE}; sinking less, as it eases out over the ground and
+     * flares, it does at once.
+     */
+    private double easedSink(double above, double climb) {
+        double from = Double.isNaN(sinkCommand) ? Math.max(0, -climb) : sinkCommand;
+        sinkCommand = Math.min(landingSink(above), from + LANDING_SINK_EASE / 20);
+        return sinkCommand;
+    }
+
+    /**
+     * The rate it sinks at landing, in blocks a second, this high above the ground: faster from high up, easing to a
      * gentle sink between {@link #LANDING_STEEP_HEIGHT} and {@link #LANDING_SETTLE_HEIGHT}, and ever more gently the
      * nearer the ground below the flare's height.
      */
     private static double landingSink(double above) {
         if (above > LANDING_SETTLE_HEIGHT) {
-            return Mth.clampedMap(above, LANDING_SETTLE_HEIGHT, LANDING_STEEP_HEIGHT, LANDING_SINK_RATE, MAX_SINK_RATE);
+            return Mth.clampedMap(above, LANDING_SETTLE_HEIGHT, LANDING_STEEP_HEIGHT, LANDING_SINK_RATE, LANDING_FAST_SINK);
         }
         return Mth.clamp(FLARE_GAIN * above, TOUCHDOWN_SINK, LANDING_SINK_RATE);
     }
