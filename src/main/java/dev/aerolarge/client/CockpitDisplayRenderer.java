@@ -46,6 +46,13 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     private static final float TEXT_LIFT = 0.01F;
     /** Text size on the map panel: blocks per font pixel. */
     private static final float TEXT = 1 / 150F;
+    /**
+     * The map panel's lines of text: how far in from the bezel they start, in blocks, and the least gap between the
+     * text against one side and the text against the other, in font pixels; where they would come closer, both are
+     * drawn smaller, so a wide circle's radius or a long way out never writes one over the other.
+     */
+    private static final double TEXT_INSET = 0.05;
+    private static final int TEXT_GAP = 8;
     /** The map panel's header and readout lines, how tall each is, in blocks. */
     private static final float LINE = 0.16F;
     /** How far round the holding block the panel can reach, for whether it is in view, in blocks. */
@@ -246,13 +253,24 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         Font font = Minecraft.getInstance().font;
         double top = height - BEZEL - LINE / 2;
         double bottom = BEZEL + LINE / 2;
-        text(font, pose, buffers, AutopilotScreenRenderer.state(autopilot, attitude), BEZEL + 0.05, top, AutopilotScreenRenderer.GREEN, ScreenDrawing.Align.LEFT);
-        text(font, pose, buffers, AutopilotScreenRenderer.targets(autopilot), width - BEZEL - 0.05, top, AutopilotScreenRenderer.TARGET, ScreenDrawing.Align.RIGHT);
-        if (attitude != null) {
-            text(font, pose, buffers, AutopilotScreenRenderer.now(attitude, here), BEZEL + 0.05, bottom, AutopilotScreenRenderer.WHITE, ScreenDrawing.Align.LEFT);
-        }
-        text(font, pose, buffers, Component.translatable("screen.aerolarge.autopilot.range", display.range()), width - BEZEL - 0.05, bottom,
-            AutopilotScreenRenderer.GREY, ScreenDrawing.Align.RIGHT);
+        line(font, pose, buffers, width, top, AutopilotScreenRenderer.state(autopilot, attitude), AutopilotScreenRenderer.GREEN,
+            AutopilotScreenRenderer.targets(autopilot), AutopilotScreenRenderer.TARGET);
+        Component now = attitude != null ? AutopilotScreenRenderer.now(attitude, here) : Component.empty();
+        line(font, pose, buffers, width, bottom, now, AutopilotScreenRenderer.WHITE, Component.translatable("screen.aerolarge.autopilot.range", display.range()),
+            AutopilotScreenRenderer.GREY);
+    }
+
+    /**
+     * A line of text over or under the map, centred on y: one text against the left of the glass and one against the
+     * right, both drawn smaller where at full size they would run into each other.
+     */
+    private static void line(Font font, PoseStack pose, MultiBufferSource buffers, float width, double y, Component left, int leftColour, Component right,
+                             int rightColour) {
+        double room = width - 2 * (BEZEL + TEXT_INSET);
+        int wanted = font.width(left) + TEXT_GAP + font.width(right);
+        float size = (float) Math.min(TEXT, room / wanted);
+        ScreenDrawing.text(font, pose, buffers, left, BEZEL + TEXT_INSET, y, TEXT_LIFT, size, leftColour, ScreenDrawing.Align.LEFT);
+        ScreenDrawing.text(font, pose, buffers, right, width - BEZEL - TEXT_INSET, y, TEXT_LIFT, size, rightColour, ScreenDrawing.Align.RIGHT);
     }
 
     /** The systems page: the glass, and its tiles over it. */
@@ -270,11 +288,6 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         pose.translate(0, 0, LAYER);
         TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height, !display.cameraKeysOnSlope());
         pose.popPose();
-    }
-
-    /** Text placed against x as aligned, centred on y, in the face's units. */
-    private static void text(Font font, PoseStack pose, MultiBufferSource buffers, Component text, double x, double y, int colour, ScreenDrawing.Align align) {
-        ScreenDrawing.text(font, pose, buffers, text, x, y, TEXT_LIFT, TEXT, colour, align);
     }
 
     /**
