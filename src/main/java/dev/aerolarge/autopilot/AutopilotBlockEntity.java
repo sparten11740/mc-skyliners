@@ -668,6 +668,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         return phase;
     }
 
+    /**
+     * Whether it is the autopilot of an airliner built from its blueprint, which knows its frame (see
+     * {@link #frame}): not one put down by hand.
+     */
+    public boolean built() {
+        return frameFrom != null && frameTo != null;
+    }
+
     public Lateral lateral() {
         return lateral;
     }

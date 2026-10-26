@@ -32,6 +32,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LASER_PATH_CLEARER;
     public static final ModConfigSpec.IntValue LASER_RANGE;
     public static final ModConfigSpec.IntValue LASER_BOLTS_PER_SECOND;
+    public static final ModConfigSpec.BooleanValue SELF_DESTRUCT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -193,6 +194,17 @@ public final class AerolargeConfig {
         LASER_BOLTS_PER_SECOND = builder
             .comment("How many bolts the laser fires each second; each vaporises at most 27 blocks or hurts one mob.")
             .defineInRange("laserBoltsPerSecond", 5, 1, 20);
+        builder.pop();
+
+        builder.push("selfDestruct");
+        SELF_DESTRUCT = builder
+            .comment(
+                "Whether the self-destruct button on the flight deck works: a big red button under a striped cover, opened, armed and",
+                "pressed again within ten seconds, gives everyone aboard a parachute and blows the assembled airliner up in a huge",
+                "explosion of fire and smoke. The airliner is gone, but nothing round it is harmed: no block is broken and nobody is",
+                "hurt. Off, the button only thuds. Only airliners built while it is on have the button; one placed by hand works too."
+            )
+            .define("selfDestruct", true);
         builder.pop();
 
         SPEC = builder.build();

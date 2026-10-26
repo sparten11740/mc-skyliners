@@ -142,6 +142,8 @@ import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.SecretBookshelfBlock;
+import dev.aerolarge.block.SelfDestructButtonBlock;
+import dev.aerolarge.block.SelfDestructButtonBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
@@ -271,6 +273,8 @@ public final class AerolargeRegistry {
     private static final int STARLIGHT_GLOW = 10;
     /** How brightly the hide and seek button glows while pressed, in light levels. */
     private static final int PRESSED_GLOW = 7;
+    /** How brightly the self-destruct button glows while armed, in light levels: a red glow round it on the wall. */
+    private static final int ARMED_GLOW = 9;
 
     /** A turbofan running, looped; the engines pitch and swell it with their thrust. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ENGINE_SOUND = sound("engine");
@@ -365,6 +369,21 @@ public final class AerolargeRegistry {
     );
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
+    /**
+     * The self-destruct: the alarm's siren wailing through the cabin while it is armed, and the airliner blowing up,
+     * its bang and the long rumble after it.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SELF_DESTRUCT_SIREN = sound("self_destruct_siren");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SELF_DESTRUCT_BLAST = sound("self_destruct_blast");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SELF_DESTRUCT_RUMBLE = sound("self_destruct_rumble");
+    /**
+     * The airliner blowing up (see {@link dev.aerolarge.selfdestruct.Blast}): huge, slow puffs of its fireball, of the
+     * smoke rising from it, of the ring of its blast wave, and the burning embers thrown out of it.
+     */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_FIRE = PARTICLES.register("blast_fire", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_SMOKE = PARTICLES.register("blast_smoke", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_WAVE = PARTICLES.register("blast_wave", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_EMBER = PARTICLES.register("blast_ember", () -> new SimpleParticleType(false));
 
     /** Opens by hand like a wooden door but sounds like the metal one it is. */
     public static final BlockSetType AIRLINER = BlockSetType.register(new BlockSetType(
@@ -565,6 +584,13 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<LaserTurretBlock> LASER_TURRET = BLOCKS.registerBlock("laser_turret", LaserTurretBlock::new, metal(MapColor.METAL));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaserTurretBlockEntity>> LASER_TURRET_ENTITY =
         BLOCK_ENTITIES.register("laser_turret", () -> BlockEntityType.Builder.of(LaserTurretBlockEntity::new, LASER_TURRET.get()).build(null));
+    /** The self-destruct button on the flight deck's back wall, under its striped cover, glowing red while armed. */
+    public static final DeferredBlock<SelfDestructButtonBlock> SELF_DESTRUCT_BUTTON = BLOCKS.registerBlock(
+        "self_destruct_button", SelfDestructButtonBlock::new,
+        metal(MapColor.COLOR_RED).noOcclusion().lightLevel(state -> state.getValue(SelfDestructButtonBlock.ARMED) ? ARMED_GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SelfDestructButtonBlockEntity>> SELF_DESTRUCT_BUTTON_ENTITY =
+        BLOCK_ENTITIES.register("self_destruct_button", () -> BlockEntityType.Builder.of(SelfDestructButtonBlockEntity::new, SELF_DESTRUCT_BUTTON.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LinkedControlBlockEntity>> LINKED_CONTROL_ENTITY =
         BLOCK_ENTITIES.register("linked_control", () -> BlockEntityType.Builder.of(LinkedControlBlockEntity::new, TILLER.get(), PARKING_BRAKE.get(), JUMP_SWITCH.get()).build(null));
     public static final DeferredBlock<AutopilotBlock> AUTOPILOT = BLOCKS.registerBlock(
@@ -675,6 +701,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> GEAR_LEVER_ITEM = ITEMS.registerSimpleBlockItem(GEAR_LEVER);
     public static final DeferredItem<BlockItem> LASER_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(LASER_SWITCH);
     public static final DeferredItem<BlockItem> LASER_TURRET_ITEM = ITEMS.registerSimpleBlockItem(LASER_TURRET);
+    public static final DeferredItem<BlockItem> SELF_DESTRUCT_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(SELF_DESTRUCT_BUTTON);
     public static final DeferredItem<BlockItem> PILOT_SEAT_ITEM = ITEMS.registerSimpleBlockItem(PILOT_SEAT);
     public static final DeferredItem<BlockItem> NAV_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(NAV_LIGHT);
     public static final DeferredItem<BlockItem> AIRSTAIR_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(AIRSTAIR_CONTROLLER);
@@ -1455,7 +1482,7 @@ public final class AerolargeRegistry {
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, LASER_SWITCH_ITEM, LASER_TURRET_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, FLIGHT_MAP_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
-            DROP_RELEASE_ITEM
+            DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,

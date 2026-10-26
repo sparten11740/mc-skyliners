@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "armed=false,facing=north,open=false": {
+      "model": "aerolarge:block/self_destruct_button_shut",
+      "y": 0
+    },
+    "armed=false,facing=north,open=true": {
+      "model": "aerolarge:block/self_destruct_button_open",
+      "y": 0
+    },
+    "armed=true,facing=north,open=false": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 0
+    },
+    "armed=true,facing=north,open=true": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 0
+    },
+    "armed=false,facing=east,open=false": {
+      "model": "aerolarge:block/self_destruct_button_shut",
+      "y": 90
+    },
+    "armed=false,facing=east,open=true": {
+      "model": "aerolarge:block/self_destruct_button_open",
+      "y": 90
+    },
+    "armed=true,facing=east,open=false": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 90
+    },
+    "armed=true,facing=east,open=true": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 90
+    },
+    "armed=false,facing=south,open=false": {
+      "model": "aerolarge:block/self_destruct_button_shut",
+      "y": 180
+    },
+    "armed=false,facing=south,open=true": {
+      "model": "aerolarge:block/self_destruct_button_open",
+      "y": 180
+    },
+    "armed=true,facing=south,open=false": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 180
+    },
+    "armed=true,facing=south,open=true": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 180
+    },
+    "armed=false,facing=west,open=false": {
+      "model": "aerolarge:block/self_destruct_button_shut",
+      "y": 270
+    },
+    "armed=false,facing=west,open=true": {
+      "model": "aerolarge:block/self_destruct_button_open",
+      "y": 270
+    },
+    "armed=true,facing=west,open=false": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 270
+    },
+    "armed=true,facing=west,open=true": {
+      "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 270
+    }
+  }
+}

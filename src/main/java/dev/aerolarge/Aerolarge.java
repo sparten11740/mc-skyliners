@@ -25,12 +25,14 @@ import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.cabin.Seatbelts;
 import dev.aerolarge.cabin.TurbulencePayload;
 import dev.aerolarge.client.AutopilotSettingsScreen;
+import dev.aerolarge.client.BlastFlash;
 import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
 import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
+import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.client.TransponderScreen;
 import dev.aerolarge.compat.SableFlight;
@@ -42,6 +44,9 @@ import dev.aerolarge.radar.RadarLand;
 import dev.aerolarge.radar.RadarSurvey;
 import dev.aerolarge.radar.Transponders;
 import dev.aerolarge.radio.Broadcasts;
+import dev.aerolarge.selfdestruct.BlastPayload;
+import dev.aerolarge.selfdestruct.SelfDestruct;
+import dev.aerolarge.selfdestruct.SelfDestructAlarmPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -54,6 +59,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
@@ -88,6 +94,8 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreak);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onExplosion);
+        NeoForge.EVENT_BUS.addListener(SelfDestruct::onFall);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> SelfDestruct.forget());
         // Last, so a placement another mod turned down is not marked.
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, HandPlaced::onPlace);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, HandPlaced::onArrive);
@@ -103,6 +111,7 @@ public final class Aerolarge {
                 RunwayBuild.tick(level);
                 RadarSurvey.tick(level);
                 HandPlaced.tick(level);
+                SelfDestruct.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
@@ -121,12 +130,13 @@ public final class Aerolarge {
                 ControlTower.drop(level);
                 RunwayBuild.drop(level);
                 RadarSurvey.unload(level);
+                SelfDestruct.drop(level);
             }
         });
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("19")
+        event.registrar("20")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -160,6 +170,10 @@ public final class Aerolarge {
             .playToClient(RadarContacts.TYPE, RadarContacts.STREAM_CODEC,
                 (payload, context) -> RadarPicture.receive(payload))
             .playToClient(RadarLand.TYPE, RadarLand.STREAM_CODEC,
-                (payload, context) -> TerrainMap.surveyed(payload));
+                (payload, context) -> TerrainMap.surveyed(payload))
+            .playToClient(SelfDestructAlarmPayload.TYPE, SelfDestructAlarmPayload.STREAM_CODEC,
+                (payload, context) -> SelfDestructWarning.alarm(payload.ticks()))
+            .playToClient(BlastPayload.TYPE, BlastPayload.STREAM_CODEC,
+                (payload, context) -> BlastFlash.blast(payload.shake(), payload.flash()));
     }
 }

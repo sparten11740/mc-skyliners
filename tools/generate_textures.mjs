@@ -3332,4 +3332,64 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 2);
 }
 
+// The self-destruct button (see SelfDestructButtonBlock), drawn so it reads as the button not to press without a word:
+// its plate a broad yellow-and-black hazard border round dark steel, its flip lid clear plastic in a frame striped the
+// same, so the button shows through it, and the button a deep red dome with a shine on its upper left; lit while armed,
+// red-hot with a white-hot middle. In the hand, the whole of it seen from the front.
+{
+  const stripes = (x, y) => ((x + y) % 4 < 2 ? HAZARD : RUBBER);
+  const STEEL_PLATE = [0x3a, 0x3e, 0x44];
+  texture(blockOutput, "self_destruct_plate", (x, y) => {
+    if (x <= 2 || y <= 2 || x >= 13 || y >= 13) return stripes(x, y);
+    if (x === 3 || y === 3 || x === 12 || y === 12) return STEEL_DARK;
+    return STEEL_PLATE;
+  }, 3);
+  texture(blockOutput, "self_destruct_cover", (x, y) => (x <= 2 || y <= 2 || x >= 13 || y >= 13 ? stripes(x, y) : [0xd8, 0xe6, 0xee, 0x48]), 3);
+  const dome = (lit) => (x, y) => {
+    const out = Math.hypot(x - 7.5, y - 7.5) / 8;
+    if (lit) return out < 0.35 ? [0xff, 0xe8, 0xd0] : out < 0.7 ? [0xff, 0x50, 0x30] : [0xe8, 0x20, 0x18];
+    if (Math.hypot(x - 5.5, y - 5.5) < 1.6) return [0xe0, 0x70, 0x68];
+    return out < 0.75 ? [0xa8, 0x14, 0x12] : [0x78, 0x0c, 0x0c];
+  };
+  texture(blockOutput, "self_destruct_button", dome(false), 3);
+  texture(blockOutput, "self_destruct_button_lit", dome(true), 2);
+  texture(itemOutput, "self_destruct_button", (x, y) => {
+    if (x < 1 || y < 1 || x > 14 || y > 14) return CLEAR;
+    if (x <= 2 || y <= 2 || x >= 13 || y >= 13) return stripes(x, y);
+    const out = Math.hypot(x - 7.5, y - 7.5);
+    if (Math.hypot(x - 6, y - 6) < 1.2) return [0xff, 0xa0, 0x98];
+    return out < 4.1 ? [0xd8, 0x18, 0x14] : STEEL_PLATE;
+  }, 2);
+}
+
+// A puff of an airliner blowing up (see BlastPuffParticle): a soft, lumpy white cloud, see-through toward its edges, a
+// ball in the middle with a few smaller ones bulging out of it, which each kind of puff tints: fire, smoke and dust.
+{
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  mkdirSync(particleOutput, { recursive: true });
+  reseed("blast_puff");
+  const PUFF = 32;
+  const LUMPS = 7;
+  const lumps = [[0, 0, 0.6]];
+  for (let i = 0; i < LUMPS; i++) {
+    const angle = (i + random() * 0.6) * (2 * Math.PI / LUMPS);
+    const out = 0.3 + 0.15 * random();
+    lumps.push([Math.cos(angle) * out, Math.sin(angle) * out, 0.28 + 0.1 * random()]);
+  }
+  const pixels = [];
+  for (let y = 0; y < PUFF; y++) {
+    const row = [];
+    for (let x = 0; x < PUFF; x++) {
+      const u = ((x + 0.5) / PUFF) * 2 - 1;
+      const v = ((y + 0.5) / PUFF) * 2 - 1;
+      const density = Math.max(...lumps.map(([cx, cy, r]) => 1 - ((u - cx) ** 2 + (v - cy) ** 2) / (r * r)));
+      const a = Math.max(0, Math.min(1, density * 1.6)) * (0.85 + 0.15 * random());
+      const shade = Math.round(236 + 19 * Math.max(0, Math.min(1, density)));
+      row.push([shade, shade, shade, Math.round(255 * a)]);
+    }
+    pixels.push(row);
+  }
+  writeFileSync(resolve(particleOutput, "blast_puff.png"), encodePng(pixels));
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

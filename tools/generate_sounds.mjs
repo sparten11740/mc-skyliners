@@ -9,6 +9,8 @@ import { execFileSync } from "node:child_process";
 // no libvorbis, as Homebrew's FFmpeg 9 has not, oggenc from vorbis-tools, the same encoder). Given sound names, it
 // writes only those and leaves the rest as they are:
 // - engine.ogg: a turbofan running, a seamless loop the engines play, pitched and swelled with thrust;
+// - the self-destruct's siren and bang, from recordings kept in tools/audio (see AUDIO), as Ultrasplosive makes its
+//   nuke's;
 // - the flight deck's voice, its callouts and cabin announcements, spoken by Kokoro, an open speech synthesis model,
 //   and played through the cabin's loudspeakers (see VOICE), on any system once kokoro-js is installed with npm
 //   install --prefix tools (the model itself is fetched on the first run);
@@ -941,6 +943,67 @@ const laserNoise = (() => {
   }
   gearRing(samples, length - 0.12, 1800, 0.4);
   writeSound("laser_charge", samples);
+}
+
+// The self-destruct, the sounds of Ultrasplosive's nuke (the same author's mod), made the same way and with its own
+// noise, so it never shifts the sounds above. The siren and the bang are recordings, kept as they were in tools/audio:
+// - civil-defense-siren-waver.ogg: a civil defence siren in St. Paul, Minnesota, recorded in 2008 by Wikimedia Commons
+//   user Techtonic (https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg), in the public domain;
+// - red-library-R09-52-huge-explosion-with-long-decay.flac: "R09-52 Huge Explosion with Long Decay", from the Red
+//   Library sound effects tapes (https://archive.org/details/Red_Library_Explosions), under CC0 1.0.
+// The siren, while the button is armed: its spin-up from standstill and its first wail, the ten seconds the button
+// stays armed, the rumble of the wind taken out and its quiet start brought up. The bang: slowed a tenth for weight,
+// its lows lifted, its long decay evened out and its tape tail trimmed, fourteen seconds. The rumble after it,
+// synthesised: low brown noise and a wandering deep tone under it, swelling in over a second and a half and dying
+// away, the odd distant crack in it.
+const AUDIO = resolve(ROOT, "tools/audio");
+
+/** A recording in tools/audio through FFmpeg's filters, read back as samples at the generator's rate. */
+function recorded(file, filters) {
+  const heard = join(scratch, `${file}.wav`);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", resolve(AUDIO, file), "-af", filters.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", heard]);
+  return readWav(heard);
+}
+writeSound("self_destruct_siren", recorded("civil-defense-siren-waver.ogg", [
+  // The motor starts about 1.9 s in.
+  "atrim=start=1.8:end=11.8", "asetpts=PTS-STARTPTS", "highpass=f=70",
+  "acompressor=threshold=0.08:ratio=3:attack=15:release=400:makeup=9", "alimiter=limit=0.95:level=0",
+  "afade=t=in:st=0:d=0.02", "afade=t=out:st=9.5:d=0.5",
+]));
+writeSound("self_destruct_blast", recorded("red-library-R09-52-huge-explosion-with-long-decay.flac", [
+  // The 48 kHz tape played at 43.2 kHz: a tenth slower and a little over a semitone lower; the hit is about 0.38 s in.
+  "asetrate=43200", `aresample=${RATE}`, "atrim=start=0.33:end=14.6", "asetpts=PTS-STARTPTS", "highpass=f=28", "bass=g=5:f=90:w=0.6",
+  "acompressor=threshold=0.3:ratio=2:attack=10:release=400:makeup=4", "alimiter=limit=0.95:level=0",
+  "afade=t=in:st=0:d=0.01", "afade=t=out:st=11.6:d=2.6",
+]), 0.95);
+const blastNoise = (() => {
+  let blastSeed = 0x6e756b65;
+  return () => {
+    blastSeed = (Math.imul(blastSeed, 1664525) + 1013904223) | 0;
+    return (blastSeed >>> 0) / 4294967296 * 2 - 1;
+  };
+})();
+{
+  const seconds = 9;
+  const samples = new Float64Array(seconds * RATE);
+  const lowCut = 1 - Math.exp((-2 * Math.PI * 90) / RATE);
+  const highCut = Math.exp((-2 * Math.PI * 20) / RATE);
+  let brown = 0;
+  let low = 0;
+  let high = 0;
+  let lastLow = 0;
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    brown = Math.max(-1, Math.min(1, brown + blastNoise() * 0.08));
+    low += lowCut * (brown - low);
+    high = highCut * (high + low - lastLow);
+    lastLow = low;
+    phase += (2 * Math.PI * (32 + 14 * Math.sin(t * 0.8) + 6 * Math.sin(t * 3.7))) / RATE;
+    const crack = Math.abs(blastNoise()) < 0.0008 ? blastNoise() * 0.6 : 0;
+    samples[i] = Math.min(1, t / 1.5) * Math.pow(1 - t / seconds, 1.6) * (3 * high + 0.45 * Math.sin(phase) + crack);
+  }
+  writeSound("self_destruct_rumble", samples, 0.9);
 }
 
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's

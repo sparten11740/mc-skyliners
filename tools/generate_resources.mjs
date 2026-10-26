@@ -548,10 +548,12 @@ function atcLang() {
   Object.assign(sounds, gearSounds());
   Object.assign(sounds, airPocketSounds());
   Object.assign(sounds, laserSounds());
+  Object.assign(sounds, selfDestructSounds());
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
   write(`assets/${ID}/particles/flare_smoke.json`, { textures: [`${ID}:contrail`] });
+  selfDestructParticles();
 }
 
 // The tiller and the parking brake, modules of the centre console drawn nose north. The tiller: a small handwheel on a
@@ -741,6 +743,84 @@ function laserLang() {
     "message.aerolarge.laser.disarmed": "Laser path clearer safe",
     "message.aerolarge.laser.off": "The laser path clearer is switched off on this server",
     "death.attack.aerolarge.laser": "%1$s was vaporised by an airliner's laser",
+  };
+}
+
+// The self-destruct button (see SelfDestructButtonBlock), drawn facing north as its viewer does, against the north side
+// of its block: a plate in a yellow-and-black hazard border, the red button standing out of its middle, and over it a
+// clear lid in a striped frame, so the button shows through it. Shut, the lid covers the button; open, it is flipped up
+// to stand out over it; armed, the button glows red-hot whatever the light round it, as its renderer flashes it. The
+// lid is see-through, so the whole model is drawn translucent.
+{
+  const face = (texture, uv, lit) => ({ texture, ...(uv ? { uv } : {}), ...(lit ? { neoforge_data: { block_light: 15, sky_light: 15 } } : {}) });
+  const box = (from, to, front, edge, lit, shade = true) => ({
+    from, to, ...(shade ? {} : { shade: false }),
+    faces: { south: front, north: edge, east: edge, west: edge, up: edge, down: edge },
+  });
+  const plate = box([2, 2, 0], [14, 14, 1.5], face("#plate"), face("#plate", [0, 0, 16, 2]));
+  const button = (lit) => box([5.5, 5.5, 1.5], [10.5, 10.5, 4], face("#button", null, lit), face("#button", [0, 0, 16, 4], lit), lit, !lit);
+  const lidEdge = face("#cover", [0, 0, 16, 3]);
+  // Shut over the button, and flipped up about its top edge to stand out from the wall over it.
+  const shut = { from: [4.5, 4.5, 1.5], to: [11.5, 11.5, 5.5], faces: { south: face("#cover"), east: lidEdge, west: lidEdge, up: lidEdge, down: lidEdge } };
+  const up = { from: [4.5, 11.5, 1.5], to: [11.5, 12.5, 8.5], faces: { up: face("#cover"), down: face("#cover"), south: lidEdge, east: lidEdge, west: lidEdge } };
+  const looks = { shut: [button(false), shut], open: [button(false), up], armed: [button(true), up] };
+  for (const [look, parts] of Object.entries(looks)) {
+    write(`assets/${ID}/models/block/self_destruct_button_${look}.json`, {
+      parent: "minecraft:block/block",
+      render_type: "minecraft:translucent",
+      textures: {
+        plate: `${ID}:block/self_destruct_plate`, cover: `${ID}:block/self_destruct_cover`, particle: `${ID}:block/self_destruct_plate`,
+        button: `${ID}:block/self_destruct_button${look === "armed" ? "_lit" : ""}`,
+      },
+      elements: [plate, ...parts],
+    });
+  }
+  const buttonLook = (open, armed) => (armed ? "armed" : open ? "open" : "shut");
+  write(`assets/${ID}/blockstates/self_destruct_button.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [false, true].flatMap((armed) => [false, true].map((open) =>
+        [`armed=${armed},facing=${facing},open=${open}`, { model: `${ID}:block/self_destruct_button_${buttonLook(open, armed)}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/self_destruct_button.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/self_destruct_button` } });
+  dropsItself("self_destruct_button");
+  cubes.self_destruct_button = null;
+}
+// The self-destruct's sounds (see tools/generate_sounds.mjs): the alarm's siren, heard by everyone aboard wherever they
+// are, and the airliner blowing up, its bang heard far and wide and the rumble after it, played at each listener's ear.
+function selfDestructSounds() {
+  const BANG_HEARD = 640;
+  return {
+    self_destruct_siren: heardAboard("self_destruct_siren"),
+    self_destruct_blast: { subtitle: `subtitles.${ID}.self_destruct_blast`, sounds: [{ name: `${ID}:self_destruct_blast`, stream: true, attenuation_distance: BANG_HEARD }] },
+    self_destruct_rumble: { subtitle: `subtitles.${ID}.self_destruct_rumble`, sounds: [{ name: `${ID}:self_destruct_rumble`, stream: true }] },
+  };
+}
+// The blast's puffs share one soft cloud picture, each kind tinting it.
+function selfDestructParticles() {
+  for (const kind of ["fire", "smoke", "wave", "ember"]) {
+    write(`assets/${ID}/particles/blast_${kind}.json`, { textures: [`${ID}:blast_puff`] });
+  }
+}
+// A stone button and a block of TNT, between yellow and black dye, on a plate of the airframe.
+function selfDestructRecipes() {
+  shaped("self_destruct_button", ["YBK", "RTR", " P "], {
+    Y: "minecraft:yellow_dye", B: "minecraft:stone_button", K: "minecraft:black_dye", R: "minecraft:redstone", T: "minecraft:tnt", P: `${ID}:airframe_panel`,
+  }, 1);
+}
+function selfDestructLang() {
+  return {
+    "block.aerolarge.self_destruct_button": "Self-Destruct Button",
+    "subtitles.aerolarge.self_destruct_siren": "Self-destruct alarm wails",
+    "subtitles.aerolarge.self_destruct_blast": "Airliner explodes",
+    "subtitles.aerolarge.self_destruct_rumble": "Explosion rumbles",
+    "message.aerolarge.self_destruct.open": "Cover up: press the red button to arm the self-destruct",
+    "message.aerolarge.self_destruct.shut": "Cover shut",
+    "message.aerolarge.self_destruct.armed": "Self-destruct armed! Press again within %s seconds to blow up the airliner, or sneak to cancel",
+    "message.aerolarge.self_destruct.alarm": "Self-destruct armed! Everyone will get a parachute",
+    "message.aerolarge.self_destruct.cancelled": "Self-destruct cancelled",
+    "message.aerolarge.self_destruct.not_assembled": "Nothing happens: the self-destruct only works on an assembled airliner",
+    "message.aerolarge.self_destruct.off": "The self-destruct is switched off on this server",
+    "message.aerolarge.self_destruct.parachute": "Boom! Your parachute opens by itself: steer it the way you walk",
   };
 }
 
@@ -4848,8 +4928,9 @@ const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
 // and the buttons, the airstairs' (the call button on the gear and the one on the skin outside by the top of the stairs
-// among them) and the doors'.
-write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !b.endsWith("_button"))));
+// among them) and the doors'; but the self-destruct button, on the flight deck's wall like its other controls, is in.
+const outsideButton = (b) => b.endsWith("_button") && !b.endsWith(":self_destruct_button");
+write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !outsideButton(b))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
 // controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
@@ -4965,6 +5046,7 @@ cabinStairsRecipes();
 crewLockerRecipes();
 gearRecipes();
 laserRecipes();
+selfDestructRecipes();
 slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
@@ -5416,6 +5498,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...gearLang(),
   ...airPocketLang(),
   ...laserLang(),
+  ...selfDestructLang(),
   ...hullLiningLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),

@@ -16,6 +16,8 @@ import dev.aerolarge.client.AtisScreenRenderer;
 import dev.aerolarge.client.AutopilotRenderer;
 import dev.aerolarge.client.AutopilotScreenRenderer;
 import dev.aerolarge.client.BasketballRenderer;
+import dev.aerolarge.client.BlastFlash;
+import dev.aerolarge.client.BlastPuffParticle;
 import dev.aerolarge.client.BlueIceChunkRenderer;
 import dev.aerolarge.client.BlueprintPreview;
 import dev.aerolarge.client.CameraShake;
@@ -53,6 +55,8 @@ import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
+import dev.aerolarge.client.SelfDestructButtonRenderer;
+import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.TabBanners;
@@ -91,7 +95,9 @@ import net.neoforged.neoforge.common.NeoForge;
  * tail camera display's live picture, the cabin's blue light at night, the den's disco ball turning and its coloured
  * spots, the clouds kept out of the cabin, parachutes:
  * opening them by jumping, and the canopy over their wearers; the pilot helmet's visor and the pilots' head-up display
- * on it; the radio's headset on screen while air traffic control talks; the creative tab's section banners; the curtains' dye colours; and the settings screen in the Mods menu.
+ * on it; the radio's headset on screen while air traffic control talks; the self-destruct's countdown on screen, its
+ * button flashing and the blast, its puffs, flash and shake; the creative tab's section banners; the curtains' dye
+ * colours; and the settings screen in the Mods menu.
  */
 @Mod(value = Aerolarge.MOD_ID, dist = Dist.CLIENT)
 public final class AerolargeClient {
@@ -164,9 +170,11 @@ public final class AerolargeClient {
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "lightning_flash"), LightningFlash::overlay);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "blast_flash"), BlastFlash::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "pilot_hud"), PilotHud::overlay);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "atc_headset"), AtcHeadset::overlay);
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "self_destruct_warning"), SelfDestructWarning::overlay);
         // Over the view as a carved pumpkin's is, under the crosshair and the hotbar.
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "helmet_visor"), HelmetVisor::overlay);
     }
@@ -186,6 +194,10 @@ public final class AerolargeClient {
     private static void onRegisterParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(AerolargeRegistry.CONTRAIL.get(), ContrailParticle.Provider::new);
         event.registerSpriteSet(AerolargeRegistry.FLARE_SMOKE.get(), FlareSmokeParticle.Provider::new);
+        event.registerSpriteSet(AerolargeRegistry.BLAST_FIRE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FIRE));
+        event.registerSpriteSet(AerolargeRegistry.BLAST_SMOKE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.SMOKE));
+        event.registerSpriteSet(AerolargeRegistry.BLAST_WAVE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
+        event.registerSpriteSet(AerolargeRegistry.BLAST_EMBER.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.EMBER));
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -202,6 +214,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ANNOUNCEMENT_PANEL_ENTITY.get(), context -> new AnnouncementPanelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_MAP_ENTITY.get(), context -> new FlightMapRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.SELF_DESTRUCT_BUTTON_ENTITY.get(), context -> new SelfDestructButtonRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PLUG_DOOR_ENTITY.get(), context -> new PlugDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DOOR_ENTITY.get(), context -> new CockpitDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), context -> new AirstairRenderer());

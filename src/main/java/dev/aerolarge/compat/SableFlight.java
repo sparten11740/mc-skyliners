@@ -9,6 +9,7 @@ import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
+import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
@@ -51,9 +52,10 @@ import org.joml.Vector3d;
  * Sable's plot, away from where the airliner is seen; projecting a few points of the plot out into the world gives
  * the airliner's position and the directions its nose, right wing and roof point. The cabin's loose things (trolleys,
  * basketballs, paper planes) live in the plot too while they are inside the hull, carried along with the airliner's
- * blocks (see {@link #keepWithCabin}). This is the only class that touches Sable on the server, and only once Sable is
- * known to be installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the
- * world. {@link #fitsAboard} also serves the client, which works out its own player's pose.
+ * blocks (see {@link #keepWithCabin}). An airliner blown up by its self-destruct button is taken away through here too
+ * (see {@link #remove}). This is the only class that touches Sable on the server, and only once Sable is known to be
+ * installed; without it nothing is ever assembled, and every answer is the one for blocks standing in the world.
+ * {@link #fitsAboard} also serves the client, which works out its own player's pose.
  */
 public final class SableFlight {
     private static final boolean SABLE = ModList.get().isLoaded("sable");
@@ -126,6 +128,23 @@ public final class SableFlight {
     /** Whether the entity rides any assembled airliner. */
     public static boolean ridesAny(Entity entity) {
         return SABLE && Access.ridesAny(entity);
+    }
+
+    /**
+     * Whether two block entities are both part of one assembled airliner: the same one of Sable's flying bodies, not
+     * merely two that fly side by side; false when either is not part of one.
+     */
+    public static boolean sameAirliner(BlockEntity one, BlockEntity other) {
+        return SABLE && one.getLevel() != null && one.getLevel() == other.getLevel() && Access.sameAirliner(one, other);
+    }
+
+    /**
+     * Takes the assembled airliner the block entity is part of out of the world for good, every block of it gone at
+     * once and nothing dropped, as Sable's own {@code sable remove} does; whether there was one to take. On the server,
+     * between ticks of the level, never while its block entities tick: its plot's chunks go with it.
+     */
+    public static boolean remove(BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel && Access.remove(blockEntity);
     }
 
     /** Where a point among an assembled airliner's blocks is in the world; the point itself anywhere else. */
@@ -429,6 +448,24 @@ public final class SableFlight {
 
         static boolean ridesAny(Entity entity) {
             return Sable.HELPER.getTrackingOrVehicleSubLevel(entity) != null;
+        }
+
+        static boolean sameAirliner(BlockEntity one, BlockEntity other) {
+            SubLevel airliner = Sable.HELPER.getContaining(one);
+            return airliner != null && airliner == Sable.HELPER.getContaining(other);
+        }
+
+        static boolean remove(BlockEntity blockEntity) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airliner) || airliner.isRemoved()
+                || !(blockEntity.getLevel() instanceof ServerLevel level)) {
+                return false;
+            }
+            ServerSubLevelContainer airliners = SubLevelContainer.getContainer(level);
+            if (airliners == null) {
+                return false;
+            }
+            airliners.removeSubLevel(airliner, SubLevelRemovalReason.REMOVED);
+            return true;
         }
 
         static Vec3 toWorld(Level level, Vec3 point) {

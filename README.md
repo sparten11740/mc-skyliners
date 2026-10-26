@@ -268,6 +268,40 @@ the block would, so land a claim protects keeps its blocks. Turn it off with `la
 (the switch then only buzzes), where `laserRange` and `laserBoltsPerSecond` set how far it reaches and how fast it
 fires. A Laser Switch and a Laser Turret can be crafted, but only an airliner built with the laser has them wired.
 
+### Self-destruct
+
+On the flight deck's back wall at a standing pilot's eyes, left of the door as you face it from the seats, past the
+announcement panel where that hangs on the wall (or right of the door, past the flight map, where the left has no
+room), is the self-destruct button: a big red button on a plate in a yellow-and-black hazard border, under a clear lid
+in a striped frame. It takes three presses on purpose to set off. Use it once and the lid flips up with a clack. Use
+it again and it arms: the button lights up and flashes red, faster and faster, the alarm's siren wails for everyone
+aboard wherever they are, a beep sounds every second, rising in pitch and twice a second over the last three, and on
+everyone's screen the edges pulse red and a picture of the button stands over a row of ten red lamps, one going out
+each second, the last one lit blinking. Press it a third time within those ten seconds and the airliner blows up. Left
+alone, it disarms by itself when the time is up, with a falling hum, its lid still up; sneak and use it (with an empty
+hand) to snap the lid shut and disarm it at once. Holding the use key down, or pressing twice in quick succession,
+never gets it past a step: each press has to be its own, and it waits a second after arming before a press sets it
+off.
+
+As it blows up, everyone aboard puts on a parachute (whatever they wore on their chest goes into their inventory) and
+is got out of their seat, and the airliner is gone, every block of it at once, with everything loose or stored aboard
+(the chests' and lockers' contents, items on its floors, trolleys, balls, paper planes, frames and pictures): nothing
+is dropped and none of it comes back. In its place it goes up in a huge explosion, Ultrasplosive's nuke scaled down to
+the airliner (Ultrasplosive need not be installed): a blinding white flash and a shake of the view for everyone near,
+fire bursting out all over where the airliner was, its wings and tail too, round a fireball in the middle, sparks and
+burning embers flying out of it, a ring of dust racing out from it (along the ground if the ground is near), a column
+of smoke rising into a small mushroom cloud that hangs on a while, and a huge bang, heard later the further off you
+are, with a long rumble after it. Everyone who was aboard falls clear in the middle of it, their parachute opens by
+itself as soon as they fall free, and they float down under it, steering it the way they walk; a fall too short for it
+to open does not hurt either. A villager passenger or a pet aboard floats down slowly. Nothing round the airliner is
+touched: the explosion breaks no blocks, sets nothing alight and hurts nobody.
+
+The button only works on an assembled airliner of this mod's, built from its blueprint, and only blows up the airliner
+it is part of, never another mod's vehicle, even with an autopilot put aboard by hand; anywhere else, arming it only
+gives a dull thud. Turn it off with `selfDestruct` in the server config: the button then only thuds, and airliners
+built while it is off have none. A Self-Destruct Button can be crafted and put up on a wall of an airliner in your own
+builds, facing you; it works the airliner of the nearest autopilot within 24 blocks, once that airliner is assembled.
+
 ### The upper deck
 
 Like an A380, the airliner has two decks. The upper deck's floor runs three metres over the main deck's, under the
@@ -344,6 +378,8 @@ Passenger screens) for good, the route flown since take-off and the airliner on 
 climbing, cruising or descending, and under the map its altitude, its speed over the ground and how far it has flown.
 A Flight Map can be crafted and put up on a wall in your own builds, its middle where you put it; it shows the flight
 of the airliner it is part of, and a welcome page while that stands as blocks.
+
+Past the announcement panel, at the end of the wall, is the self-destruct button (see Self-destruct).
 
 Air traffic control talks to the airliner over the flight deck's radio, calling it "Aerolarge three eight zero": a
 man's voice, so it is never taken for the flight deck's own, crackling through a VHF radio's hiss and squelch. Set to
@@ -1379,7 +1415,10 @@ going away, as `AirstairFlight` builds and moves them, from their `AirstairBlock
 evacuation slide inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
 `SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `LaserTurretRenderer` draws the laser path
 clearer's turret out of its hatch and `LaserBolts` its bolts, which its `LaserTurretBlockEntity` fires at what
-`LaserAim`'s rays find in the way; `GearBayRenderer` draws a landing gear leg
+`LaserAim`'s rays find in the way; `SelfDestructButtonBlockEntity` arms the self-destruct button, and `SelfDestruct`
+sounds its alarm aboard and blows its airliner up, taking it away through `SableFlight.remove` once the level's tick is
+over, as `Blast` plays the explosion out in particles (`BlastPuffParticle`) and sounds, and `BlastFlash`, `CameraShake`
+and `SelfDestructWarning` show it on screen; `GearBayRenderer` draws a landing gear leg
 swinging up or down, and its doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going
 up and puts them back coming down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras'
 pictures for the flight deck's camera displays through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue light
@@ -1397,7 +1436,9 @@ and stone button retextured, so their files come from vanilla's: pass the folder
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.
 `node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any) with FFmpeg, and with
 `oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is
-synthesised, and the flight deck's voice (the callouts and the cabin announcements) is spoken by
+synthesised, the self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a public-domain siren
+and a CC0 explosion recorded on tape, kept in `tools/audio` (where each came from is in the script), and the flight
+deck's voice (the callouts and the cabin announcements) is spoken by
 [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open speech synthesis model under the Apache License 2.0, in
 its British woman's voice Emma, on any system: install it once with `npm install --prefix tools` (the model, some
 300 MB, is fetched into `tools/node_modules` on the first run), or the voice is left as it is. FFmpeg plays it through

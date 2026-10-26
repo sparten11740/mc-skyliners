@@ -742,5 +742,33 @@
         "name": "aerolarge:laser_charge"
       }
     ]
+  },
+  "self_destruct_siren": {
+    "subtitle": "subtitles.aerolarge.self_destruct_siren",
+    "sounds": [
+      {
+        "name": "aerolarge:self_destruct_siren",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "self_destruct_blast": {
+    "subtitle": "subtitles.aerolarge.self_destruct_blast",
+    "sounds": [
+      {
+        "name": "aerolarge:self_destruct_blast",
+        "stream": true,
+        "attenuation_distance": 640
+      }
+    ]
+  },
+  "self_destruct_rumble": {
+    "subtitle": "subtitles.aerolarge.self_destruct_rumble",
+    "sounds": [
+      {
+        "name": "aerolarge:self_destruct_rumble",
+        "stream": true
+      }
+    ]
   }
 }

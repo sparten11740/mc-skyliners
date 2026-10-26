@@ -51,6 +51,8 @@ import dev.aerolarge.block.PlugDoorBlock;
 import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
+import dev.aerolarge.block.SelfDestructButtonBlock;
+import dev.aerolarge.block.SelfDestructButtonBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.SlideControlBlock;
@@ -221,6 +223,11 @@ public final class AirframeLayout {
      * cockpit door, in blocks: their bottom row at a standing pilot's eyes, their top row level with the door's top.
      */
     private static final int BULKHEAD_PANEL_RAISE = 1;
+    /**
+     * How far above the flight deck's floor the self-destruct button is on the wall beside the cockpit door, in
+     * blocks: at a standing pilot's eyes, level with the bottom row of the panels on that wall.
+     */
+    private static final int SELF_DESTRUCT_RAISE = 1;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
     /** How far either side of the middle the steps up to the flight deck reach. */
@@ -1438,8 +1445,9 @@ public final class AirframeLayout {
      * In a nose too small for it, it stands at the first station where two pilots fit side by side at all, the autopilot
      * screen set into it between them, a flight display in it in front of each and the tail camera display on top of
      * the autopilot screen, with the controls fitted round them (see {@link #narrowControls}), and the door moves back
-     * if it has to, but no further than the raised floor's back edge. Behind the door, on the same raised floor at the
-     * top of the steps, are the WC and the crew room.
+     * if it has to, but no further than the raised floor's back edge. On the back wall beside the door are the
+     * self-destruct button and, where the wall leaves them room, the announcement panel and the flight map. Behind the
+     * door, on the same raised floor at the top of the steps, are the WC and the crew room.
      */
     private void flightDeck() {
         int deck = Math.max(floorY + 1, Windscreen.deckRow(scale));
@@ -1519,6 +1527,9 @@ public final class AirframeLayout {
         }
         crewLocker(-seatX, deck + 1, seatZ);
         crewLocker(seatX, deck + 1, seatZ);
+        if (walled && AerolargeConfig.SELF_DESTRUCT.get()) {
+            selfDestructButton(deck, bulkhead, autopilot);
+        }
     }
 
     /**
@@ -2035,6 +2046,49 @@ public final class AirframeLayout {
             }
         }
         return true;
+    }
+
+    /**
+     * The self-destruct button on the flight deck's back wall, the bulkhead at station z, facing the pilots,
+     * {@link #SELF_DESTRUCT_RAISE} above the floor: on the first officer's side of the cockpit door, beyond the
+     * announcement panel where that is on the wall, or failing that on the captain's side, beyond the flight map. There
+     * it is out of the way, behind the seats and clear of the door and of everything the pilots use in flight, yet a
+     * few steps from either seat. Nothing where no plain panel of the wall is open in front at that height. Linked to
+     * the autopilot when the airliner is built.
+     */
+    private void selfDestructButton(int deck, int z, BlockPos autopilot) {
+        int y = deck + 1 + SELF_DESTRUCT_RAISE;
+        BlockPos at = besideDoor(y, z, 1);
+        if (at == null) {
+            at = besideDoor(y, z, -1);
+        }
+        if (at == null) {
+            return;
+        }
+        set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.SELF_DESTRUCT_BUTTON.get().defaultBlockState()
+            .setValue(SelfDestructButtonBlock.FACING, Direction.SOUTH));
+        BlockPos button = at;
+        fittings.put(button, (blockEntity, rotation) -> {
+            if (blockEntity instanceof SelfDestructButtonBlockEntity linked) {
+                linked.configure(autopilot.subtract(button).rotate(rotation));
+            }
+        });
+    }
+
+    /**
+     * The first spot in front of the bulkhead at station z, at height y, going out from the cockpit door to one side (1
+     * to starboard, -1 to port), that is open with a plain panel of the bulkhead behind it; null for none.
+     */
+    @Nullable
+    private BlockPos besideDoor(int y, int z, int side) {
+        int hull = (int) Math.ceil(WIDTH / 2 * scale) + 1;
+        int from = side > 0 ? COCKPIT_DOOR_LEFT + CockpitDoorBlock.COLUMNS : COCKPIT_DOOR_LEFT - 1;
+        for (int x = from; Math.abs(x) <= hull; x += side) {
+            if (isOpen(x, y, z - 1) && isPlainHull(x, y, z)) {
+                return new BlockPos(x, y, z - 1);
+            }
+        }
+        return null;
     }
 
     /**
