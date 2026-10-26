@@ -113,14 +113,19 @@ feature as a player meets it, and its Building section says which classes do wha
   serves MCP (`--mcp`). On macOS start the client in the background after `caffeinate -u -t 3600`, or with the display
   asleep its window cannot open, and close it with `quit`, which saves the world and waits for the game to exit.
   - Aboard an assembled airliner, positions for `use`, `block` and `nbt` are plot positions: find them with
-    `sable:find <sub> <block id>`. `sable:info <sub> brief` reads pitch, speed, climb and height above the ground, and
+    `sable:find <sub> <block id>` (plain `find` sees only the world's blocks, and no further than 128).
+    `sable:info <sub> brief` reads pitch, speed, climb and height above the ground, and
     `sample sable:info <sub> brief every 20t x60` records a landing a second at a time.
+  - `use <pos>` on a block aboard fails with `obstructed` when something stands in the way; `any` skips that check, so
+    keep it for the big multi-block panels and never use it on a block buried behind others, where it clicks whatever
+    is in front.
   - `server ...` runs as the server console at the world's spawn, so selectors and `distance=` there count from
-    spawn: wrap them in `execute at @p`.
+    spawn: `server as=player <command>` runs it at and as the player.
   - Taking off from the autopilot's screen leaves a standing player behind, and an airliner flying away from the
-    player unloads within seconds. Board it straight away, in the same shell command: find its uuid with
-    `server sable info @e`, then `server execute positioned <plot pos> out_sub_level <uuid> run tp @p ~ ~ ~`.
+    player unloads within seconds. Note a plot position aboard first (`sable:find`); plot positions stay put in
+    flight, so `sable:tp <plot pos>` puts the player back aboard beside it straight away, while it is still loaded.
   - Sneaking and using a block with something in hand places that instead (a thrust lever pulled back, a button's
     cover shut): `select` an empty slot first. `use <pos> hold=40t` holds the use key down.
   - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
-    screenshot taken.
+    screenshot taken. `option gamma 1` brightens dark spaces, and the reply says `inside` when the camera is in a
+    solid block.
