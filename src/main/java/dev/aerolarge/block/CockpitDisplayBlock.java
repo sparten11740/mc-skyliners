@@ -50,6 +50,11 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
     static final int ROWS = 2;
     /** How deep a panel's slab is behind its face, in blocks. */
     public static final float DEPTH = 0.1F;
+    /**
+     * How far back along the look from where it met the panel's block a touch's ray starts, in blocks: before any face
+     * standing in that block.
+     */
+    private static final double LOOK_BACK = 1.5;
 
     /** What a panel's screen shows. */
     public enum Shows implements StringRepresentable {
@@ -104,7 +109,10 @@ public class CockpitDisplayBlock extends HorizontalDirectionalBlock implements E
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel server) {
-            Vec3 eye = SableFlight.toPlot(server, pos, player.getEyePosition(), false);
+            // From where the look met the block, back along it: aboard an airliner in flight the server has the player
+            // where they stood a tick ago, blocks behind, so the eye would put the touch somewhere else on the panel.
+            Vec3 look = SableFlight.turnToPlot(server, pos, player.getLookAngle());
+            Vec3 eye = hit.getLocation().subtract(look.scale(LOOK_BACK));
             CockpitDisplayBlockEntity panel = CockpitDisplayBlockEntity.touched(server, pos, eye, hit.getLocation());
             if (panel != null && panel.touch(server, eye, hit.getLocation(), serverPlayer)) {
                 level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4F, 1.6F);
