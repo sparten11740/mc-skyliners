@@ -23,6 +23,13 @@ public final class EngineSounds {
     private static final Map<EngineCoreBlockEntity, EngineSound> PLAYING = new WeakHashMap<>();
     /** Below this spool an engine is silent. */
     private static final float AUDIBLE = 0.02F;
+    /**
+     * How loud an engine is, as a share of full: idling, and heard from inside the airliner it is part of, muffled by
+     * the hull. Never above full, which only makes Minecraft cut it off there: how far it carries is set with the sound
+     * itself (see tools/generate_resources.mjs).
+     */
+    private static final float IDLE_VOLUME = 0.3F;
+    private static final float ABOARD_VOLUME = 0.35F;
     /** Height in the world above which running engines leave contrails, at any thrust: even idling, they run hot. */
     private static final double CONTRAIL_HEIGHT = 120;
     private static final float CONTRAIL_SPOOL = 0.05F;
@@ -106,8 +113,7 @@ public final class EngineSounds {
         private void update() {
             float spool = engine.spool();
             boolean aboard = SableClient.isAboard(Minecraft.getInstance().player, engine);
-            // Volume above 1 carries further: a jet engine is heard from a long way off.
-            volume = (0.3F + 2.7F * spool) * (aboard ? 0.35F : 1F);
+            volume = Mth.lerp(spool, IDLE_VOLUME, 1F) * (aboard ? ABOARD_VOLUME : 1F);
             pitch = 0.55F + 0.85F * spool;
         }
     }

@@ -506,7 +506,16 @@ function atcLang() {
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
-  const sounds = { engine: { subtitle: `subtitles.${ID}.engine`, sounds: [{ name: `${ID}:engine` }] } };
+  // How far an engine is heard, in blocks: from the flight deck and the far end of the cabin, and out on the ground
+  // round the runway. Minecraft fixes how far a sound carries as it starts, from how loud it is then, and an engine's
+  // sound starts as it begins to spool up, all but silent; so its reach is set here, not by turning it up.
+  const ENGINE_HEARD = 160;
+  const sounds = {
+    engine: {
+      subtitle: `subtitles.${ID}.engine`,
+      sounds: [{ name: `${ID}:engine`, attenuation_distance: ENGINE_HEARD }],
+    },
+  };
   for (const name of Object.keys(VOICE_SUBTITLES)) {
     sounds[name] = heardAboard(name);
   }

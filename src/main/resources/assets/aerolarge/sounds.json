@@ -3,7 +3,8 @@
     "subtitle": "subtitles.aerolarge.engine",
     "sounds": [
       {
-        "name": "aerolarge:engine"
+        "name": "aerolarge:engine",
+        "attenuation_distance": 160
       }
     ]
   },
