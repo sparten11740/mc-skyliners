@@ -3533,36 +3533,46 @@ function wideScreen(name, model) {
   cubes[name] = null;
 }
 
-// The announcement panel: nine parts hung from a ceiling, each a slab of the dark casing as deep as
-// AnnouncementPanelBlock.DEPTH against the top of its block, a tile's dark glass on its underside; its renderer draws
-// the tiles over all of it from part 0. One model for every part and facing, turned with the facing all the same.
-// Only part 0 drops the panel, so the whole panel gives back one.
-{
+// The announcement panel and the flight map (see TiledPanelBlock): nine parts each, a slab of the dark casing as deep
+// as TiledPanelBlock.DEPTH against what they are put up on, hung from a ceiling (the announcement panel only) or on a
+// wall. Their renderers draw over all of the face from part 0: the panel's tiles, the map's page inside a thin bezel,
+// so the panel's face is a tile's dark glass and the map's the casing. One model for each way it can be put up, for
+// every part, turned with the facing. Only part 0 drops it, so a whole one gives back one.
+function tiledPanel(name, face, ceilings) {
   const depth = 4;
-  write(`assets/${ID}/models/block/announcement_panel.json`, boxes(
-    { screen: `${ID}:block/announcement_panel`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
-    [[[0, 16 - depth, 0], [16, 16, 16], { down: "#screen", all: "#casing" }]],
-  ));
-  write(`assets/${ID}/blockstates/announcement_panel.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-      [0, 1, 2, 3, 4, 5, 6, 7, 8].map((part) => [`facing=${facing},part=${part}`, { model: `${ID}:block/announcement_panel`, y }]))),
+  const textures = { screen: face, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` };
+  if (ceilings) {
+    write(`assets/${ID}/models/block/${name}.json`, boxes(textures, [[[0, 16 - depth, 0], [16, 16, 16], { down: "#screen", all: "#casing" }]]));
+  }
+  // On a wall, facing north as its viewer does: against the north side of its block, its face to the south.
+  const wallModel = ceilings ? `${name}_wall` : name;
+  write(`assets/${ID}/models/block/${wallModel}.json`, boxes(textures, [[[0, 0, 0], [16, 16, depth], { south: "#screen", all: "#casing" }]]));
+  const parts = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => parts.flatMap((part) => [
+      ...(ceilings ? [[`facing=${facing},part=${part},wall=false`, { model: `${ID}:block/${name}`, y }]] : []),
+      [`facing=${facing},part=${part}${ceilings ? ",wall=true" : ""}`, { model: `${ID}:block/${wallModel}`, y }],
+    ]))),
   });
-  write(`assets/${ID}/models/item/announcement_panel.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/announcement_panel` } });
-  write(`data/${ID}/loot_table/blocks/announcement_panel.json`, {
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
     pools: [{
       rolls: 1.0,
       bonus_rolls: 0.0,
-      entries: [{ type: "minecraft:item", name: `${ID}:announcement_panel` }],
+      entries: [{ type: "minecraft:item", name: `${ID}:${name}` }],
       conditions: [
-        { condition: "minecraft:block_state_property", block: `${ID}:announcement_panel`, properties: { part: "0" } },
+        { condition: "minecraft:block_state_property", block: `${ID}:${name}`, properties: { part: "0" } },
         { condition: "minecraft:survives_explosion" },
       ],
     }],
-    random_sequence: `${ID}:blocks/announcement_panel`,
+    random_sequence: `${ID}:blocks/${name}`,
   });
-  cubes.announcement_panel = null;
+  cubes[name] = null;
 }
+tiledPanel("announcement_panel", `${ID}:block/announcement_panel`, true);
+write(`assets/${ID}/models/item/announcement_panel.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/announcement_panel` } });
+tiledPanel("flight_map", `${ID}:block/passenger_screen_casing`, false);
+write(`assets/${ID}/models/item/flight_map.json`, { parent: `${ID}:block/flight_map` });
 
 // The autopilot's control head: a module of the centre console with a raised head on it, its top the panel (the AP
 // badge and a row of mode lamps), which in the world its renderer covers with the display of what the autopilot is
@@ -4911,6 +4921,7 @@ shaped("parking_brake", ["S", "R", "P"], { S: "minecraft:lever", R: "minecraft:r
 shaped("flight_display", ["G", "P"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:instrument_panel` }, 1);
 shaped("tail_camera_display", ["GGG", "PSP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, S: "minecraft:spyglass" }, 1);
 shaped("announcement_panel", ["GGG", "PNP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, N: "minecraft:note_block" }, 1);
+shaped("flight_map", ["GGG", "GMG", "PRP"], { G: "minecraft:black_stained_glass_pane", M: "minecraft:map", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 1);
 shaped("landing_gear_tire", ["KKK", "KSK", "KKK"], { K: "minecraft:black_wool", S: "minecraft:iron_ingot" }, 4);
 // Duty free and the paper plane: a counter of glass, emeralds and a chest on white concrete; a sheet of paper folds
 // into a plane; a cap in the shape of a helmet, with a gold badge; a model airliner, its fuselage and wings of airframe
@@ -5222,6 +5233,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.tail_camera_display.standby": "ASSEMBLE TO FLY",
   "screen.aerolarge.tail_camera_display.camera": "CAM %s",
   "block.aerolarge.announcement_panel": "Announcement Panel",
+  "block.aerolarge.flight_map": "Flight Map",
   "message.aerolarge.announcement_panel.unlinked": "This panel is not near an airliner's autopilot.",
   "screen.aerolarge.announcement_panel.welcome": "Welcome",
   "screen.aerolarge.announcement_panel.takeoff": "Take-off",

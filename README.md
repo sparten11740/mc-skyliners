@@ -320,20 +320,28 @@ on with the take-off and landing announcements (which opens the curtains), and o
 so everyone can get up. Announcements never talk over each other: one asked for while another plays waits for it to
 end, and the same one is not made again within twenty seconds, however often the buttons are pressed.
 
-Overhead, hung close under the ceiling over the pilots' seats, is the announcement panel (ahead of them over the
-centre console where the ceiling leaves room, else reaching back behind them), a slim quarter of a block deep: nine tiles, three by three, each making one announcement in the same voice when pressed (use it), for young pilots too, since every
-tile is a big picture first and its name only small under it. Read from the seats, row by row in the order of a flight:
-Welcome (someone waving hello), Take-off (the airliner climbing off a runway; the autopilot's own announcement),
-Seatbelts (a cloud over bumpy air and a buckled belt: bumpy air ahead, seatbelt signs on), Snacks (a cup and a
-cookie: drinks and snacks are coming), Look out (a cabin window onto the sky and mountains), Pool & gym (a basketball
-over the pool: seatbelt signs off, the pool and the gym open), Sleep (the moon and stars: the cabin lights go down to
-their night glow), Landing (the airliner coming down to a runway) and Arrival (a heart over the parked airliner). Where the panel reaches back behind the seats its rows run the other way, so the
-first row, Welcome, Take-off and Seatbelts, hangs right over the seats, within a seated pilot's reach. A
-tile glows in its colour while it can be pressed, lights up and pulses while its announcement plays, blinks while it
-waits for the flight deck to fall quiet, and greys out while another is playing and for twenty seconds after its
-own. An Announcement Panel can be crafted and put up in your own builds too, against the underside of a block, its
-middle tile where you put it and its top row nearest you as you face; it works the nearest airliner's autopilot within
-24 blocks.
+On the flight deck's back wall, left of the door as you face it from the seats, is the announcement panel, a slim
+quarter of a block deep: nine tiles, three by three, each making one announcement in the same voice when pressed (use
+it), for young pilots too, since every tile is a big picture first and its name only small under it. Read row by row
+from the top, in the order of a flight: Welcome (someone waving hello), Take-off (the airliner climbing off a runway;
+the autopilot's own announcement), Seatbelts (a cloud over bumpy air and a buckled belt: bumpy air ahead, seatbelt
+signs on), Snacks (a cup and a cookie: drinks and snacks are coming), Look out (a cabin window onto the sky and
+mountains), Pool & gym (a basketball over the pool: seatbelt signs off, the pool and the gym open), Sleep (the moon and
+stars: the cabin lights go down to their night glow), Landing (the airliner coming down to a runway) and Arrival (a
+heart over the parked airliner). Where the wall leaves it no room, it hangs overhead instead, close under the ceiling
+over the pilots' seats (ahead of them over the centre console where the ceiling leaves room, else reaching back behind
+them, its rows then running the other way, so the first row, Welcome, Take-off and Seatbelts, hangs right over the
+seats, within a seated pilot's reach). A tile glows in its colour while it can be pressed, lights up and pulses while
+its announcement plays, blinks while it waits for the flight deck to fall quiet, and greys out while another is
+playing and for twenty seconds after its own. An Announcement Panel can be crafted and put up in your own builds too,
+on a wall or against the underside of a block, its middle tile where you put it (under a ceiling its top row nearest
+you as you face); it works the nearest airliner's autopilot within 24 blocks.
+
+Right of the door, as big as the announcement panel, is the flight map: the passenger screens' route map (see
+Passenger screens) for good, the route flown since take-off and the airliner on it under a header saying whether it is
+climbing, cruising or descending, and under the map its altitude, its speed over the ground and how far it has flown.
+A Flight Map can be crafted and put up on a wall in your own builds, its middle where you put it; it shows the flight
+of the airliner it is part of, and a welcome page while that stands as blocks.
 
 Air traffic control talks to the airliner over the flight deck's radio, calling it "Aerolarge three eight zero": a
 man's voice, so it is never taken for the flight deck's own, crackling through a VHF radio's hiss and squelch. Set to

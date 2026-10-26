@@ -270,6 +270,7 @@
   "screen.aerolarge.tail_camera_display.standby": "ASSEMBLE TO FLY",
   "screen.aerolarge.tail_camera_display.camera": "CAM %s",
   "block.aerolarge.announcement_panel": "Announcement Panel",
+  "block.aerolarge.flight_map": "Flight Map",
   "message.aerolarge.announcement_panel.unlinked": "This panel is not near an airliner's autopilot.",
   "screen.aerolarge.announcement_panel.welcome": "Welcome",
   "screen.aerolarge.announcement_panel.takeoff": "Take-off",

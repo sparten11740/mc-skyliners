@@ -66,6 +66,8 @@ import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.block.FlightMapBlock;
+import dev.aerolarge.block.FlightMapBlockEntity;
 import dev.aerolarge.block.FlightStripBoardBlock;
 import dev.aerolarge.block.FlightStripBoardBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
@@ -628,12 +630,18 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TailCameraDisplayBlockEntity>> TAIL_CAMERA_DISPLAY_ENTITY =
         BLOCK_ENTITIES.register("tail_camera_display", () -> BlockEntityType.Builder.of(TailCameraDisplayBlockEntity::new, TAIL_CAMERA_DISPLAY.get()).build(null));
-    /** The overhead panel of picture tiles over the centre console, each making one cabin announcement. */
+    /** The panel of picture tiles on the flight deck, each making one cabin announcement. */
     public static final DeferredBlock<AnnouncementPanelBlock> ANNOUNCEMENT_PANEL = BLOCKS.registerBlock(
         "announcement_panel", AnnouncementPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AnnouncementPanelBlockEntity>> ANNOUNCEMENT_PANEL_ENTITY =
         BLOCK_ENTITIES.register("announcement_panel", () -> BlockEntityType.Builder.of(AnnouncementPanelBlockEntity::new, ANNOUNCEMENT_PANEL.get()).build(null));
+    /** The big route map on the flight deck's back wall, as big as the announcement panel. */
+    public static final DeferredBlock<FlightMapBlock> FLIGHT_MAP = BLOCKS.registerBlock(
+        "flight_map", FlightMapBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> 7)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlightMapBlockEntity>> FLIGHT_MAP_ENTITY =
+        BLOCK_ENTITIES.register("flight_map", () -> BlockEntityType.Builder.of(FlightMapBlockEntity::new, FLIGHT_MAP.get()).build(null));
     public static final DeferredBlock<EngineCoreBlock> ENGINE_CORE = BLOCKS.registerBlock("engine_core", EngineCoreBlock::new, metal(MapColor.SNOW));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EngineCoreBlockEntity>> ENGINE_CORE_ENTITY =
         BLOCK_ENTITIES.register("engine_core", () -> BlockEntityType.Builder.of(EngineCoreBlockEntity::new, ENGINE_CORE.get()).build(null));
@@ -661,6 +669,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> FLIGHT_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(FLIGHT_DISPLAY);
     public static final DeferredItem<BlockItem> TAIL_CAMERA_DISPLAY_ITEM = ITEMS.registerSimpleBlockItem(TAIL_CAMERA_DISPLAY);
     public static final DeferredItem<BlockItem> ANNOUNCEMENT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(ANNOUNCEMENT_PANEL);
+    public static final DeferredItem<BlockItem> FLIGHT_MAP_ITEM = ITEMS.registerSimpleBlockItem(FLIGHT_MAP);
     public static final DeferredItem<BlockItem> TILLER_ITEM = ITEMS.registerSimpleBlockItem(TILLER);
     public static final DeferredItem<BlockItem> PARKING_BRAKE_ITEM = ITEMS.registerSimpleBlockItem(PARKING_BRAKE);
     public static final DeferredItem<BlockItem> GEAR_LEVER_ITEM = ITEMS.registerSimpleBlockItem(GEAR_LEVER);
@@ -1445,7 +1454,7 @@ public final class AerolargeRegistry {
         new TabSection("flight_deck", List.of(
             PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, LASER_SWITCH_ITEM, LASER_TURRET_ITEM, FLIGHT_DISPLAY_ITEM,
-            TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
+            TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, FLIGHT_MAP_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM
         )),
         new TabSection("cabin", List.of(

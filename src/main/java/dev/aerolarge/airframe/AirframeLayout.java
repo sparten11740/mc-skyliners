@@ -33,6 +33,7 @@ import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
+import dev.aerolarge.block.FlightMapBlock;
 import dev.aerolarge.block.GearBayBlock;
 import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.block.GearLeverBlockEntity;
@@ -58,6 +59,7 @@ import dev.aerolarge.block.SurfacePanelBlock;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.ThrustLeverBlock;
 import dev.aerolarge.block.ThrustLeverBlockEntity;
+import dev.aerolarge.block.TiledPanelBlock;
 import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.TransponderBlockEntity;
 import dev.aerolarge.radar.MarkerColour;
@@ -214,6 +216,11 @@ public final class AirframeLayout {
     private static final int ANNOUNCEMENT_PANEL_LOW_HEADROOM = 2;
     /** How many rows of open space over the announcement panel, at most, are boxed in up to the crown. */
     private static final int ANNOUNCEMENT_PANEL_MOUNT = 2;
+    /**
+     * How far above the flight deck's floor the announcement panel and the flight map start on the wall beside the
+     * cockpit door, in blocks: their bottom row at a standing pilot's eyes, their top row level with the door's top.
+     */
+    private static final int BULKHEAD_PANEL_RAISE = 1;
     /** How many rows of main deck floor stay clear between the foot of the steps down from the flight deck and the forward doors. */
     private static final int STEPS_CLEARANCE = 1;
     /** How far either side of the middle the steps up to the flight deck reach. */
@@ -1472,7 +1479,8 @@ public final class AirframeLayout {
         }
         int seatZ = screenZ + LEGROOM + 1;
         int bulkhead = Math.min(deckEnd, Math.max(doorStation, seatZ + 3));
-        if (cockpitDoor(deck, bulkhead)) {
+        boolean walled = cockpitDoor(deck, bulkhead);
+        if (walled) {
             new CrewRooms(this, deck, bulkhead + 1, deckEnd).apply();
         }
         if (panelZ < 0) {
@@ -1506,7 +1514,9 @@ public final class AirframeLayout {
         if (!console && !cameraOnScreen(deck + 1, screenZ)) {
             tailCameraDisplay(deck, seatZ - 1);
         }
-        announcementPanel(deck, seatZ, autopilot);
+        if (!walled || !bulkheadPanels(deck, bulkhead, autopilot)) {
+            announcementPanel(deck, seatZ, autopilot);
+        }
         crewLocker(-seatX, deck + 1, seatZ);
         crewLocker(seatX, deck + 1, seatZ);
     }
@@ -1978,6 +1988,56 @@ public final class AirframeLayout {
     }
 
     /**
+     * The announcement panel and the flight map on the flight deck's back wall, the bulkhead at station z, either side
+     * of the cockpit door and facing the pilots: the panel to the left of the door as they face it, the map to the
+     * right, {@link #BULKHEAD_PANEL_RAISE} above the floor; whether both fit, open in front of the bulkhead with its
+     * plain panels behind them, and went up. The panel is linked to the autopilot when the airliner is built.
+     */
+    private boolean bulkheadPanels(int deck, int z, BlockPos autopilot) {
+        int top = deck + BULKHEAD_PANEL_RAISE + TiledPanelBlock.ROWS;
+        // Facing aft, the viewer's left is east: each panel's first column, its part 0's, is its eastmost.
+        int panelLeft = COCKPIT_DOOR_LEFT + CockpitDoorBlock.COLUMNS + TiledPanelBlock.COLUMNS - 1;
+        int mapLeft = COCKPIT_DOOR_LEFT - 1;
+        if (!onBulkhead(panelLeft, top, z) || !onBulkhead(mapLeft, top, z)) {
+            return false;
+        }
+        BlockState panel = AerolargeRegistry.ANNOUNCEMENT_PANEL.get().defaultBlockState().setValue(AnnouncementPanelBlock.FACING, Direction.SOUTH)
+            .setValue(AnnouncementPanelBlock.WALL, true);
+        BlockState map = AerolargeRegistry.FLIGHT_MAP.get().defaultBlockState().setValue(FlightMapBlock.FACING, Direction.SOUTH);
+        for (int part = 0; part < TiledPanelBlock.COLUMNS * TiledPanelBlock.ROWS; part++) {
+            int column = part % TiledPanelBlock.COLUMNS;
+            int y = top - part / TiledPanelBlock.COLUMNS;
+            set(panelLeft - column, y, z - 1, panel.setValue(TiledPanelBlock.PART, part));
+            set(mapLeft - column, y, z - 1, map.setValue(TiledPanelBlock.PART, part));
+        }
+        linkAnnouncementPanel(new BlockPos(panelLeft, top, z - 1), autopilot);
+        return true;
+    }
+
+    /**
+     * Whether a panel facing aft fits on the bulkhead at station z, its top left corner, as its viewer sees it, at x
+     * and y: open in front of the bulkhead, and the bulkhead's plain panels behind all of it.
+     */
+    private boolean onBulkhead(int left, int top, int z) {
+        for (int row = 0; row < TiledPanelBlock.ROWS; row++) {
+            if (!openBeforeBulkhead(left, top - row, z)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a row of a panel facing aft fits on the bulkhead at station z, from its left end at x, as seen. */
+    private boolean openBeforeBulkhead(int left, int y, int z) {
+        for (int column = 0; column < TiledPanelBlock.COLUMNS; column++) {
+            if (!isOpen(left - column, y, z - 1) || !isPlainHull(left - column, y, z)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Hangs the announcement panel at height y over the seats' row, as far forward as it fits with its back row no
      * further behind the seats than the panel is long; whether it did.
      */
@@ -2029,7 +2089,11 @@ public final class AirframeLayout {
         for (int part = 0; part < AnnouncementPanelBlock.COLUMNS * AnnouncementPanelBlock.ROWS; part++) {
             set(left + part % AnnouncementPanelBlock.COLUMNS, y, back - part / AnnouncementPanelBlock.COLUMNS, panel.setValue(AnnouncementPanelBlock.PART, part));
         }
-        BlockPos origin = new BlockPos(left, y, back);
+        linkAnnouncementPanel(new BlockPos(left, y, back), autopilot);
+    }
+
+    /** Links the announcement panel held at origin to the autopilot when the airliner is built. */
+    private void linkAnnouncementPanel(BlockPos origin, BlockPos autopilot) {
         fittings.put(origin, (blockEntity, rotation) -> {
             if (blockEntity instanceof AnnouncementPanelBlockEntity linked) {
                 linked.configure(autopilot.subtract(origin).rotate(rotation));

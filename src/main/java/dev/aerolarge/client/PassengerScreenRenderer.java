@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector2d;
@@ -32,10 +34,11 @@ import org.joml.Vector3d;
  * is above the ground and how far it has flown since it took off, and along the bottom the time in the air and that
  * using the screen shows the outside cameras (see {@link PassengerCameras}). Every ten seconds the page gives way to
  * the route map for as long (see {@link RouteMap}): the land below, the villages and the route flown since take-off,
- * the airliner on it, under the same header. The figures are read from the airliner
- * each tick as the client has it, and the page's text is laid out from them once a tick for all the airliner's
- * screens, which share one log of its flight (see {@link Trip}). On an airliner that is not assembled it shows a
- * standby page.
+ * the airliner on it, under the same header. The flight deck's flight map shows that map for good, big, on a square
+ * page of its own laid out here too (see {@link #drawFlightMap}), with three of the figures under it. The figures are
+ * read from the airliner each tick as the client has it, and the page's text is laid out from them once a tick for all
+ * the airliner's screens, which share one log of its flight (see {@link Trip}). On an airliner that is not assembled
+ * it shows a standby page.
  *
  * <p>A screen is only drawn with the camera in front of it, as its face is drawn from the front only, and no further
  * off than the game draws any block entity, past which its block's miniature of the page stands in. Its text fades
@@ -119,11 +122,25 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
 
     private static final Tile[] TILES = tiles();
 
-    /** Each assembled airliner's flight, as all its screens show it; forgotten a while after nothing asks after it. */
-    private final Map<UUID, Flight> flights = new HashMap<>();
+    /**
+     * The flight map's square page, in a screen's units round its middle: as wide as a screen's lit face, and as
+     * tall. The route map runs under its header as wide as the page, as tall as the map's own shape, and a row of
+     * tiles under it shows three of the six figures: the altitude, the speed over the ground and the distance flown.
+     */
+    static final double FLIGHT_MAP_WIDTH = 2 * HALF_WIDTH;
+    private static final double FLIGHT_MAP_TOP = HALF_WIDTH - HEADER - STRIPE;
+    private static final double FLIGHT_MAP_BOTTOM = FLIGHT_MAP_TOP - FLIGHT_MAP_WIDTH * RouteMap.HEIGHT / RouteMap.WIDTH;
+    private static final int[] FLIGHT_MAP_READINGS = {0, 1, 5};
+    private static final Tile[] FLIGHT_MAP_TILES = flightMapTiles();
+
+    /**
+     * Each assembled airliner's flight, as all its screens and its flight map show it; forgotten a while after nothing
+     * asks after it.
+     */
+    private static final Map<UUID, Flight> FLIGHTS = new HashMap<>();
     /** The standby page's text, and the game time it was laid out at. */
-    private List<ScreenDrawing.Label> standby = List.of();
-    private long standbyLaidOut = Long.MIN_VALUE;
+    private static List<ScreenDrawing.Label> standby = List.of();
+    private static long standbyLaidOut = Long.MIN_VALUE;
 
     /** A rectangle on the screen. */
     private record Tile(double x0, double y0, double x1, double y1) {
@@ -165,50 +182,74 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         long now = level.getGameTime();
         boolean map = flight != null && now / PAGE_TICKS % 2 == 1;
         if (map) {
-            header(shapes, matrix);
+            header(shapes, matrix, HALF_HEIGHT);
             // After the shapes, which fetching the map's own buffer ends.
             flight.map(level, now).draw(buffers, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT - HEADER - STRIPE, LAYER);
         } else if (flight != null) {
             panels(shapes, matrix);
         }
-        // The text over it all, as clear as it can still be made out from here.
-        float strength = Math.clamp((Sight.pixels(pose.last(), DIGIT * FIGURE) - GONE) / (SHARP - GONE), 0F, 1F);
-        if (strength >= FAINTEST) {
-            Font font = Minecraft.getInstance().font;
-            int alpha = Math.round(255 * strength);
-            List<ScreenDrawing.Label> text = flight == null ? standby(font, now) : map ? flight.mapPage(font, now) : flight.page(font, now);
-            for (ScreenDrawing.Label label : text) {
-                label.draw(font, pose, buffers, TEXT_LIFT, alpha);
-            }
-        }
+        text(pose, buffers, font -> flight == null ? standby(font, now) : map ? flight.mapPage(font, now) : flight.page(font, now));
         pose.popPose();
     }
 
     /**
-     * The flight of the assembled airliner the screen is part of, followed up to this tick; null while the screen
-     * stands among blocks that are not assembled.
+     * The flight map's page (see {@link FlightMapRenderer}), square round the middle of the pose, {@link
+     * #FLIGHT_MAP_WIDTH} wide and tall: the header, the route map under it and three figures under that, in a screen's
+     * colours; the standby page while the airliner is not assembled.
+     */
+    static void drawFlightMap(@Nullable Flight flight, Level level, PoseStack pose, MultiBufferSource buffers) {
+        Matrix4f matrix = pose.last().pose();
+        VertexConsumer shapes = ScreenDrawing.shapes(buffers);
+        ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_WIDTH, HALF_WIDTH, HALF_WIDTH, 0, BACKGROUND);
+        long now = level.getGameTime();
+        if (flight != null) {
+            header(shapes, matrix, HALF_WIDTH);
+            for (Tile tile : FLIGHT_MAP_TILES) {
+                ScreenDrawing.rect(shapes, matrix, tile.x0(), tile.y0(), tile.x1(), tile.y1(), LAYER, TILE);
+            }
+            flight.map(level, now).draw(buffers, matrix, -HALF_WIDTH, FLIGHT_MAP_BOTTOM, HALF_WIDTH, FLIGHT_MAP_TOP, LAYER);
+        }
+        text(pose, buffers, font -> flight == null ? standby(font, now) : flight.flightMapPage(font, now));
+    }
+
+    /** The text over it all, as clear as it can still be made out from here: none once it is too small to read. */
+    private static void text(PoseStack pose, MultiBufferSource buffers, Function<Font, List<ScreenDrawing.Label>> layout) {
+        float strength = Math.clamp((Sight.pixels(pose.last(), DIGIT * FIGURE) - GONE) / (SHARP - GONE), 0F, 1F);
+        if (strength < FAINTEST) {
+            return;
+        }
+        Font font = Minecraft.getInstance().font;
+        int alpha = Math.round(255 * strength);
+        for (ScreenDrawing.Label label : layout.apply(font)) {
+            label.draw(font, pose, buffers, TEXT_LIFT, alpha);
+        }
+    }
+
+    /**
+     * The flight of the assembled airliner a screen (or the flight map) is part of, followed up to this tick; null
+     * while it stands among blocks that are not assembled.
      */
     @Nullable
-    private Flight follow(PassengerScreenBlockEntity screen) {
+    static Flight follow(BlockEntity screen) {
         Level level = screen.getLevel();
         UUID airliner = level != null ? SableClient.airliner(screen) : null;
         if (airliner == null) {
             return null;
         }
         long now = level.getGameTime();
-        Flight flight = flights.get(airliner);
+        Flight flight = FLIGHTS.get(airliner);
         if (flight == null) {
             forgetOld(now);
             flight = new Flight(airliner, now);
-            flights.put(airliner, flight);
+            FLIGHTS.put(airliner, flight);
         }
         flight.follow(screen, now);
         return flight;
     }
 
     /** Forgets the flights nothing has asked after for a long while, letting go of their maps. */
-    private void forgetOld(long now) {
-        Iterator<Flight> each = flights.values().iterator();
+    private static void forgetOld(long now) {
+        Iterator<Flight> each = FLIGHTS.values().iterator();
         while (each.hasNext()) {
             Flight old = each.next();
             if (old.forgotten(now)) {
@@ -219,7 +260,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
     }
 
     /** The standby page's text, laid out once a tick. */
-    private List<ScreenDrawing.Label> standby(Font font, long now) {
+    private static List<ScreenDrawing.Label> standby(Font font, long now) {
         if (standbyLaidOut != now) {
             standbyLaidOut = now;
             standby = List.of(
@@ -229,25 +270,25 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         return standby;
     }
 
-    /** The header band along the top, and the stripe under it, of both pages. */
-    private static void header(VertexConsumer shapes, Matrix4f matrix) {
-        ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER, HALF_WIDTH, HALF_HEIGHT, LAYER, BAND);
-        ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, HALF_HEIGHT - HEADER - STRIPE, HALF_WIDTH, HALF_HEIGHT - HEADER, LAYER, ACCENT);
+    /** The header band along the top of a page, its top edge this high, and the stripe under it. */
+    private static void header(VertexConsumer shapes, Matrix4f matrix, double top) {
+        ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, top - HEADER, HALF_WIDTH, top, LAYER, BAND);
+        ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, top - HEADER - STRIPE, HALF_WIDTH, top - HEADER, LAYER, ACCENT);
     }
 
     /** The page of flight information's bands and tiles, under its text. */
     private static void panels(VertexConsumer shapes, Matrix4f matrix) {
-        header(shapes, matrix);
+        header(shapes, matrix, HALF_HEIGHT);
         ScreenDrawing.rect(shapes, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, -HALF_HEIGHT + FOOTER, LAYER, BAND);
         for (Tile tile : TILES) {
             ScreenDrawing.rect(shapes, matrix, tile.x0(), tile.y0(), tile.x1(), tile.y1(), LAYER, TILE);
         }
     }
 
-    /** The header's text, on both pages: the page's title, and what the airliner is doing. */
-    private static List<ScreenDrawing.Label> header(Font font, String title, String status) {
+    /** The header's text, on every page, its top edge this high: the page's title, and what the airliner is doing. */
+    private static List<ScreenDrawing.Label> header(Font font, String title, String status, double top) {
         List<ScreenDrawing.Label> text = new ArrayList<>();
-        double header = HALF_HEIGHT - HEADER / 2;
+        double header = top - HEADER / 2;
         text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + title), -HALF_WIDTH + MARGIN, header, TITLE, WHITE, ScreenDrawing.Align.LEFT));
         text.add(ScreenDrawing.Label.of(font, Component.translatable(KEY + "status." + status), HALF_WIDTH - MARGIN, header, TITLE, ACCENT,
             ScreenDrawing.Align.RIGHT));
@@ -256,7 +297,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
 
     /** The page of flight information's text: the header, a reading in each tile and the footer. */
     private static List<ScreenDrawing.Label> flightInfo(Font font, Reading[] readings, String status, long flightTicks) {
-        List<ScreenDrawing.Label> text = header(font, "title", status);
+        List<ScreenDrawing.Label> text = header(font, "title", status, HALF_HEIGHT);
         for (int i = 0; i < TILES.length; i++) {
             reading(font, text, TILES[i], readings[i]);
         }
@@ -336,11 +377,24 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         return tiles;
     }
 
+    /** The flight map's row of tiles, across its page under the route map, down to the page's bottom margin. */
+    private static Tile[] flightMapTiles() {
+        double top = FLIGHT_MAP_BOTTOM - MARGIN;
+        double bottom = -HALF_WIDTH + MARGIN;
+        double width = (FLIGHT_MAP_WIDTH - (FLIGHT_MAP_READINGS.length + 1) * MARGIN) / FLIGHT_MAP_READINGS.length;
+        Tile[] tiles = new Tile[FLIGHT_MAP_READINGS.length];
+        for (int column = 0; column < tiles.length; column++) {
+            double x0 = -HALF_WIDTH + MARGIN + column * (width + MARGIN);
+            tiles[column] = new Tile(x0, bottom, x0 + width, top);
+        }
+        return tiles;
+    }
+
     /**
      * An assembled airliner as its screens show it: its flight, followed once a tick however many screens ask, as the
      * airliner was that tick, and the page's text, laid out from them once a tick for whichever screens are drawn.
      */
-    private static final class Flight implements AutoCloseable {
+    static final class Flight implements AutoCloseable {
         private final UUID airliner;
         private final Trip trip = new Trip();
         @Nullable
@@ -351,6 +405,9 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         /** The route map page's text, and the game time it was laid out at. */
         private List<ScreenDrawing.Label> mapPage = List.of();
         private long mapLaidOut = Long.MIN_VALUE;
+        /** The flight map page's text, and the game time it was laid out at. */
+        private List<ScreenDrawing.Label> flightMapPage = List.of();
+        private long flightMapLaidOut = Long.MIN_VALUE;
         /** The game times something last asked after it, it was last followed and its page last laid out at. */
         private long asked;
         private long followed = Long.MIN_VALUE;
@@ -362,7 +419,7 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
             asked = now;
         }
 
-        void follow(PassengerScreenBlockEntity screen, long now) {
+        void follow(BlockEntity screen, long now) {
             asked = now;
             if (now == followed) {
                 return;
@@ -401,9 +458,22 @@ public class PassengerScreenRenderer implements BlockEntityRenderer<PassengerScr
         List<ScreenDrawing.Label> mapPage(Font font, long now) {
             if (mapLaidOut != now && ride != null) {
                 mapLaidOut = now;
-                mapPage = header(font, "map_title", trip.status(ride));
+                mapPage = header(font, "map_title", trip.status(ride), HALF_HEIGHT);
             }
             return mapPage;
+        }
+
+        /** The flight map page's text: its header, and three of the figures under the map. */
+        List<ScreenDrawing.Label> flightMapPage(Font font, long now) {
+            if (flightMapLaidOut != now && ride != null) {
+                flightMapLaidOut = now;
+                flightMapPage = header(font, "map_title", trip.status(ride), HALF_WIDTH);
+                Reading[] readings = readings(ride, trip);
+                for (int i = 0; i < FLIGHT_MAP_TILES.length; i++) {
+                    reading(font, flightMapPage, FLIGHT_MAP_TILES[i], readings[FLIGHT_MAP_READINGS[i]]);
+                }
+            }
+            return flightMapPage;
         }
 
         /** The route map, drawn again as it falls due. */

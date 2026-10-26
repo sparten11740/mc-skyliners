@@ -21,15 +21,17 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * Draws the announcement panel over the whole of its face, the underside of its blocks, from the block that holds it:
+ * Draws the announcement panel over the whole of its face, the front of its blocks on a wall or their underside under
+ * a ceiling, from the block that holds it:
  * a tile in each block, dark glass in a rim of the tile's own colour, its picture big in the middle and its name small
  * under it, the pictures saying it all for those who cannot read yet. A tile shows where its announcement stands (see
  * {@link Announcement.Standing}): ready, it glows in its colour; being made, it lights up in its colour, pulsing; waiting
  * its turn, its rim blinks; hushed while another is made, or resting after it was, it greys out. The face reads from
- * the top, the row nearest whoever looks up at it, as they face. It is only drawn with the camera under it.
+ * the top: on a wall its top row, under a ceiling the row nearest whoever looks up at it, as they face. It is only
+ * drawn with the camera in front of it.
  */
 public class AnnouncementPanelRenderer implements BlockEntityRenderer<AnnouncementPanelBlockEntity> {
-    /** Where the face is, from the middle of the block down: the panel's underside, the drawing lifted just off it. */
+    /** Where the face is, from the middle of the block the way it looks: the panel's front, the drawing just off it. */
     private static final float FACE = AnnouncementPanelBlock.DEPTH / 16F - 0.5F + 0.002F;
     private static final float LAYER = 0.002F;
     private static final float TEXT_LIFT = 0.01F;
@@ -74,25 +76,27 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
     @Override
     public boolean shouldRender(AnnouncementPanelBlockEntity panel, Vec3 camera) {
         return BlockEntityRenderer.super.shouldRender(panel, camera)
-            && Sight.facing(panel.getBlockPos(), Direction.DOWN, FACE, camera, getViewDistance());
+            && Sight.facing(panel.getBlockPos(), AnnouncementPanelBlock.face(panel.getBlockState()), FACE, camera, getViewDistance());
     }
 
     @Override
     public void render(AnnouncementPanelBlockEntity panel, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        Direction facing = panel.getBlockState().getValue(AnnouncementPanelBlock.FACING);
+        BlockState state = panel.getBlockState();
+        Direction facing = state.getValue(AnnouncementPanelBlock.FACING);
         pose.pushPose();
-        // Onto the face, x to the viewer's right and y toward them, the top of the face as they look up at it, from
-        // the top left corner of the whole panel: a screen facing them, then laid face down.
+        // Onto the face, x to the viewer's right and y to the top of the face as they see it, from the top left corner
+        // of the whole panel: a screen facing them, upright on a wall, laid face down under a ceiling.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-facing.getOpposite().toYRot()));
-        pose.mulPose(Axis.XP.rotationDegrees(90));
+        if (!state.getValue(AnnouncementPanelBlock.WALL)) {
+            pose.mulPose(Axis.XP.rotationDegrees(90));
+        }
         pose.translate(-0.5, 0.5, FACE);
         Matrix4f matrix = pose.last().pose();
 
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(fill, matrix, 0, -AnnouncementPanelBlock.ROWS, AnnouncementPanelBlock.COLUMNS, 0, 0, CASING);
         Announcement[] announcements = Announcement.values();
-        BlockState state = panel.getBlockState();
         for (Announcement announcement : announcements) {
             tile(fill, matrix, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
         }

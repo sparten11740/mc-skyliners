@@ -34,6 +34,7 @@ import dev.aerolarge.client.EngineRenderer;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
+import dev.aerolarge.client.FlightMapRenderer;
 import dev.aerolarge.client.FlightStripBoardRenderer;
 import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmetVisor;
@@ -200,6 +201,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ANNOUNCEMENT_PANEL_ENTITY.get(), context -> new AnnouncementPanelRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.FLIGHT_MAP_ENTITY.get(), context -> new FlightMapRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PLUG_DOOR_ENTITY.get(), context -> new PlugDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DOOR_ENTITY.get(), context -> new CockpitDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), context -> new AirstairRenderer());
