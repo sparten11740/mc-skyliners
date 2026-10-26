@@ -134,6 +134,21 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         return !standing() && served() != null;
     }
 
+    /**
+     * Whether the stairs are out or coming out. The new ones answer from where they are themselves: the old ones'
+     * record of coming out stays as they were built, out, however often the new ones have folded since.
+     */
+    @Override
+    protected boolean unfolding() {
+        return integral() ? deploying : super.unfolding();
+    }
+
+    /** Whether the stairs are all folded away and staying that way: the new ones in their bay, its hatch shut. */
+    @Override
+    protected boolean folded() {
+        return integral() ? !deploying && ticks == 0 && !hatchOpen : super.folded();
+    }
+
     /** The served door's bottom left part, where it is; null when the controller serves no plug door. */
     @Nullable
     public BlockPos served() {
