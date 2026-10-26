@@ -240,12 +240,13 @@ were, tires and all.
 The gear never goes up while the airliner stands on its wheels: the lever bumps back down with a buzz and the lamps
 flash red. Coming down near the ground with the gear not down (sinking, its wheels less than 30 blocks above the
 ground), the gear horn beeps on the flight deck and the lamps flash red; nothing stops a pilot landing on the belly,
-though, and the airliner slides to a stop on it. Thrown down then, the legs swing down and wait until there is room
-under them: lift the airliner off the ground (Unstuck does, see Autopilot) and they lock down. The autopilot works the
-gear by itself (see Autopilot). A Landing Gear Lever (a tire on a lever on an airframe panel) and a Landing Gear Bay
-can be crafted, but only an airliner built with retractable gear has its legs wired to them. Switch it off with
-`retractableGear` in the server config: an airliner built then keeps its gear down, and one built before can still
-lower its gear but no longer raise it.
+though, and the airliner slides to a stop on it. Lying on its belly, its wheels have no room to come down: the lever
+bumps back up with a buzz and the lamps flash red, and the gear stays up until the airliner is in the air again, where
+it comes down as ever (set to take off, the autopilot waits a few seconds for it, then slides off on its belly). The
+autopilot works the gear by itself (see Autopilot). A Landing Gear Lever (a tire on a lever on an airframe panel) and
+a Landing Gear Bay can be crafted, but only an airliner built with retractable gear has its legs wired to them. Switch
+it off with `retractableGear` in the server config: an airliner built then keeps its gear down, and one built before
+can still lower its gear but no longer raise it.
 
 ### Laser path clearer
 

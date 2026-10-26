@@ -672,6 +672,7 @@ function gearLang() {
     "message.aerolarge.gear.down": "Gear down",
     "message.aerolarge.gear.on_ground": "The gear stays down: the airliner is standing on its wheels",
     "message.aerolarge.gear.fixed": "The gear stays down: retractable gear is switched off on this server",
+    "message.aerolarge.gear.no_room": "The gear stays up: its wheels have no room to come down",
   };
 }
 

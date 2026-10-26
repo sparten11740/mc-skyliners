@@ -150,6 +150,14 @@ public class GearBayBlockEntity extends BlockEntity {
         return true;
     }
 
+    /**
+     * Whether the leg may come down: it is down or on its way already, or its wheels would have room under them. Lying
+     * on its belly, or too low over the ground, the airliner leaves its gear up.
+     */
+    public boolean roomToLower(Level level) {
+        return motion == Motion.DOWN || motion == Motion.LOWERING || wheelsAboveGround(level) >= ROOM_BELOW;
+    }
+
     /** Whether the airliner stands on this leg's wheels, so it may not go up. */
     public boolean bearsWeight(Level level) {
         return motion == Motion.DOWN && wheelsAboveGround(level) < ON_GROUND;

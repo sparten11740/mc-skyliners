@@ -78,9 +78,17 @@ public class GearLeverBlockEntity extends BlockEntity {
         return legs(level).stream().mapToDouble(bay -> bay.wheelsAboveGround(level)).min().orElse(Double.MAX_VALUE);
     }
 
-    /** Throws the lever down, if it is not, and the legs follow. */
-    public void lower(ServerLevel level) {
+    /**
+     * Throws the lever down, if it is not, and the legs follow. False, the lever left up, while any leg's wheels have
+     * no room to come down (see {@link GearBayBlockEntity#roomToLower}): an airliner landed on its belly keeps its gear
+     * up until it is in the air again.
+     */
+    public boolean lower(ServerLevel level) {
+        if (legs(level).stream().anyMatch(bay -> !bay.roomToLower(level))) {
+            return false;
+        }
         throwTo(level, true);
+        return true;
     }
 
     /**
@@ -97,21 +105,26 @@ public class GearLeverBlockEntity extends BlockEntity {
 
     /**
      * Used by a pilot: thrown the other way; or, held down by the airliner's weight or with retractable gear switched
-     * off, a buzz and a red flash, and why.
+     * off, or held up with no room under the wheels, a buzz and a red flash, and why.
      */
     void pull(ServerLevel level, Player player) {
-        if (!down()) {
-            lower(level);
-            player.displayClientMessage(Component.translatable("message.aerolarge.gear.down"), true);
-        } else if (raise(level)) {
-            player.displayClientMessage(Component.translatable("message.aerolarge.gear.up"), true);
-        } else {
-            refused = REFUSED_TICKS;
-            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
-            light(level, GearLeverBlock.Lamps.RED);
-            String why = AerolargeConfig.RETRACTABLE_GEAR.get() ? "on_ground" : "fixed";
-            player.displayClientMessage(Component.translatable("message.aerolarge.gear." + why), true);
+        boolean lowering = !down();
+        if (lowering ? lower(level) : raise(level)) {
+            player.displayClientMessage(Component.translatable("message.aerolarge.gear." + (lowering ? "down" : "up")), true);
+            return;
         }
+        refused = REFUSED_TICKS;
+        level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
+        light(level, GearLeverBlock.Lamps.RED);
+        player.displayClientMessage(Component.translatable("message.aerolarge.gear." + refusal(lowering)), true);
+    }
+
+    /** Why the lever would not go: no room under the wheels, the weight on them, or the gear fixed down. */
+    private static String refusal(boolean lowering) {
+        if (lowering) {
+            return "no_room";
+        }
+        return AerolargeConfig.RETRACTABLE_GEAR.get() ? "on_ground" : "fixed";
     }
 
     private void throwTo(ServerLevel level, boolean down) {

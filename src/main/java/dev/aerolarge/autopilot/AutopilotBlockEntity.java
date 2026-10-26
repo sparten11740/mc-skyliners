@@ -1761,8 +1761,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Set to take off with the gear not down (come down on its belly, say): it throws the lever down and holds the
-     * brakes until the gear is down and locked, or it has waited {@link #GEAR_WAIT} ticks.
+     * Set to take off with the gear not down: it throws the lever down and holds the brakes until the gear is down and
+     * locked, or it has waited {@link #GEAR_WAIT} ticks. Come down on its belly, the gear has no room to come down, so
+     * it waits that long and slides off on its belly, the gear coming down in the air when it next lands.
      */
     private boolean waitingForGear(ServerLevel level) {
         GearLeverBlockEntity gear = gear(level);
