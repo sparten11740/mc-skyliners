@@ -274,18 +274,17 @@ fires. A Laser Switch and a Laser Turret can be crafted, but only an airliner bu
 
 ### Self-destruct
 
-On the flight deck's back wall at a standing pilot's eyes, left of the door as you face it from the seats, past the
-announcement panel where that hangs on the wall (or right of the door, past the flight map, where the left has no
-room), is the self-destruct button: a big red button on a plate in a yellow-and-black hazard border, under a clear lid
-in a striped frame. It takes three presses on purpose to set off. Use it once and the lid flips up with a clack. Use
-it again and it arms: the button lights up and flashes red, faster and faster, the alarm's siren wails for everyone
-aboard wherever they are, a beep sounds every second, rising in pitch and twice a second over the last three, and on
-everyone's screen the edges pulse red and a picture of the button stands over a row of ten red lamps, one going out
-each second, the last one lit blinking. Press it a third time within those ten seconds and the airliner blows up. Left
-alone, it disarms by itself when the time is up, with a falling hum, its lid still up; sneak and use it (with an empty
-hand) to snap the lid shut and disarm it at once. Holding the use key down, or pressing twice in quick succession,
-never gets it past a step: each press has to be its own, and it waits a second after arming before a press sets it
-off.
+On the flight deck's side wall at a standing pilot's eyes, just left of the announcement panel as you face it from the
+seats (on the other side wall where that has no room, and failing both on the back wall beside the door), is the
+self-destruct button: a big red button on a plate in a yellow-and-black hazard border, under a clear lid in a striped
+frame. It takes three presses on purpose to set off. Use it once and the lid flips up with a clack. Use it again and
+it arms: the button lights up and flashes red, faster and faster, the alarm's siren wails for everyone aboard wherever
+they are, a beep sounds every second, rising in pitch and twice a second over the last three, and on everyone's screen
+the edges pulse red and a picture of the button stands over a row of ten red lamps, one going out each second, the
+last one lit blinking. Press it a third time within those ten seconds and the airliner blows up. Left alone, it
+disarms by itself when the time is up, with a falling hum, its lid still up; sneak and use it (with an empty hand) to
+snap the lid shut and disarm it at once. Holding the use key down, or pressing twice in quick succession, never gets
+it past a step: each press has to be its own, and it waits a second after arming before a press sets it off.
 
 As it blows up, everyone aboard puts on a parachute (whatever they wore on their chest goes into their inventory) and
 is got out of their seat, and the airliner is gone, every block of it at once, with everything loose or stored aboard
@@ -300,11 +299,13 @@ itself as soon as they fall free, and they float down under it, steering it the 
 to open does not hurt either. A villager passenger or a pet aboard floats down slowly. Nothing round the airliner is
 touched: the explosion breaks no blocks, sets nothing alight and hurts nobody.
 
-The button only works on an assembled airliner of this mod's, built from its blueprint, and only blows up the airliner
-it is part of, never another mod's vehicle, even with an autopilot put aboard by hand; anywhere else, arming it only
-gives a dull thud. Turn it off with `selfDestruct` in the server config: the button then only thuds, and airliners
-built while it is off have none. A Self-Destruct Button can be crafted and put up on a wall of an airliner in your own
-builds, facing you; it works the airliner of the nearest autopilot within 24 blocks, once that airliner is assembled.
+The button only works on an airliner of this mod's, built from its blueprint, and only blows up the airliner it is
+part of, never another mod's vehicle, even with an autopilot put aboard by hand; anywhere else, arming it only gives a
+dull thud. Armed on an airliner still standing parked as blocks, it first has its Physics Assembler put it together,
+as Take Off does, with a hum, and arms a moment later, once it has. Turn it off with `selfDestruct` in the server
+config: the button then only thuds, and airliners built while it is off have none. A Self-Destruct Button can be
+crafted and put up on a wall of an airliner in your own builds, facing you; it works the airliner of the nearest
+autopilot within 24 blocks, once that airliner is assembled.
 
 ### The upper deck
 
@@ -383,7 +384,7 @@ climbing, cruising or descending, and under the map its altitude, its speed over
 A Flight Map can be crafted and put up on a wall in your own builds, its middle where you put it; it shows the flight
 of the airliner it is part of, and a welcome page while that stands as blocks.
 
-Past the announcement panel, at the end of the wall, is the self-destruct button (see Self-destruct).
+On the side wall beside the announcement panel is the self-destruct button (see Self-destruct).
 
 Air traffic control talks to the airliner over the flight deck's radio, calling it "Aerolarge three eight zero": a
 man's voice, so it is never taken for the flight deck's own, crackling through a VHF radio's hiss and squelch. Set to

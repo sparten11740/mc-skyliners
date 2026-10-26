@@ -2063,30 +2063,69 @@ public final class AirframeLayout {
     }
 
     /**
-     * The self-destruct button on the flight deck's back wall, the bulkhead at station z, facing the pilots,
-     * {@link #SELF_DESTRUCT_RAISE} above the floor: on the first officer's side of the cockpit door, beyond the
-     * announcement panel where that is on the wall, or failing that on the captain's side, beyond the flight map. There
-     * it is out of the way, behind the seats and clear of the door and of everything the pilots use in flight, yet a
-     * few steps from either seat. Nothing where no plain panel of the wall is open in front at that height. Linked to
-     * the autopilot when the airliner is built.
+     * The self-destruct button on one of the flight deck's side walls, {@link #SELF_DESTRUCT_RAISE} above the floor,
+     * just in front of the bulkhead at station z and facing in: on the first officer's side, left of the announcement
+     * panel as the pilots face it from the seats, or failing that on the captain's side; and where neither side wall
+     * has room, on the back wall beside the cockpit door, facing the pilots. There it is out of the way, behind the
+     * seats and clear of the door and of everything the pilots use in flight, yet a few steps from either seat. Nothing
+     * where no plain panel of a wall is open in front at that height. Linked to the autopilot when the airliner is
+     * built.
      */
     private void selfDestructButton(int deck, int z, BlockPos autopilot) {
         int y = deck + 1 + SELF_DESTRUCT_RAISE;
+        for (int side : new int[]{1, -1}) {
+            BlockPos at = onSideWall(y, z, side);
+            if (at != null) {
+                selfDestructButtonAt(at, side > 0 ? Direction.EAST : Direction.WEST, autopilot);
+                return;
+            }
+        }
         BlockPos at = besideDoor(y, z, 1);
         if (at == null) {
             at = besideDoor(y, z, -1);
         }
-        if (at == null) {
-            return;
+        if (at != null) {
+            selfDestructButtonAt(at, Direction.SOUTH, autopilot);
         }
+    }
+
+    /** Puts the self-destruct button up at the spot, facing the way whoever presses it faces, linked to the autopilot. */
+    private void selfDestructButtonAt(BlockPos at, Direction facing, BlockPos autopilot) {
         set(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.SELF_DESTRUCT_BUTTON.get().defaultBlockState()
-            .setValue(SelfDestructButtonBlock.FACING, Direction.SOUTH));
-        BlockPos button = at;
-        fittings.put(button, (blockEntity, rotation) -> {
+            .setValue(SelfDestructButtonBlock.FACING, facing));
+        fittings.put(at, (blockEntity, rotation) -> {
             if (blockEntity instanceof SelfDestructButtonBlockEntity linked) {
-                linked.configure(autopilot.subtract(button).rotate(rotation));
+                linked.configure(autopilot.subtract(at).rotate(rotation));
             }
         });
+    }
+
+    /**
+     * A spot on the flight deck's side wall to one side (1 to starboard, -1 to port) at height y, a row or two in front
+     * of the bulkhead at station z, out of the corner where the back wall's panels hang: open, with a plain panel of
+     * the hull beside it; null for none.
+     */
+    @Nullable
+    private BlockPos onSideWall(int y, int z, int side) {
+        int hull = (int) Math.ceil(WIDTH / 2 * scale) + 1;
+        for (int row : new int[]{z - 2, z - 3}) {
+            BlockPos spot = againstSide(y, row, side, hull);
+            if (spot != null) {
+                return spot;
+            }
+        }
+        return null;
+    }
+
+    /** The last open spot going out to one side across a row at height y, with a plain panel of the hull beyond it. */
+    @Nullable
+    private BlockPos againstSide(int y, int row, int side, int hull) {
+        for (int x = side; Math.abs(x) < hull && isOpen(x, y, row); x += side) {
+            if (isPlainHull(x + side, y, row)) {
+                return new BlockPos(x, y, row);
+            }
+        }
+        return null;
     }
 
     /**

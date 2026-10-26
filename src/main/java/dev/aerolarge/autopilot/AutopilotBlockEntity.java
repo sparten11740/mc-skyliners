@@ -848,6 +848,19 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Component.translatable("message.aerolarge.autopilot.assembly_failed", failed);
     }
 
+    /**
+     * Assembles the airliner standing parked as blocks with its Physics Assembler, as {@link #assembleToFly} does but
+     * to fly nowhere: for the self-destruct button, which arms once it is aboard the assembled airliner. Whether it
+     * started: not with the airliner assembled already, assembling, or without a Physics Assembler.
+     */
+    public boolean startAssembly(ServerPlayer player) {
+        if (!(level instanceof ServerLevel server) || SableFlight.read(this, nose()) != null || assembling()) {
+            return false;
+        }
+        BlockPos at = assemblerAt(server);
+        return at != null && PhysicsAssembler.assemble(server, at, player) == null;
+    }
+
     /** Whether it has its Physics Assembler assembling the airliner, to fly once aboard, and is waiting for it. */
     public boolean assembling() {
         return flyOnceAboard != null && level != null && level.getGameTime() - assemblingSince < ASSEMBLY_WAIT;

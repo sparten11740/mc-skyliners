@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.selfdestruct.SelfDestruct;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -16,6 +17,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -58,6 +60,8 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     private static final int PRESS_GAP = 6;
     /** How long it stays armed before a press sets it off, in ticks: a quick double press never arms and fires it. */
     private static final int SETTLE = SharedConstants.TICKS_PER_SECOND;
+    /** How long it waits for a parked airliner to assemble, once pressed to arm on one, in ticks: ten seconds. */
+    private static final int ASSEMBLY_WAIT = 10 * SharedConstants.TICKS_PER_SECOND;
 
     /** Where the autopilot is, from this block; null until linked. */
     @Nullable
@@ -69,6 +73,13 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
     private long armedUntil;
     /** The game time it was last pressed at, whether the press counted or not; not saved. */
     private long lastPress = Long.MIN_VALUE / 2;
+    /**
+     * Who pressed it to arm on a parked airliner, which it then assembles, and when: it arms for them once among the
+     * assembled airliner's blocks. Saved, so it goes along into those blocks as the airliner assembles.
+     */
+    @Nullable
+    private UUID armFor;
+    private long armAskedAt;
 
     public SelfDestructButtonBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.SELF_DESTRUCT_BUTTON_ENTITY.get(), pos, state);
@@ -141,12 +152,61 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         }
     }
 
-    /** The cover up, the button pressed: armed, with the alarm through the airliner; or a thud and why not. */
+    /**
+     * The cover up, the button pressed: armed, with the alarm through the airliner; on an airliner standing parked as
+     * blocks, assembled first and armed once it is (see {@link #assembleFirst}); else a thud and why not. While the
+     * airliner assembles for it, pressed again, it only waits.
+     */
     private void arm(ServerLevel level, Player player) {
-        if (!mayBlowUp()) {
-            thud(level, player);
+        if (armFor != null) {
             return;
         }
+        if (mayBlowUp()) {
+            armNow(level, player);
+        } else if (!assembleFirst(level, player)) {
+            thud(level, player);
+        }
+    }
+
+    /**
+     * On an airliner of this mod's standing parked as blocks, with the self-destruct switched on: its Physics Assembler
+     * assembles it, as Take Off does, with a hum while it does, and the button arms for whoever pressed it once it is
+     * among the assembled airliner's blocks (see {@link #armOnceAssembled}); whether that started.
+     */
+    private boolean assembleFirst(ServerLevel level, Player player) {
+        AutopilotBlockEntity linked = AerolargeConfig.SELF_DESTRUCT.get() ? autopilot() : null;
+        if (linked == null || !linked.built() || !(player instanceof ServerPlayer asker)) {
+            return false;
+        }
+        // Noted before it assembles, so the button takes it along into the new airliner's blocks.
+        armFor = player.getUUID();
+        armAskedAt = level.getGameTime();
+        setChanged();
+        if (!linked.startAssembly(asker)) {
+            armFor = null;
+            setChanged();
+            return false;
+        }
+        level.playSound(null, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, CLICK_VOLUME, 1.0F);
+        player.displayClientMessage(Component.translatable("message.aerolarge.self_destruct.assembling"), true);
+        return true;
+    }
+
+    /** Asked to arm on a parked airliner: arms for whoever asked once it has assembled, or gives up after a while. */
+    private void armOnceAssembled(ServerLevel level) {
+        ServerPlayer asker = level.getServer().getPlayerList().getPlayer(armFor);
+        if (mayBlowUp() && asker != null) {
+            armFor = null;
+            setChanged();
+            armNow(level, asker);
+        } else if (level.getGameTime() - armAskedAt > ASSEMBLY_WAIT) {
+            armFor = null;
+            setChanged();
+        }
+    }
+
+    /** Armed: the button lit and flashing, the alarm through the airliner, for whoever pressed it to hear why. */
+    private void armNow(ServerLevel level, Player player) {
         armedUntil = level.getGameTime() + WINDOW;
         level.setBlock(worldPosition, getBlockState().setValue(SelfDestructButtonBlock.ARMED, true), Block.UPDATE_ALL);
         level.playSound(null, worldPosition, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, CLICK_VOLUME, 1.0F);
@@ -196,9 +256,18 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         player.displayClientMessage(Component.translatable(why), true);
     }
 
-    /** Each tick, on the server, while armed: the countdown's beeps, until the time is up and it disarms itself. */
+    /**
+     * Each tick, on the server: asked to arm on a parked airliner, whether it has assembled yet; while armed, the
+     * countdown's beeps, until the time is up and it disarms itself.
+     */
     void tick() {
-        if (!(level instanceof ServerLevel server) || !getBlockState().getValue(SelfDestructButtonBlock.ARMED)) {
+        if (!(level instanceof ServerLevel server)) {
+            return;
+        }
+        if (armFor != null) {
+            armOnceAssembled(server);
+        }
+        if (!getBlockState().getValue(SelfDestructButtonBlock.ARMED)) {
             return;
         }
         long left = armedUntil - server.getGameTime();
@@ -224,10 +293,17 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         if (autopilot != null) {
             tag.put("Autopilot", NbtUtils.writeBlockPos(autopilot));
         }
+        if (armFor != null) {
+            tag.putUUID("ArmFor", armFor);
+            tag.putLong("ArmAskedAt", armAskedAt);
+        }
         Turning.save(tag, getBlockState());
     }
 
-    /** The link to the autopilot from the save; the arming's end only ever from the server's update. */
+    /**
+     * The link to the autopilot, and an arming asked on a parked airliner, from the save; the arming's end only ever
+     * from the server's update.
+     */
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -235,6 +311,8 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
             autopilot = Turning.turn(NbtUtils.readBlockPos(tag, "Autopilot").orElse(null), Turning.since(tag, getBlockState()));
         }
         armedUntil = tag.getLong("ArmedUntil");
+        armFor = tag.hasUUID("ArmFor") ? tag.getUUID("ArmFor") : null;
+        armAskedAt = tag.getLong("ArmAskedAt");
     }
 
     /** The clients only need when the arming runs out, for the button's flashing. */
