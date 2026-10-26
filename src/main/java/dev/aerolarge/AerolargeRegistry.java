@@ -863,7 +863,7 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> CABIN_CURTAIN_ITEM = ITEMS.registerSimpleBlockItem(CABIN_CURTAIN);
     public static final DeferredItem<BlockItem> CABIN_PARTITION_ITEM = ITEMS.registerSimpleBlockItem(CABIN_PARTITION);
-    /** The white archways in the bulkheads, a piece at a time: as tough as the partition, and nothing spawns on it. */
+    /** The white archways in the bulkheads, put up whole by hand: as tough as the partition, and nothing spawns on it. */
     public static final DeferredBlock<CabinArchBlock> CABIN_ARCH = BLOCKS.registerBlock(
         "cabin_arch", CabinArchBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(1.5F).sound(SoundType.WOOD).noOcclusion().isValidSpawn(AerolargeRegistry::never)

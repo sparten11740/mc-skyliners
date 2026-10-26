@@ -2589,16 +2589,20 @@ const ROOM_DIVIDER_LANG = {
 // is open; the first pixel out is the moulding's bead, flush with the wall's faces; the next its groove, set back half
 // a pixel into both; then white panelling out to BAND; then the bulkhead's own cream panels. Each block is the pixels
 // of each kind in it merged into boxes, showing a face only where a box meets the open archway or something set back
-// further, so the arch's underside steps round its curve a pixel at a time. In the hand, a narrow archway whole.
+// further, so the arch's underside steps round its curve a pixel at a time. In the hand, a narrow archway whole, as one
+// goes up put down by hand.
 {
   // How far out from the opening's edge the white reaches, in pixels: CabinArchBlock.BAND.
   const BAND = 6;
+  // How many rows tall the jambs of an archway put up by hand are: CabinArchBlock.JAMB_ROWS.
+  const JAMB_ROWS = 3;
   // CabinArchBlock.Part: the jamb (the same for both sizes), then each size's arch blocks, by columns out from the
   // middle and rows over the opening, the opening reaching that many blocks either side of the middle.
   const SPANS = { narrow: 1, wide: 2 };
   const PARTS = ["jamb", "narrow_1_1", "narrow_2_1", "narrow_0_2", "narrow_1_2", "narrow_2_2",
     "wide_2_1", "wide_3_1", "wide_2_2", "wide_3_2", "wide_0_3", "wide_1_3", "wide_2_3"];
-  const DEFAULT = "narrow_0_2";
+  // The arch's crowns, its pieces up the middle: the ones an archway put up whole comes down as.
+  const CROWNS = PARTS.filter((part) => part.split("_")[1] === "0");
   const radius = (span) => 16 * span + 8;
   const rows = (span) => Math.ceil((radius(span) + BAND) / 16);
   // What each kind of pixel is drawn as, from the opening out: the bead, the groove, the white panelling and the
@@ -2693,15 +2697,15 @@ const ROOM_DIVIDER_LANG = {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => PARTS.map((part) =>
       [`facing=${facing},part=${part}`, { model: `${ID}:block/cabin_arch_${part}`, ...(y ? { y } : {}) }]))),
   });
-  // In the hand, a narrow archway whole, its jambs two rows tall, seen from the front: the wall a fifth of its size,
-  // each kind's boxes over all of it in one flat colour of its texture.
+  // In the hand, a narrow archway whole as it goes up put down by hand, seen from the front: the wall a fifth of its
+  // size, each kind's boxes over all of it in one flat colour of its texture.
   {
     const span = SPANS.narrow;
     const width = 16 * (2 * span + 3);
-    const height = 32 + 16 * rows(span);
+    const height = 16 * (JAMB_ROWS + rows(span));
     const scale = 16 / width;
     const left = -width / 2;
-    const bottom = -32;
+    const bottom = -16 * JAMB_ROWS;
     const lift = (16 - height * scale) / 2;
     const flat = [4, 4, 5, 5];
     const elements = merge(span, left, bottom, width, height).map((box) => {
@@ -2728,21 +2732,28 @@ const ROOM_DIVIDER_LANG = {
       },
     });
   }
-  // A piece comes down as itself, kept as the block state to put it down as (as picking one does, see CabinArchBlock);
-  // the piece put down when nothing says which is left off, so those stack with new ones.
+  // A piece standing alone, as the airliner's do, comes down as itself, kept as the block state to put it down as (as
+  // picking one does, see CabinArchBlock). An archway put up whole comes down whole, as the one Cabin Arch it went up
+  // from, which only its crown gives back, so taking it down never gives back more than went into it.
   const arch = `${ID}:cabin_arch`;
+  const whole = (value) => ({ condition: "minecraft:block_state_property", block: arch, properties: { whole: value } });
   write(`data/${ID}/loot_table/blocks/cabin_arch.json`, {
     type: "minecraft:block",
     pools: [{
       rolls: 1.0, bonus_rolls: 0.0,
       entries: [{
         type: "minecraft:item", name: arch,
-        functions: [{
-          function: "minecraft:copy_state", block: arch, properties: ["part"],
-          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: arch, properties: { part: DEFAULT } } }],
-        }],
+        functions: [{ function: "minecraft:copy_state", block: arch, properties: ["part"] }],
       }],
-      conditions: [{ condition: "minecraft:survives_explosion" }],
+      conditions: [whole("false"), { condition: "minecraft:survives_explosion" }],
+    }, {
+      rolls: 1.0, bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: arch }],
+      conditions: [
+        whole("true"),
+        { condition: "minecraft:any_of", terms: CROWNS.map((part) => ({ condition: "minecraft:block_state_property", block: arch, properties: { part } })) },
+        { condition: "minecraft:survives_explosion" },
+      ],
     }],
     random_sequence: `${ID}:blocks/cabin_arch`,
   });

@@ -659,13 +659,18 @@ into one curtain on a steel rail. Use any piece to draw the whole curtain open o
 the piece used, with a swish; drawn open, only its gathered ends and its rail show, and those are what to use. Use a
 dye on it to dye all of it, for one dye, and taken down it keeps its colour. It is only cloth: players, villagers,
 trolleys and basketballs pass straight through it, open or shut, and it keeps no light out. A Cabin Partition is a
-plain cream bulkhead panel to build walls with, a Cabin Arch a piece of a white archway in one, a Bulkhead Sign a
+plain cream bulkhead panel to build walls with, a Cabin Arch a white archway in one, a Bulkhead Sign a
 backlit sign set into one, and an Exit Sign a green running man heading out through a doorway. All five can be
-crafted. A Cabin
-Arch piece is a block of a round white arch over an opening three or five blocks wide, or of the jambs either side of
-it: smooth white panelling round the opening with a moulding along its edge, a bead and a groove behind it, set into
-cream panels like the partition's and the same from either side. Taken down, or picked from an archway, a piece keeps
-which piece it is; put down, it is the right-hand side of an archway as you face it, or the left-hand side sneaking.
+crafted. A Cabin Arch puts up a whole archway like the airliner's: a round white arch over an opening three blocks
+wide, on white jambs three blocks tall either side of it, smooth white panelling round the opening with a moulding
+along its edge, a bead and a groove behind it, set into cream panels like the partition's and the same from either
+side. It goes up across the way you face, the foot of its left-hand jamb where you put it and the rest to your right
+and up, five blocks wide and five tall; sneak to put up a wide one, over an opening five blocks wide, seven blocks
+wide and six tall with partition panels in its top corners. It only goes up where there is room for all of it and
+nobody stands in its way. Breaking any piece of it takes the whole archway down, panels and all, and gives back the
+one Cabin Arch, as picking it does. The airliner's own archways are built a piece at a time and come down a piece at
+a time: taken down, or picked, such a piece keeps which piece it is, and goes down alone, the right-hand side of an
+archway as you face it or the left-hand side sneaking, for building archways of other shapes, with taller jambs say.
 A Bulkhead Sign is a block of the partition's cream panelling with a lightbox in its face: a picture printed on white
 behind a slim brushed steel bezel, glowing whatever the light around (though it lights nothing), so it shows with the
 cabin lights set for the night. Each picture says what lies beyond without a word, in its room's colour: a seat, a
