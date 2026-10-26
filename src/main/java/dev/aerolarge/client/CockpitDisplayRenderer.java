@@ -28,8 +28,8 @@ import org.joml.Vector3f;
 /**
  * Draws a panel of the flight deck's curved row from the block holding it (see {@link CockpitDisplayBlockEntity}): a
  * slim dark screen standing a block over the floor, turned toward the seats, on a desk whose top slopes down toward
- * them at 45 degrees (see {@link CockpitCasing}), with the touch keys on the slope (see {@link CockpitKeysArt} and
- * {@link AutopilotDeskArt}). On the screen, inside the bezel, what it shows: a pilot's flight display,
+ * them at 45 degrees (see {@link CockpitCasing}), with the touch keys on the slope (see {@link CockpitKeysArt}, {@link
+ * AutopilotDeskArt} and {@link TillerArt}). On the screen, inside the bezel, what it shows: a pilot's flight display,
  * the same as the one set into the panel in older airliners (see {@link FlightDisplayRenderer}), as large as it fits;
  * the moving map, as the autopilot screen of older airliners draws it, with what the autopilot is doing over it and how
  * the airliner flies under it; the systems page's tiles; or an outside camera's live picture with its buttons, as on
@@ -104,8 +104,10 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
             pose.mulPose(Axis.XP.rotationDegrees(-45));
             if (display.desk() == CockpitDisplayBlockEntity.Desk.AUTOPILOT) {
                 AutopilotDeskArt.draw(display, level, buffers, pose, partialTick, pointer);
+            } else if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
+                TillerArt.draw(display, level, buffers, pose.last().pose(), partialTick, pointer);
             } else {
-                CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), panel.leftCut(), width - panel.rightCut(), panel.slope());
+                CockpitKeysArt.slope(display, level, buffers, pose.last().pose());
             }
             pose.popPose();
         }

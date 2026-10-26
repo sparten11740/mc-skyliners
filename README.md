@@ -127,65 +127,72 @@ glow. The window shades' tile runs every cabin window's shade down, or up again,
 their motors. A closed shade shuts out the daylight; anyone can open or close a window's own shade by using it.
 
 In front of the console the screens curve round the seats like an airliner's glass cockpit, three quarters of a block
-above the floor on a desk whose top slopes down toward the pilots, their top edges just under a seated pilot's eyes, so
-the pilots look out over them through the windscreen, a dark glareshield hood running along their top edges. In the
+above the floor on a desk whose top slopes down toward the pilots, their top edges just under a seated pilot's eyes,
+so the pilots look out over them through the windscreen, a dark glareshield hood running along their top edges. In the
 middle, straight, is the systems screen, and either side of it two screens in the same slim dark casing, each turned
 further toward the seats than the one inside it, so the row wraps round the pilots. Left to right, as on an A380: the
-moving map, the captain's primary flight display, the systems screen, the first officer's primary flight display and the
-outside camera, each pilot's own flight display straight ahead of them. Each is as wide as the nose leaves room for, two
-blocks where it can (where the nose is too narrow for the outer pair, the inner pair shows the map and the camera, and
-the tiller's keys go under the camera). Behind them the instrument panel carries on round to the hull as plain casing,
-its own screens left off. The systems screen holds a tile for each of six switches, three across and two down, each a
-picture of what its switch does, as it is now; while it is on its face takes on its colour, its rim broadens in it and
-the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer (a light bulb with
-long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at night), the seatbelt
-signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights (a skydiver beside the
-jump light, its red and green halves both dark while it is off, red or green), the window shades (a window on the sky
-with its striped shade a third of the way down, or pulled all the way down, lit amber), the laser (its light metal
-turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors, or the doors open and the
-crate floating down under a parachute, lit red). The everyday three, the dimmer, the seatbelt signs and the shades, run
-along the top row, where a seated pilot's look rests, and the jump lights, the laser and the drop along the bottom, out
-of the way of a stray touch. Touch a tile to work its switch. On the slope under the screens are the keys: under each
-pilot's flight display a tiller, an arrow either side of a little wheel turned as the nose wheel is (touch an arrow to
-steer a notch that way), so either pilot can taxi; under the map the parking brake, a wheel gripped red while it is set,
-and the landing gear (see Landing gear); under the systems screen the autopilot's buttons (see Autopilot); and under the
-camera's screen the cameras' buttons (see below). The desk runs round under the screens as one moulded console in a
-blue-grey a step lighter than the screens, its sloped top brushed between a steel trim along its front lip and its top
-edge, and past the outer screens it carries on without a screen out to the hull. Looking at the screens or the slope
-from within reach, a little white dot follows your look, and the tile, key or camera button under it is outlined in
-white, so you see what a touch will work before you touch it. The flight displays show attitude, airspeed, altitude,
-vertical speed and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY under the green airliner
-of the autopilot's on/off key, the key that has the Physics Assembler assemble the airliner and takes off. The moving
-map shows what the autopilot is doing over it and how the airliner flies under it, the way it is heading always up, the
-track it has flown, and the circle it flies round or the heading it turns to; touch it to zoom out a step, round to the
-closest again. The camera panel, like an A380's taxiing camera screen, shows the live picture from one of the airliner's
-outside cameras, the ones the passenger screens look through (see below), the camera on top of the fin at first: the
-whole airliner from above and behind, its wingtips at the edges, the ground or the clouds beyond, with CAM TAIL and a
-blinking recording light in the corner. Where the nose leaves no room for the camera panel, a tail camera display, a
-wide screen three blocks across, hangs from the crown just ahead of the seats instead, tilted 45 degrees down toward
-them. Four buttons on the slope under the camera's screen pick the camera (along the bottom left of its picture where
-the tiller takes that slope, and on the older tail camera display), each a little airliner seen from the side with a big
-dot where its camera is, in a colour of its own, the one shown lit white with a white rim: sky blue on the fin, looking
-ahead and down; green on the right wing, looking out along the wing toward you; orange under the nose by the nose gear;
-and pink in front of the nose, level with the pilots' eyes and looking fifteen degrees down at the runway coming up to
-meet the airliner. The camera on the picture's label takes the same colour. Use one to switch; everyone sees the camera
-picked, and the screen keeps it. The picture is drawn small, a few times a second, and only while a screen showing it is
-in sight within 32 blocks; every screen aboard the same airliner set to the same camera shows the same picture. Without
-one it shows a test card: colour bars with the airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY
-beside the same green airliner while the airliner stands as blocks. That is also what it shows with a shader pack (Iris,
-Oculus) or Fabulous graphics, or with `tailCameraFeed` off in the client config, where `tailCameraFps`,
-`tailCameraResolution` and `tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It
-is drawn at most ten times a second by default (1 to 30), and reaches 12 chunks (2 to 32), never further than your own
-render distance, since the world is only loaded that far round you, and the fog closes in at its edge as it does at the
-edge of your own view. That is far enough for the whole airliner at the default scale to stand clear of the fog; at
-scale 3 it takes 18 chunks, at scale 4 24. The further it reaches, the more each picture costs: what the camera sees is
-worked out afresh every time it is drawn, while the game waits, about four times as much at twice the distance. A Tail
-Camera Display can be crafted and put up in your own builds too: against a wall it stands upright, and put up against
-the underside of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as
-you face it, and needs the room there; it comes down whole. On an assembled airliner with an autopilot it shows that
-airliner's cameras. Against the wall behind the captain's seat is the Physics Assembler. Right behind each pilot's seat
-stands that pilot's Flight Crew Locker, its door toward the back of the flight deck, with a Pilot Helmet and a Pilot Cap
-in it when the airliner is built (see Souvenirs).
+moving map, the captain's primary flight display, the systems screen, the first officer's primary flight display and
+the outside camera, each pilot's own flight display straight ahead of them. Each is as wide as the nose leaves room
+for, two blocks where it can (where the nose is too narrow for the outer pair, the inner pair shows the map and the
+camera, and the tiller's keys go under the camera). Behind them the instrument panel carries on round to the hull as
+plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across and two
+down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its rim
+broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
+(a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at
+night), the seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights
+(a skydiver beside the jump light, its red and green halves both dark while it is off, red or green), the window
+shades (a window on the sky with its striped shade a third of the way down, or pulled all the way down, lit amber),
+the laser (its light metal turret firing a red beam, lit red) and the drop release (a crate on the bay's shut doors,
+or the doors open and the crate floating down under a parachute, lit red). The everyday three, the dimmer, the
+seatbelt signs and the shades, run along the top row, where a seated pilot's look rests, and the jump lights, the
+laser and the drop along the bottom, out of the way of a stray touch. Touch a tile to work its switch. On the slope
+under the screens are the keys: under each pilot's flight display the nose wheel tiller, drawn as the ground it steers
+on, seen from above: dark tarmac between strips of grass, the airliner's white nose at the bottom with its nose
+wheel's black tyre turned the way it is set, and five yellow taxi lines fanning out from the wheel, a hard curl and a
+gentle bend either way and straight on between them. The line set is bright and solid, the others faint and dashed;
+touch a line to steer that way at once (a ratchet's click, a deeper clunk back to straight ahead, a dull thud on the
+line already set), and pointing at one brightens it first. While the airliner rolls, white dashes run along the line
+it follows, and with the wheel turned the straight line pulses so it is not left turned by mistake; a green dot at its
+foot shows the wheel is straight. Either pilot can taxi; under the map the parking brake, a wheel gripped red while it
+is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons (see Autopilot); and
+under the camera's screen the cameras' buttons (see below). The desk runs round under the screens as one moulded
+console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim along its front
+lip and its top edge, and past the outer screens it carries on without a screen out to the hull. Looking at the
+screens or the slope from within reach, a little white dot follows your look, and the tile, key or camera button under
+it is outlined in white, so you see what a touch will work before you touch it. The flight displays show attitude,
+airspeed, altitude, vertical speed and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY
+under the green airliner of the autopilot's on/off key, the key that has the Physics Assembler assemble the airliner
+and takes off. The moving map shows what the autopilot is doing over it and how the airliner flies under it, the way
+it is heading always up, the track it has flown, and the circle it flies round or the heading it turns to; touch it to
+zoom out a step, round to the closest again. The camera panel, like an A380's taxiing camera screen, shows the live
+picture from one of the airliner's outside cameras, the ones the passenger screens look through (see below), the
+camera on top of the fin at first: the whole airliner from above and behind, its wingtips at the edges, the ground or
+the clouds beyond, with CAM TAIL and a blinking recording light in the corner. Where the nose leaves no room for the
+camera panel, a tail camera display, a wide screen three blocks across, hangs from the crown just ahead of the seats
+instead, tilted 45 degrees down toward them. Four buttons on the slope under the camera's screen pick the camera
+(along the bottom left of its picture where the tiller takes that slope, and on the older tail camera display), each a
+little airliner seen from the side with a big dot where its camera is, in a colour of its own, the one shown lit white
+with a white rim: sky blue on the fin, looking ahead and down; green on the right wing, looking out along the wing
+toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
+looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes the
+same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is drawn small,
+a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen aboard the same
+airliner set to the same camera shows the same picture. Without one it shows a test card: colour bars with the
+airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY beside the same green airliner while the
+airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or with
+`tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
+`tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It is drawn at most ten
+times a second by default (1 to 30), and reaches 12 chunks (2 to 32), never further than your own render distance,
+since the world is only loaded that far round you, and the fog closes in at its edge as it does at the edge of your
+own view. That is far enough for the whole airliner at the default scale to stand clear of the fog; at scale 3 it
+takes 18 chunks, at scale 4 24. The further it reaches, the more each picture costs: what the camera sees is worked
+out afresh every time it is drawn, while the game waits, about four times as much at twice the distance. A Tail Camera
+Display can be crafted and put up in your own builds too: against a wall it stands upright, and put up against the
+underside of a block it hangs from it tilted toward you. It reaches two blocks to the right of where it is put, as you
+face it, and needs the room there; it comes down whole. On an assembled airliner with an autopilot it shows that
+airliner's cameras. Against the wall behind the captain's seat is the Physics Assembler. Right behind each pilot's
+seat stands that pilot's Flight Crew Locker, its door toward the back of the flight deck, with a Pilot Helmet and a
+Pilot Cap in it when the airliner is built (see Souvenirs).
 
 A Flight Crew Locker is a slim cabinet of brushed grey-blue panels for the crew's things, its pale door hinged on one
 side with a small chrome handle on the other, and on the door a pilot's peaked cap, navy with its gold wings badge and
@@ -1317,10 +1324,11 @@ looks into its WC, in the airliner's frame through `SableFlight` once it is asse
 drawn), and is lined inside by `HullLining`, face by face, as `Lining` says which faces and how
 each looks, and `Windscreen` says where the glass and its posts go; `ScreenArc` lays out the flight deck's curved row
 of screens (`CockpitDisplayBlock`, whose block entity keeps where each panel stands and what it is linked to, and
-`CockpitKeys` where its touch keys are, and the shape of the autopilot's speedometer, steering dial and sky that a
-touch is read by), whose keys use the switches standing out of sight in the avionics bay as a player would, and
-`CockpitDisplayRenderer`, `CockpitKeysArt` and `AutopilotDeskArt` (the autopilot's controls) draw it, with the pointer
-that follows the look, as `AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity`
+`CockpitKeys` where its touch keys are, and the shape of the autopilot's speedometer, steering dial and sky and of the
+tiller's taxi lines that a touch is read by), whose keys use the switches standing out of sight in the avionics bay as
+a player would, and `CockpitDisplayRenderer`, `CockpitKeysArt`, `AutopilotDeskArt` (the autopilot's controls) and
+`TillerArt` (the tiller's taxi lines) draw it, with the pointer that follows the look, as `AutopilotRenderer` draws
+the control head's display; `AutopilotBlockEntity`
 flies (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks
 `ControlSurfaces` turns over), assembling its airliner when engaged on one not yet assembled through
 `PhysicsAssembler`, which works the assembler as a Create deployer does, reading the airliner from Sable

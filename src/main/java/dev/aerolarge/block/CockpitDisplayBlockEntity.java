@@ -115,7 +115,7 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
     public enum Desk {
         /** Nothing: a plain slope. */
         NONE,
-        /** The nose wheel tiller: a key to steer left, a key to steer right. */
+        /** The nose wheel tiller: taxi lines from the nose wheel, one for each way it steers. */
         TILLER,
         /** The parking brake, and the landing gear lever with its lamps. */
         GROUND,
@@ -398,8 +398,8 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
 
     /**
      * Works what a key is for, as whoever touched it, sneaking or not: one of the autopilot's controls, where it was
-     * touched along it, the tiller a notch either way, or the switch it uses where it stands out of sight. Whether there
-     * was a key that clicks: the autopilot's controls sound for themselves.
+     * touched along it, the tiller set to the taxi line touched, or the switch it uses where it stands out of sight.
+     * Whether there was a key that clicks: the autopilot's controls and the tiller sound for themselves.
      */
     private boolean work(ServerLevel level, @Nullable Key key, Touch touch, ServerPlayer player) {
         Function function = key == null ? null : key.function();
@@ -416,9 +416,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             }
             return false;
         }
-        if (function == Function.TILLER_LEFT || function == Function.TILLER_RIGHT) {
-            TillerBlock.steer(level, at, player, function == Function.TILLER_RIGHT);
-            return true;
+        if (function == Function.TILLER) {
+            TillerBlock.steerTo(level, at, player, (int) CockpitKeys.along(key, touch.across(), touch.up()));
+            return false;
         }
         level.getBlockState(at).useWithoutItem(level, player, new BlockHitResult(Vec3.atCenterOf(at), Direction.UP, at, false));
         return true;

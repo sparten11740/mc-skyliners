@@ -39,6 +39,16 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
     public static final int CENTRE = 2;
     /** Signal per notch off centre. */
     private static final int SIGNAL_PER_NOTCH = 7;
+    /**
+     * Its sounds: a ratchet's click as it turns, a deeper clunk back to straight ahead, and a dull thud where it is set
+     * already; how loud each is and its pitch.
+     */
+    private static final float CLICK_VOLUME = 0.4F;
+    private static final float CLICK_PITCH = 0.9F;
+    private static final float CLUNK_VOLUME = 0.5F;
+    private static final float CLUNK_PITCH = 0.8F;
+    private static final float THUD_VOLUME = 0.6F;
+    private static final float THUD_PITCH = 0.6F;
     /** A module of the console with the tiller's handwheel on it. */
     private static final VoxelShape SHAPE = ConsoleModule.with(3, 4.5);
 
@@ -79,20 +89,36 @@ public class TillerBlock extends HorizontalDirectionalBlock implements EntityBlo
     }
 
     /**
-     * Turns the tiller at a position a notch to the right or the left, on the server, as its right or left half does
-     * (or the flight deck's touch keys for it), telling whoever turned it.
+     * Turns the tiller at a position a notch to the right or the left, on the server, as its right or left half does,
+     * telling whoever turned it.
      */
     public static void steer(Level level, BlockPos pos, Player player, boolean toRight) {
         BlockState state = level.getBlockState(pos);
-        if (!(state.getBlock() instanceof TillerBlock)) {
+        if (state.getBlock() instanceof TillerBlock) {
+            steerTo(level, pos, player, Math.clamp(state.getValue(STEER) + (toRight ? 1 : -1), 0, 4));
+        }
+    }
+
+    /**
+     * Sets the tiller at a position straight to a position, from hard left (0) to hard right (4), on the server, as the
+     * flight deck's taxi lines do, telling whoever set it. It sounds as it goes: a ratchet's click for a turn, a deeper
+     * clunk as it comes back to straight ahead, and a dull thud where it is set already.
+     */
+    public static void steerTo(Level level, BlockPos pos, Player player, int steer) {
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof TillerBlock) || steer < 0 || steer > 4) {
             return;
         }
-        int steer = Math.clamp(state.getValue(STEER) + (toRight ? 1 : -1), 0, 4);
         if (steer == state.getValue(STEER)) {
+            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, THUD_VOLUME, THUD_PITCH);
             return;
         }
         level.setBlock(pos, state.setValue(STEER, steer), Block.UPDATE_ALL);
-        level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4F, 0.9F);
+        if (steer == CENTRE) {
+            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, CLUNK_VOLUME, CLUNK_PITCH);
+        } else {
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, CLICK_VOLUME, CLICK_PITCH);
+        }
         if (level.getBlockEntity(pos) instanceof Control control) {
             control.resync();
         }

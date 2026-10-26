@@ -15,7 +15,6 @@ import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LaserSwitchBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
-import dev.aerolarge.block.TillerBlock;
 import dev.aerolarge.block.WindowShadesBlock;
 import java.util.List;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -32,11 +31,10 @@ import org.joml.Matrix4f;
  * so that whoever cannot read can still work them. The systems screen's tiles show a picture of what each works, as
  * it is now (a seated passenger buckled in, a light bulb or the moon, a skydiver beside the jump light, a window with
  * its shade up or down, the laser turret firing, the drop bay shut or dropping), its rim lit in its colour while on.
- * On the sloped panel under the screens: the tiller's arrows either side of a little wheel turned as the tiller is;
- * the parking brake as a wheel gripped red while it is set; the landing gear as a wheel with an arrow the way its
- * lever is thrown and its three lamps; and the outside cameras' buttons, each the airliner from the side with a big
- * dot where its camera is, the one on the screen lit. The autopilot's desk has a drawing of its own (see {@link
- * AutopilotDeskArt}).
+ * On the sloped panel under the screens: the parking brake as a wheel gripped red while it is set; the landing gear
+ * as a wheel with an arrow the way its lever is thrown and its three lamps; and the outside cameras' buttons, each
+ * the airliner from the side with a big dot where its camera is, the one on the screen lit. The autopilot's desk and
+ * the nose wheel tiller have drawings of their own (see {@link AutopilotDeskArt} and {@link TillerArt}).
  * The switches' states are read from their blocks out of sight under the floor.
  */
 final class CockpitKeysArt {
@@ -54,8 +52,6 @@ final class CockpitKeysArt {
     private static final double ON_LIGHT = 0.12;
     /** Segments a ring is drawn with. */
     private static final int RING_SEGMENTS = 20;
-    /** How far the little tiller wheel turns for each notch the tiller is turned, in degrees. */
-    private static final double STEER_TURN = 30;
 
     private static final int KEY = AutopilotScreenRenderer.BUTTON;
     private static final int EDGE = AutopilotScreenRenderer.BUTTON_EDGE;
@@ -104,18 +100,12 @@ final class CockpitKeysArt {
         }
     }
 
-    /**
-     * The keys on the sloped panel under the screen, on the slope from its front left corner as it would be uncut,
-     * between its mitred ends, the slope this long.
-     */
-    static void slope(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix, float left, float right, float length) {
+    /** The keys on the sloped panel under the screen, on the slope from its front left corner as it would be uncut. */
+    static void slope(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix) {
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         for (Key key : display.slopeKeys()) {
             tile(shapes, matrix, key.box(), EDGE, KEY);
             drawn(shapes, matrix, key, display, level);
-        }
-        if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
-            tillerWheel(shapes, matrix, (left + right) / 2, length / 2, Math.min((right - left) / 9, length / 2.5), state(display, level, Link.TILLER));
         }
     }
 
@@ -164,15 +154,13 @@ final class CockpitKeysArt {
         return new Look(JUMP_LIGHTS[signal.ordinal()], lit);
     }
 
-    /** What a key shows in shapes: the tiller's arrows, the brake, the gear, and the outside cameras. */
+    /** What a key shows in shapes: the brake, the gear, and the outside cameras. */
     private static void drawn(VertexConsumer shapes, Matrix4f matrix, Key key, CockpitDisplayBlockEntity display, Level level) {
         Box box = key.box();
         double cx = (box.x0() + box.x1()) / 2;
         double cy = (box.y0() + box.y1()) / 2;
         double size = Math.min(box.x1() - box.x0(), box.y1() - box.y0());
         switch (key.function()) {
-            case TILLER_LEFT -> arrow(shapes, matrix, cx, cy, size * 0.3, 180, WHITE);
-            case TILLER_RIGHT -> arrow(shapes, matrix, cx, cy, size * 0.3, 0, WHITE);
             case BRAKE -> brake(shapes, matrix, cx, cy, size * 0.32, on(state(display, level, Link.BRAKE), ParkingBrakeBlock.SET));
             case GEAR -> gear(shapes, matrix, box, state(display, level, Link.GEAR));
             case TAIL_CAMERA, WING_CAMERA, NOSE_CAMERA, FRONT_CAMERA -> TailCameraDisplayRenderer.cameraButton(shapes, matrix, key.function().camera,
@@ -234,15 +222,6 @@ final class CockpitKeysArt {
             ScreenDrawing.line(shapes, matrix, x + radius * Math.cos(a0), y + radius * Math.sin(a0), x + radius * Math.cos(a1), y + radius * Math.sin(a1),
                 3 * LAYER, thickness, colour);
         }
-    }
-
-    /** The little tiller wheel between its arrows, turned as the tiller is: a rim, and a spoke up from its hub. */
-    private static void tillerWheel(VertexConsumer shapes, Matrix4f matrix, double x, double y, double radius, BlockState tiller) {
-        int steer = tiller.hasProperty(TillerBlock.STEER) ? tiller.getValue(TillerBlock.STEER) : TillerBlock.CENTRE;
-        double a = Math.toRadians(90 - (steer - TillerBlock.CENTRE) * STEER_TURN);
-        ring(shapes, matrix, x, y, radius, (float) (radius * 0.25), WHITE);
-        ScreenDrawing.line(shapes, matrix, x, y, x + Math.cos(a) * radius, y + Math.sin(a) * radius, 3 * LAYER, (float) (radius * 0.25), AMBER);
-        ScreenDrawing.disc(shapes, matrix, x, y, radius * 0.25, 10, 4 * LAYER, WHITE);
     }
 
     /** The parking brake: a wheel with its two pads, gripping it red while set, standing off it grey while released. */

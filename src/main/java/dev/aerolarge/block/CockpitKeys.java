@@ -63,6 +63,17 @@ public final class CockpitKeys {
     /** The steering fan, the half of a disc over the turns: how far in from its key's edges its rim is, in blocks. */
     private static final double FAN_INSET = 0.02;
     /**
+     * The tiller's taxi lines: how far up from the key's bottom edge the nose wheel is and how far from its top edge
+     * the straight line ends, in blocks; the degrees round from straight ahead each notch's line ends at; where a line
+     * bends, as a share of its reach up from the nose wheel; and how far out a hard curl ends, as a share of the
+     * straight line's length, it curling in tighter than a gentle bend reaches.
+     */
+    private static final double NOSE_WHEEL_UP = 0.11;
+    private static final double TAXI_TOP = 0.03;
+    private static final double TAXI_SPREAD = 38;
+    private static final double TAXI_BEND_UP = 0.55;
+    private static final double HARD_REACH = 0.85;
+    /**
      * The sky on its key: its frame, the ground along its bottom, and the room above and below its scale, in blocks.
      */
     private static final double SKY_INSET = 0.02;
@@ -71,7 +82,7 @@ public final class CockpitKeys {
 
     /** What a key works: a control out of sight under the flight deck, by its link, or one of the autopilot's buttons. */
     public enum Function {
-        TILLER_LEFT(Link.TILLER), TILLER_RIGHT(Link.TILLER), BRAKE(Link.BRAKE), GEAR(Link.GEAR),
+        TILLER(Link.TILLER), BRAKE(Link.BRAKE), GEAR(Link.GEAR),
         CABIN_LIGHTS(Link.CABIN_LIGHTS), SEATBELTS(Link.SEATBELTS), JUMP_LIGHTS(Link.JUMP_LIGHTS), SHADES(Link.SHADES), LASER(Link.LASER),
         DROP(Link.DROP),
         ENGAGE(Button.ENGAGE), SPEED(Button.SPEED), HEADING(Button.HEADING), ALTITUDE(Button.ALTITUDE), TIGHT_LEFT(Button.TIGHT_LEFT),
@@ -151,6 +162,76 @@ public final class CockpitKeys {
         }
     }
 
+    /**
+     * The tiller's taxi lines, on its key, seen from above: the nose wheel at the middle of the key's bottom edge, just
+     * up from it, under the airliner's nose, and five taxi lines fanning out from it, hard left round to hard right,
+     * each rising straight from the wheel before it bends away. A touch picks the line drawn nearest it.
+     */
+    public record Taxi(double x, double y, double radius) {
+        /** The straight pieces each taxi line is drawn in, and a touch is measured against. */
+        public static final int PIECES = 24;
+
+        public static Taxi on(Box box) {
+            return new Taxi((box.x0() + box.x1()) / 2, box.y0() + NOSE_WHEEL_UP, box.y1() - box.y0() - NOSE_WHEEL_UP - TAXI_TOP);
+        }
+
+        /**
+         * The degrees right of straight ahead a taxi line ends at, for a tiller position from hard left (0) to hard
+         * right (4).
+         */
+        public static double bend(int steer) {
+            return (steer - TillerBlock.CENTRE) * TAXI_SPREAD;
+        }
+
+        /**
+         * A point a share of the way along a tiller position's taxi line, across and up the key: from the nose wheel
+         * straight up, bending towards where the line ends; a hard curl ends nearer the wheel, curling tighter than a
+         * gentle bend.
+         */
+        public double[] point(int steer, double t) {
+            double bend = Math.toRadians(bend(steer));
+            double reach = Math.abs(steer - TillerBlock.CENTRE) == 2 ? radius * HARD_REACH : radius;
+            double endX = x + Math.sin(bend) * reach;
+            double endY = y + Math.cos(bend) * reach;
+            return new double[]{curve(x, x, endX, t), curve(y, y + reach * TAXI_BEND_UP, endY, t)};
+        }
+
+        /** The tiller position, hard left (0) to hard right (4), whose taxi line runs nearest a place on the key. */
+        public int steer(double across, double up) {
+            int nearest = TillerBlock.CENTRE;
+            double nearestDistance = Double.MAX_VALUE;
+            for (int steer : TillerBlock.STEER.getPossibleValues()) {
+                double distance = distance(steer, across, up);
+                if (distance < nearestDistance) {
+                    nearest = steer;
+                    nearestDistance = distance;
+                }
+            }
+            return nearest;
+        }
+
+        /** How far a place on the key is from a tiller position's taxi line, as drawn in its pieces, in blocks. */
+        private double distance(int steer, double across, double up) {
+            double nearest = Double.MAX_VALUE;
+            double[] from = point(steer, 0);
+            for (int k = 1; k <= PIECES; k++) {
+                double[] to = point(steer, (double) k / PIECES);
+                nearest = Math.min(nearest, toPiece(across, up, from, to));
+                from = to;
+            }
+            return nearest;
+        }
+
+        /** How far a place is from a straight piece of line between two points, in blocks. */
+        private static double toPiece(double across, double up, double[] from, double[] to) {
+            double dx = to[0] - from[0];
+            double dy = to[1] - from[1];
+            double lengthSquared = dx * dx + dy * dy;
+            double share = lengthSquared == 0 ? 0 : Math.clamp(((across - from[0]) * dx + (up - from[1]) * dy) / lengthSquared, 0.0, 1.0);
+            return Math.hypot(across - from[0] - share * dx, up - from[1] - share * dy);
+        }
+    }
+
     /** A point a share of the way along a quadratic curve, in one coordinate, from its start by its bend to its end. */
     public static double curve(double start, double bend, double end, double t) {
         return (1 - t) * (1 - t) * start + 2 * (1 - t) * t * bend + t * t * end;
@@ -208,9 +289,7 @@ public final class CockpitKeys {
         double width = right - left;
         return switch (desk) {
             case NONE -> List.of();
-            case TILLER -> List.of(
-                new Key(Function.TILLER_LEFT, new Box(left + MARGIN, MARGIN, left + width / 3, length - MARGIN)),
-                new Key(Function.TILLER_RIGHT, new Box(left + 2 * width / 3, MARGIN, right - MARGIN, length - MARGIN)));
+            case TILLER -> List.of(new Key(Function.TILLER, new Box(left + MARGIN, MARGIN, right - MARGIN, length - MARGIN)));
             case GROUND -> List.of(
                 new Key(Function.BRAKE, new Box(left + MARGIN, MARGIN, left + width / 2 - GAP / 2, length - MARGIN)),
                 new Key(Function.GEAR, new Box(left + width / 2 + GAP / 2, MARGIN, right - MARGIN, length - MARGIN)));
@@ -268,13 +347,15 @@ public final class CockpitKeys {
     /**
      * Where along a key a touch landed, for the keys set by where they are touched (see {@link
      * dev.aerolarge.autopilot.AutopilotBlockEntity#press}): the share of the way round the speedometer's scale or up
-     * the sky's, or the degrees right of the nose on the steering fan; 0 for any other key.
+     * the sky's, the degrees right of the nose on the steering fan, or the tiller position whose taxi line was touched;
+     * 0 for any other key.
      */
     public static double along(Key key, double across, double up) {
         return switch (key.function()) {
             case SPEED -> Dial.on(key.box()).share(across, up);
             case ALTITUDE -> Sky.on(key.box()).share(up);
             case HEADING -> Fan.on(key.box()).turn(across, up);
+            case TILLER -> Taxi.on(key.box()).steer(across, up);
             default -> 0;
         };
     }
