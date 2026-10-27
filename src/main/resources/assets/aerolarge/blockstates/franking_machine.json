@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,resting=false": {
+      "model": "aerolarge:block/franking_machine",
+      "y": 0
+    },
+    "facing=north,resting=true": {
+      "model": "aerolarge:block/franking_machine_resting",
+      "y": 0
+    },
+    "facing=east,resting=false": {
+      "model": "aerolarge:block/franking_machine",
+      "y": 90
+    },
+    "facing=east,resting=true": {
+      "model": "aerolarge:block/franking_machine_resting",
+      "y": 90
+    },
+    "facing=south,resting=false": {
+      "model": "aerolarge:block/franking_machine",
+      "y": 180
+    },
+    "facing=south,resting=true": {
+      "model": "aerolarge:block/franking_machine_resting",
+      "y": 180
+    },
+    "facing=west,resting=false": {
+      "model": "aerolarge:block/franking_machine",
+      "y": 270
+    },
+    "facing=west,resting=true": {
+      "model": "aerolarge:block/franking_machine_resting",
+      "y": 270
+    }
+  }
+}

@@ -760,6 +760,43 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/searchlight.json`, { parent: `${ID}:block/searchlight` });
   dropsItself("searchlight");
   cubes.searchlight = null;
+  // Zeppelin Post (see FrankingMachineBlock): the franking machine, a red post office machine on the control car's
+  // floor, drawn facing north: its body, an iron top with the stamp's black handle on it, a dark slot in its front the
+  // postcards come out of, and a little lamp on top, green while it is ready to drop a mail sack and dark while it
+  // rests. And the mail sack (see MailSackBlock): canvas, tied at the neck, a red band of the post round it.
+  for (const resting of [false, true]) {
+    write(`assets/${ID}/models/block/franking_machine${resting ? "_resting" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: {
+        body: "minecraft:block/red_concrete", top: "minecraft:block/iron_block", dark: "minecraft:block/black_concrete",
+        lamp: resting ? "minecraft:block/gray_concrete" : "minecraft:block/lime_concrete", particle: "minecraft:block/red_concrete",
+      },
+      elements: [
+        solid([2, 0, 3], [14, 8, 13], "#body"),
+        solid([3, 8, 4], [13, 9, 12], "#top"),
+        solid([5, 4, 2.9], [11, 5, 3], "#dark"),
+        solid([4, 9, 6], [6, 12, 8], "#dark"),
+        solid([10, 9, 9], [12, 11, 11], "#lamp"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/franking_machine.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((resting) => [
+      `facing=${facing},resting=${resting}`, { model: `${ID}:block/franking_machine${resting ? "_resting" : ""}`, y },
+    ]))),
+  });
+  write(`assets/${ID}/models/item/franking_machine.json`, { parent: `${ID}:block/franking_machine` });
+  dropsItself("franking_machine");
+  cubes.franking_machine = null;
+  write(`assets/${ID}/models/block/mail_sack.json`, {
+    parent: "minecraft:block/block",
+    textures: { canvas: "minecraft:block/brown_wool", band: "minecraft:block/red_wool", particle: "minecraft:block/brown_wool" },
+    elements: [solid([3, 0, 3], [13, 10, 13], "#canvas"), solid([2.9, 4, 2.9], [13.1, 6, 13.1], "#band"), solid([6, 10, 6], [10, 12, 10], "#canvas")],
+  });
+  write(`assets/${ID}/blockstates/mail_sack.json`, { variants: { "": { model: `${ID}:block/mail_sack` } } });
+  write(`assets/${ID}/models/item/mail_sack.json`, { parent: `${ID}:block/mail_sack` });
+  dropsItself("mail_sack");
+  cubes.mail_sack = null;
   // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
   // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
   // way, drawn facing north, it throws its light.
@@ -920,6 +957,11 @@ function zeppelinControlsLang() {
     "block.aerolarge.ballast_valve": "Water Ballast Valve",
     "block.aerolarge.searchlight": "Searchlight",
     "block.aerolarge.floodlight": "Floodlight",
+    "block.aerolarge.franking_machine": "Franking Machine",
+    "block.aerolarge.mail_sack": "Mail Sack",
+    "item.aerolarge.postcard": "Postcard from %s",
+    "item.aerolarge.postcard.franked": "Franked over %s, %s",
+    "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",
     "block.aerolarge.searchlight_handle": "Searchlight Handle",
     "block.aerolarge.skywriting_board": "Skywriting Board",
     "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
@@ -5544,7 +5586,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5624,6 +5666,8 @@ shaped("screen_stand", ["F", "C"], { F: "minecraft:dark_oak_fence", C: "minecraf
 shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
 shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
 shaped("floodlight", ["I", "L", "D"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", D: "minecraft:daylight_detector" }, 1);
+shaped("franking_machine", ["P", "C"], { P: "minecraft:paper", C: "minecraft:cartography_table" }, 1);
+shaped("mail_sack", ["S", "L", "P"], { S: "minecraft:string", L: "minecraft:leather", P: "minecraft:paper" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);

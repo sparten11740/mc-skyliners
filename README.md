@@ -1581,6 +1581,15 @@ over her axis, where the hull's drag centres, so her nose stays level rather tha
 with her engine cars, which hang below it, run full ahead. The server config's `speedBoost` leaves it out of zeppelins
 built from then on, and off, the buttons already built do nothing.
 
+Zeppelin Post: a red Franking Machine stands on the control car's floor to starboard, a green lamp on it. Use it with a
+sheet of paper and it prints a postcard: a map of the land she is flying over, named for her ("Postcard from" her
+christened name, or the Zeppelin), franked with where she was, which fills in as you hold it. Use it with an empty hand
+while she flies over a village and a mail sack drops from under the car on a parachute, landing among the houses with a
+thump and a flutter of letters while the village bell rings for the post, loud enough to be heard aboard, and the
+villagers sparkle; its lamp goes dark for half a minute before the next. Away from a village, or while it rests, it only
+sounds a low note. The server config's `zeppelinPost` leaves it out of zeppelins built from then on, and off, the
+machines already built do nothing.
+
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
 takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
@@ -1812,8 +1821,9 @@ airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `
 `SearchlightBlock`s whose `SearchlightHandleBlock`s swing them, `SearchlightBeams` drawing their beams and pools, and
 `ZeppelinFloodlights` hangs the `FloodlightBlock`s whose `FloodlightBlockEntity` lights them as the sky darkens,
 `Floodlights` drawing their light, and `HullAmbience` plays her hull's boom and groans to those aboard, `GreatShadow`
-draws her shadow from her `ZeppelinSilhouette`, and `ZeppelinBoost` fits the `BoostButtonBlock` and the boosters round
-her tail, its `BoostButtonBlockEntity` firing them and `SpeedBoost` steering her as they do (a `Course` on
+draws her shadow from her `ZeppelinSilhouette`, and `ZeppelinPost` stands the `FrankingMachineBlock`, whose mail sacks
+(`MailSackItem`) land their own way from a `FallingCrate`, `ZeppelinBoost` fits the `BoostButtonBlock` and the boosters
+round her tail, its `BoostButtonBlockEntity` firing them and `SpeedBoost` steering her as they do (a `Course` on
 `ZeppelinPilot`'s list, keeping her engines as they were), and `ZeppelinSkywriting` hangs the `SkywritingBoardBlock`
 whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her along it, `Skywriting` handing her
 pilot the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the smoke and `SkywritingBoardRenderer`

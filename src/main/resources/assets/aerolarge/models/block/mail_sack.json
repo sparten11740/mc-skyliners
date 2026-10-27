@@ -1,0 +1,106 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "canvas": "minecraft:block/brown_wool",
+    "band": "minecraft:block/red_wool",
+    "particle": "minecraft:block/brown_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        10,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#canvas"
+        },
+        "south": {
+          "texture": "#canvas"
+        },
+        "east": {
+          "texture": "#canvas"
+        },
+        "west": {
+          "texture": "#canvas"
+        },
+        "up": {
+          "texture": "#canvas"
+        },
+        "down": {
+          "texture": "#canvas"
+        }
+      }
+    },
+    {
+      "from": [
+        2.9,
+        4,
+        2.9
+      ],
+      "to": [
+        13.1,
+        6,
+        13.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#band"
+        },
+        "south": {
+          "texture": "#band"
+        },
+        "east": {
+          "texture": "#band"
+        },
+        "west": {
+          "texture": "#band"
+        },
+        "up": {
+          "texture": "#band"
+        },
+        "down": {
+          "texture": "#band"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        10,
+        6
+      ],
+      "to": [
+        10,
+        12,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#canvas"
+        },
+        "south": {
+          "texture": "#canvas"
+        },
+        "east": {
+          "texture": "#canvas"
+        },
+        "west": {
+          "texture": "#canvas"
+        },
+        "up": {
+          "texture": "#canvas"
+        },
+        "down": {
+          "texture": "#canvas"
+        }
+      }
+    }
+  ]
+}

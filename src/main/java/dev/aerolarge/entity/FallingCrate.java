@@ -31,7 +31,8 @@ import net.minecraft.world.phys.Vec3;
  * A care package on its way down: shoved off, it slides on until it leaves the floor it stood on (out of the cargo
  * door, over the edge), falls free for a moment, then its parachute opens and it floats down, drifting to a stop
  * sideways, and lands as the crate it was, its contents and all. Landing, it says how far from the nearest
- * burning signal flare it came down, to everyone nearby and to whoever dropped it.
+ * burning signal flare it came down, to everyone nearby and to whoever dropped it. Anything else it carries whose item
+ * knows how to land (see {@link Landing}) lands as that item says instead, as a zeppelin's mail sack does.
  */
 public class FallingCrate extends Entity {
     private static final EntityDataAccessor<ItemStack> CRATE = SynchedEntityData.defineId(FallingCrate.class, EntityDataSerializers.ITEM_STACK);
@@ -62,6 +63,12 @@ public class FallingCrate extends Entity {
 
     public FallingCrate(EntityType<? extends FallingCrate> type, Level level) {
         super(type, level);
+    }
+
+    /** An item that, carried down on a parachute, lands its own way rather than as a crate. */
+    public interface Landing {
+        /** Lands what it carried where it came to rest, on the server, dropped by whoever is given. */
+        void land(ServerLevel level, Vec3 at, ItemStack carried, @Nullable UUID dropper);
     }
 
     /** A crate falling from the point given, moving as given (blocks a tick), dropped by whoever is given. */
@@ -120,6 +127,11 @@ public class FallingCrate extends Entity {
     /** Down: stands where it came to rest as the crate it was, or as its item if there is no room, and says where. */
     private void land(ServerLevel level) {
         ItemStack crate = crate();
+        if (crate.getItem() instanceof Landing landing) {
+            landing.land(level, position(), crate, dropper);
+            discard();
+            return;
+        }
         BlockPos at = blockPosition();
         for (int i = 0; i < ROOM_ABOVE && !level.getBlockState(at).canBeReplaced(); i++) {
             at = at.above();
