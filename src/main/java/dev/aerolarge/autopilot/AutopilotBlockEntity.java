@@ -1156,7 +1156,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             if (phase != Phase.OFF) {
                 disengage();
             }
-            return Component.translatable("message.aerolarge.autopilot.off");
+            return Component.translatable(craft == Craft.ZEPPELIN ? "message.aerolarge.autopilot.off_zeppelin" : "message.aerolarge.autopilot.off");
         }
         SableFlight.State state = SableFlight.read(this, nose());
         if (state == null || level == null) {

@@ -5298,6 +5298,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...atcLang(),
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
+  "message.aerolarge.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner, and there is no Physics Assembler aboard to assemble it.",
   "message.aerolarge.autopilot.assembling": "Assembling the airliner: the autopilot takes it from here.",
   "message.aerolarge.autopilot.assembly_failed": "The Physics Assembler could not assemble the airliner: %s",
