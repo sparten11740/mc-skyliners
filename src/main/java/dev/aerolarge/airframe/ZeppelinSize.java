@@ -10,8 +10,8 @@ import java.util.Set;
  * hull and no more than leaves it usable (see {@link ZeppelinLayout}). Each ship keeps its own, from its blueprint.
  */
 public enum ZeppelinSize {
-    HALF(1, new ZeppelinShape.CellFill(1, 13.5, 7.5, 0.55)),
-    FULL(2, ZeppelinShape.CELLS_FILL);
+    HALF(1, new ZeppelinShape.CellFill(1, 13.5, 7.5, 0.55), new EngineCarShape(2.4, 7, 3, 6, 4.5F, 1 / 3.0)),
+    FULL(2, ZeppelinShape.CELLS_FILL, new EngineCarShape(3.2, 9, 4, 8, 6, 1));
 
     /** The names of the sizes the first test builds were made at, smaller than full. */
     private static final Set<String> LEGACY_SMALL = Set.of("THIRD", "TWO_THIRDS");
@@ -22,14 +22,31 @@ public enum ZeppelinSize {
      * block-thick envelope, would be too little to float the full-size control car and decks it carries.
      */
     private final ZeppelinShape.CellFill cells;
+    /** Its engine cars: on a smaller hull, smaller and nearer it, or they would look oversized on her. */
+    private final EngineCarShape engineCars;
 
-    ZeppelinSize(double scale, ZeppelinShape.CellFill cells) {
+    ZeppelinSize(double scale, ZeppelinShape.CellFill cells, EngineCarShape engineCars) {
         this.scale = scale;
         this.cells = cells;
+        this.engineCars = engineCars;
+    }
+
+    /**
+     * An engine car's pod: its radius, how many rows it reaches fore and aft of its station, how many its nose rounds
+     * over, how far out from the hull's side it stands, in blocks, and how far its propeller's blades reach round the
+     * hub, in blocks. Each is cut by its own share on a smaller hull, as far as leaves a room an engineer stands in. And
+     * how hard its engine pushes, a share of the configured setting: on a lighter ship, as much less as she weighs,
+     * so she speeds up and turns as the full-size ship does, which her pilot is tuned for, rather than hunting.
+     */
+    public record EngineCarShape(double radius, int halfLength, double nose, double standoff, float propellerReach, double thrust) {
     }
 
     ZeppelinShape.CellFill cells() {
         return cells;
+    }
+
+    public EngineCarShape engineCars() {
+        return engineCars;
     }
 
     public double scale() {

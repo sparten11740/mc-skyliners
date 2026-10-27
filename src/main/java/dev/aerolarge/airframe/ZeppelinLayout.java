@@ -8,6 +8,7 @@ import dev.aerolarge.block.BoardingStairsBlockEntity;
 import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.PropellerBlock;
+import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.ThrustRelayBlock;
@@ -157,16 +158,8 @@ public final class ZeppelinLayout implements Layout {
     private static final double DECKS_NARROWEST = 0.95;
     /** The most rows the fairing over the control car climbs to meet the cover, a bound on its search. */
     private static final int FAIRING_HIGHEST = 16;
-    /** An engine car's pod: how many rows its nose rounds over, and how thick its skin is, in blocks. */
-    private static final double POD_NOSE = 4;
+    /** How thick an engine car's pod's skin is, in blocks; the rest of it is the size's (see {@link ZeppelinSize}). */
     private static final double POD_SKIN = 1.2;
-    /**
-     * An engine car's pod, at every size: its radius, how many rows it reaches fore and aft of its station, and how
-     * far out from the hull's side it stands, in blocks.
-     */
-    private static final double POD_RADIUS = 3.2;
-    private static final int POD_HALF_LENGTH = 9;
-    private static final double POD_STANDOFF = 8;
     /**
      * The engine cars' thrusters: those pushing ahead stand round the propeller's hub at the pod's tail, as offsets
      * across and up from its middle; those pushing astern stand in its nose.
@@ -991,11 +984,14 @@ public final class ZeppelinLayout implements Layout {
         }
     }
 
-    /** An engine car's pod, in blocks: its axis across and up, its nose and tail rows and its radius. */
-    private record Pod(int x, int y, int front, int back, double radius) {
+    /**
+     * An engine car's pod, in blocks: its axis across and up, its nose and tail rows, its radius and how many rows its
+     * nose rounds over.
+     */
+    private record Pod(int x, int y, int front, int back, double radius, double nose) {
         /** The pod's radius at a row, rounding over at its nose. */
         double radiusAt(int z) {
-            return radius * Math.min(1, Math.sqrt(Math.max(0, (z - front + 0.5) / POD_NOSE)));
+            return radius * Math.min(1, Math.sqrt(Math.max(0, (z - front + 0.5) / nose)));
         }
     }
 
@@ -1007,12 +1003,13 @@ public final class ZeppelinLayout implements Layout {
      */
     private void engineCar(int engine) {
         EngineCar car = EngineCar.of(engine);
+        ZeppelinSize.EngineCarShape shape = options.size().engineCars();
         double hullRadius = radius(car.station());
         double drop = ENGINE_DROP * hullRadius;
-        double out = Math.sqrt(hullRadius * hullRadius - drop * drop) * scale + POD_STANDOFF;
+        double out = Math.sqrt(hullRadius * hullRadius - drop * drop) * scale + shape.standoff();
         int station = (int) Math.round(car.station() * scale);
-        Pod pod = new Pod((int) Math.round(car.side() * out), (int) Math.round((axisHeight - drop) * scale), station - POD_HALF_LENGTH,
-            station + POD_HALF_LENGTH, POD_RADIUS);
+        Pod pod = new Pod((int) Math.round(car.side() * out), (int) Math.round((axisHeight - drop) * scale), station - shape.halfLength(),
+            station + shape.halfLength(), shape.radius(), shape.nose());
         int reach = (int) Math.ceil(pod.radius());
         box(pod.x() - reach, pod.y() - reach, pod.front(), pod.x() + reach, pod.y() + reach, pod.back(), (x, y, z) -> podAt(pod, x, y, z));
         List<BlockPos> ahead = new ArrayList<>();
@@ -1020,8 +1017,12 @@ public final class ZeppelinLayout implements Layout {
             thruster(pod.x() + at[0], pod.y() + at[1], pod.back(), Direction.NORTH);
             ahead.add(relay(pod.x() + at[0], pod.y() + at[1], pod.back() - 1));
         }
-        set(pod.x(), pod.y(), pod.back(), AerolargeRegistry.PROPELLER.get().defaultBlockState().setValue(PropellerBlock.FACING, Direction.NORTH));
-        ahead.add(new BlockPos(pod.x(), pod.y(), pod.back()));
+        BlockPos hub = new BlockPos(pod.x(), pod.y(), pod.back());
+        set(hub.getX(), hub.getY(), hub.getZ(), AerolargeRegistry.PROPELLER.get().defaultBlockState().setValue(PropellerBlock.FACING, Direction.NORTH));
+        if (shape.propellerReach() != PropellerBlockEntity.FULL_REACH) {
+            fittings.put(hub, (blockEntity, rotation) -> reachTo(blockEntity, shape.propellerReach()));
+        }
+        ahead.add(hub);
         List<BlockPos> astern = new ArrayList<>();
         for (int[] at : ASTERN_THRUSTERS) {
             thruster(pod.x() + at[0], pod.y() + at[1], pod.front(), Direction.SOUTH);
@@ -1030,7 +1031,14 @@ public final class ZeppelinLayout implements Layout {
         aheadRelays.put(engine, ahead);
         asternRelays.put(engine, astern);
         engineCars.add(new BlockPos(pod.x(), pod.y(), (pod.front() + pod.back()) / 2));
-        strut(pod.x(), pod.y(), station, car.side());
+        strut(pod.x(), pod.y(), station, car.side(), pod.radius());
+    }
+
+    /** A propeller's blades cut to its engine car's size. */
+    private static void reachTo(BlockEntity blockEntity, float reach) {
+        if (blockEntity instanceof PropellerBlockEntity propeller) {
+            propeller.reachTo(reach);
+        }
     }
 
     /** A block of a pod: its skin, closed over at its nose and tail, and open inside. */
@@ -1050,20 +1058,20 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /**
-     * A creative thruster facing the way it pushes, turned up to the configured setting, with no plume: an airship's
-     * engines turn propellers, and burn nothing to be seen (see {@link Thrusters}).
+     * A creative thruster facing the way it pushes, turned up to the configured setting, or its size's share of it, with
+     * no plume: an airship's engines turn propellers, and burn nothing to be seen (see {@link Thrusters}).
      */
     private void thruster(int x, int y, int z, Direction pushes) {
         if (palette.engine().isEmpty()) {
             return;
         }
         set(x, y, z, AirframePalette.with(palette.engine().get(), "facing", pushes.getSerializedName()));
-        fittings.put(new BlockPos(x, y, z), Thrusters.fullThrust(EngineFlames.NONE));
+        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(EngineFlames.NONE, options.size().engineCars().thrust()));
     }
 
     /** The strut from an engine car back in to the hull: girders across, from the car's side to the cover. */
-    private void strut(int x, int y, int z, int side) {
-        for (int at = x - side * (int) Math.ceil(POD_RADIUS); at * side > 0 && !inHull(at, y, z); at -= side) {
+    private void strut(int x, int y, int z, int side, double podRadius) {
+        for (int at = x - side * (int) Math.ceil(podRadius); at * side > 0 && !inHull(at, y, z); at -= side) {
             strutAt(at, y, z);
         }
     }

@@ -107,6 +107,7 @@ offered by the blueprints and commands.
 | 7 | Two sizes | Half (1 block a metre) and full, in place of the third and two thirds; a ship saved at a third or two thirds loads as half, the nearest left | Jan |
 | 8 | What shrinks at half | Each part by its own share (the table above), from the planning agent's layout survey | Lead, from the survey |
 | 9 | Half's gas cells | Gap 1 m, half 13.5 m wide and 7.5 m tall at their fullest, their middle 0.55 of the radius over the axis: no nearer than 1.5 blocks to the cover, two rows of headroom over the gangway. Found in play-testing: mass 10,753 bare, she climbs at 2 blocks a second to her ceiling of some 117 (175 over the ground) and holds level there, her cells at signals 10 to 14 | Lead, found in play-testing |
+| 10 | Half's engine cars | Pod radius 2.4, 15 rows long, its nose rounding over 3, 6 blocks off the hull, the propeller's blades 4.5 (its reach now saved with each propeller, 6 for one saved without); inside, the grating a row under the axis with two rows of headroom, 9 rows long. Found in play-testing: with the full ship's engines she hunted, full ahead and stopped by turns, her speed swinging from -3 to 16 b/s about the 8 asked; her engines pushing a third as hard, as she weighs a third as much, she settles on 8 within a minute | Lead, found in play-testing |
 
 ## Outcome
 

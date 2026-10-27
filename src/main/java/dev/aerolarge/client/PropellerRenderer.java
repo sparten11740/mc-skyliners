@@ -61,18 +61,18 @@ public class PropellerRenderer implements BlockEntityRenderer<PropellerBlockEnti
         for (int blade = 0; blade < BLADES; blade++) {
             pose.pushPose();
             pose.mulPose(Axis.ZP.rotationDegrees(360F * blade / BLADES));
-            blade(consumer, pose.last(), light);
+            blade(consumer, pose.last(), light, propeller.reach());
             pose.popPose();
         }
         pose.popPose();
     }
 
-    /** One blade, out along y: varnished wood, tapering to its brass tip. */
-    private static void blade(VertexConsumer consumer, PoseStack.Pose pose, int light) {
-        float tipStart = PropellerBlockEntity.REACH - TIP_SHARE * (PropellerBlockEntity.REACH - BLADE_ROOT);
-        float tipWidth = ROOT_WIDTH + (TIP_WIDTH - ROOT_WIDTH) * (tipStart - BLADE_ROOT) / (PropellerBlockEntity.REACH - BLADE_ROOT);
+    /** One blade, out along y as far as it reaches, in blocks: varnished wood, tapering to its brass tip. */
+    private static void blade(VertexConsumer consumer, PoseStack.Pose pose, int light, float reach) {
+        float tipStart = reach - TIP_SHARE * (reach - BLADE_ROOT);
+        float tipWidth = ROOT_WIDTH + (TIP_WIDTH - ROOT_WIDTH) * (tipStart - BLADE_ROOT) / (reach - BLADE_ROOT);
         slab(consumer, pose, light, BLADE_ROOT, tipStart, ROOT_WIDTH, tipWidth, WOOD, WOOD_EDGE);
-        slab(consumer, pose, light, tipStart, PropellerBlockEntity.REACH, tipWidth, TIP_WIDTH, BRASS, BRASS);
+        slab(consumer, pose, light, tipStart, reach, tipWidth, TIP_WIDTH, BRASS, BRASS);
     }
 
     /**

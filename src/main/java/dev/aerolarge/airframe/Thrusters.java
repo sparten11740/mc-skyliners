@@ -19,7 +19,12 @@ final class Thrusters {
     }
 
     static Fitting fullThrust(EngineFlames flames) {
-        int setting = AerolargeConfig.THRUST_SETTING.get();
+        return thrust(flames, 1);
+    }
+
+    /** A thruster turned up to a share of the configured setting, at least its least. */
+    static Fitting thrust(EngineFlames flames, double share) {
+        int setting = Math.max(1, (int) Math.round(AerolargeConfig.THRUST_SETTING.get() * share));
         return (blockEntity, rotation) -> set(blockEntity, setting, flames);
     }
 
