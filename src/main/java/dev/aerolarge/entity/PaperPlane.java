@@ -3,6 +3,7 @@ package dev.aerolarge.entity;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -135,9 +136,11 @@ public class PaperPlane extends Entity {
         move(MoverType.SELF, velocity);
         Vec3 moved = position().subtract(from);
         boolean blocked = Math.abs(moved.x - velocity.x) > 1e-4 || Math.abs(moved.y - velocity.y) > 1e-4 || Math.abs(moved.z - velocity.z) > 1e-4;
-        if (blocked || isInWater() || isInLava() || tickCount > LONGEST_FLIGHT) {
+        boolean down = blocked || isInWater() || isInLava();
+        if (down || tickCount > LONGEST_FLIGHT) {
             setDeltaMovement(Vec3.ZERO);
             if (!level().isClientSide) {
+                scoreAtTarget(down);
                 land();
             }
             return;
@@ -215,6 +218,16 @@ public class PaperPlane extends Entity {
     private void keepLandGoing() {
         if (tickCount % GLIDING_RENEWAL == 0 && level() instanceof ServerLevel server && !SableFlight.inPlot(this)) {
             server.getChunkSource().addRegionTicket(GLIDING, chunkPosition(), GLIDING_REACH, getId());
+        }
+    }
+
+    /**
+     * Come down on the ground, out of every airframe, it is scored for whoever threw it at the nearest landing target;
+     * not when it is let fall out of the air after its longest flight.
+     */
+    private void scoreAtTarget(boolean down) {
+        if (down && !isRemoved() && !SableFlight.inPlot(this) && thrower() instanceof ServerPlayer player) {
+            LandingTargetBlockEntity.scorePlane(player, position());
         }
     }
 

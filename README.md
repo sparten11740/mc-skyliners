@@ -1098,7 +1098,8 @@ ten seconds after it opened, the door shuts by itself (waiting, as ever, for any
 Turn it off with `decompression` in the server config.
 
 Put a Landing Target on the ground at the drop zone: every parachute landing within 64 blocks of it is called out to
-everyone nearby with its distance from the middle, and using the target shows the best landing so far.
+everyone nearby with its distance from the middle, and using the target shows the best landing so far. Paper planes
+that come down near it are called out the same way for whoever threw them, with a best of their own.
 
 A Signal Flare stuck in the ground marks a drop zone from the air: for three minutes it sends up a column of smoke a
 hundred blocks tall, red, or the colour of any dye used on it, then burns out.
