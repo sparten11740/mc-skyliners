@@ -2,6 +2,9 @@ package dev.aerolarge;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.airframe.AirframeLayout;
+import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairCallButtonBlock;
@@ -112,7 +115,6 @@ import dev.aerolarge.block.LightCableBlock;
 import dev.aerolarge.block.LightStripBlock;
 import dev.aerolarge.block.LinedShellBlock;
 import dev.aerolarge.block.LinkedControlBlockEntity;
-import dev.aerolarge.block.ModelAirlinerBlock;
 import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
@@ -179,6 +181,7 @@ import dev.aerolarge.block.CockpitDisplayBlock;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.HelmBlock;
 import dev.aerolarge.block.HelmBlockEntity;
+import dev.aerolarge.block.SouvenirModelBlock;
 import dev.aerolarge.block.TelegraphBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
@@ -187,7 +190,7 @@ import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.entity.Trolley;
-import dev.aerolarge.item.AirlinerBlueprintItem;
+import dev.aerolarge.item.AirframeBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
@@ -264,6 +267,9 @@ public final class AerolargeRegistry {
      * the airliner, in its way as it takes off.
      */
     private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
+    /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see {@link AirframeBlueprintItem}). */
+    private static final float AIRLINER_MODEL_MIDDLE = 7;
+    private static final float ZEPPELIN_MODEL_MIDDLE = 8;
 
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Aerolarge.MOD_ID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Aerolarge.MOD_ID);
@@ -1355,13 +1361,18 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
     /** A laser pointer to shine about the cabin, which dazzles whoever it catches in the face. */
     public static final DeferredItem<LaserPointerItem> LASER_POINTER = ITEMS.register("laser_pointer", () -> new LaserPointerItem(new Item.Properties().stacksTo(1)));
-    /** Souvenirs: a pilot's cap to wear and a model of the airliner on its stand. */
+    /** Souvenirs: a pilot's cap to wear, and models of the airliner and the zeppelin on their stands. */
     public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredBlock<ModelAirlinerBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
-        "model_airliner", ModelAirlinerBlock::new,
+    public static final DeferredBlock<SouvenirModelBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
+        "model_airliner", SouvenirModelBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_AIRLINER_ITEM = ITEMS.registerSimpleBlockItem(MODEL_AIRLINER);
+    public static final DeferredBlock<SouvenirModelBlock> MODEL_ZEPPELIN = BLOCKS.registerBlock(
+        "model_zeppelin", SouvenirModelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> MODEL_ZEPPELIN_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ZEPPELIN);
     /**
      * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
      * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.
@@ -1500,15 +1511,25 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> ENGINE_TELEGRAPH_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_TELEGRAPH);
     public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
 
-    /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
-    public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
-        "airliner_blueprint",
-        () -> new AirlinerBlueprintItem(false, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    /**
+     * Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. Each shows a
+     * miniature of what it builds by the souvenir model's body's middle, so many sixteenths up its block.
+     */
+    public static final DeferredItem<AirframeBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
+        "airliner_blueprint", () -> new AirframeBlueprintItem(() -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false),
+            () -> MODEL_AIRLINER.get().defaultBlockState(), AIRLINER_MODEL_MIDDLE, "item.aerolarge.airliner_blueprint.tooltip",
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** The same airliner with a pool, a gym hall and a lounge already fitted into the cabin. */
-    public static final DeferredItem<AirlinerBlueprintItem> FURNISHED_AIRLINER_BLUEPRINT = ITEMS.register(
-        "furnished_airliner_blueprint",
-        () -> new AirlinerBlueprintItem(true, new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    public static final DeferredItem<AirframeBlueprintItem> FURNISHED_AIRLINER_BLUEPRINT = ITEMS.register(
+        "furnished_airliner_blueprint", () -> new AirframeBlueprintItem(() -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true),
+            () -> MODEL_AIRLINER.get().defaultBlockState(), AIRLINER_MODEL_MIDDLE, "item.aerolarge.furnished_airliner_blueprint.tooltip",
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
+    /** The Hindenburg-sized zeppelin, always at its own size. */
+    public static final DeferredItem<AirframeBlueprintItem> ZEPPELIN_BLUEPRINT = ITEMS.register(
+        "zeppelin_blueprint", () -> new AirframeBlueprintItem(ZeppelinLayout::create, () -> MODEL_ZEPPELIN.get().defaultBlockState(),
+            ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.zeppelin_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
@@ -1525,7 +1546,7 @@ public final class AerolargeRegistry {
 
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
-        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, GEAR_BAY_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
@@ -1543,7 +1564,7 @@ public final class AerolargeRegistry {
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
-            PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM, DISCO_BALL_ITEM,

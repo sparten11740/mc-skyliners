@@ -13,15 +13,16 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A souvenir model of the airliner on a stand, for a desk or a shelf. FACING is the way its nose points: toward
- * whoever put it down.
+ * A souvenir model on a stand, for a desk or a shelf: of the airliner, or of the zeppelin. FACING is the way its
+ * nose points: toward whoever put it down. A blueprint's preview shows its airframe's model (see
+ * {@link dev.aerolarge.item.AirframeBlueprintItem}).
  */
-public class ModelAirlinerBlock extends HorizontalDirectionalBlock {
-    private static final MapCodec<ModelAirlinerBlock> CODEC = simpleCodec(ModelAirlinerBlock::new);
-    /** The model on its stand, wings and all, whichever way it points. */
+public class SouvenirModelBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<SouvenirModelBlock> CODEC = simpleCodec(SouvenirModelBlock::new);
+    /** The model on its stand, wings or fins and all, whichever way it points. */
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 12, 15);
 
-    public ModelAirlinerBlock(Properties properties) {
+    public SouvenirModelBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }

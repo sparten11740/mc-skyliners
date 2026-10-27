@@ -742,8 +742,8 @@ mkdirSync(miscOutput, { recursive: true });
 }
 
 // The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
-// carries a gold star for the fittings. The control tower's shows the tower from the side: its shaft under the wider
-// cab, the cab's windows a band of the paper, and the mast on its roof.
+// carries a gold star for the fittings. The zeppelin's shows it from the side. The control tower's shows the tower
+// from the side: its shaft under the wider cab, the cab's windows a band of the paper, and the mast on its roof.
 function blueprint(name, star, drawn = airlinerFromAbove) {
   texture(itemOutput, name, (x, y) => {
     if (x < 1 || x > 14 || y < 2 || y > 13) return CLEAR;
@@ -768,6 +768,15 @@ function runwayFromAbove(x, y) {
   const keys = (y === 3 || y === 12) && x % 2 === 0;
   return x === 4 || x === 11 || keys || (x === 7 && y % 3 !== 0);
 }
+// A zeppelin from the side, nose to the left: its long cigar of a hull, the fins at its tail and the car under its bow.
+function zeppelinFromTheSide(x, y) {
+  const along = (x - 7) / 6;
+  const taper = x > 8 ? 1 - (x - 8) / 9 : 1;
+  const hull = along * along < 1 && Math.abs(y - 7) <= 2.6 * Math.sqrt(1 - along * along) * taper;
+  const fins = x >= 11 && x <= 13 && Math.abs(y - 7) <= (x - 10) * 1.2;
+  const car = y === 10 && x >= 3 && x <= 5;
+  return hull || fins || car;
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -777,6 +786,7 @@ function towerFromTheSide(x, y) {
 }
 blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
+blueprint("zeppelin_blueprint", false, zeppelinFromTheSide);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 

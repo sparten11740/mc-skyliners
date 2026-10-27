@@ -42,13 +42,14 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   through it, with lavatories by the gym hall's entrance, lit WC signs pointing the way to the WCs and showing whether
   they are free, and an exit sign over every door (see Curtains, bulkheads and signs). Over all of it runs the upper
   deck, galleries round the tall rooms (see The upper deck).
+- **Zeppelin Blueprint**: a Hindenburg-sized zeppelin, 490 blocks long, with its control car, decks, gas cells, Sky
+  Shaft and Sky Deck (see The zeppelin).
 
-Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you
-face. While you hold one, a see-through miniature of the airliner floats over the block you aim at, turned the way it
-would be built there, so you can see which way it will go before you click: nose toward you, tail away, along
-whichever of north, east, south and west you face most. It refuses while anything is in the way and says where;
-sneak to build through it. Operators can also run
-`/aerolarge build <pos> <north|east|south|west> [furnished]`.
+Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you face.
+While you hold one, a see-through miniature of the airliner or the zeppelin floats over the block you aim at, turned the
+way it would be built there, so you can see which way it will go before you click: nose toward you, tail away, along
+whichever of north, east, south and west you face most. It refuses while anything is in the way and says where; sneak to
+build through it. Operators can also run `/aerolarge build <pos> <north|east|south|west> [furnished]`.
 
 At the default scale (2 blocks per metre, set by `scale` in the server config) the airliner is about 145 blocks long
 and 160 across the wings, and its cabin is about 14 blocks wide and 11 tall above the main deck's floor, 5 of them
@@ -1063,7 +1064,8 @@ from the height it left at, hundreds of blocks.
 
 A Pilot Cap, navy with a black peak and a gold badge, is worn on the head: use it to put it on, or put it in the
 helmet slot. It is no armour and protects nothing; it just looks the part. A Model Airliner on its stand goes on a desk
-or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter.
+or a shelf, its nose toward you. Both can be crafted, or bought at a duty-free counter. A Model Zeppelin, a silver
+cigar on its stand with its fins and its car, is in the creative tab.
 
 A Pilot Helmet is a jet pilot's flight helmet: white with the livery's blue stripe over the crown, the airline's
 roundel over each ear, a gold visor down over the eyes and a microphone on a boom in front of the mouth. It is worn
@@ -1377,9 +1379,10 @@ stops there (On the Numbers).
 
 A rigid airship in the Hindenburg's style, as big as the real one at the airliner's scale: about 490 blocks long and 82
 across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is always
-built at that size, whatever `scale` the server config sets for the airliner. Operators build one with `/aerolarge build
-<pos> <north|east|south|west> zeppelin`, its nose tip at the position and its tail stretching away the way given,
-through whatever stands there; it takes a few tens of seconds to go up.
+built at that size, whatever `scale` the server config sets for the airliner. The Zeppelin Blueprint builds one as an
+airliner's blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin`, its nose tip
+at the position and its tail stretching away the way given, through whatever stands there; it takes a few tens of
+seconds to go up.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1548,7 +1551,8 @@ Create's own turn does (the gym hall's trusses of an airliner built facing east 
 `CloudlessCabin` leaves the clouds out of the player's view while the camera is inside a hull in the cloud layer. The
 zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in metres, fixed at two blocks a metre) and
 is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
-as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
+as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, from an
+`AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its souvenir model (`SouvenirModelBlock`), and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
 engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck, and `ZeppelinCellGallery` the gallery inside the
 middle cell. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
