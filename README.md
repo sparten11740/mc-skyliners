@@ -45,6 +45,8 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
 - **Zeppelin Blueprint**: a Hindenburg-sized zeppelin, 490 blocks long, with its control car, decks, gas cells, Sky
   Shaft and Sky Deck (see The zeppelin).
 - **Furnished Zeppelin Blueprint**: the same zeppelin with its passenger decks furnished (see The zeppelin).
+- **Half-Size Zeppelin Blueprints**, plain, furnished and festive: the zeppelin at half the size, 245 blocks long, its
+  control car and decks as big as ever, a smaller ship drawn on the sheet (see The zeppelin).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you face.
 While you hold one, a see-through miniature of the airliner or the zeppelin floats over the block you aim at, turned the
@@ -1389,12 +1391,10 @@ blueprint does, and operators with `/aerolarge build <pos> <north|east|south|wes
 takes a few tens of seconds to go up. At half the size, some 245 blocks long, its hull is smaller and its control car
 and decks a player's size as ever, the hull raised over the car and its gas cells fuller for its size, to float them;
 its engine cars are a quarter slimmer and stand nearer the hull, with shorter propellers and a smaller room inside, and
-push a third as hard, as she weighs a third as much; she climbs to some 175 blocks over the ground. For now a half-size
-one is built with only some of the features below: everything in and under her control car (the horn cord, the livery
-board, the ship's plaque, the Lookout's Glass, the searchlights, the skywriting board, the floodlights and the speed
-boost), her engine rooms, her furnished decks and their passenger screens, the cell gallery, the techno room, the trim
-car, Up Ship's take-off, the Sky Deck with all on it and the ship's colours over it, painted on her fins, her christened
-crest and name, the flank screens, her lights, and the festive dress; and only with the command.
+push a third as hard, as she weighs a third as much; she climbs to some 175 blocks over the ground. The Half-Size
+Zeppelin Blueprints build one, plain, furnished or festive, with everything below, each piece as big as the full ship's
+wherever it fits: only the colours and the crest painted on her and the flank screens are made to fit her smaller fins
+and flanks, and the techno room is a little shorter.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control

@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairCallButtonBlock;
@@ -1777,6 +1778,12 @@ public final class AerolargeRegistry {
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.festive_zeppelin_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+    /** The zeppelin at half the Hindenburg's size, plain, furnished and dressed for Christmas. */
+    public static final DeferredItem<AirframeBlueprintItem> HALF_ZEPPELIN_BLUEPRINT = halfZeppelinBlueprint("half_zeppelin_blueprint", ZeppelinOptions.PLAIN);
+    public static final DeferredItem<AirframeBlueprintItem> HALF_FURNISHED_ZEPPELIN_BLUEPRINT =
+        halfZeppelinBlueprint("half_furnished_zeppelin_blueprint", ZeppelinOptions.FURNISHED);
+    public static final DeferredItem<AirframeBlueprintItem> HALF_FESTIVE_ZEPPELIN_BLUEPRINT =
+        halfZeppelinBlueprint("half_festive_zeppelin_blueprint", ZeppelinOptions.FESTIVE);
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
         "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
@@ -1786,6 +1793,13 @@ public final class AerolargeRegistry {
         "runway_blueprint", () -> new RunwayBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
 
+    /** A blueprint for a half-size zeppelin built with these options, its tooltip under its own name's. */
+    private static DeferredItem<AirframeBlueprintItem> halfZeppelinBlueprint(String name, ZeppelinOptions options) {
+        return ITEMS.register(name, () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(options.sized(ZeppelinSize.HALF)),
+            () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge." + name + ".tooltip",
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
+    }
+
     /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
     public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
     }
@@ -1793,7 +1807,7 @@ public final class AerolargeRegistry {
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
         new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT,
-            CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
+            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, GEAR_BAY_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,

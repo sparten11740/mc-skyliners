@@ -792,6 +792,16 @@ function zeppelinFromTheSide(x, y) {
   const car = y === 10 && x >= 3 && x <= 5;
   return hull || fins || car;
 }
+// A half-size zeppelin from the side: the same, half as long and a little slimmer, in the middle of the sheet, so a
+// blueprint shows its size by its picture.
+function halfZeppelinFromTheSide(x, y) {
+  const along = (x - 7.5) / 3.5;
+  const taper = x > 8 ? 1 - (x - 8) / 6 : 1;
+  const hull = along * along < 1 && Math.abs(y - 7) <= 1.6 * Math.sqrt(1 - along * along) * taper;
+  const fins = x >= 9 && x <= 10 && Math.abs(y - 7) <= (x - 8) * 1.1;
+  const car = y === 9 && x >= 5 && x <= 6;
+  return hull || fins || car;
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -804,6 +814,9 @@ blueprint("furnished_airliner_blueprint", true);
 blueprint("zeppelin_blueprint", false, zeppelinFromTheSide);
 blueprint("furnished_zeppelin_blueprint", true, zeppelinFromTheSide);
 blueprint("festive_zeppelin_blueprint", true, zeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
+blueprint("half_zeppelin_blueprint", false, halfZeppelinFromTheSide);
+blueprint("half_furnished_zeppelin_blueprint", true, halfZeppelinFromTheSide);
+blueprint("half_festive_zeppelin_blueprint", true, halfZeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 
