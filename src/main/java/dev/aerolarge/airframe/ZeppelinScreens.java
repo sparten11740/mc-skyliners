@@ -37,6 +37,12 @@ final class ZeppelinScreens implements ZeppelinPiece {
         return AerolargeConfig.ZEPPELIN_SCREENS.get();
     }
 
+    /** Before the promenades' armchairs and in the control car, wherever they stand at the size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         int y = layout.upperDeckRow() + 1;

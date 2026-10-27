@@ -71,6 +71,12 @@ final class ZeppelinDecks implements ZeppelinPiece {
         return options.furnished();
     }
 
+    /** At every size, the decks' furniture where their floors reach, their width following the hull's. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     /** Furnishes both decks, once their stairs are in. */
     @Override
     public void build() {
@@ -153,7 +159,7 @@ final class ZeppelinDecks implements ZeppelinPiece {
 
     /** A table two blocks long along the hull, an armchair facing it at either end of either side. */
     private void table(int x, int y, int z) {
-        if (!layout.isOpen(x, y, z) || !layout.isOpen(x, y, z + 1)) {
+        if (!open(x, y, z) || !open(x, y, z + 1)) {
             return;
         }
         BlockState top = AerolargeRegistry.BAR_COUNTER.get().defaultBlockState().setValue(BarCounterBlock.FACING, Direction.EAST);
@@ -191,7 +197,7 @@ final class ZeppelinDecks implements ZeppelinPiece {
 
     /** An armchair facing the way given, its back over it, where both are open. */
     private void seat(int x, int y, int z, Direction facing, DyeColor colour) {
-        if (!layout.isOpen(x, y, z) || !layout.isOpen(x, y + 1, z)) {
+        if (!open(x, y, z) || !open(x, y + 1, z)) {
             return;
         }
         BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), colour, facing);
@@ -201,9 +207,14 @@ final class ZeppelinDecks implements ZeppelinPiece {
 
     /** A piece of furniture, where the deck is open. */
     private void place(int x, int y, int z, BlockState state) {
-        if (layout.isOpen(x, y, z) && layout.inHull(x, y, z)) {
+        if (open(x, y, z)) {
             layout.set(x, y, z, state);
         }
+    }
+
+    /** Whether a block is open deck: nothing laid there yet, and inside the hull rather than past its cover. */
+    private boolean open(int x, int y, int z) {
+        return layout.isOpen(x, y, z) && layout.inHull(x, y, z);
     }
 
     /** Something against the wall on one side, -1 port or 1 starboard; where across it went, or 0 where it did not. */
