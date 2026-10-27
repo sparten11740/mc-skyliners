@@ -87,9 +87,11 @@ classes already, `coverAt` names its block directly):
 | 11 | The festive wreath | Two blocks of Aerolarge's own, a garland and a bow: a zeppelin's assembly takes only Aerolarge's blocks (and the configured other mods') outside the hull, so a wreath of vanilla leaves and concrete stayed in the air and held the nose down at take-off. `aerolarge:assembly` now names such blocks | Lead, found in play-testing |
 | 12 | The festive switch | The blueprint itself: a festive zeppelin is built only from its own blueprint, so it needs no config switch | Lead |
 | 13 | Hearing the sleigh bells | Aboard, round the listener, since the engine cars are far aft of most of the ship; on the ground, from the fastest propeller, loud enough to carry 96 blocks | Lead, found in play-testing |
+| 14 | The control car's gap | Faired into the hull: the cover carried down solid from the hull to the car's roof all round, as the Hindenburg's was. The car had hung on a narrow ladder neck with sky round it, looking like a floating box; solid, so no dark hollow spawns mobs, under 1% more mass | Jan spotted it, lead |
+| 15 | Ship's colours | A 15-block flagstaff at the aft end of the Sky Deck's centre line, the halyard at its foot; the flag 20 by 10 blocks (two blocks a pixel), the banner's top at the hoist and its left edge along the flag's top, as flag protocol has a banner flown as a flag; it rises over two seconds with a pulley squeak and breaks out with a flap. Painted on the top and bottom fins only, at one block a pixel (40 by 20) in the middle of their outer part with a margin of the livery's colour, the flag's top skyward on both, mirrored seen from starboard as on aircraft tails; the side fins keep the livery, as the Hindenburg's did. The fins take the paint once the flag is closed up at the top, and lose it as soon as it is struck | Panel (historian, designer, skeptic) |
 
 ## Outcome
 
-So far (alpha.112): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch
+So far (alpha.114): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch
 (with paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board, 5 Festive
-blueprint; and the hole at the nose's tip mended.
+blueprint, 6 Ship's colours; and the hole at the nose's tip mended, and the control car faired into the hull.
