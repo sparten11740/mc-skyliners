@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import dev.aerolarge.Aboard;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.sublevel.ClientSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
@@ -139,10 +140,10 @@ public final class SableClient {
 
     /**
      * Where an assembled airliner's own frame lies among its blocks: the point on its centreline under the tip of its
-     * nose, level with the bottom of its wheels, and the way its nose points. Blocks keep the way they faced when it
-     * was assembled, so this is how the airliner was built.
+     * nose, level with the bottom of its wheels, and the way its nose points, and what kind of craft it is, airliner
+     * or zeppelin. Blocks keep the way they faced when it was assembled, so this is how the airliner was built.
      */
-    public record Frame(Vec3 origin, Direction nose) {
+    public record Frame(Vec3 origin, Direction nose, Craft craft) {
     }
 
     /**
@@ -382,7 +383,7 @@ public final class SableClient {
             return null;
         }
 
-        private static Frame frame(BlockEntity autopilot, BoundingBox3ic bounds) {
+        private static Frame frame(AutopilotBlockEntity autopilot, BoundingBox3ic bounds) {
             Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
             Vec3 centreline = Vec3.atCenterOf(autopilot.getBlockPos());
             // The far face of the blocks furthest the way the nose points.
@@ -395,7 +396,7 @@ public final class SableClient {
             Vec3 origin = nose.getAxis() == Direction.Axis.Z
                 ? new Vec3(centreline.x, bounds.minY(), tip)
                 : new Vec3(tip, bounds.minY(), centreline.z);
-            return new Frame(origin, nose);
+            return new Frame(origin, nose, autopilot.craft());
         }
 
         @Nullable

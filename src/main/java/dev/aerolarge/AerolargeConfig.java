@@ -48,6 +48,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue TECHNO_ROOM;
     public static final ModConfigSpec.BooleanValue LOOKOUT;
     public static final ModConfigSpec.BooleanValue UP_SHIP;
+    public static final ModConfigSpec.BooleanValue ZEPPELIN_SCREENS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -318,6 +319,13 @@ public final class AerolargeConfig {
                 "and zeppelins built from then on have no ballast valve."
             )
             .define("upShip", true);
+        ZEPPELIN_SCREENS = builder
+            .comment(
+                "Whether a zeppelin is built with passenger screens, before her promenades' armchairs and in her control car, looking",
+                "through her outside cameras: at her bow, under her car, and the flyby camera circling her. Zeppelins already built",
+                "keep theirs."
+            )
+            .define("zeppelinScreens", true);
         builder.pop();
 
         SPEC = builder.build();

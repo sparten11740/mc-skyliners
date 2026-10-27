@@ -15,6 +15,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
     public static final ModConfigSpec.BooleanValue DISCO_LIGHTS;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
+    public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -68,6 +69,10 @@ public final class AerolargeClientConfig {
                 "With Fast or Fancy graphics the windows never show the clouds behind them anyway; with Fabulous graphics the",
                 "clouds outside the windows go too while the cloud layer passes. Outside the hull the clouds are always drawn.")
             .define("cloudlessCabin", true);
+        FLYBY_CAMERA = builder
+            .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
+                "well out and a little above her. Off, her screens look through her bow and belly cameras only.")
+            .define("flybyCamera", true);
         SPEC = builder.build();
     }
 

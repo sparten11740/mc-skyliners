@@ -4,7 +4,6 @@ import static dev.aerolarge.airframe.AirframeShape.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The outside cameras the passenger screens and the flight deck's camera display look through, fixed to the airframe
@@ -13,7 +12,7 @@ import java.util.Locale;
  * It looks this many degrees to the right of the nose and up from level, through a lens this many degrees wide from top
  * to bottom.
  */
-public enum OutsideCamera {
+public enum OutsideCamera implements CameraSpot {
     /**
      * Four metres over the tip of the fin and five behind it, looking forward and down over the whole airliner, its
      * wingtips at the edges of the wide lens.
@@ -59,9 +58,34 @@ public enum OutsideCamera {
         this.fov = fov;
     }
 
-    /** The key of the camera's name in the lang file. */
-    public String label() {
-        return "screen.aerolarge.passenger_screen.camera." + name().toLowerCase(Locale.ROOT);
+    @Override
+    public double across() {
+        return across;
+    }
+
+    @Override
+    public double up() {
+        return up;
+    }
+
+    @Override
+    public double back() {
+        return back;
+    }
+
+    @Override
+    public double yaw() {
+        return yaw;
+    }
+
+    @Override
+    public double pitch() {
+        return pitch;
+    }
+
+    @Override
+    public double fov() {
+        return fov;
     }
 
     /** The camera of this name, or the fallback for a name no camera has. */

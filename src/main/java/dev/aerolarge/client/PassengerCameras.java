@@ -1,7 +1,10 @@
 package dev.aerolarge.client;
 
-import dev.aerolarge.AerolargeConfig;
-import dev.aerolarge.airframe.OutsideCamera;
+import dev.aerolarge.AerolargeClientConfig;
+import dev.aerolarge.airframe.CameraSpot;
+import dev.aerolarge.airframe.ZeppelinCamera;
+import dev.aerolarge.autopilot.Craft;
+import java.util.List;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import javax.annotation.Nullable;
 import net.minecraft.client.CameraType;
@@ -31,7 +34,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Looking through an assembled airliner's outside cameras from a passenger screen, the way a security camera is
- * watched: using the screen moves the player's view to the first camera (see {@link OutsideCamera}), using it again
+ * watched: using the screen moves the player's view to the first camera (see {@link CameraSpot}), using it again
  * steps on to the next and, after the last, back to the cabin; sneaking goes straight back. The view rides with the
  * airliner, placed afresh every frame as the airliner is drawn. The player stays where they are, seated or standing,
  * and nothing they do reaches the world while they look: a click only steps the camera on, and the sneak that leaves
@@ -95,18 +98,22 @@ public final class PassengerCameras {
         /** Whether the use key is still down from the press that got here, which must not step on again. */
         boolean useHeld = true;
 
-        Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, double scale, Lens lens, CameraType cameraType, float yRot, float xRot) {
+        Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, Lens lens, CameraType cameraType, float yRot, float xRot) {
             this.screen = screen;
             this.frame = frame;
-            this.scale = scale;
+            this.scale = CameraSpot.scale(frame.craft());
+            this.cameras = shown(frame.craft());
             this.lens = lens;
             this.cameraType = cameraType;
             this.yRot = yRot;
             this.xRot = xRot;
         }
 
-        OutsideCamera camera() {
-            return OutsideCamera.values()[camera];
+        /** The cameras of the airframe watched, in the order using the screen steps through them. */
+        final List<CameraSpot> cameras;
+
+        CameraSpot camera() {
+            return cameras.get(camera);
         }
 
         /** Sets the camera up among the airliner's blocks. */
@@ -114,6 +121,15 @@ public final class PassengerCameras {
             this.camera = camera;
             where = CameraMount.on(frame, scale, camera());
         }
+    }
+
+    /**
+     * The cameras of an airframe of a kind this player looks through, in order: all of them but a zeppelin's flyby
+     * camera when it is switched off on this client (see {@link AerolargeClientConfig#FLYBY_CAMERA}).
+     */
+    private static List<CameraSpot> shown(Craft craft) {
+        boolean flyby = AerolargeClientConfig.FLYBY_CAMERA.get();
+        return CameraSpot.of(craft).stream().filter(camera -> flyby || camera != ZeppelinCamera.FLYBY).toList();
     }
 
     /** The local player has used a passenger screen: look through the first camera, if the airliner has them. */
@@ -133,7 +149,7 @@ public final class PassengerCameras {
         // The server's settings, the airliner's scale among them, reach the client as it joins. The lens's eyes are as
         // high as the player's, so the view does not slide while the camera eases from the one's eye height to the
         // other's.
-        Viewing view = new Viewing(screen, frame, AerolargeConfig.SCALE.get(), new Lens(player.level(), player.getEyeHeight()),
+        Viewing view = new Viewing(screen, frame, new Lens(player.level(), player.getEyeHeight()),
             minecraft.options.getCameraType(), player.getYRot(), player.getXRot());
         view.mount(0);
         if (!place(view, minecraft.getTimer().getGameTimeDeltaPartialTick(true))) {
@@ -149,7 +165,7 @@ public final class PassengerCameras {
     /** On to the next camera, or back to the cabin after the last. */
     private static void next(Minecraft minecraft, Viewing view) {
         click(minecraft);
-        if (view.camera + 1 < OutsideCamera.values().length) {
+        if (view.camera + 1 < view.cameras.size()) {
             view.mount(view.camera + 1);
         } else {
             leave(minecraft);
@@ -286,7 +302,7 @@ public final class PassengerCameras {
     public static void fov(ViewportEvent.ComputeFov event) {
         Viewing view = viewing;
         if (view != null && event.usedConfiguredFov() && event.getCamera().getEntity() == view.lens) {
-            event.setFOV(view.camera().fov);
+            event.setFOV(view.camera().fov());
         }
     }
 
