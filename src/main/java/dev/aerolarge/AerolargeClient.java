@@ -194,7 +194,6 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(LookoutView::guiLayer);
         NeoForge.EVENT_BUS.addListener(LookoutView::loggingOut);
         NeoForge.EVENT_BUS.addListener(UpShipScene::tick);
-        NeoForge.EVENT_BUS.addListener(UpShipScene::stage);
         NeoForge.EVENT_BUS.addListener(SearchlightBeams::stage);
         NeoForge.EVENT_BUS.addListener(SkyTrails::tick);
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);

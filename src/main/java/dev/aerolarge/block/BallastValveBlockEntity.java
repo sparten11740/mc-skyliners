@@ -26,12 +26,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The water ballast valve's block entity: where the zeppelin's ground handlers stand and the points on her hull their
- * lines are made fast to, the officer who gives the call among them, and the outlet in her belly her bow's water pours
- * from, all set as she is built (turned as she was placed); and the game time her last take-off from the ground began,
- * sent to every client, which draws the handlers and the water from it (see the client's {@code UpShipScene}). Taking
- * off, she is held on the lines: the ship's bell, a short blast of the officer's whistle to hold fast, the bow's water
- * ballast pouring out, the officer's call "Up ship!" with a long blast, and the handlers letting go together.
+ * The water ballast valve's block entity: where the zeppelin's ground handlers would stand and the points on her hull
+ * their lines are made fast to, the officer who gives the call among them, and the outlet in her belly her bow's water
+ * pours from, all set as she is built (turned as she was placed); and the game time her last take-off from the ground
+ * began, sent with the outlet to every client, which pours the water from it (see the client's {@code UpShipScene}).
+ * Taking off, she is held on the lines: the ship's bell, a short blast of the officer's whistle to hold fast, the bow's
+ * water ballast pouring out, the officer's call "Up ship!" with a long blast, and the lines let go together. The
+ * handlers are not drawn; their whistles and the call are heard from where the officer stands.
  */
 public class BallastValveBlockEntity extends BlockEntity {
     private static final Loaded<BallastValveBlockEntity> LOADED = new Loaded<>(BallastValveBlockEntity.class, true);
@@ -39,14 +40,13 @@ public class BallastValveBlockEntity extends BlockEntity {
     private static final long NONE = Long.MIN_VALUE;
     /**
      * The take-off's beats, in ticks from its start: the whistle to hold fast, the water pouring from and to, the call
-     * "Up ship!", the handlers letting go, and the handlers fading away from and gone.
+     * "Up ship!", the lines let go, and the take-off over.
      */
     public static final int HOLD_FAST = 10;
     public static final int POUR_FROM = 30;
     public static final int POUR_TO = 90;
     public static final int CALL = 110;
     public static final int RELEASE = 130;
-    public static final int FADE_FROM = 200;
     public static final int GONE = 220;
     /**
      * How long a tick takes, in real time, at least, once the server is ticking at its pace again, in milliseconds,
@@ -114,10 +114,6 @@ public class BallastValveBlockEntity extends BlockEntity {
         this.stations.addAll(stations);
         this.outlet = outlet;
         setChanged();
-    }
-
-    public List<Station> stations() {
-        return List.copyOf(stations);
     }
 
     /** Where in her belly the water pours out, from the valve; null for a valve put down by hand. */
@@ -315,11 +311,13 @@ public class BallastValveBlockEntity extends BlockEntity {
         started = tag.contains("Started") ? tag.getLong("Started") : NONE;
     }
 
-    /** What every client is sent: the stations, and when the take-off on the lines began, for them to draw it. */
+    /** What every client is sent: the outlet, and when the take-off on the lines began, for them to pour the water. */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, registries);
+        if (outlet != null) {
+            tag.put("Outlet", NbtUtils.writeBlockPos(outlet));
+        }
         tag.putLong("Started", started);
         return tag;
     }

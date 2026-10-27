@@ -18,7 +18,8 @@ import net.minecraft.world.level.block.Rotation;
  * {@link BallastValveBlockEntity}): the ground officer on her centre line ahead of the control car, facing it, and on
  * each side two handlers in a file on a line from under her bow, two at the car's side, one under her flank amidships
  * and one under her stern. The valve hangs from the gangway face to face, so it is assembled with the zeppelin; the
- * handlers stand on the ground, drawn by the clients, and are no blocks at all.
+ * handlers are no blocks and are not drawn, the officer's station only saying where his whistle and call are heard
+ * from.
  */
 final class ZeppelinUpShip implements ZeppelinPiece {
     /** How far aft of the gangway's forward end the valve hangs, in rows: clear of the post at its first ring. */
