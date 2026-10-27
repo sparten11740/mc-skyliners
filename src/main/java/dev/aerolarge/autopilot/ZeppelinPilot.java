@@ -1,5 +1,6 @@
 package dev.aerolarge.autopilot;
 
+import dev.aerolarge.block.EngineRepeaterBlockEntity;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -248,11 +251,11 @@ public final class ZeppelinPilot {
         burn(level, origin, state, mass, climb, pitch, pitchRate);
         boolean upShip = rising && radio < ENGINES_CLEAR;
         if (upShip || comingDown && radio < ENGINES_CLEAR) {
-            drive(level, origin, holdSpeed(state, 0), 0);
+            drive(level, origin, holdSpeed(state, 0), 0, false);
         } else {
             double heading = heading(orders, state, middle, distance);
             double ahead = Mth.wrapDegrees(heading - state.heading());
-            drive(level, origin, holdSpeed(state, speed(orders, distance, ahead)), yaw(heading, state.heading(), yawRate));
+            drive(level, origin, holdSpeed(state, speed(orders, distance, ahead)), yaw(heading, state.heading(), yawRate), false);
         }
         settled = comingDown && radio < SETTLED_HEIGHT && Math.abs(state.velocity().y) < SETTLED_SINK ? settled + 1 : 0;
         if (settled >= SETTLED_TICKS) {
@@ -355,7 +358,7 @@ public final class ZeppelinPilot {
         settled = 0;
         risingTicks = 0;
         setBurners(level, origin, RESTING * floats(state, mass), pitchTrim);
-        drive(level, origin, 0, 0);
+        drive(level, origin, 0, 0, false);
         controls.show(level, origin, ZeppelinControls.Setting.AT_REST);
     }
 
@@ -364,7 +367,7 @@ public final class ZeppelinPilot {
      * where it floats until someone moves them. Without any, the burners are left as they are.
      */
     void stop(ServerLevel level, BlockPos origin) {
-        drive(level, origin, 0, 0);
+        drive(level, origin, 0, 0, false);
         controls.handOver(level, origin, ZeppelinControls.Setting.FLOATING);
     }
 
@@ -394,7 +397,7 @@ public final class ZeppelinPilot {
             burn(level, origin, state, mass, climb, pitch + hand.elevator() * HAND_NOSE, pitchRate);
         }
         double thrust = (hand.port() + hand.starboard()) / 2 * FULL_SIGNAL;
-        drive(level, origin, thrust, (hand.port() - hand.starboard()) / 2 * FULL_SIGNAL + hand.rudder() * MOST_YAW);
+        drive(level, origin, thrust, (hand.port() - hand.starboard()) / 2 * FULL_SIGNAL + hand.rudder() * MOST_YAW, true);
     }
 
     /**
@@ -475,20 +478,35 @@ public final class ZeppelinPilot {
 
     /**
      * Drives the engines: so much thrust, ahead or astern, split between the sides to turn it, the port engines (the
-     * first two) the harder to turn it to starboard.
+     * first two) the harder to turn it to starboard. An engine with a repeater in its car follows only once its order
+     * is answered there (see {@link EngineRepeaterBlockEntity}), and runs on as it was until then: flown by hand, its
+     * engineer has a few seconds to answer before its crew do; under the autopilot, its crew answer at once.
      */
-    private void drive(ServerLevel level, BlockPos origin, double thrust, double turn) {
+    private void drive(ServerLevel level, BlockPos origin, double thrust, double turn, boolean byHand) {
         lastThrust = thrust;
         lastTurn = turn;
+        BoundingBox frame = level.getBlockEntity(origin) instanceof AutopilotBlockEntity autopilot ? autopilot.frame() : null;
         for (int engine = 0; engine < ENGINES; engine++) {
             double side = engine < ENGINES / 2 ? 1 : -1;
             double push = thrust + side * turn;
+            if (!answered(level, frame, engine, push / FULL_SIGNAL, byHand)) {
+                continue;
+            }
             int forward = Mth.clamp((int) Math.round(push), 0, FULL_SIGNAL);
             int back = Mth.clamp((int) Math.round(-push * ASTERN_BOOST), 0, FULL_SIGNAL);
             int key = engine * 2;
             setEngine(level, origin, key, ahead.getOrDefault(engine, List.of()), forward);
             setEngine(level, origin, key + 1, astern.getOrDefault(engine, List.of()), back);
         }
+    }
+
+    /**
+     * Whether an engine may do as it is asked, a share of full thrust, by hand or by the autopilot: its order
+     * answered, or no repeater by it.
+     */
+    private static boolean answered(ServerLevel level, @Nullable BoundingBox frame, int engine, double share, boolean byHand) {
+        EngineRepeaterBlockEntity repeater = frame == null ? null : EngineRepeaterBlockEntity.standingBy(level, frame, engine);
+        return repeater == null || repeater.ask(share, byHand);
     }
 
     private void setEngine(ServerLevel level, BlockPos origin, int key, List<BlockPos> relays, int signal) {

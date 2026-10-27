@@ -482,6 +482,34 @@ cubes.propeller = null;
       orders.map((order) => [`engines=${side},facing=${facing},order=${order}`, { model: `${ID}:block/engine_telegraph_${side}_${order}`, y }])))),
   });
   write(`assets/${ID}/models/item/engine_telegraph.json`, { parent: `${ID}:block/engine_telegraph_port_stop` });
+  // The engine repeater in each engine car (see EngineRepeaterBlock): the telegraph's pedestal, dial and handle on a
+  // brass plate, and a lamp on the side of its head, red while its order waits to be answered and green once it is.
+  for (const answered of ["false", "true"]) {
+    orders.forEach((order, i) => {
+      const rotation = { origin: [8, 11.25, 11], axis: "z", angle: 45 - 22.5 * i };
+      write(`assets/${ID}/models/block/engine_repeater_${order}${answered === "true" ? "_answered" : ""}.json`, {
+        parent: "minecraft:block/block",
+        render_type: "minecraft:cutout",
+        textures: { brass, dial: `${ID}:block/telegraph_dial`, lamp: `${ID}:block/jump_light_${answered === "true" ? "green" : "red"}`, particle: brass },
+        elements: [
+          solid([3, 0, 3], [13, 1, 13], "#brass"),
+          solid([6.5, 1, 6.5], [9.5, 9, 9.5], "#brass"),
+          solid([4, 9, 6], [12, 16, 10.5], "#brass"),
+          { from: [4, 10, 10.5], to: [12, 15, 10.6], faces: { south: { texture: "#dial", uv: [0, 5, 16, 15] } } },
+          solid([7.5, 11.25, 10.6], [8.5, 14.75, 11.2], "#brass", rotation),
+          solid([12, 13, 7], [13.5, 15, 9], "#lamp"),
+        ],
+      });
+    });
+  }
+  write(`assets/${ID}/blockstates/engine_repeater.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["false", "true"].flatMap((answered) =>
+      orders.map((order) => [`answered=${answered},facing=${facing},order=${order}`,
+        { model: `${ID}:block/engine_repeater_${order}${answered === "true" ? "_answered" : ""}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/engine_repeater.json`, { parent: `${ID}:block/engine_repeater_stop_answered` });
+  dropsItself("engine_repeater");
+  cubes.engine_repeater = null;
   // The livery board: a board three sixteenths thick standing at the back of its block, its swatches on its front.
   write(`assets/${ID}/models/block/livery_board.json`, {
     parent: "minecraft:block/block",
@@ -657,6 +685,7 @@ function zeppelinControlsLang() {
     "block.aerolarge.rudder_wheel": "Rudder Wheel",
     "block.aerolarge.elevator_wheel": "Elevator Wheel",
     "block.aerolarge.engine_telegraph": "Engine Telegraph",
+    "block.aerolarge.engine_repeater": "Engine Repeater",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
     "block.aerolarge.festive_garland": "Festive Garland",
@@ -5222,7 +5251,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "engine_repeater", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5298,6 +5327,7 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
+shaped("engine_repeater", ["B", "G", "C"], { B: "minecraft:bell", G: "minecraft:gold_ingot", C: "minecraft:copper_ingot" }, 1);
 shaped("picture_board", ["GGG", "RDB", "PPP"], { G: "minecraft:glass_pane", R: "minecraft:redstone", D: "minecraft:glowstone_dust", B: "minecraft:stone_button", P: "minecraft:dark_oak_planks" }, 1);
 shaped("christening_bottle", ["N", "S", "B"], { N: "minecraft:gold_nugget", S: "minecraft:sweet_berries", B: "minecraft:glass_bottle" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);

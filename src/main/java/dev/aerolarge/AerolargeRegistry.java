@@ -185,6 +185,8 @@ import dev.aerolarge.block.WindSockBlockEntity;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.block.CockpitDisplayBlock;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
+import dev.aerolarge.block.EngineRepeaterBlock;
+import dev.aerolarge.block.EngineRepeaterBlockEntity;
 import dev.aerolarge.block.HelmBlock;
 import dev.aerolarge.block.HelmBlockEntity;
 import dev.aerolarge.block.HornCordBlock;
@@ -1554,6 +1556,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipsPlaqueBlockEntity>> SHIPS_PLAQUE_ENTITY =
         BLOCK_ENTITIES.register("ships_plaque", () -> BlockEntityType.Builder.of(ShipsPlaqueBlockEntity::new, SHIPS_PLAQUE.get()).build(null));
+    /** An engine repeater in a zeppelin's engine car, answering the control car's orders for its engine. */
+    public static final DeferredBlock<EngineRepeaterBlock> ENGINE_REPEATER = BLOCKS.registerBlock(
+        "engine_repeater", EngineRepeaterBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EngineRepeaterBlockEntity>> ENGINE_REPEATER_ENTITY =
+        BLOCK_ENTITIES.register("engine_repeater", () -> BlockEntityType.Builder.of(EngineRepeaterBlockEntity::new, ENGINE_REPEATER.get()).build(null));
     /** The picture board choosing what a zeppelin's flank screens show. */
     public static final DeferredBlock<PictureBoardBlock> PICTURE_BOARD = BLOCKS.registerBlock(
         "picture_board", PictureBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
@@ -1579,6 +1587,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> FLAGSTAFF_ITEM = ITEMS.registerSimpleBlockItem(FLAGSTAFF);
     public static final DeferredItem<BlockItem> SHIPS_PLAQUE_ITEM = ITEMS.registerSimpleBlockItem(SHIPS_PLAQUE);
     public static final DeferredItem<BlockItem> PICTURE_BOARD_ITEM = ITEMS.registerSimpleBlockItem(PICTURE_BOARD);
+    public static final DeferredItem<BlockItem> ENGINE_REPEATER_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_REPEATER);
     /** Broken on a zeppelin's nose, christens her with the name it was given at an anvil. */
     public static final DeferredItem<ChristeningBottleItem> CHRISTENING_BOTTLE = ITEMS.register(
         "christening_bottle", () -> new ChristeningBottleItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON))
@@ -1668,7 +1677,7 @@ public final class AerolargeRegistry {
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
-            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

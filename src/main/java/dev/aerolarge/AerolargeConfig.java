@@ -43,6 +43,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
+    public static final ModConfigSpec.BooleanValue ENGINE_REPEATERS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -279,6 +280,13 @@ public final class AerolargeConfig {
                 "they show: posters, her colours, a map, the faces aboard or her height and speed. Zeppelins already built keep theirs."
             )
             .define("flankScreen", true);
+        ENGINE_REPEATERS = builder
+            .comment(
+                "Whether a zeppelin's engine cars are built fitted out for their engineers: a repeater in each, its engine waiting for each",
+                "new order to be answered there before it follows (the engine crew answer it after a few seconds when no one does), a",
+                "lamp, and a rope down from each to climb up by. Zeppelins already built keep theirs."
+            )
+            .define("engineRepeaters", true);
         builder.pop();
 
         SPEC = builder.build();

@@ -1481,6 +1481,16 @@ huge figures, an arrow green as she climbs and amber as she sinks; and Off. A ne
 server config's `flankScreen` leaves the screens and the board off zeppelins built from then on; a Picture Board is
 crafted from three glass panes over redstone, glowstone dust and a stone button, over three dark oak planks.
 
+Each engine car is fitted out for its engineer: a grating along its floor, a lamp in its roof, and at its forward end an
+Engine Repeater, the control car's telegraph's twin, a climbing rope hanging from a hatch in its floor to a little over
+the ground to climb up into it, and to ride in it in flight. Each new order for its engine swings the repeater's handle
+to it with the double ring of its bell, its lamp red, and the engine runs on as it was until the order is answered: use
+the repeater and its lamp turns green with the clunk of its handle, and the engine does as it is told. Flown by hand
+from the control car's telegraphs, an order waits a few seconds for an engineer, ringing now and then, before the engine
+crew answer it themselves; under the autopilot the crew answer at once, so its flying never waits. The server config's
+`engineRepeaters` leaves the cars bare on zeppelins built from then on; an Engine Repeater is crafted from a bell over a
+gold ingot over a copper ingot.
+
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
 among its glowing burners, lit at its corners. The hot air stays put over the open mouth, as it does over a hot air
@@ -1672,16 +1682,17 @@ hangs the `ShipsPlaqueBlock` that a `ChristeningBottleItem` broken on her nose e
 `ChristeningPaint` painting her crest and name where `FlankArt` says (each a `PaintOverlay` on `ZeppelinPaint`'s list)
 and `ShipsPlaqueRenderer` engraving the plaque, and `ZeppelinFlankScreen` stands the `PictureBoardBlock` whose
 `FlankScreenRenderer` draws the screens where `FlankScreen` says, its headlines and figures set in a typeface by
-`ScreenType` and its maps painted by `ScreenMaps`; a feature is taken out of the zeppelin with its line on the list.
-`ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand control;
-`ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
-`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
-autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
-autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
-from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy`
-opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that
-starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel
-there is.
+`ScreenType` and its maps painted by `ScreenMaps`, and `ZeppelinEngineRooms` fits each engine car out with an
+`EngineRepeaterBlock`, whose `EngineRepeaterBlockEntity` holds its engine in `ZeppelinPilot` until its order is
+answered; a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control
+room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
+(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
+`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
+hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
+`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
+`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
+zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
+burners crackling at the far end of it do not take every sound channel there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
