@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import dev.aerolarge.airframe.FinArt;
+import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,25 @@ public final class ShipsColours {
     private record Banner(DyeColor base, BannerPatternLayers patterns) {
     }
 
+    /** The colours painted on a zeppelin's fins: a banner's picture, one block to a pixel where {@link FinArt} says. */
+    private record Fins(int[] picture) implements PaintOverlay {
+        @Override
+        public int colour(Livery.Spot spot, boolean fabric, Livery under) {
+            int pixel = fabric ? FinArt.pixel(spot) : -1;
+            return pixel < 0 ? -1 : picture[pixel];
+        }
+
+        @Override
+        public double from() {
+            return FinArt.FRONT;
+        }
+
+        @Override
+        public double to() {
+            return FinArt.BACK;
+        }
+    }
+
     private static final Map<Banner, int[]> PICTURES = new LinkedHashMap<>(KEPT, 0.75F, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<Banner, int[]> eldest) {
@@ -47,22 +67,24 @@ public final class ShipsColours {
     private ShipsColours() {
     }
 
-    /**
-     * The picture a zeppelin's fins are painted with, row by row from the banner's top: the colours closed up at a
-     * halyard in its box; null while none are.
-     */
+    /** What a zeppelin's fins are painted with: the colours closed up at a halyard in its box; null while none are. */
     @Nullable
-    public static int[] fins(ClientLevel level, BoundingBox box) {
+    static PaintOverlay fins(ClientLevel level, BoundingBox box) {
         for (FlagHalyardBlockEntity halyard : FlagHalyardBlockEntity.loaded(level)) {
             if (box.isInside(halyard.getBlockPos()) && halyard.closedUp()) {
-                return PICTURES.computeIfAbsent(new Banner(halyard.base(), halyard.patterns()), ShipsColours::picture);
+                return new Fins(picture(halyard.base(), halyard.patterns()));
             }
         }
         return null;
     }
 
+    /** A banner's picture, row by row from its top, each row from its left, as 0xRRGGBB, worked out once and kept. */
+    static int[] picture(DyeColor base, BannerPatternLayers patterns) {
+        return PICTURES.computeIfAbsent(new Banner(base, patterns), ShipsColours::paint);
+    }
+
     /** A banner's picture: its base colour, and each of its patterns laid over it in turn. */
-    private static int[] picture(Banner banner) {
+    private static int[] paint(Banner banner) {
         float[][] picture = new float[3][FinArt.BANNER_WIDTH * FinArt.BANNER_HEIGHT];
         layer(picture, BASE, banner.base());
         for (BannerPatternLayers.Layer layer : banner.patterns().layers()) {
