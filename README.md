@@ -1397,6 +1397,13 @@ an upper deck with long promenade windows down both sides, slanting with the hul
 deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
 climbs from the control car up its neck to a corridor running aft to the decks.
 
+The Sky Shaft climbs to the top. Just aft of the middle, where a ring stands between two cells' rounded ends, a gap in
+the gangway's rail leads to a climbing rope inside a cage of girders. It rises past the glowing cells, some 40 blocks,
+out through a hatch in the crown onto the Sky Deck. That is a railed grating on top of the zeppelin, with a lamp at each
+corner, a gantry over the hatch that the rope hangs from, and a mast whose red beacon blinks over it. Climb the rope as
+any ladder is climbed, and step off fore or aft at the top. Like a ladder it slows a fall, so nobody is hurt slipping
+down it.
+
 How it flies: the zeppelin is lifted by real hot air. Each cell holds hot air burners, and the hot air they fill it with
 lifts it, as Create Aeronautics' balloons do, the more the harder they burn and the less the thinner the air, so the
 zeppelin rises until the thinning air balances it and floats there, at a height the burners set. Sable flies only what
@@ -1538,15 +1545,16 @@ zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in m
 is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and
-hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
-`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
-autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
-autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
-from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves
-out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take
-every sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures
-(ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
+engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck. `ZeppelinControlCar` fits out its control
+room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
+(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
+`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
+hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
+`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
+`SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves out a sound that starts too far off to
+be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel there is.
+Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
+hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
 (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are.

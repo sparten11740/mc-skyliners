@@ -31,8 +31,9 @@ import net.minecraft.world.level.block.state.properties.Half;
  * crown of each of the sixteen bays between the rings hangs a gas cell, a balloon of Create Aeronautics' envelope in a
  * colour of its own, its hot air burners standing in it on posts; the zeppelin floats on their hot air (see the
  * README's How it flies). Below the cells an axial gangway runs nearly the whole length of the hull, the passenger
- * decks lie in its belly with promenade windows down both sides, the control car hangs under the bow, the four engine
- * cars stand out on struts on the flanks, and four fins in a cross carry the tail.
+ * decks lie in its belly with promenade windows down both sides, the control car hangs under the bow (see
+ * {@link ZeppelinControlCar}), the four engine cars stand out on struts on the flanks, and four fins in a cross carry
+ * the tail. A rope climbs from the gangway to a deck on the crown (see {@link ZeppelinSkyDeck}).
  *
  * <p>Sable flies the zeppelin as one body only as far as its blocks touch, face to face: anything standing free
  * inside it would fly off on its own. So the cells hang from the crown, the burners stand on posts down to the cells'
@@ -163,6 +164,7 @@ public final class ZeppelinLayout implements Layout {
         layout.controlCar();
         layout.decks();
         layout.gangway();
+        new ZeppelinSkyDeck(layout).build();
         for (int engine = 0; engine < 4; engine++) {
             layout.engineCar(engine);
         }
@@ -194,7 +196,7 @@ public final class ZeppelinLayout implements Layout {
         return !cells.containsKey(new BlockPos(x, y, z));
     }
 
-    private void clear(int x, int y, int z) {
+    void clear(int x, int y, int z) {
         cells.remove(new BlockPos(x, y, z));
     }
 
@@ -437,7 +439,7 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /** The row the axial gangway's catwalk is laid in, its walkway just over the hull's axis. */
-    private int gangwayRow() {
+    int gangwayRow() {
         return axis - 1;
     }
 
