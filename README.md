@@ -1404,6 +1404,11 @@ corner, a gantry over the hatch that the rope hangs from, and a mast whose red b
 any ladder is climbed, and step off fore or aft at the top. Like a ladder it slows a fall, so nobody is hurt slipping
 down it.
 
+Another rope climbs into a balloon. At the middle cell, the biggest, a gap in the gangway's rail leads to a caged rope
+up through an open mouth in the cell's floor into its hot air, to a little railed gallery among its glowing burners, lit
+at its corners. The hot air stays put over the open mouth, as it does over a hot air balloon's open throat, so the cell
+lifts as before.
+
 How it flies: the zeppelin is lifted by real hot air. Each cell holds hot air burners, and the hot air they fill it with
 lifts it, as Create Aeronautics' balloons do, the more the harder they burn and the less the thinner the air, so the
 zeppelin rises until the thinning air balances it and floats there, at a height the burners set. Sable flies only what
@@ -1545,14 +1550,15 @@ zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in m
 is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck. `ZeppelinControlCar` fits out its control
-room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
-(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
-`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
-hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
-`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves out a sound that starts too far off to
-be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel there is.
+engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck, and `ZeppelinCellGallery` the gallery inside the
+middle cell. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
+control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves
+out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take
+every sound channel there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
