@@ -95,7 +95,7 @@ public final class HandPlaced extends SavedData {
         Map<BlockPos, Block> marked = new HashMap<>();
         for (BlockSnapshot snapshot : snapshots) {
             BlockState state = level.getBlockState(snapshot.getPos());
-            if (state.is(FrameProtection.UNBREAKABLE) && holds(player, state.getBlock())) {
+            if (FrameProtection.held(state) && holds(player, state.getBlock())) {
                 marked.put(snapshot.getPos().immutable(), state.getBlock());
             }
         }

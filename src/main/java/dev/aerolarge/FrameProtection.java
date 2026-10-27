@@ -24,19 +24,29 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 /**
  * Keeps the airliner's frame and controls whole: the blocks in {@code #aerolarge:unbreakable} cannot be mined, broken
  * in creative mode or blown up while they are part of an airliner, so a stray click or a creeper never takes a wing
- * off. A player who sneaks holding a wrench (Create's, or any in {@code #c:tools/wrench}), or sneaks in creative mode,
- * can still take them apart: to clear an airliner away on purpose, or to take back a panel placed in the wrong spot.
- * The cabin floor and everything built inside are not in the tag.
+ * off; nor can those in {@code #aerolarge:unbreakable_in_frame}, a zeppelin's gas cells and burners, within the frame
+ * of an airframe of this mod's, so no child's pickaxe lets a cell's hot air out. A player who sneaks holding a wrench
+ * (Create's, or any in {@code #c:tools/wrench}), or sneaks in creative mode, can still take them apart: to clear an
+ * airliner away on purpose, or to take back a panel placed in the wrong spot. The cabin floor and everything built
+ * inside are not in the tag.
  *
  * <p>A block is part of an airliner while it stands within the box round the blocks its blueprint laid, which the
  * airliner's autopilot keeps, or among an assembled airliner's blocks, in its plot; for an airliner built before its
- * autopilot kept that box, inside the Super Glue its blueprint glued it with (which can leave gaps: Create's glue
- * comes out narrower than laid along an airliner built facing east or west). The same blocks laid anywhere else, as the runway's lights
- * and the control tower's glass, lights, panels and seats are, break as any other block does, and so does one a player
- * placed by hand (see {@link HandPlaced}): only what the blueprint laid is held.
+ * autopilot kept that box, inside the Super Glue its blueprint glued it with (which can leave gaps: Create's glue comes
+ * out narrower than laid along an airliner built facing east or west). The same blocks laid anywhere else, as the
+ * runway's lights and the control tower's glass, lights, panels and seats are, break as any other block does, and so
+ * does one a player placed by hand (see {@link HandPlaced}): only what the blueprint laid is held.
  */
 public final class FrameProtection {
     public static final TagKey<Block> UNBREAKABLE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "unbreakable"));
+    /**
+     * Other mods' blocks held the same way only within the frame of an airframe of this mod's (see
+     * {@link AutopilotBlockEntity#framing}): a zeppelin's gas cells and burners, which on anyone else's balloon must
+     * break as ever. It names the blocks the zeppelin is built with by default; a datapack adds others configured in
+     * their place.
+     */
+    public static final TagKey<Block> UNBREAKABLE_IN_FRAME =
+        TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "unbreakable_in_frame"));
     private static final TagKey<Item> WRENCHES = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "tools/wrench"));
     /** How far in from a block's faces the glue it stands in is looked for, so glue round its neighbour is not taken for its own. */
     private static final double GLUE_INSET = 0.25;
@@ -50,7 +60,15 @@ public final class FrameProtection {
     }
 
     private static boolean protects(LevelAccessor level, BlockPos pos, BlockState state) {
-        return state.is(UNBREAKABLE) && level instanceof Level world && !HandPlaced.at(world, pos, state) && partOfAirliner(world, pos);
+        if (!(level instanceof Level world) || !held(state) || HandPlaced.at(world, pos, state)) {
+            return false;
+        }
+        return state.is(UNBREAKABLE) ? partOfAirliner(world, pos) : AutopilotBlockEntity.framing(world, pos);
+    }
+
+    /** Whether a block is one held where a blueprint laid it, in either tag: a frame block, or a zeppelin's cells. */
+    public static boolean held(BlockState state) {
+        return state.is(UNBREAKABLE) || state.is(UNBREAKABLE_IN_FRAME);
     }
 
     /**

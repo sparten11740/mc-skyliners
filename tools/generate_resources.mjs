@@ -4966,6 +4966,13 @@ write(`data/${ID}/tags/block/unbreakable.json`, tag([
   ...["createpropulsion:wing", "createpropulsion:creative_thruster", "createpropulsion:thruster", "offroad:wheel_mount",
     "simulated:physics_assembler"].map((id) => ({ id, required: false })),
 ]));
+// Other mods' blocks held the same way only within an airframe's frame (see FrameProtection): a zeppelin's gas cells,
+// in any of the dyes' colours, and its burners, which on anyone else's balloon break as ever.
+const DYES = ["white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown",
+  "green", "red", "black"];
+write(`data/${ID}/tags/block/unbreakable_in_frame.json`, tag([
+  ...DYES.map((dye) => `aeronautics:${dye}_envelope`), "aeronautics:adjustable_burner",
+].map((id) => ({ id, required: false }))));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
 // to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight).
@@ -5348,7 +5355,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.seatbelt_ding": "Seatbelt sign dings",
   "subtitles.aerolarge.pa_chime": "Cabin chime",
   "subtitles.aerolarge.radio_crackle": "Radio crackles",
-  "message.aerolarge.unbreakable": "The airliner's frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
+  "message.aerolarge.unbreakable": "The frame and controls cannot be broken. Sneak holding a wrench to take them apart.",
   "block.aerolarge.tail_camera_display": "Tail Camera Display",
   "screen.aerolarge.tail_camera_display.no_signal": "NO SIGNAL",
   "screen.aerolarge.tail_camera_display.standby": "ASSEMBLE TO FLY",
