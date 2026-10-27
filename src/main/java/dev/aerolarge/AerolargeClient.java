@@ -31,6 +31,7 @@ import dev.aerolarge.client.DiscoBallRenderer;
 import dev.aerolarge.client.DiscoLights;
 import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
+import dev.aerolarge.client.Earshot;
 import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.GiantRubberDuckRenderer;
 import dev.aerolarge.client.EngineRenderer;
@@ -140,6 +141,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::heard);
+        NeoForge.EVENT_BUS.addListener(Earshot::heard);
         NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);
         NeoForge.EVENT_BUS.addListener(HelmetVisor::loggingOut);

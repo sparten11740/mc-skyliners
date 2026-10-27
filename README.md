@@ -1520,8 +1520,9 @@ as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`,
 engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner and engine;
 `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the autopilot's block entity,
 which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it from through
-`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded while it flies or anyone is aboard.
-Assets are generated: `node tools/generate_textures.mjs` writes the textures
+`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded while it flies or anyone is aboard. `Earshot`
+leaves out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not
+take every sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
