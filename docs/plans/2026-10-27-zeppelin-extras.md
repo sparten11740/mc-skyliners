@@ -77,7 +77,15 @@ classes already, `coverAt` names its block directly):
 | 1 | Which ideas | The 21 above, the flag drop later | Jan, idea by idea |
 | 2 | The festive look | Its own blueprint, not a choice on the livery board | Jan |
 | 3 | Modularity | Each feature pluggable, with its own switch; but a great idea is built even where it cannot be | Jan |
+| 4 | Proving the groundwork moves nothing | `aerolarge:layout`, a fingerprint of a layout's blocks: the plain and furnished zeppelins' stayed `c16548f83e2fafef` and `ec5084dc1cbcd0c5` through the refactor | Lead |
+| 5 | Lights seen from afar | Their glow drawn out to 512 blocks and never smaller to the eye than half a degree, the airliner's too: at 1.6 blocks across they vanished 220 blocks off | Lead, found in play-testing |
+| 6 | Jumping from the Sky Deck | A gap in the deck's rail by the jump light: the rails stop a jump as a fence does, so there was no way off. Out through it a player walks down the crown's curve, over the forward engine car (a perch 40 blocks up) and off the flank | Lead, found in play-testing |
+| 7 | Paper planes from the crown | They froze in mid-air 176 blocks out, past the land kept going round any player; now a gliding plane keeps a ticket on the chunks round it, as ender pearls later do, and comes down some 650 blocks off. Planes are scored at landing targets with a best of their own, and a far-off thrower hears the bell | Lead, found in play-testing |
+| 8 | The horn's echo | Back a second for each 100 blocks up (10 blocks a tick there and back), slower than sound so it is heard apart from the blast; only in flight, 12 blocks or more up | Lead |
+| 9 | How a livery is painted | A client-side tint by where a block sits on the hull, kept on the autopilot and sent with its frame, the slices the paint reaches meshed again: never a block or state swap (100,000 updates, a property on every cover piece), which would also churn the balloons and the assembly | Panel (the engineer and the skeptic in round 1) |
+| 10 | The liveries | Silver, Graf Zeppelin cream, navy grey, the airliner's white with a blue cheatline and blue fins, polar red with white fins, midnight blue with gold stars (the stars do not glow: a tint cannot) | Jan's pick, lead |
 
 ## Outcome
 
-Filled in as the features land.
+So far (alpha.110): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch
+(with paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board.
