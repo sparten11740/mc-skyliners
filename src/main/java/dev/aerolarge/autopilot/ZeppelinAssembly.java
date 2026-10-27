@@ -52,6 +52,25 @@ public final class ZeppelinAssembly {
         }
     }
 
+    /**
+     * The zeppelin's own blocks in its frame that assembling it from its control head would leave behind, touching the
+     * rest only along an edge or at a corner, or not at all: for play-testing a layout, which should leave none.
+     */
+    public static List<BlockPos> leftBehind(ServerLevel level, BlockPos head, BoundingBox frame) {
+        Set<Block> theirs = AirframePalette.balloon().blocks();
+        LongOpenHashSet assembled = new LongOpenHashSet();
+        for (BlockPos pos : blocks(level, head, frame)) {
+            assembled.add(pos.asLong());
+        }
+        List<BlockPos> left = new ArrayList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(frame.minX(), frame.minY(), frame.minZ(), frame.maxX(), frame.maxY(), frame.maxZ())) {
+            if (!assembled.contains(pos.asLong()) && ours(level.getBlockState(pos), theirs)) {
+                left.add(pos.immutable());
+            }
+        }
+        return left;
+    }
+
     private static boolean aboard(ServerLevel level, BlockPos pos, Set<Block> theirs) {
         BlockState state = level.getBlockState(pos);
         if (state.isAir()) {

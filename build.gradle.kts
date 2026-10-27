@@ -36,6 +36,28 @@ repositories {
     }
 }
 
+// Blockpilot (github.com/sparten11740/blockpilot-mcp), the client mod an agent play-tests the mod with: Aerolarge gives
+// it commands of its own (see compat/blockpilot), compiled against its API from the local Maven repository, where
+// `./gradlew publishToMavenLocal` in Blockpilot's repository puts it. Without it there, those commands are left out of
+// the build, and nothing else changes.
+val mavenLocalRepository = System.getProperty("maven.repo.local") ?: "${System.getProperty("user.home")}/.m2/repository"
+val blockpilotApi = file("$mavenLocalRepository/dev/blockpilot/blockpilot-api/2.0.0")
+val withBlockpilot = blockpilotApi.isDirectory
+if (withBlockpilot) {
+    repositories {
+        mavenLocal {
+            content { includeGroup("dev.blockpilot") }
+        }
+    }
+    dependencies {
+        compileOnly("dev.blockpilot:blockpilot-api:2.0.0")
+    }
+} else {
+    sourceSets.main {
+        java.exclude("dev/aerolarge/compat/blockpilot/**")
+    }
+}
+
 // Create is required: its Super Glue holds the airliner together for the Physics Assembler. The autopilot reads the
 // assembled airliner's position, attitude and speed from Sable; it only runs when Sable is installed. The tail camera
 // display draws the world from the fin through Veil, which comes inside Sable's jar. All are only compiled against;

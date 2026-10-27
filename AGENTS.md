@@ -51,12 +51,14 @@ feature as a player meets it, and its Building section says which classes do wha
   flies. Block positions, block entities and block hit locations aboard are in plot coordinates; players and other
   entities are in world coordinates. Convert with `SableFlight.toWorld`, `toPlot` and `turnToPlot` on the server and
   `SableClient.toWorld` on the client. Mixing the two is this codebase's most common bug.
-- **Other mods.** Sable is touched only in `compat/SableFlight` (server) and `client/SableClient` (client), each
-  behind a `ModList` check. The exceptions are `SableFlight.fitsAboard`, which the client also calls for its own
-  player's pose, and `SableFlight.aboard`, which `FrameProtection` calls on both sides. Veil is touched only in
-  `TailCameraFeed`, `VeilLights` and `mixin/AdvancedFboImplMixin`. Create Propulsion and Create Aeronautics' Simulated
-  and Offroad are named only by registry id in `AerolargeConfig` and resolved in `AirframePalette`. Create and Sable
-  are compiled against, never bundled.
+- **Other mods.** Sable is touched only in `compat/SableFlight` (server) and `client/SableClient` (client), each behind
+  a `ModList` check. The exceptions are `SableFlight.fitsAboard`, which the client also calls for its own player's pose,
+  and `SableFlight.aboard`, which `FrameProtection` calls on both sides. Veil is touched only in `TailCameraFeed`,
+  `VeilLights` and `mixin/AdvancedFboImplMixin`. Blockpilot, the play-testing client mod, is touched only in
+  `compat/blockpilot`, compiled only when Blockpilot's API is in the local Maven repository and reached by name from
+  `compat/Blockpilot` behind a `ModList` check. Create Propulsion and Create Aeronautics' Simulated and Offroad are
+  named only by registry id in `AerolargeConfig` and resolved in `AirframePalette`. Create and Sable are compiled
+  against, never bundled.
 - **Geometry.** New airframe geometry is drawn in `AirframeShape`'s metres in the layout's nose-north frame and turns
   with `AirframeBuild.Placement`, never in world coordinates. Block entities that need data once placed get it through
   a `Fitting`, whose offsets turn with the placement. `CabinFitOut` only furnishes open cabin space or replaces cabin
@@ -134,3 +136,11 @@ feature as a player meets it, and its Building section says which classes do wha
   - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
     screenshot taken. `option gamma 1` brightens dark spaces, and the reply says `inside` when the camera is in a
     solid block.
+  - Aerolarge gives Blockpilot commands of its own (`help aerolarge`): `aerolarge:build airliner|furnished|zeppelin`
+    lays one down in front of the player and waits until it stands; `aerolarge:autopilot fly|land|off [altitude=]
+    [speed=] [heading=] [pin=x,z] [land=]` sets the nearest autopilot as its screen would, assembling first; and
+    `aerolarge:zeppelin` reads a zeppelin's flight (phase, height, climb, speed, pitch, heading, mass, each cell's
+    burner signal, the engines, what its pilot has learnt), to `sample` through a flight. `aerolarge:assembly`, before
+    a zeppelin first flies, counts the blocks its assembly takes along and names those of its own it would leave
+    behind, touching the rest only along an edge or not at all: a layout should leave none. A zeppelin's control head
+    is in its control car under the bow.
