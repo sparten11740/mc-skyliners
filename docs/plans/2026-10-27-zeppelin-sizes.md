@@ -74,7 +74,10 @@ first full size only, each step widening it for the pieces it finishes.
 | 2 | What shrinks | The hull only; the car, rooms and fittings stay player-sized | Jan |
 | 3 | Where the size lives | Each ship's own, from its blueprint, saved with its autopilot; none saved means full | Lead, from the planning agent's survey |
 | 4 | The car under a smaller hull | Unchanged, its front 30 m along; the hull's axis raised to clear its roof | Lead, from the survey |
+| 5 | A third's lift | Found in play-testing: with the full ship's cells scaled down, a third's held only some 1,500 m³ of gas inside their block-thick envelopes, too little for her 4,400 of mass, and four of her cells' burners fitted at all. Her cells fill the room over her gangway (half 16 m wide and 9 m tall at their fullest, set a little lower), the gangway laid over her single deck's roof rather than on the axis, holding some 5,000 m³; mass 5,502 with them, she floats at about half burn. At two thirds the cells are as at full size (26,000 m³ for 15,900) | Lead, found in play-testing |
+| 6 | Burners at every size | As many as the floor's breadth takes, no more than fill what the cell holds, at least one wherever there is room; each turned down by its value box where together they would give more than the cell holds, the pilot working each cell by its own most. At full size only the last cell changes: one burner where two gave twice what it holds | Lead |
 
 ## Outcome
 
-Planned (alpha.127).
+Steps 1 to 4 (alpha.128): the size in each layout and each ship, the hull at each size, and lift at each; flown at all
+three by command.
