@@ -42,7 +42,7 @@ final class ZeppelinShape {
     record CellFill(double gap, double halfWidth, double halfHeight, double rise) {
     }
 
-    /** The cells as they fill a hull of two thirds or the full size. */
+    /** The cells as they fill a full-size hull. */
     static final CellFill CELLS_FILL = new CellFill(1, 10, 6.5, 0.45);
 
     /**

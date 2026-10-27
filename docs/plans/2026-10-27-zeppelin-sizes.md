@@ -66,6 +66,34 @@ first full size only, each step widening it for the pieces it finishes.
 - **Handling.** The same engines push a much lighter ship: their thrust and the pilot's gains go with its mass.
 - **Looks.** At a third the car is two fifths of the hull's width. Jan sees it before the rest is built.
 
+## Half size, from the same day
+
+Jan, seeing the first smaller ships: "I'm also fine with just supporting two sizes, like half the size of what the
+biggest one is right now, and the current size", and "don't scale everything proportionally ... some things could
+just be like 25% smaller, some things 10% smaller, so that it still looks good, but you can still do everything". A
+planning agent laid half out against the layout's own rules: at 1 block a metre (245 blocks) every feature fits where a
+player can use it, the decks their full 80 rows with 11 to spare and two decks under the gangway; 0.92 blocks a metre
+is the least that does. Each part shrinks by its own share:
+
+| Part | Shrinks by | Why |
+|---|---|---|
+| The hull: cover, rings' spacing, nose, taper, fins, gangway's length | half | the size asked for |
+| Gas cells | about 40% across | at half they barely float her (8,260 m³ of gas for some 11,000 of mass) |
+| Rings' depth, the cover and envelope's thickness | nothing | they are a block thick |
+| The control car, decks, stairs, furniture, gangway's width, Sky Deck, mast, cell gallery | nothing | a player uses them; the decks' width follows the hull |
+| Engine cars | a quarter across and from the hull, a fifth in length, their propellers a quarter | at full size they looked oversized on her |
+| The engine room in the car | headroom 4 to 2 rows, grating 13 to 9 | still a room to stand at the repeater |
+| Techno room | a quarter in length (15 to 11 rows inside) | to fit one bay between the gangway's posts |
+| The trim rail, Up Ship's lines, the flank screen, the flyby camera | half | they are laid along the hull |
+| The painted art | half (two picture pixels a block) | the full ship's proportions |
+| The festive wreath | a quarter | at full width it would look twice as big on the nose |
+| Lights' spacing, the skywriting shapes | nothing | a smaller ship only turns tighter |
+
+Steps, each built, played and committed alone: half in place of the third and two thirds; the engine cars at each
+size; the car's pieces; the Sky Deck, the colours, the lights and the festive dress; the decks, screens and flank
+board; the cell gallery; the trim car and Up Ship; the techno room; the painted art and the flank screen; and half
+offered by the blueprints and commands.
+
 ## Decision log
 
 | # | Question | Decided | By |
@@ -76,6 +104,9 @@ first full size only, each step widening it for the pieces it finishes.
 | 4 | The car under a smaller hull | Unchanged, its front 30 m along; the hull's axis raised to clear its roof | Lead, from the survey |
 | 5 | A third's lift | Found in play-testing: with the full ship's cells scaled down, a third's held only some 1,500 m³ of gas inside their block-thick envelopes, too little for her 4,400 of mass, and four of her cells' burners fitted at all. Her cells fill the room over her gangway (half 16 m wide and 9 m tall at their fullest, set a little lower), the gangway laid over her single deck's roof rather than on the axis, holding some 5,000 m³; mass 5,502 with them, she floats at about half burn. At two thirds the cells are as at full size (26,000 m³ for 15,900) | Lead, found in play-testing |
 | 6 | Burners at every size | As many as the floor's breadth takes, no more than fill what the cell holds, at least one wherever there is room; each turned down by its value box where together they would give more than the cell holds, the pilot working each cell by its own most. At full size only the last cell changes: one burner where two gave twice what it holds | Lead |
+| 7 | Two sizes | Half (1 block a metre) and full, in place of the third and two thirds; a ship saved at a third or two thirds loads as half, the nearest left | Jan |
+| 8 | What shrinks at half | Each part by its own share (the table above), from the planning agent's layout survey | Lead, from the survey |
+| 9 | Half's gas cells | Gap 1 m, half 13.5 m wide and 7.5 m tall at their fullest, their middle 0.55 of the radius over the axis: no nearer than 1.5 blocks to the cover, two rows of headroom over the gangway. Found in play-testing: mass 10,753 bare, she climbs at 2 blocks a second to her ceiling of some 117 (175 over the ground) and holds level there, her cells at signals 10 to 14 | Lead, found in play-testing |
 
 ## Outcome
 

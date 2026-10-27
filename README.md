@@ -1385,11 +1385,11 @@ A rigid airship in the Hindenburg's style, as big as the real one at the airline
 across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is built at
 that size whatever `scale` the server config sets for the airliner. The Zeppelin Blueprint builds one as an airliner's
 blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin [furnished|festive]
-[third|two_thirds|full]`, its nose tip at the position and its tail stretching away the way given, through whatever
-stands there; it takes a few tens of seconds to go up. At two thirds or a third of the size, only its hull is smaller,
-some 330 or 160 blocks long, its control car, decks and engine cars a player's size as ever, the hull raised over the
-car; a third has one deck, and bigger gas cells for its size, to float them. For now a smaller one is built bare,
-without the features below, and only with the command.
+[half|full]`, its nose tip at the position and its tail stretching away the way given, through whatever stands there; it
+takes a few tens of seconds to go up. At half the size, some 245 blocks long, its hull is smaller and its control car,
+decks and engine cars a player's size as ever, the hull raised over the car and its gas cells fuller for its size, to
+float them; she climbs to some 175 blocks over the ground. For now a half-size one is built bare, without the features
+below, and only with the command.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control

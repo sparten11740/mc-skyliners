@@ -60,7 +60,7 @@ public final class BlockpilotCommands {
      * The sizes a zeppelin can be built at, as the build and layout commands name them, in the order of
      * {@link ZeppelinSize}'s: "full" is a word Blockpilot keeps for itself.
      */
-    private static final List<String> SIZES = List.of("third", "two_thirds", "three_thirds");
+    private static final List<String> SIZES = List.of("half", "whole");
 
     private BlockpilotCommands() {
     }
