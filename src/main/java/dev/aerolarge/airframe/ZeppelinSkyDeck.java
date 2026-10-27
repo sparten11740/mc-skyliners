@@ -36,10 +36,24 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
         this.layout = layout;
     }
 
+    /** The row along the hull the deck is laid round, at the shaft's ring. */
+    static int station() {
+        return (int) Math.floor(ringAt(SHAFT_RING) * SCALE);
+    }
+
+    /** The row the deck's grating is laid in, once it is laid: the topmost of the zeppelin over its middle. */
+    static int floor(ZeppelinLayout layout) {
+        int y = layout.axis() + (int) Math.ceil(RADIUS * SCALE) + GANTRY_HEIGHT;
+        while (y > layout.axis() && layout.stateAt(0, y, station()).isAir()) {
+            y--;
+        }
+        return y;
+    }
+
     /** Lays the shaft and the deck, once the gangway it starts from is laid. */
     @Override
     public void build() {
-        int z = (int) Math.floor(ringAt(SHAFT_RING) * SCALE);
+        int z = station();
         int walkway = layout.gangwayRow();
         int deck = deckRow(z, walkway);
         ZeppelinRopes.foot(layout, ROPE_OUT, z);

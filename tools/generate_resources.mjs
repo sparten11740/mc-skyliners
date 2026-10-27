@@ -1039,6 +1039,14 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
     variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/parachute_rack`, y }])),
   });
   write(`assets/${ID}/models/item/parachute_rack.json`, { parent: `${ID}:block/parachute_rack` });
+  write(`assets/${ID}/models/block/paper_plane_box.json`, {
+    parent: "minecraft:block/orientable",
+    textures: { front: `${ID}:block/paper_plane_box_front`, side: `${ID}:block/paper_plane_box_side`, top: `${ID}:block/paper_plane_box_top` },
+  });
+  write(`assets/${ID}/blockstates/paper_plane_box.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/paper_plane_box`, y }])),
+  });
+  write(`assets/${ID}/models/item/paper_plane_box.json`, { parent: `${ID}:block/paper_plane_box` });
   write(`assets/${ID}/models/block/landing_target.json`, {
     parent: "minecraft:block/block",
     textures: { top: `${ID}:block/landing_target_top`, side: `${ID}:block/landing_target_side`, particle: `${ID}:block/landing_target_top` },
@@ -1053,7 +1061,7 @@ write(`assets/${ID}/blockstates/instrument_panel.json`, {
   write(`assets/${ID}/blockstates/landing_target.json`, { variants: { "": { model: `${ID}:block/landing_target` } } });
   write(`assets/${ID}/models/item/landing_target.json`, { parent: `${ID}:block/landing_target` });
   write(`assets/${ID}/models/item/parachute.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/parachute` } });
-  for (const name of ["jump_light", "jump_switch", "parachute_rack", "landing_target"]) {
+  for (const name of ["jump_light", "jump_switch", "parachute_rack", "paper_plane_box", "landing_target"]) {
     loot(name);
     cubes[name] = null;
   }
@@ -5029,7 +5037,7 @@ const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${n
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
 // The care package is a wooden crate, the gym floor maple, and the wall bars and the gym bench ash.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`]));
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:paper_plane_box`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
@@ -5041,7 +5049,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5111,6 +5119,7 @@ shaped("parachute", ["WWW", "S S", " L "], { W: "minecraft:white_wool", S: "mine
 shaped("jump_light", ["R", "L", "G"], { R: "minecraft:red_dye", L: "minecraft:redstone_lamp", G: "minecraft:green_dye" }, 1);
 shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_panel` }, 1);
 shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
+shaped("paper_plane_box", ["PPP", "PCP", "PPP"], { P: `${ID}:paper_plane`, C: "minecraft:chest" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
@@ -5341,6 +5350,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.jump_switch.green": "Jump lights green: GO!",
   "message.aerolarge.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
   "message.aerolarge.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
+  "block.aerolarge.paper_plane_box": "Paper Plane Box",
+  "message.aerolarge.paper_plane_box.handed": "A paper plane: throw it from up here and watch it glide",
   "message.aerolarge.parachute_rack.wearing": "You are already wearing a parachute.",
   "message.aerolarge.decompression": "Door open! Explosive decompression: keep clear of the door, or stay in your seat.",
   "message.aerolarge.landing_target.landed": "%s landed %s blocks from the target",

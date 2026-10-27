@@ -125,6 +125,8 @@
   "message.aerolarge.jump_switch.green": "Jump lights green: GO!",
   "message.aerolarge.parachute_rack.put_on": "You put on a parachute. Jump while falling to open it.",
   "message.aerolarge.parachute_rack.handed": "You took a parachute: wear it in your chest slot.",
+  "block.aerolarge.paper_plane_box": "Paper Plane Box",
+  "message.aerolarge.paper_plane_box.handed": "A paper plane: throw it from up here and watch it glide",
   "message.aerolarge.parachute_rack.wearing": "You are already wearing a parachute.",
   "message.aerolarge.decompression": "Door open! Explosive decompression: keep clear of the door, or stay in your seat.",
   "message.aerolarge.landing_target.landed": "%s landed %s blocks from the target",

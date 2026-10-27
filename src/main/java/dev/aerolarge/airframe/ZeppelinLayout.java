@@ -133,6 +133,7 @@ public final class ZeppelinLayout implements Layout {
      */
     private static final List<Function<ZeppelinLayout, ZeppelinPiece>> PIECES = List.of(
         ZeppelinSkyDeck::new,
+        ZeppelinSkyDeckLaunch::new,
         ZeppelinCellGallery::new,
         ZeppelinDecks::new,
         ZeppelinLights::new);

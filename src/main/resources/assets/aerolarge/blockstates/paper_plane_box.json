@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/paper_plane_box",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/paper_plane_box",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/paper_plane_box",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/paper_plane_box",
+      "y": 270
+    }
+  }
+}

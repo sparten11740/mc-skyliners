@@ -122,6 +122,7 @@ import dev.aerolarge.block.OverheadBinBlock;
 import dev.aerolarge.block.OverheadBinBlockEntity;
 import dev.aerolarge.block.OverheadWcSignBlock;
 import dev.aerolarge.block.OverheadWcSignBlockEntity;
+import dev.aerolarge.block.PaperPlaneBoxBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -728,6 +729,9 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<ParachuteRackBlock> PARACHUTE_RACK = BLOCKS.registerBlock(
         "parachute_rack", ParachuteRackBlock::new, metal(MapColor.COLOR_GREEN)
     );
+    public static final DeferredBlock<PaperPlaneBoxBlock> PAPER_PLANE_BOX = BLOCKS.registerBlock(
+        "paper_plane_box", PaperPlaneBoxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD)
+    );
     public static final DeferredBlock<LandingTargetBlock> LANDING_TARGET = BLOCKS.registerBlock(
         "landing_target", LandingTargetBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.WOOL)
     );
@@ -741,6 +745,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> JUMP_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(JUMP_SWITCH);
     public static final DeferredItem<BlockItem> JUMP_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(JUMP_LIGHT);
     public static final DeferredItem<BlockItem> PARACHUTE_RACK_ITEM = ITEMS.registerSimpleBlockItem(PARACHUTE_RACK);
+    public static final DeferredItem<BlockItem> PAPER_PLANE_BOX_ITEM = ITEMS.registerSimpleBlockItem(PAPER_PLANE_BOX);
     public static final DeferredItem<BlockItem> LANDING_TARGET_ITEM = ITEMS.registerSimpleBlockItem(LANDING_TARGET);
 
     /** Speaking to the cabin and the tower: the captain's handset on the flight deck and a radio for the airfield. */
@@ -1586,7 +1591,7 @@ public final class AerolargeRegistry {
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM)),
         new TabSection("drops", List.of(
-            JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
+            JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),
         new TabSection("airport", List.of(
             JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM,

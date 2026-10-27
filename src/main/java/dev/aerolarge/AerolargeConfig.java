@@ -37,6 +37,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.ConfigValue<String> ENVELOPE_BLOCK;
     public static final ModConfigSpec.BooleanValue SAFETY_CANOPY;
     public static final ModConfigSpec.BooleanValue NAVIGATION_LIGHTS;
+    public static final ModConfigSpec.BooleanValue SKY_DECK_LAUNCH;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -236,6 +237,12 @@ public final class AerolargeConfig {
                 "strobes on its fins, a beacon under its belly and a line of warm bulbs along its crown. Zeppelins already built keep theirs."
             )
             .define("navigationLights", true);
+        SKY_DECK_LAUNCH = builder
+            .comment(
+                "Whether a zeppelin is built with a parachute rack, a jump light and its switch, a box of paper planes and a locker",
+                "holding a landing target and signal flares on its Sky Deck. Zeppelins already built keep theirs."
+            )
+            .define("skyDeckLaunch", true);
         builder.pop();
 
         SPEC = builder.build();

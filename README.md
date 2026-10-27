@@ -1426,6 +1426,16 @@ corner, a gantry over the hatch that the rope hangs from, and a mast whose red b
 any ladder is climbed, and step off fore or aft at the top. Like a ladder it slows a fall, so nobody is hurt slipping
 down it.
 
+The Sky Deck is a place to jump from. Along its port side stand a rack of parachutes, the jump switch and the jump
+light it works, red to stand by and green to go with a bell, by a gap in the rail: the way out onto the crown, down its
+curve and off the flank, under a parachute (or the safety canopy, see below). Along its starboard side stand a Paper
+Plane Box, never empty, whose planes glide hundreds of blocks from up here, and a locker holding a landing target and
+four signal flares to lay out on the ground below as a drop zone: a Landing Target scores paper planes as well as
+parachute landings, calling out how far from its middle each came down, with a record of its own for planes, and rings
+its bell in the ears of a thrower too far off to hear it. A plane gliding far from anyone keeps the land round it going
+until it is down, so it never hangs in the sky. The server config's `skyDeckLaunch` leaves it all off zeppelins built
+from then on; a Paper Plane Box is crafted from eight paper planes round a chest.
+
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
 among its glowing burners, lit at its corners. The hot air stays put over the open mouth, as it does over a hot air

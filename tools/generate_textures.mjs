@@ -847,6 +847,28 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return parachuteSign(x, y, 7.5, 6.5, 5.5) ?? STEEL;
   });
   texture(blockOutput, "parachute_rack_top", (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 ? STEEL_DARK : STEEL));
+  // The paper plane box: a crate of pale boards, a white paper plane stencilled on its front and sides, its open top
+  // full of folded planes.
+  const BOARD = [0xc9, 0xa4, 0x6c];
+  const BOARD_SEAM = [0x8e, 0x6b, 0x3d];
+  const PAPER = [0xf6, 0xf6, 0xf0];
+  const PAPER_FOLD = [0xc4, 0xc9, 0xcf];
+  const boards = (x, y) => (x === 0 || x === 15 || y === 0 || y === 15 || y % 5 === 0 ? BOARD_SEAM : BOARD);
+  // A paper plane from above, its nose up and to the right: two wings folded either side of a keel, the far wing
+  // in the fold's shade.
+  const paperPlane = (x, y, cx, cy, size) => {
+    const along = ((x - cx) + (cy - y)) / Math.SQRT2 / size;
+    const out = ((x - cx) - (cy - y)) / Math.SQRT2 / size;
+    if (along < -1 || along > 1 || Math.abs(out) > (1 - along) * 0.45) return null;
+    return out > 0 ? PAPER_FOLD : PAPER;
+  };
+  texture(blockOutput, "paper_plane_box_front", (x, y) => paperPlane(x, y, 7.5, 7.5, 6) ?? boards(x, y));
+  texture(blockOutput, "paper_plane_box_side", (x, y) => paperPlane(x, y, 7.5, 7.5, 5) ?? boards(x, y));
+  texture(blockOutput, "paper_plane_box_top", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return BOARD_SEAM;
+    if (x === 1 || x === 14 || y === 1 || y === 14) return BOARD;
+    return paperPlane(x, y, 5, 10, 4) ?? paperPlane(x, y, 10.5, 5.5, 4) ?? (y % 3 === 0 ? PAPER_FOLD : PAPER);
+  });
   texture(blockOutput, "landing_target_top", (x, y) => {
     const ring = Math.floor(Math.hypot(x - 7.5, y - 7.5) / 2);
     return ring % 2 === 0 ? [0xd0, 0x20, 0x20] : [0xf0, 0xf0, 0xf0];
