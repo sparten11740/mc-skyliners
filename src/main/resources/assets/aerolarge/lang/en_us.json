@@ -684,6 +684,8 @@
   "block.aerolarge.searchlight_handle": "Searchlight Handle",
   "block.aerolarge.skywriting_board": "Skywriting Board",
   "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
+  "block.aerolarge.boost_button": "Speed Boost Button",
+  "subtitles.aerolarge.speed_boost": "Engines roar",
   "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
   "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
   "subtitles.aerolarge.water_ballast": "Water ballast pours",

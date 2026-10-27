@@ -401,6 +401,14 @@ const litCap = (picture) => (glow, glyph) => (x, y) => (picture[y - 5]?.[x - 5] 
   texture(blockOutput, "door_button", cap([0x3c, 0xb4, 0xf0], [0x0a, 0x2a, 0x5c]), 1);
   texture(blockOutput, "door_button_pressed", cap([0xd2, 0xf2, 0xff], [0x1a, 0x5c, 0xa8]), 1);
 }
+// A zeppelin's speed boost button (see BoostButtonBlock), in the airstair button's bezel: its cap a fiery red, with a
+// fast-forward arrow on it in dark red, two bold chevrons pointing the way she goes; pressed, the cap glows brighter,
+// nearly white, the arrow a deeper red on it.
+{
+  const cap = litCap(["#..#..", "##.##.", ".##.##", ".##.##", "##.##.", "#..#.."]);
+  texture(blockOutput, "boost_button", cap([0xf0, 0x48, 0x20], [0x50, 0x0c, 0x04]), 1);
+  texture(blockOutput, "boost_button_pressed", cap([0xff, 0xd0, 0xa8], [0xb0, 0x28, 0x0c]), 1);
+}
 // The integral airstairs, drawn by their renderer a pixel of texture to a pixel of the airliner. A tread: dark grey
 // non-slip plate, ribbed across with raised studs between the ribs; its nosing, safety yellow, a shade darker along
 // its front edge. The stringers: brushed aluminium, streaked lengthways, catching the light along their top edge. The

@@ -237,6 +237,8 @@ function litButton(name, capName = name) {
 litButton("airstair_button");
 // A zeppelin's boarding stairs' button (see BoardingStairsButtonBlock), in the airstair button's cap: the same stairs.
 litButton("boarding_stairs_button", "airstair_button");
+// A zeppelin's speed boost button (see BoostButtonBlock): its red cap shows a fast-forward arrow.
+litButton("boost_button");
 // The illuminated button: the call button with glowstone dust over it to light its cap.
 function airstairButtonRecipes() {
   shaped("airstair_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: `${ID}:airstair_call_button` }, 1);
@@ -921,6 +923,8 @@ function zeppelinControlsLang() {
     "block.aerolarge.searchlight_handle": "Searchlight Handle",
     "block.aerolarge.skywriting_board": "Skywriting Board",
     "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
+    "block.aerolarge.boost_button": "Speed Boost Button",
+    "subtitles.aerolarge.speed_boost": "Engines roar",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -1137,6 +1141,9 @@ function atcLang() {
     subtitle: `subtitles.${ID}.zeppelin_creak`,
     sounds: [1, 2, 3].map((variant) => ({ name: `${ID}:zeppelin_creak_${variant}`, attenuation_distance: GROAN_HEARD })),
   };
+  // A zeppelin's speed boost, her engines roaring up to full ahead, heard as far as BOOST_HEARD blocks off.
+  const BOOST_HEARD = 96;
+  sounds.speed_boost = { subtitle: `subtitles.${ID}.speed_boost`, sounds: [{ name: `${ID}:speed_boost`, attenuation_distance: BOOST_HEARD }] };
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);
@@ -5536,7 +5543,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5619,6 +5626,7 @@ shaped("floodlight", ["I", "L", "D"], { I: "minecraft:iron_ingot", L: "minecraft
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);
+shaped("boost_button", ["F", "B"], { F: "minecraft:fire_charge", B: "minecraft:polished_blackstone_button" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);

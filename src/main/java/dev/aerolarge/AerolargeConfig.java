@@ -52,6 +52,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SEARCHLIGHTS;
     public static final ModConfigSpec.BooleanValue FLOODLIGHTS;
     public static final ModConfigSpec.BooleanValue SKYWRITING;
+    public static final ModConfigSpec.BooleanValue SPEED_BOOST;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -349,6 +350,13 @@ public final class AerolargeConfig {
                 "her belly. Off, the boards already built do nothing."
             )
             .define("skywriting", true);
+        SPEED_BOOST = builder
+            .comment(
+                "Whether a zeppelin is built with a speed boost button in her control car, which has her autopilot run her engines",
+                "full ahead for ten seconds, flames streaming from their cars, on the heading she had and at her height. Off, the",
+                "buttons already built do nothing."
+            )
+            .define("speedBoost", true);
         builder.pop();
 
         SPEC = builder.build();

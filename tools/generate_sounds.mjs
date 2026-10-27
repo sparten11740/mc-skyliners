@@ -1034,6 +1034,37 @@ function hullEcho(dry, wet) {
   return dry.map((s, i) => s * (1 - wet) + diffused[i] * wet);
 }
 
+// A zeppelin's speed boost (see BoostButtonBlockEntity): her engines roaring up to full ahead. A whoosh of air sweeping
+// up as they take hold, a deep roar of rushing exhaust under it swelling in a second and easing off over three, and
+// the engines' own growl rising in pitch as they wind up, all of it echoing off the hull.
+{
+  const boostRandom = ownRandom(0x426f6f73);
+  const length = 4;
+  const n = Math.round(length * RATE);
+  const noise = Float64Array.from({ length: n }, () => boostRandom() * 2 - 1);
+  const swell = (t) => Math.min(1, t / 0.9) ** 1.5 * Math.exp(-Math.max(0, t - 0.9) / 1.4) * Math.min(1, (length - t) / 0.8);
+  let low = 0;
+  let sweepLow = 0;
+  let sweepBand = 0;
+  let phase = 0;
+  const dry = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    low += 0.02 * (noise[i] - low);
+    // A band of the noise sweeping up from 300 to 2,500 Hz over the first second, a two-pole state variable filter.
+    const centre = 300 + 2200 * Math.min(1, t / 1.1) ** 0.7;
+    const tune = 2 * Math.sin((Math.PI * centre) / RATE);
+    sweepLow += tune * sweepBand;
+    const high = noise[i] - sweepLow - 0.5 * sweepBand;
+    sweepBand += tune * high;
+    const whoosh = sweepBand * Math.exp(-Math.max(0, t - 0.6) / 0.5) * Math.min(1, t / 0.15);
+    phase += (2 * Math.PI * (55 + 45 * Math.min(1, t / 1.2))) / RATE;
+    const growl = Math.tanh(2.5 * (Math.sin(phase) + 0.5 * Math.sin(2 * phase) + 0.3 * Math.sin(3 * phase))) * (1 + 0.3 * Math.sin(2 * Math.PI * 31 * t));
+    dry[i] = swell(t) * (3.2 * low + 0.35 * growl) + 0.6 * whoosh;
+  }
+  writeSound("speed_boost", hullEcho(dry, 0.25), 0.85);
+}
+
 // Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
 // shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
 {

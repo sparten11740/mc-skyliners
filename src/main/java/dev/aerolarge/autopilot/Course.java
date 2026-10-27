@@ -17,7 +17,19 @@ public interface Course {
     @Nullable
     Steer steer(ServerLevel level, AutopilotBlockEntity autopilot, Vec3 middle, double heading);
 
-    /** A heading, as Minecraft yaw in degrees (0 south, 90 west), and a speed, in blocks a second. */
+    /**
+     * A heading, as Minecraft yaw in degrees (0 south, 90 west), and a speed, in blocks a second; or none, her engines
+     * kept as they are while something else drives her along (see {@link #holdingThrust}).
+     */
     record Steer(double heading, double speed) {
+        /** Steering her onto a heading, her engines kept as they are. */
+        public static Steer holdingThrust(double heading) {
+            return new Steer(heading, Double.NaN);
+        }
+
+        /** Whether her engines are kept as they are rather than driven for a speed. */
+        public boolean holdsThrust() {
+            return Double.isNaN(speed);
+        }
     }
 }

@@ -191,6 +191,7 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinScreens::new,
         ZeppelinSearchlights::new,
         ZeppelinFloodlights::new,
+        ZeppelinBoost::new,
         ZeppelinSkywriting::new);
 
     private final AirframePalette.Balloon palette;
@@ -1052,9 +1053,23 @@ public final class ZeppelinLayout implements Layout {
         set(x, y, z, skin ? AerolargeRegistry.ZEPPELIN_FABRIC.get().defaultBlockState() : Blocks.AIR.defaultBlockState());
     }
 
-    private BlockPos relay(int x, int y, int z) {
+    /** A thrust relay at a block, which drives the thrusters beside it; where it stands. */
+    BlockPos relay(int x, int y, int z) {
         set(x, y, z, AerolargeRegistry.THRUST_RELAY.get().defaultBlockState());
         return new BlockPos(x, y, z);
+    }
+
+    /**
+     * A booster at a block: a creative thruster facing the way it pushes, at the full configured setting whatever the
+     * hull's size, its plume shown, as it fires only a few seconds at a time; whether there is a thruster to lay.
+     */
+    boolean booster(int x, int y, int z, Direction pushes) {
+        if (palette.engine().isEmpty()) {
+            return false;
+        }
+        set(x, y, z, AirframePalette.with(palette.engine().get(), "facing", pushes.getSerializedName()));
+        fittings.put(new BlockPos(x, y, z), Thrusters.thrust(EngineFlames.PROPULSION_PLUME, 1));
+        return true;
     }
 
     /**

@@ -1561,6 +1561,15 @@ handle again to let go, the light left shining where it points, or use it sneaki
 from a handle lets it go too. The server config's `searchlights` leaves them out of zeppelins built from then on, and
 off, the handles already built do nothing.
 
+On the control car's front wall, under the windows beside the rudder wheel, glows the red Speed Boost Button, a
+fast-forward arrow on its cap. Press it while her autopilot flies her along and the boosters round her tail fire for ten
+seconds with a roar, streaming blue plasma behind her: she gathers speed, to some three times as fast, on the heading
+she had and at her height, her engines as they were; then she slows back to her set speed, and the button rests ten
+seconds before it boosts again. At any other time it only sounds a low note. The boosters push along her length a little
+over her axis, where the hull's drag centres, so her nose stays level rather than rising and lifting her, as it would
+with her engine cars, which hang below it, run full ahead. The server config's `speedBoost` leaves it out of zeppelins
+built from then on, and off, the buttons already built do nothing.
+
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
 takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
@@ -1791,6 +1800,8 @@ airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `
 `SearchlightBlock`s whose `SearchlightHandleBlock`s swing them, `SearchlightBeams` drawing their beams and pools, and
 `ZeppelinFloodlights` hangs the `FloodlightBlock`s whose `FloodlightBlockEntity` lights them as the sky darkens,
 `Floodlights` drawing their light, and `HullAmbience` plays her hull's boom and groans to those aboard, and
+`ZeppelinBoost` fits the `BoostButtonBlock` and the boosters round her tail, its `BoostButtonBlockEntity` firing them
+and `SpeedBoost` steering her as they do (a `Course` on `ZeppelinPilot`'s list, keeping her engines as they were), and
 `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of
 her and steers her along it, `Skywriting` handing her pilot the course (a `Course` on `ZeppelinPilot`'s list),
 `SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting the button; a feature is taken out of the zeppelin

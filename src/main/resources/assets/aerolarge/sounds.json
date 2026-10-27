@@ -869,6 +869,15 @@
       }
     ]
   },
+  "speed_boost": {
+    "subtitle": "subtitles.aerolarge.speed_boost",
+    "sounds": [
+      {
+        "name": "aerolarge:speed_boost",
+        "attenuation_distance": 96
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

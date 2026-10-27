@@ -4,6 +4,7 @@ import dev.aerolarge.block.EngineRepeaterBlockEntity;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.boost.SpeedBoost;
 import dev.aerolarge.skywriting.Skywriting;
 import dev.aerolarge.upship.UpShip;
 import java.util.ArrayList;
@@ -45,10 +46,10 @@ public final class ZeppelinPilot {
      */
     private static final List<TakeoffHold> HOLDS = List.of(UpShip::holds);
     /**
-     * What may steer a zeppelin a while in place of what her autopilot is set to fly, such as skywriting a shape: a
-     * feature is taken out of her flying with its line on the list.
+     * What may steer a zeppelin a while in place of what her autopilot is set to fly, such as a speed boost or
+     * skywriting a shape, the first that steers her: a feature is taken out of her flying with its line on the list.
      */
-    private static final List<Course> COURSES = List.of(Skywriting::steer);
+    private static final List<Course> COURSES = List.of(SpeedBoost::steer, Skywriting::steer);
     /** The zeppelin's engines, numbered from 0: two to port (0 forward, 1 aft), two to starboard (2 aft, 3 forward). */
     static final int ENGINES = 4;
     /** How much a m³ of hot air lifts at sea level, in Sable's units: Create Aeronautics' {@code hotAirStrength}. */
@@ -305,7 +306,8 @@ public final class ZeppelinPilot {
             double heading = steer != null ? steer.heading() : heading(orders, state, middle, distance);
             double ahead = Mth.wrapDegrees(heading - state.heading());
             double speed = steer != null ? steer.speed() : speed(orders, distance, ahead);
-            drive(level, origin, holdSpeed(state, speed), yaw(heading, state.heading(), yawRate), false);
+            double thrust = steer != null && steer.holdsThrust() ? lastThrust : holdSpeed(state, speed);
+            drive(level, origin, thrust, yaw(heading, state.heading(), yawRate), false);
         }
         settled = comingDown && radio < SETTLED_HEIGHT && Math.abs(state.velocity().y) < SETTLED_SINK ? settled + 1 : 0;
         if (settled >= SETTLED_TICKS) {
