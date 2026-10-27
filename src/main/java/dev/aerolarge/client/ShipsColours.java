@@ -8,9 +8,9 @@ import dev.aerolarge.block.FlagHalyardBlockEntity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
@@ -67,15 +67,16 @@ public final class ShipsColours {
     private ShipsColours() {
     }
 
-    /** What a zeppelin's fins are painted with: the colours closed up at a halyard in its box; null while none are. */
-    @Nullable
-    static PaintOverlay fins(ClientLevel level, BoundingBox box) {
+    /**
+     * What a zeppelin's fins are painted with: the colours closed up at a halyard in its box; nothing while none are.
+     */
+    static List<PaintOverlay> fins(ClientLevel level, BoundingBox box) {
         for (FlagHalyardBlockEntity halyard : FlagHalyardBlockEntity.loaded(level)) {
             if (box.isInside(halyard.getBlockPos()) && halyard.closedUp()) {
-                return new Fins(picture(halyard.base(), halyard.patterns()));
+                return List.of(new Fins(picture(halyard.base(), halyard.patterns())));
             }
         }
-        return null;
+        return List.of();
     }
 
     /** A banner's picture, row by row from its top, each row from its left, as 0xRRGGBB, worked out once and kept. */

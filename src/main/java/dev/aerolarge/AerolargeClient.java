@@ -29,6 +29,7 @@ import dev.aerolarge.client.CockpitDoorRenderer;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.DiscoBallRenderer;
 import dev.aerolarge.client.DiscoLights;
+import dev.aerolarge.client.DoveParticle;
 import dev.aerolarge.client.DropBayScreen;
 import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.Earshot;
@@ -64,6 +65,7 @@ import dev.aerolarge.client.SelfDestructButtonRenderer;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.ShipsColoursRenderer;
+import dev.aerolarge.client.ShipsPlaqueRenderer;
 import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.TabBanners;
@@ -212,6 +214,7 @@ public final class AerolargeClient {
     private static void onRegisterParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(AerolargeRegistry.CONTRAIL.get(), ContrailParticle.Provider::new);
         event.registerSpriteSet(AerolargeRegistry.FLARE_SMOKE.get(), FlareSmokeParticle.Provider::new);
+        event.registerSpriteSet(AerolargeRegistry.DOVE.get(), DoveParticle.Provider::new);
         event.registerSpriteSet(AerolargeRegistry.BLAST_FIRE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.FIRE));
         event.registerSpriteSet(AerolargeRegistry.BLAST_SMOKE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.SMOKE));
         event.registerSpriteSet(AerolargeRegistry.BLAST_WAVE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
@@ -231,6 +234,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.HELM_ENTITY.get(), context -> new HelmRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

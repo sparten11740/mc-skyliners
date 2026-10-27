@@ -6,15 +6,11 @@ import dev.aerolarge.block.FlagHalyardBlock;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -49,11 +45,6 @@ public class ShipsColoursRenderer implements BlockEntityRenderer<FlagHalyardBloc
     private static final float HALYARD_OUT = 0.16F;
     private static final float HALYARD_WIDTH = 0.04F;
     private static final int HALYARD = 0xFFD9C79B;
-    /** Where the flag's face is on a banner's 64-pixel texture: a pixel in from its corner, 20 across by 40 down. */
-    private static final float FACE_LEFT = 1 / 64F;
-    private static final float FACE_TOP = 1 / 64F;
-    private static final float FACE_WIDTH = 20 / 64F;
-    private static final float FACE_HEIGHT = 40 / 64F;
     /** How far off the colours are drawn, in blocks: a zeppelin's length. */
     private static final int VIEW_DISTANCE = 512;
 
@@ -76,11 +67,7 @@ public class ShipsColoursRenderer implements BlockEntityRenderer<FlagHalyardBloc
         float hoist = smooth(halyard.hoist(partialTick));
         float size = Math.max(BUNDLE, hoist);
         Flag flag = new Flag(fly, Mth.lerp(hoist, BUNDLE_OVER + DEPTH * BUNDLE, top), size, (level.getGameTime() + partialTick) / WAVE_TICKS);
-        layer(flag, last, buffers.getBuffer(Sheets.BANNER_BASE.renderType(RenderType::entityCutoutNoCull)), Sheets.BANNER_BASE, halyard.base(), light);
-        for (BannerPatternLayers.Layer layer : halyard.patterns().layers()) {
-            Material material = Sheets.getBannerMaterial(layer.pattern());
-            layer(flag, last, buffers.getBuffer(Sheets.bannerSheet()), material, layer.color(), light);
-        }
+        BannerQuads.layers(buffers, halyard.base(), halyard.patterns(), (consumer, colour) -> strips(flag, last, consumer, colour, light));
     }
 
     /** A share eased in and out: the flag starts up the staff gently and slows as it closes up at the top. */
@@ -102,9 +89,7 @@ public class ShipsColoursRenderer implements BlockEntityRenderer<FlagHalyardBloc
     }
 
     /** One of the banner's layers over the whole flag, tinted its dye's colour, strip by strip. */
-    private static void layer(Flag flag, PoseStack.Pose pose, VertexConsumer buffer, Material material, DyeColor dye, int light) {
-        VertexConsumer consumer = material.sprite().wrap(buffer);
-        int colour = 0xFF000000 | dye.getTextureDiffuseColor();
+    private static void strips(Flag flag, PoseStack.Pose pose, VertexConsumer consumer, int colour, int light) {
         for (int strip = 0; strip < STRIPS; strip++) {
             strip(flag, pose, consumer, colour, light, strip / (float) STRIPS, (strip + 1) / (float) STRIPS);
         }
@@ -137,7 +122,7 @@ public class ShipsColoursRenderer implements BlockEntityRenderer<FlagHalyardBloc
         float swing = flag.swing(share);
         consumer.addVertex(pose, 0.5F + fly.getStepX() * along + side.getStepX() * swing, y, 0.5F + fly.getStepZ() * along + side.getStepZ() * swing)
             .setColor(colour)
-            .setUv(FACE_LEFT + across * FACE_WIDTH, FACE_TOP + share * FACE_HEIGHT)
+            .setUv(BannerQuads.FACE_LEFT + across * BannerQuads.FACE_WIDTH, BannerQuads.FACE_TOP + share * BannerQuads.FACE_HEIGHT)
             .setOverlay(OverlayTexture.NO_OVERLAY)
             .setLight(light)
             .setNormal(pose, nx, 0, nz);

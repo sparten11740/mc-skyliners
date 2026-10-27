@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -53,8 +52,9 @@ public final class ZeppelinPaint {
     }
 
     /** What the features paint over a zeppelin's livery, one line each: taking a feature out is taking out its line. */
-    private static final List<BiFunction<ClientLevel, BoundingBox, PaintOverlay>> OVERLAYS = List.of(
-        ShipsColours::fins);
+    private static final List<BiFunction<ClientLevel, BoundingBox, List<PaintOverlay>>> OVERLAYS = List.of(
+        ShipsColours::fins,
+        ChristeningPaint::flanks);
 
     /** How far past the hull's length a repaint sweeps, in blocks: over the fins, the last of it. */
     private static final double SWEEP_LENGTH = 520;
@@ -125,7 +125,7 @@ public final class ZeppelinPaint {
 
     /** What the features paint over a zeppelin's livery now, in its box. */
     private static List<PaintOverlay> overlays(ClientLevel level, BoundingBox box) {
-        return OVERLAYS.stream().map(overlay -> overlay.apply(level, box)).filter(Objects::nonNull).toList();
+        return OVERLAYS.stream().flatMap(overlays -> overlays.apply(level, box).stream()).toList();
     }
 
     /**

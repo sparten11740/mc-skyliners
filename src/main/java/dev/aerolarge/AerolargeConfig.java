@@ -41,6 +41,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue HORN;
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
+    public static final ModConfigSpec.BooleanValue CHRISTENING;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -265,6 +266,12 @@ public final class AerolargeConfig {
                 "flag, and is painted on the zeppelin's top and bottom fins. Zeppelins already built keep theirs."
             )
             .define("shipsColours", true);
+        CHRISTENING = builder
+            .comment(
+                "Whether a zeppelin is built with a ship's plaque in her control car, so a Christening Bottle broken on her nose names",
+                "her and paints her crest and name on her flanks. Zeppelins already built keep theirs."
+            )
+            .define("christening", true);
         builder.pop();
 
         SPEC = builder.build();

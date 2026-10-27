@@ -47,6 +47,11 @@ public class FlagHalyardBlockEntity extends BlockEntity {
         return !banner.isEmpty();
     }
 
+    /** The colours' banner, a copy of it; empty for none. */
+    public ItemStack colours() {
+        return banner.copy();
+    }
+
     /** The colours' banner's base colour. */
     public DyeColor base() {
         return banner.getItem() instanceof BannerItem item ? item.getColor() : DyeColor.WHITE;

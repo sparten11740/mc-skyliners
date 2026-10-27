@@ -3563,6 +3563,46 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const fold = Math.abs(((x + y) % 8) - 4);
     return fold <= 1 ? [0xf0, 0x5a, 0x5e] : fold <= 2 ? [0xd0, 0x22, 0x2c] : [0xa8, 0x14, 0x1e];
   }, 3);
+  // The Christening Bottle: a bottle of wine in dark green glass with a shine down its side, its neck and shoulders
+  // wrapped in gold foil, a red ribbon tied round its neck with its tails hanging, a dark line round it all.
+  const BOTTLE_GLASS = [0x1f, 0x5a, 0x2e];
+  const BOTTLE_SHINE = [0x6f, 0xb0, 0x7a];
+  const RIBBON = [0xc8, 0x20, 0x2a];
+  const bottle = (x, y) => {
+    const across = Math.abs(x + 0.5 - 8);
+    if (y >= 1 && y <= 4 && across <= 1) return y === 4 ? RIBBON : GOLD;
+    if (y >= 5 && y <= 6 && across <= y - 3) return GOLD;
+    if (y >= 7 && y <= 14 && across <= 3) return x === 6 && y <= 12 ? BOTTLE_SHINE : BOTTLE_GLASS;
+    if ((x === 10 && y >= 4 && y <= 6) || (x === 11 && y >= 6 && y <= 8)) return RIBBON;
+    return null;
+  };
+  texture(itemOutput, "christening_bottle", (x, y) => {
+    const inside = bottle(x, y);
+    if (inside) return inside;
+    return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => bottle(x + dx, y + dy)) ? [0x14, 0x24, 0x18] : CLEAR;
+  }, 2);
+  // The doves released at a christening: white birds seen from the side, in two frames of a wingbeat, wings up and
+  // wings down, a grey beak and the underside of the body shaded.
+  {
+    const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+    const DOVE = [0xf6, 0xf6, 0xf4];
+    const DOVE_SHADE = [0xc4, 0xca, 0xd2];
+    const body = (x, y) => ((x - 8) / 3.6) ** 2 + ((y - 8.5) / 1.6) ** 2 <= 1 || Math.hypot(x - 11.6, y - 7) <= 1.3;
+    const tail = (x, y) => x >= 3 && x <= 5 && Math.abs(y - 8.5 + (5 - x) * 0.3) <= 0.6 + (5 - x) * 0.35;
+    const wing = (up, x, y) => {
+      const t = up ? (8 - y) / 6 : (y - 9) / 4;
+      return t >= 0 && t <= 1 && Math.abs(x - (8 - t * 1.5)) <= 2.2 * (1 - t) + 0.5;
+    };
+    for (const [name, up] of [["dove_up", true], ["dove_down", false]]) {
+      texture(particleOutput, name, (x, y) => {
+        const [cx, cy] = [x + 0.5, y + 0.5];
+        if (x === 13 && y === 7) return [0x80, 0x80, 0x84];
+        if (body(cx, cy) || tail(cx, cy)) return cy > 9.2 ? DOVE_SHADE : DOVE;
+        if (wing(up, cx, cy)) return up ? DOVE : DOVE_SHADE;
+        return CLEAR;
+      }, 0);
+    }
+  }
   const GIRDER = [0x2f, 0x5f, 0xb3];
   const GIRDER_DARK = [0x23, 0x48, 0x8a];
   texture(blockOutput, "zeppelin_girder", (x, y) => {

@@ -188,9 +188,12 @@ import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.HelmBlock;
 import dev.aerolarge.block.HelmBlockEntity;
 import dev.aerolarge.block.HornCordBlock;
+import dev.aerolarge.block.ShipsPlaqueBlock;
+import dev.aerolarge.block.ShipsPlaqueBlockEntity;
 import dev.aerolarge.block.SouvenirModelBlock;
 import dev.aerolarge.block.TelegraphBlock;
 import dev.aerolarge.cabin.Passengers;
+import dev.aerolarge.christening.ChristeningBottleItem;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.BlueIceChunk;
 import dev.aerolarge.entity.FallingCrate;
@@ -386,6 +389,8 @@ public final class AerolargeRegistry {
             }
         }
     );
+    /** A white dove released at a zeppelin's christening, seen from far off. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DOVE = PARTICLES.register("dove", () -> new SimpleParticleType(true));
     /** A puff of an engine's contrail, laid high up and left hanging in the sky. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CONTRAIL = PARTICLES.register("contrail", () -> new SimpleParticleType(true));
     /**
@@ -1541,6 +1546,12 @@ public final class AerolargeRegistry {
     );
     /** The halyard's pulley squeaking as the colours run up the staff, and down. */
     public static final DeferredHolder<SoundEvent, SoundEvent> FLAG_HALYARD_SOUND = sound("flag_halyard");
+    /** A ship's plaque, engraved with a zeppelin's name and crest when she is christened. */
+    public static final DeferredBlock<ShipsPlaqueBlock> SHIPS_PLAQUE = BLOCKS.registerBlock(
+        "ships_plaque", ShipsPlaqueBlock::new, metal(MapColor.GOLD).noOcclusion().noCollission()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipsPlaqueBlockEntity>> SHIPS_PLAQUE_ENTITY =
+        BLOCK_ENTITIES.register("ships_plaque", () -> BlockEntityType.Builder.of(ShipsPlaqueBlockEntity::new, SHIPS_PLAQUE.get()).build(null));
     /** The zeppelin's horn and its echo off the ground (see {@link dev.aerolarge.horn.ShipHorn}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN = sound("zeppelin_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN_ECHO = sound("zeppelin_horn_echo");
@@ -1558,6 +1569,11 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> LIVERY_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_BOARD);
     public static final DeferredItem<BlockItem> FLAG_HALYARD_ITEM = ITEMS.registerSimpleBlockItem(FLAG_HALYARD);
     public static final DeferredItem<BlockItem> FLAGSTAFF_ITEM = ITEMS.registerSimpleBlockItem(FLAGSTAFF);
+    public static final DeferredItem<BlockItem> SHIPS_PLAQUE_ITEM = ITEMS.registerSimpleBlockItem(SHIPS_PLAQUE);
+    /** Broken on a zeppelin's nose, christens her with the name it was given at an anvil. */
+    public static final DeferredItem<ChristeningBottleItem> CHRISTENING_BOTTLE = ITEMS.register(
+        "christening_bottle", () -> new ChristeningBottleItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON))
+    );
     public static final DeferredItem<BlockItem> FESTIVE_GARLAND_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_GARLAND);
     public static final DeferredItem<BlockItem> FESTIVE_BOW_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_BOW);
 
@@ -1644,7 +1660,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
-            FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
+            SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

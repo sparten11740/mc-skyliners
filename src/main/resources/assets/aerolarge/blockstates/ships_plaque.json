@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "aerolarge:block/ships_plaque",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "aerolarge:block/ships_plaque",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "aerolarge:block/ships_plaque",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aerolarge:block/ships_plaque",
+      "y": 270
+    }
+  }
+}

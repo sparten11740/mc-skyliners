@@ -579,6 +579,35 @@ cubes.propeller = null;
   dropsItself("flag_halyard");
   cubes.flag_halyard = null;
 }
+// A ship's plaque (see ShipsPlaqueBlock): a brass plate on the wall, a sixteenth thick, its engraving drawn by its
+// renderer once its zeppelin is christened (see ShipsPlaqueRenderer); and the Christening Bottle broken on her nose.
+{
+  const brass = `${ID}:block/zeppelin_brass`;
+  write(`assets/${ID}/models/block/ships_plaque.json`, {
+    parent: "minecraft:block/block",
+    textures: { brass, particle: brass },
+    elements: [solid([1, 3, 15], [15, 13, 16], "#brass")],
+  });
+  write(`assets/${ID}/blockstates/ships_plaque.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/ships_plaque`, y }])),
+  });
+  write(`assets/${ID}/models/item/ships_plaque.json`, { parent: `${ID}:block/ships_plaque` });
+  dropsItself("ships_plaque");
+  cubes.ships_plaque = null;
+  write(`assets/${ID}/models/item/christening_bottle.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/christening_bottle` } });
+  write(`assets/${ID}/particles/dove.json`, { textures: [`${ID}:dove_up`, `${ID}:dove_down`] });
+}
+function christeningLang() {
+  return {
+    "block.aerolarge.ships_plaque": "Ship's Plaque",
+    "block.aerolarge.ships_plaque.christened_by": "Christened by %s",
+    "item.aerolarge.christening_bottle": "Christening Bottle",
+    "item.aerolarge.christening_bottle.tooltip": "Name it at an anvil, then swing it at a zeppelin's nose to christen her",
+    "message.aerolarge.christening.named": "I name this ship %s. God bless her, and all who sail in her!",
+    "message.aerolarge.christening.unnamed": "God bless her, and all who sail in her! Name the bottle at an anvil to give her a name",
+    "message.aerolarge.christening.nose": "Swing the bottle at her nose",
+  };
+}
 function shipsColoursLang() {
   return {
     "block.aerolarge.flag_halyard": "Flag Halyard",
@@ -5156,7 +5185,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5231,6 +5260,8 @@ shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark
 shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
+shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
+shaped("christening_bottle", ["N", "S", "B"], { N: "minecraft:gold_nugget", S: "minecraft:sweet_berries", B: "minecraft:glass_bottle" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
@@ -5812,6 +5843,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...zeppelinLang(),
   ...zeppelinControlsLang(),
   ...shipsColoursLang(),
+  ...christeningLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

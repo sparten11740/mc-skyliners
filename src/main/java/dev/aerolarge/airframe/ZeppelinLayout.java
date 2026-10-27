@@ -142,7 +142,8 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinHornCord::new,
         ZeppelinLiveryBoard::new,
         ZeppelinFestive::new,
-        ZeppelinColours::new);
+        ZeppelinColours::new,
+        ZeppelinChristening::new);
 
     private final AirframePalette.Balloon palette;
     /** What it is built with: furnished or not, and the livery it is painted in, and its cells coloured by. */

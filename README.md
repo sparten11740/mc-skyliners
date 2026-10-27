@@ -1456,6 +1456,18 @@ fins go back to the livery's colour. The server config's `shipsColours` leaves t
 on; a Flagstaff is crafted from white dye over two sticks, and a Flag Halyard from string over a flagstaff over a copper
 ingot, to fly colours from anywhere.
 
+A zeppelin is christened as a ship is launched, with a bottle broken on her nose. Name a Christening Bottle at an anvil
+and swing it at her nose, close by or from the ground under it, for it reaches some 60 blocks: the glass smashes with a
+bang, wine sprays, and a flock of 48 white doves flies off, as the airship Akron's pigeons did, while "I name this
+ship..." is said. Then her crest is painted on both flanks, sweeping back from the bow: the colours flying from her
+flagstaff, upright in a gold frame, one block to each of the banner's pixels, or a gold globe on blue when none fly; and
+beside it her name, in the game's own lettering standing on the equator, as the Hindenburg's ran along her bow, dark on
+a light livery and white on a dark one, reading the right way from either side. A Ship's Plaque on the back wall of the
+observation lounge keeps them, engraved with her crest and her name, or with who christened her when the bottle had no
+name. Swung anywhere else on her, the bottle only clinks. A new bottle christens her afresh. The server config's
+`christening` leaves the plaque off zeppelins built from then on; a Christening Bottle is crafted from a gold nugget
+over sweet berries over a glass bottle, and a Ship's Plaque from a gold nugget between two copper ingots.
+
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
 among its glowing burners, lit at its corners. The hot air stays put over the open mouth, as it does over a hot air
@@ -1642,16 +1654,19 @@ looking up, and `ZeppelinLiveryBoard` the `LiveryBoardBlock`, whose `LiveryBoard
 zeppelin's `Livery` is kept by its autopilot, and `ZeppelinPaint` tints its cover (the shell model's `tint_index`) and
 fabric by it on the client, and `ZeppelinFestive` dresses a festive zeppelin (`SleighBells` rings with its engines on
 the client), and `ZeppelinColours` stands the flagstaff on the Sky Deck, its colours hoisted at a `FlagHalyardBlock`,
-flown by `ShipsColoursRenderer` and painted on the fins by `ShipsColours` where `FinArt` says; a feature is taken out of
-the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and wires the control head to
-every burner, engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel
-`HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by
-hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the
-air where it is, through the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the
-blocks Sable assembles it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is
-assembled. `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot`
-leaves out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not
-take every sound channel there is.
+flown by `ShipsColoursRenderer` and painted on the fins by `ShipsColours` where `FinArt` says, and `ZeppelinChristening`
+hangs the `ShipsPlaqueBlock` that a `ChristeningBottleItem` broken on her nose engraves through `Christening`,
+`ChristeningPaint` painting her crest and name where `FlankArt` says (each a `PaintOverlay` on `ZeppelinPaint`'s list)
+and `ShipsPlaqueRenderer` engraving the plaque; a feature is taken out of the zeppelin with its line on the list.
+`ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand control;
+`ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy`
+opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that
+starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel
+there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
