@@ -1,5 +1,6 @@
 package dev.aerolarge.entity;
 
+import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
@@ -7,7 +8,9 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -36,7 +39,9 @@ import net.minecraft.world.phys.Vec3;
  * bounces: thrown in the lounge in flight it flies down the lounge, not off to the back at the airliner's speed. Out
  * through a door it is sent into the world at the airliner's speed, meets the still air outside, slows, and glides on
  * from the height it left at, a long way down: from an airliner in flight it can come down far from where it was
- * thrown (Air Mail).
+ * thrown (Air Mail). From high up, off a zeppelin's Sky Deck, it glides hundreds of blocks, further than the land
+ * round any player is kept going, so while it glides it keeps the land round it going itself, as a thrown ender pearl
+ * does in later versions of the game, and lets it go as it comes down.
  */
 public class PaperPlane extends Entity {
     /** Speed a throw leaves the hand at, and a soft one, sneaking, in blocks a tick. */
@@ -74,6 +79,14 @@ public class PaperPlane extends Entity {
      */
     private static final double IN_FLIGHT = 10;
     private static final double AIR_MAIL = 100;
+    /**
+     * What keeps the chunks round a gliding plane going: a ticket over the chunk it is in, the chunks round it among
+     * them so it always glides on into one that is going, held for a second and a half after it was last renewed,
+     * renewed every half second, so it lapses soon after the plane comes down.
+     */
+    private static final TicketType<Integer> GLIDING = TicketType.create(Aerolarge.MOD_ID + ":paper_plane", Integer::compare, 30);
+    private static final int GLIDING_REACH = 3;
+    private static final int GLIDING_RENEWAL = 10;
 
     @Nullable
     private UUID thrower;
@@ -114,6 +127,7 @@ public class PaperPlane extends Entity {
         super.tick();
         if (!level().isClientSide) {
             SableFlight.keepWithCabin(this);
+            keepLandGoing();
         }
         catchDelay = Math.max(0, catchDelay - 1);
         Vec3 velocity = glide(getDeltaMovement());
@@ -195,6 +209,13 @@ public class PaperPlane extends Entity {
         SableFlight.sendOut(dropped);
         level().addFreshEntity(dropped);
         discard();
+    }
+
+    /** Out over the land, out of every airframe, it keeps the chunks round it going while it glides (see {@link #GLIDING}). */
+    private void keepLandGoing() {
+        if (tickCount % GLIDING_RENEWAL == 0 && level() instanceof ServerLevel server && !SableFlight.inPlot(this)) {
+            server.getChunkSource().addRegionTicket(GLIDING, chunkPosition(), GLIDING_REACH, getId());
+        }
     }
 
     /** Who threw it, if they are still about. */
