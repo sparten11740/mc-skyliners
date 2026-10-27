@@ -15,9 +15,9 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
  * The speed boost (see {@link BoostButtonBlockEntity}): its button on the inside of the control car's front wall,
  * under the windows beside the rudder wheel, where whoever stands at the wheel or the control head sees it; and its
  * boosters, rings of thrusters round her tail between the fins, each standing on the tail's cover just aft of it with
- * its relay set into the cover in front of it, so all of them push along her length, through the hull's drag. Everything stands on the car or the
- * cover face to face, so it is assembled with her. The {@code speedBoost} switch leaves it off a zeppelin built from
- * then on.
+ * its relay set into the cover in front of it, so all of them push along her length, through the hull's drag.
+ * Everything stands on the car or the cover face to face, so it is assembled with her. The {@code speedBoost} switch
+ * leaves it off a zeppelin built from then on.
  */
 final class ZeppelinBoost implements ZeppelinPiece {
     /** How far to starboard of the middle the button is, beside the rudder wheel, and how high over the floor, in blocks. */

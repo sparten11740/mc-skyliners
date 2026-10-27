@@ -354,9 +354,9 @@ public final class AerolargeConfig {
             .define("skywriting", true);
         SPEED_BOOST = builder
             .comment(
-                "Whether a zeppelin is built with a speed boost button in her control car, which has her autopilot run her engines",
-                "full ahead for ten seconds, flames streaming from their cars, on the heading she had and at her height. Off, the",
-                "buttons already built do nothing."
+                "Whether a zeppelin is built with a speed boost button in her control car and boosters round her tail, which the",
+                "button fires for ten seconds while her autopilot holds the heading she had and her height. Off, the buttons",
+                "already built do nothing."
             )
             .define("speedBoost", true);
         ZEPPELIN_POST = builder
