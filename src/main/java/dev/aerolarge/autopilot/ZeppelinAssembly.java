@@ -71,6 +71,33 @@ public final class ZeppelinAssembly {
         return left;
     }
 
+    /**
+     * The blocks in a zeppelin's frame that its assembly would leave behind pressed against it, face to face: neither
+     * its own nor inside its hull, such as vanilla blocks laid on its outside. Left in the world where they stand, they
+     * hold the zeppelin as it flies off; for play-testing a layout, which should leave none.
+     */
+    public static List<BlockPos> stuckTo(ServerLevel level, BlockPos head, BoundingBox frame) {
+        LongOpenHashSet assembled = new LongOpenHashSet();
+        List<BlockPos> blocks = blocks(level, head, frame);
+        blocks.forEach(pos -> assembled.add(pos.asLong()));
+        LongOpenHashSet stuck = new LongOpenHashSet();
+        List<BlockPos> found = new ArrayList<>();
+        for (BlockPos pos : blocks) {
+            stuckBeside(level, pos, frame, assembled, stuck, found);
+        }
+        return found;
+    }
+
+    /** The blocks beside one of the zeppelin's, in its frame, that it would leave behind, each once. */
+    private static void stuckBeside(ServerLevel level, BlockPos pos, BoundingBox frame, LongOpenHashSet assembled, LongOpenHashSet stuck, List<BlockPos> found) {
+        for (Direction side : Direction.values()) {
+            BlockPos beside = pos.relative(side);
+            if (frame.isInside(beside) && !assembled.contains(beside.asLong()) && !level.getBlockState(beside).isAir() && stuck.add(beside.asLong())) {
+                found.add(beside);
+            }
+        }
+    }
+
     private static boolean aboard(ServerLevel level, BlockPos pos, Set<Block> theirs) {
         BlockState state = level.getBlockState(pos);
         if (state.isAir()) {

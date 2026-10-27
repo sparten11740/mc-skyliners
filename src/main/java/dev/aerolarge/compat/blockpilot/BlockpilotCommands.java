@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -84,7 +85,9 @@ public final class BlockpilotCommands {
             .help("before the nearest zeppelin flies: how many of its blocks its assembly takes along, and which of its own it would leave behind")
             .field("assembled", "the blocks its assembly takes along")
             .field("left", "its own blocks it would leave behind in the world")
-            .field("first", "where the first few left behind stand"));
+            .field("first", "where the first few left behind stand")
+            .field("stuck", "other blocks in its frame it would leave behind pressed against it, holding it as it flies off")
+            .field("first_stuck", "where the first few of those stand, and what they are"));
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("livery", (context, args) -> livery(args))
             .onServer()
             .group("aerolarge")
@@ -145,10 +148,16 @@ public final class BlockpilotCommands {
         }
         List<BlockPos> left = ZeppelinAssembly.leftBehind(level, autopilot.getBlockPos(), frame);
         String first = left.stream().limit(FIRST_LEFT).map(pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()).collect(Collectors.joining(" "));
+        List<BlockPos> stuck = ZeppelinAssembly.stuckTo(level, autopilot.getBlockPos(), frame);
+        String firstStuck = stuck.stream().limit(FIRST_LEFT)
+            .map(pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ() + "=" + BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()))
+            .collect(Collectors.joining(" "));
         return Result.ok(new Fields()
             .tag("assembled", ZeppelinAssembly.blocks(level, autopilot.getBlockPos(), frame).size())
             .tag("left", left.size())
-            .tag("first", first));
+            .tag("first", first)
+            .tag("stuck", stuck.size())
+            .tag("first_stuck", firstStuck));
     }
 
     private static Result autopilot(CommandContext context, Args args) throws CommandException {
