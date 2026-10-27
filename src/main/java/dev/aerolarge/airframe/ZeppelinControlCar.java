@@ -135,7 +135,7 @@ final class ZeppelinControlCar {
         height = burners > 0 ? height / burners : at.getY();
         List<ZeppelinPilot.Cell> cells = new ArrayList<>();
         for (int cell = 0; cell < relays.size(); cell++) {
-            cells.add(new ZeppelinPilot.Cell(offsets(at, relays.get(cell), rotation), middle - cellMiddle(cell) * layout.scale()));
+            cells.add(new ZeppelinPilot.Cell(offsets(at, relays.get(cell), rotation), middle - cellMiddle(cell) * layout.scale(), layout.cellGas().get(cell)));
         }
         autopilot.configureZeppelin(cells, engines(at, layout.aheadRelays(), rotation), engines(at, layout.asternRelays(), rotation),
             height - at.getY(), middle - at.getZ(), at.getY(), layout.hullSize());

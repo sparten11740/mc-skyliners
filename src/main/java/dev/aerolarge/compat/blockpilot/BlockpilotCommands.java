@@ -8,6 +8,7 @@ import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.SetAutopilot;
@@ -55,6 +56,11 @@ public final class BlockpilotCommands {
     private static final double REACH = 600;
     /** How many of the blocks an assembly would leave behind are named, to find them by. */
     private static final int FIRST_LEFT = 5;
+    /**
+     * The sizes a zeppelin can be built at, as the build and layout commands name them, in the order of
+     * {@link ZeppelinSize}'s: "full" is a word Blockpilot keeps for itself.
+     */
+    private static final List<String> SIZES = List.of("third", "two_thirds", "three_thirds");
 
     private BlockpilotCommands() {
     }
@@ -99,6 +105,7 @@ public final class BlockpilotCommands {
             .onServer()
             .group("aerolarge")
             .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
+            .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
             .field("blocks", "its blocks, the air inside its hull among them")
             .field("fingerprint", "of every block's position and state, and of where its block entities are set up")
@@ -107,6 +114,7 @@ public final class BlockpilotCommands {
             .onServer()
             .group("aerolarge")
             .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
+            .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("aerolarge:build zeppelin"));
     }
@@ -207,7 +215,7 @@ public final class BlockpilotCommands {
     }
 
     private static Result layout(Args args) throws CommandException {
-        Layout layout = layout(args.word("what"));
+        Layout layout = layout(args.word("what"), size(args));
         long[] sum = {0};
         layout.inOrder((pos, state) -> sum[0] += mix(pos.asLong() ^ mix(state.toString().hashCode())));
         layout.fittings().keySet().forEach(pos -> sum[0] += mix(~pos.asLong()));
@@ -221,11 +229,17 @@ public final class BlockpilotCommands {
         return z ^ (z >>> 31);
     }
 
-    private static Layout layout(String what) {
+    /** The size a command asks a zeppelin to be built at: full size unless it says. */
+    private static ZeppelinSize size(Args args) {
+        int named = args.hasOption("size") ? SIZES.indexOf(args.option("size")) : -1;
+        return named < 0 ? ZeppelinSize.FULL : ZeppelinSize.values()[named];
+    }
+
+    private static Layout layout(String what, ZeppelinSize size) {
         return switch (what) {
-            case "zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.PLAIN);
-            case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED);
-            case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE);
+            case "zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.PLAIN.sized(size));
+            case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED.sized(size));
+            case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE.sized(size));
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };
@@ -237,7 +251,7 @@ public final class BlockpilotCommands {
         if (AirframeBuild.isRunning(level)) {
             throw new CommandException("busy");
         }
-        Layout layout = layout(args.word("what"));
+        Layout layout = layout(args.word("what"), size(args));
         Direction along = player.getDirection();
         BlockPos nose = player.blockPosition().relative(along, 3);
         AirframeBuild.Placement placement = AirframeBuild.Placement.of(level, layout, nose, along);

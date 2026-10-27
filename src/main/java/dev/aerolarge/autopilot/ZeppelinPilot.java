@@ -55,8 +55,11 @@ public final class ZeppelinPilot {
     private static final double HOT_AIR = 1.5;
     /** A redstone signal at its strongest, which drives a burner or a thruster as hard as it goes. */
     private static final int FULL_SIGNAL = 15;
-    /** The most hot air one burner gives, in m³ (its value box at the most, as built), at full signal. */
-    private static final double BURNER_GAS = 500;
+    /**
+     * The most hot air one burner gives, in m³ (its value box at the most), at full signal: as a full-size zeppelin's
+     * are built, and a smaller one's are turned down from, to fill no more than their cell holds.
+     */
+    public static final double BURNER_GAS = 500;
     /** How fast the air thins going up, as Sable's air pressure does: a share each block. */
     private static final double THINNING = 0.004;
     /**
@@ -161,10 +164,11 @@ public final class ZeppelinPilot {
     private static final double GLIDE = 0.25;
 
     /**
-     * A gas cell's burners: their relays, as offsets from the autopilot, and how far ahead of the cells' middle the
-     * cell hangs, in blocks (behind it, less than nothing), which decides whether it lifts the nose or the tail.
+     * A gas cell's burners: their relays, as offsets from the autopilot, how far ahead of the cells' middle the cell
+     * hangs, in blocks (behind it, less than nothing), which decides whether it lifts the nose or the tail, and the most
+     * hot air they give together, at full signal, in m³.
      */
-    public record Cell(List<BlockPos> relays, double ahead) {
+    public record Cell(List<BlockPos> relays, double ahead, double fullGas) {
     }
 
     /**
@@ -187,6 +191,8 @@ public final class ZeppelinPilot {
     private Map<Integer, List<BlockPos>> ahead = Map.of();
     private Map<Integer, List<BlockPos>> astern = Map.of();
     private int burners;
+    /** The most hot air all its burners give together, at full signal, in m³. */
+    private double fullGas;
     /** How far above the autopilot the cells' hot air stands, in blocks, where the air it lifts in is thinner. */
     private double gasAbove;
     /**
@@ -230,6 +236,7 @@ public final class ZeppelinPilot {
         this.gasAbove = gasAbove;
         this.middleAft = middleAft;
         this.burners = cells.stream().mapToInt(cell -> cell.relays().size()).sum();
+        this.fullGas = cells.stream().mapToDouble(Cell::fullGas).sum();
     }
 
     boolean wired() {
@@ -406,7 +413,7 @@ public final class ZeppelinPilot {
      * work in. NaN without burners, a mass or air.
      */
     double ceiling(SableFlight.State state, double mass) {
-        double most = CEILING_SHARE * burners * BURNER_GAS;
+        double most = CEILING_SHARE * fullGas;
         double air = state.air() * Math.exp(-THINNING * gasAbove);
         if (Double.isNaN(mass) || mass <= 0 || most <= 0 || air <= 0) {
             return Double.NaN;
@@ -429,7 +436,7 @@ public final class ZeppelinPilot {
      */
     private void setBurners(ServerLevel level, BlockPos origin, double gas, double split) {
         double reach = cells.stream().mapToDouble(cell -> Math.abs(cell.ahead())).max().orElse(1);
-        double each = burners == 0 ? 0 : FULL_SIGNAL * gas / (BURNER_GAS * burners);
+        double each = fullGas <= 0 ? 0 : FULL_SIGNAL * gas / fullGas;
         for (int i = 0; i < cells.size(); i++) {
             Cell cell = cells.get(i);
             double lean = reach > 0 ? cell.ahead() / reach : 0;
@@ -627,7 +634,7 @@ public final class ZeppelinPilot {
 
     /** Turns its links as its block has turned (see {@link Turning}). */
     void turn(Rotation turn) {
-        cells = cells.stream().map(cell -> new Cell(Turning.turn(cell.relays(), turn), cell.ahead())).toList();
+        cells = cells.stream().map(cell -> new Cell(Turning.turn(cell.relays(), turn), cell.ahead(), cell.fullGas())).toList();
         Map<Integer, List<BlockPos>> turnedAhead = new HashMap<>();
         ahead.forEach((engine, relays) -> turnedAhead.put(engine, Turning.turn(relays, turn)));
         ahead = turnedAhead;
@@ -644,6 +651,7 @@ public final class ZeppelinPilot {
             CompoundTag saved = new CompoundTag();
             saved.put("Relays", Relays.write(cell.relays()));
             saved.putDouble("Ahead", cell.ahead());
+            saved.putDouble("FullGas", cell.fullGas());
             list.add(saved);
         }
         tag.put("Cells", list);
@@ -669,7 +677,10 @@ public final class ZeppelinPilot {
         List<Cell> loaded = new ArrayList<>();
         for (Tag entry : tag.getList("Cells", Tag.TAG_COMPOUND)) {
             CompoundTag saved = (CompoundTag) entry;
-            loaded.add(new Cell(Turning.turn(Relays.read(saved.getList("Relays", Tag.TAG_INT_ARRAY)), turn), saved.getDouble("Ahead")));
+            List<BlockPos> relays = Relays.read(saved.getList("Relays", Tag.TAG_INT_ARRAY));
+            // Saved before a cell's burners could be turned down: each at the most a burner gives.
+            double full = saved.contains("FullGas") ? saved.getDouble("FullGas") : BURNER_GAS * relays.size();
+            loaded.add(new Cell(Turning.turn(relays, turn), saved.getDouble("Ahead"), full));
         }
         configure(loaded, engines(tag.getCompound("AheadRelays"), turn), engines(tag.getCompound("AsternRelays"), turn), tag.getDouble("GasAbove"),
             tag.getDouble("MiddleAft"));

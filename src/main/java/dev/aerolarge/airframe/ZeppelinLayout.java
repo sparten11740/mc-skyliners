@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import static dev.aerolarge.airframe.ZeppelinShape.*;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.ZeppelinPilot;
 import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.PropellerBlock;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -120,19 +122,26 @@ public final class ZeppelinLayout implements Layout {
     private static final int CAR_SILL = 2;
     /**
      * The control car, at every size: how many rows long it is from its front wall to its back wall, how far either
-     * side of the middle its walls stand, its floor's row over the ground, and how many rows tall it is inside.
+     * side of the middle its walls stand, its floor's row over the ground, how many rows tall it is inside, and the row
+     * of its roof, which the hull is raised to clear (see {@link ZeppelinSize#axis}).
      */
-    private static final int CAR_ROWS = 28;
+    static final int CAR_ROWS = 28;
     private static final int CAR_HALF = 5;
     private static final int CAR_FLOOR_ROW = 1;
     private static final int CAR_ROOM = 6;
+    static final int CAR_ROOF = CAR_FLOOR_ROW + CAR_ROOM + 1;
     /**
-     * The passenger decks, at every size: how many rows long they are, and the lower and upper decks' floors, in rows
-     * over the hull's lowest row along them.
+     * The passenger decks, at every size: how many rows long they are at most, and the lower and upper decks' floors,
+     * in rows over the hull's lowest row along them; a hull too shallow for two has one, its floor so many rows up. They
+     * begin a couple of rows aft of the control car at least, and end where the hull has narrowed to a share of its
+     * full radius, at the latest.
      */
     private static final int DECK_ROWS = 80;
     private static final int LOWER_DECK_ROWS = 2;
     private static final int UPPER_DECK_ROWS = 8;
+    private static final int SINGLE_DECK_ROWS = 3;
+    private static final int DECKS_AFT_OF_CAR = 2;
+    private static final double DECKS_NARROWEST = 0.95;
     /** The most rows the fairing over the control car climbs to meet the cover, a bound on its search. */
     private static final int FAIRING_HIGHEST = 16;
     /** An engine car's pod: how many rows its nose rounds over, and how thick its skin is, in blocks. */
@@ -185,8 +194,9 @@ public final class ZeppelinLayout implements Layout {
     private final Map<BlockPos, Fitting> fittings = new HashMap<>();
     /** Each gas cell's balloon, bow first, worked out once: the layout looks into them millions of times. */
     private final List<ZeppelinShape.Cell> balloons = new ArrayList<>();
-    /** Each gas cell's burners' relays, bow first. */
+    /** Each gas cell's burners' relays, bow first, and the most hot air they give together, at full signal, in m³. */
     private final List<List<BlockPos>> burnerRelays = new ArrayList<>();
+    private final List<Double> cellGas = new ArrayList<>();
     /**
      * Each engine car's relays, ahead and astern, by its engine's number less one (1 and 2 to port, 3 and 4 to
      * starboard).
@@ -201,6 +211,16 @@ public final class ZeppelinLayout implements Layout {
     private final int axis;
     /** How high the hull's axis stands over the ground, in metres, as the shape measures it. */
     private final double axisHeight;
+    /**
+     * The rows the passenger decks begin and end at along the hull, the hull's lowest row along them, and whether it
+     * is deep enough there for two decks, worked out once: the cover asks after them for every block it lays.
+     */
+    private final int deckFront;
+    private final int deckBack;
+    private final int deckBase;
+    private final boolean twoDecks;
+    /** The row the axial gangway's catwalk is laid in. */
+    private final int gangway;
     /** The hull's radius at each row along it, in blocks, from the row before the nose to the one after the stern. */
     private final double[] radii;
     /** Where the stairs up from the decks reach the gangway, a row along it, once they are laid. */
@@ -221,6 +241,16 @@ public final class ZeppelinLayout implements Layout {
         for (int z = -2; z <= length + 1; z++) {
             radii[z + 2] = radius((z + 0.5) / scale) * scale;
         }
+        int carBack = (int) Math.round(CAR_FRONT * scale) + CAR_ROWS;
+        this.deckFront = Math.max((int) Math.ceil(DECKS_FRONT * scale), carBack + DECKS_AFT_OF_CAR);
+        int back = deckFront;
+        while (back < deckFront + DECK_ROWS && radiusAt(back + 1) >= DECKS_NARROWEST * RADIUS * scale) {
+            back++;
+        }
+        this.deckBack = back;
+        this.deckBase = (int) Math.round(ZeppelinShape.belly((deckFront + deckBack) / 2.0 / scale, axisHeight) * scale);
+        this.twoDecks = deckBase + UPPER_DECK_ROWS + ROOM_HEIGHT + 1 < axis - 1;
+        this.gangway = twoDecks ? axis - 1 : deckBase + SINGLE_DECK_ROWS + ROOM_HEIGHT + 2;
     }
 
     /**
@@ -417,30 +447,47 @@ public final class ZeppelinLayout implements Layout {
      */
     private void gasCells() {
         for (int cell = 0; cell < CELLS; cell++) {
-            balloons.add(ZeppelinShape.Cell.of(cell, axisHeight));
+            balloons.add(ZeppelinShape.Cell.of(cell, axisHeight, options.size().cells()));
         }
         for (int cell = 0; cell < CELLS; cell++) {
             burnerRelays.add(gasCell(cell));
         }
     }
 
-    private List<BlockPos> gasCell(int cell) {
+    /**
+     * The box round a gas cell, in blocks: its first and last rows along the hull, how far across it reaches, and its
+     * lowest and highest rows.
+     */
+    private record CellBox(int front, int back, int across, int low, int high) {
+    }
+
+    private CellBox cellBox(int cell) {
         ZeppelinShape.Cell balloon = balloons.get(cell);
+        return new CellBox((int) Math.floor((balloon.middle() - balloon.halfLength()) * scale) - 1,
+            (int) Math.ceil((balloon.middle() + balloon.halfLength()) * scale) + 1, (int) Math.ceil(balloon.halfWidth() * scale) + 1,
+            (int) Math.floor((balloon.centreY() - balloon.halfHeight()) * scale) - 1, (int) Math.ceil((balloon.centreY() + balloon.halfHeight()) * scale) + 1);
+    }
+
+    private List<BlockPos> gasCell(int cell) {
         String[] colours = options.livery().cellColours();
         BlockState envelope = palette.envelope(colours[cell % colours.length]);
-        int front = (int) Math.floor((balloon.middle() - balloon.halfLength()) * scale) - 1;
-        int back = (int) Math.ceil((balloon.middle() + balloon.halfLength()) * scale) + 1;
-        int across = (int) Math.ceil(balloon.halfWidth() * scale) + 1;
-        int low = (int) Math.floor((balloon.centreY() - balloon.halfHeight()) * scale) - 1;
-        int high = (int) Math.ceil((balloon.centreY() + balloon.halfHeight()) * scale) + 1;
-        box(-across, low, front, across, high, back, (x, y, z) -> envelopeAt(cell, envelope, x, y, z));
+        CellBox around = cellBox(cell);
+        box(-around.across(), around.low(), around.front(), around.across(), around.high(), around.back(), (x, y, z) -> envelopeAt(cell, envelope, x, y, z));
         hangers(cell);
-        int middle = (int) Math.floor(balloon.middle() * scale);
-        int bottom = low;
-        while (bottom < high && !inCell(cell, 0, bottom, middle)) {
+        int middle = (int) Math.floor(balloons.get(cell).middle() * scale);
+        int bottom = around.low();
+        while (bottom < around.high() && !inCell(cell, 0, bottom, middle)) {
             bottom++;
         }
         return burners(cell, bottom + BURNER_RISE);
+    }
+
+    /** How much hot air a cell holds, in m³: its open gas, inside its envelope. */
+    private int gasHeld(int cell) {
+        CellBox around = cellBox(cell);
+        int[] held = {0};
+        box(-around.across(), around.low(), around.front(), around.across(), around.high(), around.back(), (x, y, z) -> held[0] += inGas(cell, x, y, z) ? 1 : 0);
+        return held[0];
     }
 
     private void envelopeAt(int cell, BlockState envelope, int x, int y, int z) {
@@ -503,16 +550,21 @@ public final class ZeppelinLayout implements Layout {
 
     /**
      * A cell's burners, in two rows across the middle of its floor at a row, spaced so each stands with open gas all
-     * round it, each with its relay on its east side and a post from under the relay down to the envelope. Their
-     * relays.
+     * round it, each with its relay on its east side and a post from under the relay down to the envelope: as many as
+     * the floor's breadth takes, but no more than fill the gas the cell holds, and in a cell too small for them a
+     * single one wherever there is room for it. Where together they would give more than the cell holds, each is
+     * turned down to its share. Their relays.
      */
     private List<BlockPos> burners(int cell, int row) {
         List<BlockPos> relays = new ArrayList<>();
         if (palette.burner().isEmpty()) {
+            cellGas.add(0.0);
             return relays;
         }
+        int held = gasHeld(cell);
         double size = cellScale(cell);
-        int count = Math.max(LEAST_BURNERS, (int) Math.round(MOST_BURNERS * size * size));
+        int pattern = Math.max(LEAST_BURNERS, (int) Math.round(MOST_BURNERS * size * size));
+        int count = Math.max(1, Math.min(pattern, (int) Math.ceil(held / ZeppelinPilot.BURNER_GAS)));
         int middle = (int) Math.floor(balloons.get(cell).middle() * scale);
         int pairs = (count + 1) / 2;
         for (int i = 0; i < count; i++) {
@@ -522,7 +574,52 @@ public final class ZeppelinLayout implements Layout {
                 relays.add(burner(across, row, z));
             }
         }
+        BlockPos room = relays.isEmpty() ? roomForBurner(cell, row, middle) : null;
+        if (room != null) {
+            relays.add(burner(room.getX(), room.getY(), room.getZ()));
+        }
+        turnDown(relays, held);
         return relays;
+    }
+
+    /** Where in a cell a burner and its relay find open gas, from a row up, nearest its middle; null for nowhere. */
+    @Nullable
+    private BlockPos roomForBurner(int cell, int from, int middle) {
+        CellBox around = cellBox(cell);
+        for (int y = from; y < around.high(); y++) {
+            BlockPos room = roomInRow(cell, y, middle, around);
+            if (room != null) {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private BlockPos roomInRow(int cell, int y, int middle, CellBox around) {
+        for (int k = 0; k <= around.back() - around.front(); k++) {
+            int z = middle + (k % 2 == 0 ? k / 2 : -(k + 1) / 2);
+            for (int x = -around.across(); x < around.across(); x++) {
+                if (inGas(cell, x, y, z) && inGas(cell, x + 1, y, z)) {
+                    return new BlockPos(x, y, z);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Turns a cell's burners down, by their relays, where together they would give more hot air than the cell holds,
+     * each to its share of it; and notes what they give together.
+     */
+    private void turnDown(List<BlockPos> relays, int held) {
+        double each = relays.isEmpty() ? 0 : Math.min(ZeppelinPilot.BURNER_GAS, (double) held / relays.size());
+        if (each < ZeppelinPilot.BURNER_GAS) {
+            for (BlockPos relay : relays) {
+                fittings.put(relay.west(), Burners.turnedDown(Math.max(1, (int) each)));
+            }
+        }
+        cellGas.add(each * relays.size());
     }
 
     /** A burner with its relay beside it, standing on its post; the relay. */
@@ -536,9 +633,12 @@ public final class ZeppelinLayout implements Layout {
         return new BlockPos(x + 1, y, z);
     }
 
-    /** The row the axial gangway's catwalk is laid in, its walkway just over the hull's axis. */
+    /**
+     * The row the axial gangway's catwalk is laid in: its walkway just over the hull's axis; in a hull with one deck,
+     * just over that deck's roof, so the gas cells over it have the room a small hull has for them.
+     */
     int gangwayRow() {
-        return axis - 1;
+        return gangway;
     }
 
     /**
@@ -616,26 +716,33 @@ public final class ZeppelinLayout implements Layout {
         }
     }
 
+    /** The lower deck's floor row; in a hull with one deck, that deck's. */
     int lowerDeckRow() {
-        return LOWER_DECK_ROWS + deckBase();
+        return twoDecks() ? LOWER_DECK_ROWS + deckBase() : upperDeckRow();
     }
 
+    /** The upper deck's floor row, the promenade's; in a hull with one deck, that deck's. */
     int upperDeckRow() {
-        return UPPER_DECK_ROWS + deckBase();
+        return (twoDecks() ? UPPER_DECK_ROWS : SINGLE_DECK_ROWS) + deckBase();
+    }
+
+    /** Whether the hull is deep enough for two decks, one over the other: the upper deck's roof under the gangway. */
+    boolean twoDecks() {
+        return twoDecks;
     }
 
     /** The row the passenger decks begin at, along the hull, and the row they end at. */
     int deckFront() {
-        return (int) Math.ceil(DECKS_FRONT * scale);
+        return deckFront;
     }
 
     int deckBack() {
-        return deckFront() + DECK_ROWS;
+        return deckBack;
     }
 
     /** The hull's lowest row along the passenger decks, which their floors are measured up from. */
     private int deckBase() {
-        return (int) Math.round(ZeppelinShape.belly((deckFront() + deckBack()) / 2.0 / scale, axisHeight) * scale);
+        return deckBase;
     }
 
     /**
@@ -650,11 +757,14 @@ public final class ZeppelinLayout implements Layout {
         int lower = lowerDeckRow();
         int upper = upperDeckRow();
         int reach = reach();
-        for (int row : new int[]{lower, upper, upper + ROOM_HEIGHT + 1}) {
+        int[] floors = twoDecks() ? new int[]{lower, upper, upper + ROOM_HEIGHT + 1} : new int[]{upper, upper + ROOM_HEIGHT + 1};
+        for (int row : floors) {
             box(-reach, row, front, reach, row, back, this::deckFloorAt);
         }
         int middle = (front + back) / 2;
-        stairs(LOWER_FLIGHT_ACROSS, lower + 1, middle - LOWER_FLIGHT_AHEAD, upper - lower, Direction.NORTH);
+        if (twoDecks()) {
+            stairs(LOWER_FLIGHT_ACROSS, lower + 1, middle - LOWER_FLIGHT_AHEAD, upper - lower, Direction.NORTH);
+        }
         int rise = gangwayRow() - upper;
         stairs(GANGWAY_HALF_WIDTH + 3, upper + 1, middle + UPPER_FLIGHT_AFT, rise, Direction.SOUTH);
         stairsTop = middle + UPPER_FLIGHT_AFT + rise - 1;
@@ -916,7 +1026,8 @@ public final class ZeppelinLayout implements Layout {
     /**
      * The four fins in a cross: from the cover out to their outline, a block thick in the middle of their plane, the
      * lower fin cut off a row over the ground, with the wheel the zeppelin rests on at the stern under its lowest
-     * point.
+     * point; under a hull raised over its control car, where the lower fin stops short of the ground, the wheel at the
+     * foot of a tail skid of girders down from it.
      */
     private void fins() {
         int lowest = Integer.MAX_VALUE;
@@ -932,9 +1043,13 @@ public final class ZeppelinLayout implements Layout {
                 lowestZ = z;
             }
         }
-        if (lowest != Integer.MAX_VALUE) {
-            set(0, lowest - 1, lowestZ, AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
+        if (lowest == Integer.MAX_VALUE) {
+            return;
         }
+        for (int y = 1; y < lowest; y++) {
+            set(0, y, lowestZ, AerolargeRegistry.ZEPPELIN_GIRDER.get().defaultBlockState());
+        }
+        set(0, 0, lowestZ, AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
     }
 
     /**
@@ -1016,6 +1131,11 @@ public final class ZeppelinLayout implements Layout {
     /** Each gas cell's burners' relays, bow first, by layout position. */
     List<List<BlockPos>> burnerRelays() {
         return burnerRelays;
+    }
+
+    /** The most hot air each gas cell's burners give together, at full signal, bow first, in m³. */
+    List<Double> cellGas() {
+        return cellGas;
     }
 
     /**

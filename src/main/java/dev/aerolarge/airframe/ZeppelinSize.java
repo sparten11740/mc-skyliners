@@ -8,15 +8,25 @@ package dev.aerolarge.airframe;
  * from its blueprint.
  */
 public enum ZeppelinSize {
-    THIRD(2.0 / 3),
-    TWO_THIRDS(4.0 / 3),
-    FULL(2);
+    THIRD(2.0 / 3, new ZeppelinShape.CellFill(0.4, 16, 9, 0.35)),
+    TWO_THIRDS(4.0 / 3, ZeppelinShape.CELLS_FILL),
+    FULL(2, ZeppelinShape.CELLS_FILL);
 
     /** The hull's blocks a metre. */
     private final double scale;
+    /**
+     * How its gas cells fill the hull: a third's fill all the room over its gangway, or the hot air in them, inside a
+     * block-thick envelope, would be too little to float the full-size control car and deck it carries.
+     */
+    private final ZeppelinShape.CellFill cells;
 
-    ZeppelinSize(double scale) {
+    ZeppelinSize(double scale, ZeppelinShape.CellFill cells) {
         this.scale = scale;
+        this.cells = cells;
+    }
+
+    ZeppelinShape.CellFill cells() {
+        return cells;
     }
 
     public double scale() {
@@ -28,9 +38,15 @@ public enum ZeppelinSize {
         return ZeppelinShape.LENGTH * scale;
     }
 
-    /** The row the hull's axis runs along, over the zeppelin's lowest blocks. */
+    /**
+     * The row the hull's axis runs along, over the zeppelin's lowest blocks: as high as the shape has it, or higher,
+     * where the hull would sink onto the full-size control car under it, so its belly behind the car stands clear of
+     * the car's roof.
+     */
     public int axis() {
-        return (int) Math.round(ZeppelinShape.AXIS_HEIGHT * scale);
+        int carBack = (int) Math.round(ZeppelinShape.CAR_FRONT * scale) + ZeppelinLayout.CAR_ROWS;
+        double clear = ZeppelinLayout.CAR_ROOF + 1 + ZeppelinShape.radius(carBack / scale) * scale;
+        return Math.max((int) Math.round(ZeppelinShape.AXIS_HEIGHT * scale), (int) Math.ceil(clear));
     }
 
     /** The hull's radius so many blocks aft of the nose's tip, in blocks; 0 past either end. */

@@ -33,14 +33,17 @@ final class ZeppelinShape {
     static final double LAST_RING = 228;
     static final int CELLS = 16;
     /**
-     * Each gas cell: a balloon hanging under the crown of its bay, as long as the bay less this gap at either end, and
-     * at its fullest (in the full middle of the hull) this wide and tall, scaled down with the hull's radius toward
-     * either end. Its middle stands this share of the hull's radius over the axis.
+     * Each gas cell: a balloon hanging under the crown of its bay, as long as the bay less a gap at either end, and at
+     * its fullest (in the full middle of the hull) so wide and tall, in metres, scaled down with the hull's radius
+     * toward either end, its middle a share of the hull's radius over the axis. A small hull's cells fill more of it
+     * (see {@link ZeppelinSize}): their envelope and the hot air's edge are a block thick at every size, a share of a
+     * small cell that would leave it too little gas to float the ship.
      */
-    static final double CELL_GAP = 1;
-    static final double CELL_HALF_WIDTH = 10;
-    static final double CELL_HALF_HEIGHT = 6.5;
-    static final double CELL_RISE = 0.45;
+    record CellFill(double gap, double halfWidth, double halfHeight, double rise) {
+    }
+
+    /** The cells as they fill a hull of two thirds or the full size. */
+    static final CellFill CELLS_FILL = new CellFill(1, 10, 6.5, 0.45);
 
     /**
      * The control car: its front this far back, at every size, the car itself a player's size (see
@@ -151,11 +154,11 @@ final class ZeppelinShape {
      * the hull leaves room for there.
      */
     record Cell(double middle, double centreY, double halfLength, double halfWidth, double halfHeight) {
-        /** A cell's balloon in a hull whose axis stands so high over the ground. */
-        static Cell of(int cell, double axis) {
+        /** A cell's balloon in a hull whose axis stands so high over the ground, its cells filling it so. */
+        static Cell of(int cell, double axis, CellFill fill) {
             double k = cellScale(cell);
-            double halfLength = (ringAt(cell + 1) - ringAt(cell)) / 2 - CELL_GAP;
-            return new Cell(cellMiddle(cell), axis + CELL_RISE * RADIUS * k, halfLength, CELL_HALF_WIDTH * k, CELL_HALF_HEIGHT * k);
+            double halfLength = (ringAt(cell + 1) - ringAt(cell)) / 2 - fill.gap();
+            return new Cell(cellMiddle(cell), axis + fill.rise() * RADIUS * k, halfLength, fill.halfWidth() * k, fill.halfHeight() * k);
         }
 
         boolean contains(double x, double y, double z) {

@@ -9,6 +9,8 @@ import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
+import dev.aerolarge.airframe.ZeppelinSize;
+import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -33,15 +35,24 @@ final class AerolargeCommand {
                 .then(Commands.literal(along.getSerializedName())
                     .executes(context -> build(context, along, false))
                     .then(Commands.literal("furnished").executes(context -> build(context, along, true)))
-                    .then(Commands.literal("zeppelin").executes(context -> buildZeppelin(context, along, ZeppelinOptions.PLAIN))
-                        .then(Commands.literal("furnished").executes(context -> buildZeppelin(context, along, ZeppelinOptions.FURNISHED)))
-                        .then(Commands.literal("festive").executes(context -> buildZeppelin(context, along, ZeppelinOptions.FESTIVE))))));
+                    .then(sized(Commands.literal("zeppelin"), along, ZeppelinOptions.PLAIN)
+                        .then(sized(Commands.literal("furnished"), along, ZeppelinOptions.FURNISHED))
+                        .then(sized(Commands.literal("festive"), along, ZeppelinOptions.FESTIVE)))));
         }
         dispatcher.register(Commands.literal(Aerolarge.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, boolean furnished) throws CommandSyntaxException {
         return build(context, along, AirframeLayout.create(AerolargeConfig.SCALE.get(), furnished), "commands.aerolarge.build");
+    }
+
+    /** A zeppelin's word in the command, built at full size, or at the size named after it. */
+    private static LiteralArgumentBuilder<CommandSourceStack> sized(LiteralArgumentBuilder<CommandSourceStack> word, Direction along, ZeppelinOptions options) {
+        word.executes(context -> buildZeppelin(context, along, options));
+        for (ZeppelinSize size : ZeppelinSize.values()) {
+            word.then(Commands.literal(size.name().toLowerCase(Locale.ROOT)).executes(context -> buildZeppelin(context, along, options.sized(size))));
+        }
+        return word;
     }
 
     private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, ZeppelinOptions options) throws CommandSyntaxException {
