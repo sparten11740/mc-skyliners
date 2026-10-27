@@ -644,6 +644,7 @@ const LENSES = {
   white: [0xf4, 0xf4, 0xf0],
   strobe: [0xe0, 0xe8, 0xff],
   beacon: [0xff, 0x30, 0x10],
+  bulb: [0xff, 0xd0, 0x80],
 };
 for (const [kind, colour] of Object.entries(LENSES)) {
   texture(blockOutput, `nav_light_${kind}`, (x, y) => {

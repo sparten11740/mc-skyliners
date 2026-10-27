@@ -1392,6 +1392,14 @@ two to each side, each with a big four-bladed wooden propeller with brass tips b
 runs and spins down slowly when it stops. The zeppelin rests on a wheel under the control car and another under the
 lower fin.
 
+At night it is dressed in lights, as an airship's are and as a ship's are when she is dressed overall: a red light on
+each engine car to port and a green one on each to starboard, shining out to the side, a white light on the tip of the
+tail, white strobes double-flashing on the tips of the fins, a red beacon blinking under the belly as the mast's does
+on the Sky Deck, and a line of warm bulbs along the crown from the nose up the leading edge of the upper fin. Their glow
+lights nothing up round them but reads from the ground the whole length of the ship, a bright point however far off; an
+airliner's lights glow the same way. The server config's `navigationLights` leaves them off zeppelins built from then
+on.
+
 Inside, the cover is held up by seventeen rings of blue lattice girders, and in the sixteen bays between them hang its
 sixteen gas cells, huge balloons of Create Aeronautics' envelope, every one a colour of its own from red at the bow
 through orange, yellow, green and blue to black at the stern, so a cell is told by its colour alone. Under the cells an

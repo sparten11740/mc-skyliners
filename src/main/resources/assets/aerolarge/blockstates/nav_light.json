@@ -15,6 +15,9 @@
     "facing=up,kind=beacon": {
       "model": "aerolarge:block/nav_light_beacon"
     },
+    "facing=up,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb"
+    },
     "facing=down,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 180
@@ -35,6 +38,10 @@
       "model": "aerolarge:block/nav_light_beacon",
       "x": 180
     },
+    "facing=down,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb",
+      "x": 180
+    },
     "facing=north,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 90
@@ -53,6 +60,10 @@
     },
     "facing=north,kind=beacon": {
       "model": "aerolarge:block/nav_light_beacon",
+      "x": 90
+    },
+    "facing=north,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb",
       "x": 90
     },
     "facing=south,kind=red": {
@@ -77,6 +88,11 @@
     },
     "facing=south,kind=beacon": {
       "model": "aerolarge:block/nav_light_beacon",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb",
       "x": 90,
       "y": 180
     },
@@ -105,6 +121,11 @@
       "x": 90,
       "y": 90
     },
+    "facing=east,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb",
+      "x": 90,
+      "y": 90
+    },
     "facing=west,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 90,
@@ -127,6 +148,11 @@
     },
     "facing=west,kind=beacon": {
       "model": "aerolarge:block/nav_light_beacon",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=bulb": {
+      "model": "aerolarge:block/nav_light_bulb",
       "x": 90,
       "y": 270
     }

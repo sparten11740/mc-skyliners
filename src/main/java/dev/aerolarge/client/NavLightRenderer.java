@@ -14,16 +14,28 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import org.joml.Vector3f;
 
 /**
  * Draws a light's glow: a soft flare facing the camera, just off the lens, added onto whatever is behind it at full
- * brightness, so it reads at night from far off. Flashing lights follow the game clock, the same on every client.
+ * brightness, so it reads at night from far off: from as far as a zeppelin's whole length, so its lights are seen
+ * end to end, and never smaller to the eye than a point of light, as a real light far off is. Flashing lights follow
+ * the game clock, the same on every client.
  */
 public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity> {
     private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/misc/nav_glow.png");
     /** The flare's size in blocks: the steady lights small, the flashing ones big. */
     private static final float STEADY_SIZE = 1.6F;
     private static final float FLASH_SIZE = 3.2F;
+    /** How far off a light is drawn, in blocks: past a zeppelin's length, about 490. */
+    private static final int VIEW_DISTANCE = 512;
+    /**
+     * The least a flare spans as seen, as its size over its distance from the camera: about half a degree, a bright
+     * point at any distance.
+     */
+    private static final float LEAST_SPAN = 0.009F;
+    /** Where the light is from the camera, worked out afresh for each light on the render thread. */
+    private final Vector3f fromCamera = new Vector3f();
 
     @Override
     public void render(NavLightBlockEntity light, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int overlay) {
@@ -36,14 +48,15 @@ public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity
             return;
         }
         Direction facing = light.getBlockState().getValue(NavLightBlock.FACING);
-        float size = kind == NavLightBlock.Kind.RED || kind == NavLightBlock.Kind.GREEN || kind == NavLightBlock.Kind.WHITE ? STEADY_SIZE : FLASH_SIZE;
+        pose.pushPose();
+        pose.translate(0.5 + facing.getStepX() * 0.3, 0.5 + facing.getStepY() * 0.3, 0.5 + facing.getStepZ() * 0.3);
+        // The pose is the camera's, moved to the light, so how far it has moved is how far the light is.
+        float distance = pose.last().pose().getTranslation(fromCamera).length();
+        float size = Math.max(kind.flashing() ? FLASH_SIZE : STEADY_SIZE, distance * LEAST_SPAN);
         int colour = kind.colour();
         float r = (colour >> 16 & 0xFF) / 255F * brightness;
         float g = (colour >> 8 & 0xFF) / 255F * brightness;
         float b = (colour & 0xFF) / 255F * brightness;
-
-        pose.pushPose();
-        pose.translate(0.5 + facing.getStepX() * 0.3, 0.5 + facing.getStepY() * 0.3, 0.5 + facing.getStepZ() * 0.3);
         pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         PoseStack.Pose last = pose.last();
         VertexConsumer consumer = buffers.getBuffer(RenderType.eyes(GLOW));
@@ -66,11 +79,11 @@ public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity
 
     @Override
     public int getViewDistance() {
-        return 256;
+        return VIEW_DISTANCE;
     }
 
     @Override
     public AABB getRenderBoundingBox(NavLightBlockEntity light) {
-        return new AABB(light.getBlockPos()).inflate(FLASH_SIZE);
+        return new AABB(light.getBlockPos()).inflate(Math.max(FLASH_SIZE, VIEW_DISTANCE * LEAST_SPAN));
     }
 }

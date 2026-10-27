@@ -134,7 +134,8 @@ public final class ZeppelinLayout implements Layout {
     private static final List<Function<ZeppelinLayout, ZeppelinPiece>> PIECES = List.of(
         ZeppelinSkyDeck::new,
         ZeppelinCellGallery::new,
-        ZeppelinDecks::new);
+        ZeppelinDecks::new,
+        ZeppelinLights::new);
 
     private final AirframePalette.Balloon palette;
     /** Every block of the zeppelin that is not the air inside its hull, by position relative to the nose's tip. */
@@ -150,6 +151,8 @@ public final class ZeppelinLayout implements Layout {
      */
     private final Map<Integer, List<BlockPos>> aheadRelays = new HashMap<>();
     private final Map<Integer, List<BlockPos>> asternRelays = new HashMap<>();
+    /** Each engine car's pod's middle, on its axis, by its engine's number less one. */
+    private final List<BlockPos> engineCars = new ArrayList<>();
     private final int length;
     private final int axis;
     /** The hull's radius at each row along it, in blocks, from the row before the nose to the one after the stern. */
@@ -785,6 +788,7 @@ public final class ZeppelinLayout implements Layout {
         }
         aheadRelays.put(engine, ahead);
         asternRelays.put(engine, astern);
+        engineCars.add(new BlockPos(pod.x(), pod.y(), (pod.front() + pod.back()) / 2));
         strut(pod.x(), pod.y(), (int) Math.round(car.station() * SCALE), car.side());
     }
 
@@ -937,6 +941,21 @@ public final class ZeppelinLayout implements Layout {
     /** Each engine's relays that drive it ahead, by its number less one, by layout position. */
     Map<Integer, List<BlockPos>> aheadRelays() {
         return aheadRelays;
+    }
+
+    /** Each engine car's pod's middle on its axis, by its engine's number less one, by layout position. */
+    List<BlockPos> engineCars() {
+        return engineCars;
+    }
+
+    /** The row the hull's axis runs along. */
+    int axis() {
+        return axis;
+    }
+
+    /** How many rows long the hull is, nose to stern. */
+    int length() {
+        return length;
     }
 
     /** Each engine's relays that drive it astern, by its number less one, by layout position. */

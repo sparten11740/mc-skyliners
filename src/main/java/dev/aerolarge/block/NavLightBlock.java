@@ -25,8 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * An exterior light: a small lens on the airframe, FACING the way it shines. What it is, and so how it glows, is its
  * KIND: the steady red and green navigation lights on the port and starboard wingtips and the white one on the tail,
- * the white strobes that double-flash at the wingtips, and the red anti-collision beacons above and below the
- * fuselage. The glow is drawn by its renderer, so flashing never changes the block.
+ * the white strobes that double-flash at the wingtips, the red anti-collision beacons above and below the fuselage,
+ * and the warm bulbs strung along a zeppelin dressed for the night. The glow is drawn by its renderer, so flashing
+ * never changes the block.
  */
 public class NavLightBlock extends DirectionalBlock implements EntityBlock {
     private static final MapCodec<NavLightBlock> CODEC = simpleCodec(NavLightBlock::new);
@@ -43,7 +44,8 @@ public class NavLightBlock extends DirectionalBlock implements EntityBlock {
     }
 
     public enum Kind implements StringRepresentable {
-        RED(0xFF2A1A, false), GREEN(0x1AFF4A, false), WHITE(0xFFFFFF, false), STROBE(0xFFFFFF, true), BEACON(0xFF2010, true);
+        RED(0xFF2A1A, false), GREEN(0x1AFF4A, false), WHITE(0xFFFFFF, false), STROBE(0xFFFFFF, true), BEACON(0xFF2010, true),
+        BULB(0xFFD58A, false);
 
         private final int colour;
         private final boolean flashing;
@@ -55,6 +57,11 @@ public class NavLightBlock extends DirectionalBlock implements EntityBlock {
 
         public int colour() {
             return colour;
+        }
+
+        /** Whether it flashes: the strobes and the beacons, which glow bigger than the steady lights to catch the eye. */
+        public boolean flashing() {
+            return flashing;
         }
 
         /**

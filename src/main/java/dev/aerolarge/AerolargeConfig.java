@@ -36,6 +36,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.ConfigValue<String> BURNER_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENVELOPE_BLOCK;
     public static final ModConfigSpec.BooleanValue SAFETY_CANOPY;
+    public static final ModConfigSpec.BooleanValue NAVIGATION_LIGHTS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -229,6 +230,12 @@ public final class AerolargeConfig {
                 "as under a parachute: off its boarding stairs in flight, or from its gangway inside the hull."
             )
             .define("safetyCanopy", true);
+        NAVIGATION_LIGHTS = builder
+            .comment(
+                "Whether a zeppelin is built dressed for the night: red and green lights on its engine cars, a white one on its tail,",
+                "strobes on its fins, a beacon under its belly and a line of warm bulbs along its crown. Zeppelins already built keep theirs."
+            )
+            .define("navigationLights", true);
         builder.pop();
 
         SPEC = builder.build();

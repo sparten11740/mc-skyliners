@@ -963,7 +963,7 @@ function selfDestructLang() {
 // The exterior lights: a small lens on the face it is fixed to, pointing the way it shines (up in the model), one
 // model per kind; turned like an end rod for the other directions.
 {
-  const kinds = ["red", "green", "white", "strobe", "beacon"];
+  const kinds = ["red", "green", "white", "strobe", "beacon", "bulb"];
   for (const kind of kinds) {
     const face = { texture: "#lens" };
     write(`assets/${ID}/models/block/nav_light_${kind}.json`, {
