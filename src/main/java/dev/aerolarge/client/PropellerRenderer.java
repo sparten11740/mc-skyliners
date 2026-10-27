@@ -8,9 +8,7 @@ import dev.aerolarge.block.PropellerBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
@@ -20,7 +18,6 @@ import net.minecraft.world.phys.AABB;
  * spun them. Flat colours on vanilla's white texture, lit by the light just behind the hub.
  */
 public class PropellerRenderer implements BlockEntityRenderer<PropellerBlockEntity> {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
     private static final int BLADES = 4;
     /** How far behind the hub's middle the blades turn, in blocks: just clear of its back face. */
     private static final float BLADE_BEHIND = 0.7F;
@@ -53,7 +50,7 @@ public class PropellerRenderer implements BlockEntityRenderer<PropellerBlockEnti
         Direction pulls = propeller.getBlockState().getValue(PropellerBlock.FACING);
         Direction behind = pulls.getOpposite();
         int light = SableClient.light(level, propeller.getBlockPos().relative(behind));
-        VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(WHITE));
+        VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(FlatQuads.WHITE));
         pose.pushPose();
         // Onto the hub's axis: z out behind it, the blades turning in x and y.
         pose.translate(0.5, 0.5, 0.5);
@@ -87,11 +84,11 @@ public class PropellerRenderer implements BlockEntityRenderer<PropellerBlockEnti
         float a = fromWidth / 2;
         float b = toWidth / 2;
         float t = BLADE_THICKNESS / 2;
-        quad(consumer, pose, light, face, 0, 0, 1, -a, from, t, a, from, t, b, to, t, -b, to, t);
-        quad(consumer, pose, light, face, 0, 0, -1, -b, to, -t, b, to, -t, a, from, -t, -a, from, -t);
-        quad(consumer, pose, light, edge, 1, 0, 0, a, from, t, a, from, -t, b, to, -t, b, to, t);
-        quad(consumer, pose, light, edge, -1, 0, 0, -a, from, -t, -a, from, t, -b, to, t, -b, to, -t);
-        quad(consumer, pose, light, edge, 0, 1, 0, -b, to, t, b, to, t, b, to, -t, -b, to, -t);
+        FlatQuads.quad(consumer, pose, light, face, 0, 0, 1, -a, from, t, a, from, t, b, to, t, -b, to, t);
+        FlatQuads.quad(consumer, pose, light, face, 0, 0, -1, -b, to, -t, b, to, -t, a, from, -t, -a, from, -t);
+        FlatQuads.quad(consumer, pose, light, edge, 1, 0, 0, a, from, t, a, from, -t, b, to, -t, b, to, t);
+        FlatQuads.quad(consumer, pose, light, edge, -1, 0, 0, -a, from, -t, -a, from, t, -b, to, t, -b, to, -t);
+        FlatQuads.quad(consumer, pose, light, edge, 0, 1, 0, -b, to, t, b, to, t, b, to, -t, -b, to, -t);
     }
 
     /** The spinner over the blades' roots: a polished square cone pointing out behind. */
@@ -104,25 +101,8 @@ public class PropellerRenderer implements BlockEntityRenderer<PropellerBlockEnti
             float[] next = corners[(i + 1) % corners.length];
             float nx = (here[0] + next[0]) / 2;
             float ny = (here[1] + next[1]) / 2;
-            quad(consumer, pose, light, SPINNER, nx, ny, r, here[0], here[1], 0, next[0], next[1], 0, 0, 0, tip, 0, 0, tip);
+            FlatQuads.quad(consumer, pose, light, SPINNER, nx, ny, r, here[0], here[1], 0, next[0], next[1], 0, 0, 0, tip, 0, 0, tip);
         }
-    }
-
-    private static void quad(VertexConsumer consumer, PoseStack.Pose pose, int light, int colour, float nx, float ny, float nz,
-                             float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4) {
-        vertex(consumer, pose, light, colour, nx, ny, nz, x1, y1, z1);
-        vertex(consumer, pose, light, colour, nx, ny, nz, x2, y2, z2);
-        vertex(consumer, pose, light, colour, nx, ny, nz, x3, y3, z3);
-        vertex(consumer, pose, light, colour, nx, ny, nz, x4, y4, z4);
-    }
-
-    private static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int light, int colour, float nx, float ny, float nz, float x, float y, float z) {
-        consumer.addVertex(pose, x, y, z)
-            .setColor(colour)
-            .setUv(0.5F, 0.5F)
-            .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(light)
-            .setNormal(pose, nx, ny, nz);
     }
 
     @Override

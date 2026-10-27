@@ -1,0 +1,84 @@
+{
+  "variants": {
+    "facing=north,heat=0": {
+      "model": "aerolarge:block/burner_lever_0",
+      "y": 0
+    },
+    "facing=north,heat=1": {
+      "model": "aerolarge:block/burner_lever_1",
+      "y": 0
+    },
+    "facing=north,heat=2": {
+      "model": "aerolarge:block/burner_lever_2",
+      "y": 0
+    },
+    "facing=north,heat=3": {
+      "model": "aerolarge:block/burner_lever_3",
+      "y": 0
+    },
+    "facing=north,heat=4": {
+      "model": "aerolarge:block/burner_lever_4",
+      "y": 0
+    },
+    "facing=east,heat=0": {
+      "model": "aerolarge:block/burner_lever_0",
+      "y": 90
+    },
+    "facing=east,heat=1": {
+      "model": "aerolarge:block/burner_lever_1",
+      "y": 90
+    },
+    "facing=east,heat=2": {
+      "model": "aerolarge:block/burner_lever_2",
+      "y": 90
+    },
+    "facing=east,heat=3": {
+      "model": "aerolarge:block/burner_lever_3",
+      "y": 90
+    },
+    "facing=east,heat=4": {
+      "model": "aerolarge:block/burner_lever_4",
+      "y": 90
+    },
+    "facing=south,heat=0": {
+      "model": "aerolarge:block/burner_lever_0",
+      "y": 180
+    },
+    "facing=south,heat=1": {
+      "model": "aerolarge:block/burner_lever_1",
+      "y": 180
+    },
+    "facing=south,heat=2": {
+      "model": "aerolarge:block/burner_lever_2",
+      "y": 180
+    },
+    "facing=south,heat=3": {
+      "model": "aerolarge:block/burner_lever_3",
+      "y": 180
+    },
+    "facing=south,heat=4": {
+      "model": "aerolarge:block/burner_lever_4",
+      "y": 180
+    },
+    "facing=west,heat=0": {
+      "model": "aerolarge:block/burner_lever_0",
+      "y": 270
+    },
+    "facing=west,heat=1": {
+      "model": "aerolarge:block/burner_lever_1",
+      "y": 270
+    },
+    "facing=west,heat=2": {
+      "model": "aerolarge:block/burner_lever_2",
+      "y": 270
+    },
+    "facing=west,heat=3": {
+      "model": "aerolarge:block/burner_lever_3",
+      "y": 270
+    },
+    "facing=west,heat=4": {
+      "model": "aerolarge:block/burner_lever_4",
+      "y": 270
+    }
+  }
+}

@@ -433,6 +433,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final int UNATTENDED = 60 * 20;
     /** How often it looks whether anyone is aboard, in ticks. */
     private static final int ABOARD_LOOK = 20;
+    /** How often a flying zeppelin's autopilot shows what it does on the control car's hand controls, in ticks. */
+    private static final int SHOW_CONTROLS = 20;
     /** How far from the autopilot it is heard, in blocks: the flight deck and the cabin just behind it. */
     public static final double FLIGHT_DECK = 24;
     /**
@@ -643,6 +645,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.wheelsBelow = wheelsBelow;
         zeppelin.configure(cells, ahead, astern, gasAbove, middleAft);
         linksChecked = true;
+        setChanged();
+    }
+
+    /** Wired when a zeppelin is built: its control car's hand controls, as offsets from it. */
+    public void wireZeppelinControls(BlockPos rudder, BlockPos elevator, BlockPos port, BlockPos starboard, BlockPos lever) {
+        zeppelin.wireControls(rudder, elevator, port, starboard, lever);
         setChanged();
     }
 
@@ -1467,7 +1475,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     /**
      * Each tick of an assembled zeppelin's: lightning strikes it in a storm and it notes the villages below, as an
      * airliner does; it comes down by itself once nobody has been aboard a while; engaged, it flies (see
-     * {@link ZeppelinPilot}), until it is down on the ground and rests there, switching itself off.
+     * {@link ZeppelinPilot}), showing what it does on the control car's hand controls, until it is down on the ground
+     * and rests there, switching itself off; switched off, it is flown by those controls once handed over to them.
      */
     private void zeppelinTick(ServerLevel level, SableFlight.State flight) {
         keepLoaded(level);
@@ -1479,6 +1488,11 @@ public class AutopilotBlockEntity extends BlockEntity {
             ZeppelinPilot.Orders orders = new ZeppelinPilot.Orders(phase, targetAltitude, targetSpeed, targetHeading, lateral, orbitX, orbitZ,
                 orbitRadius, landAtPin);
             follow(level, flight, zeppelin.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this)));
+            if (phase != Phase.OFF && Math.floorMod(level.getGameTime() + worldPosition.asLong(), SHOW_CONTROLS) == 0) {
+                zeppelin.showControls(level, worldPosition);
+            }
+        } else {
+            zeppelin.flyByHand(level, worldPosition, flight, radio, SableFlight.mass(this));
         }
         watchArrival(flight, radio + flight.apex() - flight.position().y > AIRBORNE);
     }

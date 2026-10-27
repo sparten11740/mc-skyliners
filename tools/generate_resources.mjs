@@ -423,6 +423,90 @@ write(`data/${ID}/loot_table/blocks/propeller.json`, {
   random_sequence: `${ID}:blocks/propeller`,
 });
 cubes.propeller = null;
+// The zeppelin's hand controls in its control car (see HelmBlock, TelegraphBlock and BurnerLeverBlock), drawn with
+// whoever works them standing at the model's south side, looking north. The ship's wheels stand on a turned brass
+// pedestal, the wheel itself drawn round by its renderer (see HelmRenderer). The engine telegraph is a brass column
+// with a round head, its dial facing whoever rings it and its handle over the order rung, the five orders on the
+// dial as pictures in colours (see the texture); its base plate is red for the port engines' and green for the
+// starboard engines', as a ship's sides are. The burner lever stands on a box beside a flame painted from a small
+// blue one at the bottom to a big red one at the top, its red knob thrown forward to burn harder.
+{
+  const brass = `${ID}:block/zeppelin_brass`;
+  const wood = `${ID}:block/zeppelin_wood`;
+  write(`assets/${ID}/models/block/helm_pedestal.json`, {
+    parent: "minecraft:block/block",
+    textures: { brass, wood, particle: brass },
+    elements: [
+      solid([4, 0, 4], [12, 2, 12], "#wood"),
+      solid([6.5, 2, 6.5], [9.5, 13, 9.5], "#brass"),
+      solid([5.5, 13, 6], [10.5, 15, 10], "#wood"),
+    ],
+  });
+  for (const name of ["rudder_wheel", "elevator_wheel"]) {
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+        [...Array(9).keys()].map((turn) => [`facing=${facing},turn=${turn}`, { model: `${ID}:block/helm_pedestal`, y }]))),
+    });
+    write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/ships_wheel` } });
+    dropsItself(name);
+    cubes[name] = null;
+  }
+  const orders = ["astern", "stop", "slow", "half", "full"];
+  for (const side of ["port", "starboard"]) {
+    orders.forEach((order, i) => {
+      const rotation = { origin: [8, 11.25, 11], axis: "z", angle: 45 - 22.5 * i };
+      write(`assets/${ID}/models/block/engine_telegraph_${side}_${order}.json`, {
+        parent: "minecraft:block/block",
+        render_type: "minecraft:cutout",
+        textures: { brass, plate: `${ID}:block/telegraph_${side}`, dial: `${ID}:block/telegraph_dial`, particle: brass },
+        elements: [
+          solid([3, 0, 3], [13, 1, 13], "#plate"),
+          solid([6.5, 1, 6.5], [9.5, 9, 9.5], "#brass"),
+          solid([4, 9, 6], [12, 16, 10.5], "#brass"),
+          // The dial's half disc, which the texture draws across its middle rows, across the head's face.
+          { from: [4, 10, 10.5], to: [12, 15, 10.6], faces: { south: { texture: "#dial", uv: [0, 5, 16, 15] } } },
+          solid([7.5, 11.25, 10.6], [8.5, 14.75, 11.2], "#brass", rotation),
+        ],
+      });
+    });
+  }
+  write(`assets/${ID}/blockstates/engine_telegraph.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["port", "starboard"].flatMap((side) =>
+      orders.map((order) => [`engines=${side},facing=${facing},order=${order}`, { model: `${ID}:block/engine_telegraph_${side}_${order}`, y }])))),
+  });
+  write(`assets/${ID}/models/item/engine_telegraph.json`, { parent: `${ID}:block/engine_telegraph_port_stop` });
+  dropsItself("engine_telegraph");
+  cubes.engine_telegraph = null;
+  for (let heat = 0; heat <= 4; heat++) {
+    const rotation = { origin: [8, 6, 8], axis: "x", angle: 45 - 22.5 * heat };
+    write(`assets/${ID}/models/block/burner_lever_${heat}.json`, {
+      parent: "minecraft:block/block",
+      textures: { brass, wood, flame: `${ID}:block/burner_flame`, knob: `${ID}:block/jump_light_red`, particle: brass },
+      elements: [
+        solid([4, 0, 5], [12, 6, 11], "#wood"),
+        // The painted flame, a board standing on the box beside the lever, the whole picture on either face.
+        { from: [10, 6, 8.5], to: [13.5, 15, 9], faces: { south: { texture: "#flame", uv: [0, 0, 16, 16] }, north: { texture: "#flame", uv: [16, 0, 0, 16] } } },
+        solid([7.5, 6, 7.5], [8.5, 12, 8.5], "#brass", rotation),
+        solid([6.5, 12, 6.5], [9.5, 14, 9.5], "#knob", rotation),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/burner_lever.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      [0, 1, 2, 3, 4].map((heat) => [`facing=${facing},heat=${heat}`, { model: `${ID}:block/burner_lever_${heat}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/burner_lever.json`, { parent: `${ID}:block/burner_lever_2` });
+  dropsItself("burner_lever");
+  cubes.burner_lever = null;
+}
+function zeppelinControlsLang() {
+  return {
+    "block.aerolarge.rudder_wheel": "Rudder Wheel",
+    "block.aerolarge.elevator_wheel": "Elevator Wheel",
+    "block.aerolarge.engine_telegraph": "Engine Telegraph",
+    "block.aerolarge.burner_lever": "Burner Lever",
+  };
+}
 // The zeppelin's fabric is far lighter than the airliner's aluminium: its cover and fins weigh a tenth of a block,
 // against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`] });
@@ -5563,6 +5647,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...laserPointerLang(),
   ...towerInstrumentsLang(),
   ...zeppelinLang(),
+  ...zeppelinControlsLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

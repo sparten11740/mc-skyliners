@@ -1410,13 +1410,31 @@ round the propellers' hubs, eight pushing ahead and two astern in each, without 
 propellers. Without Create Aeronautics the cells are made of the zeppelin's own fabric and it is a building;
 `burnerBlock` and `envelopeBlock` in the server config's `zeppelin` section name the blocks it is built with.
 
-Its control car is its flight deck: the autopilot's control head stands in the middle of the control room, a step back
-from the windows, with a flight display and the transponder on the low wall under the windows either side of it and the
+Its control car is its flight deck, laid out as the Hindenburg's was: the rudder wheel at the front windows, the
+autopilot's control head behind it between the two engine telegraphs, a flight display and the transponder on the low
+wall under the windows, the elevator wheel and the burner lever along the port wall, looking out of its windows, and the
 flight map on the back wall by the ladder. The transponder shows the zeppelin on the maps and the tower's radar as a
 white airship. Use the control head to open the autopilot's settings, the airliner's own screen, its speed dial running
 from stopped to 25 blocks a second. The zeppelin is too big for the Physics Assembler, so it is not glued: engaging the
 autopilot assembles it through Sable, every block of its own and everything built inside its hull, but not the ground
 under it or the trees beside it.
+
+The hand controls are ship's controls, read without words. The **Rudder Wheel** and the **Elevator Wheel** are big
+wooden wheels on brass pedestals, the top spoke red so their turn is seen at a glance: use one to turn it a notch
+clockwise, sneak and use it to turn it back, four notches either way. Clockwise, the rudder wheel turns the zeppelin to
+starboard and the elevator wheel tips its nose down. Each **Engine Telegraph**, the port engines' on a red plate and the
+starboard engines' on a green one, has a dial of five orders in colours and pictures: astern (a blue arrow pointing
+back), stop (a red bar), slow, half and full ahead (one yellow, two lime and three green dots); use it to ring it a step
+ahead, sneak and use it a step back, its bell ringing twice. The **Burner Lever** stands beside a flame painted from a
+small blue one at the bottom to a big red one at the top: pushed up the burners burn harder and the zeppelin climbs,
+pulled down it sinks, and in the middle it holds its height. While the autopilot flies, it moves the controls itself to
+show what it does, ringing the telegraphs as it changes them: how hard it climbs or sinks on the lever, how it trims the
+nose on the elevator wheel, its engines on both telegraphs and its turns on the rudder wheel. Switched off in the air,
+it hands the zeppelin over to them, the lever in the middle and the engines stopped, so it floats where it is; parked,
+it flies by them as soon as someone moves one, once it has flown under the autopilot. Two telegraphs rung differently
+turn it, as the rudder does; with both at stop and the rudder hard over, it turns on the spot. Up high, where the air is
+too thin for the burners to lift it further, the lever and the elevator have nothing more to give. With nobody aboard
+for a minute, the autopilot comes down where it is, flown by hand or not.
 
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
@@ -1440,9 +1458,10 @@ simulated, which for a zeppelin it never is. So once it has been assembled it ke
 ticket of Sable's), flying or parked, with anyone aboard or not, wherever the players are; it lets go only when its
 control head is taken away. That costs a parked zeppelin's ticking, a little, wherever it is.
 
-The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk grating
-and the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
-strongest redstone signal beside it).
+The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk
+grating, the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
+strongest redstone signal beside it), and the hand controls (placed by hand, each faces whoever places it, and a
+telegraph rings for the port engines, on its red plate; they fly a zeppelin only where its blueprint laid them).
 
 ### Settings
 
@@ -1519,12 +1538,14 @@ zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in m
 is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner and engine;
-`ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the autopilot's block entity,
-which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it from through
-`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot`
-leaves out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not
-take every sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and
+hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves
+out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take
+every sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar

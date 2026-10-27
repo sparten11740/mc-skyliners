@@ -41,6 +41,7 @@ import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.FlightMapRenderer;
 import dev.aerolarge.client.FlightStripBoardRenderer;
 import dev.aerolarge.client.GearBayRenderer;
+import dev.aerolarge.client.HelmRenderer;
 import dev.aerolarge.client.HelmetVisor;
 import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LaserTurretRenderer;
@@ -215,6 +216,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SCOREBOARD_ENTITY.get(), context -> new ScoreboardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PROPELLER_ENTITY.get(), context -> new PropellerRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.HELM_ENTITY.get(), context -> new HelmRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

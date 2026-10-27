@@ -93,6 +93,8 @@ public final class ZeppelinPilot {
     private static final double YAW_GAIN = 0.4;
     private static final double YAW_DAMPING = 3;
     private static final double MOST_YAW = 10;
+    /** How far the nose is held up or down with the elevator wheel turned all the way, flown by hand, in degrees. */
+    private static final double HAND_NOSE = 8;
     /**
      * Flying to a pin: the speed it slows to per block nearer than its slowing distance, so it comes in gently and
      * stops over it; how near counts as over it, and how slow as stopped.
@@ -170,6 +172,16 @@ public final class ZeppelinPilot {
     /** How many ticks it has been coming down and still at the ground, and rising off it (see {@link #upShip}). */
     private int settled;
     private int risingTicks;
+    /** The control car's hand controls, which it flies by while switched off and shows what it does on. */
+    private final ZeppelinControls controls = new ZeppelinControls();
+    /**
+     * What it did last, to show on the controls: the climb it asked for (blocks a second), the split of its burners
+     * fore and aft, its engines' thrust and the split between the sides that turns it (signals).
+     */
+    private double lastClimb;
+    private double lastSplit;
+    private double lastThrust;
+    private double lastTurn;
     /** The signals last set, by cell and by engine, so they are only set when they change. */
     private final Map<Integer, Integer> cellSignals = new HashMap<>();
     private final Map<Integer, Integer> engineSignals = new HashMap<>();
@@ -186,6 +198,11 @@ public final class ZeppelinPilot {
 
     boolean wired() {
         return burners > 0;
+    }
+
+    /** Wired when the zeppelin is built: the control car's hand controls, as offsets from the autopilot. */
+    void wireControls(BlockPos rudder, BlockPos elevator, BlockPos port, BlockPos starboard, BlockPos lever) {
+        controls.wire(rudder, elevator, port, starboard, lever);
     }
 
     /** Every relay it works, for mending its links (see {@link Turning#mend}). */
@@ -280,6 +297,8 @@ public final class ZeppelinPilot {
         if (Math.abs(split) < MOST_SPLIT) {
             pitchTrim = Mth.clamp(pitchTrim - PITCH_LEARN * pitch, -MOST_SPLIT, MOST_SPLIT);
         }
+        lastClimb = climb;
+        lastSplit = split;
         setBurners(level, origin, floats(state, mass) * (1 + share), split);
     }
 
@@ -321,11 +340,55 @@ public final class ZeppelinPilot {
         risingTicks = 0;
         setBurners(level, origin, RESTING * floats(state, mass), pitchTrim);
         drive(level, origin, 0, 0);
+        controls.show(level, origin, ZeppelinControls.Setting.AT_REST);
     }
 
-    /** The engines stopped, the burners left as they are: it floats on where it is. */
+    /**
+     * Switched off: the engines stopped, and the zeppelin handed over to the control car's controls, set to hold it
+     * where it floats until someone moves them. Without any, the burners are left as they are.
+     */
     void stop(ServerLevel level, BlockPos origin) {
         drive(level, origin, 0, 0);
+        controls.handOver(level, origin, ZeppelinControls.Setting.FLOATING);
+    }
+
+    /**
+     * Flies one tick by hand, the autopilot switched off, once someone has moved a control in the control car (see
+     * {@link ZeppelinControls}): the burner lever climbs or sinks it, holding its height in the middle; the elevator
+     * wheel holds its nose up or down; each telegraph drives its side's engines, and the rudder wheel turns it. On the
+     * ground with the lever down, it rests there as it does landed, learning nothing from the ground holding it up.
+     */
+    void flyByHand(ServerLevel level, BlockPos origin, SableFlight.State state, double radio, double mass) {
+        ZeppelinControls.Setting hand = controls.byHand(level, origin);
+        if (hand == null) {
+            return;
+        }
+        if (!primed) {
+            engage(state);
+        }
+        double pitch = state.pitch();
+        double pitchRate = (pitch - lastPitch) * SharedConstants.TICKS_PER_SECOND;
+        lastPitch = pitch;
+        lastHeading = state.heading();
+        double climb = hand.lever() > 0 ? hand.lever() * MAX_CLIMB : hand.lever() * MAX_SINK;
+        if (climb < 0 && radio < SETTLED_HEIGHT) {
+            lastClimb = climb;
+            setBurners(level, origin, RESTING * floats(state, mass), pitchTrim);
+        } else {
+            burn(level, origin, state, mass, climb, pitch + hand.elevator() * HAND_NOSE, pitchRate);
+        }
+        double thrust = (hand.port() + hand.starboard()) / 2 * FULL_SIGNAL;
+        drive(level, origin, thrust, (hand.port() - hand.starboard()) / 2 * FULL_SIGNAL + hand.rudder() * MOST_YAW);
+    }
+
+    /**
+     * Shows on the control car's controls what it does as it flies: the climb on the lever, the nose's trim on the
+     * elevator wheel, the engines' thrust on both telegraphs and the turn on the rudder wheel.
+     */
+    void showControls(ServerLevel level, BlockPos origin) {
+        double lever = lastClimb > 0 ? lastClimb / MAX_CLIMB : lastClimb / MAX_SINK;
+        double thrust = lastThrust / FULL_SIGNAL;
+        controls.show(level, origin, new ZeppelinControls.Setting(lever, -lastSplit / MOST_SPLIT, thrust, thrust, lastTurn / MOST_YAW));
     }
 
     /**
@@ -399,6 +462,8 @@ public final class ZeppelinPilot {
      * first two) the harder to turn it to starboard.
      */
     private void drive(ServerLevel level, BlockPos origin, double thrust, double turn) {
+        lastThrust = thrust;
+        lastTurn = turn;
         for (int engine = 0; engine < ENGINES; engine++) {
             double side = engine < ENGINES / 2 ? 1 : -1;
             double push = thrust + side * turn;
@@ -441,6 +506,7 @@ public final class ZeppelinPilot {
         Map<Integer, List<BlockPos>> turnedAstern = new HashMap<>();
         astern.forEach((engine, relays) -> turnedAstern.put(engine, Turning.turn(relays, turn)));
         astern = turnedAstern;
+        controls.turn(turn);
     }
 
     CompoundTag save() {
@@ -460,6 +526,7 @@ public final class ZeppelinPilot {
         tag.putDouble("PitchTrim", pitchTrim);
         tag.putDouble("ThrustPerSpeed", thrustTrim);
         tag.putDouble("MiddleAft", middleAft);
+        tag.put("Controls", controls.save());
         return tag;
     }
 
@@ -481,6 +548,7 @@ public final class ZeppelinPilot {
         liftTrim = tag.getDouble("LiftTrim");
         pitchTrim = tag.getDouble("PitchTrim");
         thrustTrim = Mth.clamp(tag.getDouble("ThrustPerSpeed"), -MOST_THRUST_TRIM, MOST_THRUST_TRIM);
+        controls.load(tag.getCompound("Controls"), turn);
         primed = false;
         cellSignals.clear();
         engineSignals.clear();

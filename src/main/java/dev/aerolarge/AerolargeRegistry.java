@@ -26,6 +26,7 @@ import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.BulkheadSignBlock;
 import dev.aerolarge.block.BunkBlock;
+import dev.aerolarge.block.BurnerLeverBlock;
 import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.block.CabinCarpetBlock;
 import dev.aerolarge.block.CabinControlBlockEntity;
@@ -176,6 +177,9 @@ import dev.aerolarge.block.WindSockBlockEntity;
 import dev.aerolarge.block.WindowShadesBlock;
 import dev.aerolarge.block.CockpitDisplayBlock;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
+import dev.aerolarge.block.HelmBlock;
+import dev.aerolarge.block.HelmBlockEntity;
+import dev.aerolarge.block.TelegraphBlock;
 import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.BlueIceChunk;
@@ -1467,10 +1471,34 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<PropellerBlock> PROPELLER = BLOCKS.registerBlock("propeller", PropellerBlock::new, metal(MapColor.METAL));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PropellerBlockEntity>> PROPELLER_ENTITY =
         BLOCK_ENTITIES.register("propeller", () -> BlockEntityType.Builder.of(PropellerBlockEntity::new, PROPELLER.get()).build(null));
+    /**
+     * The control car's hand controls: the rudder wheel and the elevator wheel, ship's wheels on brass pedestals; the
+     * engine telegraphs, one for each side's engines; and the burner lever. The autopilot flies by them while it is
+     * switched off, and moves them itself while it flies (see {@link dev.aerolarge.autopilot.ZeppelinPilot}).
+     */
+    public static final DeferredBlock<HelmBlock> RUDDER_WHEEL = BLOCKS.registerBlock(
+        "rudder_wheel", HelmBlock::new, metal(MapColor.COLOR_BROWN).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredBlock<HelmBlock> ELEVATOR_WHEEL = BLOCKS.registerBlock(
+        "elevator_wheel", HelmBlock::new, metal(MapColor.COLOR_BROWN).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HelmBlockEntity>> HELM_ENTITY = BLOCK_ENTITIES.register(
+        "helm", () -> BlockEntityType.Builder.of(HelmBlockEntity::new, RUDDER_WHEEL.get(), ELEVATOR_WHEEL.get()).build(null)
+    );
+    public static final DeferredBlock<TelegraphBlock> ENGINE_TELEGRAPH = BLOCKS.registerBlock(
+        "engine_telegraph", TelegraphBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredBlock<BurnerLeverBlock> BURNER_LEVER = BLOCKS.registerBlock(
+        "burner_lever", BurnerLeverBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
     public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);
     public static final DeferredItem<BlockItem> ZEPPELIN_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_GIRDER);
     public static final DeferredItem<BlockItem> ZEPPELIN_CATWALK_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_CATWALK);
     public static final DeferredItem<BlockItem> PROPELLER_ITEM = ITEMS.registerSimpleBlockItem(PROPELLER);
+    public static final DeferredItem<BlockItem> RUDDER_WHEEL_ITEM = ITEMS.registerSimpleBlockItem(RUDDER_WHEEL);
+    public static final DeferredItem<BlockItem> ELEVATOR_WHEEL_ITEM = ITEMS.registerSimpleBlockItem(ELEVATOR_WHEEL);
+    public static final DeferredItem<BlockItem> ENGINE_TELEGRAPH_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_TELEGRAPH);
+    public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
 
     /** Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. */
     public static final DeferredItem<AirlinerBlueprintItem> AIRLINER_BLUEPRINT = ITEMS.register(
@@ -1527,7 +1555,8 @@ public final class AerolargeRegistry {
             HIDE_AND_SEEK_BUTTON_ITEM, WALL_BARS_ITEM, CLIMBING_ROPE_ITEM, GYM_RINGS_ITEM, GYM_BENCH_ITEM, SPRINGBOARD_ITEM,
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
-        new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM)),
+        new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
+            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

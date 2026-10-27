@@ -3438,4 +3438,68 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 3);
 }
 
+// The zeppelin's control car's hand controls: polished brass and varnished wood; the engine telegraph's dial, read
+// without words, five wedges from left to right, each a colour and a picture: blue with an arrow pointing back
+// (astern), red with a bar across (stop), yellow with one dot (slow), lime with two (half) and green with three
+// (full); its base plates red (port) and green (starboard); the burner lever's flame, from a small blue flame at the
+// bottom to a big red one at the top; and a ship's wheel for the wheels' items.
+{
+  const BRASS = [0xd9, 0xb2, 0x4c];
+  const BRASS_DARK = [0xa8, 0x82, 0x2c];
+  const BRASS_SHINE = [0xf2, 0xd7, 0x84];
+  texture(blockOutput, "zeppelin_brass", (x, y) => (x + y) % 7 === 0 ? BRASS_SHINE : y % 5 === 0 ? BRASS_DARK : BRASS, 3);
+  const WOOD = [0x8a, 0x5a, 0x33];
+  const WOOD_GRAIN = [0x6b, 0x44, 0x26];
+  texture(blockOutput, "zeppelin_wood", (x, y) => (y * 3 + Math.round(Math.sin(x / 2) * 2)) % 5 === 0 ? WOOD_GRAIN : WOOD, 4);
+  texture(blockOutput, "telegraph_port", (x, y) => x === 0 || y === 0 || x === 15 || y === 15 ? [0x7a, 0x14, 0x14] : [0xc4, 0x24, 0x24], 3);
+  texture(blockOutput, "telegraph_starboard", (x, y) => x === 0 || y === 0 || x === 15 || y === 15 ? [0x12, 0x5c, 0x22] : [0x22, 0xa0, 0x3a], 3);
+  const WEDGES = [[0x2f, 0x6f, 0xd6], [0xd2, 0x3b, 0x2e], [0xf0, 0xc4, 0x3a], [0x9b, 0xd6, 0x2c], [0x2e, 0xa8, 0x46]];
+  const INK = [0xf6, 0xf2, 0xe6];
+  const RIM = [0x6b, 0x52, 0x1c];
+  // The handle swings in steps of 22.5 degrees, as far as a model's part may turn, from astern 45 degrees to the left
+  // to full 45 degrees to the right: each wedge is as wide as a step, round where the handle points.
+  const dots = (along, across, count) => [3.2, 4.6, 6].slice(0, count).some((at) => Math.abs(along - at) < 0.6 && Math.abs(across) < 0.6);
+  texture(blockOutput, "telegraph_dial", (x, y) => {
+    const dx = x + 0.5 - 8;
+    const dy = 13 - (y + 0.5);
+    const r = Math.hypot(dx, dy);
+    if (dy < -1.5 || r > 7.5) return CLEAR;
+    if (r > 6.8 || dy < -0.5 || r < 1.5) return RIM;
+    const angle = (Math.atan2(dx, Math.max(dy, 0.01)) * 180) / Math.PI;
+    if (Math.abs(angle) > 56.25) return RIM;
+    const wedge = Math.max(0, Math.min(4, Math.round((angle + 45) / 22.5)));
+    const middle = ((-45 + 22.5 * wedge) * Math.PI) / 180;
+    const along = dx * Math.sin(middle) + dy * Math.cos(middle);
+    const across = dx * Math.cos(middle) - dy * Math.sin(middle);
+    const picture = [
+      // An arrow pointing back in, toward the hub.
+      () => (Math.abs(across) < 0.5 && along > 3 && along < 6.2) || (Math.abs(Math.abs(across) - 0.9) < 0.5 && Math.abs(along - 3.9) < 0.5),
+      // A bar across: stop.
+      () => Math.abs(along - 4.6) < 0.6 && Math.abs(across) < 1.1,
+      () => dots(along, across, 1),
+      () => dots(along, across, 2),
+      () => dots(along, across, 3),
+    ][wedge]();
+    return picture ? INK : WEDGES[wedge];
+  }, 0);
+  texture(blockOutput, "burner_flame", (x, y) => {
+    const up = 15 - y;
+    const width = 1 + up / 4;
+    const dx = Math.abs(x + 0.5 - 8);
+    if (dx > width) return [0x2a, 0x2a, 0x2e];
+    const t = up / 15;
+    return [Math.round(0x30 + 0xcf * t), Math.round(0x70 + 0x40 * (1 - Math.abs(t - 0.5) * 2)), Math.round(0xe0 * (1 - t) + 0x20)];
+  }, 2);
+  texture(itemOutput, "ships_wheel", (x, y) => {
+    const dx = x + 0.5 - 8;
+    const dy = y + 0.5 - 8;
+    const r = Math.hypot(dx, dy);
+    if (r < 1.6) return BRASS;
+    if (r > 4.6 && r < 6) return WOOD;
+    const a = Math.atan2(dy, dx);
+    const spoke = Math.abs(Math.sin(a * 4)) < 0.35 && r < 7.4;
+    return spoke ? (r > 6 ? WOOD_GRAIN : WOOD) : CLEAR;
+  }, 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
