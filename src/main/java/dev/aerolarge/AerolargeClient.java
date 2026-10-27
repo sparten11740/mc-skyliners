@@ -82,6 +82,7 @@ import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.client.TowerRadarRenderer;
 import dev.aerolarge.client.TransponderRenderer;
 import dev.aerolarge.client.TrolleyRenderer;
+import dev.aerolarge.client.UpShipScene;
 import dev.aerolarge.client.VeilLights;
 import dev.aerolarge.client.WindSockRenderer;
 import dev.aerolarge.client.ZeppelinPaint;
@@ -185,6 +186,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(LookoutView::highlight);
         NeoForge.EVENT_BUS.addListener(LookoutView::guiLayer);
         NeoForge.EVENT_BUS.addListener(LookoutView::loggingOut);
+        NeoForge.EVENT_BUS.addListener(UpShipScene::tick);
+        NeoForge.EVENT_BUS.addListener(UpShipScene::stage);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));

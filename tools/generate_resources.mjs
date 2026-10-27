@@ -712,6 +712,26 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/lookout_glass.json`, { parent: `${ID}:block/lookout_glass` });
   dropsItself("lookout_glass");
   cubes.lookout_glass = null;
+  // The water ballast valve under the gangway at the bow (see BallastValveBlock): a copper pipe down through its block
+  // from the bow's ballast bags, and on it a brass hand wheel, its rim, two spokes and its hub.
+  write(`assets/${ID}/models/block/ballast_valve.json`, {
+    parent: "minecraft:block/block",
+    textures: { pipe: "minecraft:block/cut_copper", brass, particle: brass },
+    elements: [
+      solid([6.5, 0, 6.5], [9.5, 16, 9.5], "#pipe"),
+      solid([3, 7, 3], [13, 8, 4], "#brass"),
+      solid([3, 7, 12], [13, 8, 13], "#brass"),
+      solid([3, 7, 4], [4, 8, 12], "#brass"),
+      solid([12, 7, 4], [13, 8, 12], "#brass"),
+      solid([4, 7, 7.5], [12, 8, 8.5], "#brass"),
+      solid([7.5, 7, 4], [8.5, 8, 12], "#brass"),
+      solid([6, 6.5, 6], [10, 8.5, 10], "#brass"),
+    ],
+  });
+  write(`assets/${ID}/blockstates/ballast_valve.json`, { variants: { "": { model: `${ID}:block/ballast_valve` } } });
+  write(`assets/${ID}/models/item/ballast_valve.json`, { parent: `${ID}:block/ballast_valve` });
+  dropsItself("ballast_valve");
+  cubes.ballast_valve = null;
 }
 // A ship's plaque (see ShipsPlaqueBlock): a brass plate on the wall, a sixteenth thick, its engraving drawn by its
 // renderer once its zeppelin is christened (see ShipsPlaqueRenderer); and the Christening Bottle broken on her nose.
@@ -803,6 +823,11 @@ function zeppelinControlsLang() {
     "block.aerolarge.club_wall": "Club Wall",
     "block.aerolarge.lookout_glass": "Lookout's Glass",
     "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
+    "block.aerolarge.ballast_valve": "Water Ballast Valve",
+    "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
+    "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
+    "subtitles.aerolarge.water_ballast": "Water ballast pours",
+    "subtitles.aerolarge.up_ship_call": "Up ship!",
     "subtitles.aerolarge.techno_track": "Techno pounds",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
@@ -998,8 +1023,11 @@ function atcLang() {
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
-  // pulley of its flag halyard and the ship's bell a lookout's spot is struck with.
-  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard", "lookout_bell"]) {
+  // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
+  // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
+  const zeppelinSounds = ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard", "lookout_bell", "handler_whistle_short",
+    "handler_whistle_long", "water_ballast", "up_ship_call"];
+  for (const name of zeppelinSounds) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
@@ -5389,7 +5417,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5465,6 +5493,7 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraft:copper_ingot", F: "minecraft:dark_oak_fence" }, 1);
+shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);

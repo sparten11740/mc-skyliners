@@ -4,6 +4,7 @@ import dev.aerolarge.block.EngineRepeaterBlockEntity;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.upship.UpShip;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,11 @@ import net.minecraft.world.phys.Vec3;
  * weight, and stops its engines.
  */
 public final class ZeppelinPilot {
+    /**
+     * What may hold a zeppelin on the ground a moment as she takes off, before she rises, such as her ground handlers
+     * on their lines: a feature is taken out of the take-off with its line on the list.
+     */
+    private static final List<TakeoffHold> HOLDS = List.of(UpShip::holds);
     /** The zeppelin's engines, numbered from 0: two to port (0 forward, 1 aft), two to starboard (2 aft, 3 forward). */
     static final int ENGINES = 4;
     /** How much a m³ of hot air lifts at sea level, in Sable's units: Create Aeronautics' {@code hotAirStrength}. */
@@ -174,6 +180,9 @@ public final class ZeppelinPilot {
     private double lastHeading;
     /** Whether it has started from how the zeppelin is since it was last loaded (see {@link #engage}). */
     private boolean primed;
+    /** Whether anything on {@link #HOLDS} has been asked yet this take-off, and whether they have all let her go. */
+    private boolean holdAsked;
+    private boolean letGo;
     /** How many ticks it has been coming down and still at the ground, and rising off it (see {@link #upShip}). */
     private int settled;
     private int risingTicks;
@@ -225,17 +234,26 @@ public final class ZeppelinPilot {
         lastHeading = state.heading();
         settled = 0;
         risingTicks = 0;
+        holdAsked = false;
+        letGo = false;
         primed = true;
     }
 
     /**
      * Flies one tick: the burners for the height and the nose, the engines for the speed and the heading. The phase it
      * goes on in: up from the ground it climbs, near the height it cruises, stopped over a pin it is to land at it
-     * comes down, holding itself over the pin all the way, and down on the ground it is done.
+     * comes down, holding itself over the pin all the way, and down on the ground it is done. Taking off, it rests on
+     * the ground while anything on {@link #HOLDS} holds it.
      */
     AutopilotBlockEntity.Phase fly(ServerLevel level, BlockPos origin, Orders orders, SableFlight.State state, double radio, double mass) {
         if (!primed) {
             engage(state);
+        }
+        if (orders.phase() == AutopilotBlockEntity.Phase.TAKEOFF && held(level, origin, radio)) {
+            lastPitch = state.pitch();
+            lastHeading = state.heading();
+            rest(level, origin, state, mass);
+            return AutopilotBlockEntity.Phase.TAKEOFF;
         }
         double pitch = state.pitch();
         double pitchRate = (pitch - lastPitch) * SharedConstants.TICKS_PER_SECOND;
@@ -265,6 +283,24 @@ public final class ZeppelinPilot {
             return upShip(radio, orders.phase());
         }
         return comingDown ? AutopilotBlockEntity.Phase.LAND : heightPhase(orders.altitude() - state.position().y);
+    }
+
+    /**
+     * Whether something on {@link #HOLDS} holds her on the ground a moment yet as she takes off; once all have let her
+     * go, she is not held again this take-off.
+     */
+    private boolean held(ServerLevel level, BlockPos origin, double radio) {
+        if (letGo || !(level.getBlockEntity(origin) instanceof AutopilotBlockEntity autopilot)) {
+            return false;
+        }
+        boolean first = !holdAsked;
+        holdAsked = true;
+        boolean holding = false;
+        for (TakeoffHold hold : HOLDS) {
+            holding |= hold.holds(level, autopilot, radio, first);
+        }
+        letGo = !holding;
+        return holding;
     }
 
     /**

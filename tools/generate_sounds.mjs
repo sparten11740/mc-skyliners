@@ -1089,6 +1089,49 @@ function gearRamp(t, from, to) {
   writeSound("lookout_bell", samples);
 }
 
+// A zeppelin's take-off on her ground handlers' lines (see BallastValveBlockEntity), each with its own noise so it
+// never shifts the sounds above. The ground officer's pea whistle: a shrill note trilled by the pea rattling in it,
+// over a breath of air, a short blast to hold fast and a long one to let go. Her bow's water ballast: a heavy cascade
+// drumming down, swelling in and dying away over three seconds, a low roar under the splashing.
+{
+  const whistle = (name, seconds, seed) => {
+    const breath = ownRandom(seed);
+    const samples = new Float64Array(Math.round(seconds * RATE));
+    let phase = 0;
+    let airLow = 0;
+    for (let i = 0; i < samples.length; i++) {
+      const t = i / RATE;
+      const envelope = Math.min(1, t / 0.02) * Math.min(1, (seconds - t) / 0.06);
+      const pitch = 2900 + 140 * Math.sin(2 * Math.PI * 31 * t) + 80 * Math.min(1, t / 0.15);
+      phase += (2 * Math.PI * pitch) / RATE;
+      const trill = 0.65 + 0.35 * Math.abs(Math.sin(2 * Math.PI * 15.5 * t));
+      const air = breath() * 2 - 1;
+      airLow += 0.5 * (air - airLow);
+      samples[i] = envelope * (trill * Math.sin(phase) + 0.12 * (air - airLow));
+    }
+    // Written well under the others' peak: a pure, shrill note sounds far louder than a noise as high.
+    writeSound(name, samples, 0.45);
+  };
+  whistle("handler_whistle_short", 0.35, 0x77687331);
+  whistle("handler_whistle_long", 1.4, 0x77687332);
+  const water = ownRandom(0x77617472);
+  const samples = new Float64Array(Math.round(3.2 * RATE));
+  let roar = 0;
+  let splashLow = 0;
+  let splashBand = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const envelope = Math.min(1, t / 0.25) * Math.min(1, (3.2 - t) / 0.8);
+    const white = water() * 2 - 1;
+    roar += 0.02 * (white - roar);
+    splashBand += 0.35 * (white - splashBand);
+    splashLow += 0.06 * (white - splashLow);
+    const drumming = 0.7 + 0.3 * Math.sin(2 * Math.PI * 7 * t + Math.sin(2 * Math.PI * 1.3 * t));
+    samples[i] = envelope * (6 * roar + drumming * (splashBand - splashLow));
+  }
+  writeSound("water_ballast", samples, 0.85);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.
@@ -1481,6 +1524,33 @@ if (speaker) {
     const longest = name === "announcement_takeoff" ? TAKEOFF_LONGEST : ANNOUNCEMENT_LONGEST;
     writeVoiced(name, announcement(trim(readWav(join(scratch, `${name}.voiced.wav`)))), VOICE.announcement, longest);
   }
+}
+
+// The ground officer's call as a zeppelin is let go from her handlers' lines (see BallastValveBlockEntity): a British
+// man's voice, Kokoro's George, shouted through a megaphone, its horn's narrow band and hard middle, and the field's
+// echo after it. Tune it here.
+const OFFICER = {
+  voice: "bm_george",
+  pace: 0.9,
+  megaphone: [
+    "highpass=f=450:poles=2",
+    "lowpass=f=3600:poles=2",
+    "equalizer=f=1600:t=q:w=1:g=6",
+    "acompressor=threshold=-28dB:ratio=4:attack=2:release=80:makeup=10dB",
+    "aecho=0.8:0.55:170|330:0.28|0.12",
+  ],
+  level: 0.9,
+};
+if (speaker) {
+  const spoken = await speaker.generate("Up ship!", { voice: OFFICER.voice, speed: OFFICER.pace });
+  const shouted = trim(Float64Array.from(spoken.audio), spoken.sampling_rate);
+  let peak = 0;
+  shouted.forEach((sample) => (peak = Math.max(peak, Math.abs(sample))));
+  const said = join(scratch, "up_ship_call.said.wav");
+  const voiced = join(scratch, "up_ship_call.voiced.wav");
+  writeWav(said, Array.from(shouted, (sample) => (sample / peak) * 0.5), spoken.sampling_rate);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", OFFICER.megaphone.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", voiced]);
+  writeSound("up_ship_call", readWav(voiced), OFFICER.level);
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

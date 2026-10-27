@@ -1511,6 +1511,17 @@ and each comes down after ten minutes. Alone aboard while the autopilot flies, y
 as nobody else is there to pick it. Step, jump or sneak to step back from the glass. The server config's `lookout`
 leaves it out of zeppelins built from then on, and off, the glasses already built mark nothing.
 
+Taking off from the ground, she is held a moment on her lines, as the Hindenburg was at Lakehurst. Her ground handlers
+stand round her in navy with white caps, each on a manila line made fast to her hull: two on a line from under each side
+of her bow, two at each side of the control car, one under each flank and one under each side of her stern, her ground
+officer in his white-covered cap with its gold badge ahead of the car. The ship's bell rings, a short blast of his
+whistle bids them hold fast, her bow's water ballast pours out of her belly in a stream with a drumming roar, and on his
+call "Up ship!", his arm raised and a long blast of the whistle, they all let go together: the lines fall, the handlers
+step back and stand watching her rise, and fade away. Each stands on the ground at their station; over water, or where
+there is no ground, there is nobody. They are drawn by each player's game and are no creatures, nothing to bump into or
+hit. A zeppelin already floating rises at once. The server config's `upShip` switches it off, and leaves the Water
+Ballast Valve under her gangway out of zeppelins built from then on.
+
 And somewhere aboard is a secret. One length of the gangway's grating towards the stern is a Secret Hatch, just like the
 rest of it but for a musical note drifting up out of it now and then: use it and it swings open, a rope leading down
 through it into a black room hung under the gangway, with no other way in. It is a techno club: a dance floor of black
@@ -1720,15 +1731,18 @@ autopilot says, its `BubbleLevelBlock` drawn by `BubbleLevelRenderer`, and `Zepp
 `TechnoRoomRenderer`, and `ZeppelinLookout` stands the `LookoutGlassBlock` in the control car, looked through by
 `LookoutView` and drawn by `LookoutGlassRenderer`, whose spots `LookoutSpot` checks and drops as flags on the
 `LookoutGlassBlockEntity`, `LookoutFlags` putting them on the autopilot's map (each a `MapMarker` on `DestinationMap`'s
-list); a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room
-and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
-(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
-`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
-hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
-`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
-zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
-burners crackling at the far end of it do not take every sound channel there is.
+list), and `ZeppelinUpShip` hangs the `BallastValveBlock` whose `BallastValveBlockEntity` keeps her handlers' stations
+and strikes the take-off's beats, `UpShip` holding her on the lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and
+`UpShipScene` drawing the handlers, their lines and the water; a feature is taken out of the zeppelin with its line on
+the list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
+control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy`
+opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that
+starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel
+there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

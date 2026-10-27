@@ -23,6 +23,8 @@ import dev.aerolarge.block.AwningBlock;
 import dev.aerolarge.block.BallMatBlock;
 import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
+import dev.aerolarge.block.BallastValveBlock;
+import dev.aerolarge.block.BallastValveBlockEntity;
 import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.BarStoolBlock;
 import dev.aerolarge.block.BeanBagBlock;
@@ -1609,6 +1611,19 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LookoutGlassBlockEntity>> LOOKOUT_GLASS_ENTITY =
         BLOCK_ENTITIES.register("lookout_glass", () -> BlockEntityType.Builder.of(LookoutGlassBlockEntity::new, LOOKOUT_GLASS.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> LOOKOUT_BELL = sound("lookout_bell");
+    /**
+     * The water ballast valve at a zeppelin's bow, and the sounds of her take-off on her handlers' lines: the ground
+     * officer's whistle, short to hold fast and long to let go, her bow's water pouring out, and his call "Up ship!".
+     */
+    public static final DeferredBlock<BallastValveBlock> BALLAST_VALVE = BLOCKS.registerBlock(
+        "ballast_valve", BallastValveBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BallastValveBlockEntity>> BALLAST_VALVE_ENTITY =
+        BLOCK_ENTITIES.register("ballast_valve", () -> BlockEntityType.Builder.of(BallastValveBlockEntity::new, BALLAST_VALVE.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> HANDLER_WHISTLE_SHORT = sound("handler_whistle_short");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HANDLER_WHISTLE_LONG = sound("handler_whistle_long");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WATER_BALLAST = sound("water_ballast");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UP_SHIP_CALL = sound("up_ship_call");
     /** An engine repeater in a zeppelin's engine car, answering the control car's orders for its engine. */
     public static final DeferredBlock<EngineRepeaterBlock> ENGINE_REPEATER = BLOCKS.registerBlock(
         "engine_repeater", EngineRepeaterBlock::new, metal(MapColor.GOLD).noOcclusion()
@@ -1648,6 +1663,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DANCE_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(DANCE_FLOOR);
     public static final DeferredItem<BlockItem> CLUB_WALL_ITEM = ITEMS.registerSimpleBlockItem(CLUB_WALL);
     public static final DeferredItem<BlockItem> LOOKOUT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LOOKOUT_GLASS);
+    public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
     public static final DeferredItem<BlockItem> BUBBLE_LEVEL_ITEM = ITEMS.registerSimpleBlockItem(BUBBLE_LEVEL);
@@ -1741,7 +1757,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

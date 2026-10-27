@@ -811,6 +811,38 @@
       }
     ]
   },
+  "handler_whistle_short": {
+    "subtitle": "subtitles.aerolarge.handler_whistle_short",
+    "sounds": [
+      {
+        "name": "aerolarge:handler_whistle_short"
+      }
+    ]
+  },
+  "handler_whistle_long": {
+    "subtitle": "subtitles.aerolarge.handler_whistle_long",
+    "sounds": [
+      {
+        "name": "aerolarge:handler_whistle_long"
+      }
+    ]
+  },
+  "water_ballast": {
+    "subtitle": "subtitles.aerolarge.water_ballast",
+    "sounds": [
+      {
+        "name": "aerolarge:water_ballast"
+      }
+    ]
+  },
+  "up_ship_call": {
+    "subtitle": "subtitles.aerolarge.up_ship_call",
+    "sounds": [
+      {
+        "name": "aerolarge:up_ship_call"
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

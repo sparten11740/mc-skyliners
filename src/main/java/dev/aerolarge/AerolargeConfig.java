@@ -47,6 +47,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue TRIM_CAR;
     public static final ModConfigSpec.BooleanValue TECHNO_ROOM;
     public static final ModConfigSpec.BooleanValue LOOKOUT;
+    public static final ModConfigSpec.BooleanValue UP_SHIP;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -310,6 +311,13 @@ public final class AerolargeConfig {
                 "mark nothing."
             )
             .define("lookout", true);
+        UP_SHIP = builder
+            .comment(
+                "Whether a zeppelin taking off from the ground is held a moment on her ground handlers' lines while her bow's water",
+                "ballast pours out, until her ground officer calls \"Up ship!\" and they let her go together. Off, she rises at once,",
+                "and zeppelins built from then on have no ballast valve."
+            )
+            .define("upShip", true);
         builder.pop();
 
         SPEC = builder.build();

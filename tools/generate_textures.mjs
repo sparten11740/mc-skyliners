@@ -3860,4 +3860,65 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   });
 }
 
+// The ground handlers who hold a zeppelin on her lines as she takes off, and their officer (see UpShipScene), each a
+// player's skin, its parts laid out as the game's are: the handlers in navy jumpers and trousers, tan work gloves and
+// white sailor caps, the white the one bright note; the officer in a dark double-breasted coat with gilt buttons, white
+// gloves and a peaked cap with a white cover, its black band carrying a gold badge over a black peak. The caps are
+// painted on the head itself as well as on its overlay, so they show however the overlay is drawn.
+{
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  const NONE = [0, 0, 0, 0];
+  const SKIN = [0xc8, 0x92, 0x6c];
+  const HAIR = [0x4a, 0x32, 0x22];
+  const EYE = [0x2a, 0x22, 0x30];
+  const WHITE = [0xf4, 0xf4, 0xf0];
+  const BLACK = [0x1a, 0x1a, 0x1c];
+  const SHOE = [0x16, 0x12, 0x10];
+  const inBox = (x, y, x0, y0, x1, y1) => x >= x0 && x < x1 && y >= y0 && y < y1;
+  // The head and its overlay, the same for both: hair on top and at the back, eyes and a mouth on the face.
+  const head = (x, y) => {
+    if (inBox(x, y, 8, 0, 16, 8) || inBox(x, y, 24, 8, 32, 13) || (inBox(x, y, 0, 8, 8, 10) || inBox(x, y, 16, 8, 24, 10))) return HAIR;
+    if ((x === 10 || x === 13) && y === 12) return EYE;
+    if (y === 14 && (x === 11 || x === 12)) return [0xa0, 0x6c, 0x50];
+    return SKIN;
+  };
+  // A limb's or the body's colour, its lowest rows its hands or its shoes.
+  const skin = (cloth, gloves, cap, badge) => (x, y) => {
+    if (inBox(x, y, 0, 0, 32, 16)) return cap(x + 32, y) !== NONE ? cap(x + 32, y) : head(x, y);
+    if (inBox(x, y, 32, 0, 64, 16)) return cap(x, y);
+    const arm = inBox(x, y, 40, 16, 56, 32) || inBox(x, y, 32, 48, 48, 64);
+    const leg = inBox(x, y, 0, 16, 16, 32) || inBox(x, y, 16, 48, 32, 64);
+    const body = inBox(x, y, 16, 16, 40, 32);
+    const row = y % 16;
+    if (arm && (row >= 13 || inBox(x, y, 48, 16, 52, 20) || inBox(x, y, 40, 48, 44, 52))) return gloves;
+    if (arm) return cloth;
+    if (leg && row >= 14) return SHOE;
+    if (leg) return cloth.map((c) => Math.round(c * 0.85));
+    if (body) return badge(x, y) ?? cloth;
+    return NONE;
+  };
+  // The sailor's cap: a white crown and brim round the top of the head.
+  const sailorCap = (x, y) => (inBox(x, y, 40, 0, 48, 8) || inBox(x, y, 32, 8, 64, 11) ? WHITE : NONE);
+  // The officer's peaked cap: a white cover over a black band, a gold badge at its front, and a black peak.
+  const peakedCap = (x, y) => {
+    if (inBox(x, y, 40, 0, 48, 8) || inBox(x, y, 32, 8, 64, 10)) return WHITE;
+    if (y === 10 && x >= 43 && x < 45) return [0xe8, 0xc0, 0x40];
+    if (y === 10 && x >= 32) return BLACK;
+    if (y === 11 && x >= 40 && x < 48) return BLACK;
+    return NONE;
+  };
+  // A sailor's collar: a white band across the top of the jumper's front, and his belt.
+  const sailorCollar = (x, y) => {
+    if (inBox(x, y, 20, 20, 28, 21) || (y === 21 && (x === 20 || x === 27))) return WHITE;
+    return y === 29 ? [0x14, 0x1a, 0x2a] : null;
+  };
+  // The officer's coat: a white collar at the throat and two columns of gilt buttons.
+  const coatButtons = (x, y) => {
+    if (y === 20 && x >= 23 && x < 25) return WHITE;
+    return (x === 22 || x === 25) && y >= 22 && y <= 28 && y % 2 === 0 ? [0xe0, 0xb8, 0x38] : null;
+  };
+  texture(entityOutput, "ground_handler", skin([0x22, 0x2e, 0x4c], [0xc4, 0xa0, 0x68], sailorCap, sailorCollar), 3, 64, 64);
+  texture(entityOutput, "ground_officer", skin([0x1a, 0x1e, 0x2e], WHITE, peakedCap, coatButtons), 3, 64, 64);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
