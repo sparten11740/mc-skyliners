@@ -26,6 +26,8 @@ import dev.aerolarge.block.BallPitBlock;
 import dev.aerolarge.block.BallRackBlock;
 import dev.aerolarge.block.BallastValveBlock;
 import dev.aerolarge.block.BallastValveBlockEntity;
+import dev.aerolarge.block.BannerCleatBlock;
+import dev.aerolarge.block.BannerCleatBlockEntity;
 import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.BarStoolBlock;
 import dev.aerolarge.block.BeanBagBlock;
@@ -1687,6 +1689,12 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<MailSackBlock> MAIL_SACK = BLOCKS.registerBlock(
         "mail_sack", MailSackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.4F).sound(SoundType.WOOL).noOcclusion()
     );
+    /** The towed banner's cleat on a zeppelin's control car's back wall, which streams her banner from her tail. */
+    public static final DeferredBlock<BannerCleatBlock> BANNER_CLEAT = BLOCKS.registerBlock(
+        "banner_cleat", BannerCleatBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BannerCleatBlockEntity>> BANNER_CLEAT_ENTITY =
+        BLOCK_ENTITIES.register("banner_cleat", () -> BlockEntityType.Builder.of(BannerCleatBlockEntity::new, BANNER_CLEAT.get()).build(null));
     /** The skywriting board in a zeppelin's control car, whose picture buttons have her fly a shape in smoke. */
     public static final DeferredBlock<SkywritingBoardBlock> SKYWRITING_BOARD = BLOCKS.registerBlock(
         "skywriting_board", SkywritingBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
@@ -1743,6 +1751,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SKYWRITING_BOARD_ITEM = ITEMS.registerSimpleBlockItem(SKYWRITING_BOARD);
     public static final DeferredItem<BlockItem> FRANKING_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(FRANKING_MACHINE);
     public static final DeferredItem<MailSackItem> MAIL_SACK_ITEM = ITEMS.register("mail_sack", () -> new MailSackItem(MAIL_SACK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> BANNER_CLEAT_ITEM = ITEMS.registerSimpleBlockItem(BANNER_CLEAT);
     public static final DeferredItem<BlockItem> BOARDING_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOARDING_STAIRS_BUTTON);
     public static final DeferredItem<BlockItem> BOOST_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOOST_BUTTON);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
@@ -1851,7 +1860,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

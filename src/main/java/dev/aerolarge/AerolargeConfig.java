@@ -54,6 +54,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SKYWRITING;
     public static final ModConfigSpec.BooleanValue SPEED_BOOST;
     public static final ModConfigSpec.BooleanValue ZEPPELIN_POST;
+    public static final ModConfigSpec.BooleanValue TOWED_BANNER;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -365,6 +366,13 @@ public final class AerolargeConfig {
                 "do nothing."
             )
             .define("zeppelinPost", true);
+        TOWED_BANNER = builder
+            .comment(
+                "Whether a zeppelin is built with a banner cleat on her control car's back wall, which streams a banner with her",
+                "name on it from her tail on a tow rope, hanging lower the slower she flies. Off, the cleats already built do",
+                "nothing."
+            )
+            .define("towedBanner", true);
         builder.pop();
 
         SPEC = builder.build();

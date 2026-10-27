@@ -689,6 +689,7 @@
   "block.aerolarge.floodlight": "Floodlight",
   "block.aerolarge.franking_machine": "Franking Machine",
   "block.aerolarge.mail_sack": "Mail Sack",
+  "block.aerolarge.banner_cleat": "Banner Cleat",
   "item.aerolarge.postcard": "Postcard from %s",
   "item.aerolarge.postcard.franked": "Franked over %s, %s",
   "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",

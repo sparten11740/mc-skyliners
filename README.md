@@ -1595,6 +1595,15 @@ villagers sparkle; its lamp goes dark for half a minute before the next. Away fr
 sounds a low note. The server config's `zeppelinPost` leaves it out of zeppelins built from then on, and off, the
 machines already built do nothing.
 
+Low on the control car's back wall, to starboard of the ladder, a brass Banner Cleat holds a coil of tow rope. Use it
+and the rope runs out with a squeak and a flap of cloth, and a long banner streams from the tip of her tail on the rope:
+her christened name in big black capitals on white sail cloth between red edges, or "AEROLARGE" before she is
+christened, reading the right way round from either side. Still, it hangs straight down; the faster she flies the
+further back it streams and the harder it flutters, nearly level behind her at her cruising speeds, so its angle shows
+how fast she goes. It is only out while her tail is well clear of the ground under it, so it never drags on the land as
+she comes in. Use the cleat again to haul it in, the rope coiled back round it. The server config's `towedBanner` leaves
+it out of zeppelins built from then on, and off, the cleats already built do nothing.
+
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
 takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
@@ -1827,7 +1836,8 @@ airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `
 `ZeppelinFloodlights` hangs the `FloodlightBlock`s whose `FloodlightBlockEntity` lights them as the sky darkens,
 `Floodlights` drawing their light, and `HullAmbience` plays her hull's boom and groans to those aboard, `GreatShadow`
 draws her shadow from her `ZeppelinSilhouette`, `MistyWindows` mists her promenade windows, and `ZeppelinPost` stands
-the `FrankingMachineBlock`, whose mail sacks (`MailSackItem`) land their own way from a `FallingCrate`, `ZeppelinBoost`
+the `FrankingMachineBlock`, whose mail sacks (`MailSackItem`) land their own way from a `FallingCrate`,
+`ZeppelinTowedBanner` fits the `BannerCleatBlock` whose banner `TowedBanner` draws from her tail, `ZeppelinBoost`
 fits the `BoostButtonBlock` and the boosters round her tail, its `BoostButtonBlockEntity` firing them and `SpeedBoost`
 steering her as they do (a `Course` on `ZeppelinPilot`'s list, keeping her engines as they were), and
 `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of

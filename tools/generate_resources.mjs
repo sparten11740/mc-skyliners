@@ -797,6 +797,30 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/mail_sack.json`, { parent: `${ID}:block/mail_sack` });
   dropsItself("mail_sack");
   cubes.mail_sack = null;
+  // The towed banner's cleat (see BannerCleatBlock): a brass horn cleat on a plate against the wall behind it, drawn
+  // facing north; while the banner is hauled in its tow rope is made fast round the horns and coiled under them, and
+  // while it streams the rope runs taut from the horns up out of the car.
+  for (const streaming of [false, true]) {
+    write(`assets/${ID}/models/block/banner_cleat${streaming ? "_streaming" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { brass, rope: `${ID}:block/climbing_rope`, particle: brass },
+      elements: [
+        solid([5, 4, 15], [11, 12, 16], "#brass"),
+        solid([7, 7, 12], [9, 9, 15], "#brass"),
+        solid([3, 7, 10], [13, 9, 12], "#brass"),
+        solid([6.5, 6.5, 9.5], [9.5, 9.5, 12.5], "#rope"),
+        ...streaming ? [solid([7.5, 9.5, 10.5], [8.5, 16, 11.5], "#rope")] : [solid([5, 1, 10], [11, 6.5, 14], "#rope")],
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/banner_cleat.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((streaming) => [
+      `facing=${facing},streaming=${streaming}`, { model: `${ID}:block/banner_cleat${streaming ? "_streaming" : ""}`, y },
+    ]))),
+  });
+  write(`assets/${ID}/models/item/banner_cleat.json`, { parent: `${ID}:block/banner_cleat` });
+  dropsItself("banner_cleat");
+  cubes.banner_cleat = null;
   // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
   // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
   // way, drawn facing north, it throws its light.
@@ -959,6 +983,7 @@ function zeppelinControlsLang() {
     "block.aerolarge.floodlight": "Floodlight",
     "block.aerolarge.franking_machine": "Franking Machine",
     "block.aerolarge.mail_sack": "Mail Sack",
+    "block.aerolarge.banner_cleat": "Banner Cleat",
     "item.aerolarge.postcard": "Postcard from %s",
     "item.aerolarge.postcard.franked": "Franked over %s, %s",
     "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",
@@ -5586,7 +5611,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5668,6 +5693,7 @@ shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraf
 shaped("floodlight", ["I", "L", "D"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", D: "minecraft:daylight_detector" }, 1);
 shaped("franking_machine", ["P", "C"], { P: "minecraft:paper", C: "minecraft:cartography_table" }, 1);
 shaped("mail_sack", ["S", "L", "P"], { S: "minecraft:string", L: "minecraft:leather", P: "minecraft:paper" }, 1);
+shaped("banner_cleat", ["L", "C", "W"], { L: "minecraft:lead", C: "minecraft:copper_ingot", W: "minecraft:white_wool" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);
