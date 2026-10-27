@@ -1382,9 +1382,9 @@ stops there (On the Numbers).
 A rigid airship in the Hindenburg's style, as big as the real one at the airliner's scale: about 490 blocks long and 82
 across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is always
 built at that size, whatever `scale` the server config sets for the airliner. The Zeppelin Blueprint builds one as an
-airliner's blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin [furnished]`, its
-nose tip at the position and its tail stretching away the way given, through whatever stands there; it takes a few tens
-of seconds to go up.
+airliner's blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin
+[furnished|festive]`, its nose tip at the position and its tail stretching away the way given, through whatever stands
+there; it takes a few tens of seconds to go up.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1400,6 +1400,15 @@ on the Sky Deck, and a line of warm bulbs along the crown from the nose up the l
 lights nothing up round them but reads from the ground the whole length of the ship, a bright point however far off; an
 airliner's lights glow the same way. The server config's `navigationLights` leaves them off zeppelins built from then
 on.
+
+The Festive Zeppelin Blueprint, in the creative tab, builds the furnished zeppelin dressed for Christmas: frosted
+silver with snow on its crown and a red band edged white round it at every ring, its fins and engine cars green, its
+gas cells red and green within; fairy lights round every ring, red, gold, green and blue, twinkling one colour after
+another so they seem to chase round; a wreath of evergreen garland dotted with berries round the tip of its nose, a red
+bow under it; a gold star in place of the red beacon on its mast; and sleigh bells ringing with its engines as they
+turn, heard all over the ship aboard and from its propellers below. Operators build one with `/aerolarge build <pos>
+<north|east|south|west> zeppelin festive`. Its livery board can repaint it in any of the board's liveries; its cells,
+lights, wreath and star stay. The Festive Garland and Festive Bow its wreath is made of are in the creative tab too.
 
 Inside, the cover is held up by seventeen rings of blue lattice girders, and in the sixteen bays between them hang its
 sixteen gas cells, huge balloons of Create Aeronautics' envelope, every one a colour of its own from red at the bow
@@ -1620,7 +1629,8 @@ the gallery inside the middle cell, `ZeppelinDecks` the furnished zeppelin's fur
 and `PaperPlaneBoxBlock`, `ZeppelinHornCord` the `HornCordBlock` that `ShipHorn` sounds the horn from, its echo and
 the mobs looking up, and `ZeppelinLiveryBoard` the `LiveryBoardBlock`, whose `LiveryBoardRenderer` draws the painters'
 cradle; a zeppelin's `Livery` is kept by its autopilot, and `ZeppelinPaint` tints its cover (the shell model's
-`tint_index`) and fabric by it on the client; a feature is taken out of
+`tint_index`) and fabric by it on the client, and `ZeppelinFestive` dresses a festive zeppelin (`SleighBells` rings
+with its engines on the client); a feature is taken out of
 the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and
 wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
 (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and

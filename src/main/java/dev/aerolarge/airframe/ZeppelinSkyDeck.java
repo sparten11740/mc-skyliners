@@ -4,6 +4,7 @@ import static dev.aerolarge.airframe.ZeppelinShape.*;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.NavLightBlock;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -48,6 +49,11 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
             y--;
         }
         return y;
+    }
+
+    /** Where the beacon on the mast's top is, once the deck is laid. */
+    static BlockPos beacon(ZeppelinLayout layout) {
+        return new BlockPos(-DECK_HALF + MAST_IN, floor(layout) + MAST_HEIGHT + 1, station() - DECK_HALF + MAST_IN);
     }
 
     /** Lays the shaft and the deck, once the gangway it starts from is laid. */

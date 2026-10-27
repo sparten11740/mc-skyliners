@@ -34,6 +34,32 @@ public enum Livery {
         public int colour(Spot spot, boolean fabric) {
             return !fabric && spot.round() <= STARS_DOWN_TO && Math.floorMod(HashCommon.mix(spot.seed()), (long) STAR_ONE_IN) == 0 ? STAR : super.colour(spot, fabric);
         }
+    },
+    /**
+     * Dressed for Christmas, as the Festive Zeppelin Blueprint builds it (not on the livery board): frosted silver,
+     * snow on its crown, a red band edged white round it at every ring, its fins and cars green, and its gas cells red
+     * and green within.
+     */
+    FESTIVE(0xC9D3DC, 0x1F7A3A) {
+        @Override
+        public int colour(Spot spot, boolean fabric) {
+            if (fabric) {
+                return fabric();
+            }
+            if (spot.round() <= SNOW_DOWN_TO) {
+                return SNOW;
+            }
+            double fromRing = spot.fromRing();
+            if (fromRing <= BAND_HALF) {
+                return fromRing > BAND_HALF - BAND_EDGE ? SNOW : BAND;
+            }
+            return hull();
+        }
+
+        @Override
+        public String[] cellColours() {
+            return FESTIVE_CELLS;
+        }
     };
 
     /** How long a repaint takes to sweep from the nose to the tail, in ticks: a minute. */
@@ -47,6 +73,16 @@ public enum Livery {
     private static final int STAR_ONE_IN = 89;
     private static final double STARS_DOWN_TO = 120;
     private static final int STAR = 0xFFD866;
+    /**
+     * The festive livery: how far round from the crown its snow reaches, in degrees; how far either side of a ring its
+     * band reaches and how much of that is its white edge, in blocks; its colours, and its cells'.
+     */
+    private static final double SNOW_DOWN_TO = 32;
+    private static final double BAND_HALF = 3;
+    private static final double BAND_EDGE = 1;
+    private static final int SNOW = 0xFFFFFF;
+    private static final int BAND = 0xC8202A;
+    private static final String[] FESTIVE_CELLS = {"red", "green"};
 
     private final int hull;
     private final int fabric;
@@ -63,6 +99,11 @@ public enum Livery {
 
     int hull() {
         return hull;
+    }
+
+    /** The colours its gas cells are built in, bow to stern, one after another: the rainbow, unless it has its own. */
+    public String[] cellColours() {
+        return ZeppelinLayout.CELL_COLOURS;
     }
 
     int fabric() {
@@ -118,6 +159,15 @@ public enum Livery {
         /** How far round from the crown it is, in degrees: 0 on top, 90 at the side, 180 underneath. */
         public double round() {
             return Math.toDegrees(Math.atan2(Math.abs(across), up));
+        }
+
+        /** How far it lies along the hull from the nearest of its rings, in blocks. */
+        public double fromRing() {
+            double nearest = Double.MAX_VALUE;
+            for (int ring = 0; ring <= ZeppelinShape.CELLS; ring++) {
+                nearest = Math.min(nearest, Math.abs(along - ZeppelinShape.ringAt(ring) * ZeppelinShape.SCALE));
+            }
+            return nearest;
         }
 
         /** Whether it lies between two shares of the hull's length, from the nose. */

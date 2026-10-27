@@ -98,7 +98,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
             .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
             .field("blocks", "its blocks, the air inside its hull among them")
             .field("fingerprint", "of every block's position and state, and of where its block entities are set up")
@@ -106,7 +106,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("aerolarge:build zeppelin"));
     }
@@ -225,6 +225,7 @@ public final class BlockpilotCommands {
         return switch (what) {
             case "zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.PLAIN);
             case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED);
+            case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE);
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };

@@ -1,8 +1,10 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -22,6 +24,9 @@ public class PropellerBlockEntity extends BlockEntity {
     /** How far round the hub its blades reach, in blocks: the whole propeller is drawn while any of it is in view. */
     public static final float REACH = 6;
 
+    /** The propellers loaded on this client, for what rings with them (a festive zeppelin's sleigh bells). */
+    private static final Loaded<PropellerBlockEntity> LOADED = new Loaded<>(PropellerBlockEntity.class, true);
+
     private float spin;
     private float angle;
     private float lastAngle;
@@ -39,6 +44,34 @@ public class PropellerBlockEntity extends BlockEntity {
             angle -= FULL_TURN;
             lastAngle -= FULL_TURN;
         }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        LOADED.add(this);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        LOADED.remove(this);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        LOADED.remove(this);
+    }
+
+    /** The propellers loaded in a level, on this client. */
+    public static List<PropellerBlockEntity> loaded(Level level) {
+        return LOADED.in(level);
+    }
+
+    /** How fast it spins, a share of full speed. */
+    public float spin() {
+        return spin;
     }
 
     /** How far round the blades have turned, in radians, between the last tick and this one. */

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "aerolarge:block/festive_garland"
+  },
+  "render_type": "minecraft:cutout"
+}

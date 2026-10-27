@@ -918,6 +918,21 @@ function gearRamp(t, from, to) {
   writeSound("zeppelin_horn_echo", echo, 0.6);
 }
 
+// Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
+// shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
+{
+  const jingle = ownRandom(0x4a696e67);
+  const samples = new Float64Array(Math.round(1.1 * RATE));
+  const bells = [2350, 2620, 2890, 3170, 3480];
+  for (const shake of [0, 0.42]) {
+    for (let strike = 0; strike < 14; strike++) {
+      const at = shake + jingle() * 0.16;
+      bell(samples, at, bells[Math.floor(jingle() * bells.length)] * (0.99 + jingle() * 0.02), 0.09 + jingle() * 0.05);
+    }
+  }
+  writeSound("sleigh_bells", samples, 0.7);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.

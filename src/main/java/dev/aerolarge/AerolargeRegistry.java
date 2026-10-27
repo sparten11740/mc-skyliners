@@ -1483,6 +1483,15 @@ public final class AerolargeRegistry {
         "zeppelin_cover", properties -> new ShellBlock(properties, AerolargeRegistry.ZEPPELIN_FABRIC), fabric()
     );
     public static final DeferredBlock<Block> ZEPPELIN_GIRDER = BLOCKS.registerSimpleBlock("zeppelin_girder", metal(MapColor.COLOR_BLUE).noOcclusion());
+    /**
+     * A festive zeppelin's wreath on its nose (see {@link ZeppelinOptions#FESTIVE}): evergreen garland dotted with red
+     * berries and gold tinsel, and the red satin ribbon of its bow. Aerolarge's own, so the zeppelin's assembly takes
+     * them along, as it would not vanilla leaves.
+     */
+    public static final DeferredBlock<Block> FESTIVE_GARLAND = BLOCKS.registerSimpleBlock("festive_garland",
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.2F).sound(SoundType.GRASS).noOcclusion());
+    public static final DeferredBlock<Block> FESTIVE_BOW = BLOCKS.registerSimpleBlock("festive_bow",
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.2F).sound(SoundType.WOOL));
     public static final DeferredBlock<Block> ZEPPELIN_CATWALK = BLOCKS.registerSimpleBlock(
         "zeppelin_catwalk", metal(MapColor.METAL).noOcclusion().isViewBlocking((state, level, pos) -> false)
     );
@@ -1521,6 +1530,8 @@ public final class AerolargeRegistry {
     /** The zeppelin's horn and its echo off the ground (see {@link dev.aerolarge.horn.ShipHorn}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN = sound("zeppelin_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN_ECHO = sound("zeppelin_horn_echo");
+    /** Sleigh bells, rung from a festive zeppelin's engines as they turn (see the client's SleighBells). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SLEIGH_BELLS = sound("sleigh_bells");
     public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);
     public static final DeferredItem<BlockItem> ZEPPELIN_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_GIRDER);
     public static final DeferredItem<BlockItem> ZEPPELIN_CATWALK_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_CATWALK);
@@ -1531,6 +1542,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
     public static final DeferredItem<BlockItem> HORN_CORD_ITEM = ITEMS.registerSimpleBlockItem(HORN_CORD);
     public static final DeferredItem<BlockItem> LIVERY_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_BOARD);
+    public static final DeferredItem<BlockItem> FESTIVE_GARLAND_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_GARLAND);
+    public static final DeferredItem<BlockItem> FESTIVE_BOW_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_BOW);
 
     /**
      * Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. Each shows a
@@ -1558,6 +1571,15 @@ public final class AerolargeRegistry {
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.furnished_zeppelin_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
+    /**
+     * The furnished zeppelin dressed for Christmas: snow on its crown, red bands at its rings, green fins, red and
+     * green gas cells, fairy lights, a wreath on its nose, a star on its mast and sleigh bells with its engines.
+     */
+    public static final DeferredItem<AirframeBlueprintItem> FESTIVE_ZEPPELIN_BLUEPRINT = ITEMS.register(
+        "festive_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE),
+            () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.festive_zeppelin_blueprint.tooltip",
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
         "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
@@ -1573,7 +1595,7 @@ public final class AerolargeRegistry {
 
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
-        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT,
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT,
             CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
@@ -1605,7 +1627,7 @@ public final class AerolargeRegistry {
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
-            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM)),
+            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

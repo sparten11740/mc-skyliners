@@ -688,6 +688,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         return repaintStart >= 0 && level != null && level.getGameTime() - repaintStart < Livery.REPAINT_TICKS;
     }
 
+    /** Paints its zeppelin in a livery at once, as it is built in it: no repaint sweeps along it. */
+    public void paint(Livery to) {
+        livery = to;
+        repaintedFrom = to;
+        repaintStart = -1;
+        changed();
+    }
+
     /**
      * Has its zeppelin repainted, the new livery sweeping along it from the nose to the tail over
      * {@link Livery#REPAINT_TICKS}, over whatever it was painted in a moment ago. Painted as it is, nothing happens.

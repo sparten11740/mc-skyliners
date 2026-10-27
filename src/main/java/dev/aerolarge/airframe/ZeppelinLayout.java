@@ -138,9 +138,12 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinDecks::new,
         ZeppelinLights::new,
         ZeppelinHornCord::new,
-        ZeppelinLiveryBoard::new);
+        ZeppelinLiveryBoard::new,
+        ZeppelinFestive::new);
 
     private final AirframePalette.Balloon palette;
+    /** What it is built with: furnished or not, and the livery it is painted in, and its cells coloured by. */
+    private final ZeppelinOptions options;
     /** Every block of the zeppelin that is not the air inside its hull, by position relative to the nose's tip. */
     private final Map<BlockPos, BlockState> cells = new HashMap<>();
     private final Map<BlockPos, Fitting> fittings = new HashMap<>();
@@ -167,8 +170,9 @@ public final class ZeppelinLayout implements Layout {
     /** How many blocks of air {@link #inOrder} hands over, found once everything else stands. */
     private int air = -1;
 
-    private ZeppelinLayout(AirframePalette.Balloon palette) {
+    private ZeppelinLayout(AirframePalette.Balloon palette, ZeppelinOptions options) {
         this.palette = palette;
+        this.options = options;
         this.length = (int) Math.ceil(LENGTH * SCALE);
         this.axis = (int) Math.round(AXIS_HEIGHT * SCALE);
         this.radii = new double[length + 4];
@@ -182,7 +186,7 @@ public final class ZeppelinLayout implements Layout {
      * at y 0, its nose at z 0. The hull first, then its pieces.
      */
     public static ZeppelinLayout create(ZeppelinOptions options) {
-        ZeppelinLayout layout = new ZeppelinLayout(AirframePalette.balloon());
+        ZeppelinLayout layout = new ZeppelinLayout(AirframePalette.balloon(), options);
         layout.cover();
         layout.rings();
         layout.gasCells();
@@ -244,7 +248,7 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /** The hull's radius at a row along it, in blocks; 0 past either end. */
-    private double radiusAt(int z) {
+    double radiusAt(int z) {
         return z < -2 || z > length + 1 ? 0 : radii[z + 2];
     }
 
@@ -374,7 +378,8 @@ public final class ZeppelinLayout implements Layout {
 
     private List<BlockPos> gasCell(int cell) {
         ZeppelinShape.Cell balloon = balloons.get(cell);
-        BlockState envelope = palette.envelope(CELL_COLOURS[cell % CELL_COLOURS.length]);
+        String[] colours = options.livery().cellColours();
+        BlockState envelope = palette.envelope(colours[cell % colours.length]);
         int front = (int) Math.floor((balloon.middle() - balloon.halfLength()) * SCALE) - 1;
         int back = (int) Math.ceil((balloon.middle() + balloon.halfLength()) * SCALE) + 1;
         int across = (int) Math.ceil(balloon.halfWidth() * SCALE) + 1;
@@ -952,6 +957,11 @@ public final class ZeppelinLayout implements Layout {
     /** Each engine car's pod's middle on its axis, by its engine's number less one, by layout position. */
     List<BlockPos> engineCars() {
         return engineCars;
+    }
+
+    /** The livery the zeppelin is first painted in, which its autopilot is handed as it is wired. */
+    Livery livery() {
+        return options.livery();
     }
 
     /** The control car's box, in blocks, under the bow. */

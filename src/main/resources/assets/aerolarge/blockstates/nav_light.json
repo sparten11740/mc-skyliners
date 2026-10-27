@@ -18,6 +18,21 @@
     "facing=up,kind=bulb": {
       "model": "aerolarge:block/nav_light_bulb"
     },
+    "facing=up,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red"
+    },
+    "facing=up,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green"
+    },
+    "facing=up,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold"
+    },
+    "facing=up,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue"
+    },
+    "facing=up,kind=star": {
+      "model": "aerolarge:block/nav_light_star"
+    },
     "facing=down,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 180
@@ -42,6 +57,26 @@
       "model": "aerolarge:block/nav_light_bulb",
       "x": 180
     },
+    "facing=down,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red",
+      "x": 180
+    },
+    "facing=down,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green",
+      "x": 180
+    },
+    "facing=down,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold",
+      "x": 180
+    },
+    "facing=down,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue",
+      "x": 180
+    },
+    "facing=down,kind=star": {
+      "model": "aerolarge:block/nav_light_star",
+      "x": 180
+    },
     "facing=north,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 90
@@ -64,6 +99,26 @@
     },
     "facing=north,kind=bulb": {
       "model": "aerolarge:block/nav_light_bulb",
+      "x": 90
+    },
+    "facing=north,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red",
+      "x": 90
+    },
+    "facing=north,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green",
+      "x": 90
+    },
+    "facing=north,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold",
+      "x": 90
+    },
+    "facing=north,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue",
+      "x": 90
+    },
+    "facing=north,kind=star": {
+      "model": "aerolarge:block/nav_light_star",
       "x": 90
     },
     "facing=south,kind=red": {
@@ -93,6 +148,31 @@
     },
     "facing=south,kind=bulb": {
       "model": "aerolarge:block/nav_light_bulb",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,kind=star": {
+      "model": "aerolarge:block/nav_light_star",
       "x": 90,
       "y": 180
     },
@@ -126,6 +206,31 @@
       "x": 90,
       "y": 90
     },
+    "facing=east,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,kind=star": {
+      "model": "aerolarge:block/nav_light_star",
+      "x": 90,
+      "y": 90
+    },
     "facing=west,kind=red": {
       "model": "aerolarge:block/nav_light_red",
       "x": 90,
@@ -153,6 +258,31 @@
     },
     "facing=west,kind=bulb": {
       "model": "aerolarge:block/nav_light_bulb",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=fairy_red": {
+      "model": "aerolarge:block/nav_light_fairy_red",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=fairy_green": {
+      "model": "aerolarge:block/nav_light_fairy_green",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=fairy_gold": {
+      "model": "aerolarge:block/nav_light_fairy_gold",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=fairy_blue": {
+      "model": "aerolarge:block/nav_light_fairy_blue",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,kind=star": {
+      "model": "aerolarge:block/nav_light_star",
       "x": 90,
       "y": 270
     }

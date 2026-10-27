@@ -120,7 +120,7 @@ final class ZeppelinControlCar {
      * Wires the control head once it stands: each cell's burners' relays with how far ahead of the cells' middle the
      * cell hangs, each engine's relays, how far above the head the hot air stands and how far aft the cells' middle
      * is, its wheels' height under it, and the box round the zeppelin's blocks, all as offsets from it turned as the
-     * zeppelin was placed.
+     * zeppelin was placed; and the livery the zeppelin is first painted in.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Controls controls, Rotation rotation) {
         List<List<BlockPos>> relays = layout.burnerRelays();
@@ -145,6 +145,7 @@ final class ZeppelinControlCar {
         autopilot.wireZeppelinControls(hand.get(0), hand.get(1), hand.get(2), hand.get(3), hand.get(4));
         List<BlockPos> frame = offsets(at, layout.frameCorners(), rotation);
         autopilot.frame(frame.get(0), frame.get(1));
+        autopilot.paint(layout.livery());
     }
 
     private static Map<Integer, List<BlockPos>> engines(BlockPos at, Map<Integer, List<BlockPos>> relays, Rotation rotation) {

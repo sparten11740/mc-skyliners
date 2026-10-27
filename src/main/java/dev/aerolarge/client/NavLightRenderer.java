@@ -24,9 +24,8 @@ import org.joml.Vector3f;
  */
 public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity> {
     private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/misc/nav_glow.png");
-    /** The flare's size in blocks: the steady lights small, the flashing ones big. */
-    private static final float STEADY_SIZE = 1.6F;
-    private static final float FLASH_SIZE = 3.2F;
+    /** The biggest a light's flare is drawn as near, in blocks: the festive star's. */
+    private static final float BIGGEST = 6F;
     /** How far off a light is drawn, in blocks: past a zeppelin's length, about 490. */
     private static final int VIEW_DISTANCE = 512;
     /**
@@ -52,7 +51,7 @@ public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity
         pose.translate(0.5 + facing.getStepX() * 0.3, 0.5 + facing.getStepY() * 0.3, 0.5 + facing.getStepZ() * 0.3);
         // The pose is the camera's, moved to the light, so how far it has moved is how far the light is.
         float distance = pose.last().pose().getTranslation(fromCamera).length();
-        float size = Math.max(kind.flashing() ? FLASH_SIZE : STEADY_SIZE, distance * LEAST_SPAN);
+        float size = Math.max(kind.size(), distance * LEAST_SPAN);
         int colour = kind.colour();
         float r = (colour >> 16 & 0xFF) / 255F * brightness;
         float g = (colour >> 8 & 0xFF) / 255F * brightness;
@@ -84,6 +83,6 @@ public class NavLightRenderer implements BlockEntityRenderer<NavLightBlockEntity
 
     @Override
     public AABB getRenderBoundingBox(NavLightBlockEntity light) {
-        return new AABB(light.getBlockPos()).inflate(Math.max(FLASH_SIZE, VIEW_DISTANCE * LEAST_SPAN));
+        return new AABB(light.getBlockPos()).inflate(Math.max(BIGGEST, VIEW_DISTANCE * LEAST_SPAN));
     }
 }

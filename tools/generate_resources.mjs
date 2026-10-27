@@ -35,6 +35,8 @@ const cubes = {
   cabin_light: null,
   zeppelin_fabric: null,
   zeppelin_girder: "minecraft:cutout",
+  festive_garland: "minecraft:cutout",
+  festive_bow: null,
   zeppelin_catwalk: "minecraft:cutout",
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
@@ -547,6 +549,8 @@ function zeppelinControlsLang() {
     "block.aerolarge.engine_telegraph": "Engine Telegraph",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
+    "block.aerolarge.festive_garland": "Festive Garland",
+    "block.aerolarge.festive_bow": "Festive Bow",
     "livery.aerolarge.silver": "Hindenburg silver",
     "livery.aerolarge.cream": "Graf Zeppelin cream",
     "livery.aerolarge.navy": "navy grey",
@@ -557,6 +561,7 @@ function zeppelinControlsLang() {
     "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
     "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
     "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
+    "subtitles.aerolarge.sleigh_bells": "Sleigh bells jingle",
     "block.aerolarge.burner_lever": "Burner Lever",
   };
 }
@@ -730,7 +735,7 @@ function atcLang() {
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks.
-  for (const name of ["zeppelin_horn", "zeppelin_horn_echo"]) {
+  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   write(`assets/${ID}/sounds.json`, sounds);
@@ -1020,7 +1025,7 @@ function selfDestructLang() {
 // The exterior lights: a small lens on the face it is fixed to, pointing the way it shines (up in the model), one
 // model per kind; turned like an end rod for the other directions.
 {
-  const kinds = ["red", "green", "white", "strobe", "beacon", "bulb"];
+  const kinds = ["red", "green", "white", "strobe", "beacon", "bulb", "fairy_red", "fairy_green", "fairy_gold", "fairy_blue", "star"];
   for (const kind of kinds) {
     const face = { texture: "#lens" };
     write(`assets/${ID}/models/block/nav_light_${kind}.json`, {
@@ -4113,7 +4118,7 @@ function crewLockerLang() {
   };
 }
 
-for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint", "furnished_zeppelin_blueprint"]) {
+for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint", "furnished_zeppelin_blueprint", "festive_zeppelin_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
 
@@ -5651,6 +5656,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.aerolarge.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.aerolarge.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
+  "item.aerolarge.festive_zeppelin_blueprint": "Festive Zeppelin Blueprint",
+  "item.aerolarge.festive_zeppelin_blueprint.tooltip": "The furnished zeppelin dressed for Christmas: snow, red bands, green fins, fairy lights, a wreath, a star and sleigh bells",
   "item.aerolarge.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
   "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
   "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",

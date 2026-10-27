@@ -63,6 +63,7 @@ import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.SelfDestructButtonRenderer;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
+import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
@@ -162,6 +163,7 @@ public final class AerolargeClient {
             AerolargeRegistry.ZEPPELIN_COVER.get(), AerolargeRegistry.ZEPPELIN_FABRIC.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, AerolargeRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
+        NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));

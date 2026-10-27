@@ -645,6 +645,11 @@ const LENSES = {
   strobe: [0xe0, 0xe8, 0xff],
   beacon: [0xff, 0x30, 0x10],
   bulb: [0xff, 0xd0, 0x80],
+  fairy_red: [0xf0, 0x30, 0x28],
+  fairy_green: [0x28, 0xe0, 0x50],
+  fairy_gold: [0xff, 0xc0, 0x28],
+  fairy_blue: [0x30, 0x68, 0xf0],
+  star: [0xff, 0xd0, 0x40],
 };
 for (const [kind, colour] of Object.entries(LENSES)) {
   texture(blockOutput, `nav_light_${kind}`, (x, y) => {
@@ -743,13 +748,14 @@ mkdirSync(miscOutput, { recursive: true });
 }
 
 // The blueprints: a rolled-out sheet of blue paper with the airliner drawn from above in white; the furnished one
-// carries a gold star for the fittings. The zeppelin's shows it from the side. The control tower's shows the tower
-// from the side: its shaft under the wider cab, the cab's windows a band of the paper, and the mast on its roof.
-function blueprint(name, star, drawn = airlinerFromAbove) {
+// carries a gold star for the fittings. The zeppelin's shows it from the side, the festive one's drawn in red. The
+// control tower's shows the tower from the side: its shaft under the wider cab, the cab's windows a band of the
+// paper, and the mast on its roof.
+function blueprint(name, star, drawn = airlinerFromAbove, ink = INK) {
   texture(itemOutput, name, (x, y) => {
     if (x < 1 || x > 14 || y < 2 || y > 13) return CLEAR;
     if (star && Math.abs(x - 12.5) + Math.abs(y - 4.5) <= 1.5) return GOLD;
-    if (drawn(x, y)) return INK;
+    if (drawn(x, y)) return ink;
     if (x === 1 || x === 14 || y === 2 || y === 13) return PAPER_LINE;
     if (x % 4 === 0 || y % 4 === 0) return PAPER_LINE;
     return PAPER;
@@ -789,6 +795,7 @@ blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
 blueprint("zeppelin_blueprint", false, zeppelinFromTheSide);
 blueprint("furnished_zeppelin_blueprint", true, zeppelinFromTheSide);
+blueprint("festive_zeppelin_blueprint", true, zeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 
@@ -3543,6 +3550,19 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return column >= 0 && row >= 0 ? swatches[row][column](x - SWATCH_COLUMNS[column], y - SWATCH_ROWS[row]) : BOARD;
   }, 2);
   texture(blockOutput, "livery_board_side", (x, y) => (y % 4 === 0 ? BOARD : BOARD_FRAME), 3);
+  // A festive zeppelin's wreath: evergreen garland, sprigs of dark and light needles with gaps between, a red berry
+  // here and there and a glint of gold tinsel; and the red satin of its bow, a sheen across its folds.
+  texture(blockOutput, "festive_garland", (x, y) => {
+    const sprig = (x * 7 + y * 13 + ((x * y) % 5)) % 11;
+    if ((x === 3 && y === 4) || (x === 11 && y === 9) || (x === 6 && y === 13)) return [0xd2, 0x1f, 0x2a];
+    if ((x + 2 * y) % 17 === 0) return [0xf0, 0xc4, 0x40];
+    if (sprig === 0 || sprig === 5) return CLEAR;
+    return sprig % 3 === 0 ? [0x2f, 0x6e, 0x38] : sprig % 3 === 1 ? [0x1d, 0x4f, 0x29] : [0x3e, 0x84, 0x44];
+  }, 6);
+  texture(blockOutput, "festive_bow", (x, y) => {
+    const fold = Math.abs(((x + y) % 8) - 4);
+    return fold <= 1 ? [0xf0, 0x5a, 0x5e] : fold <= 2 ? [0xd0, 0x22, 0x2c] : [0xa8, 0x14, 0x1e];
+  }, 3);
   const GIRDER = [0x2f, 0x5f, 0xb3];
   const GIRDER_DARK = [0x23, 0x48, 0x8a];
   texture(blockOutput, "zeppelin_girder", (x, y) => {

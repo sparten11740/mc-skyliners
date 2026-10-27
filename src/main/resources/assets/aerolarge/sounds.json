@@ -786,5 +786,13 @@
         "name": "aerolarge:zeppelin_horn_echo"
       }
     ]
+  },
+  "sleigh_bells": {
+    "subtitle": "subtitles.aerolarge.sleigh_bells",
+    "sounds": [
+      {
+        "name": "aerolarge:sleigh_bells"
+      }
+    ]
   }
 }

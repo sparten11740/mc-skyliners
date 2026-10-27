@@ -33,8 +33,9 @@ final class AerolargeCommand {
                 .then(Commands.literal(along.getSerializedName())
                     .executes(context -> build(context, along, false))
                     .then(Commands.literal("furnished").executes(context -> build(context, along, true)))
-                    .then(Commands.literal("zeppelin").executes(context -> buildZeppelin(context, along, false))
-                        .then(Commands.literal("furnished").executes(context -> buildZeppelin(context, along, true))))));
+                    .then(Commands.literal("zeppelin").executes(context -> buildZeppelin(context, along, ZeppelinOptions.PLAIN))
+                        .then(Commands.literal("furnished").executes(context -> buildZeppelin(context, along, ZeppelinOptions.FURNISHED)))
+                        .then(Commands.literal("festive").executes(context -> buildZeppelin(context, along, ZeppelinOptions.FESTIVE))))));
         }
         dispatcher.register(Commands.literal(Aerolarge.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
     }
@@ -43,8 +44,8 @@ final class AerolargeCommand {
         return build(context, along, AirframeLayout.create(AerolargeConfig.SCALE.get(), furnished), "commands.aerolarge.build");
     }
 
-    private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, boolean furnished) throws CommandSyntaxException {
-        return build(context, along, ZeppelinLayout.create(furnished ? ZeppelinOptions.FURNISHED : ZeppelinOptions.PLAIN), "commands.aerolarge.build_zeppelin");
+    private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, ZeppelinOptions options) throws CommandSyntaxException {
+        return build(context, along, ZeppelinLayout.create(options), "commands.aerolarge.build_zeppelin");
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, Layout layout, String said) throws CommandSyntaxException {
