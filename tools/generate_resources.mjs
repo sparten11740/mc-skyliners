@@ -689,21 +689,22 @@ cubes.propeller = null;
   cubes.flag_halyard = null;
   // The Lookout's Glass in the control car's lounge (see LookoutGlassBlock): a teak post on a foot, a brass yoke on its
   // top and in it a long brass glass, its sunshade forward and its eyepiece aft, tilted up a step toward the horizon
-  // ahead, at a lookout's waist, so that looking out over it they never look into it.
+  // ahead. It stands above its block, at a lookout's chest, so that it points out of the car's windows over their sill
+  // rather than into the wall under them; its renderer leaves it out for whoever looks through it.
   const wood = `${ID}:block/zeppelin_wood`;
-  const tilt = { origin: [8, 12, 8], axis: "x", angle: 22.5 };
+  const tilt = { origin: [8, 20, 8], axis: "x", angle: 22.5 };
   write(`assets/${ID}/models/block/lookout_glass.json`, {
     parent: "minecraft:block/block",
     textures: { wood, brass, eyepiece: "minecraft:block/black_concrete", particle: brass },
     elements: [
       patched([4, 0, 4], [12, 1, 12], "#wood"),
-      patched([7, 1, 7], [9, 10, 9], "#wood"),
-      patched([5.5, 10, 7], [10.5, 11, 9], "#brass"),
-      patched([5.5, 11, 7], [6.5, 13, 9], "#brass"),
-      patched([9.5, 11, 7], [10.5, 13, 9], "#brass"),
-      patched([6.5, 10.5, 2], [9.5, 13.5, 15], "#brass", tilt),
-      patched([6, 10, -1], [10, 14, 2], "#brass", tilt),
-      patched([7, 11, 15], [9, 13, 17.5], "#eyepiece", tilt),
+      patched([7, 1, 7], [9, 18, 9], "#wood"),
+      patched([5.5, 18, 7], [10.5, 19, 9], "#brass"),
+      patched([5.5, 19, 7], [6.5, 21, 9], "#brass"),
+      patched([9.5, 19, 7], [10.5, 21, 9], "#brass"),
+      patched([6.5, 18.5, 2], [9.5, 21.5, 15], "#brass", tilt),
+      patched([6, 18, -1], [10, 22, 2], "#brass", tilt),
+      patched([7, 19, 15], [9, 21, 17.5], "#eyepiece", tilt),
     ],
   });
   write(`assets/${ID}/blockstates/lookout_glass.json`, {

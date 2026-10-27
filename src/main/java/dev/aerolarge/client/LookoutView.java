@@ -2,6 +2,7 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.block.LookoutGlassBlock;
 import dev.aerolarge.block.LookoutGlassBlockEntity;
 import dev.aerolarge.lookout.LookoutSpot;
 import javax.annotation.Nullable;
@@ -13,6 +14,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -99,6 +101,16 @@ public final class LookoutView {
     private static final int HINT_Y = 12;
     private static final int HINT = 0xFFE8E8E8;
 
+    /**
+     * How far below the horizon the view first looks, out the way the glass points, whichever way the player stood at
+     * the glass, in degrees: a step steeper than the shallowest look from the first to the last, a step steeper each
+     * time, that rests on land it can mark rather than on the car's windows or walls a step away, which its zoom would
+     * fill the view with; the step past it keeps the edge it just clears out of the view.
+     */
+    private static final float OUT_DOWN = 30;
+    private static final float OUT_STEEPEST = 85;
+    private static final float OUT_STEP = 5;
+
     @Nullable
     private static LookoutGlassBlockEntity looking;
     /** The spot the middle of the view rests on now, if there is one to mark. */
@@ -117,7 +129,7 @@ public final class LookoutView {
         return looking == glass;
     }
 
-    /** The player has used a glass: they look through it. */
+    /** The player has used a glass: they look through it, out the way it points, never first into the car's wall. */
     public static void look(LookoutGlassBlockEntity glass) {
         Minecraft minecraft = Minecraft.getInstance();
         if (looking != null || minecraft.player == null || minecraft.level == null || !atGlass(minecraft.player, minecraft.level, glass)) {
@@ -126,7 +138,33 @@ public final class LookoutView {
         looking = glass;
         useHeld = true;
         aim = null;
+        lookOut(minecraft.player, minecraft.level, glass);
         minecraft.player.playSound(SoundEvents.SPYGLASS_USE, 1, 1);
+    }
+
+    /** Turns the player to look out the way the glass points, the ship's turn and all, and down onto the land. */
+    private static void lookOut(LocalPlayer player, ClientLevel level, LookoutGlassBlockEntity glass) {
+        Vec3 centre = glass.getBlockPos().getCenter();
+        Direction facing = glass.getBlockState().getValue(LookoutGlassBlock.FACING);
+        Vec3 out = SableClient.toWorld(level, centre.add(Vec3.atLowerCornerOf(facing.getNormal()))).subtract(SableClient.toWorld(level, centre));
+        float yaw = (float) Math.toDegrees(Math.atan2(-out.x, out.z));
+        float down = down(level, glass, player.getEyePosition(), yaw);
+        player.setYRot(yaw);
+        player.yRotO = yaw;
+        player.setXRot(down);
+        player.xRotO = down;
+    }
+
+    /** How far down to look the way the glass points first: the shallowest look that rests on land it can mark. */
+    private static float down(ClientLevel level, LookoutGlassBlockEntity glass, Vec3 eye, float yaw) {
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.zeppelinFraming(level, glass.getBlockPos());
+        BoundingBox own = autopilot != null ? autopilot.frame() : null;
+        for (float down = OUT_DOWN; down < OUT_STEEPEST; down += OUT_STEP) {
+            if (ground(level, eye, Vec3.directionFromRotation(down, yaw), own) != null) {
+                return Math.min(OUT_STEEPEST, down + OUT_STEP);
+            }
+        }
+        return OUT_STEEPEST;
     }
 
     private static void leave() {

@@ -29,7 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class LookoutGlassBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<LookoutGlassBlock> CODEC = simpleCodec(LookoutGlassBlock::new);
-    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 15, 14);
+    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 23, 14);
 
     public LookoutGlassBlock(Properties properties) {
         super(properties);

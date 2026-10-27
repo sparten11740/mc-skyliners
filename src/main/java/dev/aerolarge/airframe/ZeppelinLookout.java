@@ -15,10 +15,12 @@ import net.minecraft.core.Direction;
 final class ZeppelinLookout implements ZeppelinPiece {
     /**
      * How far aft of the car's middle row, where the lounge begins, the glass stands, in rows, and how far in from the
-     * car's port wall.
+     * car's port wall: out on the glass floor, so that wherever its lookout stands round it, they stand on glass and
+     * look down through it, clear of the wall and the solid floor forward of the lounge, and clear of the port
+     * searchlight's handle.
      */
-    private static final int AFT = 1;
-    private static final int IN = 1;
+    private static final int AFT = 5;
+    private static final int IN = 2;
 
     private final ZeppelinLayout layout;
 
