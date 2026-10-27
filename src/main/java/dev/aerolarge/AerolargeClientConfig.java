@@ -19,6 +19,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
+    public static final ModConfigSpec.BooleanValue MISTY_WINDOWS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -90,6 +91,10 @@ public final class AerolargeClientConfig {
                 "thrown long and soft as the sun sinks, gone at night and in rain. Worked out every other tick over the ground she",
                 "could shade; turn it off if that costs too much.")
             .define("greatShadow", true);
+        MISTY_WINDOWS = builder
+            .comment("Aboard a zeppelin flying through cloud or rain, mist her promenade windows over on the inside, to be drawn on by",
+                "holding use with an empty hand on a pane. Each player's mist and drawing are their own.")
+            .define("mistyWindows", true);
         SPEC = builder.build();
     }
 

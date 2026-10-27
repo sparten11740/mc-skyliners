@@ -57,6 +57,7 @@ import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
 import dev.aerolarge.client.LookoutGlassRenderer;
 import dev.aerolarge.client.LookoutView;
+import dev.aerolarge.client.MistyWindows;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
 import dev.aerolarge.client.PaperPlaneRenderer;
@@ -188,6 +189,9 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(HullAmbience::tick);
         NeoForge.EVENT_BUS.addListener(GreatShadow::tick);
         NeoForge.EVENT_BUS.addListener(GreatShadow::stage);
+        NeoForge.EVENT_BUS.addListener(MistyWindows::tick);
+        NeoForge.EVENT_BUS.addListener(MistyWindows::stage);
+        NeoForge.EVENT_BUS.addListener(MistyWindows::loggingOut);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::shake);
         NeoForge.EVENT_BUS.addListener(LookoutView::tick);
         NeoForge.EVENT_BUS.addListener(LookoutView::fov);
