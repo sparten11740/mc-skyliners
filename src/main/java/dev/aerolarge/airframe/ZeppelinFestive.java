@@ -24,17 +24,30 @@ final class ZeppelinFestive implements ZeppelinPiece {
     private static final NavLightBlock.Kind[] FAIRY = {
         NavLightBlock.Kind.FAIRY_RED, NavLightBlock.Kind.FAIRY_GOLD, NavLightBlock.Kind.FAIRY_GREEN, NavLightBlock.Kind.FAIRY_BLUE
     };
-    /** How far out from the nose's tip the wreath lies, inside and out, in blocks; and about one in so many a berry. */
-    private static final double WREATH_INNER = 5.5;
-    private static final double WREATH_OUTER = 7.5;
+    /**
+     * How far out from the nose's tip the wreath lies, inside and out, in blocks: on a full-size nose, and a quarter in
+     * on a half-size one's, as at its full width it would look twice as big on her. And about one in so many a berry.
+     */
+    private static final Wreath FULL_WREATH = new Wreath(5.5, 7.5);
+    private static final Wreath HALF_WREATH = new Wreath(4, 5.5);
     private static final int BERRY_ONE_IN = 7;
     /** How far forward of the nose's tip the wreath is looked for on its cover, in rows. */
     private static final int NOSE_DEPTH = 40;
 
     private final ZeppelinLayout layout;
 
+    /** How far out from the nose's tip a wreath lies, inside and out, in blocks. */
+    private record Wreath(double inner, double outer) {
+    }
+
     ZeppelinFestive(ZeppelinLayout layout) {
         this.layout = layout;
+    }
+
+    /** At every size, the wreath sized to her nose. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
     }
 
     @Override
@@ -91,13 +104,17 @@ final class ZeppelinFestive implements ZeppelinPiece {
     private void wreath() {
         BlockState spruce = AerolargeRegistry.FESTIVE_GARLAND.get().defaultBlockState();
         BlockState red = AerolargeRegistry.FESTIVE_BOW.get().defaultBlockState();
-        int reach = (int) Math.ceil(WREATH_OUTER);
+        Wreath wreath = switch (layout.hullSize()) {
+            case HALF -> HALF_WREATH;
+            case FULL -> FULL_WREATH;
+        };
+        int reach = (int) Math.ceil(wreath.outer());
         for (BlockPos across : BlockPos.betweenClosed(-reach, layout.axis() - reach, 0, reach, layout.axis() + reach, 0)) {
             double from = Math.hypot(across.getX(), across.getY() - layout.axis());
-            if (from < WREATH_INNER || from > WREATH_OUTER) {
+            if (from < wreath.inner() || from > wreath.outer()) {
                 continue;
             }
-            boolean bow = across.getY() < layout.axis() - WREATH_INNER && Math.abs(across.getX()) <= 1;
+            boolean bow = across.getY() < layout.axis() - wreath.inner() && Math.abs(across.getX()) <= 1;
             boolean berry = Math.floorMod(HashCommon.mix(across.asLong()), (long) BERRY_ONE_IN) == 0;
             onNose(across.getX(), across.getY(), bow || berry ? red : spruce);
         }

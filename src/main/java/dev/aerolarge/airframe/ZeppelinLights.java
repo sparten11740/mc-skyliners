@@ -43,6 +43,12 @@ final class ZeppelinLights implements ZeppelinPiece {
         return AerolargeConfig.NAVIGATION_LIGHTS.get();
     }
 
+    /** On the engine cars, the tail, the fins' tips, the belly and the crown, wherever they are at the size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     /** The lights, once the engine cars and the fins stand, and the Sky Deck the bulbs leave room for. */
     @Override
     public void build() {

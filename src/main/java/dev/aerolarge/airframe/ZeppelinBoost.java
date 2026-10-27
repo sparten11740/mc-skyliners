@@ -102,7 +102,7 @@ final class ZeppelinBoost implements ZeppelinPiece {
     private void booster(int x, int y, List<BlockPos> relays) {
         for (int z = layout.length() + 1; z > layout.length() / 2; z--) {
             if (!layout.isOpen(x, y, z - 1)) {
-                if (cover(layout.stateAt(x, y, z - 1)) && layout.booster(x, y, z, Direction.NORTH)) {
+                if (cover(layout.stateAt(x, y, z - 1)) && layout.isOpen(x, y, z) && layout.booster(x, y, z, Direction.NORTH)) {
                     relays.add(layout.relay(x, y, z - 1));
                 }
                 return;

@@ -49,6 +49,12 @@ final class ZeppelinSkyDeckLaunch implements ZeppelinPiece {
         return AerolargeConfig.SKY_DECK_LAUNCH.get();
     }
 
+    /** On the Sky Deck, the same at every size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         int z = ZeppelinSkyDeck.station(layout);

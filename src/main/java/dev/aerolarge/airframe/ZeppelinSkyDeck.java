@@ -56,6 +56,12 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
         return new BlockPos(-DECK_HALF + MAST_IN, floor(layout) + MAST_HEIGHT + 1, station(layout) - DECK_HALF + MAST_IN);
     }
 
+    /** Round the ring it climbs at, wherever it stands at the size; the deck itself a player's size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     /** Lays the shaft and the deck, once the gangway it starts from is laid. */
     @Override
     public void build() {

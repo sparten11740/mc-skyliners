@@ -30,6 +30,12 @@ final class ZeppelinColours implements ZeppelinPiece {
         return AerolargeConfig.SHIPS_COLOURS.get();
     }
 
+    /** On the Sky Deck, the same at every size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         int z = ZeppelinSkyDeck.station(layout) + AFT;
