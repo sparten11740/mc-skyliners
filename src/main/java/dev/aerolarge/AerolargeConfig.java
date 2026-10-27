@@ -50,6 +50,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue UP_SHIP;
     public static final ModConfigSpec.BooleanValue ZEPPELIN_SCREENS;
     public static final ModConfigSpec.BooleanValue SEARCHLIGHTS;
+    public static final ModConfigSpec.BooleanValue SKYWRITING;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -334,6 +335,13 @@ public final class AerolargeConfig {
                 "nothing."
             )
             .define("searchlights", true);
+        SKYWRITING = builder
+            .comment(
+                "Whether a zeppelin is built with a skywriting board in her control car, whose picture buttons have her autopilot",
+                "fly a circle, a heart, a figure of eight or a wave across the sky, smoke in her cells' colours streaming from under",
+                "her belly. Off, the boards already built do nothing."
+            )
+            .define("skywriting", true);
         builder.pop();
 
         SPEC = builder.build();

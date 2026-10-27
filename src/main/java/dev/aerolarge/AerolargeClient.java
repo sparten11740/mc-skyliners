@@ -72,6 +72,8 @@ import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
 import dev.aerolarge.client.ShipsColoursRenderer;
 import dev.aerolarge.client.ShipsPlaqueRenderer;
+import dev.aerolarge.client.SkyTrails;
+import dev.aerolarge.client.SkywritingBoardRenderer;
 import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.TabBanners;
@@ -190,6 +192,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(UpShipScene::tick);
         NeoForge.EVENT_BUS.addListener(UpShipScene::stage);
         NeoForge.EVENT_BUS.addListener(SearchlightBeams::stage);
+        NeoForge.EVENT_BUS.addListener(SkyTrails::tick);
+        NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));
@@ -265,6 +269,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.BUBBLE_LEVEL_ENTITY.get(), context -> new BubbleLevelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TECHNO_DECK_ENTITY.get(), context -> new TechnoRoomRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LOOKOUT_GLASS_ENTITY.get(), context -> new LookoutGlassRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.SKYWRITING_BOARD_ENTITY.get(), context -> new SkywritingBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

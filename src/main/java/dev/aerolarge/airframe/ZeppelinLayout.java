@@ -151,7 +151,8 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinLookout::new,
         ZeppelinUpShip::new,
         ZeppelinScreens::new,
-        ZeppelinSearchlights::new);
+        ZeppelinSearchlights::new,
+        ZeppelinSkywriting::new);
 
     private final AirframePalette.Balloon palette;
     /** What it is built with: furnished or not, and the livery it is painted in, and its cells coloured by. */
@@ -978,6 +979,21 @@ public final class ZeppelinLayout implements Layout {
     /** Each gas cell's burners' relays, bow first, by layout position. */
     List<List<BlockPos>> burnerRelays() {
         return burnerRelays;
+    }
+
+    /**
+     * How far aft of the nose the middle of the cells' lift is, in blocks: the middles of their bays, each weighted by
+     * its burners. It is about where the zeppelin turns on the spot, and what her autopilot steers.
+     */
+    double liftMiddle() {
+        double middle = 0;
+        int burners = 0;
+        for (int cell = 0; cell < burnerRelays.size(); cell++) {
+            int count = burnerRelays.get(cell).size();
+            middle += count * cellMiddle(cell) * SCALE;
+            burners += count;
+        }
+        return burners > 0 ? middle / burners : 0;
     }
 
     /** Each engine's relays that drive it ahead, by its number less one, by layout position. */

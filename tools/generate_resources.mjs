@@ -771,6 +771,25 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/searchlight_handle.json`, { parent: `${ID}:block/searchlight_handle` });
   dropsItself("searchlight_handle");
   cubes.searchlight_handle = null;
+  // The skywriting board (see SkywritingBoardBlock): a board two sixteenths thick at the back of its block, its
+  // picture buttons on its face; the lit one's frame is drawn by its renderer (see SkywritingBoardRenderer).
+  write(`assets/${ID}/models/block/skywriting_board.json`, {
+    parent: "minecraft:block/block",
+    textures: { front: `${ID}:block/skywriting_board_front`, side: `${ID}:block/skywriting_board_side`, particle: `${ID}:block/skywriting_board_side` },
+    elements: [{
+      from: [0, 0, 14], to: [16, 16, 16],
+      faces: {
+        north: { texture: "#front" }, south: { texture: "#side" }, up: { texture: "#side", uv: [0, 14, 16, 16] },
+        down: { texture: "#side", uv: [0, 14, 16, 16] }, east: { texture: "#side", uv: [14, 0, 16, 16] }, west: { texture: "#side", uv: [0, 0, 2, 16] },
+      },
+    }],
+  });
+  write(`assets/${ID}/blockstates/skywriting_board.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/skywriting_board`, y }])),
+  });
+  write(`assets/${ID}/models/item/skywriting_board.json`, { parent: `${ID}:block/skywriting_board` });
+  dropsItself("skywriting_board");
+  cubes.skywriting_board = null;
   write(`assets/${ID}/models/item/ballast_valve.json`, { parent: `${ID}:block/ballast_valve` });
   dropsItself("ballast_valve");
   cubes.ballast_valve = null;
@@ -868,6 +887,7 @@ function zeppelinControlsLang() {
     "block.aerolarge.ballast_valve": "Water Ballast Valve",
     "block.aerolarge.searchlight": "Searchlight",
     "block.aerolarge.searchlight_handle": "Searchlight Handle",
+    "block.aerolarge.skywriting_board": "Skywriting Board",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -5461,7 +5481,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5540,6 +5560,7 @@ shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraf
 shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
 shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
+shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);

@@ -1538,6 +1538,17 @@ handle again to let go, the light left shining where it points, or use it sneaki
 from a handle lets it go too. The server config's `searchlights` leaves them out of zeppelins built from then on, and
 off, the handles already built do nothing.
 
+On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
+blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
+takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
+flies that shape across the sky, a few hundred blocks across, while coloured smoke streams from under her belly, puff
+after puff in her gas cells' colours, drawing the shape behind her. A circle takes about four minutes, the wave five,
+and the heart or the figure of eight about eight. Done, a bell rings and she flies on along the heading she ends
+on, at her own speed again. Press the lit button again, or set her autopilot afresh or switch it off, to give the shape
+up, with a low note; the same low note answers a button pressed while she is not flying along. The smoke glows at night
+too and fades away a quarter of an hour later, in the order it was drawn. The server config's `skywriting` leaves the
+board out of zeppelins built from then on, and off, the boards already built do nothing.
+
 And somewhere aboard is a secret. One length of the gangway's grating towards the stern is a Secret Hatch, just like the
 rest of it but for a musical note drifting up out of it now and then: use it and it swings open, a rope leading down
 through it into a black room hung under the gangway, with no other way in. It is a techno club: a dance floor of black
@@ -1752,7 +1763,10 @@ and strikes the take-off's beats, `UpShip` holding her on the lines (a `TakeoffH
 `UpShipScene` drawing the handlers, their lines and the water, and `ZeppelinScreens` places the `PassengerScreenBlock`s
 that look through her `ZeppelinCamera`s (each a `CameraSpot`, as the airliner's `OutsideCamera`s are, the flyby circling
 her in `CameraMount`), and `ZeppelinSearchlights` hangs the `SearchlightBlock`s whose `SearchlightHandleBlock`s swing
-them, `SearchlightBeams` drawing their beams and pools; a feature is taken out of the zeppelin with its line on the
+them, `SearchlightBeams` drawing their beams and pools, and `ZeppelinSkywriting` hangs the `SkywritingBoardBlock`
+whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her along it, `Skywriting` handing her
+pilot the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the smoke and `SkywritingBoardRenderer`
+lighting the button; a feature is taken out of the zeppelin with its line on the
 list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
 control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
 `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the

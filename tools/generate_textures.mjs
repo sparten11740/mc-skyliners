@@ -3936,4 +3936,43 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "searchlight_lens_off", lens(false), 2);
 }
 
+// The skywriting board (see SkywritingBoardBlock): four picture buttons on deep blue in a wooden frame, each a shape
+// drawn in smoke-white: a circle, a heart, a figure of eight and a wave, its top left first. And a puff of the
+// skywriting's smoke (see SkyTrails): a soft round cloud, white so it takes any colour, fading out to its edge.
+{
+  const BLUE = [0x1c, 0x3a, 0x6e];
+  const WOOD = [0x5a, 0x40, 0x28];
+  const SMOKE = [0xf2, 0xf2, 0xee];
+  const ring = (u, v, cu, cv, radius) => Math.abs(Math.hypot(u - cu, v - cv) - radius) < 0.8;
+  const heart = (u, v) => {
+    const x = (u - 6.5) / 4.6;
+    const y = (7.4 - v) / 4.6;
+    const inside = (x * x + y * y - 1) ** 3 - x * x * y * y * y <= 0;
+    const near = [[-1, 0], [1, 0], [0, -1], [0, 1]].some(([du, dv]) => {
+      const nx = (u + du - 6.5) / 4.6;
+      const ny = (7.4 - (v + dv)) / 4.6;
+      return (nx * nx + ny * ny - 1) ** 3 - nx * nx * ny * ny * ny > 0;
+    });
+    return inside && near;
+  };
+  const icons = [
+    (u, v) => ring(u, v, 6.5, 6.5, 4.5),
+    heart,
+    (u, v) => ring(u, v, 4, 6.5, 2.8) || ring(u, v, 9.5, 6.5, 2.8),
+    (u, v) => Math.abs(v - (6.5 - 3.5 * Math.sin(((u - 1) / 11) * 3 * Math.PI))) < 0.9 && u >= 1 && u <= 12,
+  ];
+  texture(blockOutput, "skywriting_board_front", (x, y) => {
+    if (x < 2 || x > 29 || y < 2 || y > 29) return WOOD;
+    if (x === 15 || x === 16 || y === 15 || y === 16) return WOOD;
+    const icon = icons[(y < 16 ? 0 : 2) + (x < 16 ? 0 : 1)];
+    return icon((x - 2) % 14, (y - 2) % 14) ? SMOKE : BLUE;
+  }, 2, 32, 32);
+  texture(blockOutput, "skywriting_board_side", () => WOOD, 3);
+  texture(miscOutput, "sky_puff", (x, y) => {
+    const r = Math.hypot(x + 0.5 - 16, y + 0.5 - 16) / 16;
+    const a = Math.max(0, 1 - r * r) ** 1.5;
+    return [0xff, 0xff, 0xff, Math.round(a * 255)];
+  }, 0, 32, 32);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -124,16 +124,14 @@ final class ZeppelinControlCar {
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Controls controls, Rotation rotation) {
         List<List<BlockPos>> relays = layout.burnerRelays();
-        double middle = 0;
+        double middle = layout.liftMiddle();
         double height = 0;
         int burners = 0;
         for (int cell = 0; cell < relays.size(); cell++) {
             int count = relays.get(cell).size();
-            middle += count * cellMiddle(cell) * SCALE;
             height += count * ZeppelinShape.Cell.of(cell).centreY() * SCALE;
             burners += count;
         }
-        middle = burners > 0 ? middle / burners : 0;
         height = burners > 0 ? height / burners : at.getY();
         List<ZeppelinPilot.Cell> cells = new ArrayList<>();
         for (int cell = 0; cell < relays.size(); cell++) {

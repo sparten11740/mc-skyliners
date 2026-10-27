@@ -205,6 +205,8 @@ import dev.aerolarge.block.PictureBoardBlockEntity;
 import dev.aerolarge.block.SecretHatchBlock;
 import dev.aerolarge.block.ShipsPlaqueBlock;
 import dev.aerolarge.block.ShipsPlaqueBlockEntity;
+import dev.aerolarge.block.SkywritingBoardBlock;
+import dev.aerolarge.block.SkywritingBoardBlockEntity;
 import dev.aerolarge.block.SouvenirModelBlock;
 import dev.aerolarge.block.SpeakerBlock;
 import dev.aerolarge.block.TechnoDeckBlock;
@@ -1639,6 +1641,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightHandleBlockEntity>> SEARCHLIGHT_HANDLE_ENTITY =
         BLOCK_ENTITIES.register("searchlight_handle", () -> BlockEntityType.Builder.of(SearchlightHandleBlockEntity::new, SEARCHLIGHT_HANDLE.get()).build(null));
+    /** The skywriting board in a zeppelin's control car, whose picture buttons have her fly a shape in smoke. */
+    public static final DeferredBlock<SkywritingBoardBlock> SKYWRITING_BOARD = BLOCKS.registerBlock(
+        "skywriting_board", SkywritingBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SkywritingBoardBlockEntity>> SKYWRITING_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("skywriting_board", () -> BlockEntityType.Builder.of(SkywritingBoardBlockEntity::new, SKYWRITING_BOARD.get()).build(null));
     /** An engine repeater in a zeppelin's engine car, answering the control car's orders for its engine. */
     public static final DeferredBlock<EngineRepeaterBlock> ENGINE_REPEATER = BLOCKS.registerBlock(
         "engine_repeater", EngineRepeaterBlock::new, metal(MapColor.GOLD).noOcclusion()
@@ -1681,6 +1689,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT_HANDLE);
+    public static final DeferredItem<BlockItem> SKYWRITING_BOARD_ITEM = ITEMS.registerSimpleBlockItem(SKYWRITING_BOARD);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
     public static final DeferredItem<BlockItem> BUBBLE_LEVEL_ITEM = ITEMS.registerSimpleBlockItem(BUBBLE_LEVEL);
@@ -1774,7 +1783,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

@@ -4,6 +4,7 @@ import dev.aerolarge.block.EngineRepeaterBlockEntity;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.skywriting.Skywriting;
 import dev.aerolarge.upship.UpShip;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,11 @@ public final class ZeppelinPilot {
      * on their lines: a feature is taken out of the take-off with its line on the list.
      */
     private static final List<TakeoffHold> HOLDS = List.of(UpShip::holds);
+    /**
+     * What may steer a zeppelin a while in place of what her autopilot is set to fly, such as skywriting a shape: a
+     * feature is taken out of her flying with its line on the list.
+     */
+    private static final List<Course> COURSES = List.of(Skywriting::steer);
     /** The zeppelin's engines, numbered from 0: two to port (0 forward, 1 aft), two to starboard (2 aft, 3 forward). */
     static final int ENGINES = 4;
     /** How much a m³ of hot air lifts at sea level, in Sable's units: Create Aeronautics' {@code hotAirStrength}. */
@@ -271,9 +277,11 @@ public final class ZeppelinPilot {
         if (upShip || comingDown && radio < ENGINES_CLEAR) {
             drive(level, origin, holdSpeed(state, 0), 0, false);
         } else {
-            double heading = heading(orders, state, middle, distance);
+            Course.Steer steer = steer(level, origin, middle, state.heading());
+            double heading = steer != null ? steer.heading() : heading(orders, state, middle, distance);
             double ahead = Mth.wrapDegrees(heading - state.heading());
-            drive(level, origin, holdSpeed(state, speed(orders, distance, ahead)), yaw(heading, state.heading(), yawRate), false);
+            double speed = steer != null ? steer.speed() : speed(orders, distance, ahead);
+            drive(level, origin, holdSpeed(state, speed), yaw(heading, state.heading(), yawRate), false);
         }
         settled = comingDown && radio < SETTLED_HEIGHT && Math.abs(state.velocity().y) < SETTLED_SINK ? settled + 1 : 0;
         if (settled >= SETTLED_TICKS) {
@@ -301,6 +309,21 @@ public final class ZeppelinPilot {
         }
         letGo = !holding;
         return holding;
+    }
+
+    /** The first heading and speed something on {@link #COURSES} steers her by this tick; null for none. */
+    @Nullable
+    private static Course.Steer steer(ServerLevel level, BlockPos origin, Vec3 middle, double heading) {
+        if (!(level.getBlockEntity(origin) instanceof AutopilotBlockEntity autopilot)) {
+            return null;
+        }
+        for (Course course : COURSES) {
+            Course.Steer steer = course.steer(level, autopilot, middle, heading);
+            if (steer != null) {
+                return steer;
+            }
+        }
+        return null;
     }
 
     /**
