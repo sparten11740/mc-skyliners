@@ -141,6 +141,8 @@ public final class ZeppelinLayout implements Layout {
     private static final int CAR_FLOOR_ROW = 1;
     private static final int CAR_ROOM = 6;
     static final int CAR_ROOF = CAR_FLOOR_ROW + CAR_ROOM + 1;
+    /** How far either side of the middle the control car's outer rows of ceiling lights run, in blocks. */
+    private static final int CAR_LAMP_OUT = 3;
     /**
      * The passenger decks, at every size: how many rows long they are at most, and the lower and upper decks' floors,
      * in rows over the hull's lowest row along them; a hull too shallow for two has one, its floor so many rows up. They
@@ -898,14 +900,16 @@ public final class ZeppelinLayout implements Layout {
     /**
      * The control car under the bow: a glazed car faired into the hull, with a wheel under it, and a ladder up a neck
      * through the fairing into the hull; inside, from the front, the control room and an observation lounge with a
-     * glass floor.
+     * glass floor, lit by three rows of lights along its ceiling.
      */
     private void controlCar() {
         int front = (int) Math.round(CAR_FRONT * scale);
         Car car = new Car(front, front + CAR_ROWS, CAR_HALF, CAR_FLOOR_ROW, CAR_FLOOR_ROW + CAR_ROOM + 1);
         box(-car.half(), car.floor(), car.front(), car.half(), car.roof(), car.back(), (x, y, z) -> set(x, y, z, carBlock(car, x, y, z)));
         for (int z = car.front() + 2; z < car.back(); z += LAMP_SPACING / 2) {
-            set(0, car.roof(), z, AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState());
+            for (int x = -CAR_LAMP_OUT; x <= CAR_LAMP_OUT; x += CAR_LAMP_OUT) {
+                set(x, car.roof(), z, AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState());
+            }
         }
         new ZeppelinControlCar(this).fit(car.front(), car.back(), car.floor());
         this.car = car;
