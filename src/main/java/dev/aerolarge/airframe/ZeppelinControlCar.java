@@ -138,7 +138,7 @@ final class ZeppelinControlCar {
             cells.add(new ZeppelinPilot.Cell(offsets(at, relays.get(cell), rotation), middle - cellMiddle(cell) * layout.scale()));
         }
         autopilot.configureZeppelin(cells, engines(at, layout.aheadRelays(), rotation), engines(at, layout.asternRelays(), rotation),
-            height - at.getY(), middle - at.getZ(), at.getY());
+            height - at.getY(), middle - at.getZ(), at.getY(), layout.hullSize());
         List<BlockPos> hand = offsets(at, List.of(controls.rudder(), controls.elevator(), controls.port(), controls.starboard(), controls.lever()), rotation);
         autopilot.wireZeppelinControls(hand.get(0), hand.get(1), hand.get(2), hand.get(3), hand.get(4));
         List<BlockPos> frame = offsets(at, layout.frameCorners(), rotation);

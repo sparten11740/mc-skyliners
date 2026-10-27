@@ -5,6 +5,7 @@ import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.block.Announcement;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.Control;
@@ -623,6 +624,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private Livery livery = Livery.SILVER;
     private Livery repaintedFrom = Livery.SILVER;
     private long repaintStart = -1;
+    /** How big its zeppelin's hull is (see {@link ZeppelinSize}); one saved before there were sizes is full size. */
+    private ZeppelinSize zeppelinSize = ZeppelinSize.FULL;
     /**
      * Whether it has seen to it that its zeppelin is kept loaded since it was loaded itself (see {@link #keepLoaded});
      * Sable keeps the ticket in the save meanwhile.
@@ -645,12 +648,13 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Wired when a zeppelin is built: it flies a zeppelin, its gas cells' burners and its engines' relays as offsets
-     * from it, how far its hot air stands above it, how far aft of it the cells' middle is, and how far its block
-     * stands above the bottom of its wheels.
+     * from it, how far its hot air stands above it, how far aft of it the cells' middle is, how far its block stands
+     * above the bottom of its wheels, and how big its hull is.
      */
     public void configureZeppelin(List<ZeppelinPilot.Cell> cells, Map<Integer, List<BlockPos>> ahead, Map<Integer, List<BlockPos>> astern,
-                                  double gasAbove, double middleAft, int wheelsBelow) {
+                                  double gasAbove, double middleAft, int wheelsBelow, ZeppelinSize size) {
         craft = Craft.ZEPPELIN;
+        zeppelinSize = size;
         this.wheelsBelow = wheelsBelow;
         zeppelin.configure(cells, ahead, astern, gasAbove, middleAft);
         linksChecked = true;
@@ -671,6 +675,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How its zeppelin is painted, on the clients as on the server. */
     public Livery livery() {
         return livery;
+    }
+
+    /** How big its zeppelin's hull is, on the clients as on the server; full size for an airliner's. */
+    public ZeppelinSize zeppelinSize() {
+        return zeppelinSize;
     }
 
     /** How its zeppelin was painted before the repaint that began at {@link #repaintStart}. */
@@ -2443,6 +2452,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             tag.putLong("FlyOnceAboardSeat", flyOnceAboardSeat.asLong());
         }
         tag.putString("Craft", craft.name());
+        tag.putString("ZeppelinSize", zeppelinSize.name());
         if (craft == Craft.ZEPPELIN) {
             tag.put("Zeppelin", zeppelin.save());
         }
@@ -2483,6 +2493,8 @@ public class AutopilotBlockEntity extends BlockEntity {
         // In the save and in the update the clients are sent alike, for the pictures they draw it with; saved before
         // there were zeppelins: an airliner's.
         craft = parse(Craft.class, tag.getString("Craft"), Craft.AIRLINER);
+        // Saved and sent alike, as the clients paint and look by it; saved before there were sizes: full size.
+        zeppelinSize = ZeppelinSize.named(tag.getString("ZeppelinSize"));
         // Saved and sent alike, as the clients paint by it; saved before there were liveries: silver, with no repaint.
         livery = Livery.named(tag.getString("Livery"));
         repaintedFrom = Livery.named(tag.getString("RepaintedFrom"));
@@ -2599,6 +2611,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveTargets(tag);
         tag.putBoolean("Stuck", stuck);
         tag.putString("Craft", craft.name());
+        tag.putString("ZeppelinSize", zeppelinSize.name());
         saveLivery(tag);
         saveFrame(tag);
         Turning.save(tag, getBlockState());

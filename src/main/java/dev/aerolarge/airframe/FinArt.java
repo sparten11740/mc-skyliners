@@ -29,7 +29,7 @@ public final class FinArt {
         if (Math.abs(spot.across()) >= 0.5 || spot.along() < FRONT || spot.along() >= BACK) {
             return -1;
         }
-        double out = Math.abs(spot.up()) - Livery.radiusAt(spot.along()) - OUT;
+        double out = Math.abs(spot.up()) - spot.radius() - OUT;
         if (out < 0 || out >= BANNER_WIDTH) {
             return -1;
         }

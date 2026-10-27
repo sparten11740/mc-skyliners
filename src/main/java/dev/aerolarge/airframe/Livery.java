@@ -64,6 +64,8 @@ public enum Livery {
 
     /** How long a repaint takes to sweep from the nose to the tail, in ticks: a minute. */
     public static final int REPAINT_TICKS = 60 * 20;
+    /** How far past the hull's stern a repaint sweeps on, in blocks: over the fins, the last of it. */
+    private static final double SWEEP_PAST = 30;
     /** The airliner's cheatline: how far round from the crown it runs, in degrees, and from and to where along. */
     private static final double CHEATLINE_TOP = 98;
     private static final double CHEATLINE_BOTTOM = 106;
@@ -110,14 +112,12 @@ public enum Livery {
         return fabric;
     }
 
-    /** The hull's radius at a distance aft of its nose's tip, in blocks: where its flanks are, to paint them from. */
-    public static double radiusAt(double along) {
-        return ZeppelinShape.radius(along / ZeppelinSize.FULL.scale()) * ZeppelinSize.FULL.scale();
-    }
-
-    /** How high the hull's axis runs over the zeppelin's lowest blocks, in blocks. */
-    public static double axisHeight() {
-        return ZeppelinShape.AXIS_HEIGHT * ZeppelinSize.FULL.scale();
+    /**
+     * How far aft of the nose's tip a repaint sweeps on a zeppelin of a size, in blocks: past the hull's length over
+     * the fins, the last of it.
+     */
+    public static double sweep(ZeppelinSize size) {
+        return size.length() + SWEEP_PAST;
     }
 
     /** A livery by its saved name; silver for none or one not known. */
@@ -132,23 +132,24 @@ public enum Livery {
 
     /**
      * Where a block sits on a zeppelin: how far aft of its nose's tip, how far up from its axis and how far out from
-     * it to starboard, in blocks, and a number from its position that a pattern can scatter by.
+     * it to starboard, in blocks, a number from its position that a pattern can scatter by, and how big the zeppelin's
+     * hull is.
      */
-    public record Spot(double along, double up, double across, long seed) {
-        /** The hull's length, nose to stern, in blocks. */
-        private static final double LENGTH = ZeppelinShape.LENGTH * ZeppelinSize.FULL.scale();
-        /** How high the hull's axis runs over the zeppelin's lowest blocks, in blocks. */
-        private static final double AXIS = ZeppelinShape.AXIS_HEIGHT * ZeppelinSize.FULL.scale();
-
+    public record Spot(double along, double up, double across, long seed, ZeppelinSize size) {
         /**
-         * Where a block sits on the zeppelin whose blocks lie in a box, from one corner to the other, its nose facing the
-         * way given.
+         * Where a block sits on the zeppelin of a size whose blocks lie in a box, from one corner to the other, its
+         * nose facing the way given.
          */
-        public static Spot of(BlockPos pos, BlockPos min, BlockPos max, Direction nose) {
+        public static Spot of(BlockPos pos, BlockPos min, BlockPos max, Direction nose, ZeppelinSize size) {
             Direction starboard = nose.getClockWise();
             double tip = Math.max(project(min, nose), project(max, nose));
             double middle = (project(min, starboard) + project(max, starboard)) / 2;
-            return new Spot(tip - project(pos, nose), pos.getY() + 0.5 - min.getY() - AXIS, project(pos, starboard) - middle, pos.asLong());
+            return new Spot(tip - project(pos, nose), pos.getY() + 0.5 - min.getY() - size.axis(), project(pos, starboard) - middle, pos.asLong(), size);
+        }
+
+        /** The hull's radius where it lies along it, in blocks: where the flanks are there, to paint them from. */
+        public double radius() {
+            return size.radiusAt(along);
         }
 
         /** How far a block's middle lies the way given, in blocks. */
@@ -164,15 +165,15 @@ public enum Livery {
         /** How far it lies along the hull from the nearest of its rings, in blocks. */
         public double fromRing() {
             double nearest = Double.MAX_VALUE;
-            for (int ring = 0; ring <= ZeppelinShape.CELLS; ring++) {
-                nearest = Math.min(nearest, Math.abs(along - ZeppelinShape.ringAt(ring) * ZeppelinSize.FULL.scale()));
+            for (int ring = 0; ring < ZeppelinSize.rings(); ring++) {
+                nearest = Math.min(nearest, Math.abs(along - size.ringAt(ring)));
             }
             return nearest;
         }
 
         /** Whether it lies between two shares of the hull's length, from the nose. */
         public boolean alongFlank(double from, double to) {
-            return along >= from * LENGTH && along <= to * LENGTH;
+            return along >= from * size.length() && along <= to * size.length();
         }
     }
 }

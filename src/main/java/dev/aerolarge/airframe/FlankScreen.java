@@ -24,8 +24,11 @@ public final class FlankScreen {
         return BOTTOM - TOP;
     }
 
-    /** The hull's radius under the screen, and how far out from the axis the screen is, in blocks. */
+    /**
+     * The hull's radius under the screen, and how far out from the axis the screen is, in blocks: on a full-size hull,
+     * the only one it is laid on yet (see {@link ZeppelinFlankScreen}).
+     */
     public static double radius() {
-        return Livery.radiusAt(FRONT + LENGTH / 2.0) + OFF_THE_COVER;
+        return ZeppelinSize.FULL.radiusAt(FRONT + LENGTH / 2.0) + OFF_THE_COVER;
     }
 }

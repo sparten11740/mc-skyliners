@@ -215,7 +215,7 @@ public final class ZeppelinLayout implements Layout {
         this.options = options;
         this.scale = options.size().scale();
         this.length = (int) Math.ceil(LENGTH * scale);
-        this.axis = (int) Math.round(AXIS_HEIGHT * scale);
+        this.axis = options.size().axis();
         this.axisHeight = axis / scale;
         this.radii = new double[length + 4];
         for (int z = -2; z <= length + 1; z++) {
@@ -1061,6 +1061,11 @@ public final class ZeppelinLayout implements Layout {
     /** The hull's blocks a metre, as its size has it. */
     double scale() {
         return scale;
+    }
+
+    /** How big its hull is. */
+    ZeppelinSize hullSize() {
+        return options.size();
     }
 
     /** A gas cell's balloon, in metres, the bow's first. */

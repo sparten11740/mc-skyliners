@@ -103,7 +103,7 @@ public final class PassengerCameras {
         Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, Lens lens, CameraType cameraType, float yRot, float xRot) {
             this.screen = screen;
             this.frame = frame;
-            this.scale = CameraSpot.scale(frame.craft());
+            this.scale = CameraSpot.scale(frame.craft(), frame.size());
             this.cameras = shown(frame.craft());
             this.lens = lens;
             this.cameraType = cameraType;

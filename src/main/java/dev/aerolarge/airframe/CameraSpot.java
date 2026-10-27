@@ -54,8 +54,8 @@ public interface CameraSpot {
         return craft == Craft.ZEPPELIN ? List.of(ZeppelinCamera.values()) : List.of(OutsideCamera.values());
     }
 
-    /** How many blocks a metre an airframe of a kind is built at. */
-    static double scale(Craft craft) {
-        return craft == Craft.ZEPPELIN ? ZeppelinSize.FULL.scale() : AerolargeConfig.SCALE.get();
+    /** How many blocks a metre an airframe of a kind is built at, a zeppelin's hull at its size. */
+    static double scale(Craft craft, ZeppelinSize size) {
+        return craft == Craft.ZEPPELIN ? size.scale() : AerolargeConfig.SCALE.get();
     }
 }

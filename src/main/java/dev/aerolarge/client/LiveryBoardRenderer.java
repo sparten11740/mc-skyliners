@@ -47,8 +47,6 @@ public class LiveryBoardRenderer implements BlockEntityRenderer<LiveryBoardBlock
     private static final int RAIL_WOOD = 0xFF5E3B1C;
     private static final int ROPE = 0xFFD9C79B;
     private static final int PAINT_POT = 0xFF9AA3AD;
-    /** How far past the hull's length a repaint sweeps, in blocks, as the painting itself does (see ZeppelinPaint). */
-    private static final double SWEEP_LENGTH = 520;
 
     @Override
     public void render(LiveryBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -62,7 +60,7 @@ public class LiveryBoardRenderer implements BlockEntityRenderer<LiveryBoardBlock
         long start = autopilot.repaintStart();
         double share = start < 0 ? 1 : (level.getGameTime() + partialTick - start) / Livery.REPAINT_TICKS;
         if (share >= 0 && share < 1) {
-            cradles(board.getBlockPos(), autopilot, share * SWEEP_LENGTH, pose, consumer);
+            cradles(board.getBlockPos(), autopilot, share * Livery.sweep(autopilot.zeppelinSize()), pose, consumer);
         }
     }
 
@@ -107,8 +105,8 @@ public class LiveryBoardRenderer implements BlockEntityRenderer<LiveryBoardBlock
         double tip = Math.max(project(box.minX(), box.minZ(), nose), project(box.maxX() + 1, box.maxZ() + 1, nose));
         double middle = (project(box.minX(), box.minZ(), starboard) + project(box.maxX() + 1, box.maxZ() + 1, starboard)) / 2;
         double along = tip - reached;
-        double radius = Livery.radiusAt(reached);
-        double y = box.minY() + Livery.axisHeight() - HANG_BELOW;
+        double radius = autopilot.zeppelinSize().radiusAt(reached);
+        double y = box.minY() + autopilot.zeppelinSize().axis() - HANG_BELOW;
         for (int side = -1; side <= 1; side += 2) {
             double across = middle + side * (radius + HANG_OUT + CRADLE_DEPTH / 2);
             double x = along * nose.getStepX() + across * starboard.getStepX();

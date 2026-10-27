@@ -23,6 +23,31 @@ public enum ZeppelinSize {
         return scale;
     }
 
+    /** The hull's length, nose to stern, in blocks. */
+    public double length() {
+        return ZeppelinShape.LENGTH * scale;
+    }
+
+    /** The row the hull's axis runs along, over the zeppelin's lowest blocks. */
+    public int axis() {
+        return (int) Math.round(ZeppelinShape.AXIS_HEIGHT * scale);
+    }
+
+    /** The hull's radius so many blocks aft of the nose's tip, in blocks; 0 past either end. */
+    public double radiusAt(double along) {
+        return ZeppelinShape.radius(along / scale) * scale;
+    }
+
+    /** How far aft of the nose's tip one of the main rings stands, the bow's first, in blocks. */
+    public double ringAt(int ring) {
+        return ZeppelinShape.ringAt(ring) * scale;
+    }
+
+    /** How many main rings the hull has, the bow's to the stern's. */
+    public static int rings() {
+        return ZeppelinShape.CELLS + 1;
+    }
+
     /** The size of this name; full size for none, or one no size has, as a ship saved before sizes was. */
     public static ZeppelinSize named(String name) {
         for (ZeppelinSize size : values()) {

@@ -85,7 +85,8 @@ public final class Christening {
         }
         BoundingBox box = zeppelin.frame();
         Direction nose = zeppelin.getBlockState().getValue(AutopilotBlock.FACING);
-        Livery.Spot spot = Livery.Spot.of(struck, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose);
+        Livery.Spot spot = Livery.Spot.of(struck, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
+            zeppelin.zeppelinSize());
         if (spot.along() > NOSE_REACH) {
             return Outcome.NOT_HER_NOSE;
         }

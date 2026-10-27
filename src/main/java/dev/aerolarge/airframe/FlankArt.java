@@ -36,6 +36,6 @@ public final class FlankArt {
      * below.
      */
     public static double rise(Livery.Spot spot) {
-        return Math.toRadians(90 - spot.round()) * Livery.radiusAt(spot.along());
+        return Math.toRadians(90 - spot.round()) * spot.radius();
     }
 }

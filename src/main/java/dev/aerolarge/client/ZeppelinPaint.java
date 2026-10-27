@@ -2,6 +2,7 @@ package dev.aerolarge.client;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotBlock;
@@ -36,10 +37,10 @@ public final class ZeppelinPaint {
      * A zeppelin as this client paints it, how far aft of its nose the new paint has reached, in blocks, and what its
      * features paint over it.
      */
-    private record Painted(BoundingBox box, BlockPos min, BlockPos max, Direction nose, Livery livery, Livery before, double reached,
-                           List<PaintOverlay> overlays) {
+    private record Painted(BoundingBox box, BlockPos min, BlockPos max, Direction nose, ZeppelinSize size, Livery livery, Livery before,
+                           double reached, List<PaintOverlay> overlays) {
         int colour(BlockPos pos, boolean fabric) {
-            Livery.Spot spot = Livery.Spot.of(pos, min, max, nose);
+            Livery.Spot spot = Livery.Spot.of(pos, min, max, nose, size);
             Livery under = spot.along() < reached ? livery : before;
             for (PaintOverlay overlay : overlays) {
                 int colour = overlay.colour(spot, fabric, under);
@@ -55,9 +56,6 @@ public final class ZeppelinPaint {
     private static final List<BiFunction<ClientLevel, BoundingBox, List<PaintOverlay>>> OVERLAYS = List.of(
         ShipsColours::fins,
         ChristeningPaint::flanks);
-
-    /** How far past the hull's length a repaint sweeps, in blocks: over the fins, the last of it. */
-    private static final double SWEEP_LENGTH = 520;
 
     /** The zeppelins as last seen, read by the meshing threads while the client's thread puts the next in its place. */
     private static volatile List<Painted> painted = List.of();
@@ -77,12 +75,12 @@ public final class ZeppelinPaint {
                 }
             }
         }
-        return Livery.SILVER.colour(new Livery.Spot(0, 0, 0, 0), fabric);
+        return Livery.SILVER.colour(new Livery.Spot(0, 0, 0, 0, ZeppelinSize.FULL), fabric);
     }
 
     /** The tint the cover and the fabric are drawn with in hand: silver. */
     public static int itemTint(ItemStack stack, int tintIndex) {
-        return Livery.SILVER.colour(new Livery.Spot(0, 0, 0, 0), false);
+        return Livery.SILVER.colour(new Livery.Spot(0, 0, 0, 0, ZeppelinSize.FULL), false);
     }
 
     /** Once a tick: the zeppelins' paint as their autopilots have it now, and what has to be meshed again for it. */
@@ -117,10 +115,10 @@ public final class ZeppelinPaint {
         }
         long start = autopilot.repaintStart();
         double share = start < 0 ? 1 : Math.min(1, (level.getGameTime() - start) / (double) Livery.REPAINT_TICKS);
-        double reached = share >= 1 ? Double.MAX_VALUE : share * SWEEP_LENGTH;
+        double reached = share >= 1 ? Double.MAX_VALUE : share * Livery.sweep(autopilot.zeppelinSize());
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
         return new Painted(box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            autopilot.livery(), autopilot.repaintedFrom(), reached, overlays(level, box));
+            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays(level, box));
     }
 
     /** What the features paint over a zeppelin's livery now, in its box. */
@@ -155,16 +153,17 @@ public final class ZeppelinPaint {
     private static void remeshLivery(@Nullable Painted before, Painted after) {
         if (before == null) {
             if (after.livery() != Livery.SILVER || after.before() != Livery.SILVER) {
-                remesh(after, 0, SWEEP_LENGTH);
+                remesh(after, 0, Livery.sweep(after.size()));
             }
             return;
         }
+        double sweep = Livery.sweep(after.size());
         if (before.livery() != after.livery() && after.reached() == Double.MAX_VALUE) {
-            remesh(after, 0, SWEEP_LENGTH);
+            remesh(after, 0, sweep);
             return;
         }
-        double from = before.livery() == after.livery() ? Math.min(before.reached(), SWEEP_LENGTH) : 0;
-        double to = Math.min(after.reached(), SWEEP_LENGTH);
+        double from = before.livery() == after.livery() ? Math.min(before.reached(), sweep) : 0;
+        double to = Math.min(after.reached(), sweep);
         if (to > from) {
             remesh(after, from, to);
         }
