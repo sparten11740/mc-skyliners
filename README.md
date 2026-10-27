@@ -1258,15 +1258,16 @@ Announcements and the radio), its radar screen and its transponder at the front,
 and a second radar screen at the side. The ground under the shaft is filled in, so it stands on uneven ground too.
 
 A **Transponder** shows wherever it is on every autopilot's map (see Autopilot) and on the tower's radar, by a picture
-and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: ten pictures (a control
-tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour and a mine) and twelve colours, each a
-button showing what it picks, with the marker as the maps will show it on the left; it shows its picture in its colour
-on its own little screen, too. One standing on the ground shows on the maps from anywhere, however far off; one aboard
-an assembled airliner flies with it, and shows where the airliner is while it is loaded, which it is while anyone is
-near it. The control tower's transponder shows the tower as an orange tower, and every airliner built from 0.1.0-alpha.48
-on has one on the flight deck (on newer airliners on the centre console behind the seats), showing it as a white airliner (an
-older airliner can be given one: a Transponder is crafted from iron, a glass pane, redstone and a compass, and goes on
-a console or a desk anywhere). On its own autopilot's map an airliner's transponder is left out, the airliner being its gold arrow there.
+and a colour of its own, as a beacon does in Subnautica. Use it to pick them on its panel: eleven pictures (a control
+tower, an airliner, home, a star, a flag, a heart, treasure, a forest, a harbour, a mine and an airship) and twelve
+colours, each a button showing what it picks, with the marker as the maps will show it on the left; it shows its picture
+in its colour on its own little screen, too. One standing on the ground shows on the maps from anywhere, however far
+off; one aboard an assembled airliner flies with it, and shows where the airliner is while it is loaded, which it is
+while anyone is near it. The control tower's transponder shows the tower as an orange tower, and every airliner built
+from 0.1.0-alpha.48 on has one on the flight deck (on newer airliners on the centre console behind the seats), showing
+it as a white airliner (an older airliner can be given one: a Transponder is crafted from iron, a glass pane, redstone
+and a compass, and goes on a console or a desk anywhere). On its own autopilot's map an airliner's transponder is left
+out, the airliner being its gold arrow there.
 
 A **Motion Sensor** (craftable from quartz, an observer and redstone) is the sensor over an automatic door: a white
 housing with a dark lens and a little lamp that lights red while it sees someone. Put it in the wall over a door, its lens
@@ -1411,10 +1412,11 @@ propellers. Without Create Aeronautics the cells are made of the zeppelin's own 
 
 Its control car is its flight deck: the autopilot's control head stands in the middle of the control room, a step back
 from the windows, with a flight display and the transponder on the low wall under the windows either side of it and the
-flight map on the back wall by the ladder. Use the control head to open the autopilot's settings, the airliner's own
-screen, its speed dial running from stopped to 25 blocks a second. The zeppelin is too big for the Physics Assembler, so
-it is not glued: engaging the autopilot assembles it through Sable, every block of its own and everything built inside
-its hull, but not the ground under it or the trees beside it.
+flight map on the back wall by the ladder. The transponder shows the zeppelin on the maps and the tower's radar as a
+white airship. Use the control head to open the autopilot's settings, the airliner's own screen, its speed dial running
+from stopped to 25 blocks a second. The zeppelin is too big for the Physics Assembler, so it is not glued: engaging the
+autopilot assembles it through Sable, every block of its own and everything built inside its hull, but not the ground
+under it or the trees beside it.
 
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the

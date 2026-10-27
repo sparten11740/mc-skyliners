@@ -2071,7 +2071,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // The transponders' markers (see MarkerIcon), drawn white so each takes its transponder's colour, kept to the middle
   // so they fit the round marker they sit in: a control tower, its glass cab over the shaft, the windows showing
   // through; an airliner from above; a house with its door; a five-pointed star; a flag on its pole; a heart; a cut gem,
-  // its girdle showing through; a round tree on its trunk; an anchor; a pickaxe.
+  // its girdle showing through; a round tree on its trunk; an anchor; a pickaxe; a zeppelin from the side, its round
+  // bow ahead, tapering to its fins at the tail, its car under the bow.
   const markerOutput = resolve(guiOutput, "marker");
   mkdirSync(markerOutput, { recursive: true });
   const markers = {
@@ -2111,6 +2112,14 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       return (x >= 7 && x <= 8 && y >= 4 && y <= 13) || (y === 6 && x >= 4 && x <= 11) || (y >= 9 && arms >= 5 && arms <= 6.4);
     },
     pickaxe: (x, y) => onSegment(x, y, [3, 13], [10, 6], 1.8) || onSegment(x, y, [10, 6], [4.5, 2.5], 2.2) || onSegment(x, y, [10, 6], [13.5, 11.5], 2.2),
+    airship: (x, y) => {
+      const along = (x - 6.5) / 5;
+      const taper = x > 7 ? 1 - (x - 7) / 10 : 1;
+      const body = along * along < 1 && Math.abs(y - 7) <= 2.4 * Math.sqrt(1 - along * along) * taper;
+      const fins = x >= 10 && x <= 12 && Math.abs(y - 7) <= (x - 9) * 1.15;
+      const car = y === 10 && x >= 4 && x <= 6;
+      return body || fins || car;
+    },
   };
   for (const [name, shape] of Object.entries(markers)) {
     icon(markerOutput, name, (x, y) => (shape(x, y) ? INK : null));

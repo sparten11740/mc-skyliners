@@ -5489,6 +5489,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "marker.aerolarge.icon.tree": "Forest",
   "marker.aerolarge.icon.anchor": "Harbour",
   "marker.aerolarge.icon.pickaxe": "Mine",
+  "marker.aerolarge.icon.airship": "Airship",
   "marker.aerolarge.colour.white": "White",
   "marker.aerolarge.colour.red": "Red",
   "marker.aerolarge.colour.orange": "Orange",

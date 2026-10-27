@@ -53,7 +53,7 @@ final class ZeppelinControlCar {
         layout.set(BESIDE, floor + 1, front + 1, AerolargeRegistry.TRANSPONDER.get().defaultBlockState().setValue(TransponderBlock.FACING, Direction.SOUTH));
         layout.fit(new BlockPos(BESIDE, floor + 1, front + 1), (blockEntity, rotation) -> {
             if (blockEntity instanceof TransponderBlockEntity transponder) {
-                transponder.show(MarkerIcon.AIRLINER, MarkerColour.WHITE);
+                transponder.show(MarkerIcon.AIRSHIP, MarkerColour.WHITE);
             }
         });
         flightMap(back, floor);

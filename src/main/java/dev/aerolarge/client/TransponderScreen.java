@@ -26,9 +26,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * game goes on behind it, and it closes with its close button, Escape, or once the player has stepped out of reach.
  */
 public class TransponderScreen extends Screen {
-    /** The panel's size and the space inside its bezel. */
+    /** The panel's width and the space inside its bezel; its height follows from what it holds ({@link #HEIGHT}). */
     private static final int WIDTH = 260;
-    private static final int HEIGHT = 156;
     private static final int PADDING = 8;
     private static final int CONTENT_Y = PanelArt.BORDER + PanelArt.TITLE_HEIGHT + 1 + PADDING;
     /** The marker on its glass: the glass's size and the marker's scale on it. */
@@ -44,6 +43,10 @@ public class TransponderScreen extends Screen {
     private static final int COLOUR_HEIGHT = 18;
     private static final int GAP = 3;
     private static final int GROUP_GAP = 8;
+    /** The panel's height: its rows of pictures and of colours, or the marker on its glass, whichever is taller. */
+    private static final int HEIGHT = CONTENT_Y + Math.max(PREVIEW,
+        rows(MarkerIcon.values().length, ICONS_PER_ROW) * (ICON_HEIGHT + GAP) + GROUP_GAP + rows(MarkerColour.values().length, COLOURS_PER_ROW) * (COLOUR_HEIGHT + GAP)
+            - 2 * GAP) + PADDING + PanelArt.BORDER;
     /** How far in from a colour's edge its swatch starts. */
     private static final int SWATCH_INSET = 3;
     /** The close button's distance in from the corner of the title bar. */

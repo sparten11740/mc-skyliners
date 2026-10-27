@@ -5,11 +5,12 @@ import net.minecraft.network.chat.Component;
 
 /**
  * The pictures a transponder can be shown by on the maps, as a beacon in Subnautica is: one for a control tower, one
- * for an airliner, and a handful for anywhere else worth finding again (home, a mine, a harbour). Each is drawn white
- * so it takes the transponder's colour (see {@link MarkerColour}).
+ * for an airliner, one for a zeppelin, and a handful for anywhere else worth finding again (home, a mine, a harbour).
+ * Each is drawn white so it takes the transponder's colour (see {@link MarkerColour}). New ones only ever go on the
+ * end: older versions' saves keep their pictures by name, but the network sends them by place.
  */
 public enum MarkerIcon {
-    TOWER, AIRLINER, HOUSE, STAR, FLAG, HEART, GEM, TREE, ANCHOR, PICKAXE;
+    TOWER, AIRLINER, HOUSE, STAR, FLAG, HEART, GEM, TREE, ANCHOR, PICKAXE, AIRSHIP;
 
     /** Its picture's name, under the panels' pictures: "marker/tower". */
     public String texture() {
