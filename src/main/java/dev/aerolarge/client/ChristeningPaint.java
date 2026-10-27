@@ -42,11 +42,12 @@ public final class ChristeningPaint {
     /** How light a livery must be, 0 to 1, for the letters on it to be dark. */
     private static final double LIGHT_LIVERY = 0.4;
     /**
-     * How big her name is lettered, in blocks to the type's size, its capitals some 20 blocks tall, and the smallest a
-     * long name is lettered to fit.
+     * How big her name is lettered, in blocks to the type's size, its capitals some 11 blocks tall, about as big
+     * against her hull as the Graf Zeppelin's were; and the smallest a long name is lettered to fit, its capitals some
+     * 9 blocks tall, as small as they keep their serifs at a block to a pixel.
      */
-    private static final float TYPE_SIZE = 30;
-    private static final float SMALLEST_TYPE = 18;
+    private static final float TYPE_SIZE = 17;
+    private static final float SMALLEST_TYPE = 14;
     /** How much of a block the letters must cover for it to be painted, out of 255. */
     private static final int COVERED = 128;
     /** How many names' lettering is kept. */

@@ -17,7 +17,7 @@ public final class FlankArt {
     public static final int CREST_HEIGHT = FinArt.BANNER_HEIGHT + 2;
     /** How far aft of the nose's tip the name starts, a little aft of the crest, and the longest it runs, in blocks. */
     public static final int NAME_FRONT = CREST_FRONT + CREST_WIDTH + 6;
-    public static final int NAME_LONGEST = 240;
+    public static final int NAME_LONGEST = 200;
     /** How far round from the crown a block must be to be on a flank, either way, in degrees. */
     private static final double FLANK_FROM = 40;
     private static final double FLANK_TO = 140;
