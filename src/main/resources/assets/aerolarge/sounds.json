@@ -843,6 +843,32 @@
       }
     ]
   },
+  "zeppelin_hull": {
+    "subtitle": "subtitles.aerolarge.zeppelin_hull",
+    "sounds": [
+      {
+        "name": "aerolarge:zeppelin_hull",
+        "stream": true
+      }
+    ]
+  },
+  "zeppelin_creak": {
+    "subtitle": "subtitles.aerolarge.zeppelin_creak",
+    "sounds": [
+      {
+        "name": "aerolarge:zeppelin_creak_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "aerolarge:zeppelin_creak_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "aerolarge:zeppelin_creak_3",
+        "attenuation_distance": 48
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

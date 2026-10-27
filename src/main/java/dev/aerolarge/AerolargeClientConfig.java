@@ -17,6 +17,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue FLOODLIGHT_LIGHT;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
+    public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -79,6 +80,10 @@ public final class AerolargeClientConfig {
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")
             .define("flybyCamera", true);
+        HULL_AMBIENCE = builder
+            .comment("Aboard a zeppelin, hear her hull: the hollow boom of the wind over her cover, louder the faster she flies, and",
+                "now and then a girder groaning somewhere round you.")
+            .define("hullAmbience", true);
         SPEC = builder.build();
     }
 

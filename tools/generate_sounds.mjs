@@ -936,6 +936,104 @@ function gearRamp(t, from, to) {
   writeSound("zeppelin_horn_echo", echo, 0.6);
 }
 
+// Inside a zeppelin's hull (see the client's HullAmbience): the great hollow space's own sound, a seamless loop. Wind
+// over the cover booms low through the hull, swelling and easing in slow gusts; the air inside rings at a few deep
+// notes, as a cathedral's does; the cover's fabric flutters in the gusts; now and then, far off, a girder groans; and
+// all of it echoes long off the cover and the cells. Every part is worked round the loop twice and the second turn
+// kept, so its end runs on into its start without a seam. And the girders' groans heard on their own, nearer, from
+// somewhere round whoever is aboard: three of them, each a stick-slip of metal on metal ringing through the hull.
+{
+  const hullRandom = ownRandom(0x48756c6c);
+  const length = 24;
+  const n = Math.round(length * RATE);
+  const noise = Float64Array.from({ length: 2 * n }, (_, i) => (i < n ? hullRandom() * 2 - 1 : 0));
+  noise.copyWithin(n, 0, n);
+  // The gusts: a slow swell made of whole turns round the loop, so it meets itself at the seam.
+  const gust = (t) => 0.62 + 0.24 * Math.sin((2 * Math.PI * 2 * t) / length + 0.4) + 0.14 * Math.sin((2 * Math.PI * 5 * t) / length + 1.3);
+  const lowPass = (signal, cutoff) => {
+    const share = 1 - Math.exp((-2 * Math.PI * cutoff) / RATE);
+    let low = 0;
+    return signal.map((s) => (low += share * (s - low)));
+  };
+  const rumble = lowPass(lowPass(noise, 140), 140);
+  const modes = [[41, 1], [58, 0.8], [73, 0.6], [97, 0.45]].map(([note, gain]) => resonance(noise, note, 40).map((s) => s * gain));
+  const fabric = resonance(noise, 900, 1.5);
+  const dry = new Float64Array(2 * n);
+  for (let i = 0; i < 2 * n; i++) {
+    const t = (i % n) / RATE;
+    const flutter = Math.max(0, gust(t) - 0.66) * (1 + 0.5 * Math.sin(2 * Math.PI * 13 * t));
+    const ringing = modes.reduce((sum, mode) => sum + mode[i], 0);
+    dry[i] = gust(t) * (2.2 * rumble[i] + 3 * ringing) + 0.25 * flutter * fabric[i];
+  }
+  for (const [at, gain] of [[6.2, 0.05], [15.8, 0.035]]) {
+    girderGroan(dry, at, ownRandom(0x47726f61 + Math.round(at * 10)), gain);
+    girderGroan(dry, at + length, ownRandom(0x47726f61 + Math.round(at * 10)), gain);
+  }
+  writeSound("zeppelin_hull", hullEcho(dry, 0.45).slice(n), 0.6);
+  for (let variant = 1; variant <= 3; variant++) {
+    const groan = new Float64Array(Math.round(3.5 * RATE));
+    girderGroan(groan, 0.05, ownRandom(0x43726561 + variant), 1);
+    writeSound(`zeppelin_creak_${variant}`, hullEcho(groan, 0.4), 0.7);
+  }
+}
+
+/**
+ * A girder groaning in a zeppelin's hull, from a time in seconds: metal slipping on metal in a quickening and then
+ * slowing run of jerks, each ringing the girder at two of its notes, the run's length, rate and notes its own.
+ */
+function girderGroan(samples, start, own, gain) {
+  const length = 0.7 + own() * 0.6;
+  const rateFrom = 9 + own() * 8;
+  const rateTo = 25 + own() * 25;
+  const note = 260 + own() * 320;
+  const jerks = new Float64Array(samples.length);
+  let phase = 0;
+  for (let i = Math.round(start * RATE); i < Math.min(samples.length, Math.round((start + length) * RATE)); i++) {
+    const share = (i / RATE - start) / length;
+    phase += (rateFrom + (rateTo - rateFrom) * Math.sin(Math.PI * share)) / RATE;
+    if (phase >= 1) {
+      phase -= 1;
+      jerks[i] = Math.sin(Math.PI * share) * (0.6 + 0.4 * own());
+    }
+  }
+  const low = resonance(jerks, note, 9);
+  const high = resonance(jerks, note * 2.37, 12);
+  for (let i = 0; i < samples.length; i++) {
+    samples[i] += gain * (low[i] + 0.5 * high[i]);
+  }
+}
+
+/**
+ * The echo of a zeppelin's hull: four long, damped echoes off the cover and the cells, the high notes dying first,
+ * smeared by two diffusers, mixed over so much of the dry sound. Some four seconds before it dies away.
+ */
+function hullEcho(dry, wet) {
+  const combs = [[0.113, 0.83], [0.137, 0.81], [0.161, 0.79], [0.187, 0.77]];
+  const damping = 0.45;
+  const echo = new Float64Array(dry.length);
+  for (const [delay, feedback] of combs) {
+    const gap = Math.round(delay * RATE);
+    const line = new Float64Array(dry.length);
+    let low = 0;
+    for (let i = 0; i < dry.length; i++) {
+      low += damping * ((i >= gap ? line[i - gap] : 0) - low);
+      line[i] = dry[i] + feedback * low;
+      echo[i] += line[i] / combs.length;
+    }
+  }
+  let diffused = echo;
+  for (const [delay, spread] of [[0.031, 0.7], [0.011, 0.7]]) {
+    const gap = Math.round(delay * RATE);
+    const input = diffused;
+    const out = new Float64Array(input.length);
+    for (let i = 0; i < input.length; i++) {
+      out[i] = -spread * input[i] + (i >= gap ? input[i - gap] + spread * out[i - gap] : 0);
+    }
+    diffused = out;
+  }
+  return dry.map((s, i) => s * (1 - wet) + diffused[i] * wet);
+}
+
 // Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
 // shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
 {

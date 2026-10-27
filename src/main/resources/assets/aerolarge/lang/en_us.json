@@ -702,6 +702,8 @@
   "message.aerolarge.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
   "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
   "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
+  "subtitles.aerolarge.zeppelin_hull": "Wind booms through the hull",
+  "subtitles.aerolarge.zeppelin_creak": "Girder groans",
   "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
   "subtitles.aerolarge.sleigh_bells": "Sleigh bells jingle",
   "block.aerolarge.burner_lever": "Burner Lever",

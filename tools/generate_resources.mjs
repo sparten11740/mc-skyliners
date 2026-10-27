@@ -939,6 +939,8 @@ function zeppelinControlsLang() {
     "message.aerolarge.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
     "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
     "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
+    "subtitles.aerolarge.zeppelin_hull": "Wind booms through the hull",
+    "subtitles.aerolarge.zeppelin_creak": "Girder groans",
     "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
     "subtitles.aerolarge.sleigh_bells": "Sleigh bells jingle",
     "block.aerolarge.burner_lever": "Burner Lever",
@@ -1127,6 +1129,14 @@ function atcLang() {
   for (const name of zeppelinSounds) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  // Inside a zeppelin's hull: its loop, streamed as it is long; and the girders' groans, one of three, heard from well
+  // off through the hull, as far as GROAN_HEARD blocks.
+  const GROAN_HEARD = 48;
+  sounds.zeppelin_hull = { subtitle: `subtitles.${ID}.zeppelin_hull`, sounds: [{ name: `${ID}:zeppelin_hull`, stream: true }] };
+  sounds.zeppelin_creak = {
+    subtitle: `subtitles.${ID}.zeppelin_creak`,
+    sounds: [1, 2, 3].map((variant) => ({ name: `${ID}:zeppelin_creak_${variant}`, attenuation_distance: GROAN_HEARD })),
+  };
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);

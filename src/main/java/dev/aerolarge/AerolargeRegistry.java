@@ -1686,6 +1686,9 @@ public final class AerolargeRegistry {
     /** The zeppelin's horn and its echo off the ground (see {@link dev.aerolarge.horn.ShipHorn}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN = sound("zeppelin_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN_ECHO = sound("zeppelin_horn_echo");
+    /** The sound of a zeppelin's hull heard aboard her, and a girder groaning in it (see the client's HullAmbience). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HULL = sound("zeppelin_hull");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_CREAK = sound("zeppelin_creak");
     /** Sleigh bells, rung from a festive zeppelin's engines as they turn (see the client's SleighBells). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SLEIGH_BELLS = sound("sleigh_bells");
     public static final DeferredItem<BlockItem> ZEPPELIN_FABRIC_ITEM = ITEMS.registerSimpleBlockItem(ZEPPELIN_FABRIC);

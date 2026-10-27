@@ -37,6 +37,7 @@ import dev.aerolarge.client.DuckHints;
 import dev.aerolarge.client.Earshot;
 import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.GiantRubberDuckRenderer;
+import dev.aerolarge.client.HullAmbience;
 import dev.aerolarge.client.EngineRenderer;
 import dev.aerolarge.client.EngineSounds;
 import dev.aerolarge.client.FlankScreenRenderer;
@@ -183,6 +184,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
+        NeoForge.EVENT_BUS.addListener(HullAmbience::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::shake);
         NeoForge.EVENT_BUS.addListener(LookoutView::tick);
         NeoForge.EVENT_BUS.addListener(LookoutView::fov);
