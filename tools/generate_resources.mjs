@@ -887,6 +887,7 @@ function zeppelinControlsLang() {
     "block.aerolarge.dance_floor": "Dance Floor",
     "block.aerolarge.club_wall": "Club Wall",
     "block.aerolarge.lookout_glass": "Lookout's Glass",
+    "block.aerolarge.screen_stand": "Screen Stand",
     "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
     "block.aerolarge.ballast_valve": "Water Ballast Valve",
     "block.aerolarge.searchlight": "Searchlight",
@@ -1853,6 +1854,18 @@ facing("passenger_screen");
 write(`assets/${ID}/models/item/passenger_screen.json`, { parent: `${ID}:block/passenger_screen` });
 dropsItself("passenger_screen");
 cubes.passenger_screen = null;
+// The stand a zeppelin's promenade screen stands on (see ScreenStandBlock): a brass foot along the back of its block
+// and a teak post up from it, past the block's top into the casing of the screen standing over it, drawn as the
+// screen it carries is, facing north with its back to the south side.
+write(`assets/${ID}/models/block/screen_stand.json`, {
+  parent: "minecraft:block/block",
+  textures: { wood: `${ID}:block/zeppelin_wood`, brass: `${ID}:block/zeppelin_brass`, particle: `${ID}:block/zeppelin_wood` },
+  elements: [patched([4, 0, 10], [12, 1, 16], "#brass"), patched([7, 1, 14], [9, 19, 16], "#wood")],
+});
+facing("screen_stand");
+write(`assets/${ID}/models/item/screen_stand.json`, { parent: `${ID}:block/screen_stand` });
+dropsItself("screen_stand");
+cubes.screen_stand = null;
 
 // The signal flare: a red paper tube stuck in the ground, its tip burning bright whatever the light around. Burnt or
 // broken, it leaves nothing.
@@ -5486,7 +5499,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5562,6 +5575,7 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraft:copper_ingot", F: "minecraft:dark_oak_fence" }, 1);
+shaped("screen_stand", ["F", "C"], { F: "minecraft:dark_oak_fence", C: "minecraft:copper_ingot" }, 2);
 shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
 shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);

@@ -1536,9 +1536,9 @@ drawn by each player's game and are no creatures, nothing to bump into or hit. A
 once. The server config's `upShip` switches it off, and leaves the Water Ballast Valve under her gangway out of
 zeppelins built from then on.
 
-Passenger screens look through her outside cameras, as an airliner's do: one at the foot of the windows before each
-armchair on her promenades, turned to whoever sits in it, and one on the control car's back wall beside the Ship's
-Plaque. Use one and you look out of her bow, ahead and a little down; use it again for the camera under the control car,
+Passenger screens look through her outside cameras, as an airliner's do: one before each armchair on her promenades,
+standing on a teak post at the eyes of whoever sits in it and turned to them, and one on the control car's back wall
+beside the Ship's Plaque. Use one and you look out of her bow, ahead and a little down; use it again for the camera under the control car,
 looking straight down at the land she flies over; and again for the flyby camera, circling the whole ship from 240
 blocks out and 60 above her, once in two minutes, so she slides past broadside, her poster screens, engine cars and fins
 and all. Use it once more, or sneak, to come back. The client config's `flybyCamera` leaves the flyby camera out, and
@@ -1777,40 +1777,40 @@ plays it through `TechnoRoom` on the client, its lights drawn by `TechnoRoomRend
 map (each a `MapMarker` on `DestinationMap`'s list), and `ZeppelinUpShip` hangs the `BallastValveBlock` whose
 `BallastValveBlockEntity` keeps her handlers' stations and strikes the take-off's beats, `UpShip` holding her on the
 lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and `UpShipScene` drawing the handlers, their lines and the water, and
-`ZeppelinScreens` places the `PassengerScreenBlock`s that look through her `ZeppelinCamera`s (each a `CameraSpot`, as
-the airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `ZeppelinSearchlights` hangs the
-`SearchlightBlock`s whose `SearchlightHandleBlock`s swing them, `SearchlightBeams` drawing their beams and pools, and
-`ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of
-her and steers her along it, `Skywriting` handing her pilot the course (a `Course` on `ZeppelinPilot`'s list),
-`SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting the button; a feature is taken out of the zeppelin
-with its line on the list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner,
-engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws
-turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to
-show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
-the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
-it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
-`SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
-sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
-sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that
-can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot
-tables, tags, recipes and lang file. The door and the call button are vanilla's iron door and stone button retextured,
-so their files come from vanilla's: pass the folder the client resources jar
-(`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are. `node
-tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any) with FFmpeg, and with `oggenc` from
-vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is synthesised, the
-self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a public-domain siren and a CC0
-explosion recorded on tape, kept in `tools/audio` (where each came from is in the script), and the flight deck's voice
-(the callouts and the cabin announcements) is spoken by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open
-speech synthesis model under the Apache License 2.0, in its British woman's voice Emma, on any system: install it once
-with `npm install --prefix tools` (the model, some 300 MB, is fetched into `tools/node_modules` on the first run), or
-the voice is left as it is. FFmpeg plays it through the cabin's loudspeakers, their band, a bright middle and the
-speakers further along the cabin, and evens its level: the callouts compressed hard, crisp as warnings, the
-announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. Air traffic
-control is Windows' own speech synthesis, its man's voice ("Microsoft David"), so that part runs on Windows only,
-through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000 Hz), compresses, clips and bit-crushes
-it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's click as the
-button is pressed and the burst of noise as it is let go; other aircraft are the same voice pitched up or down. Its
-settings and every line said are in `RADIO` and `ATC`.
+`ZeppelinScreens` places the `PassengerScreenBlock`s, on the promenades each on a `ScreenStandBlock`, that look through
+her `ZeppelinCamera`s (each a `CameraSpot`, as the airliner's `OutsideCamera`s are, the flyby circling her in
+`CameraMount`), and `ZeppelinSearchlights` hangs the `SearchlightBlock`s whose `SearchlightHandleBlock`s swing them,
+`SearchlightBeams` drawing their beams and pools, and `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose
+`SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her along it, `Skywriting` handing her pilot
+the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting
+the button; a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control
+room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
+(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
+`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
+hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
+`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
+`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
+zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
+burners crackling at the far end of it do not take every sound channel there is. Assets are generated: `node
+tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by hand), and `node
+tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot tables, tags, recipes and lang file.
+The door and the call button are vanilla's iron door and stone button retextured, so their files come from vanilla's:
+pass the folder the client resources jar (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it
+out to keep them as they are. `node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any)
+with FFmpeg, and with `oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the
+engine loop is synthesised, the self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a
+public-domain siren and a CC0 explosion recorded on tape, kept in `tools/audio` (where each came from is in the script),
+and the flight deck's voice (the callouts and the cabin announcements) is spoken by
+[Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open speech synthesis model under the Apache License 2.0, in its
+British woman's voice Emma, on any system: install it once with `npm install --prefix tools` (the model, some 300 MB, is
+fetched into `tools/node_modules` on the first run), or the voice is left as it is. FFmpeg plays it through the cabin's
+loudspeakers, their band, a bright middle and the speakers further along the cabin, and evens its level: the callouts
+compressed hard, crisp as warnings, the announcements through a loudness normaliser. The settings for all of it are
+together in `VOICE`, to tune it. Air traffic control is Windows' own speech synthesis, its man's voice ("Microsoft
+David"), so that part runs on Windows only, through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to
+3000 Hz), compresses, clips and bit-crushes it a little, and the script lays it over the carrier's hiss with the odd
+crackle, between the squelch's click as the button is pressed and the burst of noise as it is let go; other aircraft are
+the same voice pitched up or down. Its settings and every line said are in `RADIO` and `ATC`.
 
 ## License
 

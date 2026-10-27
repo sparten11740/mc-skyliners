@@ -156,6 +156,7 @@ import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
+import dev.aerolarge.block.ScreenStandBlock;
 import dev.aerolarge.block.SearchlightBlock;
 import dev.aerolarge.block.SearchlightBlockEntity;
 import dev.aerolarge.block.SearchlightHandleBlock;
@@ -1619,6 +1620,11 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LookoutGlassBlockEntity>> LOOKOUT_GLASS_ENTITY =
         BLOCK_ENTITIES.register("lookout_glass", () -> BlockEntityType.Builder.of(LookoutGlassBlockEntity::new, LOOKOUT_GLASS.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> LOOKOUT_BELL = sound("lookout_bell");
+    /** The stand a passenger screen stands on before each armchair on a zeppelin's promenades. */
+    public static final DeferredBlock<ScreenStandBlock> SCREEN_STAND = BLOCKS.registerBlock(
+        "screen_stand", ScreenStandBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
     /**
      * The water ballast valve at a zeppelin's bow, and the sounds of her take-off on her handlers' lines: the ground
      * officer's whistle, short to hold fast and long to let go, her bow's water pouring out, and his call "Up ship!".
@@ -1696,6 +1702,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DANCE_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(DANCE_FLOOR);
     public static final DeferredItem<BlockItem> CLUB_WALL_ITEM = ITEMS.registerSimpleBlockItem(CLUB_WALL);
     public static final DeferredItem<BlockItem> LOOKOUT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LOOKOUT_GLASS);
+    public static final DeferredItem<BlockItem> SCREEN_STAND_ITEM = ITEMS.registerSimpleBlockItem(SCREEN_STAND);
     public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT_HANDLE);
@@ -1794,7 +1801,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, BOARDING_STAIRS_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, BOARDING_STAIRS_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

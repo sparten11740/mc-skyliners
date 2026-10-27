@@ -4,15 +4,17 @@ import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
+import dev.aerolarge.block.ScreenStandBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
  * A zeppelin's passenger screens, looking through her outside cameras (see {@link ZeppelinCamera}): on her promenades,
- * one at the foot of the windows before each armchair facing out of them, turned to whoever sits in it; and one on the
- * control car's back wall beside the Ship's Plaque, facing forward. Each is fixed to the sill or the wall behind it,
- * face to face, so it is assembled with the zeppelin; without the promenades' armchairs, those screens are left out.
+ * one before each armchair facing out of the windows, standing on a stand at the eyes of whoever sits in it and turned
+ * to them; and one on the control car's back wall beside the Ship's Plaque, facing forward. Each is fixed face to face,
+ * a promenade's to its stand and the stand to the floor, the car's to the wall behind it, so it is assembled with the
+ * zeppelin; without the promenades' armchairs, those screens are left out.
  */
 final class ZeppelinScreens implements ZeppelinPiece {
     /** How far in from the promenade windows an armchair is looked for, at most, in blocks. */
@@ -54,15 +56,16 @@ final class ZeppelinScreens implements ZeppelinPiece {
 
     /**
      * A screen between the window and the armchair facing out of it on one side of a promenade at a row, if one stands
-     * there: at its foot, turned to the chair.
+     * there: on a stand on the floor before the chair, turned to it.
      */
     private void beforeChair(int y, int z, int side) {
         Direction out = side > 0 ? Direction.EAST : Direction.WEST;
         int wall = layout.wallX(y, z);
         for (int in = CHAIR_REACH; in >= 1; in--) {
             int x = side * (wall - in);
-            if (facingOut(layout.stateAt(x, y, z), out) && layout.isOpen(x + side, y, z)) {
-                layout.set(x + side, y, z, screen(out.getOpposite()));
+            if (facingOut(layout.stateAt(x, y, z), out) && layout.isOpen(x + side, y, z) && layout.isOpen(x + side, y + 1, z)) {
+                layout.set(x + side, y, z, stand(out.getOpposite()));
+                layout.set(x + side, y + 1, z, screen(out.getOpposite()));
                 return;
             }
         }
@@ -72,6 +75,10 @@ final class ZeppelinScreens implements ZeppelinPiece {
     private static boolean facingOut(BlockState state, Direction out) {
         return state.getBlock() instanceof CabinSeatBlock && state.getValue(CabinSeatBlock.FACING) == out
             && state.getValue(CabinSeatBlock.HALF) == DoubleBlockHalf.LOWER;
+    }
+
+    private static BlockState stand(Direction facing) {
+        return AerolargeRegistry.SCREEN_STAND.get().defaultBlockState().setValue(ScreenStandBlock.FACING, facing);
     }
 
     private static BlockState screen(Direction facing) {
