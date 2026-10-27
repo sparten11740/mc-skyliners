@@ -280,10 +280,16 @@ public final class ZeppelinLayout implements Layout {
         box(-reach, axis - reach, -1, reach, axis + reach, length, this::coverAt);
     }
 
+    /**
+     * The cover's block at a place, if the surface passes through it. Only blocks near the hull's radius at their row
+     * or the rows either side are looked at: at the blunt nose the surface faces forward, so the tip's first row is
+     * cut by it right on the axis, though the hull there is already some four blocks across.
+     */
     private void coverAt(int x, int y, int z) {
         double across = Math.hypot(x, y + 0.5 - axis);
         double widest = Math.max(radiusAt(z - 1), Math.max(radiusAt(z), radiusAt(z + 1)));
-        if (across > widest + COVER_BAND_OUT || across < radiusAt(z) - COVER_BAND_IN) {
+        double narrowest = Math.min(radiusAt(z - 1), Math.min(radiusAt(z), radiusAt(z + 1)));
+        if (across > widest + COVER_BAND_OUT || across < narrowest - COVER_BAND_IN) {
             return;
         }
         int shape = coverShape(x, y, z);
