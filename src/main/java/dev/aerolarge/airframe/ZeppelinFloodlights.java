@@ -32,6 +32,12 @@ final class ZeppelinFloodlights implements ZeppelinPiece {
         return AerolargeConfig.FLOODLIGHTS.get();
     }
 
+    /** Under the control car and at shares of the keel's length, the same at every size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         ZeppelinLayout.Car car = layout.car();

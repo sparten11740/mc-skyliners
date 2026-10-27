@@ -25,6 +25,12 @@ final class ZeppelinLiveryBoard implements ZeppelinPiece {
         return AerolargeConfig.LIVERY_BOARD.get();
     }
 
+    /** In the control car, the same at every size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         ZeppelinLayout.Car car = layout.car();
