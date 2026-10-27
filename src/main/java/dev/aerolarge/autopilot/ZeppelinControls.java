@@ -27,6 +27,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * way, until the autopilot is engaged again.
  */
 final class ZeppelinControls {
+    /** How much nearer to the thrust, as a share of full thrust, another order must be to ring the telegraph to it. */
+    private static final double RING_MARGIN = 0.05;
+
     /**
      * What the controls are set to: the lever from -1 (burners low, sinking) to 1 (burners high, climbing), the
      * elevator wheel from -1 (nose up) to 1 (nose down), each telegraph as a share of full thrust (less than nothing
@@ -145,10 +148,19 @@ final class ZeppelinControls {
         }
     }
 
+    /**
+     * Rings a telegraph to the order nearest the thrust, once that is nearer by a margin than the order it stands at,
+     * so a thrust between two orders does not ring it back and forth every second.
+     */
     private static void showTelegraph(Level level, BlockPos origin, @Nullable BlockPos offset, double thrust) {
         BlockState state = offset == null ? null : level.getBlockState(origin.offset(offset));
-        if (state != null && state.getBlock() instanceof TelegraphBlock) {
-            TelegraphBlock.ring(level, origin.offset(offset), state.setValue(TelegraphBlock.ORDER, TelegraphBlock.Order.nearest(thrust)));
+        if (state == null || !(state.getBlock() instanceof TelegraphBlock)) {
+            return;
+        }
+        TelegraphBlock.Order now = state.getValue(TelegraphBlock.ORDER);
+        TelegraphBlock.Order nearest = TelegraphBlock.Order.nearest(thrust);
+        if (Math.abs(thrust - nearest.thrust) + RING_MARGIN < Math.abs(thrust - now.thrust)) {
+            TelegraphBlock.ring(level, origin.offset(offset), state.setValue(TelegraphBlock.ORDER, nearest));
         }
     }
 
