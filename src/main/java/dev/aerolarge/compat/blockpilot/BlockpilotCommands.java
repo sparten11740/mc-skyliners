@@ -6,6 +6,7 @@ import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.ZeppelinLayout;
+import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.ZeppelinAssembly;
@@ -193,8 +194,8 @@ public final class BlockpilotCommands {
 
     private static Layout layout(String what) {
         return switch (what) {
-            case "zeppelin" -> ZeppelinLayout.create(false);
-            case "furnished_zeppelin" -> ZeppelinLayout.create(true);
+            case "zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.PLAIN);
+            case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED);
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };

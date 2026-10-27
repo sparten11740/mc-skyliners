@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * the cell lifts as before. The gallery stands on posts down to the cell's floor, the rope's foot on the gangway, all
  * of them this mod's own blocks joined face to face, so they are assembled with the zeppelin.
  */
-final class ZeppelinCellGallery {
+final class ZeppelinCellGallery implements ZeppelinPiece {
     /** Which gas cell the rope climbs into: one of the biggest, just forward of the middle. */
     private static final int CELL = 7;
     /** How far out from the middle the rope hangs, in blocks: beside the gangway, past its rail, between burners. */
@@ -31,7 +31,8 @@ final class ZeppelinCellGallery {
     }
 
     /** Lays the gallery and its rope, once the cells and the gangway are laid. */
-    void build() {
+    @Override
+    public void build() {
         int z = (int) Math.floor(ZeppelinShape.Cell.of(CELL).middle() * SCALE);
         int walkway = layout.gangwayRow();
         int gallery = gasFloor(z, walkway) + GALLERY_RISE;

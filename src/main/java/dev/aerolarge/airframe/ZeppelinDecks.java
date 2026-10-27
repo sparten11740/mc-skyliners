@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * bar, the coffee on the bar, and bean bags beyond it. Everything stands only where the deck is open, never in the
  * stairs, their headroom or the hull, so the decks of a plain zeppelin and a furnished one are otherwise the same.
  */
-final class ZeppelinDecks {
+final class ZeppelinDecks implements ZeppelinPiece {
     /** How far aft of the decks' front the boarding hall reaches, and how far apart its planters stand, in blocks. */
     private static final int HALL_LENGTH = 21;
     private static final int PLANTER_SPACING = 4;
@@ -67,8 +67,15 @@ final class ZeppelinDecks {
         this.layout = layout;
     }
 
+    /** Only on a furnished zeppelin. */
+    @Override
+    public boolean wanted(ZeppelinOptions options) {
+        return options.furnished();
+    }
+
     /** Furnishes both decks, once their stairs are in. */
-    void furnish() {
+    @Override
+    public void build() {
         int front = (int) Math.ceil(DECKS_FRONT * SCALE);
         int back = (int) Math.floor(DECKS_BACK * SCALE);
         int middle = (front + back) / 2;

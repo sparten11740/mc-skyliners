@@ -1577,8 +1577,10 @@ is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works th
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, from an
 `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its souvenir model (`SouvenirModelBlock`), and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck, `ZeppelinCellGallery` the gallery inside the
-middle cell, and `ZeppelinDecks` the furnished zeppelin's furniture. `ZeppelinControlCar` fits out its control room and
+engine's signal. Once the hull stands, `ZeppelinLayout` lays its features, each a `ZeppelinPiece` of its own on one
+list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the Sky Shaft and the Sky Deck, `ZeppelinCellGallery`
+the gallery inside the middle cell, and `ZeppelinDecks` the furnished zeppelin's furniture; a feature is taken out of
+the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and
 wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
 (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
 `BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -33,8 +34,9 @@ import net.minecraft.world.level.block.state.properties.Half;
  * README's How it flies). Below the cells an axial gangway runs nearly the whole length of the hull, the passenger
  * decks lie in its belly with promenade windows down both sides, the control car hangs under the bow (see
  * {@link ZeppelinControlCar}), the four engine cars stand out on struts on the flanks, and four fins in a cross carry
- * the tail. A rope climbs from the gangway to a deck on the crown (see {@link ZeppelinSkyDeck}), and another into
- * the middle cell's hot air (see {@link ZeppelinCellGallery}).
+ * the tail. Once the hull stands, the features laid into it, each a piece of its own (see {@link ZeppelinPiece}):
+ * a rope from the gangway to a deck on the crown (see {@link ZeppelinSkyDeck}), another into the middle cell's hot air
+ * (see {@link ZeppelinCellGallery}), and on a furnished zeppelin the furniture (see {@link ZeppelinDecks}).
  *
  * <p>Sable flies the zeppelin as one body only as far as its blocks touch, face to face: anything standing free
  * inside it would fly off on its own. So the cells hang from the crown, the burners stand on posts down to the cells'
@@ -125,6 +127,15 @@ public final class ZeppelinLayout implements Layout {
     private static final int[][] AHEAD_THRUSTERS = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
     private static final int[][] ASTERN_THRUSTERS = {{-1, 0}, {1, 0}};
 
+    /**
+     * The features laid once the hull stands, in this order, each where the zeppelin's options want it (see
+     * {@link ZeppelinPiece}): taking one out of the zeppelin is taking out its line here, and its class.
+     */
+    private static final List<Function<ZeppelinLayout, ZeppelinPiece>> PIECES = List.of(
+        ZeppelinSkyDeck::new,
+        ZeppelinCellGallery::new,
+        ZeppelinDecks::new);
+
     private final AirframePalette.Balloon palette;
     /** Every block of the zeppelin that is not the air inside its hull, by position relative to the nose's tip. */
     private final Map<BlockPos, BlockState> cells = new HashMap<>();
@@ -158,8 +169,11 @@ public final class ZeppelinLayout implements Layout {
         }
     }
 
-    /** The finished layout: its lowest blocks (the control car's wheel and the lower fin's) at y 0, its nose at z 0. */
-    public static ZeppelinLayout create(boolean furnished) {
+    /**
+     * The finished layout, built as the options ask: its lowest blocks (the control car's wheel and the lower fin's)
+     * at y 0, its nose at z 0. The hull first, then its pieces.
+     */
+    public static ZeppelinLayout create(ZeppelinOptions options) {
         ZeppelinLayout layout = new ZeppelinLayout(AirframePalette.balloon());
         layout.cover();
         layout.rings();
@@ -167,14 +181,15 @@ public final class ZeppelinLayout implements Layout {
         layout.controlCar();
         layout.decks();
         layout.gangway();
-        new ZeppelinSkyDeck(layout).build();
-        new ZeppelinCellGallery(layout).build();
         for (int engine = 0; engine < 4; engine++) {
             layout.engineCar(engine);
         }
         layout.fins();
-        if (furnished) {
-            new ZeppelinDecks(layout).furnish();
+        for (Function<ZeppelinLayout, ZeppelinPiece> kind : PIECES) {
+            ZeppelinPiece piece = kind.apply(layout);
+            if (piece.wanted(options)) {
+                piece.build();
+            }
         }
         layout.countAir();
         return layout;

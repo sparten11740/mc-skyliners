@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
+import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairCallButtonBlock;
@@ -1527,12 +1528,12 @@ public final class AerolargeRegistry {
     );
     /** The Hindenburg-sized zeppelin, always at its own size. */
     public static final DeferredItem<AirframeBlueprintItem> ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(false), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
+        "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.PLAIN), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
             ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.zeppelin_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** The same zeppelin with its decks furnished: cabins, a galley, a dining room, a lounge and promenades. */
     public static final DeferredItem<AirframeBlueprintItem> FURNISHED_ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(true),
+        "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED),
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.furnished_zeppelin_blueprint.tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );

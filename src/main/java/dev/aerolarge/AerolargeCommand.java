@@ -8,6 +8,7 @@ import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.ZeppelinLayout;
+import dev.aerolarge.airframe.ZeppelinOptions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -43,7 +44,7 @@ final class AerolargeCommand {
     }
 
     private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, boolean furnished) throws CommandSyntaxException {
-        return build(context, along, ZeppelinLayout.create(furnished), "commands.aerolarge.build_zeppelin");
+        return build(context, along, ZeppelinLayout.create(furnished ? ZeppelinOptions.FURNISHED : ZeppelinOptions.PLAIN), "commands.aerolarge.build_zeppelin");
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, Layout layout, String said) throws CommandSyntaxException {

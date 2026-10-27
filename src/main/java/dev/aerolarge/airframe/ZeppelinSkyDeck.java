@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * enough to climb. All of it is this mod's own blocks, joined face to face from the gangway to the deck, so it is
  * assembled with the zeppelin.
  */
-final class ZeppelinSkyDeck {
+final class ZeppelinSkyDeck implements ZeppelinPiece {
     /** Which ring the shaft climbs at: the one just aft of the hull's middle, aft of the decks. */
     private static final int SHAFT_RING = 9;
     /** How far out from the middle the rope hangs, in blocks: beside the gangway, past its rail. */
@@ -37,7 +37,8 @@ final class ZeppelinSkyDeck {
     }
 
     /** Lays the shaft and the deck, once the gangway it starts from is laid. */
-    void build() {
+    @Override
+    public void build() {
         int z = (int) Math.floor(ringAt(SHAFT_RING) * SCALE);
         int walkway = layout.gangwayRow();
         int deck = deckRow(z, walkway);
