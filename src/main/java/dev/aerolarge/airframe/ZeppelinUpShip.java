@@ -26,8 +26,11 @@ final class ZeppelinUpShip implements ZeppelinPiece {
     private static final int VALVE_AFT = 2;
     /** The row the handlers stand in, on the ground the zeppelin's wheels stand on. */
     private static final int GROUND = 0;
-    /** Where the bow lines hang from, in blocks: how far aft of the nose's tip, and how far either side. */
-    private static final int BOW_LINE_Z = 24;
+    /**
+     * Where the bow lines hang from: how far aft of the nose's tip, in metres along the hull, and how far either side,
+     * in blocks.
+     */
+    private static final double BOW_LINE_ALONG = 12;
     private static final int BOW_LINE_X = 3;
     /**
      * The bow lines' files: how many handlers each, how far out and forward of the line's foot the first stands, and
@@ -42,15 +45,16 @@ final class ZeppelinUpShip implements ZeppelinPiece {
     private static final int CAR_IN = 4;
     private static final int CAR_OUT = 3;
     /**
-     * The flank lines: how far either side of the middle they hang from, and how far out the handlers stand, in blocks.
+     * The flank lines: how far either side of the middle they hang from, in metres across the hull, and how far out the
+     * handlers stand, in blocks.
      */
-    private static final int FLANK_X = 24;
+    private static final double FLANK_ACROSS = 12;
     private static final int FLANK_OUT = 8;
     /**
-     * The stern lines: how far aft of the nose's tip, how far either side, and how far out and aft the handlers stand,
-     * in blocks.
+     * The stern lines: how far aft of the nose's tip, in metres along the hull; how far either side, and how far out
+     * and aft the handlers stand, in blocks.
      */
-    private static final int TAIL_Z = 400;
+    private static final double TAIL_ALONG = 200;
     private static final int TAIL_X = 3;
     private static final int TAIL_OUT = 6;
     /**
@@ -69,6 +73,12 @@ final class ZeppelinUpShip implements ZeppelinPiece {
     @Override
     public boolean wanted(ZeppelinOptions options) {
         return AerolargeConfig.UP_SHIP.get();
+    }
+
+    /** Its valve at the gangway's forward end and its stations along the hull, wherever they are at the size. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
     }
 
     @Override
@@ -95,17 +105,20 @@ final class ZeppelinUpShip implements ZeppelinPiece {
         ZeppelinLayout.Car car = layout.car();
         stations.add(new Station(new BlockPos(0, GROUND, car.front() - OFFICER_AHEAD), new BlockPos(0, car.floor() + 1, car.front()), null));
         int middle = (int) Math.round(LENGTH * layout.scale() / 2);
+        int bow = (int) Math.round(BOW_LINE_ALONG * layout.scale());
+        int flank = (int) Math.round(FLANK_ACROSS * layout.scale());
+        int tail = (int) Math.round(TAIL_ALONG * layout.scale());
         for (int side : SIDES) {
             for (int man = 0; man < BOW_FILE; man++) {
                 int out = BOW_OUT + man * FILE_STEP;
-                hullLine(stations, side * BOW_LINE_X, BOW_LINE_Z, side * out, -out);
+                hullLine(stations, side * BOW_LINE_X, bow, side * out, -out);
             }
             for (int z : new int[]{car.front() + CAR_IN, car.back() - CAR_IN}) {
                 BlockPos line = new BlockPos(side * car.half(), car.floor() + 1, z);
                 stations.add(new Station(new BlockPos(side * (car.half() + CAR_OUT), GROUND, z), line, line));
             }
-            hullLine(stations, side * FLANK_X, middle, side * FLANK_OUT, 0);
-            hullLine(stations, side * TAIL_X, TAIL_Z, side * TAIL_OUT, TAIL_OUT);
+            hullLine(stations, side * flank, middle, side * FLANK_OUT, 0);
+            hullLine(stations, side * TAIL_X, tail, side * TAIL_OUT, TAIL_OUT);
         }
         return stations;
     }

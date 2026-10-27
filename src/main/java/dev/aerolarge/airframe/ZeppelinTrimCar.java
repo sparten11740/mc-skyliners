@@ -16,10 +16,13 @@ import net.minecraft.core.Direction;
  * so it is assembled with the zeppelin; nothing hangs from the car.
  */
 final class ZeppelinTrimCar implements ZeppelinPiece {
-    /** Where the rail runs, in blocks: how far to starboard, from how far aft of the nose's tip, and how long it is. */
+    /**
+     * Where the rail runs: how far to starboard and how long it is, in blocks, the same at every size; and where its
+     * middle is, how far aft of the nose's tip in metres along the hull: the middle of the gas cells at every size.
+     */
     private static final int RAIL_ACROSS = 1;
-    private static final int RAIL_FRONT = 131;
     private static final int RAIL_LENGTH = 120;
+    private static final double RAIL_MIDDLE = 95.5;
     /**
      * How far aft of the car's front the trim wheel and the bubble level stand, in blocks, by its starboard windows.
      */
@@ -37,16 +40,23 @@ final class ZeppelinTrimCar implements ZeppelinPiece {
         return AerolargeConfig.TRIM_CAR.get();
     }
 
+    /** Its middle at the middle of the gas cells at every size, the rail itself as long. */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         int rail = layout.gangwayRow() - 1;
-        if (!clear(rail) || !clear(rail - 1)) {
+        int front = (int) Math.round(RAIL_MIDDLE * layout.scale()) - RAIL_LENGTH / 2;
+        if (!clear(rail, front) || !clear(rail - 1, front)) {
             return;
         }
-        for (int z = RAIL_FRONT; z <= RAIL_FRONT + RAIL_LENGTH; z++) {
+        for (int z = front; z <= front + RAIL_LENGTH; z++) {
             layout.set(RAIL_ACROSS, rail, z, AerolargeRegistry.ZEPPELIN_GIRDER.get().defaultBlockState());
         }
-        BlockPos winch = new BlockPos(RAIL_ACROSS, rail - 1, RAIL_FRONT);
+        BlockPos winch = new BlockPos(RAIL_ACROSS, rail - 1, front);
         layout.set(winch.getX(), winch.getY(), winch.getZ(), AerolargeRegistry.TRIM_WINCH.get().defaultBlockState());
         int middle = RAIL_LENGTH / 2;
         layout.set(winch.getX(), winch.getY(), winch.getZ() + middle, AerolargeRegistry.TRIM_CAR.get().defaultBlockState());
@@ -59,8 +69,8 @@ final class ZeppelinTrimCar implements ZeppelinPiece {
     }
 
     /** Whether nothing stands along the rail's row yet, under the gangway. */
-    private boolean clear(int y) {
-        for (int z = RAIL_FRONT; z <= RAIL_FRONT + RAIL_LENGTH; z++) {
+    private boolean clear(int y, int front) {
+        for (int z = front; z <= front + RAIL_LENGTH; z++) {
             if (!layout.isOpen(RAIL_ACROSS, y, z)) {
                 return false;
             }
