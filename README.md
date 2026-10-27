@@ -1392,8 +1392,8 @@ its engine cars are a quarter slimmer and stand nearer the hull, with shorter pr
 push a third as hard, as she weighs a third as much; she climbs to some 175 blocks over the ground. For now a half-size
 one is built with only some of the features below: everything in and under her control car (the horn cord, the livery
 board, the ship's plaque, the Lookout's Glass, the searchlights, the skywriting board, the floodlights and the speed
-boost), her engine rooms, her furnished decks and their passenger screens, the Sky Deck with all on it and the ship's
-colours over it, her lights, and the festive dress; and only with the command.
+boost), her engine rooms, her furnished decks and their passenger screens, the cell gallery, the Sky Deck with all on it
+and the ship's colours over it, her lights, and the festive dress; and only with the command.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
