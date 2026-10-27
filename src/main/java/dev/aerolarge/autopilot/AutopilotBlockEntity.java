@@ -613,11 +613,10 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How it flies a zeppelin, and what it works there; unused for an airliner. */
     private final ZeppelinPilot zeppelin = new ZeppelinPilot();
     /**
-     * Whether it keeps its zeppelin loaded (see {@link SableFlight#keepLoaded}), as last set; null until it has looked
-     * since loading, Sable keeping the ticket in the save meanwhile.
+     * Whether it has seen to it that its zeppelin is kept loaded since it was loaded itself (see {@link #keepLoaded});
+     * Sable keeps the ticket in the save meanwhile.
      */
-    @Nullable
-    private Boolean keptLoaded;
+    private boolean keptLoaded;
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -1471,7 +1470,7 @@ public class AutopilotBlockEntity extends BlockEntity {
      * {@link ZeppelinPilot}), until it is down on the ground and rests there, switching itself off.
      */
     private void zeppelinTick(ServerLevel level, SableFlight.State flight) {
-        keepAloft(level);
+        keepLoaded(level);
         double radio = radioAltitude(level, flight);
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
@@ -1507,18 +1506,17 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Keeps the zeppelin loaded while it flies or anyone is aboard, so the land unloaded behind a pilot riding in its
-     * bow does not take it out of the sky under them; parked with nobody aboard, it is let go, to be loaded and
-     * unloaded with the land round it as anything else is. Looked at every {@link #ABOARD_LOOK} ticks.
+     * Keeps the zeppelin loaded for as long as it is assembled, flying or parked, with anyone aboard or not. Sable
+     * loads an assembled body back only once the land under all of it is simulated, which reaches 12 chunks round a
+     * player by default, and a zeppelin is 490 blocks long: let go, it would unload where it stands once nobody was
+     * near its middle, a pilot riding in its bow included, and never load again. It is let go only when its control
+     * head is taken away (see {@link #removed}). Looked at every {@link #ABOARD_LOOK} ticks until it holds.
      */
-    private void keepAloft(ServerLevel level) {
-        if (keptLoaded != null && Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
+    private void keepLoaded(ServerLevel level) {
+        if (keptLoaded || Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
             return;
         }
-        boolean wanted = phase != Phase.OFF || !Aboard.players(this).isEmpty();
-        if (keptLoaded == null || keptLoaded != wanted) {
-            keptLoaded = SableFlight.keepLoaded(this, wanted);
-        }
+        keptLoaded = SableFlight.keepLoaded(this, true);
     }
 
     /**
@@ -1526,10 +1524,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * loaded. Not when its chunk merely unloads, which would forget the ticket Sable saves with it.
      */
     public void removed() {
-        if (Boolean.TRUE.equals(keptLoaded)) {
-            SableFlight.keepLoaded(this, false);
-            keptLoaded = false;
-        }
+        SableFlight.keepLoaded(this, false);
+        keptLoaded = false;
     }
 
     /**

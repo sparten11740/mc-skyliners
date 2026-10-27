@@ -1434,9 +1434,11 @@ off with a bell. With nobody aboard for a minute it comes down where it is. Stil
 engaged, too heavy for its burners (built over with too much, say), it rests again and switches itself off with a thud,
 saying so; built without Create Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
 
-A zeppelin is far longer than the land loaded round anyone aboard reaches: someone riding in its bow leaves its middle
-in land unloaded behind them. So while it flies, or anyone is aboard, it keeps itself loaded (a loading ticket of
-Sable's); parked with nobody aboard, it is loaded and unloaded with the land round it as anything else is.
+A zeppelin is far longer than the land simulated round a player reaches (12 chunks by default): someone riding in its
+bow leaves its middle in land unloaded behind them, and Sable loads a ship back only once the land under all of it is
+simulated, which for a zeppelin it never is. So once it has been assembled it keeps itself loaded for good (a loading
+ticket of Sable's), flying or parked, with anyone aboard or not, wherever the players are; it lets go only when its
+control head is taken away. That costs a parked zeppelin's ticking, a little, wherever it is.
 
 The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk grating
 and the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
@@ -1520,7 +1522,7 @@ as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`,
 engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner and engine;
 `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the autopilot's block entity,
 which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it from through
-`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded while it flies or anyone is aboard. `Earshot`
+`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot`
 leaves out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not
 take every sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
