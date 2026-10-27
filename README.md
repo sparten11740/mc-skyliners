@@ -1598,7 +1598,9 @@ as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`,
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
 engine's signal. Once the hull stands, `ZeppelinLayout` lays its features, each a `ZeppelinPiece` of its own on one
 list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the Sky Shaft and the Sky Deck, `ZeppelinCellGallery`
-the gallery inside the middle cell, and `ZeppelinDecks` the furnished zeppelin's furniture; a feature is taken out of
+the gallery inside the middle cell, `ZeppelinDecks` the furnished zeppelin's furniture, `ZeppelinLights` its lights
+(`NavLightBlock`s, their glow drawn by `NavLightRenderer`) and `ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light
+and `PaperPlaneBoxBlock`; a feature is taken out of
 the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and
 wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
 (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
