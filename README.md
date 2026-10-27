@@ -1388,10 +1388,10 @@ there; it takes a few tens of seconds to go up.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
-car hangs under the bow on a short neck, and four streamlined engine cars stand out on girder struts along the flanks,
-two to each side, each with a big four-bladed wooden propeller with brass tips behind it that winds up when its engine
-runs and spins down slowly when it stops. The zeppelin rests on a wheel under the control car and another under the
-lower fin.
+car hangs under the bow, faired into the hull above it as the Hindenburg's was, and four streamlined engine cars stand
+out on girder struts along the flanks, two to each side, each with a big four-bladed wooden propeller with brass tips
+behind it that winds up when its engine runs and spins down slowly when it stops. The zeppelin rests on a wheel under
+the control car and another under the lower fin.
 
 At night it is dressed in lights, as an airship's are and as a ship's are when she is dressed overall: a red light on
 each engine car to port and a green one on each to starboard, shining out to the side, a white light on the tip of the

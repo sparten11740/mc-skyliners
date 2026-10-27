@@ -117,6 +117,8 @@ public final class ZeppelinLayout implements Layout {
     private static final double WINDOW_FACING = 0.6;
     /** How many rows over the control car's floor its windows start. */
     private static final int CAR_SILL = 2;
+    /** The most rows the fairing over the control car climbs to meet the cover, a bound on its search. */
+    private static final int FAIRING_HIGHEST = 16;
     /** An engine car's pod: how many rows its nose rounds over, and how thick its skin is, in blocks. */
     private static final double POD_NOSE = 4;
     private static final double POD_SKIN = 1.2;
@@ -690,9 +692,9 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /**
-     * The control car under the bow: a glazed car on a short neck from the hull, with a wheel under it, and a ladder
-     * up the neck into the hull; inside, from the front, the control room and an observation lounge with a glass
-     * floor.
+     * The control car under the bow: a glazed car faired into the hull, with a wheel under it, and a ladder up a neck
+     * through the fairing into the hull; inside, from the front, the control room and an observation lounge with a
+     * glass floor.
      */
     private void controlCar() {
         int floor = (int) Math.round(CAR_FLOOR * SCALE);
@@ -707,6 +709,19 @@ public final class ZeppelinLayout implements Layout {
         // The wheel the zeppelin rests on at the bow, under the car's middle.
         set(0, car.floor() - 1, car.lounge(), AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
         neck(car.back() - 1, car.floor() + 1, car.roof());
+        box(-car.half(), car.roof() + 1, car.front(), car.half(), car.roof() + 1, car.back(), this::fairingAt);
+    }
+
+    /**
+     * A column of the fairing over the control car: the cover carried down from the hull to the car's roof, as the
+     * Hindenburg's car was faired into its hull, so no sky shows between them; solid, round the neck, so it holds
+     * no dark hollow for anything to spawn in.
+     */
+    private void fairingAt(int x, int y, int z) {
+        BlockState cover = ShellBlock.withShape(AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState(), ShellGeometry.WHOLE);
+        for (int at = y; at < y + FAIRING_HIGHEST && isOpen(x, at, z) && !inHull(x, at, z); at++) {
+            set(x, at, z, cover);
+        }
     }
 
     private BlockState carBlock(Car car, int x, int y, int z) {
