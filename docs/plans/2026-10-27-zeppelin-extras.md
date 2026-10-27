@@ -84,8 +84,12 @@ classes already, `coverAt` names its block directly):
 | 8 | The horn's echo | Back a second for each 100 blocks up (10 blocks a tick there and back), slower than sound so it is heard apart from the blast; only in flight, 12 blocks or more up | Lead |
 | 9 | How a livery is painted | A client-side tint by where a block sits on the hull, kept on the autopilot and sent with its frame, the slices the paint reaches meshed again: never a block or state swap (100,000 updates, a property on every cover piece), which would also churn the balloons and the assembly | Panel (the engineer and the skeptic in round 1) |
 | 10 | The liveries | Silver, Graf Zeppelin cream, navy grey, the airliner's white with a blue cheatline and blue fins, polar red with white fins, midnight blue with gold stars (the stars do not glow: a tint cannot) | Jan's pick, lead |
+| 11 | The festive wreath | Two blocks of Aerolarge's own, a garland and a bow: a zeppelin's assembly takes only Aerolarge's blocks (and the configured other mods') outside the hull, so a wreath of vanilla leaves and concrete stayed in the air and held the nose down at take-off. `aerolarge:assembly` now names such blocks | Lead, found in play-testing |
+| 12 | The festive switch | The blueprint itself: a festive zeppelin is built only from its own blueprint, so it needs no config switch | Lead |
+| 13 | Hearing the sleigh bells | Aboard, round the listener, since the engine cars are far aft of most of the ship; on the ground, from the fastest propeller, loud enough to carry 96 blocks | Lead, found in play-testing |
 
 ## Outcome
 
-So far (alpha.110): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch
-(with paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board.
+So far (alpha.112): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch
+(with paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board, 5 Festive
+blueprint; and the hole at the nose's tip mended.
