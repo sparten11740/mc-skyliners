@@ -42,6 +42,11 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
         return (int) Math.floor(ringAt(SHAFT_RING) * layout.scale());
     }
 
+    /** The deck's front edge, its row nearest the bow. */
+    static int front(ZeppelinLayout layout) {
+        return station(layout) - DECK_HALF;
+    }
+
     /** The row the deck's grating is laid in, once it is laid: the topmost of the zeppelin over its middle. */
     static int floor(ZeppelinLayout layout) {
         int y = layout.axis() + (int) Math.ceil(RADIUS * layout.scale()) + GANTRY_HEIGHT;

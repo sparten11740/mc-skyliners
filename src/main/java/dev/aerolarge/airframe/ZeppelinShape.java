@@ -16,7 +16,7 @@ final class ZeppelinShape {
      * full radius from there to the second, then tapering to the stern's point, gently at first.
      */
     private static final double NOSE = 0.2;
-    private static final double TAPER = 0.5;
+    static final double TAPER = 0.5;
     /** How the stern tapers: the radius falls as (1 - s^2)^TAPER_POWER, s running 0 to 1 down the taper. */
     private static final double TAPER_POWER = 0.9;
     /**

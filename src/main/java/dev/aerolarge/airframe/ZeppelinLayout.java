@@ -195,6 +195,7 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinPost::new,
         ZeppelinTowedBanner::new,
         ZeppelinSkyCrane::new,
+        ZeppelinFlightDeck::new,
         ZeppelinSkywriting::new);
 
     private final AirframePalette.Balloon palette;

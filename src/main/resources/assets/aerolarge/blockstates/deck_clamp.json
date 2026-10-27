@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "closed=false": {
+      "model": "aerolarge:block/deck_clamp"
+    },
+    "closed=true": {
+      "model": "aerolarge:block/deck_clamp_closed"
+    }
+  }
+}

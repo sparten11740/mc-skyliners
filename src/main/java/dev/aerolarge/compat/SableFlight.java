@@ -10,6 +10,8 @@ import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
 import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
 import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
+import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintConfiguration;
+import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintHandle;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
@@ -26,8 +28,11 @@ import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
+import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -53,7 +58,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.NeoForge;
+import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 /**
  * Where an assembled airliner is and how it is moving, read from Sable. A block of an assembled airliner lives in
@@ -171,6 +178,51 @@ public final class SableFlight {
      */
     public static double mass(BlockEntity blockEntity) {
         return SABLE && blockEntity.getLevel() instanceof ServerLevel ? Access.mass(blockEntity) : Double.NaN;
+    }
+
+    /**
+     * A body locked to an assembled airframe (see {@link #lock}): whether it is still held, and letting it go. Sable
+     * keeps no lock over a save, so whoever made it makes it again when the level is loaded.
+     */
+    public interface Lock {
+        boolean held();
+
+        void release();
+    }
+
+    /**
+     * Another of Sable's flying bodies, a player's plane, resting on an assembled airframe round a block of it: one
+     * reaching into the space over the block's top, so many blocks across either way and so many up, its middle over
+     * the block's top, moving at no more than so many blocks a second against the airframe; its id, or null for none.
+     */
+    @Nullable
+    public static UUID restingOver(BlockEntity blockEntity, double across, double up, double still) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel ? Access.restingOver(blockEntity, across, up, still) : null;
+    }
+
+    /** Which of Sable's flying bodies a position is among the blocks of, the same for all its blocks; null for none. */
+    @Nullable
+    public static UUID bodyAt(Level level, BlockPos pos) {
+        return SABLE ? Access.bodyAt(level, pos) : null;
+    }
+
+    /** How heavy one of Sable's flying bodies is, by its id, in Sable's units; NaN if it is not about. */
+    public static double massOf(Level level, UUID body) {
+        return SABLE && level instanceof ServerLevel server ? Access.massOf(server, body) : Double.NaN;
+    }
+
+    /**
+     * Locks a flying body to the assembled airframe a block entity is part of as they lie now, joined at that block's
+     * top, so the body rides it wherever it flies; null if it could not be locked.
+     */
+    @Nullable
+    public static Lock lock(BlockEntity blockEntity, UUID body) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel ? Access.lock(blockEntity, body) : null;
+    }
+
+    /** The block entities of a flying body, by its id, at most so many; none if it is not about. */
+    public static List<BlockEntity> blockEntitiesOf(Level level, UUID body, int most) {
+        return SABLE && level instanceof ServerLevel server ? Access.blockEntitiesOf(server, body, most) : List.of();
     }
 
     /**
@@ -552,6 +604,96 @@ public final class SableFlight {
 
         static double mass(BlockEntity blockEntity) {
             return Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe ? airframe.getMassTracker().getMass() : Double.NaN;
+        }
+
+        @Nullable
+        static UUID restingOver(BlockEntity blockEntity, double across, double up, double still) {
+            Level level = blockEntity.getLevel();
+            SubLevel own = Sable.HELPER.getContaining(blockEntity);
+            if (own == null) {
+                return null;
+            }
+            Vec3 top = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 0.5, 0);
+            Vec3 low = own.logicalPose().transformPosition(top.add(-across, 0, -across));
+            Vec3 high = own.logicalPose().transformPosition(top.add(across, up, across));
+            for (SubLevel other : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(low, high))) {
+                if (other != own && restingOn(level, own, other, top.y, still)) {
+                    return other.getUniqueId();
+                }
+            }
+            return null;
+        }
+
+        /** Whether a body's middle is over a height among an airframe's blocks, and it moves with the airframe. */
+        private static boolean restingOn(Level level, SubLevel own, SubLevel other, double over, double still) {
+            Vector3dc middle = other.logicalPose().position();
+            Vec3 inOwn = own.logicalPose().transformPositionInverse(new Vec3(middle.x(), middle.y(), middle.z()));
+            Vector3dc itsOwn = other.logicalPose().rotationPoint();
+            Vec3 moving = Sable.HELPER.getVelocity(level, other, new Vec3(itsOwn.x(), itsOwn.y(), itsOwn.z()));
+            return inOwn.y > over && moving.distanceTo(Sable.HELPER.getVelocity(level, own, inOwn)) <= still;
+        }
+
+        @Nullable
+        static UUID bodyAt(Level level, BlockPos pos) {
+            SubLevel body = Sable.HELPER.getContaining(level, pos);
+            return body == null ? null : body.getUniqueId();
+        }
+
+        static double massOf(ServerLevel level, UUID body) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            return bodies != null && bodies.getSubLevel(body) instanceof ServerSubLevel found ? found.getMassTracker().getMass() : Double.NaN;
+        }
+
+        @Nullable
+        static Lock lock(BlockEntity blockEntity, UUID body) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer((ServerLevel) blockEntity.getLevel());
+            if (bodies == null || !(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel own)
+                || !(bodies.getSubLevel(body) instanceof ServerSubLevel other) || other == own) {
+                return null;
+            }
+            Vec3 joint = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 0.5, 0);
+            Vec3 inOther = other.logicalPose().transformPositionInverse(own.logicalPose().transformPosition(joint));
+            Quaterniond turned = new Quaterniond(own.logicalPose().orientation()).conjugate().mul(other.logicalPose().orientation());
+            try {
+                FixedConstraintHandle handle = bodies.physicsSystem().getPipeline().addConstraint(own, other,
+                    new FixedConstraintConfiguration(new Vector3d(joint.x, joint.y, joint.z), new Vector3d(inOther.x, inOther.y, inOther.z), turned));
+                return handle == null ? null : new HeldLock(handle);
+            } catch (IllegalArgumentException refused) {
+                return null;
+            }
+        }
+
+        /** A lock as Sable holds it. */
+        private record HeldLock(FixedConstraintHandle handle) implements Lock {
+            @Override
+            public boolean held() {
+                return handle.isValid();
+            }
+
+            @Override
+            public void release() {
+                if (handle.isValid()) {
+                    handle.remove();
+                }
+            }
+        }
+
+        static List<BlockEntity> blockEntitiesOf(ServerLevel level, UUID body, int most) {
+            ServerSubLevelContainer bodies = SubLevelContainer.getContainer(level);
+            if (bodies == null || !(bodies.getSubLevel(body) instanceof ServerSubLevel found)) {
+                return List.of();
+            }
+            List<BlockEntity> all = new ArrayList<>();
+            for (PlotChunkHolder holder : found.getPlot().getLoadedChunks()) {
+                LevelChunk chunk = holder.getChunk();
+                if (chunk != null) {
+                    chunk.getBlockEntities().values().stream().limit(most - all.size()).forEach(all::add);
+                }
+                if (all.size() >= most) {
+                    break;
+                }
+            }
+            return all;
         }
 
         static boolean assemble(ServerLevel level, BlockPos anchor, List<BlockPos> blocks, BoundingBox box) {

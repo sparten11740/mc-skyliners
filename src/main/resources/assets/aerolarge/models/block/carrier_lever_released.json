@@ -1,0 +1,125 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "iron": "minecraft:block/iron_block",
+    "lever": "minecraft:block/yellow_concrete",
+    "tip": "minecraft:block/black_concrete",
+    "particle": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron"
+        },
+        "south": {
+          "texture": "#iron"
+        },
+        "east": {
+          "texture": "#iron"
+        },
+        "west": {
+          "texture": "#iron"
+        },
+        "up": {
+          "texture": "#iron"
+        },
+        "down": {
+          "texture": "#iron"
+        }
+      }
+    },
+    {
+      "from": [
+        7.25,
+        3,
+        7.25
+      ],
+      "to": [
+        8.75,
+        12,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lever"
+        },
+        "south": {
+          "texture": "#lever"
+        },
+        "east": {
+          "texture": "#lever"
+        },
+        "west": {
+          "texture": "#lever"
+        },
+        "up": {
+          "texture": "#lever"
+        },
+        "down": {
+          "texture": "#lever"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          3,
+          8
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        6.75,
+        10.5,
+        6.75
+      ],
+      "to": [
+        9.25,
+        13,
+        9.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tip"
+        },
+        "south": {
+          "texture": "#tip"
+        },
+        "east": {
+          "texture": "#tip"
+        },
+        "west": {
+          "texture": "#tip"
+        },
+        "up": {
+          "texture": "#tip"
+        },
+        "down": {
+          "texture": "#tip"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          3,
+          8
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    }
+  ]
+}

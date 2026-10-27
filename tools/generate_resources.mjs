@@ -38,12 +38,14 @@ const cubes = {
   festive_garland: "minecraft:cutout",
   festive_bow: null,
   zeppelin_catwalk: "minecraft:cutout",
+  flight_deck: null,
+  flight_deck_stripe: null,
   dance_floor: null,
   club_wall: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
-const OWN_MODELS = new Set(["cabin_floor", "airframe_panel", "zeppelin_fabric"]);
+const OWN_MODELS = new Set(["cabin_floor", "airframe_panel", "zeppelin_fabric", "flight_deck_stripe"]);
 for (const [name, renderType] of Object.entries(cubes)) {
   if (!OWN_BLOCKSTATES.has(name)) {
     write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
@@ -848,6 +850,55 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/crane_winch.json`, { parent: `${ID}:block/crane_winch_hold` });
   dropsItself("crane_winch");
   cubes.crane_winch = null;
+  // The flight deck's lines are painted on its top only: its sides are the plain deck's.
+  write(`assets/${ID}/models/block/flight_deck_stripe.json`, {
+    parent: "minecraft:block/cube_bottom_top",
+    textures: { top: `${ID}:block/flight_deck_stripe`, bottom: `${ID}:block/flight_deck`, side: `${ID}:block/flight_deck` },
+  });
+  // The flying carrier's docking clamp (see DeckClampBlock): a block of the flight deck with a pair of yellow jaws lying
+  // flat in it, or raised round a plane's wheels when closed, and a lamp between them, red open and green closed; and
+  // its release lever (see CarrierLeverBlock), a yellow lever on an iron stand, forward when the clamps lock and back
+  // when they are released, drawn facing north.
+  for (const closed of [false, true]) {
+    const jaw = closed ? 18 : 16.5;
+    write(`assets/${ID}/models/block/deck_clamp${closed ? "_closed" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { deck: `${ID}:block/flight_deck`, jaw: "minecraft:block/yellow_concrete", lamp: closed ? "minecraft:block/lime_concrete" : "minecraft:block/red_concrete",
+        particle: `${ID}:block/flight_deck` },
+      elements: [
+        solid([0, 0, 0], [16, 16, 16], "#deck"),
+        solid([2, 16, 4], [14, jaw, 6], "#jaw"),
+        solid([2, 16, 10], [14, jaw, 12], "#jaw"),
+        solid([7, 16, 7], [9, 16.6, 9], "#lamp"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/deck_clamp.json`, {
+    variants: { "closed=false": { model: `${ID}:block/deck_clamp` }, "closed=true": { model: `${ID}:block/deck_clamp_closed` } },
+  });
+  write(`assets/${ID}/models/item/deck_clamp.json`, { parent: `${ID}:block/deck_clamp` });
+  dropsItself("deck_clamp");
+  cubes.deck_clamp = null;
+  for (const released of [false, true]) {
+    write(`assets/${ID}/models/block/carrier_lever${released ? "_released" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { iron: "minecraft:block/iron_block", lever: "minecraft:block/yellow_concrete", tip: "minecraft:block/black_concrete",
+        particle: "minecraft:block/iron_block" },
+      elements: [
+        solid([5, 0, 5], [11, 3, 11], "#iron"),
+        { ...solid([7.25, 3, 7.25], [8.75, 12, 8.75], "#lever"), rotation: { origin: [8, 3, 8], axis: "x", angle: released ? 45 : -45 } },
+        { ...solid([6.75, 10.5, 6.75], [9.25, 13, 9.25], "#tip"), rotation: { origin: [8, 3, 8], axis: "x", angle: released ? 45 : -45 } },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/carrier_lever.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((released) => [
+      `facing=${facing},released=${released}`, { model: `${ID}:block/carrier_lever${released ? "_released" : ""}`, y },
+    ]))),
+  });
+  write(`assets/${ID}/models/item/carrier_lever.json`, { parent: `${ID}:block/carrier_lever` });
+  dropsItself("carrier_lever");
+  cubes.carrier_lever = null;
   // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
   // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
   // way, drawn facing north, it throws its light.
@@ -1012,6 +1063,10 @@ function zeppelinControlsLang() {
     "block.aerolarge.mail_sack": "Mail Sack",
     "block.aerolarge.banner_cleat": "Banner Cleat",
     "block.aerolarge.crane_winch": "Crane Winch",
+    "block.aerolarge.flight_deck": "Flight Deck",
+    "block.aerolarge.flight_deck_stripe": "Flight Deck Line",
+    "block.aerolarge.deck_clamp": "Docking Clamp",
+    "block.aerolarge.carrier_lever": "Clamp Release Lever",
     "entity.aerolarge.crane_hook": "Crane Hook",
     "item.aerolarge.postcard": "Postcard from %s",
     "item.aerolarge.postcard.franked": "Franked over %s, %s",
@@ -5640,7 +5695,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5696,6 +5751,8 @@ write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolle
 write(`data/${ID}/tags/entity_type/crane_loads.json`, tag(["horse", "donkey", "mule", "llama", "trader_llama", "camel", "skeleton_horse",
   "zombie_horse", "cow", "mooshroom", "pig", "sheep", "goat", "boat", "chest_boat", "minecart", "chest_minecart", "furnace_minecart",
   "hopper_minecart"].map((id) => `minecraft:${id}`)));
+// What the flying carrier's clamps top a plane's tanks up with: whatever the modpack counts as fuel, and water for steam.
+write(`data/${ID}/tags/fluid/carrier_fuel.json`, tag(["#c:fuel", "minecraft:water"]));
 write(`data/${ID}/tags/block/crane_cargo.json`, tag(["minecraft:chest", "minecraft:trapped_chest", "minecraft:barrel", `${ID}:cargo_crate`]));
 
 // Recipes, for repairing and extending an airliner in survival; the blueprints themselves are creative only.
@@ -5730,6 +5787,10 @@ shaped("franking_machine", ["P", "C"], { P: "minecraft:paper", C: "minecraft:car
 shaped("mail_sack", ["S", "L", "P"], { S: "minecraft:string", L: "minecraft:leather", P: "minecraft:paper" }, 1);
 shaped("banner_cleat", ["L", "C", "W"], { L: "minecraft:lead", C: "minecraft:copper_ingot", W: "minecraft:white_wool" }, 1);
 shaped("crane_winch", ["CLC", "IRI"], { C: "minecraft:chain", L: "minecraft:lever", I: "minecraft:iron_ingot", R: "minecraft:lead" }, 1);
+shaped("flight_deck", ["SS", "SS"], { S: "minecraft:smooth_stone_slab" }, 4);
+shaped("flight_deck_stripe", ["W", "D"], { W: "minecraft:white_dye", D: `${ID}:flight_deck` }, 1);
+shaped("deck_clamp", ["Y", "P", "D"], { Y: "minecraft:yellow_dye", P: "minecraft:piston", D: `${ID}:flight_deck` }, 1);
+shaped("carrier_lever", ["Y", "L"], { Y: "minecraft:yellow_dye", L: "minecraft:lever" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);

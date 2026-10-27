@@ -3638,6 +3638,14 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (x % 4 === 0 || y % 4 === 0) return GRATING;
     return CLEAR;
   }, 2);
+  // The flying carrier's flight deck on the crown: dark grey non-slip plating, a faint seam round each plate, and the
+  // same with a white line down its middle, for its edges and its dashed middle line.
+  const DECK = [0x3c, 0x40, 0x46];
+  const DECK_SEAM = [0x30, 0x33, 0x38];
+  const DECK_LINE = [0xe8, 0xe8, 0xe2];
+  const deck = (x, y) => (x === 0 || y === 0 ? DECK_SEAM : DECK);
+  texture(blockOutput, "flight_deck", deck, 6);
+  texture(blockOutput, "flight_deck_stripe", (x, y) => (x >= 5 && x <= 10 && y > 0 ? DECK_LINE : deck(x, y)), 4);
   // The secret techno room: black speaker cabinets, a big cone and a little horn on their fronts, a grille on their
   // sides; the DJ deck's top with its two turntables and the mixer between them, its sides black with a line of neon;
   // the dance floor's black glass tiles; and the walls' black foam, a pattern of little pyramids.

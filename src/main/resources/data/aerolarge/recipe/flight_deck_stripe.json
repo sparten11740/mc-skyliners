@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "W",
+    "D"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_dye"
+    },
+    "D": {
+      "item": "aerolarge:flight_deck"
+    }
+  },
+  "result": {
+    "id": "aerolarge:flight_deck_stripe",
+    "count": 1
+  }
+}

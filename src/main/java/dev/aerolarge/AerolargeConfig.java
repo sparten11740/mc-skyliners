@@ -56,6 +56,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ZEPPELIN_POST;
     public static final ModConfigSpec.BooleanValue TOWED_BANNER;
     public static final ModConfigSpec.BooleanValue SKY_CRANE;
+    public static final ModConfigSpec.BooleanValue FLYING_CARRIER;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -381,6 +382,13 @@ public final class AerolargeConfig {
                 "the winches already built do nothing."
             )
             .define("skyCrane", true);
+        FLYING_CARRIER = builder
+            .comment(
+                "Experimental: whether a zeppelin is built with a flight deck along her crown, whose docking clamps lock down a",
+                "plane (another ship of Sable's) come to rest on it and keep its tanks full, until its release lever is pulled.",
+                "Off, the decks already built hold nothing."
+            )
+            .define("flyingCarrier", false);
         builder.pop();
 
         SPEC = builder.build();

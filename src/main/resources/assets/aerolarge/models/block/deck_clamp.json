@@ -1,0 +1,139 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "deck": "aerolarge:block/flight_deck",
+    "jaw": "minecraft:block/yellow_concrete",
+    "lamp": "minecraft:block/red_concrete",
+    "particle": "aerolarge:block/flight_deck"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#deck"
+        },
+        "south": {
+          "texture": "#deck"
+        },
+        "east": {
+          "texture": "#deck"
+        },
+        "west": {
+          "texture": "#deck"
+        },
+        "up": {
+          "texture": "#deck"
+        },
+        "down": {
+          "texture": "#deck"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        16,
+        4
+      ],
+      "to": [
+        14,
+        16.5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#jaw"
+        },
+        "south": {
+          "texture": "#jaw"
+        },
+        "east": {
+          "texture": "#jaw"
+        },
+        "west": {
+          "texture": "#jaw"
+        },
+        "up": {
+          "texture": "#jaw"
+        },
+        "down": {
+          "texture": "#jaw"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        16,
+        10
+      ],
+      "to": [
+        14,
+        16.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#jaw"
+        },
+        "south": {
+          "texture": "#jaw"
+        },
+        "east": {
+          "texture": "#jaw"
+        },
+        "west": {
+          "texture": "#jaw"
+        },
+        "up": {
+          "texture": "#jaw"
+        },
+        "down": {
+          "texture": "#jaw"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        16,
+        7
+      ],
+      "to": [
+        9,
+        16.6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp"
+        },
+        "south": {
+          "texture": "#lamp"
+        },
+        "east": {
+          "texture": "#lamp"
+        },
+        "west": {
+          "texture": "#lamp"
+        },
+        "up": {
+          "texture": "#lamp"
+        },
+        "down": {
+          "texture": "#lamp"
+        }
+      }
+    }
+  ]
+}

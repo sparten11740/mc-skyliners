@@ -1624,6 +1624,19 @@ it. The hook weighs nothing on her flight. Should the winch be taken away, the h
 animal floating down slowly and a chest coming down on a parachute. The server config's `skyCrane` leaves it out of
 zeppelins built from then on, and off, the winches already built do nothing.
 
+The flying carrier, experimental and off until switched on with `flyingCarrier` in the server config: a zeppelin built
+then has a flight deck along her crown, forward of the Sky Deck where her crown runs level, a 9 by 40 strip of dark
+non-slip deck with white lines along its edges and a dashed line down its middle, a bulb at each corner, four docking
+clamps set into it, yellow jaws lying flat with a red lamp between, and a yellow Clamp Release Lever at its forward
+port corner. Land a plane of your own on it (one built with Create Aeronautics, or anything else Sable flies),
+coming in over her bow while she hovers or creeps along, and once it has rested on the deck a second the clamps lock
+it down with a clang, their jaws raised and their lamps green: it rides with her however she flies, turns or climbs,
+and every two seconds its tanks are topped up with the fuel they hold (whatever the modpack counts as fuel, and water
+for steam engines) and its batteries filled, with a gurgle. A plane heavier than a tenth of her is refused with a low
+note. Pull the release lever down, with a hiss, and every clamp opens and stays open so the plane can take off; push
+it back up and they lock the next plane that rests there. Locked planes stay locked through a save. Off, the decks
+already built hold nothing.
+
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
 takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
@@ -1859,7 +1872,8 @@ draws her shadow from her `ZeppelinSilhouette`, `MistyWindows` mists her promena
 the `FrankingMachineBlock`, whose mail sacks (`MailSackItem`) land their own way from a `FallingCrate`,
 `ZeppelinTowedBanner` fits the `BannerCleatBlock` whose banner `TowedBanner` draws from her tail, `ZeppelinSkyCrane`
 stands the `CraneWinchBlock` whose `CraneWinchBlockEntity` hangs and holds the `CraneHook` (drawn by `CraneHookRenderer`,
-its drum and dial by `CraneWinchRenderer`), `ZeppelinBoost`
+its drum and dial by `CraneWinchRenderer`), `ZeppelinFlightDeck` lays the flight deck whose `DeckClampBlockEntity`s lock a
+plane down through `SableFlight.lock` and refuel it, opened by the `CarrierLeverBlock`, `ZeppelinBoost`
 fits the `BoostButtonBlock` and the boosters round her tail, its `BoostButtonBlockEntity` firing them and `SpeedBoost`
 steering her as they do (a `Course` on `ZeppelinPilot`'s list, keeping her engines as they were), and
 `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of
