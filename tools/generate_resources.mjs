@@ -188,8 +188,9 @@ function cockpitDoorLang() {
 // cap, glowing whatever the light around, a pixel and a half proud, or half a pixel pressed in. The cap's face shows the
 // middle six pixels of its texture, its picture, the right way up for someone standing at the button's foot; on a
 // wall, turned up off the floor, it would stand on its head and back to front, so a wall button's face is turned half
-// round to read the right way up. In the hand, the button upright, its cap to the north.
-function litButton(name) {
+// round to read the right way up. In the hand, the button upright, its cap to the north. A button may wear another's
+// cap, its picture and all.
+function litButton(name, capName = name) {
   const block = (texture) => `${ID}:block/${texture}`;
   const bezel = block("airstair_button_bezel");
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
@@ -202,14 +203,14 @@ function litButton(name) {
     for (const pressed of [false, true]) {
       write(`assets/${ID}/models/block/${name}${wall ? "_wall" : ""}${pressed ? "_pressed" : ""}.json`, {
         parent: "minecraft:block/block",
-        textures: { bezel, cap: block(`${name}${pressed ? "_pressed" : ""}`), particle: bezel },
+        textures: { bezel, cap: block(`${capName}${pressed ? "_pressed" : ""}`), particle: bezel },
         elements: [solid([4, 0, 4], [12, 1, 12], "#bezel"), cap([5, 1, 5], [11, pressed ? 1.5 : 2.5, 11], wall)],
       });
     }
   }
   write(`assets/${ID}/models/block/${name}_inventory.json`, {
     parent: "minecraft:block/block",
-    textures: { bezel, cap: block(name), particle: bezel },
+    textures: { bezel, cap: block(capName), particle: bezel },
     elements: [
       solid([4, 4, 8], [12, 12, 9], "#bezel"),
       { from: [5, 5, 6.5], to: [11, 11, 8], shade: false, faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#cap", ...lit }])) },
@@ -234,6 +235,8 @@ function litButton(name) {
 }
 // The airstair button beside the controller (see AirstairButtonBlock), its cap showing the controller's staircase.
 litButton("airstair_button");
+// A zeppelin's boarding stairs' button (see BoardingStairsButtonBlock), in the airstair button's cap: the same stairs.
+litButton("boarding_stairs_button", "airstair_button");
 // The illuminated button: the call button with glowstone dust over it to light its cap.
 function airstairButtonRecipes() {
   shaped("airstair_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: `${ID}:airstair_call_button` }, 1);
@@ -889,6 +892,7 @@ function zeppelinControlsLang() {
     "block.aerolarge.searchlight": "Searchlight",
     "block.aerolarge.searchlight_handle": "Searchlight Handle",
     "block.aerolarge.skywriting_board": "Skywriting Board",
+    "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -5482,7 +5486,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5562,6 +5566,7 @@ shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minec
 shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
+shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);

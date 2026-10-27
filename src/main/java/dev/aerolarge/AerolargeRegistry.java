@@ -28,6 +28,8 @@ import dev.aerolarge.block.BallastValveBlockEntity;
 import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.BarStoolBlock;
 import dev.aerolarge.block.BeanBagBlock;
+import dev.aerolarge.block.BoardingStairsBlockEntity;
+import dev.aerolarge.block.BoardingStairsButtonBlock;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.BubbleLevelBlock;
 import dev.aerolarge.block.BubbleLevelBlockEntity;
@@ -1641,6 +1643,14 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightHandleBlockEntity>> SEARCHLIGHT_HANDLE_ENTITY =
         BLOCK_ENTITIES.register("searchlight_handle", () -> BlockEntityType.Builder.of(SearchlightHandleBlockEntity::new, SEARCHLIGHT_HANDLE.get()).build(null));
+    /** A zeppelin's boarding stairs' lit push-button, which folds her boarding stairs away or brings them down. */
+    public static final DeferredBlock<BoardingStairsButtonBlock> BOARDING_STAIRS_BUTTON = BLOCKS.registerBlock(
+        "boarding_stairs_button",
+        properties -> new BoardingStairsButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoardingStairsBlockEntity>> BOARDING_STAIRS_ENTITY =
+        BLOCK_ENTITIES.register("boarding_stairs_button", () -> BlockEntityType.Builder.of(BoardingStairsBlockEntity::new, BOARDING_STAIRS_BUTTON.get()).build(null));
     /** The skywriting board in a zeppelin's control car, whose picture buttons have her fly a shape in smoke. */
     public static final DeferredBlock<SkywritingBoardBlock> SKYWRITING_BOARD = BLOCKS.registerBlock(
         "skywriting_board", SkywritingBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
@@ -1690,6 +1700,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT_HANDLE);
     public static final DeferredItem<BlockItem> SKYWRITING_BOARD_ITEM = ITEMS.registerSimpleBlockItem(SKYWRITING_BOARD);
+    public static final DeferredItem<BlockItem> BOARDING_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOARDING_STAIRS_BUTTON);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
     public static final DeferredItem<BlockItem> BUBBLE_LEVEL_ITEM = ITEMS.registerSimpleBlockItem(BUBBLE_LEVEL);
@@ -1783,7 +1794,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, BOARDING_STAIRS_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

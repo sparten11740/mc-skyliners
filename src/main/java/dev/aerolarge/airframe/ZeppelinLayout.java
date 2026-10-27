@@ -4,6 +4,7 @@ import static dev.aerolarge.airframe.ZeppelinShape.*;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.ZeppelinPilot;
+import dev.aerolarge.block.BoardingStairsBlockEntity;
 import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinStairsBlock;
 import dev.aerolarge.block.PropellerBlock;
@@ -19,8 +20,12 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 
@@ -120,6 +125,12 @@ public final class ZeppelinLayout implements Layout {
     private static final double WINDOW_FACING = 0.6;
     /** How many rows over the control car's floor its windows start. */
     private static final int CAR_SILL = 2;
+    /**
+     * The boarding stairs' call button, on the outside of the control car's port wall, within reach from the ground:
+     * how many rows aft of the car's front, and how many over its floor.
+     */
+    private static final int CALL_BUTTON_AFT = 4;
+    private static final int CALL_BUTTON_UP = 1;
     /**
      * The control car, at every size: how many rows long it is from its front wall to its back wall, how far either
      * side of the middle its walls stand, its floor's row over the ground, how many rows tall it is inside, and the row
@@ -827,15 +838,48 @@ public final class ZeppelinLayout implements Layout {
 
     /**
      * Boarding stairs up through the belly from the ground to the lower deck, cut through the cover: a straight flight
-     * climbing aft, a block wide, opened up no further than a row over the deck.
+     * climbing aft, a block wide, opened up no further than a row over the deck; and beside its head on the deck, its
+     * button, which folds the flight away into the belly, and the cover and the deck's floor back over it, as she flies
+     * (see {@link BoardingStairsBlockEntity}). Everything the flight changes folds away, so with it up the hull is as
+     * it would be without it.
      */
     private void boardingStairs(int x, int deck, int z) {
+        Map<BlockPos, BlockState> before = flightColumn(x, deck, z);
         for (int y = 0; y <= deck; y++) {
             step(x, y, z + y, Direction.SOUTH, deck + 1);
         }
         for (int y = 0; y < deck; y++) {
             railAlong(x, y, z + y, Direction.WEST);
             railAlong(x, y, z + y, Direction.EAST);
+        }
+        BlockPos button = new BlockPos(x + Integer.signum(x), deck + 1, z + deck);
+        List<BoardingStairsBlockEntity.Fold> folds = new ArrayList<>();
+        before.forEach((at, was) -> addFold(folds, at, was, button));
+        set(button.getX(), button.getY(), button.getZ(), AerolargeRegistry.BOARDING_STAIRS_BUTTON.get().defaultBlockState()
+            .setValue(ButtonBlock.FACE, AttachFace.FLOOR).setValue(ButtonBlock.FACING, Direction.SOUTH));
+        fit(button, (blockEntity, rotation) -> rigStairs(blockEntity, folds, rotation));
+    }
+
+    /** What stands in a flight of boarding stairs' column of the layout, every row it reaches, open air as air. */
+    private Map<BlockPos, BlockState> flightColumn(int x, int deck, int z) {
+        Map<BlockPos, BlockState> column = new HashMap<>();
+        box(x, 0, z, x, deck + 1, z + deck, (at, y, along) -> column.put(new BlockPos(at, y, along), stateAt(at, y, along)));
+        return column;
+    }
+
+    /** A block of the flight's column that the flight changed, to fold away with it, as an offset from its button. */
+    private void addFold(List<BoardingStairsBlockEntity.Fold> folds, BlockPos at, BlockState was, BlockPos button) {
+        BlockState now = stateAt(at.getX(), at.getY(), at.getZ());
+        if (!now.equals(was)) {
+            folds.add(new BoardingStairsBlockEntity.Fold(at.subtract(button), now, was));
+        }
+    }
+
+    /** Hands a flight's button its folds, turned as the zeppelin was placed. */
+    private static void rigStairs(BlockEntity blockEntity, List<BoardingStairsBlockEntity.Fold> folds, Rotation rotation) {
+        if (blockEntity instanceof BoardingStairsBlockEntity stairs) {
+            stairs.rig(folds.stream().map(fold -> new BoardingStairsBlockEntity.Fold(fold.at().rotate(rotation), fold.down().rotate(rotation),
+                fold.up().rotate(rotation))).toList());
         }
     }
 
@@ -867,6 +911,8 @@ public final class ZeppelinLayout implements Layout {
         // The wheel the zeppelin rests on at the bow, under the car's middle.
         set(0, car.floor() - 1, car.lounge(), AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
         neck(car.back() - 1, car.floor() + 1, car.roof());
+        set(-car.half() - 1, car.floor() + CALL_BUTTON_UP, car.front() + CALL_BUTTON_AFT, AerolargeRegistry.BOARDING_STAIRS_BUTTON.get().defaultBlockState()
+            .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.WEST));
         box(-car.half(), car.roof() + 1, car.front(), car.half(), car.roof() + 1, car.back(), this::fairingAt);
     }
 

@@ -1422,7 +1422,13 @@ axial gangway, an open aluminium grating with glass rails and lamps along its ed
 second last, nearly the whole length of the hull. In the belly below lie the passenger decks: a lower deck, and over it
 an upper deck with long promenade windows down both sides, slanting with the hull's curve. Stairs climb from the lower
 deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
-climbs from the control car up its neck to a corridor running aft to the decks.
+climbs from the control car up its neck to a corridor running aft to the decks. The boarding stairs fold away into the
+belly as soon as she moves, a row at a time from their foot, the hull's cover closing over them, with the airliner's
+airstairs' motor and latch; once she is down on the ground again after flying they come down of their own accord, as far
+as the ground lets them. A lit amber button with a staircase on it, the airstairs' own, stands at the head of each
+flight on the lower deck, and another low on the outside of the control car's port side, to call them down from the
+ground: pressing any of them folds all her boarding stairs away or brings them down, while she stands still; moving, it
+only sounds a low note.
 
 The Furnished Zeppelin Blueprint fits the decks out from the airliner's furniture, as the Hindenburg's were laid out. On
 the lower deck the boarding hall at the front has bamboo in planters along its walls; the galley beside the stairs has
@@ -1654,10 +1660,10 @@ over with too much, say), it rests again and switches itself off with a thud, sa
 Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
 
 Nobody is hurt falling from a zeppelin: a striped safety canopy, the parachute's, opens over anyone who was aboard a
-moment ago and has fallen a few blocks, off the boarding stairs under its belly in flight, say, or from the gangway
-inside the hull, with the snap of a parachute opening. They glide down as under a parachute, steering the way they
-walk, and it packs itself away as they land. It does not open in creative mode, while flying or under a parachute of
-one's own; `safetyCanopy` in the server config's `zeppelin` section switches it off.
+moment ago and has fallen a few blocks, off the boarding stairs as they fold away under her, say, or from the gangway
+inside the hull, with the snap of a parachute opening. They glide down as under a parachute, steering the way they walk,
+and it packs itself away as they land. It does not open in creative mode, while flying or under a parachute of one's
+own; `safetyCanopy` in the server config's `zeppelin` section switches it off.
 
 A zeppelin is far longer than the land simulated round a player reaches (12 chunks by default): someone riding in its
 bow leaves its middle in land unloaded behind them, and Sable loads a ship back only once the land under all of it is
@@ -1742,67 +1748,69 @@ the player's view while the camera is inside a hull in the cloud layer. The zepp
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
 blocks and working the air inside its hull out from the shape as it hands it over, its burners turned down to what a
-small cell holds by `Burners`; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions,
-from an `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its souvenir model
-(`SouvenirModelBlock`), and `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which
-spin them with their engine's signal. Once the hull stands, `ZeppelinLayout` lays its features, each a `ZeppelinPiece`
-of its own on one list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the Sky Shaft and the Sky Deck,
-`ZeppelinCellGallery` the gallery inside the middle cell, `ZeppelinDecks` the furnished zeppelin's furniture,
-`ZeppelinLights` its lights (`NavLightBlock`s, their glow drawn by `NavLightRenderer`), `ZeppelinSkyDeckLaunch` the Sky
-Deck's rack, jump light and `PaperPlaneBoxBlock`, `ZeppelinHornCord` the `HornCordBlock` that `ShipHorn` sounds the horn
-from, its echo and the mobs looking up, and `ZeppelinLiveryBoard` the `LiveryBoardBlock`, whose `LiveryBoardRenderer`
-draws the painters' cradle; a zeppelin's `Livery` is kept by its autopilot, and `ZeppelinPaint` tints its cover (the
-shell model's `tint_index`) and fabric by it on the client, and `ZeppelinFestive` dresses a festive zeppelin
-(`SleighBells` rings with its engines on the client), and `ZeppelinColours` stands the flagstaff on the Sky Deck, its
-colours hoisted at a `FlagHalyardBlock`, flown by `ShipsColoursRenderer` and painted on the fins by `ShipsColours` where
-`FinArt` says, and `ZeppelinChristening` hangs the `ShipsPlaqueBlock` that a `ChristeningBottleItem` broken on her nose
-engraves through `Christening`, `ChristeningPaint` painting her crest and name where `FlankArt` says (each a
-`PaintOverlay` on `ZeppelinPaint`'s list) and `ShipsPlaqueRenderer` engraving the plaque, and `ZeppelinFlankScreen`
-stands the `PictureBoardBlock` whose `FlankScreenRenderer` draws the screens where `FlankScreen` says, its headlines and
-figures set in a typeface by `ScreenType` and its maps painted by `ScreenMaps`, and `ZeppelinEngineRooms` fits each
-engine car out with an `EngineRepeaterBlock`, whose `EngineRepeaterBlockEntity` holds its engine in `ZeppelinPilot`
-until its order is answered, and `ZeppelinTrimCar` hangs the rail whose `TrimWinchBlock` hauls the trim car as its trim
-wheel or the autopilot says, its `BubbleLevelBlock` drawn by `BubbleLevelRenderer`, and `ZeppelinTechnoRoom` hides the
-room under its `SecretHatchBlock`, whose `TechnoDeckBlock` plays it through `TechnoRoom` on the client, its lights drawn
-by `TechnoRoomRenderer`, and `ZeppelinLookout` stands the `LookoutGlassBlock` in the control car, looked through by
-`LookoutView` and drawn by `LookoutGlassRenderer`, whose spots `LookoutSpot` checks and drops as flags on the
-`LookoutGlassBlockEntity`, `LookoutFlags` putting them on the autopilot's map (each a `MapMarker` on `DestinationMap`'s
-list), and `ZeppelinUpShip` hangs the `BallastValveBlock` whose `BallastValveBlockEntity` keeps her handlers' stations
-and strikes the take-off's beats, `UpShip` holding her on the lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and
-`UpShipScene` drawing the handlers, their lines and the water, and `ZeppelinScreens` places the `PassengerScreenBlock`s
-that look through her `ZeppelinCamera`s (each a `CameraSpot`, as the airliner's `OutsideCamera`s are, the flyby circling
-her in `CameraMount`), and `ZeppelinSearchlights` hangs the `SearchlightBlock`s whose `SearchlightHandleBlock`s swing
-them, `SearchlightBeams` drawing their beams and pools, and `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose
-`SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her along it, `Skywriting` handing her pilot
-the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting
-the button; a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control
-room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
-(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
-`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
-hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
-`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
-zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
-burners crackling at the far end of it do not take every sound channel there is. Assets are generated: `node
-tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by hand), and `node
-tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot tables, tags, recipes and lang file.
-The door and the call button are vanilla's iron door and stone button retextured, so their files come from vanilla's:
-pass the folder the client resources jar (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it
-out to keep them as they are. `node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any)
-with FFmpeg, and with `oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the
-engine loop is synthesised, the self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a
-public-domain siren and a CC0 explosion recorded on tape, kept in `tools/audio` (where each came from is in the script),
-and the flight deck's voice (the callouts and the cabin announcements) is spoken by
-[Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open speech synthesis model under the Apache License 2.0, in its
-British woman's voice Emma, on any system: install it once with `npm install --prefix tools` (the model, some 300 MB, is
-fetched into `tools/node_modules` on the first run), or the voice is left as it is. FFmpeg plays it through the cabin's
-loudspeakers, their band, a bright middle and the speakers further along the cabin, and evens its level: the callouts
-compressed hard, crisp as warnings, the announcements through a loudness normaliser. The settings for all of it are
-together in `VOICE`, to tune it. Air traffic control is Windows' own speech synthesis, its man's voice ("Microsoft
-David"), so that part runs on Windows only, through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to
-3000 Hz), compresses, clips and bit-crushes it a little, and the script lays it over the carrier's hiss with the odd
-crackle, between the squelch's click as the button is pressed and the burst of noise as it is let go; other aircraft are
-the same voice pitched up or down. Its settings and every line said are in `RADIO` and `ATC`.
+small cell holds by `Burners`, and its boarding stairs folded away and brought down by the `BoardingStairsBlockEntity`
+of the `BoardingStairsButtonBlock` at the head of each flight; both airframes go up through `AirframeBuild` as a
+`Layout`, kept as packed positions, from an `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its
+souvenir model (`SouvenirModelBlock`), and `PropellerRenderer` draws a zeppelin's propellers behind their
+`PropellerBlock` hubs, which spin them with their engine's signal. Once the hull stands, `ZeppelinLayout` lays its
+features, each a `ZeppelinPiece` of its own on one list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the
+Sky Shaft and the Sky Deck, `ZeppelinCellGallery` the gallery inside the middle cell, `ZeppelinDecks` the furnished
+zeppelin's furniture, `ZeppelinLights` its lights (`NavLightBlock`s, their glow drawn by `NavLightRenderer`),
+`ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light and `PaperPlaneBoxBlock`, `ZeppelinHornCord` the `HornCordBlock`
+that `ShipHorn` sounds the horn from, its echo and the mobs looking up, and `ZeppelinLiveryBoard` the
+`LiveryBoardBlock`, whose `LiveryBoardRenderer` draws the painters' cradle; a zeppelin's `Livery` is kept by its
+autopilot, and `ZeppelinPaint` tints its cover (the shell model's `tint_index`) and fabric by it on the client, and
+`ZeppelinFestive` dresses a festive zeppelin (`SleighBells` rings with its engines on the client), and `ZeppelinColours`
+stands the flagstaff on the Sky Deck, its colours hoisted at a `FlagHalyardBlock`, flown by `ShipsColoursRenderer` and
+painted on the fins by `ShipsColours` where `FinArt` says, and `ZeppelinChristening` hangs the `ShipsPlaqueBlock` that a
+`ChristeningBottleItem` broken on her nose engraves through `Christening`, `ChristeningPaint` painting her crest and
+name where `FlankArt` says (each a `PaintOverlay` on `ZeppelinPaint`'s list) and `ShipsPlaqueRenderer` engraving the
+plaque, and `ZeppelinFlankScreen` stands the `PictureBoardBlock` whose `FlankScreenRenderer` draws the screens where
+`FlankScreen` says, its headlines and figures set in a typeface by `ScreenType` and its maps painted by `ScreenMaps`,
+and `ZeppelinEngineRooms` fits each engine car out with an `EngineRepeaterBlock`, whose `EngineRepeaterBlockEntity`
+holds its engine in `ZeppelinPilot` until its order is answered, and `ZeppelinTrimCar` hangs the rail whose
+`TrimWinchBlock` hauls the trim car as its trim wheel or the autopilot says, its `BubbleLevelBlock` drawn by
+`BubbleLevelRenderer`, and `ZeppelinTechnoRoom` hides the room under its `SecretHatchBlock`, whose `TechnoDeckBlock`
+plays it through `TechnoRoom` on the client, its lights drawn by `TechnoRoomRenderer`, and `ZeppelinLookout` stands the
+`LookoutGlassBlock` in the control car, looked through by `LookoutView` and drawn by `LookoutGlassRenderer`, whose spots
+`LookoutSpot` checks and drops as flags on the `LookoutGlassBlockEntity`, `LookoutFlags` putting them on the autopilot's
+map (each a `MapMarker` on `DestinationMap`'s list), and `ZeppelinUpShip` hangs the `BallastValveBlock` whose
+`BallastValveBlockEntity` keeps her handlers' stations and strikes the take-off's beats, `UpShip` holding her on the
+lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and `UpShipScene` drawing the handlers, their lines and the water, and
+`ZeppelinScreens` places the `PassengerScreenBlock`s that look through her `ZeppelinCamera`s (each a `CameraSpot`, as
+the airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `ZeppelinSearchlights` hangs the
+`SearchlightBlock`s whose `SearchlightHandleBlock`s swing them, `SearchlightBeams` drawing their beams and pools, and
+`ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of
+her and steers her along it, `Skywriting` handing her pilot the course (a `Course` on `ZeppelinPilot`'s list),
+`SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting the button; a feature is taken out of the zeppelin
+with its line on the list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner,
+engine and hand control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws
+turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to
+show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
+the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
+it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
+`SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
+sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
+sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that
+can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot
+tables, tags, recipes and lang file. The door and the call button are vanilla's iron door and stone button retextured,
+so their files come from vanilla's: pass the folder the client resources jar
+(`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it out to keep them as they are. `node
+tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any) with FFmpeg, and with `oggenc` from
+vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the engine loop is synthesised, the
+self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a public-domain siren and a CC0
+explosion recorded on tape, kept in `tools/audio` (where each came from is in the script), and the flight deck's voice
+(the callouts and the cabin announcements) is spoken by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open
+speech synthesis model under the Apache License 2.0, in its British woman's voice Emma, on any system: install it once
+with `npm install --prefix tools` (the model, some 300 MB, is fetched into `tools/node_modules` on the first run), or
+the voice is left as it is. FFmpeg plays it through the cabin's loudspeakers, their band, a bright middle and the
+speakers further along the cabin, and evens its level: the callouts compressed hard, crisp as warnings, the
+announcements through a loudness normaliser. The settings for all of it are together in `VOICE`, to tune it. Air traffic
+control is Windows' own speech synthesis, its man's voice ("Microsoft David"), so that part runs on Windows only,
+through a VHF radio: FFmpeg squeezes it into the radio's band (about 300 to 3000 Hz), compresses, clips and bit-crushes
+it a little, and the script lays it over the carrier's hiss with the odd crackle, between the squelch's click as the
+button is pressed and the burst of noise as it is let go; other aircraft are the same voice pitched up or down. Its
+settings and every line said are in `RADIO` and `ATC`.
 
 ## License
 
