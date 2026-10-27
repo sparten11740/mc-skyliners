@@ -63,7 +63,7 @@ public final class SearchlightBeams {
             Vec3 from = seen != null ? seen.eye() : Vec3.atCenterOf(light.getBlockPos());
             Vec3 way = seen != null ? seen.forward() : light.aim();
             if (from.distanceTo(camera) <= SEEN) {
-                draw(consumer, pose, camera, from, way, ground(level, from, way));
+                draw(consumer, pose, camera, from, way, ground(level, from, way, REACH));
             }
         }
         buffers.endBatch(RenderType.lightning());
@@ -74,11 +74,14 @@ public final class SearchlightBeams {
         return SearchlightBlockEntity.loaded(level).stream().filter(SearchlightBlockEntity::lit).toList();
     }
 
-    /** Where a beam meets the land, within its reach; null where it meets none first or reaches land not loaded. */
+    /**
+     * Where a beam meets the land, within so many blocks of where it leaves; null where it meets none first or reaches
+     * land not loaded.
+     */
     @Nullable
-    private static Vec3 ground(ClientLevel level, Vec3 from, Vec3 way) {
+    static Vec3 ground(ClientLevel level, Vec3 from, Vec3 way, double reach) {
         double under = groundUnder(level, from);
-        for (double along = MARCH_STEP; along <= REACH; along += MARCH_STEP) {
+        for (double along = MARCH_STEP; along <= reach; along += MARCH_STEP) {
             Vec3 point = from.add(way.scale(along));
             int x = Mth.floor(point.x);
             int z = Mth.floor(point.z);
@@ -126,12 +129,13 @@ public final class SearchlightBeams {
             vertex(consumer, pose, camera, ring(to, side, across, a, end), BEAM & 0x00FFFFFF);
         }
         if (hit != null) {
-            pool(consumer, pose, camera, hit.add(0, POOL_LIFT, 0), (float) length * POOL);
+            pool(consumer, pose, camera, hit, (float) length * POOL);
         }
     }
 
-    /** A disc of light lying on the ground, brightest in its middle. */
-    private static void pool(VertexConsumer consumer, Matrix4f pose, Vec3 camera, Vec3 middle, float radius) {
+    /** A disc of light lying on the ground round where a beam meets it, brightest in its middle. */
+    static void pool(VertexConsumer consumer, Matrix4f pose, Vec3 camera, Vec3 ground, float radius) {
+        Vec3 middle = ground.add(0, POOL_LIFT, 0);
         Vector3f east = new Vector3f(1, 0, 0);
         Vector3f south = new Vector3f(0, 0, 1);
         for (int k = 0; k < SIDES; k++) {

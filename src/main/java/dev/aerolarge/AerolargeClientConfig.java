@@ -14,6 +14,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.IntValue TAIL_CAMERA_RESOLUTION;
     public static final ModConfigSpec.BooleanValue NIGHT_LIGHTS;
     public static final ModConfigSpec.BooleanValue DISCO_LIGHTS;
+    public static final ModConfigSpec.BooleanValue FLOODLIGHT_LIGHT;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
 
@@ -63,6 +64,11 @@ public final class AerolargeClientConfig {
                 "lights; turn it off if that costs too much. Never with Iris installed: the ball then only turns and glints, and",
                 "lights the room as a lamp does.")
             .define("discoLights", true);
+        FLOODLIGHT_LIGHT = builder
+            .comment("Let a zeppelin's lit floodlights cast real light on the land under her, through Veil (which comes with Sable).",
+                "While one is near, every frame is drawn with Veil's extra buffers and its lights; turn it off if that costs too",
+                "much. Off, or with Iris installed, a pool of light is drawn on the ground under each instead.")
+            .define("floodlightLight", true);
         CLOUDLESS_CABIN = builder
             .comment("Keep the clouds out of the airliner's cabin: while you are inside its hull and the cloud layer passes the",
                 "airliner, the clouds are not drawn for you, so no slab of cloud cuts through the floor, the walls and the seats.",

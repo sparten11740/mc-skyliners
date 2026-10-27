@@ -77,6 +77,8 @@ import dev.aerolarge.block.FairingBlock;
 import dev.aerolarge.block.FlagHalyardBlock;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import dev.aerolarge.block.FlagstaffBlock;
+import dev.aerolarge.block.FloodlightBlock;
+import dev.aerolarge.block.FloodlightBlockEntity;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.FlightMapBlock;
@@ -1649,6 +1651,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightHandleBlockEntity>> SEARCHLIGHT_HANDLE_ENTITY =
         BLOCK_ENTITIES.register("searchlight_handle", () -> BlockEntityType.Builder.of(SearchlightHandleBlockEntity::new, SEARCHLIGHT_HANDLE.get()).build(null));
+    /** A floodlight under a zeppelin, lit from dusk to dawn and lighting the land under her. */
+    public static final DeferredBlock<FloodlightBlock> FLOODLIGHT = BLOCKS.registerBlock(
+        "floodlight", FloodlightBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(FloodlightBlock.LIT) ? 15 : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FloodlightBlockEntity>> FLOODLIGHT_ENTITY =
+        BLOCK_ENTITIES.register("floodlight", () -> BlockEntityType.Builder.of(FloodlightBlockEntity::new, FLOODLIGHT.get()).build(null));
     /** A zeppelin's boarding stairs' lit push-button, which folds her boarding stairs away or brings them down. */
     public static final DeferredBlock<BoardingStairsButtonBlock> BOARDING_STAIRS_BUTTON = BLOCKS.registerBlock(
         "boarding_stairs_button",
@@ -1705,6 +1713,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SCREEN_STAND_ITEM = ITEMS.registerSimpleBlockItem(SCREEN_STAND);
     public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT);
+    public static final DeferredItem<BlockItem> FLOODLIGHT_ITEM = ITEMS.registerSimpleBlockItem(FLOODLIGHT);
     public static final DeferredItem<BlockItem> SEARCHLIGHT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT_HANDLE);
     public static final DeferredItem<BlockItem> SKYWRITING_BOARD_ITEM = ITEMS.registerSimpleBlockItem(SKYWRITING_BOARD);
     public static final DeferredItem<BlockItem> BOARDING_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOARDING_STAIRS_BUTTON);
@@ -1801,7 +1810,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, SKYWRITING_BOARD_ITEM, BOARDING_STAIRS_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, BOARDING_STAIRS_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

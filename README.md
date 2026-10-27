@@ -1406,6 +1406,13 @@ lights nothing up round them but reads from the ground the whole length of the s
 airliner's lights glow the same way. The server config's `navigationLights` leaves them off zeppelins built from then
 on.
 
+From dusk to dawn, and under a storm by day, floodlights under the control car and along the keel come on of their own
+accord, flat black lamps whose lenses glow warm white, and throw their light down and a little ahead onto the land under
+her, so those aboard see where she is going at night and those below see her coming. It is real light, through Veil
+(which comes with Sable), as the cabin's night lights are; the client config's `floodlightLight` turns it off and draws
+a pool of light on the ground under each lamp instead, as there always is with Iris installed. The server config's
+`floodlights` leaves them off zeppelins built from then on.
+
 The Festive Zeppelin Blueprint, in the creative tab, builds the furnished zeppelin dressed for Christmas: frosted
 silver with snow on its crown and a red band edged white round it at every ring, its fins and engine cars green, its
 gas cells red and green within; fairy lights round every ring, red, gold, green and blue, twinkling one colour after
@@ -1780,27 +1787,28 @@ lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and `UpShipScene` drawing the 
 `ZeppelinScreens` places the `PassengerScreenBlock`s, on the promenades each on a `ScreenStandBlock`, that look through
 her `ZeppelinCamera`s (each a `CameraSpot`, as the airliner's `OutsideCamera`s are, the flyby circling her in
 `CameraMount`), and `ZeppelinSearchlights` hangs the `SearchlightBlock`s whose `SearchlightHandleBlock`s swing them,
-`SearchlightBeams` drawing their beams and pools, and `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose
-`SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her along it, `Skywriting` handing her pilot
-the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the smoke and `SkywritingBoardRenderer` lighting
-the button; a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control
-room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
-(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
-`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
-hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
-`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
-zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
-burners crackling at the far end of it do not take every sound channel there is. Assets are generated: `node
-tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by hand), and `node
-tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot tables, tags, recipes and lang file.
-The door and the call button are vanilla's iron door and stone button retextured, so their files come from vanilla's:
-pass the folder the client resources jar (`build/moddev/artifacts/*-client-extra-*.jar`) is extracted to, or leave it
-out to keep them as they are. `node tools/generate_sounds.mjs [<name> ...]` writes the sounds (only those named, if any)
-with FFmpeg, and with `oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's FFmpeg 9 has none): the
-engine loop is synthesised, the self-destruct's siren and bang are made as Ultrasplosive makes its nuke's, from a
-public-domain siren and a CC0 explosion recorded on tape, kept in `tools/audio` (where each came from is in the script),
-and the flight deck's voice (the callouts and the cabin announcements) is spoken by
+`SearchlightBeams` drawing their beams and pools, and `ZeppelinFloodlights` hangs the `FloodlightBlock`s whose
+`FloodlightBlockEntity` lights them as the sky darkens, `Floodlights` drawing their light, and `ZeppelinSkywriting`
+hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of her and steers her
+along it, `Skywriting` handing her pilot the course (a `Course` on `ZeppelinPilot`'s list), `SkyTrails` drawing the
+smoke and `SkywritingBoardRenderer` lighting the button; a feature is taken out of the zeppelin with its line on the
+list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
+control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy`
+opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that
+starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel
+there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be
+painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the blockstates, models, loot tables,
+tags, recipes and lang file. The door and the call button are vanilla's iron door and stone button retextured, so their
+files come from vanilla's: pass the folder the client resources jar (`build/moddev/artifacts/*-client-extra-*.jar`) is
+extracted to, or leave it out to keep them as they are. `node tools/generate_sounds.mjs [<name> ...]` writes the sounds
+(only those named, if any) with FFmpeg, and with `oggenc` from vorbis-tools where FFmpeg has no libvorbis (Homebrew's
+FFmpeg 9 has none): the engine loop is synthesised, the self-destruct's siren and bang are made as Ultrasplosive makes
+its nuke's, from a public-domain siren and a CC0 explosion recorded on tape, kept in `tools/audio` (where each came from
+is in the script), and the flight deck's voice (the callouts and the cabin announcements) is spoken by
 [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open speech synthesis model under the Apache License 2.0, in its
 British woman's voice Emma, on any system: install it once with `npm install --prefix tools` (the model, some 300 MB, is
 fetched into `tools/node_modules` on the first run), or the voice is left as it is. FFmpeg plays it through the cabin's

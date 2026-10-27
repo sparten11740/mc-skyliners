@@ -50,6 +50,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue UP_SHIP;
     public static final ModConfigSpec.BooleanValue ZEPPELIN_SCREENS;
     public static final ModConfigSpec.BooleanValue SEARCHLIGHTS;
+    public static final ModConfigSpec.BooleanValue FLOODLIGHTS;
     public static final ModConfigSpec.BooleanValue SKYWRITING;
 
     static {
@@ -335,6 +336,12 @@ public final class AerolargeConfig {
                 "nothing."
             )
             .define("searchlights", true);
+        FLOODLIGHTS = builder
+            .comment(
+                "Whether a zeppelin is built with floodlights under her control car and along her keel, coming on at dusk and",
+                "under a storm and lighting the land under her and ahead. Zeppelins already built keep theirs."
+            )
+            .define("floodlights", true);
         SKYWRITING = builder
             .comment(
                 "Whether a zeppelin is built with a skywriting board in her control car, whose picture buttons have her autopilot",

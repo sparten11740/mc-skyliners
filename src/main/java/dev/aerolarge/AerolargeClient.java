@@ -44,6 +44,7 @@ import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.FlightMapRenderer;
 import dev.aerolarge.client.FlightStripBoardRenderer;
+import dev.aerolarge.client.Floodlights;
 import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmRenderer;
 import dev.aerolarge.client.HelmetVisor;
@@ -155,6 +156,9 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(TerrainMap::loggingOut);
         NeoForge.EVENT_BUS.addListener(DiscoLights::frame);
         NeoForge.EVENT_BUS.addListener(DiscoLights::loggingOut);
+        NeoForge.EVENT_BUS.addListener(Floodlights::frame);
+        NeoForge.EVENT_BUS.addListener(Floodlights::loggingOut);
+        NeoForge.EVENT_BUS.addListener(Floodlights::stage);
         NeoForge.EVENT_BUS.addListener(VeilLights::frame);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(BlueprintPreview::stage);

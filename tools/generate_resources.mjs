@@ -758,6 +758,32 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/searchlight.json`, { parent: `${ID}:block/searchlight` });
   dropsItself("searchlight");
   cubes.searchlight = null;
+  // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
+  // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
+  // way, drawn facing north, it throws its light.
+  for (const lit of [false, true]) {
+    write(`assets/${ID}/models/block/floodlight${lit ? "_lit" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { drum: "minecraft:block/black_concrete", brass, lens: `${ID}:block/searchlight_lens${lit ? "" : "_off"}`, particle: brass },
+      elements: [
+        solid([5, 15, 5], [11, 16, 11], "#brass"),
+        solid([2, 12, 2], [14, 15, 14], "#drum"),
+        { from: [3, 11, 3], to: [13, 12, 13], faces: {
+          north: { texture: "#drum" }, south: { texture: "#drum" }, east: { texture: "#drum" }, west: { texture: "#drum" },
+          up: { texture: "#drum" }, down: { texture: "#lens" },
+        } },
+        solid([2, 9, 13], [14, 12, 14], "#drum"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/floodlight.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((lit) => [
+      `facing=${facing},lit=${lit}`, { model: `${ID}:block/floodlight${lit ? "_lit" : ""}`, y },
+    ]))),
+  });
+  write(`assets/${ID}/models/item/floodlight.json`, { parent: `${ID}:block/floodlight` });
+  dropsItself("floodlight");
+  cubes.floodlight = null;
   write(`assets/${ID}/models/block/searchlight_handle.json`, {
     parent: "minecraft:block/block",
     textures: { brass, grip: "minecraft:block/black_concrete", particle: brass },
@@ -891,6 +917,7 @@ function zeppelinControlsLang() {
     "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
     "block.aerolarge.ballast_valve": "Water Ballast Valve",
     "block.aerolarge.searchlight": "Searchlight",
+    "block.aerolarge.floodlight": "Floodlight",
     "block.aerolarge.searchlight_handle": "Searchlight Handle",
     "block.aerolarge.skywriting_board": "Skywriting Board",
     "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
@@ -5499,7 +5526,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "skywriting_board", "boarding_stairs_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5578,6 +5605,7 @@ shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraf
 shaped("screen_stand", ["F", "C"], { F: "minecraft:dark_oak_fence", C: "minecraft:copper_ingot" }, 2);
 shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
 shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
+shaped("floodlight", ["I", "L", "D"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", D: "minecraft:daylight_detector" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);
