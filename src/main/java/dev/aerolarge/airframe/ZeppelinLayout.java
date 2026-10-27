@@ -137,7 +137,8 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinCellGallery::new,
         ZeppelinDecks::new,
         ZeppelinLights::new,
-        ZeppelinHornCord::new);
+        ZeppelinHornCord::new,
+        ZeppelinLiveryBoard::new);
 
     private final AirframePalette.Balloon palette;
     /** Every block of the zeppelin that is not the air inside its hull, by position relative to the nose's tip. */

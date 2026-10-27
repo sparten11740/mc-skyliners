@@ -39,6 +39,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue NAVIGATION_LIGHTS;
     public static final ModConfigSpec.BooleanValue SKY_DECK_LAUNCH;
     public static final ModConfigSpec.BooleanValue HORN;
+    public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -251,6 +252,12 @@ public final class AerolargeConfig {
                 "built keep theirs."
             )
             .define("horn", true);
+        LIVERY_BOARD = builder
+            .comment(
+                "Whether a zeppelin is built with a livery board in its control car, its swatches repainting the zeppelin in silver, cream,",
+                "navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep theirs, and keep their paint."
+            )
+            .define("liveryBoard", true);
         builder.pop();
 
         SPEC = builder.build();

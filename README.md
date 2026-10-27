@@ -1492,6 +1492,16 @@ the higher it flies, a second for every hundred blocks or so, so the height is h
 told it by the echo of a bang. The server config's `horn` leaves the cord off zeppelins built from then on; one can be
 crafted from two string over dark oak planks and hung anywhere.
 
+A Livery Board stands against the control car's starboard wall, painted with six swatches in two rows of three:
+Hindenburg silver, Graf Zeppelin cream and navy grey; the airliner's colours (white, with a blue cheatline down each
+flank and its fins and engine cars blue), polar red with white fins, and midnight blue scattered with gold stars. Use a
+swatch and the zeppelin is repainted in it, on the ground or in flight: with the scrape of a brush the new paint sweeps
+from the nose to the tail over a minute, a painters' cradle on each flank riding its edge, a plank platform with a rail
+and a pot of paint slung on ropes over the hull from the crown; the board frames the swatch the zeppelin wears in gold.
+The paint is only drawn, so no block changes and the zeppelin flies as before. The server config's `liveryBoard`
+leaves the board off zeppelins built from then on, which keep their paint; one can be crafted from a red, a yellow and
+a blue dye over three dark oak planks.
+
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
 height set, 60 blocks above the ground to start with, where it levels off. It goes no higher than its ceiling, where its
@@ -1607,8 +1617,10 @@ engine's signal. Once the hull stands, `ZeppelinLayout` lays its features, each 
 list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the Sky Shaft and the Sky Deck, `ZeppelinCellGallery`
 the gallery inside the middle cell, `ZeppelinDecks` the furnished zeppelin's furniture, `ZeppelinLights` its lights
 (`NavLightBlock`s, their glow drawn by `NavLightRenderer`), `ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light
-and `PaperPlaneBoxBlock`, and `ZeppelinHornCord` the `HornCordBlock` that `ShipHorn` sounds the horn from, its echo and
-the mobs looking up; a feature is taken out of
+and `PaperPlaneBoxBlock`, `ZeppelinHornCord` the `HornCordBlock` that `ShipHorn` sounds the horn from, its echo and
+the mobs looking up, and `ZeppelinLiveryBoard` the `LiveryBoardBlock`, whose `LiveryBoardRenderer` draws the painters'
+cradle; a zeppelin's `Livery` is kept by its autopilot, and `ZeppelinPaint` tints its cover (the shell model's
+`tint_index`) and fabric by it on the client; a feature is taken out of
 the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and
 wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
 (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and

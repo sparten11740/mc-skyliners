@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Quads of one flat colour on vanilla's white texture, for the renderers that build their parts out of plain coloured
- * faces: a zeppelin's propellers and its ship's wheels.
+ * faces: a zeppelin's propellers, its ship's wheels and its painters' cradle.
  */
 final class FlatQuads {
     /** Vanilla's plain white texture, which each quad's colour tints. */
@@ -23,6 +23,16 @@ final class FlatQuads {
         vertex(consumer, pose, light, colour, nx, ny, nz, x2, y2, z2);
         vertex(consumer, pose, light, colour, nx, ny, nz, x3, y3, z3);
         vertex(consumer, pose, light, colour, nx, ny, nz, x4, y4, z4);
+    }
+
+    /** A box of one colour square to the pose, from one corner to the other: its six faces. */
+    static void box(VertexConsumer consumer, PoseStack.Pose pose, int light, int colour, float x0, float y0, float z0, float x1, float y1, float z1) {
+        quad(consumer, pose, light, colour, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0);
+        quad(consumer, pose, light, colour, 0, -1, 0, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
+        quad(consumer, pose, light, colour, 0, 0, -1, x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0);
+        quad(consumer, pose, light, colour, 0, 0, 1, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1);
+        quad(consumer, pose, light, colour, -1, 0, 0, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);
+        quad(consumer, pose, light, colour, 1, 0, 0, x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1);
     }
 
     private static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int light, int colour, float nx, float ny, float nz, float x, float y, float z) {

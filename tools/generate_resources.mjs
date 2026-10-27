@@ -39,7 +39,7 @@ const cubes = {
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
-const OWN_MODELS = new Set(["cabin_floor", "airframe_panel"]);
+const OWN_MODELS = new Set(["cabin_floor", "airframe_panel", "zeppelin_fabric"]);
 for (const [name, renderType] of Object.entries(cubes)) {
   if (!OWN_BLOCKSTATES.has(name)) {
     write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
@@ -361,17 +361,18 @@ function slideLang() {
 // baked by the mod's own "shell" loader from the block's corners, the windscreen's drawn as a single pane however
 // thick its glass runs (see ShellModel). They give back the part they are cut from (the clear glass, plain glass). The
 // relay hidden in the nacelles drops nothing.
-for (const [name, skin, renderType, part, singlePane] of [
-  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false],
-  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true],
-  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false],
-  ["zeppelin_cover", "zeppelin_fabric", "minecraft:solid", `${ID}:zeppelin_fabric`, false],
+for (const [name, skin, renderType, part, singlePane, tinted] of [
+  ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
+  ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
+  ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
+  ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
   write(`assets/${ID}/models/block/${name}.json`, {
     loader: `${ID}:shell`,
     render_type: renderType,
     ...(singlePane ? { single_pane: true } : {}),
+    ...(tinted ? { tint_index: 0 } : {}),
     textures: { skin: `${ID}:block/${skin}`, particle: `${ID}:block/${skin}` },
   });
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
@@ -381,6 +382,10 @@ for (const [name, skin, renderType, part, singlePane] of [
   });
   cubes[name] = null;
 }
+
+// The zeppelin's fabric, on its fins, its cars and its neck: the undoped weave all round, tinted by the zeppelin's
+// livery as its cover is (see Livery), the way vanilla's leaves are tinted.
+write(`assets/${ID}/models/block/zeppelin_fabric.json`, { parent: "minecraft:block/leaves", textures: { all: `${ID}:block/zeppelin_skin` } });
 
 // The hull's lining (see Lining): the plain skin (the whole panel, and the relay in the cabin wall that passes for
 // one) and the skin cut to the curve where the airliner's inside sees it, drawn by the "shell" loader with the
@@ -475,6 +480,24 @@ cubes.propeller = null;
       orders.map((order) => [`engines=${side},facing=${facing},order=${order}`, { model: `${ID}:block/engine_telegraph_${side}_${order}`, y }])))),
   });
   write(`assets/${ID}/models/item/engine_telegraph.json`, { parent: `${ID}:block/engine_telegraph_port_stop` });
+  // The livery board: a board three sixteenths thick standing at the back of its block, its swatches on its front.
+  write(`assets/${ID}/models/block/livery_board.json`, {
+    parent: "minecraft:block/block",
+    textures: { front: `${ID}:block/livery_board_front`, side: `${ID}:block/livery_board_side`, particle: `${ID}:block/livery_board_side` },
+    elements: [{
+      from: [0, 0, 13], to: [16, 16, 16],
+      faces: {
+        north: { texture: "#front" }, south: { texture: "#side" }, up: { texture: "#side", uv: [0, 13, 16, 16] },
+        down: { texture: "#side", uv: [0, 13, 16, 16] }, east: { texture: "#side", uv: [13, 0, 16, 16] }, west: { texture: "#side", uv: [0, 0, 3, 16] },
+      },
+    }],
+  });
+  write(`assets/${ID}/blockstates/livery_board.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/livery_board`, y }])),
+  });
+  write(`assets/${ID}/models/item/livery_board.json`, { parent: `${ID}:block/livery_board` });
+  dropsItself("livery_board");
+  cubes.livery_board = null;
   // The horn cord: a rope hanging from the ceiling with a wooden handle across its end, drawn lower while pulled.
   for (const [pulled, drop] of [["false", 0], ["true", 2]]) {
     write(`assets/${ID}/models/block/horn_cord${pulled === "true" ? "_pulled" : ""}.json`, {
@@ -523,6 +546,15 @@ function zeppelinControlsLang() {
     "block.aerolarge.elevator_wheel": "Elevator Wheel",
     "block.aerolarge.engine_telegraph": "Engine Telegraph",
     "block.aerolarge.horn_cord": "Horn Cord",
+    "block.aerolarge.livery_board": "Livery Board",
+    "livery.aerolarge.silver": "Hindenburg silver",
+    "livery.aerolarge.cream": "Graf Zeppelin cream",
+    "livery.aerolarge.navy": "navy grey",
+    "livery.aerolarge.airline": "the airliner's colours",
+    "livery.aerolarge.polar": "polar red",
+    "livery.aerolarge.midnight": "midnight blue",
+    "message.aerolarge.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
+    "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
     "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
     "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
     "block.aerolarge.burner_lever": "Burner Lever",
@@ -5074,7 +5106,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5146,6 +5178,7 @@ shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_p
 shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("paper_plane_box", ["PPP", "PCP", "PPP"], { P: `${ID}:paper_plane`, C: "minecraft:chest" }, 1);
 shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark_oak_planks" }, 1);
+shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);

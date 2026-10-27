@@ -5,9 +5,11 @@ import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
+import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.ZeppelinAssembly;
 import dev.aerolarge.autopilot.ZeppelinPilot;
@@ -22,6 +24,7 @@ import dev.blockpilot.api.CommandException;
 import dev.blockpilot.api.CommandSpec;
 import dev.blockpilot.api.Fields;
 import dev.blockpilot.api.Result;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -42,7 +45,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * the nearest autopilot as its settings screen would ({@code aerolarge:autopilot}), and laying an airframe down in
  * front of the player and waiting until it stands ({@code aerolarge:build}), which of a zeppelin's blocks its
  * assembly would leave behind ({@code aerolarge:assembly}), and a fingerprint of an airframe's layout, to show a change
- * to how it is laid out moves no block ({@code aerolarge:layout}). Only loaded when Blockpilot is installed (see
+ * to how it is laid out moves no block ({@code aerolarge:layout}), and repainting the nearest zeppelin
+ * ({@code aerolarge:livery}). Only loaded when Blockpilot is installed (see
  * {@link dev.aerolarge.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
@@ -81,6 +85,13 @@ public final class BlockpilotCommands {
             .field("assembled", "the blocks its assembly takes along")
             .field("left", "its own blocks it would leave behind in the world")
             .field("first", "where the first few left behind stand"));
+        BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("livery", (context, args) -> livery(args))
+            .onServer()
+            .group("aerolarge")
+            .keyword("livery", Arrays.stream(Livery.values()).map(livery -> livery.name().toLowerCase(Locale.ROOT)).toArray(String[]::new))
+            .help("repaints the nearest zeppelin, the new livery sweeping along it from the nose over a minute, as its livery board does")
+            .field("livery", "what it is painted now")
+            .example("aerolarge:livery cream"));
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
             .onServer()
             .group("aerolarge")
@@ -175,6 +186,15 @@ public final class BlockpilotCommands {
         } catch (RuntimeException e) {
             throw new CommandException("bad_pin", text);
         }
+    }
+
+    private static Result livery(Args args) throws CommandException {
+        AutopilotBlockEntity autopilot = nearest(player());
+        if (autopilot == null || autopilot.craft() != Craft.ZEPPELIN) {
+            return Result.error("no_zeppelin");
+        }
+        autopilot.repaint(Livery.valueOf(args.word("livery").toUpperCase(Locale.ROOT)));
+        return Result.ok(new Fields().tag("livery", autopilot.livery().name().toLowerCase(Locale.ROOT)));
     }
 
     private static Result layout(Args args) throws CommandException {

@@ -66,7 +66,8 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
  */
 public final class ShellModel implements IUnbakedGeometry<ShellModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "shell");
-    public static final IGeometryLoader<ShellModel> READER = (json, context) -> new ShellModel(GsonHelper.getAsBoolean(json, "single_pane", false));
+    public static final IGeometryLoader<ShellModel> READER = (json, context) ->
+        new ShellModel(GsonHelper.getAsBoolean(json, "single_pane", false), GsonHelper.getAsInt(json, "tint_index", -1));
     /** What is round a block that its lined walls take their look from, as {@link Lining#context} gives it. */
     private static final ModelProperty<Integer> CONTEXT = new ModelProperty<>();
     /**
@@ -88,9 +89,15 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
 
     /** Whether the glass is drawn as one pane (see the class's description). */
     private final boolean singlePane;
+    /**
+     * The tint its faces are coloured by, as a block's colour handler gives it (a zeppelin's cover, painted by its
+     * livery), from {@code "tint_index"}; -1, none.
+     */
+    private final int tintIndex;
 
-    private ShellModel(boolean singlePane) {
+    private ShellModel(boolean singlePane, int tintIndex) {
         this.singlePane = singlePane;
+        this.tintIndex = tintIndex;
     }
 
     @Override
@@ -106,7 +113,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         ResourceLocation hint = context.getRenderTypeHint();
         RenderTypeGroup group = hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY;
         RenderType renderType = group.isEmpty() ? RenderType.solid() : group.block();
-        return new Baked(looks, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane);
+        return new Baked(looks, lining, particle, renderType, context.getTransforms(), context.useAmbientOcclusion(), singlePane, tintIndex);
     }
 
     /** The texture a look is drawn with, by its name in the model's JSON. */
@@ -146,6 +153,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         private final ItemTransforms transforms;
         private final boolean ambientOcclusion;
         private final boolean singlePane;
+        private final int tintIndex;
         /**
          * For single-pane glass, each shape's outside both ways round, baked as they are needed: by side index the
          * sides that look out, and last the cut faces.
@@ -158,7 +166,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
         }
 
         Baked(TextureAtlasSprite[] looks, boolean lining, TextureAtlasSprite particle, RenderType renderType, ItemTransforms transforms,
-              boolean ambientOcclusion, boolean singlePane) {
+              boolean ambientOcclusion, boolean singlePane, int tintIndex) {
             this.looks = looks;
             this.lining = lining;
             this.particle = particle;
@@ -166,6 +174,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
             this.transforms = transforms;
             this.ambientOcclusion = ambientOcclusion;
             this.singlePane = singlePane;
+            this.tintIndex = tintIndex;
         }
 
         /**
@@ -274,7 +283,7 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * A face as quads fanned out from its first corner; a triangle is a quad with its last corner doubled. Mirrored
          * left to right, the texture is laid on the other way round.
          */
-        private static List<BakedQuad> bake(ShellGeometry.Face face, TextureAtlasSprite sprite, boolean mirrored) {
+        private List<BakedQuad> bake(ShellGeometry.Face face, TextureAtlasSprite sprite, boolean mirrored) {
             return quads(face.corners(), face.nx(), face.ny(), face.nz(), face.facing(), face.side() != null, true, sprite, mirrored);
         }
 
@@ -290,14 +299,15 @@ public final class ShellModel implements IUnbakedGeometry<ShellModel> {
          * Quads fanned out from a face's first corner, facing along a unit normal and mostly toward a side: shaded as
          * the skin is, by the side it lies on (flat) or the way it faces, or evenly lit.
          */
-        private static List<BakedQuad> quads(List<float[]> corners, float nx, float ny, float nz, Direction facing, boolean flat, boolean shaded,
-                                             TextureAtlasSprite sprite, boolean mirrored) {
+        private List<BakedQuad> quads(List<float[]> corners, float nx, float ny, float nz, Direction facing, boolean flat, boolean shaded,
+                                      TextureAtlasSprite sprite, boolean mirrored) {
             List<BakedQuad> baked = new ArrayList<>();
             for (int i = 1; i + 1 < corners.size(); i += 2) {
                 float[][] quad = {corners.getFirst(), corners.get(i), corners.get(i + 1), corners.get(Math.min(i + 2, corners.size() - 1))};
                 QuadBakingVertexConsumer builder = new QuadBakingVertexConsumer();
                 builder.setSprite(sprite);
                 builder.setDirection(facing);
+                builder.setTintIndex(tintIndex);
                 // A face on a block side is shaded and darkened in corners like any block's. A face cut across the
                 // block has no side to take its shade from: it gets the shade for the way it really faces, so the
                 // facets brighten and darken smoothly around the curve, and no corner darkening.

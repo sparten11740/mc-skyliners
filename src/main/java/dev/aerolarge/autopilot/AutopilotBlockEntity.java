@@ -4,6 +4,7 @@ import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
+import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.block.Announcement;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.Control;
@@ -616,6 +617,13 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How it flies a zeppelin, and what it works there; unused for an airliner. */
     private final ZeppelinPilot zeppelin = new ZeppelinPilot();
     /**
+     * How its zeppelin is painted; while a repaint sweeps along it, how it was painted before, and the game time the
+     * repaint began, -1 for none (see {@link Livery}).
+     */
+    private Livery livery = Livery.SILVER;
+    private Livery repaintedFrom = Livery.SILVER;
+    private long repaintStart = -1;
+    /**
      * Whether it has seen to it that its zeppelin is kept loaded since it was loaded itself (see {@link #keepLoaded});
      * Sable keeps the ticket in the save meanwhile.
      */
@@ -658,6 +666,40 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** What it flies, on the clients as on the server, whose pictures its screens show. */
     public Craft craft() {
         return craft;
+    }
+
+    /** How its zeppelin is painted, on the clients as on the server. */
+    public Livery livery() {
+        return livery;
+    }
+
+    /** How its zeppelin was painted before the repaint that began at {@link #repaintStart}. */
+    public Livery repaintedFrom() {
+        return repaintedFrom;
+    }
+
+    /** The game time the repaint sweeping along its zeppelin began, or -1 for none. */
+    public long repaintStart() {
+        return repaintStart;
+    }
+
+    /** Whether a repaint is still sweeping along its zeppelin. */
+    private boolean repainting() {
+        return repaintStart >= 0 && level != null && level.getGameTime() - repaintStart < Livery.REPAINT_TICKS;
+    }
+
+    /**
+     * Has its zeppelin repainted, the new livery sweeping along it from the nose to the tail over
+     * {@link Livery#REPAINT_TICKS}, over whatever it was painted in a moment ago. Painted as it is, nothing happens.
+     */
+    public void repaint(Livery to) {
+        if (level == null || to == livery && !repainting()) {
+            return;
+        }
+        repaintedFrom = livery;
+        livery = to;
+        repaintStart = level.getGameTime();
+        changed();
     }
 
     /** How it is working a zeppelin, for play-testing; null for an airliner's. */
@@ -2366,6 +2408,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (craft == Craft.ZEPPELIN) {
             tag.put("Zeppelin", zeppelin.save());
         }
+        saveLivery(tag);
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
         tag.putBoolean("AwaitingClearance", awaitingClearance);
@@ -2402,6 +2445,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         // In the save and in the update the clients are sent alike, for the pictures they draw it with; saved before
         // there were zeppelins: an airliner's.
         craft = parse(Craft.class, tag.getString("Craft"), Craft.AIRLINER);
+        // Saved and sent alike, as the clients paint by it; saved before there were liveries: silver, with no repaint.
+        livery = Livery.named(tag.getString("Livery"));
+        repaintedFrom = Livery.named(tag.getString("RepaintedFrom"));
+        repaintStart = tag.contains("RepaintStart") ? tag.getLong("RepaintStart") : -1;
         // The update sent to clients carries only the targets; the full save also has the wiring.
         if (tag.contains("Relays")) {
             Rotation turn = Turning.since(tag, getBlockState());
@@ -2459,6 +2506,15 @@ public class AutopilotBlockEntity extends BlockEntity {
         loadFrame(tag);
     }
 
+    /** How its zeppelin is painted, and the repaint sweeping along it, saved and sent to clients alike. */
+    private void saveLivery(CompoundTag tag) {
+        tag.putString("Livery", livery.name());
+        if (repaintStart >= 0) {
+            tag.putString("RepaintedFrom", repaintedFrom.name());
+            tag.putLong("RepaintStart", repaintStart);
+        }
+    }
+
     /** The box round the airliner's blocks, saved and sent to clients alike, so both tell its blocks the same way. */
     private void saveFrame(CompoundTag tag) {
         if (frameFrom != null && frameTo != null) {
@@ -2505,6 +2561,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveTargets(tag);
         tag.putBoolean("Stuck", stuck);
         tag.putString("Craft", craft.name());
+        saveLivery(tag);
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         surfaces.saveShown(tag);

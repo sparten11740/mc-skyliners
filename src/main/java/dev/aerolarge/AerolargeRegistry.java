@@ -107,6 +107,8 @@ import dev.aerolarge.block.JumpLightBlock;
 import dev.aerolarge.block.JumpSwitchBlock;
 import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
+import dev.aerolarge.block.LiveryBoardBlock;
+import dev.aerolarge.block.LiveryBoardBlockEntity;
 import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LiftPanelBlock;
@@ -1508,6 +1510,11 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<BurnerLeverBlock> BURNER_LEVER = BLOCKS.registerBlock(
         "burner_lever", BurnerLeverBlock::new, metal(MapColor.GOLD).noOcclusion()
     );
+    public static final DeferredBlock<LiveryBoardBlock> LIVERY_BOARD = BLOCKS.registerBlock(
+        "livery_board", LiveryBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiveryBoardBlockEntity>> LIVERY_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("livery_board", () -> BlockEntityType.Builder.of(LiveryBoardBlockEntity::new, LIVERY_BOARD.get()).build(null));
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );
@@ -1523,6 +1530,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> ENGINE_TELEGRAPH_ITEM = ITEMS.registerSimpleBlockItem(ENGINE_TELEGRAPH);
     public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
     public static final DeferredItem<BlockItem> HORN_CORD_ITEM = ITEMS.registerSimpleBlockItem(HORN_CORD);
+    public static final DeferredItem<BlockItem> LIVERY_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_BOARD);
 
     /**
      * Creative only: there is no recipe for laying down a few tens of thousands of blocks at once. Each shows a
@@ -1597,7 +1605,7 @@ public final class AerolargeRegistry {
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
-            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM)),
+            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

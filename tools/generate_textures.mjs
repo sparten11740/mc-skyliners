@@ -3513,12 +3513,36 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const SILVER = [0xc6, 0xcb, 0xd1];
   const SILVER_SEAM = [0xa9, 0xaf, 0xb7];
   const SILVER_SHEEN = [0xd6, 0xda, 0xdf];
-  texture(blockOutput, "zeppelin_fabric", (x, y) => {
+  const fabric = (x, y) => {
     if (y === 0 || y === 8) return SILVER_SEAM;
     if (x === 0) return SILVER_SEAM;
     if (x >= 6 && x <= 9) return SILVER_SHEEN;
     return SILVER;
-  }, 3);
+  };
+  texture(blockOutput, "zeppelin_fabric", fabric, 3);
+  // The same weave a shade lighter, undoped, for a livery to tint (see Livery): silver tints it back to the cover's own
+  // grey, any other livery to its colour.
+  const UNDOPED = 1.2;
+  texture(blockOutput, "zeppelin_skin", (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED))), 3);
+  // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
+  // LiveryBoardBlock lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with
+  // its white fins, midnight blue with gold stars), each where LiveryBoardRenderer frames the one the zeppelin wears.
+  const BOARD = [0x5e, 0x3b, 0x1c];
+  const BOARD_FRAME = [0x9a, 0x6a, 0x3c];
+  const swatches = [
+    [(x, y) => (x === 2 ? SILVER_SHEEN : SILVER), (x, y) => [0xef, 0xe0, 0xbc], (x, y) => [0x7e, 0x87, 0x91]],
+    [(x, y) => (y === 2 ? [0x2f, 0x5b, 0xc0] : [0xf4, 0xf6, 0xf8]), (x, y) => (y === 4 ? [0xf4, 0xf4, 0xf4] : [0xcc, 0x3a, 0x2e]),
+      (x, y) => ((x === 1 && y === 1) || (x === 3 && y === 3) ? [0xff, 0xd8, 0x66] : [0x26, 0x33, 0x5e])],
+  ];
+  const SWATCH_COLUMNS = [1, 6, 11];
+  const SWATCH_ROWS = [2, 9];
+  texture(blockOutput, "livery_board_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return BOARD_FRAME;
+    const column = SWATCH_COLUMNS.findIndex((left) => x >= left && x < left + 4);
+    const row = SWATCH_ROWS.findIndex((top) => y >= top && y < top + 5);
+    return column >= 0 && row >= 0 ? swatches[row][column](x - SWATCH_COLUMNS[column], y - SWATCH_ROWS[row]) : BOARD;
+  }, 2);
+  texture(blockOutput, "livery_board_side", (x, y) => (y % 4 === 0 ? BOARD : BOARD_FRAME), 3);
   const GIRDER = [0x2f, 0x5f, 0xb3];
   const GIRDER_DARK = [0x23, 0x48, 0x8a];
   texture(blockOutput, "zeppelin_girder", (x, y) => {

@@ -47,6 +47,7 @@ import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.LightningFlash;
+import dev.aerolarge.client.LiveryBoardRenderer;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
 import dev.aerolarge.client.PaperPlaneRenderer;
@@ -72,6 +73,7 @@ import dev.aerolarge.client.TransponderRenderer;
 import dev.aerolarge.client.TrolleyRenderer;
 import dev.aerolarge.client.VeilLights;
 import dev.aerolarge.client.WindSockRenderer;
+import dev.aerolarge.client.ZeppelinPaint;
 import dev.aerolarge.parachute.SafetyCanopy;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -156,6 +158,10 @@ public final class AerolargeClient {
         modEventBus.addListener(AerolargeClient::onRegisterGuiLayers);
         modEventBus.addListener((RegisterMenuScreensEvent event) -> event.register(AerolargeRegistry.DROP_BAY_MENU.get(), DropBayScreen::new));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, AerolargeRegistry.CABIN_CURTAIN.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
+            AerolargeRegistry.ZEPPELIN_COVER.get(), AerolargeRegistry.ZEPPELIN_FABRIC.get()));
+        modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, AerolargeRegistry.ZEPPELIN_FABRIC_ITEM.get()));
+        NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));
@@ -220,6 +226,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.ENGINE_CORE_ENTITY.get(), context -> new EngineRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PROPELLER_ENTITY.get(), context -> new PropellerRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.HELM_ENTITY.get(), context -> new HelmRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());
