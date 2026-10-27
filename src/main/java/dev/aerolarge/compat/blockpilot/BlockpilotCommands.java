@@ -39,8 +39,9 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * Commands Aerolarge gives Blockpilot, for an agent play-testing its airframes, each run on the integrated server for
  * the player: what a zeppelin's autopilot is doing ({@code aerolarge:zeppelin}, to sample through a flight), setting
  * the nearest autopilot as its settings screen would ({@code aerolarge:autopilot}), and laying an airframe down in
- * front of the player and waiting until it stands ({@code aerolarge:build}), and which of a zeppelin's blocks its
- * assembly would leave behind ({@code aerolarge:assembly}). Only loaded when Blockpilot is installed (see
+ * front of the player and waiting until it stands ({@code aerolarge:build}), which of a zeppelin's blocks its
+ * assembly would leave behind ({@code aerolarge:assembly}), and a fingerprint of an airframe's layout, to show a change
+ * to how it is laid out moves no block ({@code aerolarge:layout}). Only loaded when Blockpilot is installed (see
  * {@link dev.aerolarge.compat.Blockpilot}).
  */
 public final class BlockpilotCommands {
@@ -79,6 +80,14 @@ public final class BlockpilotCommands {
             .field("assembled", "the blocks its assembly takes along")
             .field("left", "its own blocks it would leave behind in the world")
             .field("first", "where the first few left behind stand"));
+        BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
+            .onServer()
+            .group("aerolarge")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin")
+            .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
+            .field("blocks", "its blocks, the air inside its hull among them")
+            .field("fingerprint", "of every block's position and state, and of where its block entities are set up")
+            .example("aerolarge:layout zeppelin"));
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("aerolarge")
@@ -167,18 +176,37 @@ public final class BlockpilotCommands {
         }
     }
 
+    private static Result layout(Args args) throws CommandException {
+        Layout layout = layout(args.word("what"));
+        long[] sum = {0};
+        layout.inOrder((pos, state) -> sum[0] += mix(pos.asLong() ^ mix(state.toString().hashCode())));
+        layout.fittings().keySet().forEach(pos -> sum[0] += mix(~pos.asLong()));
+        return Result.ok(new Fields().tag("blocks", layout.size()).tag("fingerprint", Long.toHexString(sum[0])));
+    }
+
+    /** Scrambles a number's bits (SplitMix64's finaliser), so a sum of scrambled numbers fingerprints a set of them. */
+    private static long mix(long value) {
+        long z = (value ^ (value >>> 30)) * 0xbf58476d1ce4e5b9L;
+        z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
+        return z ^ (z >>> 31);
+    }
+
+    private static Layout layout(String what) {
+        return switch (what) {
+            case "zeppelin" -> ZeppelinLayout.create(false);
+            case "furnished_zeppelin" -> ZeppelinLayout.create(true);
+            case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
+            default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
+        };
+    }
+
     private static Action build(CommandContext context, Args args) throws CommandException {
         ServerPlayer player = player();
         ServerLevel level = player.serverLevel();
         if (AirframeBuild.isRunning(level)) {
             throw new CommandException("busy");
         }
-        Layout layout = switch (args.word("what")) {
-            case "zeppelin" -> ZeppelinLayout.create(false);
-            case "furnished_zeppelin" -> ZeppelinLayout.create(true);
-            case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
-            default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
-        };
+        Layout layout = layout(args.word("what"));
         Direction along = player.getDirection();
         BlockPos nose = player.blockPosition().relative(along, 3);
         AirframeBuild.Placement placement = AirframeBuild.Placement.of(level, layout, nose, along);

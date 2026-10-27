@@ -143,4 +143,6 @@ feature as a player meets it, and its Building section says which classes do wha
     pitch, heading, mass, each cell's burner signal, the engines, what its pilot has learnt), to `sample` through a
     flight. `aerolarge:assembly`, before a zeppelin first flies, counts the blocks its assembly takes along and names
     those of its own it would leave behind, touching the rest only along an edge or not at all: a layout should leave
-    none. A zeppelin's control head is in its control car under the bow.
+    none. `aerolarge:layout <what>` lays an airframe out without building it and gives its block count and a
+    fingerprint of its blocks: a refactor of a layout that should move no block leaves both as they were. A
+    zeppelin's control head is in its control car under the bow.
