@@ -101,8 +101,9 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
         pose.translate(0, 0, PictureBoardBlock.THICKNESS / 16F - 0.5F + MINI_LIFT);
+        FlankScreen place = FlankScreen.of(board.size());
         float width = MINI_RIGHT - MINI_LEFT;
-        float height = width * (float) (FlankScreen.height() / FlankScreen.LENGTH);
+        float height = width * (float) (place.height() / place.length());
         draw(new Flat(MINI_LEFT, MINI_BOTTOM + height, width, height), pose.last(), buffers, picture, lit, glow, FLAT_STEP);
         pose.popPose();
         BlockPos screens = board.screens();
@@ -110,7 +111,7 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
             return;
         }
         for (boolean starboard : new boolean[]{false, true}) {
-            draw(Cylinder.of(screens, board.aft(), starboard), pose.last(), buffers, picture, lit, glow, LAYER_STEP);
+            draw(Cylinder.of(screens, board.aft(), starboard, place), pose.last(), buffers, picture, lit, glow, LAYER_STEP);
         }
     }
 
@@ -137,9 +138,10 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
     /** What the board's picture is, as layers, bottom first, inside the bezel; none when the screens are off. */
     private static List<Layer> picture(PictureBoardBlockEntity board, ClientLevel level) {
         List<Layer> layers = new ArrayList<>();
-        float bu = BEZEL / FlankScreen.LENGTH;
-        float bv = (float) (BEZEL / FlankScreen.height());
-        Frame frame = new Frame(bu, bv, 1 - bu, 1 - bv);
+        FlankScreen place = FlankScreen.of(board.size());
+        float bu = BEZEL / place.length();
+        float bv = (float) (BEZEL / place.height());
+        Frame frame = new Frame(bu, bv, 1 - bu, 1 - bv, (float) (place.height() / place.length()));
         switch (board.picture()) {
             case POSTERS -> poster(layers, frame, board.poster());
             case COLOURS -> colours(layers, frame, board, level);
@@ -154,8 +156,11 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         return layers;
     }
 
-    /** The part of the screen inside its bezel, from 0 to 1 across and down. */
-    private record Frame(float u0, float v0, float u1, float v1) {
+    /**
+     * The part of the screen inside its bezel, from 0 to 1 across and down, and how tall the screen is for how long, in
+     * blocks.
+     */
+    private record Frame(float u0, float v0, float u1, float v1, float shape) {
         float width() {
             return u1 - u0;
         }
@@ -166,7 +171,7 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
 
         /** How wide something is across the screen for how tall it is down it, in the screen's own measures. */
         float across(float tall, float aspect) {
-            return tall * aspect * (float) (FlankScreen.height() / FlankScreen.LENGTH);
+            return tall * aspect * shape;
         }
     }
 
@@ -418,17 +423,17 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
      * from the board, the way aft, the way out to its flank, and up; on the starboard flank it runs from aft forward,
      * so it reads the right way round from that side too.
      */
-    private record Cylinder(Vector3f axis, Vector3f aft, Vector3f out, boolean starboard) implements Surface {
-        static Cylinder of(BlockPos screens, Direction aft, boolean starboard) {
+    private record Cylinder(Vector3f axis, Vector3f aft, Vector3f out, boolean starboard, FlankScreen place) implements Surface {
+        static Cylinder of(BlockPos screens, Direction aft, boolean starboard, FlankScreen place) {
             Direction out = starboard ? aft.getCounterClockWise() : aft.getClockWise();
-            return new Cylinder(new Vector3f(screens.getX() + 0.5F, screens.getY(), screens.getZ() + 0.5F), aft.step(), out.step(), starboard);
+            return new Cylinder(new Vector3f(screens.getX() + 0.5F, screens.getY(), screens.getZ() + 0.5F), aft.step(), out.step(), starboard, place);
         }
 
         @Override
         public Vector3f at(float across, float down, float lift) {
-            float along = (starboard ? 1 - across : across) * FlankScreen.LENGTH;
-            float radius = (float) FlankScreen.radius() + lift;
-            float round = (float) (-(FlankScreen.TOP + down * FlankScreen.height()) / FlankScreen.radius());
+            float along = (starboard ? 1 - across : across) * place.length();
+            float radius = (float) place.radius() + lift;
+            float round = (float) (-(place.top() + down * place.height()) / place.radius());
             return new Vector3f(axis).add(new Vector3f(aft).mul(along)).add(new Vector3f(out).mul(radius * (float) Math.cos(round)))
                 .add(0, radius * (float) Math.sin(round), 0);
         }
@@ -457,9 +462,10 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         if (screens == null) {
             return around;
         }
+        FlankScreen place = FlankScreen.of(board.size());
         Vec3 axis = Vec3.atLowerCornerOf(board.getBlockPos().offset(screens));
-        Vec3 aft = Vec3.atLowerCornerOf(board.aft().getNormal()).scale(FlankScreen.LENGTH);
-        double reach = FlankScreen.radius() + 1;
-        return around.minmax(new AABB(axis, axis.add(aft)).inflate(reach, FlankScreen.BOTTOM + 1, reach));
+        Vec3 aft = Vec3.atLowerCornerOf(board.aft().getNormal()).scale(place.length());
+        double reach = place.radius() + 1;
+        return around.minmax(new AABB(axis, axis.add(aft)).inflate(reach, place.bottom() + 1, reach));
     }
 }

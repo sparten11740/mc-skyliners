@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import dev.aerolarge.airframe.FinArt;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,8 +39,11 @@ public final class ShipsColours {
     private record Banner(DyeColor base, BannerPatternLayers patterns) {
     }
 
-    /** The colours painted on a zeppelin's fins: a banner's picture, one block to a pixel where {@link FinArt} says. */
-    private record Fins(int[] picture) implements PaintOverlay {
+    /**
+     * The colours painted on a zeppelin's fins, on a hull of a size: a banner's picture, at the size's blocks to a
+     * pixel where {@link FinArt} says.
+     */
+    private record Fins(int[] picture, ZeppelinSize size) implements PaintOverlay {
         @Override
         public int colour(Livery.Spot spot, boolean fabric, Livery under) {
             int pixel = fabric ? FinArt.pixel(spot) : -1;
@@ -48,12 +52,12 @@ public final class ShipsColours {
 
         @Override
         public double from() {
-            return FinArt.FRONT;
+            return FinArt.front(size);
         }
 
         @Override
         public double to() {
-            return FinArt.BACK;
+            return FinArt.back(size);
         }
     }
 
@@ -70,10 +74,10 @@ public final class ShipsColours {
     /**
      * What a zeppelin's fins are painted with: the colours closed up at a halyard in its box; nothing while none are.
      */
-    static List<PaintOverlay> fins(ClientLevel level, BoundingBox box) {
+    static List<PaintOverlay> fins(ClientLevel level, BoundingBox box, ZeppelinSize size) {
         for (FlagHalyardBlockEntity halyard : FlagHalyardBlockEntity.loaded(level)) {
             if (box.isInside(halyard.getBlockPos()) && halyard.closedUp()) {
-                return List.of(new Fins(picture(halyard.base(), halyard.patterns())));
+                return List.of(new Fins(picture(halyard.base(), halyard.patterns()), size));
             }
         }
         return List.of();

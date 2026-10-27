@@ -1393,8 +1393,8 @@ push a third as hard, as she weighs a third as much; she climbs to some 175 bloc
 one is built with only some of the features below: everything in and under her control car (the horn cord, the livery
 board, the ship's plaque, the Lookout's Glass, the searchlights, the skywriting board, the floodlights and the speed
 boost), her engine rooms, her furnished decks and their passenger screens, the cell gallery, the techno room, the trim
-car, Up Ship's take-off, the Sky Deck with all on it and the ship's colours over it, her lights, and the festive dress;
-and only with the command.
+car, Up Ship's take-off, the Sky Deck with all on it and the ship's colours over it, painted on her fins, her christened
+crest and name, the flank screens, her lights, and the festive dress; and only with the command.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1476,37 +1476,39 @@ A white flagstaff stands at the aft end of the Sky Deck, a gilded truck on its t
 cleat at its foot: the ship's colours are hoisted there. Use the Flag Halyard with any banner and the banner is bent on
 and run up the staff, the pulley squeaking hand over hand; at the top it breaks out with a flap of cloth as a great
 flag, twenty blocks long and ten deep, rippling as it streams out aft over the crown, and the zeppelin's top and bottom
-fins are painted with it, one block to each of the banner's pixels, as the Hindenburg wore its colours on its fins. As a
-banner flown as a flag is, it flies with its top at the hoist and its left edge along the flag's top, and the fins carry
-it the same way, flying aft. Use the halyard with an empty hand to strike the colours: the banner comes back, and the
-fins go back to the livery's colour. The server config's `shipsColours` leaves the staff off zeppelins built from then
-on; a Flagstaff is crafted from white dye over two sticks, and a Flag Halyard from string over a flagstaff over a copper
-ingot, to fly colours from anywhere.
+fins are painted with it, one block to each of the banner's pixels (to every second one on a half-size zeppelin's
+smaller fins), as the Hindenburg wore its colours on its fins. As a banner flown as a flag is, it flies with its top at
+the hoist and its left edge along the flag's top, and the fins carry it the same way, flying aft. Use the halyard with
+an empty hand to strike the colours: the banner comes back, and the fins go back to the livery's colour. The server
+config's `shipsColours` leaves the staff off zeppelins built from then on; a Flagstaff is crafted from white dye over
+two sticks, and a Flag Halyard from string over a flagstaff over a copper ingot, to fly colours from anywhere.
 
 A zeppelin is christened as a ship is launched, with a bottle broken on her nose. Name a Christening Bottle at an anvil
 and swing it at her nose, close by or from the ground under it, for it reaches some 60 blocks: the glass smashes with a
 bang, wine sprays, and a flock of 48 white doves flies off, as the airship Akron's pigeons did, while "I name this
 ship..." is said. Then her crest is painted on both flanks, sweeping back from the bow: the colours flying from her
-flagstaff, upright in a gold frame, one block to each of the banner's pixels, or a gold globe on blue when none fly; and
-beside it her name, in bold serif capitals some 11 blocks high standing on the equator, as the Graf Zeppelin's ran along
-her bow (a long name is lettered smaller to fit), dark on a light livery and white on a dark one, reading the right way
-from either side. A Ship's Plaque on the back wall of the observation lounge keeps them, engraved with her crest and her
-name, or with who christened her when the bottle had no name. Swung anywhere else on her, the bottle only clinks. A new
-bottle christens her afresh. The server config's `christening` leaves the plaque off zeppelins built from then on; a
-Christening Bottle is crafted from a gold nugget over sweet berries over a glass bottle, and a Ship's Plaque from a gold
-nugget between two copper ingots.
+flagstaff, upright in a gold frame, one block to each of the banner's pixels (to every second one on a half-size
+zeppelin), or a gold globe on blue when none fly; and beside it her name, in bold serif capitals some 11 blocks high
+standing on the equator, as the Graf Zeppelin's ran along her bow (a long name is lettered smaller to fit), dark on a
+light livery and white on a dark one, reading the right way from either side. A Ship's Plaque on the back wall of the
+observation lounge keeps them, engraved with her crest and her name, or with who christened her when the bottle had no
+name. Swung anywhere else on her, the bottle only clinks. A new bottle christens her afresh. The server config's
+`christening` leaves the plaque off zeppelins built from then on; a Christening Bottle is crafted from a gold nugget
+over sweet berries over a glass bottle, and a Ship's Plaque from a gold nugget between two copper ingots.
 
 Down each flank, under the equator between the promenade windows and the engine cars, glows a screen some 64 blocks long
 and 20 high, curving with the hull in a dark bezel and reading the right way round from either side, bright enough to be
-seen at night. A Picture Board at the aft end of the upper deck chooses what both show, a little copy of the screens
-over its six painted buttons, since they cannot be seen from inside: Posters, one at each press of four travel posters
-with the zeppelin over the Nether, the End, the jungle and the frozen peaks, and four adverts (Creeper Insurance, the
-Villager Bank, Golem Guards and Cake by Air), each under its headline; Colours, the banner flying from her flagstaff, as
-a flag; Map, a filled map handed to the board, so a player's own map art is shown on her side, handed back at a second
-press; Faces, the faces of everyone aboard, a few big or more smaller, a page at a time; Flight, her height and speed in
-huge figures, an arrow green as she climbs and amber as she sinks; and Off. A new picture flickers on with a click. The
-server config's `flankScreen` leaves the screens and the board off zeppelins built from then on; a Picture Board is
-crafted from three glass panes over redstone, glowstone dust and a stone button, over three dark oak planks.
+seen at night. On a half-size zeppelin, whose promenade windows run as far aft as her engine cars, it is as long but
+lower and narrower, some 11 high under the windows along her decks, ahead of her forward engine cars. A Picture Board at
+the aft end of the upper deck chooses what both show, a little copy of the screens over its six painted buttons, since
+they cannot be seen from inside: Posters, one at each press of four travel posters with the zeppelin over the Nether,
+the End, the jungle and the frozen peaks, and four adverts (Creeper Insurance, the Villager Bank, Golem Guards and Cake
+by Air), each under its headline; Colours, the banner flying from her flagstaff, as a flag; Map, a filled map handed to
+the board, so a player's own map art is shown on her side, handed back at a second press; Faces, the faces of everyone
+aboard, a few big or more smaller, a page at a time; Flight, her height and speed in huge figures, an arrow green as she
+climbs and amber as she sinks; and Off. A new picture flickers on with a click. The server config's `flankScreen` leaves
+the screens and the board off zeppelins built from then on; a Picture Board is crafted from three glass panes over
+redstone, glowstone dust and a stone button, over three dark oak planks.
 
 Each engine car is fitted out for its engineer: a grating along its floor, a lamp in its roof, and at its forward end an
 Engine Repeater, the control car's telegraph's twin, a climbing rope hanging from a hatch in its floor to a little over

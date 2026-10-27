@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import dev.aerolarge.airframe.FinArt;
 import dev.aerolarge.airframe.FlankArt;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.block.ShipsPlaqueBlockEntity;
 import java.awt.Color;
 import java.awt.Font;
@@ -54,14 +55,18 @@ public final class ChristeningPaint {
     private static final int KEPT = 16;
     private static final boolean[] SIDES = {false, true};
 
-    private static final Map<String, Lettering> NAMES = new LinkedHashMap<>(KEPT, 0.75F, true) {
+    private static final Map<Words, Lettering> NAMES = new LinkedHashMap<>(KEPT, 0.75F, true) {
         @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Lettering> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<Words, Lettering> eldest) {
             return size() > KEPT;
         }
     };
 
     private ChristeningPaint() {
+    }
+
+    /** A name to letter, and the longest it may run, in blocks. */
+    private record Words(String name, int longest) {
     }
 
     /**
@@ -74,33 +79,36 @@ public final class ChristeningPaint {
         }
     }
 
-    /** Her crest on both flanks: a banner's picture in a gold frame. */
-    private record Crest(int[] picture) implements PaintOverlay {
+    /** Her crest on both flanks of a hull of a size: a banner's picture in a gold frame. */
+    private record Crest(int[] picture, ZeppelinSize size) implements PaintOverlay {
         @Override
         public int colour(Livery.Spot spot, boolean fabric, Livery under) {
-            int along = (int) Math.floor(spot.along()) - FlankArt.CREST_FRONT;
-            if (fabric || along < 0 || along >= FlankArt.CREST_WIDTH || !FlankArt.onFlank(spot)) {
+            int width = FlankArt.crestWidth(size);
+            int height = FlankArt.crestHeight(size);
+            int along = (int) Math.floor(spot.along()) - FlankArt.crestFront(size);
+            if (fabric || along < 0 || along >= width || !FlankArt.onFlank(spot)) {
                 return -1;
             }
-            int row = (int) Math.floor(FlankArt.CREST_HEIGHT / 2.0 - FlankArt.rise(spot));
-            if (row < 0 || row >= FlankArt.CREST_HEIGHT) {
+            int row = (int) Math.floor(height / 2.0 - FlankArt.rise(spot));
+            if (row < 0 || row >= height) {
                 return -1;
             }
-            int column = spot.across() > 0 ? FlankArt.CREST_WIDTH - 1 - along : along;
-            if (column == 0 || column == FlankArt.CREST_WIDTH - 1 || row == 0 || row == FlankArt.CREST_HEIGHT - 1) {
+            int column = spot.across() > 0 ? width - 1 - along : along;
+            if (column == 0 || column == width - 1 || row == 0 || row == height - 1) {
                 return GOLD;
             }
-            return picture[(row - 1) * FinArt.BANNER_WIDTH + column - 1];
+            int each = FinArt.pixelsPerBlock(size);
+            return picture[(row - 1) * each * FinArt.BANNER_WIDTH + (column - 1) * each];
         }
 
         @Override
         public double from() {
-            return FlankArt.CREST_FRONT;
+            return FlankArt.crestFront(size);
         }
 
         @Override
         public double to() {
-            return FlankArt.CREST_FRONT + FlankArt.CREST_WIDTH;
+            return FlankArt.crestFront(size) + FlankArt.crestWidth(size);
         }
     }
 
@@ -108,13 +116,13 @@ public final class ChristeningPaint {
      * A strip of her name on one flank, so many blocks from its start, read the right way round from that side: on the
      * starboard side her name runs from aft forward.
      */
-    private record Strip(Lettering name, int start, boolean starboard) implements PaintOverlay {
+    private record Strip(Lettering name, int start, boolean starboard, ZeppelinSize size) implements PaintOverlay {
         @Override
         public int colour(Livery.Spot spot, boolean fabric, Livery under) {
             if (fabric || spot.along() < from() || spot.along() >= to() || spot.across() > 0 != starboard || !FlankArt.onFlank(spot)) {
                 return -1;
             }
-            int across = (int) Math.floor(spot.along()) - FlankArt.NAME_FRONT;
+            int across = (int) Math.floor(spot.along()) - FlankArt.nameFront(size);
             int column = starboard ? name.width() - 1 - across : across;
             int row = name.baseline() - 1 - (int) Math.floor(FlankArt.rise(spot));
             if (!name.on(column, row)) {
@@ -125,12 +133,12 @@ public final class ChristeningPaint {
 
         @Override
         public double from() {
-            return FlankArt.NAME_FRONT + (starboard ? name.width() - end() : start);
+            return FlankArt.nameFront(size) + (starboard ? name.width() - end() : start);
         }
 
         @Override
         public double to() {
-            return FlankArt.NAME_FRONT + (starboard ? name.width() - start : end());
+            return FlankArt.nameFront(size) + (starboard ? name.width() - start : end());
         }
 
         private int end() {
@@ -142,27 +150,27 @@ public final class ChristeningPaint {
      * What a zeppelin's flanks are painted with, once she is christened: her crest and the strips of her name, as far
      * as the paint has swept along her since.
      */
-    static List<PaintOverlay> flanks(ClientLevel level, BoundingBox box) {
+    static List<PaintOverlay> flanks(ClientLevel level, BoundingBox box, ZeppelinSize size) {
         ShipsPlaqueBlockEntity plaque = plaque(level, box);
         if (plaque == null || !plaque.christened()) {
             return List.of();
         }
-        double reached = FlankArt.CREST_FRONT + (level.getGameTime() - plaque.when() - PAINT_DELAY) * SWEEP;
+        double reached = FlankArt.crestFront(size) + (level.getGameTime() - plaque.when() - PAINT_DELAY) * SWEEP;
         List<PaintOverlay> overlays = new ArrayList<>();
-        if (plaque.hasCrest() && reached >= FlankArt.CREST_FRONT) {
-            overlays.add(new Crest(ShipsColours.picture(plaque.crestBase(), plaque.crestPatterns())));
+        if (plaque.hasCrest() && reached >= FlankArt.crestFront(size)) {
+            overlays.add(new Crest(ShipsColours.picture(plaque.crestBase(), plaque.crestPatterns()), size));
         }
-        Lettering name = NAMES.computeIfAbsent(plaque.name(), ChristeningPaint::letter);
+        Lettering name = NAMES.computeIfAbsent(new Words(plaque.name(), FlankArt.nameLongest(size)), ChristeningPaint::letter);
         for (int start = 0; start < name.width(); start += STRIP) {
-            strip(overlays, name, start, reached);
+            strip(overlays, name, start, reached, size);
         }
         return overlays;
     }
 
     /** A strip of her name on each flank, where the paint has reached it. */
-    private static void strip(List<PaintOverlay> overlays, Lettering name, int start, double reached) {
+    private static void strip(List<PaintOverlay> overlays, Lettering name, int start, double reached, ZeppelinSize size) {
         for (boolean starboard : SIDES) {
-            Strip strip = new Strip(name, start, starboard);
+            Strip strip = new Strip(name, start, starboard, size);
             if (strip.from() <= reached) {
                 overlays.add(strip);
             }
@@ -183,18 +191,19 @@ public final class ChristeningPaint {
      * A name lettered in bold serif capitals, at one block to a pixel, smaller where it would run past the longest a
      * name runs; drawn off screen, as the game is told no window is to be opened for it.
      */
-    private static Lettering letter(String name) {
-        String text = name.toUpperCase(Locale.ROOT);
+    private static Lettering letter(Words words) {
+        String text = words.name().toUpperCase(Locale.ROOT);
+        int longest = words.longest();
         if (text.isBlank()) {
             return new Lettering(new boolean[0], 0, 0, 0);
         }
         Font font = new Font(Font.SERIF, Font.BOLD, 1).deriveFont(TYPE_SIZE);
         FontMetrics measure = measure(font);
-        if (measure.stringWidth(text) > FlankArt.NAME_LONGEST) {
-            font = font.deriveFont(Math.max(SMALLEST_TYPE, TYPE_SIZE * FlankArt.NAME_LONGEST / measure.stringWidth(text)));
+        if (measure.stringWidth(text) > longest) {
+            font = font.deriveFont(Math.max(SMALLEST_TYPE, TYPE_SIZE * longest / measure.stringWidth(text)));
             measure = measure(font);
         }
-        int width = Math.min(FlankArt.NAME_LONGEST, measure.stringWidth(text));
+        int width = Math.min(longest, measure.stringWidth(text));
         int height = measure.getAscent() + measure.getDescent();
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = graphics(image, font);

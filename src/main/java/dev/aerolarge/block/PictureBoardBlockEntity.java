@@ -1,6 +1,8 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.airframe.FlankScreen;
+import dev.aerolarge.airframe.ZeppelinSize;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -63,6 +65,8 @@ public class PictureBoardBlockEntity extends BlockEntity {
     @Nullable
     private BlockPos screens;
     private Direction aft = Direction.SOUTH;
+    /** How big its zeppelin's hull is; full size for one saved before sizes were. */
+    private ZeppelinSize size = ZeppelinSize.FULL;
 
     public PictureBoardBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), pos, state);
@@ -99,10 +103,19 @@ public class PictureBoardBlockEntity extends BlockEntity {
         return aft;
     }
 
-    /** Where the screens are from it and the way aft, as the zeppelin is built (turned as she was placed). */
-    public void placeScreens(BlockPos axis, Direction aft) {
+    /** How big its zeppelin's hull is, which says where on it the screens are (see {@link FlankScreen}). */
+    public ZeppelinSize size() {
+        return size;
+    }
+
+    /**
+     * Where the screens are from it and the way aft, as the zeppelin is built (turned as she was placed), and how big
+     * her hull is.
+     */
+    public void placeScreens(BlockPos axis, Direction aft, ZeppelinSize size) {
         screens = axis;
         this.aft = aft;
+        this.size = size;
         setChanged();
     }
 
@@ -172,6 +185,7 @@ public class PictureBoardBlockEntity extends BlockEntity {
         if (!map.isEmpty()) {
             tag.put("Map", map.save(registries));
         }
+        tag.putString("Size", size.name());
         if (screens != null) {
             tag.put("Screens", NbtUtils.writeBlockPos(screens));
         }
@@ -186,6 +200,7 @@ public class PictureBoardBlockEntity extends BlockEntity {
         changed = tag.getLong("Changed");
         map = tag.contains("Map") ? ItemStack.parseOptional(registries, tag.getCompound("Map")) : ItemStack.EMPTY;
         screens = NbtUtils.readBlockPos(tag, "Screens").orElse(null);
+        size = ZeppelinSize.named(tag.getString("Size"));
         Direction read = Direction.byName(tag.getString("Aft"));
         aft = read != null && read.getAxis().isHorizontal() ? read : Direction.SOUTH;
     }

@@ -1,6 +1,10 @@
 package dev.aerolarge.client;
 
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.ZeppelinSize;
+import java.util.List;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
  * Something a feature paints over a zeppelin's livery on this client (see {@link ZeppelinPaint}): the colour it gives
@@ -20,4 +24,10 @@ interface PaintOverlay {
 
     /** How far aft of the nose's tip its paint ends, in blocks. */
     double to();
+
+    /** What a feature paints over a zeppelin's livery now: in her box, on a hull of her size. */
+    @FunctionalInterface
+    interface Source {
+        List<PaintOverlay> overlays(ClientLevel level, BoundingBox box, ZeppelinSize size);
+    }
 }

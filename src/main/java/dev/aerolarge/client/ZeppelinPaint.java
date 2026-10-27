@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -53,7 +52,7 @@ public final class ZeppelinPaint {
     }
 
     /** What the features paint over a zeppelin's livery, one line each: taking a feature out is taking out its line. */
-    private static final List<BiFunction<ClientLevel, BoundingBox, List<PaintOverlay>>> OVERLAYS = List.of(
+    private static final List<PaintOverlay.Source> OVERLAYS = List.of(
         ShipsColours::fins,
         ChristeningPaint::flanks);
 
@@ -118,12 +117,12 @@ public final class ZeppelinPaint {
         double reached = share >= 1 ? Double.MAX_VALUE : share * Livery.sweep(autopilot.zeppelinSize());
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
         return new Painted(box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays(level, box));
+            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays(level, box, autopilot.zeppelinSize()));
     }
 
-    /** What the features paint over a zeppelin's livery now, in its box. */
-    private static List<PaintOverlay> overlays(ClientLevel level, BoundingBox box) {
-        return OVERLAYS.stream().flatMap(overlays -> overlays.apply(level, box).stream()).toList();
+    /** What the features paint over a zeppelin's livery now, in its box, on a hull of its size. */
+    private static List<PaintOverlay> overlays(ClientLevel level, BoundingBox box, ZeppelinSize size) {
+        return OVERLAYS.stream().flatMap(overlays -> overlays.overlays(level, box, size).stream()).toList();
     }
 
     /**

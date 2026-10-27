@@ -28,6 +28,12 @@ final class ZeppelinFlankScreen implements ZeppelinPiece {
         return AerolargeConfig.FLANK_SCREEN.get();
     }
 
+    /** At every size, the screens laid where each size has room for them (see {@link FlankScreen}). */
+    @Override
+    public boolean fits(ZeppelinSize size) {
+        return true;
+    }
+
     @Override
     public void build() {
         int z = layout.deckBack();
@@ -37,10 +43,11 @@ final class ZeppelinFlankScreen implements ZeppelinPiece {
             return;
         }
         layout.set(board.getX(), y, z, AerolargeRegistry.PICTURE_BOARD.get().defaultBlockState().setValue(PictureBoardBlock.FACING, Direction.NORTH));
-        BlockPos screens = new BlockPos(0, layout.axis(), FlankScreen.FRONT).subtract(board);
+        BlockPos screens = new BlockPos(0, layout.axis(), FlankScreen.of(layout.hullSize()).front()).subtract(board);
+        ZeppelinSize size = layout.hullSize();
         layout.fit(board, (blockEntity, rotation) -> {
             if (blockEntity instanceof PictureBoardBlockEntity picture) {
-                picture.placeScreens(screens.rotate(rotation), rotation.rotate(Direction.SOUTH));
+                picture.placeScreens(screens.rotate(rotation), rotation.rotate(Direction.SOUTH), size);
             }
         });
     }
