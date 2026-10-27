@@ -1461,12 +1461,13 @@ and swing it at her nose, close by or from the ground under it, for it reaches s
 bang, wine sprays, and a flock of 48 white doves flies off, as the airship Akron's pigeons did, while "I name this
 ship..." is said. Then her crest is painted on both flanks, sweeping back from the bow: the colours flying from her
 flagstaff, upright in a gold frame, one block to each of the banner's pixels, or a gold globe on blue when none fly; and
-beside it her name, in the game's own lettering standing on the equator, as the Hindenburg's ran along her bow, dark on
-a light livery and white on a dark one, reading the right way from either side. A Ship's Plaque on the back wall of the
-observation lounge keeps them, engraved with her crest and her name, or with who christened her when the bottle had no
-name. Swung anywhere else on her, the bottle only clinks. A new bottle christens her afresh. The server config's
-`christening` leaves the plaque off zeppelins built from then on; a Christening Bottle is crafted from a gold nugget
-over sweet berries over a glass bottle, and a Ship's Plaque from a gold nugget between two copper ingots.
+beside it her name, in tall bold serif capitals some 20 blocks high standing on the equator, as the Graf Zeppelin's ran
+along her bow (a long name is lettered smaller to fit), dark on a light livery and white on a dark one, reading the
+right way from either side. A Ship's Plaque on the back wall of the observation lounge keeps them, engraved with her
+crest and her name, or with who christened her when the bottle had no name. Swung anywhere else on her, the bottle only
+clinks. A new bottle christens her afresh. The server config's `christening` leaves the plaque off zeppelins built from
+then on; a Christening Bottle is crafted from a gold nugget over sweet berries over a glass bottle, and a Ship's Plaque
+from a gold nugget between two copper ingots.
 
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
