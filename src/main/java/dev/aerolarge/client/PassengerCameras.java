@@ -97,6 +97,8 @@ public final class PassengerCameras {
         float roll;
         /** Whether the use key is still down from the press that got here, which must not step on again. */
         boolean useHeld = true;
+        /** How many ticks the view has shown its camera: a circling camera circles by them. */
+        int ticks;
 
         Viewing(PassengerScreenBlockEntity screen, SableClient.Frame frame, Lens lens, CameraType cameraType, float yRot, float xRot) {
             this.screen = screen;
@@ -120,6 +122,7 @@ public final class PassengerCameras {
         void mount(int camera) {
             this.camera = camera;
             where = CameraMount.on(frame, scale, camera());
+            ticks = 0;
         }
     }
 
@@ -200,7 +203,7 @@ public final class PassengerCameras {
      * with it; false once no airliner holds the camera.
      */
     private static boolean place(Viewing view, float partialTick) {
-        SableClient.View seen = view.where.view(partialTick);
+        SableClient.View seen = view.where.view(partialTick, view.ticks + partialTick);
         if (seen == null) {
             return false;
         }
@@ -264,6 +267,7 @@ public final class PassengerCameras {
             return;
         }
         minecraft.setCameraEntity(view.lens);
+        view.ticks++;
         if (!minecraft.options.getCameraType().isFirstPerson()) {
             minecraft.options.setCameraType(CameraType.FIRST_PERSON);
         }
