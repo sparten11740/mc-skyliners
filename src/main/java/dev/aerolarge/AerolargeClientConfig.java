@@ -18,6 +18,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
+    public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -84,6 +85,11 @@ public final class AerolargeClientConfig {
             .comment("Aboard a zeppelin, hear her hull: the hollow boom of the wind over her cover, louder the faster she flies, and",
                 "now and then a girder groaning somewhere round you.")
             .define("hullAmbience", true);
+        GREAT_SHADOW = builder
+            .comment("Draw a flying zeppelin's great shadow on the land under her, cast from where the sun is: sharp under her at noon,",
+                "thrown long and soft as the sun sinks, gone at night and in rain. Worked out every other tick over the ground she",
+                "could shade; turn it off if that costs too much.")
+            .define("greatShadow", true);
         SPEC = builder.build();
     }
 
