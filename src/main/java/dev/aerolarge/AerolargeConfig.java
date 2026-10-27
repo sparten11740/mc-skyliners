@@ -42,6 +42,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
+    public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -272,6 +273,12 @@ public final class AerolargeConfig {
                 "her and paints her crest and name on her flanks. Zeppelins already built keep theirs."
             )
             .define("christening", true);
+        FLANK_SCREEN = builder
+            .comment(
+                "Whether a zeppelin is built with a glowing screen down each flank and a picture board on her upper deck choosing what",
+                "they show: posters, her colours, a map, the faces aboard or her height and speed. Zeppelins already built keep theirs."
+            )
+            .define("flankScreen", true);
         builder.pop();
 
         SPEC = builder.build();

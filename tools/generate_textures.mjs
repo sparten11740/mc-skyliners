@@ -3689,4 +3689,145 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 2);
 }
 
+// The picture board on a zeppelin's upper deck: a dark frame, the little screen along its top (its picture drawn by
+// its renderer), and six buttons in two rows under it, each four pixels square and painted with what it shows: a
+// landscape for the posters, a flag, a map, a face, an arrow climbing, and a red power sign for off.
+{
+  const FRAME = [0x2a, 0x2f, 0x36];
+  const GLASS = [0x14, 0x18, 0x1e];
+  const KEY = [0x46, 0x4e, 0x58];
+  const SKIN = [0xe8, 0xb8, 0x90];
+  const icons = [
+    [(x, y) => (y === 0 ? [0x6a, 0xb0, 0xf0] : y === 1 ? (x === 2 ? [0xf0, 0xd0, 0x40] : [0x6a, 0xb0, 0xf0]) : [0x50, 0xa0, 0x50]),
+      (x, y) => (x === 0 ? [0xd8, 0xd8, 0xd8] : y === 0 ? [0xd0, 0x30, 0x30] : y === 1 ? [0x30, 0x60, 0xd0] : null),
+      (x, y) => ((x === 1 && y === 1) || (x === 2 && y >= 1 && y <= 2) ? [0x8a, 0x5a, 0x2a] : [0xe8, 0xd8, 0xa8])],
+    [(x, y) => (y === 0 ? [0x6a, 0x4a, 0x2a] : (y === 1 || y === 3) && (x === 1 || x === 2) ? [0x24, 0x28, 0x40] : SKIN),
+      (x, y) => (y === 1 || x === 1 || x === 2) && (y !== 0 || x === 1 || x === 2) ? [0x5b, 0xe0, 0x7a] : null,
+      (x, y) => ((x === 0 || x === 3) && y >= 1) || (y === 3 && x >= 1 && x <= 2) || ((x === 1 || x === 2) && y === 0) ? [0xe0, 0x40, 0x40] : null],
+  ];
+  texture(blockOutput, "picture_board_front", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15 || y === 6 || y === 10) return FRAME;
+    if (y < 6) return GLASS;
+    if (x % 5 === 0) return FRAME;
+    const icon = icons[y < 10 ? 0 : 1][Math.floor(x / 5)];
+    return icon((x - 1) % 5, (y - 7) % 4 === 3 && y > 10 ? 3 : y < 10 ? y - 7 : y - 11) ?? KEY;
+  }, 1);
+  texture(blockOutput, "picture_board_side", () => FRAME, 2);
+}
+
+// The flank screens' posters, 128 by 40 pixels, in the flat colours of the travel posters of the airship age: four
+// journeys, each with the zeppelin over its destination, and four adverts. The bottom of each is kept plain, as the
+// screen sets its headline there in a dark band.
+{
+  const WIDTH = 128;
+  const HEIGHT = 40;
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * Math.max(0, Math.min(1, t))));
+  const SILVER = [0xd0, 0xd6, 0xde];
+  const SILVER_SHADE = [0x98, 0xa0, 0xaa];
+  // A zeppelin seen from the side, its nose to the right, so long, its middle at a point: hull, car and fins.
+  const zeppelin = (x, y, cx, cy, length) => {
+    const dx = (x - cx) / (length / 2);
+    const dy = (y - cy) / (length / 7);
+    if (dx * dx + dy * dy <= 1) return dy > 0.35 ? SILVER_SHADE : SILVER;
+    if (Math.abs(x - (cx + length / 5)) <= length / 14 && y > cy && y <= cy + length / 7 + 1) return SILVER_SHADE;
+    const tail = cx - length / 2;
+    return x >= tail - 1 && x <= tail + length / 8 && Math.abs(y - cy) <= (tail + length / 8 - x) * 0.6 + 0.5 ? SILVER_SHADE : null;
+  };
+  const poster = (name, paint) => {
+    reseed(`poster_${name}`);
+    const pixels = [];
+    for (let y = 0; y < HEIGHT; y++) {
+      const row = [];
+      for (let x = 0; x < WIDTH; x++) {
+        row.push([...paint(x, y), 255]);
+      }
+      pixels.push(row);
+    }
+    writeFileSync(resolve(miscOutput, `poster_${name}.png`), encodePng(pixels));
+  };
+  const stars = new Set(Array.from({ length: 60 }, (_, k) => ((k * 7919) % (WIDTH * 26))));
+  poster("nether", (x, y) => {
+    const ship = zeppelin(x, y, 40, 9, 34);
+    if (ship) return ship;
+    const ghast = x >= 94 && x < 106 && y >= 4 && y < 16;
+    if (ghast) return (y === 8 && (x === 97 || x === 102)) || (y === 12 && x >= 98 && x <= 101) ? [0x50, 0x50, 0x58] : [0xf2, 0xf2, 0xf2];
+    if (y >= 16 && y < 22 && (x === 96 || x === 99 || x === 102 || x === 105) && y - 16 < 3 + (x % 3)) return [0xe0, 0xe0, 0xe0];
+    const cliff = 30 - Math.abs(Math.sin(x * 0.31) * 6) - (x < 24 ? 12 - x / 2 : 0);
+    if (y > cliff && x < 34) return [0x6a, 0x16, 0x16];
+    if (y >= 24) return Math.sin(x * 0.4 + y * 1.3) > 0.6 ? [0xff, 0xd0, 0x50] : [0xf0, 0x7a, 0x18];
+    return mix([0x3c, 0x08, 0x0c], [0xa8, 0x2c, 0x14], y / 24);
+  });
+  poster("end", (x, y) => {
+    const ship = zeppelin(x, y, 30, 8, 30);
+    if (ship) return ship;
+    const tower = [[84, 10], [92, 4], [100, 12]].find(([left, top]) => x >= left && x < left + 6 && y >= top);
+    if (tower && y < 29) return (x - tower[0]) % 3 === 1 && y % 4 === 1 ? [0xe8, 0xc0, 0xf8] : [0x9a, 0x64, 0xa0];
+    const wing = Math.abs(x - 58) < 14 - Math.abs(y - 12) * 2.2 && y >= 8 && y <= 16;
+    if (wing) return (x === 66 || x === 67) && y === 12 ? [0xd0, 0x40, 0xf0] : [0x12, 0x10, 0x16];
+    if (y >= 27 - Math.abs(Math.sin(x * 0.07)) * 2) return y % 3 === 0 && x % 5 === 0 ? [0xc8, 0xc2, 0x8c] : [0xdc, 0xd8, 0xa0];
+    return stars.has(y * WIDTH + x) ? [0xf0, 0xf0, 0xff] : mix([0x0c, 0x06, 0x18], [0x30, 0x18, 0x48], y / 27);
+  });
+  poster("jungle", (x, y) => {
+    const ship = zeppelin(x, y, 100, 7, 30);
+    if (ship) return ship;
+    const step = Math.floor((y - 8) / 3);
+    if (y >= 8 && y < 26 && Math.abs(x - 58) <= 4 + step * 3) return (x + y) % 5 === 0 ? [0x5c, 0x80, 0x48] : [0x86, 0x8c, 0x78];
+    if ((x === 44 && y === 12) || (x === 72 && y === 10)) return [0xe8, 0x30, 0x30];
+    if ((x === 47 && y === 9) || (x === 76 && y === 14)) return [0x30, 0x70, 0xe8];
+    if (y >= 22 + Math.round(Math.sin(x * 0.5) * 2)) return (x * 3 + y * 7) % 4 === 0 ? [0x2c, 0x7c, 0x30] : y > 30 ? [0x1c, 0x5a, 0x24] : [0x3a, 0x98, 0x3c];
+    return mix([0x88, 0xcc, 0xee], [0xd0, 0xf0, 0xc8], y / 22);
+  });
+  poster("peaks", (x, y) => {
+    const ship = zeppelin(x, y, 28, 8, 30);
+    if (ship) return ship;
+    const peak = [[62, 6, 26], [92, 10, 22], [118, 14, 18]].find(([cx, top, half]) => y >= top && Math.abs(x - cx) <= (y - top) * half / 20);
+    if ((x === 74 && y === 21) || (x === 75 && y === 20) || (x === 104 && y === 24) || (x === 105 && y === 23)) return [0xfa, 0xfa, 0xfa];
+    if (peak) return y < peak[1] + 7 ? [0xfa, 0xfa, 0xff] : x < peak[0] ? [0x8a, 0x98, 0xb0] : [0xa8, 0xb4, 0xc8];
+    if (y >= 28) return [0xe8, 0xf0, 0xf8];
+    return mix([0x6c, 0xa8, 0xe8], [0xd0, 0xe4, 0xf8], y / 28);
+  });
+  poster("creeper_insurance", (x, y) => {
+    const umbrella = Math.hypot(x - 76, y - 14) <= 22 && y <= 14;
+    if (umbrella) return Math.floor(Math.atan2(y - 14, x - 76) * 3) % 2 === 0 ? [0x3c, 0x6c, 0xc8] : [0xf4, 0xf4, 0xf4];
+    if (x === 76 && y > 14 && y < 18) return [0x50, 0x40, 0x30];
+    if (y >= 18 && y < 22 && Math.abs(x - 76) <= y - 14) return [0xb0, 0x40, 0x30];
+    if (y >= 22 && y < 30 && Math.abs(x - 76) <= 8) return x === 74 && y >= 25 ? [0x60, 0x40, 0x28] : [0xd8, 0xc0, 0x90];
+    if (x >= 16 && x < 28 && y >= 12 && y < 30) {
+      const fx = Math.floor((x - 16) / 3);
+      const fy = Math.floor((y - 12) / 3);
+      const face = (fy === 1 && (fx === 0 || fx === 3)) || (fy === 2 && (fx === 1 || fx === 2)) || (fy === 3 && fx >= 0 && fx <= 3 && fx !== 1 && fx !== 2 ? false : fy === 3 && (fx === 1 || fx === 2));
+      return face ? [0x10, 0x20, 0x10] : (x + y) % 4 === 0 ? [0x6a, 0xb8, 0x4c] : [0x58, 0xa0, 0x40];
+    }
+    return y >= 30 ? [0x6c, 0xa8, 0x48] : mix([0xfa, 0xe0, 0x90], [0xf4, 0xc8, 0x70], y / 30);
+  });
+  poster("villager_bank", (x, y) => {
+    if (x < 2 || x >= WIDTH - 2 || y < 2) return [0xe0, 0xb8, 0x40];
+    const emerald = Math.abs(x - 50) / 12 + Math.abs(y - 15) / 12 <= 1;
+    if (emerald) return x < 50 && y < 15 ? [0xa8, 0xf8, 0xc0] : x >= 50 && y >= 15 ? [0x18, 0x90, 0x48] : [0x40, 0xd8, 0x78];
+    const vault = Math.hypot(x - 94, y - 15);
+    if (vault <= 11) return vault > 9.5 || Math.abs(Math.sin(Math.atan2(y - 15, x - 94) * 3)) < 0.18 || vault < 2 ? [0x60, 0x64, 0x6c] : [0xa0, 0xa6, 0xae];
+    return mix([0x10, 0x50, 0x34], [0x18, 0x68, 0x40], y / 40);
+  });
+  poster("golem_guards", (x, y) => {
+    if (x >= 52 && x < 68 && y >= 9 && y < 24) return x >= 57 && x < 63 && y >= 9 && y < 13 ? [0x80, 0x84, 0x7c] : [0xc0, 0xc0, 0xb4];
+    if (x >= 56 && x < 64 && y >= 2 && y < 9) return y === 5 && (x === 58 || x === 61) ? [0x60, 0x10, 0x10] : x >= 59 && x < 61 && y >= 6 ? [0xa0, 0x8c, 0x78] : [0xc8, 0xc8, 0xbc];
+    if ((x >= 48 && x < 52 && y >= 10 && y < 26) || (x >= 68 && x < 72 && y >= 10 && y < 22)) return [0xb0, 0xb0, 0xa4];
+    if ((x >= 54 && x < 58 && y >= 24 && y < 30) || (x >= 62 && x < 66 && y >= 24 && y < 30)) return [0xb0, 0xb0, 0xa4];
+    if (Math.hypot(x - 73, y - 20) <= 1.6) return [0xe0, 0x20, 0x24];
+    if (x === 73 && y > 21 && y < 26) return [0x30, 0x90, 0x30];
+    if (y >= 30) return [0x6c, 0xa0, 0x48];
+    return mix([0xf0, 0xec, 0xe0], [0xd8, 0xd0, 0xb8], y / 30);
+  });
+  poster("cake_by_air", (x, y) => {
+    const ship = zeppelin(x, y, 52, 7, 34);
+    if (ship) return ship;
+    const canopy = Math.hypot(x - 84, y - 15) <= 7 && y <= 15;
+    if (canopy) return Math.floor((x - 77) / 3) % 2 === 0 ? [0xe0, 0x30, 0x30] : [0xf8, 0xf8, 0xf8];
+    if (y > 15 && y < 21 && (x === 78 + Math.round((y - 15) * 0.5) || x === 90 - Math.round((y - 15) * 0.5))) return [0x60, 0x60, 0x60];
+    if (y >= 21 && y < 26 && Math.abs(x - 84) <= 4) return y === 21 ? ((x - 84) % 2 === 0 ? [0xe0, 0x20, 0x30] : [0xfc, 0xf4, 0xf0]) : y === 22 ? [0xfc, 0xf4, 0xf0] : [0xa0, 0x60, 0x30];
+    if (y >= 30) return [0x00, 0x01, 0x02].includes((x * 5) % 11) && y === 30 ? [[0xe0, 0x40, 0x40], [0x40, 0x80, 0xe0], [0xf0, 0xc0, 0x30]][x % 3] : [0x68, 0xb0, 0x48];
+    return mix([0x7c, 0xbc, 0xf0], [0xc8, 0xe8, 0xfc], y / 30);
+  });
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

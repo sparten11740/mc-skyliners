@@ -862,6 +862,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         return relay.hasProperty(ThrustRelayBlock.POWER) && relay.getValue(ThrustRelayBlock.POWER) > 0;
     }
 
+    /** The zeppelin whose frame a block lies in, on either side, by her autopilot; null for none. */
+    @Nullable
+    public static AutopilotBlockEntity zeppelinFraming(Level level, BlockPos pos) {
+        for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
+            BoundingBox frame = autopilot.craft() == Craft.ZEPPELIN ? autopilot.frame() : null;
+            if (frame != null && frame.isInside(pos)) {
+                return autopilot;
+            }
+        }
+        return null;
+    }
+
     /** The autopilot nearest to a position, on either side, within {@link #FLIGHT_DECK} of it; null for none. */
     @Nullable
     public static AutopilotBlockEntity nearest(Level level, BlockPos pos) {

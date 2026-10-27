@@ -188,6 +188,8 @@ import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.HelmBlock;
 import dev.aerolarge.block.HelmBlockEntity;
 import dev.aerolarge.block.HornCordBlock;
+import dev.aerolarge.block.PictureBoardBlock;
+import dev.aerolarge.block.PictureBoardBlockEntity;
 import dev.aerolarge.block.ShipsPlaqueBlock;
 import dev.aerolarge.block.ShipsPlaqueBlockEntity;
 import dev.aerolarge.block.SouvenirModelBlock;
@@ -1552,6 +1554,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipsPlaqueBlockEntity>> SHIPS_PLAQUE_ENTITY =
         BLOCK_ENTITIES.register("ships_plaque", () -> BlockEntityType.Builder.of(ShipsPlaqueBlockEntity::new, SHIPS_PLAQUE.get()).build(null));
+    /** The picture board choosing what a zeppelin's flank screens show. */
+    public static final DeferredBlock<PictureBoardBlock> PICTURE_BOARD = BLOCKS.registerBlock(
+        "picture_board", PictureBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PictureBoardBlockEntity>> PICTURE_BOARD_ENTITY =
+        BLOCK_ENTITIES.register("picture_board", () -> BlockEntityType.Builder.of(PictureBoardBlockEntity::new, PICTURE_BOARD.get()).build(null));
     /** The zeppelin's horn and its echo off the ground (see {@link dev.aerolarge.horn.ShipHorn}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN = sound("zeppelin_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN_ECHO = sound("zeppelin_horn_echo");
@@ -1570,6 +1578,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> FLAG_HALYARD_ITEM = ITEMS.registerSimpleBlockItem(FLAG_HALYARD);
     public static final DeferredItem<BlockItem> FLAGSTAFF_ITEM = ITEMS.registerSimpleBlockItem(FLAGSTAFF);
     public static final DeferredItem<BlockItem> SHIPS_PLAQUE_ITEM = ITEMS.registerSimpleBlockItem(SHIPS_PLAQUE);
+    public static final DeferredItem<BlockItem> PICTURE_BOARD_ITEM = ITEMS.registerSimpleBlockItem(PICTURE_BOARD);
     /** Broken on a zeppelin's nose, christens her with the name it was given at an anvil. */
     public static final DeferredItem<ChristeningBottleItem> CHRISTENING_BOTTLE = ITEMS.register(
         "christening_bottle", () -> new ChristeningBottleItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON))
@@ -1660,7 +1669,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
-            SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
+            SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

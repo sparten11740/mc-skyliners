@@ -3,7 +3,6 @@ package dev.aerolarge.christening;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
-import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import dev.aerolarge.block.ShipsPlaqueBlockEntity;
@@ -80,7 +79,7 @@ public final class Christening {
      * her nose, the bottle breaks there and she is christened.
      */
     public static Outcome christen(ServerLevel level, BlockPos struck, Vec3 at, Vec3 from, Player sponsor, ItemStack bottle) {
-        AutopilotBlockEntity zeppelin = zeppelinAt(level, struck);
+        AutopilotBlockEntity zeppelin = AutopilotBlockEntity.zeppelinFraming(level, struck);
         if (zeppelin == null || !level.getBlockState(struck).is(AerolargeRegistry.ZEPPELIN_COVER.get())) {
             return Outcome.NOT_A_ZEPPELIN;
         }
@@ -104,18 +103,6 @@ public final class Christening {
         Component named = bottle.get(DataComponents.CUSTOM_NAME);
         String name = named == null ? "" : named.getString().strip();
         return name.length() > LONGEST_NAME ? name.substring(0, LONGEST_NAME) : name;
-    }
-
-    /** The zeppelin whose frame a block lies in; null for none. */
-    @Nullable
-    private static AutopilotBlockEntity zeppelinAt(ServerLevel level, BlockPos pos) {
-        for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(level)) {
-            BoundingBox frame = autopilot.craft() == Craft.ZEPPELIN ? autopilot.frame() : null;
-            if (frame != null && frame.isInside(pos)) {
-                return autopilot;
-            }
-        }
-        return null;
     }
 
     /** Her plaque, in her frame; null for none. */

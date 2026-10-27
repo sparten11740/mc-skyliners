@@ -1469,6 +1469,18 @@ bottle christens her afresh. The server config's `christening` leaves the plaque
 Christening Bottle is crafted from a gold nugget over sweet berries over a glass bottle, and a Ship's Plaque from a gold
 nugget between two copper ingots.
 
+Down each flank, under the equator between the promenade windows and the engine cars, glows a screen some 64 blocks long
+and 20 high, curving with the hull in a dark bezel and reading the right way round from either side, bright enough to be
+seen at night. A Picture Board at the aft end of the upper deck chooses what both show, a little copy of the screens
+over its six painted buttons, since they cannot be seen from inside: Posters, one at each press of four travel posters
+with the zeppelin over the Nether, the End, the jungle and the frozen peaks, and four adverts (Creeper Insurance, the
+Villager Bank, Golem Guards and Cake by Air), each under its headline; Colours, the banner flying from her flagstaff, as
+a flag; Map, a filled map handed to the board, so a player's own map art is shown on her side, handed back at a second
+press; Faces, the faces of everyone aboard, a few big or more smaller, a page at a time; Flight, her height and speed in
+huge figures, an arrow green as she climbs and amber as she sinks; and Off. A new picture flickers on with a click. The
+server config's `flankScreen` leaves the screens and the board off zeppelins built from then on; a Picture Board is
+crafted from three glass panes over redstone, glowstone dust and a stone button, over three dark oak planks.
+
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
 among its glowing burners, lit at its corners. The hot air stays put over the open mouth, as it does over a hot air
@@ -1658,7 +1670,9 @@ the client), and `ZeppelinColours` stands the flagstaff on the Sky Deck, its col
 flown by `ShipsColoursRenderer` and painted on the fins by `ShipsColours` where `FinArt` says, and `ZeppelinChristening`
 hangs the `ShipsPlaqueBlock` that a `ChristeningBottleItem` broken on her nose engraves through `Christening`,
 `ChristeningPaint` painting her crest and name where `FlankArt` says (each a `PaintOverlay` on `ZeppelinPaint`'s list)
-and `ShipsPlaqueRenderer` engraving the plaque; a feature is taken out of the zeppelin with its line on the list.
+and `ShipsPlaqueRenderer` engraving the plaque, and `ZeppelinFlankScreen` stands the `PictureBoardBlock` whose
+`FlankScreenRenderer` draws the screens where `FlankScreen` says, its headlines and figures set in a typeface by
+`ScreenType` and its maps painted by `ScreenMaps`; a feature is taken out of the zeppelin with its line on the list.
 `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand control;
 `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
 `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the

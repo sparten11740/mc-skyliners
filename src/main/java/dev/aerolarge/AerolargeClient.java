@@ -37,6 +37,7 @@ import dev.aerolarge.client.FallingCrateRenderer;
 import dev.aerolarge.client.GiantRubberDuckRenderer;
 import dev.aerolarge.client.EngineRenderer;
 import dev.aerolarge.client.EngineSounds;
+import dev.aerolarge.client.FlankScreenRenderer;
 import dev.aerolarge.client.FlareSmokeParticle;
 import dev.aerolarge.client.FlightDisplayRenderer;
 import dev.aerolarge.client.FlightMapRenderer;
@@ -235,6 +236,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

@@ -597,6 +597,43 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/christening_bottle.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/christening_bottle` } });
   write(`assets/${ID}/particles/dove.json`, { textures: [`${ID}:dove_up`, `${ID}:dove_down`] });
 }
+// The picture board choosing what a zeppelin's flank screens show (see PictureBoardBlock): a board three sixteenths
+// thick standing at the back of its block, the little screen and its buttons on its front, the screens and the
+// little screen's picture drawn by its renderer (see FlankScreenRenderer).
+{
+  write(`assets/${ID}/models/block/picture_board.json`, {
+    parent: "minecraft:block/block",
+    textures: { front: `${ID}:block/picture_board_front`, side: `${ID}:block/picture_board_side`, particle: `${ID}:block/picture_board_side` },
+    elements: [{
+      from: [0, 0, 13], to: [16, 16, 16],
+      faces: {
+        north: { texture: "#front" }, south: { texture: "#side" }, up: { texture: "#side", uv: [0, 13, 16, 16] },
+        down: { texture: "#side", uv: [0, 13, 16, 16] }, east: { texture: "#side", uv: [13, 0, 16, 16] }, west: { texture: "#side", uv: [0, 0, 3, 16] },
+      },
+    }],
+  });
+  write(`assets/${ID}/blockstates/picture_board.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/picture_board`, y }])),
+  });
+  write(`assets/${ID}/models/item/picture_board.json`, { parent: `${ID}:block/picture_board` });
+  dropsItself("picture_board");
+  cubes.picture_board = null;
+}
+function flankScreenLang() {
+  return {
+    "block.aerolarge.picture_board": "Picture Board",
+    "message.aerolarge.picture_board.no_map": "Hand the board a filled map to show it on the screens",
+    "message.aerolarge.picture_board.no_colours": "Hoist a banner at the flagstaff to show her colours",
+    "poster.aerolarge.nether": "See the Nether",
+    "poster.aerolarge.end": "The End: Last Stop",
+    "poster.aerolarge.jungle": "Fly to the Jungle",
+    "poster.aerolarge.peaks": "Ski the Frozen Peaks",
+    "poster.aerolarge.creeper_insurance": "Creeper Insurance",
+    "poster.aerolarge.villager_bank": "Villager Bank",
+    "poster.aerolarge.golem_guards": "Golem Guards",
+    "poster.aerolarge.cake_by_air": "Cake by Air",
+  };
+}
 function christeningLang() {
   return {
     "block.aerolarge.ships_plaque": "Ship's Plaque",
@@ -5185,7 +5222,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5261,6 +5298,7 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
+shaped("picture_board", ["GGG", "RDB", "PPP"], { G: "minecraft:glass_pane", R: "minecraft:redstone", D: "minecraft:glowstone_dust", B: "minecraft:stone_button", P: "minecraft:dark_oak_planks" }, 1);
 shaped("christening_bottle", ["N", "S", "B"], { N: "minecraft:gold_nugget", S: "minecraft:sweet_berries", B: "minecraft:glass_bottle" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
@@ -5844,6 +5882,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...zeppelinControlsLang(),
   ...shipsColoursLang(),
   ...christeningLang(),
+  ...flankScreenLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
