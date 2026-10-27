@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "aerolarge:block/searchlight"
+    },
+    "lit=true": {
+      "model": "aerolarge:block/searchlight_lit"
+    }
+  }
+}

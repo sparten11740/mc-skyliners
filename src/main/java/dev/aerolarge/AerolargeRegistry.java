@@ -154,6 +154,10 @@ import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
+import dev.aerolarge.block.SearchlightBlock;
+import dev.aerolarge.block.SearchlightBlockEntity;
+import dev.aerolarge.block.SearchlightHandleBlock;
+import dev.aerolarge.block.SearchlightHandleBlockEntity;
 import dev.aerolarge.block.SeatConsoleBlock;
 import dev.aerolarge.block.SeatbeltSignBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlock;
@@ -1624,6 +1628,17 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> HANDLER_WHISTLE_LONG = sound("handler_whistle_long");
     public static final DeferredHolder<SoundEvent, SoundEvent> WATER_BALLAST = sound("water_ballast");
     public static final DeferredHolder<SoundEvent, SoundEvent> UP_SHIP_CALL = sound("up_ship_call");
+    /** The searchlights under a zeppelin's control car, lit when switched on, and the handles they are swung from. */
+    public static final DeferredBlock<SearchlightBlock> SEARCHLIGHT = BLOCKS.registerBlock(
+        "searchlight", SearchlightBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(SearchlightBlock.LIT) ? 15 : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_ENTITY =
+        BLOCK_ENTITIES.register("searchlight", () -> BlockEntityType.Builder.of(SearchlightBlockEntity::new, SEARCHLIGHT.get()).build(null));
+    public static final DeferredBlock<SearchlightHandleBlock> SEARCHLIGHT_HANDLE = BLOCKS.registerBlock(
+        "searchlight_handle", SearchlightHandleBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightHandleBlockEntity>> SEARCHLIGHT_HANDLE_ENTITY =
+        BLOCK_ENTITIES.register("searchlight_handle", () -> BlockEntityType.Builder.of(SearchlightHandleBlockEntity::new, SEARCHLIGHT_HANDLE.get()).build(null));
     /** An engine repeater in a zeppelin's engine car, answering the control car's orders for its engine. */
     public static final DeferredBlock<EngineRepeaterBlock> ENGINE_REPEATER = BLOCKS.registerBlock(
         "engine_repeater", EngineRepeaterBlock::new, metal(MapColor.GOLD).noOcclusion()
@@ -1664,6 +1679,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> CLUB_WALL_ITEM = ITEMS.registerSimpleBlockItem(CLUB_WALL);
     public static final DeferredItem<BlockItem> LOOKOUT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LOOKOUT_GLASS);
     public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
+    public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT);
+    public static final DeferredItem<BlockItem> SEARCHLIGHT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(SEARCHLIGHT_HANDLE);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
     public static final DeferredItem<BlockItem> BUBBLE_LEVEL_ITEM = ITEMS.registerSimpleBlockItem(BUBBLE_LEVEL);
@@ -1757,7 +1774,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

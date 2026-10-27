@@ -729,6 +729,48 @@ cubes.propeller = null;
     ],
   });
   write(`assets/${ID}/blockstates/ballast_valve.json`, { variants: { "": { model: `${ID}:block/ballast_valve` } } });
+  // The searchlights under the control car (see SearchlightBlock): a black drum on a brass yoke hung from the top of
+  // its block, its big lens on the drum's underside, dark glass or, lit, glowing; and the handle in the lounge it is
+  // swung from (see SearchlightHandleBlock): a brass column with a cross grip, black at its ends.
+  for (const lit of [false, true]) {
+    write(`assets/${ID}/models/block/searchlight${lit ? "_lit" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { drum: "minecraft:block/black_concrete", brass, lens: `${ID}:block/searchlight_lens${lit ? "" : "_off"}`, particle: brass },
+      elements: [
+        solid([7, 12, 7], [9, 16, 9], "#brass"),
+        solid([3, 11, 7], [13, 12, 9], "#brass"),
+        solid([3, 5, 7], [4, 11, 9], "#brass"),
+        solid([12, 5, 7], [13, 11, 9], "#brass"),
+        { from: [4, 3, 4], to: [12, 10, 12], faces: {
+          north: { texture: "#drum" }, south: { texture: "#drum" }, east: { texture: "#drum" }, west: { texture: "#drum" },
+          up: { texture: "#drum" }, down: { texture: "#lens" },
+        } },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/searchlight.json`, {
+    variants: { "lit=false": { model: `${ID}:block/searchlight` }, "lit=true": { model: `${ID}:block/searchlight_lit` } },
+  });
+  write(`assets/${ID}/models/item/searchlight.json`, { parent: `${ID}:block/searchlight` });
+  dropsItself("searchlight");
+  cubes.searchlight = null;
+  write(`assets/${ID}/models/block/searchlight_handle.json`, {
+    parent: "minecraft:block/block",
+    textures: { brass, grip: "minecraft:block/black_concrete", particle: brass },
+    elements: [
+      solid([5, 0, 5], [11, 1, 11], "#brass"),
+      solid([7, 1, 7], [9, 12, 9], "#brass"),
+      solid([5, 12, 7], [11, 13, 9], "#brass"),
+      solid([3, 12, 7], [5, 13, 9], "#grip"),
+      solid([11, 12, 7], [13, 13, 9], "#grip"),
+    ],
+  });
+  write(`assets/${ID}/blockstates/searchlight_handle.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/searchlight_handle`, y }])),
+  });
+  write(`assets/${ID}/models/item/searchlight_handle.json`, { parent: `${ID}:block/searchlight_handle` });
+  dropsItself("searchlight_handle");
+  cubes.searchlight_handle = null;
   write(`assets/${ID}/models/item/ballast_valve.json`, { parent: `${ID}:block/ballast_valve` });
   dropsItself("ballast_valve");
   cubes.ballast_valve = null;
@@ -824,6 +866,8 @@ function zeppelinControlsLang() {
     "block.aerolarge.lookout_glass": "Lookout's Glass",
     "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
     "block.aerolarge.ballast_valve": "Water Ballast Valve",
+    "block.aerolarge.searchlight": "Searchlight",
+    "block.aerolarge.searchlight_handle": "Searchlight Handle",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -5417,7 +5461,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ballast_valve", "searchlight", "searchlight_handle", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5494,6 +5538,8 @@ shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:s
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraft:copper_ingot", F: "minecraft:dark_oak_fence" }, 1);
 shaped("ballast_valve", ["N", "C", "B"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", B: "minecraft:bucket" }, 1);
+shaped("searchlight", ["I", "L", "G"], { I: "minecraft:iron_ingot", L: "minecraft:redstone_lamp", G: "minecraft:glass" }, 1);
+shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);

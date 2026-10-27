@@ -66,6 +66,7 @@ import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
+import dev.aerolarge.client.SearchlightBeams;
 import dev.aerolarge.client.SelfDestructButtonRenderer;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
@@ -188,6 +189,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(LookoutView::loggingOut);
         NeoForge.EVENT_BUS.addListener(UpShipScene::tick);
         NeoForge.EVENT_BUS.addListener(UpShipScene::stage);
+        NeoForge.EVENT_BUS.addListener(SearchlightBeams::stage);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));

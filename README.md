@@ -1530,6 +1530,14 @@ blocks out and 60 above her, once in two minutes, so she slides past broadside, 
 and all. Use it once more, or sneak, to come back. The client config's `flybyCamera` leaves the flyby camera out, and
 the server config's `zeppelinScreens` leaves the screens out of zeppelins built from then on.
 
+Two searchlights hang under the forward corners of the control car, black drums with big glass lenses, and their two
+handles stand in the car's lounge over the glass floor, one for each side. Use a handle to take it and its light
+switches on with a click and swings to wherever you look: a cone of warm light runs down from the lens to a glowing pool
+on the land, plain to see at night from the car or the ground, and the lit lamp lights up the car's underside. Use the
+handle again to let go, the light left shining where it points, or use it sneaking to switch the light off. Walking away
+from a handle lets it go too. The server config's `searchlights` leaves them out of zeppelins built from then on, and
+off, the handles already built do nothing.
+
 And somewhere aboard is a secret. One length of the gangway's grating towards the stern is a Secret Hatch, just like the
 rest of it but for a musical note drifting up out of it now and then: use it and it swings open, a rope leading down
 through it into a black room hung under the gangway, with no other way in. It is a techno club: a dance floor of black
@@ -1743,15 +1751,17 @@ list), and `ZeppelinUpShip` hangs the `BallastValveBlock` whose `BallastValveBlo
 and strikes the take-off's beats, `UpShip` holding her on the lines (a `TakeoffHold` on `ZeppelinPilot`'s list) and
 `UpShipScene` drawing the handlers, their lines and the water, and `ZeppelinScreens` places the `PassengerScreenBlock`s
 that look through her `ZeppelinCamera`s (each a `CameraSpot`, as the airliner's `OutsideCamera`s are, the flyby circling
-her in `CameraMount`); a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out
-its control room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand
-controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
-`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
-hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
-`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
-zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
-burners crackling at the far end of it do not take every sound channel there is.
+her in `CameraMount`), and `ZeppelinSearchlights` hangs the `SearchlightBlock`s whose `SearchlightHandleBlock`s swing
+them, `SearchlightBeams` drawing their beams and pools; a feature is taken out of the zeppelin with its line on the
+list. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
+control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
+`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
+autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
+autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
+from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy`
+opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that
+starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel
+there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

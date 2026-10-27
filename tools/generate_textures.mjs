@@ -3921,4 +3921,19 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(entityOutput, "ground_officer", skin([0x1a, 0x1e, 0x2e], WHITE, peakedCap, coatButtons), 3, 64, 64);
 }
 
+// A searchlight's lens (see SearchlightBlock): rings of thick glass round a bright middle, warm white and glowing lit,
+// dark glass with a faint glint switched off.
+{
+  const mix = (from, to, t) => from.map((c, i) => Math.round(c + (to[i] - c) * t));
+  const lens = (bright) => (x, y) => {
+    const r = Math.hypot(x + 0.5 - 8, y + 0.5 - 8);
+    if (r > 7.5) return [0x1a, 0x1a, 0x1c];
+    const ring = Math.floor(r) % 3 === 0;
+    if (bright) return ring ? [0xff, 0xe6, 0xaa] : mix([0xff, 0xfb, 0xee], [0xff, 0xec, 0xbb], r / 7.5);
+    return ring ? [0x5a, 0x60, 0x68] : (x === 5 && y === 5 ? [0xd0, 0xd8, 0xe0] : [0x2c, 0x32, 0x3a]);
+  };
+  texture(blockOutput, "searchlight_lens", lens(true), 2);
+  texture(blockOutput, "searchlight_lens_off", lens(false), 2);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

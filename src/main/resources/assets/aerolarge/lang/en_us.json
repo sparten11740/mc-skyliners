@@ -678,6 +678,8 @@
   "block.aerolarge.lookout_glass": "Lookout's Glass",
   "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
   "block.aerolarge.ballast_valve": "Water Ballast Valve",
+  "block.aerolarge.searchlight": "Searchlight",
+  "block.aerolarge.searchlight_handle": "Searchlight Handle",
   "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
   "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
   "subtitles.aerolarge.water_ballast": "Water ballast pours",

@@ -49,6 +49,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LOOKOUT;
     public static final ModConfigSpec.BooleanValue UP_SHIP;
     public static final ModConfigSpec.BooleanValue ZEPPELIN_SCREENS;
+    public static final ModConfigSpec.BooleanValue SEARCHLIGHTS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -326,6 +327,13 @@ public final class AerolargeConfig {
                 "keep theirs."
             )
             .define("zeppelinScreens", true);
+        SEARCHLIGHTS = builder
+            .comment(
+                "Whether a zeppelin is built with two searchlights under her control car, swung from handles in its lounge to",
+                "wherever whoever works them looks, a beam and a pool of light on the ground. Off, the handles already built do",
+                "nothing."
+            )
+            .define("searchlights", true);
         builder.pop();
 
         SPEC = builder.build();
