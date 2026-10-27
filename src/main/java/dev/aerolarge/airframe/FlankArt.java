@@ -62,4 +62,14 @@ public final class FlankArt {
     public static double rise(Livery.Spot spot) {
         return Math.toRadians(90 - spot.round()) * spot.radius();
     }
+
+    /**
+     * How far a block at a spot on a flank reaches either way of its middle, measured round the hull, in blocks: half a
+     * block on the equator, where the blocks stand one over another, and more where the hull turns away, a block's
+     * width showing round it slantwise.
+     */
+    public static double spread(Livery.Spot spot) {
+        double slant = Math.toRadians(90 - spot.round());
+        return (Math.abs(Math.sin(slant)) + Math.abs(Math.cos(slant))) / 2;
+    }
 }

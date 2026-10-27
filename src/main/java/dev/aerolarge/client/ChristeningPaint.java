@@ -124,11 +124,26 @@ public final class ChristeningPaint {
             }
             int across = (int) Math.floor(spot.along()) - FlankArt.nameFront(size);
             int column = starboard ? name.width() - 1 - across : across;
-            int row = name.baseline() - 1 - (int) Math.floor(FlankArt.rise(spot));
-            if (!name.on(column, row)) {
+            if (!inked(column, FlankArt.rise(spot), FlankArt.spread(spot))) {
                 return -1;
             }
             return lightness(under.colour(spot, false)) >= LIGHT_LIVERY ? DARK_LETTERS : LIGHT_LETTERS;
+        }
+
+        /**
+         * Whether any of the lettering's rows a block covers in a column is inked: from so far above the equator and
+         * so far either side of that, round the hull. Where the hull curves away a block covers more than one row, and
+         * a stroke a row thick would otherwise fall between two blocks and be lost.
+         */
+        private boolean inked(int column, double rise, double spread) {
+            int top = name.baseline() - 1 - (int) Math.floor(rise + spread - 1.0E-6);
+            int bottom = name.baseline() - 1 - (int) Math.floor(rise - spread);
+            for (int row = top; row <= bottom; row++) {
+                if (name.on(column, row)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
