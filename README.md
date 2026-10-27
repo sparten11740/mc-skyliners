@@ -1392,9 +1392,9 @@ its engine cars are a quarter slimmer and stand nearer the hull, with shorter pr
 push a third as hard, as she weighs a third as much; she climbs to some 175 blocks over the ground. For now a half-size
 one is built with only some of the features below: everything in and under her control car (the horn cord, the livery
 board, the ship's plaque, the Lookout's Glass, the searchlights, the skywriting board, the floodlights and the speed
-boost), her engine rooms, her furnished decks and their passenger screens, the cell gallery, the trim car, Up Ship's
-take-off, the Sky Deck with all on it and the ship's colours over it, her lights, and the festive dress; and only with
-the command.
+boost), her engine rooms, her furnished decks and their passenger screens, the cell gallery, the techno room, the trim
+car, Up Ship's take-off, the Sky Deck with all on it and the ship's colours over it, her lights, and the festive dress;
+and only with the command.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1593,7 +1593,8 @@ minute-long track starts, 128 beats a minute, played from the room as the zeppel
 tiles at a time, pink and blue changing on the beat; the build quickens, the bass drops out, half a beat of silence, and
 then the drop: a huge sub-bass boom, the camera shaking with it, the ceiling flashing white on the beat, beams of
 coloured light sweeping the room and every tile flashing its own colour each half beat. It loops for as long as you stay
-and fades away as you climb out. The server config's `technoRoom` leaves it out of zeppelins built from then on.
+and fades away as you climb out. On a half-size zeppelin the room is a little shorter, 11 blocks long inside rather than
+15, to fit between the rings there. The server config's `technoRoom` leaves it out of zeppelins built from then on.
 
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
 rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
