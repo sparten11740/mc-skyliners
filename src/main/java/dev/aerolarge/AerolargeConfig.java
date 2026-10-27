@@ -258,7 +258,7 @@ public final class AerolargeConfig {
             .define("skyDeckLaunch", true);
         HORN = builder
             .comment(
-                "Whether a zeppelin is built with a horn cord in its control car: pulled, a deep two-tone horn heard far off, villagers and",
+                "Whether a zeppelin is built with a horn cord in its control car: pulled, a deep, menacing horn heard far off, villagers and",
                 "animals below looking up, and in flight its echo off the ground, back the later the higher it flies. Zeppelins already",
                 "built keep theirs."
             )

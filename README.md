@@ -1623,11 +1623,11 @@ too thin for the burners to lift it further, the lever and the elevator have not
 for a minute, the autopilot comes down where it is, flown by hand or not.
 
 A Horn Cord hangs from the control car's roof to starboard, just aft of the control head. Pull it and the zeppelin's
-horn sounds, a deep two-tone blast heard some 300 blocks off, from the ship as it flies; the villagers and animals on
-the ground under it turn and look up at it for a few seconds. In flight its echo comes back up off the ground, the later
-the higher it flies, a second for every hundred blocks or so, so the height is heard, as an airship's echo altimeter
-told it by the echo of a bang. The server config's `horn` leaves the cord off zeppelins built from then on; one can be
-crafted from two string over dark oak planks and hung anywhere.
+horn sounds, a deep, snarling blast like a warship's, heard some 300 blocks off, from the ship as it flies; the
+villagers and animals on the ground under it turn and look up at it for a few seconds. In flight its echo comes back up
+off the ground, the later the higher it flies, a second for every hundred blocks or so, so the height is heard, as an
+airship's echo altimeter told it by the echo of a bang. The server config's `horn` leaves the cord off zeppelins built
+from then on; one can be crafted from two string over dark oak planks and hung anywhere.
 
 A Livery Board stands against the control car's starboard wall, painted with six swatches in two rows of three:
 Hindenburg silver, Graf Zeppelin cream and navy grey; the airliner's colours (white, with a blue cheatline down each

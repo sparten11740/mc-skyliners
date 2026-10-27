@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * An airship's horn, sounded from the cord in a zeppelin's control car (see {@link dev.aerolarge.block.HornCordBlock}):
- * a deep two-tone blast heard some 300 blocks off, sounding from the ship as it flies on; the villagers and animals
+ * a deep, menacing blast heard some 300 blocks off, sounding from the ship as it flies on; the villagers and animals
  * under it turning to look up at it for a few seconds; and, in flight, the blast's echo off the ground below, back
  * the later the higher it flies, so its height is heard, as an airship's echo altimeter told it by the echo of a bang.
  */

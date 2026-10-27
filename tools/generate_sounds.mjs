@@ -132,6 +132,21 @@ function writeSound(name, samples, level = 0.85) {
   toOgg(wav, name);
 }
 
+/** A resonance of a horn's throat or speaker: the samples through a two-pole band-pass round its centre, in hertz. */
+function resonance(input, centre, q) {
+  const out = new Float64Array(input.length);
+  const w = 2 * Math.PI * centre / RATE;
+  const alpha = Math.sin(w) / (2 * q);
+  const [b0, b2, a0, a1, a2] = [alpha, -alpha, 1 + alpha, -2 * Math.cos(w), 1 - alpha];
+  let [x1, x2, y1, y2] = [0, 0, 0, 0];
+  for (let i = 0; i < input.length; i++) {
+    const y = (b0 * input[i] + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+    [x2, x1, y2, y1] = [x1, input[i], y1, y];
+    out[i] = y;
+  }
+  return out;
+}
+
 /** A struck bell: a few decaying partials of the note, starting at the given time in seconds. */
 function bell(samples, start, frequency, decay) {
   const partials = [[1, 1], [2.01, 0.35], [3.02, 0.12]];
@@ -432,20 +447,7 @@ writeSound("pa_chime", CHIME);
     const envelope = Math.min(1, t / 0.015) * Math.min(1, (whoop - t) / 0.02);
     dry[i] = envelope * tone;
   }
-  // The horn speaker: its two resonances, each a two-pole band-pass, over some of the dry sound.
-  const resonance = (input, centre, q) => {
-    const out = new Float64Array(input.length);
-    const w = 2 * Math.PI * centre / RATE;
-    const alpha = Math.sin(w) / (2 * q);
-    const [b0, b2, a0, a1, a2] = [alpha, -alpha, 1 + alpha, -2 * Math.cos(w), 1 - alpha];
-    let [x1, x2, y1, y2] = [0, 0, 0, 0];
-    for (let i = 0; i < input.length; i++) {
-      const y = (b0 * input[i] + b2 * x2 - a1 * y1 - a2 * y2) / a0;
-      [x2, x1, y2, y1] = [x1, input[i], y1, y];
-      out[i] = y;
-    }
-    return out;
-  };
+  // The horn speaker: its two resonances over some of the dry sound.
   const honk = resonance(dry, 1150, 3);
   const bite = resonance(dry, 2600, 4);
   const horn = dry.map((s, i) => Math.tanh(1.6 * (0.35 * s + 1.4 * honk[i] + 0.9 * bite[i])));
@@ -880,31 +882,47 @@ function gearRamp(t, from, to) {
   writeSound("gear_horn", samples, 0.7);
 }
 
-// The zeppelin's horn: a deep two-tone blast, two reedy notes a major third apart sounding together, swelling in with a
-// breath of air, a slow waver as the air rushes through, and a long fall as the cord is let go; and its echo off the
-// ground far below, the same blast muffled, softer and smeared, a tail on its end as from rolling country.
+// The zeppelin's horn: a warship's menacing blast. Two low reeds a tritone apart, the most unsettled of intervals,
+// and another a hair off the lower one, beating against it in a slow throb; every harmonic up to where the trumpet
+// stops, through its throat's honking resonances and driven hard into clipping, so it snarls, with a reed's growl
+// fluttering through it; and an octave under them a rumble, felt more than heard. It swells in slowly on a rush of
+// air, holds, and ends in a foghorn's grunt, its pitch sagging away as the air runs out. Its echo off the ground far
+// below is the same blast muffled, softer and smeared, a tail on its end as from rolling country.
 {
   const hornRandom = ownRandom(0x486f726e);
-  const length = 2.6;
-  const notes = [98, 123.47];
-  const blast = (t) => Math.min(1, t / 0.18) * (t < 1.9 ? 1 : Math.max(0, 1 - (t - 1.9) / 0.7));
-  const horn = new Float64Array(Math.round(length * RATE));
+  const length = 3.6;
+  const notes = [61.7, 63.6, 87.3];
+  const voices = [1, 0.7, 0.8];
+  const swell = 0.5;
+  const grunt = 2.75;
+  const gruntLength = 0.85;
+  const blast = (t) => Math.min(1, t / swell) ** 1.5 * (t < grunt ? 1 : Math.max(0, 1 - (t - grunt) / gruntLength) ** 2);
+  // Flat as it catches, up to pitch over the swell, then sagging a fifth by the end of the grunt.
+  const pitch = (t) => (t < swell ? 0.95 + 0.05 * (t / swell) : 1) * (t < grunt ? 1 : 1 - 0.33 * Math.min(1, (t - grunt) / gruntLength));
+  const dry = new Float64Array(Math.round(length * RATE));
+  const rumble = new Float64Array(dry.length);
   const phases = notes.map(() => 0);
-  for (let i = 0; i < horn.length; i++) {
+  let air = 0;
+  for (let i = 0; i < dry.length; i++) {
     const t = i / RATE;
-    const waver = 1 + 0.004 * Math.sin(2 * Math.PI * 4.5 * t);
+    const bend = pitch(t) * (1 + 0.006 * Math.sin(2 * Math.PI * 3.2 * t));
     let reed = 0;
     notes.forEach((note, n) => {
-      phases[n] += (2 * Math.PI * note * waver) / RATE;
-      for (let k = 1; k <= 9; k++) {
-        reed += Math.sin(phases[n] * k) / k ** 1.2;
+      phases[n] += (2 * Math.PI * note * bend) / RATE;
+      for (let k = 1; k * note < 4000; k++) {
+        reed += (voices[n] * Math.sin(phases[n] * k)) / k ** 0.9;
       }
     });
-    const breath = (hornRandom() * 2 - 1) * 0.08 * Math.exp(-t / 0.25);
-    horn[i] = reed * blast(t) * 0.25 + breath;
+    const growl = 1 + 0.3 * Math.sin(2 * Math.PI * 27 * t);
+    air += 0.08 * (hornRandom() * 2 - 1 - air);
+    dry[i] = reed * growl * blast(t) + air * (0.6 * Math.exp(-t / 0.4) + 0.15 * blast(t));
+    rumble[i] = Math.sin(phases[0] / 2) * blast(t);
   }
+  const throat = resonance(dry, 420, 2.5);
+  const bite = resonance(dry, 1500, 3);
+  const horn = dry.map((s, i) => Math.tanh(0.35 * s + 0.9 * throat[i] + 0.8 * bite[i]) + 0.25 * rumble[i]);
   writeSound("zeppelin_horn", horn);
-  const echoLength = 3.4;
+  const echoLength = 4.4;
   const echo = new Float64Array(Math.round(echoLength * RATE));
   let low = 0;
   for (let i = 0; i < echo.length; i++) {
