@@ -112,12 +112,12 @@ public enum Livery {
 
     /** The hull's radius at a distance aft of its nose's tip, in blocks: where its flanks are, to paint them from. */
     public static double radiusAt(double along) {
-        return ZeppelinShape.radius(along / ZeppelinShape.SCALE) * ZeppelinShape.SCALE;
+        return ZeppelinShape.radius(along / ZeppelinSize.FULL.scale()) * ZeppelinSize.FULL.scale();
     }
 
     /** How high the hull's axis runs over the zeppelin's lowest blocks, in blocks. */
     public static double axisHeight() {
-        return ZeppelinShape.AXIS_HEIGHT * ZeppelinShape.SCALE;
+        return ZeppelinShape.AXIS_HEIGHT * ZeppelinSize.FULL.scale();
     }
 
     /** A livery by its saved name; silver for none or one not known. */
@@ -136,9 +136,9 @@ public enum Livery {
      */
     public record Spot(double along, double up, double across, long seed) {
         /** The hull's length, nose to stern, in blocks. */
-        private static final double LENGTH = ZeppelinShape.LENGTH * ZeppelinShape.SCALE;
+        private static final double LENGTH = ZeppelinShape.LENGTH * ZeppelinSize.FULL.scale();
         /** How high the hull's axis runs over the zeppelin's lowest blocks, in blocks. */
-        private static final double AXIS = ZeppelinShape.AXIS_HEIGHT * ZeppelinShape.SCALE;
+        private static final double AXIS = ZeppelinShape.AXIS_HEIGHT * ZeppelinSize.FULL.scale();
 
         /**
          * Where a block sits on the zeppelin whose blocks lie in a box, from one corner to the other, its nose facing the
@@ -165,7 +165,7 @@ public enum Livery {
         public double fromRing() {
             double nearest = Double.MAX_VALUE;
             for (int ring = 0; ring <= ZeppelinShape.CELLS; ring++) {
-                nearest = Math.min(nearest, Math.abs(along - ZeppelinShape.ringAt(ring) * ZeppelinShape.SCALE));
+                nearest = Math.min(nearest, Math.abs(along - ZeppelinShape.ringAt(ring) * ZeppelinSize.FULL.scale()));
             }
             return nearest;
         }

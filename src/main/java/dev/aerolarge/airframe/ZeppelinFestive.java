@@ -45,7 +45,7 @@ final class ZeppelinFestive implements ZeppelinPiece {
     @Override
     public void build() {
         for (int ring = 0; ring <= CELLS; ring++) {
-            fairyLights((int) Math.floor(ringAt(ring) * SCALE));
+            fairyLights((int) Math.floor(ringAt(ring) * layout.scale()));
         }
         wreath();
         star();

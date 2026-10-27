@@ -38,14 +38,14 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
     }
 
     /** The row along the hull the deck is laid round, at the shaft's ring. */
-    static int station() {
-        return (int) Math.floor(ringAt(SHAFT_RING) * SCALE);
+    static int station(ZeppelinLayout layout) {
+        return (int) Math.floor(ringAt(SHAFT_RING) * layout.scale());
     }
 
     /** The row the deck's grating is laid in, once it is laid: the topmost of the zeppelin over its middle. */
     static int floor(ZeppelinLayout layout) {
-        int y = layout.axis() + (int) Math.ceil(RADIUS * SCALE) + GANTRY_HEIGHT;
-        while (y > layout.axis() && layout.stateAt(0, y, station()).isAir()) {
+        int y = layout.axis() + (int) Math.ceil(RADIUS * layout.scale()) + GANTRY_HEIGHT;
+        while (y > layout.axis() && layout.stateAt(0, y, station(layout)).isAir()) {
             y--;
         }
         return y;
@@ -53,13 +53,13 @@ final class ZeppelinSkyDeck implements ZeppelinPiece {
 
     /** Where the beacon on the mast's top is, once the deck is laid. */
     static BlockPos beacon(ZeppelinLayout layout) {
-        return new BlockPos(-DECK_HALF + MAST_IN, floor(layout) + MAST_HEIGHT + 1, station() - DECK_HALF + MAST_IN);
+        return new BlockPos(-DECK_HALF + MAST_IN, floor(layout) + MAST_HEIGHT + 1, station(layout) - DECK_HALF + MAST_IN);
     }
 
     /** Lays the shaft and the deck, once the gangway it starts from is laid. */
     @Override
     public void build() {
-        int z = station();
+        int z = station(layout);
         int walkway = layout.gangwayRow();
         int deck = deckRow(z, walkway);
         ZeppelinRopes.foot(layout, ROPE_OUT, z);

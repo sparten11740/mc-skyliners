@@ -13,10 +13,10 @@ public final class FinArt {
     public static final int BANNER_WIDTH = 20;
     public static final int BANNER_HEIGHT = 40;
     /** How far aft of the nose's tip the picture starts and ends, in blocks: one block to each of the banner's rows. */
-    public static final int FRONT = (int) Math.round((ZeppelinShape.FIN_TIP_FRONT + ZeppelinShape.FIN_TIP_BACK) / 2 * ZeppelinShape.SCALE) - BANNER_HEIGHT / 2;
+    public static final int FRONT = (int) Math.round((ZeppelinShape.FIN_TIP_FRONT + ZeppelinShape.FIN_TIP_BACK) / 2 * ZeppelinSize.FULL.scale()) - BANNER_HEIGHT / 2;
     public static final int BACK = FRONT + BANNER_HEIGHT;
     /** How far out from the hull its lowest blocks are, in blocks: as much fin over it as under it. */
-    private static final double OUT = (ZeppelinShape.FIN_SPAN * ZeppelinShape.SCALE - BANNER_WIDTH) / 2;
+    private static final double OUT = (ZeppelinShape.FIN_SPAN * ZeppelinSize.FULL.scale() - BANNER_WIDTH) / 2;
 
     private FinArt() {
     }

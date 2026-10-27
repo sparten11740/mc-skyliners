@@ -1,7 +1,5 @@
 package dev.aerolarge.airframe;
 
-import static dev.aerolarge.airframe.ZeppelinShape.*;
-
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.BeanBagBlock;
@@ -76,8 +74,8 @@ final class ZeppelinDecks implements ZeppelinPiece {
     /** Furnishes both decks, once their stairs are in. */
     @Override
     public void build() {
-        int front = (int) Math.ceil(DECKS_FRONT * SCALE);
-        int back = (int) Math.floor(DECKS_BACK * SCALE);
+        int front = layout.deckFront();
+        int back = layout.deckBack();
         int middle = (front + back) / 2;
         int lower = layout.lowerDeckRow();
         int upper = layout.upperDeckRow();

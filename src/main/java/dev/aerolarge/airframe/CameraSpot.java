@@ -56,6 +56,6 @@ public interface CameraSpot {
 
     /** How many blocks a metre an airframe of a kind is built at. */
     static double scale(Craft craft) {
-        return craft == Craft.ZEPPELIN ? ZeppelinShape.SCALE : AerolargeConfig.SCALE.get();
+        return craft == Craft.ZEPPELIN ? ZeppelinSize.FULL.scale() : AerolargeConfig.SCALE.get();
     }
 }

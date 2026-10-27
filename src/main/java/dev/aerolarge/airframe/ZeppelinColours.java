@@ -32,7 +32,7 @@ final class ZeppelinColours implements ZeppelinPiece {
 
     @Override
     public void build() {
-        int z = ZeppelinSkyDeck.station() + AFT;
+        int z = ZeppelinSkyDeck.station(layout) + AFT;
         int deck = ZeppelinSkyDeck.floor(layout);
         if (!layout.stateAt(0, deck, z).is(AerolargeRegistry.ZEPPELIN_CATWALK.get()) || !clear(deck, z)) {
             return;

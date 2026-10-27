@@ -24,8 +24,9 @@ import net.minecraft.world.level.block.state.properties.Half;
 
 /**
  * The zeppelin cut into blocks before it is put anywhere, drawn nose north as the airliner's layout is (see
- * {@link Layout}), always at {@link ZeppelinShape#SCALE}. Only its blocks are kept: the air inside its hull, well
- * over a million blocks, is worked out from its shape as it is handed over, and never held.
+ * {@link Layout}), its hull at its size's blocks a metre (see {@link ZeppelinSize}) and everything a player uses at
+ * a player's size. Only its blocks are kept: the air inside its hull, over a million blocks at full size, is worked
+ * out from its shape as it is handed over, and never held.
  *
  * <p>Its hull is a silver fabric cover over seventeen rings of blue girders, cut to its curve block by block in the
  * snapped style ({@link ShellGeometry#snapped}), from where each block's corners lie against the surface. Under the
@@ -117,11 +118,33 @@ public final class ZeppelinLayout implements Layout {
     private static final double WINDOW_FACING = 0.6;
     /** How many rows over the control car's floor its windows start. */
     private static final int CAR_SILL = 2;
+    /**
+     * The control car, at every size: how many rows long it is from its front wall to its back wall, how far either
+     * side of the middle its walls stand, its floor's row over the ground, and how many rows tall it is inside.
+     */
+    private static final int CAR_ROWS = 28;
+    private static final int CAR_HALF = 5;
+    private static final int CAR_FLOOR_ROW = 1;
+    private static final int CAR_ROOM = 6;
+    /**
+     * The passenger decks, at every size: how many rows long they are, and the lower and upper decks' floors, in rows
+     * over the hull's lowest row along them.
+     */
+    private static final int DECK_ROWS = 80;
+    private static final int LOWER_DECK_ROWS = 2;
+    private static final int UPPER_DECK_ROWS = 8;
     /** The most rows the fairing over the control car climbs to meet the cover, a bound on its search. */
     private static final int FAIRING_HIGHEST = 16;
     /** An engine car's pod: how many rows its nose rounds over, and how thick its skin is, in blocks. */
     private static final double POD_NOSE = 4;
     private static final double POD_SKIN = 1.2;
+    /**
+     * An engine car's pod, at every size: its radius, how many rows it reaches fore and aft of its station, and how
+     * far out from the hull's side it stands, in blocks.
+     */
+    private static final double POD_RADIUS = 3.2;
+    private static final int POD_HALF_LENGTH = 9;
+    private static final double POD_STANDOFF = 8;
     /**
      * The engine cars' thrusters: those pushing ahead stand round the propeller's hub at the pod's tail, as offsets
      * across and up from its middle; those pushing astern stand in its nose.
@@ -172,8 +195,12 @@ public final class ZeppelinLayout implements Layout {
     private final Map<Integer, List<BlockPos>> asternRelays = new HashMap<>();
     /** Each engine car's pod's middle, on its axis, by its engine's number less one. */
     private final List<BlockPos> engineCars = new ArrayList<>();
+    /** The hull's blocks a metre, as its size has it. */
+    private final double scale;
     private final int length;
     private final int axis;
+    /** How high the hull's axis stands over the ground, in metres, as the shape measures it. */
+    private final double axisHeight;
     /** The hull's radius at each row along it, in blocks, from the row before the nose to the one after the stern. */
     private final double[] radii;
     /** Where the stairs up from the decks reach the gangway, a row along it, once they are laid. */
@@ -186,11 +213,13 @@ public final class ZeppelinLayout implements Layout {
     private ZeppelinLayout(AirframePalette.Balloon palette, ZeppelinOptions options) {
         this.palette = palette;
         this.options = options;
-        this.length = (int) Math.ceil(LENGTH * SCALE);
-        this.axis = (int) Math.round(AXIS_HEIGHT * SCALE);
+        this.scale = options.size().scale();
+        this.length = (int) Math.ceil(LENGTH * scale);
+        this.axis = (int) Math.round(AXIS_HEIGHT * scale);
+        this.axisHeight = axis / scale;
         this.radii = new double[length + 4];
         for (int z = -2; z <= length + 1; z++) {
-            radii[z + 2] = radius((z + 0.5) / SCALE) * SCALE;
+            radii[z + 2] = radius((z + 0.5) / scale) * scale;
         }
     }
 
@@ -212,7 +241,7 @@ public final class ZeppelinLayout implements Layout {
         layout.fins();
         for (Function<ZeppelinLayout, ZeppelinPiece> kind : PIECES) {
             ZeppelinPiece piece = kind.apply(layout);
-            if (piece.wanted(options)) {
+            if (piece.fits(options.size()) && piece.wanted(options)) {
                 piece.build();
             }
         }
@@ -222,12 +251,12 @@ public final class ZeppelinLayout implements Layout {
 
     /** Whether a block's middle lies inside the hull. */
     boolean inHull(int x, int y, int z) {
-        return ZeppelinShape.inHull(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE);
+        return ZeppelinShape.inHull(x / scale, (y + 0.5) / scale, (z + 0.5) / scale, axisHeight);
     }
 
     /** How far a block's middle lies outside the hull's surface, in blocks, negative inside. */
     double depthAt(int x, int y, int z) {
-        return ZeppelinShape.depth(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE) * SCALE;
+        return ZeppelinShape.depth(x / scale, (y + 0.5) / scale, (z + 0.5) / scale, axisHeight) * scale;
     }
 
     void set(int x, int y, int z, BlockState state) {
@@ -279,7 +308,7 @@ public final class ZeppelinLayout implements Layout {
 
     /** How far out from the axis the hull reaches at its widest, in blocks, and a block more. */
     private int reach() {
-        return (int) Math.ceil(RADIUS * SCALE) + 1;
+        return (int) Math.ceil(RADIUS * scale) + 1;
     }
 
     /**
@@ -334,14 +363,14 @@ public final class ZeppelinLayout implements Layout {
         if (shape != ShellGeometry.UNMATCHED) {
             return shape;
         }
-        double[] out = outward(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE);
+        double[] out = outward(x / scale, (y + 0.5) / scale, (z + 0.5) / scale, axisHeight);
         double depth = depthAt(x, y, z);
         return ShellGeometry.cut(out[0], out[1], out[2], 0.5 - out[0] * depth, 0.5 - out[1] * depth, 0.5 - out[2] * depth);
     }
 
     /** Where a block's corner, in blocks, lies against the hull's surface. */
-    private static int corner(double x, double y, double z) {
-        double depth = ZeppelinShape.depth(x / SCALE, y / SCALE, z / SCALE) * SCALE;
+    private int corner(double x, double y, double z) {
+        double depth = ZeppelinShape.depth(x / scale, y / scale, z / scale, axisHeight) * scale;
         if (depth < -ShellGeometry.ON_SURFACE) {
             return ShellGeometry.INSIDE;
         }
@@ -351,10 +380,10 @@ public final class ZeppelinLayout implements Layout {
     /** Whether the cover is a promenade window here: along the upper deck, where the cover faces out to the side. */
     private boolean promenade(int x, int y, int z) {
         int floor = upperDeckRow();
-        if (y <= floor || y > floor + ROOM_HEIGHT - 1 || z < DECKS_FRONT * SCALE || z > DECKS_BACK * SCALE) {
+        if (y <= floor || y > floor + ROOM_HEIGHT - 1 || z < deckFront() || z > deckBack()) {
             return false;
         }
-        double[] out = outward(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE);
+        double[] out = outward(x / scale, (y + 0.5) / scale, (z + 0.5) / scale, axisHeight);
         return Math.abs(out[0]) >= WINDOW_FACING;
     }
 
@@ -364,7 +393,7 @@ public final class ZeppelinLayout implements Layout {
      */
     private void rings() {
         for (int ring = 0; ring <= CELLS; ring++) {
-            int z = (int) Math.floor(ringAt(ring) * SCALE);
+            int z = (int) Math.floor(ringAt(ring) * scale);
             int reach = (int) Math.ceil(radiusAt(z)) + 1;
             box(-reach, axis - reach, z, reach, axis + reach, z, this::ringBlockAt);
         }
@@ -388,7 +417,7 @@ public final class ZeppelinLayout implements Layout {
      */
     private void gasCells() {
         for (int cell = 0; cell < CELLS; cell++) {
-            balloons.add(ZeppelinShape.Cell.of(cell));
+            balloons.add(ZeppelinShape.Cell.of(cell, axisHeight));
         }
         for (int cell = 0; cell < CELLS; cell++) {
             burnerRelays.add(gasCell(cell));
@@ -399,14 +428,14 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinShape.Cell balloon = balloons.get(cell);
         String[] colours = options.livery().cellColours();
         BlockState envelope = palette.envelope(colours[cell % colours.length]);
-        int front = (int) Math.floor((balloon.middle() - balloon.halfLength()) * SCALE) - 1;
-        int back = (int) Math.ceil((balloon.middle() + balloon.halfLength()) * SCALE) + 1;
-        int across = (int) Math.ceil(balloon.halfWidth() * SCALE) + 1;
-        int low = (int) Math.floor((balloon.centreY() - balloon.halfHeight()) * SCALE) - 1;
-        int high = (int) Math.ceil((balloon.centreY() + balloon.halfHeight()) * SCALE) + 1;
+        int front = (int) Math.floor((balloon.middle() - balloon.halfLength()) * scale) - 1;
+        int back = (int) Math.ceil((balloon.middle() + balloon.halfLength()) * scale) + 1;
+        int across = (int) Math.ceil(balloon.halfWidth() * scale) + 1;
+        int low = (int) Math.floor((balloon.centreY() - balloon.halfHeight()) * scale) - 1;
+        int high = (int) Math.ceil((balloon.centreY() + balloon.halfHeight()) * scale) + 1;
         box(-across, low, front, across, high, back, (x, y, z) -> envelopeAt(cell, envelope, x, y, z));
         hangers(cell);
-        int middle = (int) Math.floor(balloon.middle() * SCALE);
+        int middle = (int) Math.floor(balloon.middle() * scale);
         int bottom = low;
         while (bottom < high && !inCell(cell, 0, bottom, middle)) {
             bottom++;
@@ -421,7 +450,7 @@ public final class ZeppelinLayout implements Layout {
     }
 
     boolean inCell(int cell, int x, int y, int z) {
-        return balloons.get(cell).contains(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE);
+        return balloons.get(cell).contains(x / scale, (y + 0.5) / scale, (z + 0.5) / scale);
     }
 
     /**
@@ -448,7 +477,7 @@ public final class ZeppelinLayout implements Layout {
      * They hold it to the zeppelin; outside the cell, they take nothing from its gas.
      */
     private void hangers(int cell) {
-        int middle = (int) Math.floor(balloons.get(cell).middle() * SCALE);
+        int middle = (int) Math.floor(balloons.get(cell).middle() * scale);
         for (int z = middle - HANGER_SPACING; z <= middle + HANGER_SPACING; z += HANGER_SPACING) {
             hanger(cell, z);
         }
@@ -482,9 +511,9 @@ public final class ZeppelinLayout implements Layout {
         if (palette.burner().isEmpty()) {
             return relays;
         }
-        double scale = cellScale(cell);
-        int count = Math.max(LEAST_BURNERS, (int) Math.round(MOST_BURNERS * scale * scale));
-        int middle = (int) Math.floor(balloons.get(cell).middle() * SCALE);
+        double size = cellScale(cell);
+        int count = Math.max(LEAST_BURNERS, (int) Math.round(MOST_BURNERS * size * size));
+        int middle = (int) Math.floor(balloons.get(cell).middle() * scale);
         int pairs = (count + 1) / 2;
         for (int i = 0; i < count; i++) {
             int across = (i / 2) * BURNER_SPACING - (pairs - 1) * BURNER_SPACING / 2;
@@ -519,13 +548,13 @@ public final class ZeppelinLayout implements Layout {
      * and where the stairs up from the decks reach it, a landing across to them.
      */
     private void gangway() {
-        int from = (int) Math.floor(ringAt(1) * SCALE);
-        int to = (int) Math.ceil(ringAt(CELLS - 1) * SCALE);
+        int from = (int) Math.floor(ringAt(1) * scale);
+        int to = (int) Math.ceil(ringAt(CELLS - 1) * scale);
         for (int z = from; z <= to; z++) {
             gangwayRow(z);
         }
         for (int ring = 1; ring < CELLS; ring++) {
-            post((int) Math.floor(ringAt(ring) * SCALE));
+            post((int) Math.floor(ringAt(ring) * scale));
         }
         gangwayLanding(stairsTop);
     }
@@ -588,16 +617,25 @@ public final class ZeppelinLayout implements Layout {
     }
 
     int lowerDeckRow() {
-        return (int) Math.round(LOWER_DECK * SCALE) - 1 + deckBase();
+        return LOWER_DECK_ROWS + deckBase();
     }
 
     int upperDeckRow() {
-        return (int) Math.round(UPPER_DECK * SCALE) - 1 + deckBase();
+        return UPPER_DECK_ROWS + deckBase();
+    }
+
+    /** The row the passenger decks begin at, along the hull, and the row they end at. */
+    int deckFront() {
+        return (int) Math.ceil(DECKS_FRONT * scale);
+    }
+
+    int deckBack() {
+        return deckFront() + DECK_ROWS;
     }
 
     /** The hull's lowest row along the passenger decks, which their floors are measured up from. */
     private int deckBase() {
-        return (int) Math.round(belly((DECKS_FRONT + DECKS_BACK) / 2) * SCALE);
+        return (int) Math.round(ZeppelinShape.belly((deckFront() + deckBack()) / 2.0 / scale, axisHeight) * scale);
     }
 
     /**
@@ -607,8 +645,8 @@ public final class ZeppelinLayout implements Layout {
      * through the belly from the ground to the lower deck.
      */
     private void decks() {
-        int front = (int) Math.ceil(DECKS_FRONT * SCALE);
-        int back = (int) Math.floor(DECKS_BACK * SCALE);
+        int front = deckFront();
+        int back = deckBack();
         int lower = lowerDeckRow();
         int upper = upperDeckRow();
         int reach = reach();
@@ -708,9 +746,8 @@ public final class ZeppelinLayout implements Layout {
      * glass floor.
      */
     private void controlCar() {
-        int floor = (int) Math.round(CAR_FLOOR * SCALE);
-        Car car = new Car((int) Math.round(CAR_FRONT * SCALE), (int) Math.round(CAR_BACK * SCALE), (int) Math.round(CAR_HALF_WIDTH * SCALE),
-            floor, floor + (int) Math.round(CAR_HEIGHT * SCALE) + 1);
+        int front = (int) Math.round(CAR_FRONT * scale);
+        Car car = new Car(front, front + CAR_ROWS, CAR_HALF, CAR_FLOOR_ROW, CAR_FLOOR_ROW + CAR_ROOM + 1);
         box(-car.half(), car.floor(), car.front(), car.half(), car.roof(), car.back(), (x, y, z) -> set(x, y, z, carBlock(car, x, y, z)));
         for (int z = car.front() + 2; z < car.back(); z += LAMP_SPACING / 2) {
             set(0, car.roof(), z, AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState());
@@ -760,7 +797,7 @@ public final class ZeppelinLayout implements Layout {
             box(-1, y, z - 1, 1, y, z + 1, (x, at, along) -> shaftWallAt(x, at, along, z));
         }
         BlockState catwalk = AerolargeRegistry.ZEPPELIN_CATWALK.get().defaultBlockState();
-        for (int at = z - 1; at <= Math.ceil(DECKS_FRONT * SCALE); at++) {
+        for (int at = z - 1; at <= deckFront(); at++) {
             box(-1, top, at, 1, top, at, (x, y, along) -> corridorAt(x, y, along, catwalk));
         }
         BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
@@ -811,10 +848,10 @@ public final class ZeppelinLayout implements Layout {
         EngineCar car = EngineCar.of(engine);
         double hullRadius = radius(car.station());
         double drop = ENGINE_DROP * hullRadius;
-        double out = Math.sqrt(hullRadius * hullRadius - drop * drop) + ENGINE_STANDOFF;
-        Pod pod = new Pod((int) Math.round(car.side() * out * SCALE), (int) Math.round((AXIS_HEIGHT - drop) * SCALE),
-            (int) Math.round((car.station() - ENGINE_LENGTH / 2) * SCALE), (int) Math.round((car.station() + ENGINE_LENGTH / 2) * SCALE),
-            ENGINE_RADIUS * SCALE);
+        double out = Math.sqrt(hullRadius * hullRadius - drop * drop) * scale + POD_STANDOFF;
+        int station = (int) Math.round(car.station() * scale);
+        Pod pod = new Pod((int) Math.round(car.side() * out), (int) Math.round((axisHeight - drop) * scale), station - POD_HALF_LENGTH,
+            station + POD_HALF_LENGTH, POD_RADIUS);
         int reach = (int) Math.ceil(pod.radius());
         box(pod.x() - reach, pod.y() - reach, pod.front(), pod.x() + reach, pod.y() + reach, pod.back(), (x, y, z) -> podAt(pod, x, y, z));
         List<BlockPos> ahead = new ArrayList<>();
@@ -832,7 +869,7 @@ public final class ZeppelinLayout implements Layout {
         aheadRelays.put(engine, ahead);
         asternRelays.put(engine, astern);
         engineCars.add(new BlockPos(pod.x(), pod.y(), (pod.front() + pod.back()) / 2));
-        strut(pod.x(), pod.y(), (int) Math.round(car.station() * SCALE), car.side());
+        strut(pod.x(), pod.y(), station, car.side());
     }
 
     /** A block of a pod: its skin, closed over at its nose and tail, and open inside. */
@@ -865,7 +902,7 @@ public final class ZeppelinLayout implements Layout {
 
     /** The strut from an engine car back in to the hull: girders across, from the car's side to the cover. */
     private void strut(int x, int y, int z, int side) {
-        for (int at = x - side * (int) Math.ceil(ENGINE_RADIUS * SCALE); at * side > 0 && !inHull(at, y, z); at -= side) {
+        for (int at = x - side * (int) Math.ceil(POD_RADIUS); at * side > 0 && !inHull(at, y, z); at -= side) {
             strutAt(at, y, z);
         }
     }
@@ -884,8 +921,8 @@ public final class ZeppelinLayout implements Layout {
     private void fins() {
         int lowest = Integer.MAX_VALUE;
         int lowestZ = 0;
-        for (int z = (int) Math.floor(FIN_ROOT_FRONT * SCALE); z <= Math.ceil(FIN_ROOT_BACK * SCALE); z++) {
-            int reach = (int) Math.round(finReach((z + 0.5) / SCALE) * SCALE);
+        for (int z = (int) Math.floor(FIN_ROOT_FRONT * scale); z <= Math.ceil(FIN_ROOT_BACK * scale); z++) {
+            int reach = (int) Math.round(finReach((z + 0.5) / scale) * scale);
             for (Direction way : new Direction[]{Direction.UP, Direction.EAST, Direction.WEST}) {
                 fin(way, z, reach);
             }
@@ -990,7 +1027,7 @@ public final class ZeppelinLayout implements Layout {
         int burners = 0;
         for (int cell = 0; cell < burnerRelays.size(); cell++) {
             int count = burnerRelays.get(cell).size();
-            middle += count * cellMiddle(cell) * SCALE;
+            middle += count * cellMiddle(cell) * scale;
             burners += count;
         }
         return burners > 0 ? middle / burners : 0;
@@ -1019,6 +1056,21 @@ public final class ZeppelinLayout implements Layout {
     /** The row the hull's axis runs along. */
     int axis() {
         return axis;
+    }
+
+    /** The hull's blocks a metre, as its size has it. */
+    double scale() {
+        return scale;
+    }
+
+    /** A gas cell's balloon, in metres, the bow's first. */
+    ZeppelinShape.Cell balloon(int cell) {
+        return balloons.get(cell);
+    }
+
+    /** The hull's lowest point so many blocks aft of the nose's tip, in blocks over the ground. */
+    double belly(double aft) {
+        return ZeppelinShape.belly(aft / scale, axisHeight) * scale;
     }
 
     /** How many rows long the hull is, nose to stern. */

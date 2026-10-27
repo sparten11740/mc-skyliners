@@ -51,7 +51,7 @@ final class ZeppelinSkyDeckLaunch implements ZeppelinPiece {
 
     @Override
     public void build() {
-        int z = ZeppelinSkyDeck.station();
+        int z = ZeppelinSkyDeck.station(layout);
         int deck = ZeppelinSkyDeck.floor(layout);
         if (!layout.stateAt(0, deck, z).is(AerolargeRegistry.ZEPPELIN_CATWALK.get())) {
             return;

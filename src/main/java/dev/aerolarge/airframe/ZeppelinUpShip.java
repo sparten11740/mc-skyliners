@@ -72,7 +72,7 @@ final class ZeppelinUpShip implements ZeppelinPiece {
 
     @Override
     public void build() {
-        int z = (int) Math.floor(ringAt(1) * SCALE) + VALVE_AFT;
+        int z = (int) Math.floor(ringAt(1) * layout.scale()) + VALVE_AFT;
         BlockPos valve = new BlockPos(0, layout.gangwayRow() - 1, z);
         Integer belly = underside(0, z);
         if (belly == null || !layout.isOpen(valve.getX(), valve.getY(), valve.getZ())) {
@@ -93,7 +93,7 @@ final class ZeppelinUpShip implements ZeppelinPiece {
         List<Station> stations = new ArrayList<>();
         ZeppelinLayout.Car car = layout.car();
         stations.add(new Station(new BlockPos(0, GROUND, car.front() - OFFICER_AHEAD), new BlockPos(0, car.floor() + 1, car.front()), null));
-        int middle = (int) Math.round(LENGTH * SCALE / 2);
+        int middle = (int) Math.round(LENGTH * layout.scale() / 2);
         for (int side : SIDES) {
             for (int man = 0; man < BOW_FILE; man++) {
                 int out = BOW_OUT + man * FILE_STEP;

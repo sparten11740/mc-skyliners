@@ -13,6 +13,14 @@ interface ZeppelinPiece {
         return true;
     }
 
+    /**
+     * Whether the piece fits a hull of this size: only the full size's, unless the piece says it fits more, which it
+     * does once it has been laid out and tried at them.
+     */
+    default boolean fits(ZeppelinSize size) {
+        return size == ZeppelinSize.FULL;
+    }
+
     /** Lays the piece into its layout. */
     void build();
 }

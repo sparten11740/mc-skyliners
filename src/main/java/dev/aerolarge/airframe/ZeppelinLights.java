@@ -25,14 +25,17 @@ final class ZeppelinLights implements ZeppelinPiece {
     private static final int BULB_SPACING = 4;
     /** Where along the hull the beacon under the belly hangs, as a share of its length from the nose. */
     private static final double BEACON_SHARE = 0.5;
-    /** How far out from the axis a fin's tip can reach at most, in blocks, and a little more. */
-    private static final int FIN_FARTHEST = (int) Math.ceil((RADIUS + FIN_SPAN) * SCALE) + 2;
     private static final Direction[] FINS = {Direction.UP, Direction.DOWN, Direction.EAST, Direction.WEST};
 
     private final ZeppelinLayout layout;
 
     ZeppelinLights(ZeppelinLayout layout) {
         this.layout = layout;
+    }
+
+    /** How far out from the axis a fin's tip can reach at most, in blocks, and a little more. */
+    private int finFarthest() {
+        return (int) Math.ceil((RADIUS + FIN_SPAN) * layout.scale()) + 2;
     }
 
     @Override
@@ -96,7 +99,7 @@ final class ZeppelinLights implements ZeppelinPiece {
     private BlockPos finTip(Direction way) {
         BlockPos tip = null;
         int farthest = 0;
-        for (int z = (int) Math.floor(FIN_ROOT_FRONT * SCALE); z <= Math.ceil(FIN_ROOT_BACK * SCALE); z++) {
+        for (int z = (int) Math.floor(FIN_ROOT_FRONT * layout.scale()); z <= Math.ceil(FIN_ROOT_BACK * layout.scale()); z++) {
             int out = finOut(way, z);
             if (out > 0 && out >= farthest) {
                 farthest = out;
@@ -109,7 +112,7 @@ final class ZeppelinLights implements ZeppelinPiece {
     /** How far out from the axis a fin's blocks reach at a row, the way given; 0 where it has none there. */
     private int finOut(Direction way, int z) {
         int out = 0;
-        for (int k = 1; k <= FIN_FARTHEST; k++) {
+        for (int k = 1; k <= finFarthest(); k++) {
             int x = way.getStepX() * k;
             int y = layout.axis() + way.getStepY() * k;
             if (layout.stateAt(x, y, z).is(AerolargeRegistry.ZEPPELIN_FABRIC.get()) && !layout.inHull(x, y, z)) {
@@ -136,7 +139,7 @@ final class ZeppelinLights implements ZeppelinPiece {
      */
     private void crownBulbs(int to) {
         for (int z = 0; z < to; z += BULB_SPACING) {
-            int top = layout.axis() + FIN_FARTHEST;
+            int top = layout.axis() + finFarthest();
             while (top > layout.axis() && layout.stateAt(0, top, z).isAir()) {
                 top--;
             }

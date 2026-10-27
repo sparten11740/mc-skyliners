@@ -1,7 +1,5 @@
 package dev.aerolarge.airframe;
 
-import static dev.aerolarge.airframe.ZeppelinShape.*;
-
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.PictureBoardBlock;
@@ -32,7 +30,7 @@ final class ZeppelinFlankScreen implements ZeppelinPiece {
 
     @Override
     public void build() {
-        int z = (int) Math.floor(DECKS_BACK * SCALE);
+        int z = layout.deckBack();
         int y = layout.upperDeckRow() + 1;
         BlockPos board = new BlockPos(-PORT, y, z);
         if (!layout.isOpen(board.getX(), y, z) || layout.isOpen(board.getX(), y - 1, z)) {

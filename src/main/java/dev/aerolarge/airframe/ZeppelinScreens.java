@@ -1,7 +1,5 @@
 package dev.aerolarge.airframe;
 
-import static dev.aerolarge.airframe.ZeppelinShape.*;
-
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinSeatBlock;
@@ -40,7 +38,7 @@ final class ZeppelinScreens implements ZeppelinPiece {
     @Override
     public void build() {
         int y = layout.upperDeckRow() + 1;
-        for (int z = (int) Math.ceil(DECKS_FRONT * SCALE); z <= (int) Math.floor(DECKS_BACK * SCALE); z++) {
+        for (int z = layout.deckFront(); z <= layout.deckBack(); z++) {
             beforeChair(y, z, 1);
             beforeChair(y, z, -1);
         }

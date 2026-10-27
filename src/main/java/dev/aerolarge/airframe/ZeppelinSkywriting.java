@@ -1,7 +1,5 @@
 package dev.aerolarge.airframe;
 
-import static dev.aerolarge.airframe.ZeppelinShape.*;
-
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.SkywritingBoardBlock;
@@ -45,7 +43,7 @@ final class ZeppelinSkywriting implements ZeppelinPiece {
         layout.set(board.getX(), board.getY(), board.getZ(),
             AerolargeRegistry.SKYWRITING_BOARD.get().defaultBlockState().setValue(SkywritingBoardBlock.FACING, Direction.WEST));
         double middle = layout.liftMiddle();
-        BlockPos smoke = new BlockPos(0, (int) Math.floor(belly(middle / SCALE) * SCALE) - BELOW, (int) Math.floor(middle));
+        BlockPos smoke = new BlockPos(0, (int) Math.floor(layout.belly(middle)) - BELOW, (int) Math.floor(middle));
         layout.fit(board, (blockEntity, rotation) -> {
             if (blockEntity instanceof SkywritingBoardBlockEntity rigged) {
                 rigged.rig(smoke.subtract(board).rotate(rotation));

@@ -1,7 +1,5 @@
 package dev.aerolarge.airframe;
 
-import static dev.aerolarge.airframe.ZeppelinShape.*;
-
 import dev.aerolarge.AerolargeRegistry;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,7 +31,7 @@ final class ZeppelinCellGallery implements ZeppelinPiece {
     /** Lays the gallery and its rope, once the cells and the gangway are laid. */
     @Override
     public void build() {
-        int z = (int) Math.floor(ZeppelinShape.Cell.of(CELL).middle() * SCALE);
+        int z = (int) Math.floor(layout.balloon(CELL).middle() * layout.scale());
         int walkway = layout.gangwayRow();
         int gallery = gasFloor(z, walkway) + GALLERY_RISE;
         ZeppelinRopes.foot(layout, ROPE_OUT, z);
