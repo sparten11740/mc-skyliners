@@ -59,6 +59,8 @@ import dev.aerolarge.block.CheckInDeskBlock;
 import dev.aerolarge.block.ClimbingRopeBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
 import dev.aerolarge.block.CoffeeMachineBlockEntity;
+import dev.aerolarge.block.CraneWinchBlock;
+import dev.aerolarge.block.CraneWinchBlockEntity;
 import dev.aerolarge.block.CockpitDoorBlock;
 import dev.aerolarge.block.CockpitDoorBlockEntity;
 import dev.aerolarge.block.CockpitGlassBlock;
@@ -230,6 +232,7 @@ import dev.aerolarge.cabin.Passengers;
 import dev.aerolarge.christening.ChristeningBottleItem;
 import dev.aerolarge.entity.Basketball;
 import dev.aerolarge.entity.BlueIceChunk;
+import dev.aerolarge.entity.CraneHook;
 import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.SlideRide;
@@ -1098,6 +1101,11 @@ public final class AerolargeRegistry {
         "falling_crate", () -> EntityType.Builder.<FallingCrate>of(FallingCrate::new, MobCategory.MISC).sized(0.9F, 0.9F)
             .clientTrackingRange(16).updateInterval(2).build("falling_crate")
     );
+    /** The sky crane's hook, swinging on its winch's rope under a zeppelin with whatever it has caught. */
+    public static final DeferredHolder<EntityType<?>, EntityType<CraneHook>> CRANE_HOOK = ENTITY_TYPES.register(
+        "crane_hook", () -> EntityType.Builder.<CraneHook>of(CraneHook::new, MobCategory.MISC).sized(0.3F, 0.3F)
+            .clientTrackingRange(10).updateInterval(1).build("crane_hook")
+    );
     /** The hatch in the cabin floor over the ladder down to the hold, so the drop bay can be reloaded in flight. */
     public static final DeferredBlock<FloorHatchBlock> FLOOR_HATCH = BLOCKS.registerBlock(
         "floor_hatch", FloorHatchBlock::new, metal(MapColor.COLOR_YELLOW).noOcclusion()
@@ -1695,6 +1703,12 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BannerCleatBlockEntity>> BANNER_CLEAT_ENTITY =
         BLOCK_ENTITIES.register("banner_cleat", () -> BlockEntityType.Builder.of(BannerCleatBlockEntity::new, BANNER_CLEAT.get()).build(null));
+    /** The sky crane's winch on the glass floor of a zeppelin's observation lounge, lowering and hoisting its hook. */
+    public static final DeferredBlock<CraneWinchBlock> CRANE_WINCH = BLOCKS.registerBlock(
+        "crane_winch", CraneWinchBlock::new, metal(MapColor.METAL).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CraneWinchBlockEntity>> CRANE_WINCH_ENTITY =
+        BLOCK_ENTITIES.register("crane_winch", () -> BlockEntityType.Builder.of(CraneWinchBlockEntity::new, CRANE_WINCH.get()).build(null));
     /** The skywriting board in a zeppelin's control car, whose picture buttons have her fly a shape in smoke. */
     public static final DeferredBlock<SkywritingBoardBlock> SKYWRITING_BOARD = BLOCKS.registerBlock(
         "skywriting_board", SkywritingBoardBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
@@ -1752,6 +1766,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> FRANKING_MACHINE_ITEM = ITEMS.registerSimpleBlockItem(FRANKING_MACHINE);
     public static final DeferredItem<MailSackItem> MAIL_SACK_ITEM = ITEMS.register("mail_sack", () -> new MailSackItem(MAIL_SACK.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> BANNER_CLEAT_ITEM = ITEMS.registerSimpleBlockItem(BANNER_CLEAT);
+    public static final DeferredItem<BlockItem> CRANE_WINCH_ITEM = ITEMS.registerSimpleBlockItem(CRANE_WINCH);
     public static final DeferredItem<BlockItem> BOARDING_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOARDING_STAIRS_BUTTON);
     public static final DeferredItem<BlockItem> BOOST_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOOST_BUTTON);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
@@ -1860,7 +1875,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

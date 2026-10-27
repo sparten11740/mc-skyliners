@@ -55,6 +55,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SPEED_BOOST;
     public static final ModConfigSpec.BooleanValue ZEPPELIN_POST;
     public static final ModConfigSpec.BooleanValue TOWED_BANNER;
+    public static final ModConfigSpec.BooleanValue SKY_CRANE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -373,6 +374,13 @@ public final class AerolargeConfig {
                 "nothing."
             )
             .define("towedBanner", true);
+        SKY_CRANE = builder
+            .comment(
+                "Whether a zeppelin is built with a sky crane: a winch on her lounge's glass floor whose hook, lowered under",
+                "her, catches and lifts an animal, a boat, a minecart, or a chest, barrel or cargo crate with all it holds. Off,",
+                "the winches already built do nothing."
+            )
+            .define("skyCrane", true);
         builder.pop();
 
         SPEC = builder.build();

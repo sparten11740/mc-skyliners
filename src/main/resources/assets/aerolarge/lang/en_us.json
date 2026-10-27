@@ -690,6 +690,8 @@
   "block.aerolarge.franking_machine": "Franking Machine",
   "block.aerolarge.mail_sack": "Mail Sack",
   "block.aerolarge.banner_cleat": "Banner Cleat",
+  "block.aerolarge.crane_winch": "Crane Winch",
+  "entity.aerolarge.crane_hook": "Crane Hook",
   "item.aerolarge.postcard": "Postcard from %s",
   "item.aerolarge.postcard.franked": "Franked over %s, %s",
   "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",

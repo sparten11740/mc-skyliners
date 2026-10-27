@@ -29,6 +29,8 @@ import dev.aerolarge.client.CockpitDisplayRenderer;
 import dev.aerolarge.client.BubbleLevelRenderer;
 import dev.aerolarge.client.CockpitDoorRenderer;
 import dev.aerolarge.client.ContrailParticle;
+import dev.aerolarge.client.CraneHookRenderer;
+import dev.aerolarge.client.CraneWinchRenderer;
 import dev.aerolarge.client.DiscoBallRenderer;
 import dev.aerolarge.client.DiscoLights;
 import dev.aerolarge.client.DoveParticle;
@@ -287,6 +289,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.BUBBLE_LEVEL_ENTITY.get(), context -> new BubbleLevelRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.CRANE_WINCH_ENTITY.get(), context -> new CraneWinchRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TECHNO_DECK_ENTITY.get(), context -> new TechnoRoomRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LOOKOUT_GLASS_ENTITY.get(), context -> new LookoutGlassRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SKYWRITING_BOARD_ENTITY.get(), context -> new SkywritingBoardRenderer());
@@ -311,6 +314,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
+        event.registerEntityRenderer(AerolargeRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BLUE_ICE_CHUNK.get(), BlueIceChunkRenderer::new);

@@ -821,6 +821,33 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/banner_cleat.json`, { parent: `${ID}:block/banner_cleat` });
   dropsItself("banner_cleat");
   cubes.banner_cleat = null;
+  // The sky crane's winch (see CraneWinchBlock): an iron frame on a dark base, the drum of rope between its sides drawn
+  // turning by CraneWinchRenderer, the load dial's cream plate over it, and its lever at its right side, a brass arm
+  // with a red knob, tilted up to hoist, level to hold and down to lower; drawn facing north, worked from the south.
+  for (const [notch, angle] of [["lower", 45], ["hold", 0], ["hoist", -45]]) {
+    const lever = (from, to, texture) => ({ ...solid(from, to, texture), rotation: { origin: [15.5, 6.5, 8], axis: "x", angle } });
+    write(`assets/${ID}/models/block/crane_winch_${notch}.json`, {
+      parent: "minecraft:block/block",
+      textures: { base: "minecraft:block/black_concrete", iron: "minecraft:block/iron_block", dial: "minecraft:block/white_concrete",
+        brass, knob: "minecraft:block/red_concrete", particle: "minecraft:block/iron_block" },
+      elements: [
+        solid([1, 0, 2], [15, 2, 14], "#base"),
+        solid([1, 2, 5], [3, 12, 11], "#iron"),
+        solid([13, 2, 5], [15, 12, 11], "#iron"),
+        solid([3.5, 10, 11], [12.5, 16, 12], "#dial"),
+        lever([15, 6, 8], [16, 7, 14], "#brass"),
+        lever([14.75, 5.75, 13.5], [16.25, 7.25, 15], "#knob"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/crane_winch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "hold", "hoist"].map((notch, index) => [
+      `facing=${facing},notch=${index}`, { model: `${ID}:block/crane_winch_${notch}`, y },
+    ]))),
+  });
+  write(`assets/${ID}/models/item/crane_winch.json`, { parent: `${ID}:block/crane_winch_hold` });
+  dropsItself("crane_winch");
+  cubes.crane_winch = null;
   // The floodlights under the zeppelin (see FloodlightBlock): a flat black lamp on a brass plate hung from the top of
   // its block, its wide lens underneath, dark glass or, lit, glowing, and a hood down its back edge, so it reads which
   // way, drawn facing north, it throws its light.
@@ -984,6 +1011,8 @@ function zeppelinControlsLang() {
     "block.aerolarge.franking_machine": "Franking Machine",
     "block.aerolarge.mail_sack": "Mail Sack",
     "block.aerolarge.banner_cleat": "Banner Cleat",
+    "block.aerolarge.crane_winch": "Crane Winch",
+    "entity.aerolarge.crane_hook": "Crane Hook",
     "item.aerolarge.postcard": "Postcard from %s",
     "item.aerolarge.postcard.franked": "Franked over %s, %s",
     "item.aerolarge.postcard.the_zeppelin": "the Zeppelin",
@@ -5611,7 +5640,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5662,6 +5691,12 @@ write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
 // to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight).
 write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`]));
+// What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
+// net, chests, barrels and care packages with all they hold. A camel it catches but cannot lift: too heavy.
+write(`data/${ID}/tags/entity_type/crane_loads.json`, tag(["horse", "donkey", "mule", "llama", "trader_llama", "camel", "skeleton_horse",
+  "zombie_horse", "cow", "mooshroom", "pig", "sheep", "goat", "boat", "chest_boat", "minecart", "chest_minecart", "furnace_minecart",
+  "hopper_minecart"].map((id) => `minecraft:${id}`)));
+write(`data/${ID}/tags/block/crane_cargo.json`, tag(["minecraft:chest", "minecraft:trapped_chest", "minecraft:barrel", `${ID}:cargo_crate`]));
 
 // Recipes, for repairing and extending an airliner in survival; the blueprints themselves are creative only.
 const item = (id) => ({ item: id });
@@ -5694,6 +5729,7 @@ shaped("floodlight", ["I", "L", "D"], { I: "minecraft:iron_ingot", L: "minecraft
 shaped("franking_machine", ["P", "C"], { P: "minecraft:paper", C: "minecraft:cartography_table" }, 1);
 shaped("mail_sack", ["S", "L", "P"], { S: "minecraft:string", L: "minecraft:leather", P: "minecraft:paper" }, 1);
 shaped("banner_cleat", ["L", "C", "W"], { L: "minecraft:lead", C: "minecraft:copper_ingot", W: "minecraft:white_wool" }, 1);
+shaped("crane_winch", ["CLC", "IRI"], { C: "minecraft:chain", L: "minecraft:lever", I: "minecraft:iron_ingot", R: "minecraft:lead" }, 1);
 shaped("searchlight_handle", ["L", "C"], { L: "minecraft:lever", C: "minecraft:copper_ingot" }, 1);
 shaped("skywriting_board", ["WBW", "PPP"], { W: "minecraft:white_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("boarding_stairs_button", ["G", "B"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button" }, 1);

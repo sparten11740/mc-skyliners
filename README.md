@@ -1605,6 +1605,25 @@ how fast she goes. It is only out while her tail is well clear of the ground und
 she comes in. Use the cleat again to haul it in, the rope coiled back round it. The server config's `towedBanner` leaves
 it out of zeppelins built from then on, and off, the cleats already built do nothing.
 
+The sky crane's Crane Winch stands at the aft end of the observation lounge's glass floor, to starboard: an iron frame
+round a drum of rope, a lever with a red knob at its side and a load dial over the drum. Use it and the lever goes up a
+notch, and sneaking, down one: down lowers the hook on its rope through the glass floor, level holds it, up hoists it,
+the drum turning and ratcheting as it does, and the lever comes back level by itself when it is done. Looking down
+through the glass you see the hook, a black weighted ball over an iron hook, swinging under her, trailing back on its
+rope the faster she flies. Lower it onto a horse, a donkey, a llama, a cow, a pig, a sheep, a goat, a boat or a
+minecart, and it catches it with a clack and a rattle of chain, in rope slings; onto a chest, a barrel or a care
+package, and it takes it up in a net with everything inside. The hook catches anything within a block of where it
+comes down, as she drifts a little while hovering. While it holds a load the dial's lamp glows green, and its needle
+shows the strain: in the green for a pig or a boat, the amber for a horse, swinging into the red if the load swings
+hard. A load too heavy for it, a camel, it catches but will not hoist: the lever drops back with a low note. Lower a
+load until it rests on the ground while she hardly moves, and the hook lets go with a clank, standing a chest down
+where it rests with all it holds; it then catches nothing until it has been hoisted a few blocks clear. It never
+catches a player, a villager or a monster, nor a tamed animal unless its owner is aboard, nor anything a player rides,
+and a load a player climbs onto is only ever lowered. A chest is taken only where whoever works the winch could break
+it. The hook weighs nothing on her flight. Should the winch be taken away, the hook lets its load down gently, an
+animal floating down slowly and a chest coming down on a parachute. The server config's `skyCrane` leaves it out of
+zeppelins built from then on, and off, the winches already built do nothing.
+
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
 takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
@@ -1838,7 +1857,9 @@ airliner's `OutsideCamera`s are, the flyby circling her in `CameraMount`), and `
 `Floodlights` drawing their light, and `HullAmbience` plays her hull's boom and groans to those aboard, `GreatShadow`
 draws her shadow from her `ZeppelinSilhouette`, `MistyWindows` mists her promenade windows, and `ZeppelinPost` stands
 the `FrankingMachineBlock`, whose mail sacks (`MailSackItem`) land their own way from a `FallingCrate`,
-`ZeppelinTowedBanner` fits the `BannerCleatBlock` whose banner `TowedBanner` draws from her tail, `ZeppelinBoost`
+`ZeppelinTowedBanner` fits the `BannerCleatBlock` whose banner `TowedBanner` draws from her tail, `ZeppelinSkyCrane`
+stands the `CraneWinchBlock` whose `CraneWinchBlockEntity` hangs and holds the `CraneHook` (drawn by `CraneHookRenderer`,
+its drum and dial by `CraneWinchRenderer`), `ZeppelinBoost`
 fits the `BoostButtonBlock` and the boosters round her tail, its `BoostButtonBlockEntity` firing them and `SpeedBoost`
 steering her as they do (a `Course` on `ZeppelinPilot`'s list, keeping her engines as they were), and
 `ZeppelinSkywriting` hangs the `SkywritingBoardBlock` whose `SkywritingBoardBlockEntity` lays a `SkyShape` out ahead of
