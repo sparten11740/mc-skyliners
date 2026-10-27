@@ -35,6 +35,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SELF_DESTRUCT;
     public static final ModConfigSpec.ConfigValue<String> BURNER_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> ENVELOPE_BLOCK;
+    public static final ModConfigSpec.BooleanValue SAFETY_CANOPY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -222,6 +223,12 @@ public final class AerolargeConfig {
                 "(red, light_blue, ...). Left out (or not installed) the cells are made of the zeppelin's own fabric and hold no gas."
             )
             .define("envelopeBlock", "aeronautics:{colour}_envelope");
+        SAFETY_CANOPY = builder
+            .comment(
+                "Whether a canopy opens over anyone who falls from a zeppelin, a few blocks down, so they glide to the ground unhurt",
+                "as under a parachute: off its boarding stairs in flight, or from its gangway inside the hull."
+            )
+            .define("safetyCanopy", true);
         builder.pop();
 
         SPEC = builder.build();

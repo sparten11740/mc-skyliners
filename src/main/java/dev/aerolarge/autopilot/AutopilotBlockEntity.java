@@ -25,6 +25,7 @@ import dev.aerolarge.cabin.LightningStrikes;
 import dev.aerolarge.cabin.Turbulence;
 import dev.aerolarge.compat.PhysicsAssembler;
 import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.parachute.SafetyCanopy;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1474,12 +1475,16 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Each tick of an assembled zeppelin's: lightning strikes it in a storm and it notes the villages below, as an
-     * airliner does; it comes down by itself once nobody has been aboard a while; engaged, it flies (see
-     * {@link ZeppelinPilot}), showing what it does on the control car's hand controls, until it is down on the ground
-     * and rests there, switching itself off; switched off, it is flown by those controls once handed over to them.
+     * airliner does; it notes who is aboard, for the safety canopy (see {@link SafetyCanopy}); it comes down by itself
+     * once nobody has been aboard a while; engaged, it flies (see {@link ZeppelinPilot}), showing what it does on the
+     * control car's hand controls, until it is down on the ground and rests there, switching itself off; switched off,
+     * it is flown by those controls once handed over to them.
      */
     private void zeppelinTick(ServerLevel level, SableFlight.State flight) {
         keepLoaded(level);
+        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) == 0) {
+            SafetyCanopy.aboard(Aboard.players(this), level.getGameTime());
+        }
         double radio = radioAltitude(level, flight);
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());

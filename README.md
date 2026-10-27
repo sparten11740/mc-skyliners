@@ -1477,6 +1477,12 @@ off with a bell. With nobody aboard for a minute it comes down where it is. Stil
 engaged, too heavy for its burners (built over with too much, say), it rests again and switches itself off with a thud,
 saying so; built without Create Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
 
+Nobody is hurt falling from a zeppelin: a striped safety canopy, the parachute's, opens over anyone who was aboard a
+moment ago and has fallen a few blocks, off the boarding stairs under its belly in flight, say, or from the gangway
+inside the hull, with the snap of a parachute opening. They glide down as under a parachute, steering the way they
+walk, and it packs itself away as they land. It does not open in creative mode, while flying or under a parachute of
+one's own; `safetyCanopy` in the server config's `zeppelin` section switches it off.
+
 A zeppelin is far longer than the land simulated round a player reaches (12 chunks by default): someone riding in its
 bow leaves its middle in land unloaded behind them, and Sable loads a ship back only once the land under all of it is
 simulated, which for a zeppelin it never is. So once it has been assembled it keeps itself loaded for good (a loading
@@ -1571,8 +1577,9 @@ wires the control head to every burner, engine and hand control; `ZeppelinContro
 `BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
 hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
 `ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
-`SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves out a sound that starts too far off to
-be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel there is.
+`SableFlight.keepLoaded` keeps it loaded once it is assembled. `SafetyCanopy` opens a canopy over anyone falling from a
+zeppelin, gliding as `Parachute` does. `Earshot` leaves out a sound that starts too far off to be heard, so a zeppelin's
+burners crackling at the far end of it do not take every sound channel there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

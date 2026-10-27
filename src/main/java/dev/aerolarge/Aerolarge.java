@@ -40,6 +40,8 @@ import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
+import dev.aerolarge.parachute.SafetyCanopy;
+import dev.aerolarge.parachute.SafetyCanopyPayload;
 import dev.aerolarge.radar.RadarContacts;
 import dev.aerolarge.radar.RadarLand;
 import dev.aerolarge.radar.RadarSurvey;
@@ -84,6 +86,7 @@ public final class Aerolarge {
             () -> MovingInteractionBehaviour.REGISTRY.register(AerolargeRegistry.LIFT_PANEL.get(), new LiftPanelInteraction())));
         NeoForge.EVENT_BUS.addListener(AirlinerSpawnGuard::onSpawnPlacementCheck);
         NeoForge.EVENT_BUS.addListener(Parachute::tick);
+        NeoForge.EVENT_BUS.addListener(SafetyCanopy::loggedOut);
         NeoForge.EVENT_BUS.addListener(HighDive::onTick);
         NeoForge.EVENT_BUS.addListener(Headroom::onTick);
         NeoForge.EVENT_BUS.addListener(Broadcasts::onChat);
@@ -138,7 +141,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("22")
+        event.registrar("23")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -155,6 +158,8 @@ public final class Aerolarge {
                 (payload, context) -> CameraShake.airPocket(payload.depth()))
             .playToClient(LightningStrikePayload.TYPE, LightningStrikePayload.STREAM_CODEC,
                 (payload, context) -> LightningFlash.struck())
+            .playToClient(SafetyCanopyPayload.TYPE, SafetyCanopyPayload.STREAM_CODEC,
+                (payload, context) -> SafetyCanopy.told(payload))
             .playToClient(LaserBolt.TYPE, LaserBolt.STREAM_CODEC,
                 (payload, context) -> LaserBolts.add(payload))
             .playToClient(OpenAutopilotScreen.TYPE, OpenAutopilotScreen.STREAM_CODEC,

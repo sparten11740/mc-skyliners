@@ -77,11 +77,12 @@ public final class Parachute {
         }
     }
 
-    /** Every tick, on both sides, before the player moves. */
+    /** Every tick, on both sides, before the player moves; without a parachute, the zeppelin's safety canopy's. */
     public static void tick(PlayerTickEvent.Pre event) {
         Player player = event.getEntity();
         ItemStack parachute = worn(player);
         if (parachute.isEmpty()) {
+            SafetyCanopy.tick(player);
             return;
         }
         boolean server = !player.level().isClientSide;
@@ -91,7 +92,7 @@ public final class Parachute {
             }
             return;
         }
-        if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying() || player.getAbilities().flying || player.isPassenger()) {
+        if (landed(player)) {
             if (server) {
                 parachute.set(AerolargeRegistry.PARACHUTE_OPEN.get(), false);
                 if (player.onGround() && player instanceof ServerPlayer landed) {
@@ -100,6 +101,16 @@ public final class Parachute {
             }
             return;
         }
+        glide(player);
+    }
+
+    /** Whether a player under a canopy has come down: on the ground, in water or lava, flying, or carried. */
+    static boolean landed(Player player) {
+        return player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying() || player.getAbilities().flying || player.isPassenger();
+    }
+
+    /** One tick under an open canopy: the fall braked to a gentle sink, drifting the way the player walks. */
+    static void glide(Player player) {
         player.fallDistance = 0;
         Vec3 motion = player.getDeltaMovement();
         // Gravity and air still act this tick; braked toward the speed they leave at just the canopy's sink.

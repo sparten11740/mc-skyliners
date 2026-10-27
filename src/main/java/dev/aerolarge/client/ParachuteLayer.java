@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.parachute.Parachute;
+import dev.aerolarge.parachute.SafetyCanopy;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,7 +15,8 @@ import net.minecraft.util.Mth;
 
 /**
  * Draws a player's parachute: packed, a pack on their back; open, the striped canopy high over their head on cords to
- * their shoulders (see {@link Canopy}), swaying a little. Drawn in the player model's own space (y down, the origin
+ * their shoulders (see {@link Canopy}), swaying a little. A zeppelin's safety canopy is drawn the same, open over
+ * them (see {@link SafetyCanopy}). Drawn in the player model's own space (y down, the origin
  * about a block and a half above the feet), so it turns with the player.
  */
 public class ParachuteLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -29,11 +31,12 @@ public class ParachuteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
     @Override
     public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
                        float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-        if (Parachute.worn(player).isEmpty()) {
+        boolean safety = SafetyCanopy.isOpen(player);
+        if (Parachute.worn(player).isEmpty() && !safety) {
             return;
         }
         VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutoutNoCull(Canopy.TEXTURE));
-        if (Parachute.isOpen(player)) {
+        if (safety || Parachute.isOpen(player)) {
             pose.pushPose();
             // A slow sway, as if in the wind.
             pose.mulPose(Axis.ZP.rotationDegrees(3 * Mth.sin(ageInTicks * 0.05F)));
