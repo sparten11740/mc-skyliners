@@ -187,6 +187,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(LookoutView::tick);
         NeoForge.EVENT_BUS.addListener(LookoutView::fov);
         NeoForge.EVENT_BUS.addListener(LookoutView::turn);
+        NeoForge.EVENT_BUS.addListener(LookoutView::scroll);
         NeoForge.EVENT_BUS.addListener(LookoutView::input);
         NeoForge.EVENT_BUS.addListener(LookoutView::movement);
         NeoForge.EVENT_BUS.addListener(LookoutView::hand);

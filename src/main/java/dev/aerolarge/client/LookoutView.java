@@ -39,7 +39,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Looking through the Lookout's Glass (see {@link LookoutGlassBlockEntity}), on this client: the view narrowed to a
- * tenth inside the spyglass's frame, as a spyglass narrows it, the land far below brought near. At its middle a green
+ * tenth inside the spyglass's frame, as a spyglass narrows it, the land far below brought near, and the mouse wheel
+ * zooming it further in or back out a step at a time, pips under the frame showing how far. At its middle a green
  * pennant on its pole stands on the land it would mark, or a red cross shows there is none to mark there (sky, the
  * ship's own hull in the way, or land too far off or not yet loaded). Using marks it: the flag is dropped there for the
  * autopilot's map, a column of white smoke rises from the spot to show where, and the ship's bell answers; with nothing
@@ -47,21 +48,29 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * player away: a screen opening, the glass gone, or the ship carrying them off.
  */
 public final class LookoutView {
-    /** How much of the view the glass leaves, as a spyglass does. */
-    private static final float ZOOM = 0.1F;
+    /**
+     * The steps the glass zooms through by the mouse wheel, as shares of the view it leaves, from four times nearer to
+     * forty; and the one it opens at, ten times nearer, as a spyglass is.
+     */
+    private static final float[] ZOOMS = {0.25F, 0.1F, 0.05F, 0.025F};
+    private static final int FIRST_ZOOM = 1;
     /**
      * How far the player's eye may be from the glass while they look through it, in blocks: a little further than a
      * block can be used from, so the view opens wherever the glass was used from.
      */
     private static final double REACH = 5;
     /**
-     * How the game turns the view by the mouse, by the cube of its sensitivity times a share and a little more; and
-     * how much less that root is made looking through the glass, so the view turns eight times slower, as a spyglass's
-     * does, its ten times nearer land not swinging past.
+     * How the game turns the view by the mouse, by the cube of its sensitivity times a share and a little more; and how
+     * fast the view turns through the glass for each share of the view it leaves, so that ten times nearer it turns
+     * eight times slower, as a spyglass's does, and the nearer the slower, the land not swinging past.
      */
     private static final double TURN_SHARE = 0.6;
     private static final double TURN_LEAST = 0.2;
-    private static final double SLOWER = 2;
+    private static final double TURN_PER_VIEW = 1.25;
+    /** The glass's click as it zooms a step: how loud, and how much higher each step nearer, from the lowest. */
+    private static final float ZOOM_VOLUME = 0.6F;
+    private static final float ZOOM_PITCH = 0.9F;
+    private static final float ZOOM_PITCH_STEP = 0.15F;
     /**
      * How far apart the ground is sought along the view, in blocks, close enough not to step over the hull's cover;
      * and how far along it an airliner's blocks are looked for in the way, in blocks: the ship's own hull and any
@@ -100,6 +109,15 @@ public final class LookoutView {
     /** How far down from the top the hint is drawn, clear of the hotbar and the hearts, in pixels, and its colour. */
     private static final int HINT_Y = 12;
     private static final int HINT = 0xFFE8E8E8;
+    /**
+     * The zoom's pips under the middle: how far up from the bottom, how big each and how far apart, in pixels; lit up
+     * to the step it is at, dim beyond.
+     */
+    private static final int PIPS_Y = 40;
+    private static final int PIP = 5;
+    private static final int PIP_GAP = 4;
+    private static final int PIP_LIT = 0xFFF0D060;
+    private static final int PIP_DIM = 0x60FFFFFF;
 
     /**
      * How far below the horizon the view first looks, out the way the glass points, whichever way the player stood at
@@ -116,6 +134,12 @@ public final class LookoutView {
     /** The spot the middle of the view rests on now, if there is one to mark. */
     @Nullable
     private static Vec3 aim;
+    /**
+     * How far it is zoomed, as a step of {@link #ZOOMS}; and how far the mouse wheel has turned since its last whole
+     * notch, as a trackpad turns it a little at a time.
+     */
+    private static int zoom = FIRST_ZOOM;
+    private static double wheel;
     /** Whether the use key is still held from using the glass, or from the last mark, so holding it marks only once. */
     private static boolean useHeld;
     /** The game time a spot was last marked, so another is not marked sooner than the glass takes one. */
@@ -138,6 +162,8 @@ public final class LookoutView {
         looking = glass;
         useHeld = true;
         aim = null;
+        zoom = FIRST_ZOOM;
+        wheel = 0;
         lookOut(minecraft.player, minecraft.level, glass);
         minecraft.player.playSound(SoundEvents.SPYGLASS_USE, 1, 1);
     }
@@ -289,18 +315,39 @@ public final class LookoutView {
         }
     }
 
-    /** Looking through the glass, the view is narrowed to a tenth. */
+    /** Looking through the glass, the view is narrowed as far as it is zoomed. */
     public static void fov(ViewportEvent.ComputeFov event) {
         if (looking != null && event.usedConfiguredFov()) {
-            event.setFOV(event.getFOV() * ZOOM);
+            event.setFOV(event.getFOV() * ZOOMS[zoom]);
         }
     }
 
-    /** Looking through the glass, the view turns eight times slower by the mouse. */
+    /** Looking through the glass, the view turns slower by the mouse, the nearer it is zoomed the slower. */
     public static void turn(CalculatePlayerTurnEvent event) {
         if (looking != null) {
             double root = event.getMouseSensitivity() * TURN_SHARE + TURN_LEAST;
-            event.setMouseSensitivity(Math.max(0, (root / SLOWER - TURN_LEAST) / TURN_SHARE));
+            double slower = Math.cbrt(1 / (TURN_PER_VIEW * ZOOMS[zoom]));
+            event.setMouseSensitivity(Math.max(0, (root / slower - TURN_LEAST) / TURN_SHARE));
+        }
+    }
+
+    /**
+     * Looking through the glass, the mouse wheel zooms it in or out a step for each whole notch it turns, with a
+     * click, instead of turning the hotbar.
+     */
+    public static void scroll(InputEvent.MouseScrollingEvent event) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (looking == null || player == null) {
+            return;
+        }
+        event.setCanceled(true);
+        wheel += event.getScrollDeltaY();
+        int notches = (int) wheel;
+        wheel -= notches;
+        int next = Mth.clamp(zoom + notches, 0, ZOOMS.length - 1);
+        if (next != zoom) {
+            zoom = next;
+            player.playSound(SoundEvents.SPYGLASS_USE, ZOOM_VOLUME, ZOOM_PITCH + ZOOM_PITCH_STEP * zoom);
         }
     }
 
@@ -371,6 +418,17 @@ public final class LookoutView {
         Component hint = Component.translatable("screen.aerolarge.lookout.hint", minecraft.options.keyUse.getTranslatedKeyMessage(),
             minecraft.options.keyShift.getTranslatedKeyMessage());
         graphics.drawCenteredString(font, hint, x, HINT_Y, HINT);
+        pips(graphics, x, graphics.guiHeight() - PIPS_Y);
+    }
+
+    /** The zoom's pips in a row centred under the middle, lit up to the step it is at. */
+    private static void pips(GuiGraphics graphics, int x, int y) {
+        int left = x - (ZOOMS.length * (PIP + PIP_GAP) - PIP_GAP) / 2;
+        for (int step = 0; step < ZOOMS.length; step++) {
+            int from = left + step * (PIP + PIP_GAP);
+            graphics.fill(from - 1, y - 1, from + PIP + 1, y + PIP + 1, SHADE);
+            graphics.fill(from, y, from + PIP, y + PIP, step <= zoom ? PIP_LIT : PIP_DIM);
+        }
     }
 
     /** The spyglass's frame over the middle of the screen, black round it. */

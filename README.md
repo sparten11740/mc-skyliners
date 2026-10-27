@@ -1521,15 +1521,17 @@ holding the rest. The server config's `trimCar` leaves it off zeppelins built fr
 In the observation lounge at the back of the control car, by its port windows over the glass floor, stands the Lookout's
 Glass: a long brass glass on a teak post, at your chest and pointing out of the windows. Use it and you look through it,
 out the way it points and down onto the land, through the windows or the glass floor, wherever you stood, the land round
-and under the ship brought ten times nearer inside a spyglass's frame. A green pennant at the middle of the view stands
-on the land you could mark, a red cross where there is nothing to mark: sky, the ship's own hull in the way, or land too
-far off (256 blocks at most) or not loaded yet. Use it again to mark the spot: a column of white smoke rises from it,
-the ship's bell strikes twice, and a pennant with your face on it is dropped on the autopilot's map there, saying who
-spotted it when pointed at, to be clicked as the pin like a player's face. Each lookout has one flag, moved by their
-next mark, four at most stand at once and each comes down after ten minutes. Alone aboard while the autopilot flies,
-your flag is made its pin straight away, as nobody else is there to pick it. Step, jump or sneak to step back from the
-glass. The server config's `lookout` leaves it out of zeppelins built from then on, and off, the glasses already built
-mark nothing.
+and under the ship brought ten times nearer inside a spyglass's frame. Roll the mouse wheel to zoom further in, to
+twenty and forty times nearer, or back out to four, a click at each step and a row of gold pips under the view lit as
+far as it is zoomed; the nearer, the slower the view turns. A green pennant at the middle of the view stands on the land
+you could mark, a red cross where there is nothing to mark: sky, the ship's own hull in the way, or land too far off
+(256 blocks at most) or not loaded yet. Use it again to mark the spot: a column of white smoke rises from it, the ship's
+bell strikes twice, and a pennant with your face on it is dropped on the autopilot's map there, saying who spotted it
+when pointed at, to be clicked as the pin like a player's face. Each lookout has one flag, moved by their next mark,
+four at most stand at once and each comes down after ten minutes. Alone aboard while the autopilot flies, your flag is
+made its pin straight away, as nobody else is there to pick it. Step, jump or sneak to step back from the glass. The
+server config's `lookout` leaves it out of zeppelins built from then on, and off, the glasses already built mark
+nothing.
 
 Taking off from the ground, she is held a moment on her lines, as the Hindenburg was at Lakehurst. Once her take-off
 announcement is over, so that nobody talks over it, the ship's bell rings, a short blast of the ground officer's whistle

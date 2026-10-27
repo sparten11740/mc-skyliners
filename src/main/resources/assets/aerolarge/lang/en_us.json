@@ -263,7 +263,7 @@
   "screen.aerolarge.passenger_screen.camera.below": "BELOW",
   "screen.aerolarge.passenger_screen.camera.flyby": "FLYBY",
   "screen.aerolarge.passenger_screen.camera_hint": "%s: next camera    %s: back to the cabin",
-  "screen.aerolarge.lookout.hint": "%s: drop your flag there    %s: step back",
+  "screen.aerolarge.lookout.hint": "%s: drop your flag there    Mouse wheel: zoom    %s: step back",
   "message.aerolarge.passenger_screen.not_assembled": "The outside cameras come on once the airliner is assembled",
   "message.aerolarge.passenger_screen.no_cameras": "This airliner has no outside cameras: it has no autopilot to fix them to",
   "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
