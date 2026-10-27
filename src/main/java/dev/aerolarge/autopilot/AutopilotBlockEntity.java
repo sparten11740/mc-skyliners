@@ -1659,7 +1659,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         phase = Phase.OFF;
         landAtPin = false;
         changed();
-        level.playSound(null, worldPosition, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 1.0F, 1.2F);
+        level.playSound(null, worldPosition, AerolargeRegistry.LOOKOUT_BELL.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /** Tells the clients how far to swing the control surfaces' panels, once that has moved on (see {@link ControlSurfaces}). */

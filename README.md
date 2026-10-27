@@ -1402,7 +1402,8 @@ nose, a long full middle and a long taper to a point at the stern, where four fi
 car hangs under the bow, faired into the hull above it as the Hindenburg's was, lit inside by three rows of lamps along
 its ceiling, and four streamlined engine cars stand out on girder struts along the flanks, two to each side, each with a
 big four-bladed wooden propeller with brass tips behind it that winds up when its engine runs and spins down slowly when
-it stops. The zeppelin rests on a wheel under the control car and another under the lower fin.
+it stops, the car's big diesel thrumming and its blades beating the air louder and higher as it turns faster, heard
+from the ground under her as she passes over and muffled inside her hull. The zeppelin rests on a wheel under the control car and another under the lower fin.
 
 At night it is dressed in lights, as an airship's are and as a ship's are when she is dressed overall: a red light on
 each engine car to port and a green one on each to starboard, shining out to the side, a white light on the tip of the
@@ -1532,7 +1533,8 @@ crew answer it themselves; under the autopilot the crew answer at once, so its f
 gold ingot over a copper ingot.
 
 Under the gangway hangs a trim car: a heavy iron ballast car on a 120-block rail of girders, a winch at its forward end
-hauling it fore and aft a few blocks a second with a clink of chain. Moving it moves the zeppelin's weight, and the
+hauling it fore and aft a few blocks a second, its wheels rumbling over the rail's joints with a clink of chain, heard
+softly at the trim wheel too. Moving it moves the zeppelin's weight, and the
 whole ship pitches: wound right forward she dips her nose some five degrees before her burners take it up. A Trim Wheel
 by the control car's starboard windows says where the car goes, all the way one way the forward end of the rail and all
 the way the other its aft end, and a Bubble Level beside it shows her pitch, its bubble sliding toward whichever end is
@@ -1611,7 +1613,8 @@ notch, and sneaking, down one: down lowers the hook on its rope through the glas
 the drum turning and ratcheting as it does, and the lever comes back level by itself when it is done. Looking down
 through the glass you see the hook, a black weighted ball over an iron hook, swinging under her, trailing back on its
 rope the faster she flies. Lower it onto a horse, a donkey, a llama, a cow, a pig, a sheep, a goat, a boat or a
-minecart, and it catches it with a clack and a rattle of chain, in rope slings; onto a chest, a barrel or a care
+minecart, and it catches it with the clunk of its latch and a jingle of chain, heard at the winch however far down it
+is, in rope slings; onto a chest, a barrel or a care
 package, and it takes it up in a net with everything inside. The hook catches anything within a block of where it
 comes down, as she drifts a little while hovering. While it holds a load the dial's lamp glows green, and its needle
 shows the strain: in the green for a pig or a boat, the amber for a horse, swinging into the red if the load swings
@@ -1630,7 +1633,7 @@ non-slip deck with white lines along its edges and a dashed line down its middle
 clamps set into it, yellow jaws lying flat with a red lamp between, and a yellow Clamp Release Lever at its forward
 port corner. Land a plane of your own on it (one built with Create Aeronautics, or anything else Sable flies),
 coming in over her bow while she hovers or creeps along, and once it has rested on the deck a second the clamps lock
-it down with a clang, their jaws raised and their lamps green: it rides with her however she flies, turns or climbs,
+it down with a hiss of their rams and a thunk, their jaws raised and their lamps green: it rides with her however she flies, turns or climbs,
 and every two seconds its tanks are topped up with the fuel they hold (whatever the modpack counts as fuel, and water
 for steam engines) and its batteries filled, with a gurgle. A plane heavier than a tenth of her is refused with a low
 note. Pull the release lever down, with a hiss, and every clamp opens and stays open so the plane can take off; push
@@ -1693,11 +1696,14 @@ under it or the trees beside it.
 
 The hand controls are ship's controls, read without words. The **Rudder Wheel** and the **Elevator Wheel** are big
 wooden wheels on brass pedestals, the top spoke red so their turn is seen at a glance: use one to turn it a notch
-clockwise, sneak and use it to turn it back, four notches either way. Clockwise, the rudder wheel turns the zeppelin to
+clockwise, its spokes knocking and its steering chain rattling, sneak and use it to turn it back, four notches either
+way; past the last a dull thud says it will go no further, as it does for a telegraph, the burner lever or the crane's
+lever at their ends. Clockwise, the rudder wheel turns the zeppelin to
 starboard and the elevator wheel tips its nose down. Each **Engine Telegraph**, the port engines' on a red plate and the
 starboard engines' on a green one, has a dial of five orders in colours and pictures: astern (a blue arrow pointing
 back), stop (a red bar), slow, half and full ahead (one yellow, two lime and three green dots); use it to ring it a step
-ahead, sneak and use it a step back, its bell ringing twice. The **Burner Lever** stands beside a flame painted from a
+ahead, sneak and use it a step back, its brass gong struck twice, ding-ding, a little higher for a faster order; an
+engine car's repeater rings the order the same way, and rings back once, lower, when it is answered. The **Burner Lever** stands beside a flame painted from a
 small blue one at the bottom to a big red one at the top: pushed up the burners burn harder and the zeppelin climbs,
 pulled down it sinks, and in the middle it holds its height. While the autopilot flies, it moves the controls itself to
 show what it does, ringing the telegraphs as it changes them: how hard it climbs or sinks on the lever, how it trims the

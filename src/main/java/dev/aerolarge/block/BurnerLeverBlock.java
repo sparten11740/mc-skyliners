@@ -63,6 +63,7 @@ public class BurnerLeverBlock extends HorizontalDirectionalBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         int heat = Math.clamp(state.getValue(HEAT) + (player.isShiftKeyDown() ? -1 : 1), 0, 2 * FLOAT);
         if (heat == state.getValue(HEAT)) {
+            EndStop.thud(level, pos);
             return InteractionResult.CONSUME;
         }
         if (!level.isClientSide) {

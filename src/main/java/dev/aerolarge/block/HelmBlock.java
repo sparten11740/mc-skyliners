@@ -5,7 +5,6 @@ import dev.aerolarge.AerolargeRegistry;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -84,11 +83,12 @@ public class HelmBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         int turn = Math.clamp(state.getValue(TURN) + (player.isShiftKeyDown() ? -1 : 1), 0, 2 * MOST);
         if (turn == state.getValue(TURN)) {
+            EndStop.thud(level, pos);
             return InteractionResult.CONSUME;
         }
         if (!level.isClientSide) {
             level.setBlock(pos, state.setValue(TURN, turn), Block.UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.4F, 0.7F + 0.05F * turn);
+            level.playSound(null, pos, AerolargeRegistry.HELM_NOTCH.get(), SoundSource.BLOCKS, 0.6F, 0.9F + 0.03F * turn);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

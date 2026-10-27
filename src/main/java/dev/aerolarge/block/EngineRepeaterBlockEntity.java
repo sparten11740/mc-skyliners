@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -101,11 +100,9 @@ public class EngineRepeaterBlockEntity extends BlockEntity {
         }
     }
 
-    /** Its bell, rung for an order, a little higher the faster the order. */
+    /** Its gong, struck twice for an order as the control car's telegraph is, a little higher the faster the order. */
     static void ring(Level level, BlockPos pos, TelegraphBlock.Order order) {
-        float pitch = 1.2F + 0.1F * order.ordinal();
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BELL_VOLUME, pitch);
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BELL_VOLUME * 0.75F, pitch * 1.25F);
+        level.playSound(null, pos, AerolargeRegistry.TELEGRAPH_RING.get(), SoundSource.BLOCKS, BELL_VOLUME, 0.9F + 0.04F * order.ordinal());
     }
 
     @Override

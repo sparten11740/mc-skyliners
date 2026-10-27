@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -48,7 +49,11 @@ public class PropellerBlockEntity extends BlockEntity {
         super(AerolargeRegistry.PROPELLER_ENTITY.get(), pos, state);
     }
 
+    /** What a client does each tick for a propeller besides turning it: its engine car's sound, set by the client. */
+    public static Consumer<PropellerBlockEntity> clientTicker = propeller -> { };
+
     void clientTick() {
+        clientTicker.accept(this);
         float wanted = getBlockState().getValue(ThrustRelayBlock.POWER) / 15F;
         spin = wanted > spin ? Math.min(wanted, spin + SPIN_UP) : Math.max(wanted, spin - RUN_DOWN);
         lastAngle = angle;

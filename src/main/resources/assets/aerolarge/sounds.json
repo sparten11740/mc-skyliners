@@ -878,6 +878,143 @@
       }
     ]
   },
+  "zeppelin_engine": {
+    "subtitle": "subtitles.aerolarge.zeppelin_engine",
+    "sounds": [
+      {
+        "name": "aerolarge:zeppelin_engine",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "telegraph_ring": {
+    "subtitle": "subtitles.aerolarge.telegraph_ring",
+    "sounds": [
+      {
+        "name": "aerolarge:telegraph_ring"
+      }
+    ]
+  },
+  "telegraph_answer": {
+    "subtitle": "subtitles.aerolarge.telegraph_answer",
+    "sounds": [
+      {
+        "name": "aerolarge:telegraph_answer"
+      }
+    ]
+  },
+  "helm_notch": {
+    "subtitle": "subtitles.aerolarge.helm_notch",
+    "sounds": [
+      {
+        "name": "aerolarge:helm_notch"
+      }
+    ]
+  },
+  "control_stop": {
+    "subtitle": "subtitles.aerolarge.control_stop",
+    "sounds": [
+      {
+        "name": "aerolarge:control_stop"
+      }
+    ]
+  },
+  "crane_ratchet": {
+    "subtitle": "subtitles.aerolarge.crane_ratchet",
+    "sounds": [
+      {
+        "name": "aerolarge:crane_ratchet"
+      }
+    ]
+  },
+  "crane_latch": {
+    "subtitle": "subtitles.aerolarge.crane_latch",
+    "sounds": [
+      {
+        "name": "aerolarge:crane_latch"
+      }
+    ]
+  },
+  "clamp_lock": {
+    "subtitle": "subtitles.aerolarge.clamp_lock",
+    "sounds": [
+      {
+        "name": "aerolarge:clamp_lock"
+      }
+    ]
+  },
+  "clamp_release": {
+    "subtitle": "subtitles.aerolarge.clamp_release",
+    "sounds": [
+      {
+        "name": "aerolarge:clamp_release"
+      }
+    ]
+  },
+  "canopy_open": {
+    "subtitle": "subtitles.aerolarge.canopy_open",
+    "sounds": [
+      {
+        "name": "aerolarge:canopy_open"
+      }
+    ]
+  },
+  "touchdown": {
+    "subtitle": "subtitles.aerolarge.touchdown",
+    "sounds": [
+      {
+        "name": "aerolarge:touchdown"
+      }
+    ]
+  },
+  "trim_car_roll": {
+    "subtitle": "subtitles.aerolarge.trim_car_roll",
+    "sounds": [
+      {
+        "name": "aerolarge:trim_car_roll"
+      }
+    ]
+  },
+  "bin_open": {
+    "subtitle": "subtitles.aerolarge.bin_open",
+    "sounds": [
+      {
+        "name": "aerolarge:bin_open"
+      }
+    ]
+  },
+  "bin_close": {
+    "subtitle": "subtitles.aerolarge.bin_close",
+    "sounds": [
+      {
+        "name": "aerolarge:bin_close"
+      }
+    ]
+  },
+  "searchlight_on": {
+    "subtitle": "subtitles.aerolarge.searchlight_on",
+    "sounds": [
+      {
+        "name": "aerolarge:searchlight_on"
+      }
+    ]
+  },
+  "booster_cutout": {
+    "subtitle": "subtitles.aerolarge.booster_cutout",
+    "sounds": [
+      {
+        "name": "aerolarge:booster_cutout"
+      }
+    ]
+  },
+  "tow_rope": {
+    "subtitle": "subtitles.aerolarge.tow_rope",
+    "sounds": [
+      {
+        "name": "aerolarge:flag_halyard"
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

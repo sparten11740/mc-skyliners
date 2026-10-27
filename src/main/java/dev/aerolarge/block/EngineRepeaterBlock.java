@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -82,8 +81,7 @@ public class EngineRepeaterBlock extends HorizontalDirectionalBlock implements E
     /** The order answered: the lamp turns green, with the clunk of the handle and a single ring back. */
     static void answer(Level level, BlockPos pos, BlockState state) {
         level.setBlock(pos, state.setValue(ANSWERED, true), Block.UPDATE_ALL);
-        level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 1.0F, 0.7F);
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 2.0F, 1.8F);
+        level.playSound(null, pos, AerolargeRegistry.TELEGRAPH_ANSWER.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
     }
 
     @Nullable

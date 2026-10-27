@@ -90,6 +90,8 @@ public class CraneWinchBlock extends HorizontalDirectionalBlock implements Entit
         if (notch != state.getValue(NOTCH)) {
             level.setBlock(pos, state.setValue(NOTCH, notch), Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6F, CLICK_LOW + CLICK_STEP * notch);
+        } else {
+            EndStop.thud(level, pos);
         }
         return InteractionResult.CONSUME;
     }

@@ -113,10 +113,16 @@ public class BoostButtonBlockEntity extends BlockEntity {
         return Course.Steer.holdingThrust(heading);
     }
 
+    /** The boosters lit or put out, put out with their roar falling away and a pop, heard at the button and at them. */
     private void fire(ServerLevel level, boolean on) {
+        boolean were = firing;
         firing = on;
         Relays.drive(level, worldPosition, boosters, on ? FULL_SIGNAL : 0);
         setChanged();
+        if (were && !on && !boosters.isEmpty()) {
+            sound(level, worldPosition, AerolargeRegistry.BOOSTER_CUTOUT.get(), ROAR_VOLUME);
+            sound(level, worldPosition.offset(boosters.get(0)), AerolargeRegistry.BOOSTER_CUTOUT.get(), ROAR_VOLUME);
+        }
     }
 
     /** Whether the autopilot flies her level, neither taking off, landing, nor switched off. */

@@ -55,6 +55,9 @@ public class SearchlightHandleBlockEntity extends BlockEntity {
             operator = null;
         } else {
             operator = player.getUUID();
+            if (!searchlight.lit()) {
+                level.playSound(null, worldPosition, AerolargeRegistry.SEARCHLIGHT_ON.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
+            }
             searchlight.light(true);
         }
         level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6F, operator != null ? 1.2F : 0.9F);

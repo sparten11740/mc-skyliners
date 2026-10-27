@@ -25,10 +25,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * own, and who last worked its lever: whoever takes a chest up in its net must be able to break it.
  */
 public class CraneWinchBlockEntity extends BlockEntity {
-    /** How often the drum's ratchet clicks while it turns, in ticks, and how loud and how high. */
-    private static final int RATCHET_TICKS = 3;
-    private static final float RATCHET_VOLUME = 0.5F;
-    private static final float RATCHET_PITCH = 1.6F;
+    /** How often the drum's ratchet is heard while it turns, in ticks, each a quarter second, and how loud. */
+    private static final int RATCHET_TICKS = 5;
+    private static final float RATCHET_VOLUME = 0.6F;
     /**
      * How long the hook it knows may be missing, in ticks, before it hangs a new one when lowered: the hook's own chunk
      * may load a moment after the winch's.
@@ -76,7 +75,7 @@ public class CraneWinchBlockEntity extends BlockEntity {
             level.setBlock(worldPosition, getBlockState().setValue(CraneWinchBlock.NOTCH, CraneWinchBlock.HOLD), Block.UPDATE_ALL);
             level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6F, 1.0F);
         } else if (notch != CraneWinchBlock.HOLD && level.getGameTime() % RATCHET_TICKS == 0) {
-            level.playSound(null, worldPosition, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, RATCHET_VOLUME, RATCHET_PITCH);
+            level.playSound(null, worldPosition, AerolargeRegistry.CRANE_RATCHET.get(), SoundSource.BLOCKS, RATCHET_VOLUME, 1.0F);
         }
     }
 

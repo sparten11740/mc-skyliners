@@ -1679,6 +1679,29 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoostButtonBlockEntity>> BOOST_BUTTON_ENTITY =
         BLOCK_ENTITIES.register("boost_button", () -> BlockEntityType.Builder.of(BoostButtonBlockEntity::new, BOOST_BUTTON.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> SPEED_BOOST = sound("speed_boost");
+    /**
+     * The sound pass's sounds: a zeppelin's engine cars droning, her telegraphs' gong and their answer, a ship's wheel
+     * turned, a control at its stop, the sky crane's ratchet and latch, the flight deck's clamps, a parachute opening,
+     * the airliner's wheels touching down, the trim car rolling, the overhead bins, a searchlight striking up, the
+     * boosters cutting out, and the towed banner's rope.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_ENGINE = sound("zeppelin_engine");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TELEGRAPH_RING = sound("telegraph_ring");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TELEGRAPH_ANSWER = sound("telegraph_answer");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HELM_NOTCH = sound("helm_notch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CONTROL_STOP = sound("control_stop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRANE_RATCHET = sound("crane_ratchet");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRANE_LATCH = sound("crane_latch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLAMP_LOCK = sound("clamp_lock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLAMP_RELEASE = sound("clamp_release");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CANOPY_OPEN = sound("canopy_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TOUCHDOWN = sound("touchdown");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRIM_CAR_ROLL = sound("trim_car_roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BIN_OPEN = sound("bin_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BIN_CLOSE = sound("bin_close");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SEARCHLIGHT_ON = sound("searchlight_on");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOOSTER_CUTOUT = sound("booster_cutout");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TOW_ROPE = sound("tow_rope");
     /** A floodlight under a zeppelin, lit from dusk to dawn and lighting the land under her. */
     public static final DeferredBlock<FloodlightBlock> FLOODLIGHT = BLOCKS.registerBlock(
         "floodlight", FloodlightBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(FloodlightBlock.LIT) ? 15 : 0)

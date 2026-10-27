@@ -1,7 +1,9 @@
 package dev.aerolarge.client;
 
 import dev.aerolarge.AerolargeClientConfig;
+import dev.aerolarge.AerolargeRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -25,6 +27,13 @@ public final class CameraShake {
     /** Degrees of thump per block a second the airliner was sinking at touchdown, the most it gets, and its fade. */
     private static final float THUMP_PER_SINK = 0.4F;
     private static final float MAX_THUMP = 3F;
+    /**
+     * The touchdown heard, from what share of the hardest thump, and how loud at the softest heard and at the hardest:
+     * the wheels' chirp and thump is a cue of its own, heard whatever the camera shake is set to.
+     */
+    private static final float HEARD_THUMP = 0.1F;
+    private static final float SOFTEST = 0.4F;
+    private static final float HARDEST = 1.0F;
     private static final float THUMP_FADE = 0.82F;
     /**
      * The shake through the roughest air of clear skies (strength 1; a storm's is stronger), in degrees, and how many
@@ -100,6 +109,14 @@ public final class CameraShake {
         pocketTicks = 0;
     }
 
+    /** The wheels touching down, as hard as given, a share of the hardest: their thump and the tyres' chirp. */
+    private static void touchdown(Player player, float hard) {
+        if (hard >= HEARD_THUMP) {
+            player.level().playLocalSound(player.getX(), player.getY(), player.getZ(), AerolargeRegistry.TOUCHDOWN.get(), SoundSource.BLOCKS,
+                Mth.lerp(hard, SOFTEST, HARDEST), 1.0F, false);
+        }
+    }
+
     public static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         thump *= THUMP_FADE;
@@ -121,6 +138,7 @@ public final class CameraShake {
         boolean onGround = GROUND.onGround(ride);
         if (onGround && !wasOnGround) {
             thump = Math.min(MAX_THUMP, (float) lastSink * THUMP_PER_SINK);
+            touchdown(player, thump / MAX_THUMP);
         }
         if (onGround) {
             rumble = RUMBLE * (float) Math.min(1, speed / RUMBLE_SPEED);

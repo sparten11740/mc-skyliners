@@ -238,7 +238,7 @@ public class BallastValveBlockEntity extends BlockEntity {
         } else if (since == POUR_FROM) {
             play(level, worldPosition.offset(outlet), AerolargeRegistry.WATER_BALLAST.get(), WATER_VOLUME);
         } else if (since == CALL) {
-            play(level, officer, AerolargeRegistry.UP_SHIP_CALL.get(), CALL_VOLUME);
+            level.playSound(null, officer, AerolargeRegistry.UP_SHIP_CALL.get(), SoundSource.VOICE, CALL_VOLUME, 1);
             play(level, officer, AerolargeRegistry.HANDLER_WHISTLE_LONG.get(), WHISTLE_VOLUME);
         } else if (since == RELEASE) {
             play(level, officer, SoundEvents.LEASH_KNOT_BREAK, WHISTLE_VOLUME);

@@ -24,6 +24,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
@@ -126,8 +127,13 @@ public class CraneHook extends Entity {
     private static final float SLACK_STRAIN = 0.05F;
     /** How long, in ticks, the hook waits for its winch before it lets its load down and goes. */
     private static final int WINCH_LOST = 40;
-    /** The pitch of the low note a refused chest gives. */
+    /**
+     * The pitch of the low note a refused load gives, and of the latch letting go; and how loud its sounds are at the
+     * winch, heard by whoever works it however far the rope runs out.
+     */
     private static final float REFUSED_PITCH = 0.5F;
+    private static final float LET_GO_PITCH = 1.25F;
+    private static final float AT_WINCH = 0.6F;
     /** How long a living load let down without its winch floats down slowly, in ticks. */
     private static final int SLOW_FALL = 30 * 20;
 
@@ -265,7 +271,7 @@ public class CraneHook extends Entity {
         double reach = top().distanceTo(anchor);
         if (notch == CraneWinchBlock.HOIST) {
             if (carriesPlayer() || weight() > 1) {
-                level.playSound(null, getX(), getY() + hookHeight(), getZ(), SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, 1.0F, REFUSED_PITCH);
+                heard(level, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), REFUSED_PITCH);
                 return true;
             }
             length = Math.max(SHORTEST, Math.min(length, reach + SLACK) - WINDING);
@@ -425,7 +431,7 @@ public class CraneHook extends Entity {
             catching = false;
             letGoAt = length();
             stopWinch = true;
-            level.playSound(null, at, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, 1.0F, REFUSED_PITCH);
+            heard(level, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), REFUSED_PITCH);
             return;
         }
         ItemStack carried = new ItemStack(state.getBlock());
@@ -448,11 +454,19 @@ public class CraneHook extends Entity {
         return state.hasProperty(ChestBlock.TYPE) ? state.setValue(ChestBlock.TYPE, ChestType.SINGLE) : state;
     }
 
-    /** Caught with a clack of its latch and a rattle of chain, the winch's lever back to holding. */
+    /** Caught with the clunk of its latch and a jingle of chain, the winch's lever back to holding. */
     private void caught(ServerLevel level) {
         stopWinch = true;
-        level.playSound(null, getX(), getY() + hookHeight(), getZ(), SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1.0F, 0.7F);
-        level.playSound(null, getX(), getY() + hookHeight(), getZ(), SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.8F, 0.6F);
+        heard(level, AerolargeRegistry.CRANE_LATCH.get(), 1.0F);
+    }
+
+    /**
+     * A sound at the hook, and at its winch as well: the rope runs out far further than a sound carries, and whoever
+     * works the winch must hear what the hook does.
+     */
+    private void heard(ServerLevel level, SoundEvent sound, float pitch) {
+        level.playSound(null, getX(), getY() + hookHeight(), getZ(), sound, SoundSource.BLOCKS, 1.0F, pitch);
+        level.playSound(null, winch(), sound, SoundSource.BLOCKS, AT_WINCH, pitch);
     }
 
     private void resize(float width, float height) {
@@ -478,8 +492,7 @@ public class CraneHook extends Entity {
         catching = false;
         letGoAt = length();
         stopWinch = true;
-        level.playSound(null, getX(), getY() + hookHeight(), getZ(), SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.8F, 0.7F);
-        level.playSound(null, getX(), getY() + hookHeight(), getZ(), SoundEvents.CHAIN_BREAK, SoundSource.BLOCKS, 0.8F, 0.8F);
+        heard(level, AerolargeRegistry.CRANE_LATCH.get(), LET_GO_PITCH);
     }
 
     /** The chest in its net stood where it rests, or, with no room, dropped there with all it held. */

@@ -10,7 +10,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
@@ -36,8 +35,8 @@ public class TrimWinchBlockEntity extends BlockEntity {
      */
     private static final double TRIM_LEARN = 0.5;
     private static final double TRIM_DEADBAND = 0.01;
-    /** How many steps the car rolls between each rumble of its wheels. */
-    private static final int RUMBLE_EVERY = 3;
+    /** How loud the car's roll is heard at the trim wheel, far forward of it in the control car. */
+    private static final float AT_WHEEL = 0.4F;
 
     private Direction aft = Direction.SOUTH;
     /**
@@ -50,7 +49,6 @@ public class TrimWinchBlockEntity extends BlockEntity {
     private BlockPos wheel;
     /** Where the autopilot wants the car, in blocks aft of the winch. */
     private double wanted;
-    private int steps;
 
     public TrimWinchBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.TRIM_WINCH_ENTITY.get(), pos, state);
@@ -126,8 +124,9 @@ public class TrimWinchBlockEntity extends BlockEntity {
         level.setBlock(from, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         car = to;
         setChanged();
-        if (++steps % RUMBLE_EVERY == 0) {
-            level.playSound(null, at, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 0.8F, 0.6F);
+        level.playSound(null, at, AerolargeRegistry.TRIM_CAR_ROLL.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
+        if (wheel != null) {
+            level.playSound(null, worldPosition.offset(wheel), AerolargeRegistry.TRIM_CAR_ROLL.get(), SoundSource.BLOCKS, AT_WHEEL, 1.0F);
         }
     }
 

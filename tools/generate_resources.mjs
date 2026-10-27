@@ -1075,7 +1075,24 @@ function zeppelinControlsLang() {
     "block.aerolarge.skywriting_board": "Skywriting Board",
     "block.aerolarge.boarding_stairs_button": "Boarding Stairs Button",
     "block.aerolarge.boost_button": "Speed Boost Button",
-    "subtitles.aerolarge.speed_boost": "Engines roar",
+    "subtitles.aerolarge.speed_boost": "Boosters roar",
+    "subtitles.aerolarge.zeppelin_engine": "Engine car drones",
+    "subtitles.aerolarge.telegraph_ring": "Engine telegraph rings",
+    "subtitles.aerolarge.telegraph_answer": "Engine car answers",
+    "subtitles.aerolarge.helm_notch": "Ship's wheel turns",
+    "subtitles.aerolarge.control_stop": "Control at its stop",
+    "subtitles.aerolarge.crane_ratchet": "Winch ratchets",
+    "subtitles.aerolarge.crane_latch": "Crane hook clunks",
+    "subtitles.aerolarge.clamp_lock": "Docking clamps lock",
+    "subtitles.aerolarge.clamp_release": "Docking clamps open",
+    "subtitles.aerolarge.canopy_open": "Parachute opens",
+    "subtitles.aerolarge.touchdown": "Wheels touch down",
+    "subtitles.aerolarge.trim_car_roll": "Trim car rolls",
+    "subtitles.aerolarge.bin_open": "Overhead bin opens",
+    "subtitles.aerolarge.bin_close": "Overhead bin closes",
+    "subtitles.aerolarge.searchlight_on": "Searchlight strikes up",
+    "subtitles.aerolarge.booster_cutout": "Boosters cut out",
+    "subtitles.aerolarge.tow_rope": "Tow rope runs",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -1295,6 +1312,17 @@ function atcLang() {
   // A zeppelin's speed boost, her engines roaring up to full ahead, heard as far as BOOST_HEARD blocks off.
   const BOOST_HEARD = 96;
   sounds.speed_boost = { subtitle: `subtitles.${ID}.speed_boost`, sounds: [{ name: `${ID}:speed_boost`, attenuation_distance: BOOST_HEARD }] };
+  // The sound pass's sounds: a zeppelin's engine cars, heard as far as ENGINE_CAR_HEARD blocks off, from the ground
+  // under her at cruise; her telegraphs and wheels, her controls' stops, the sky crane, the flight deck's clamps, a
+  // parachute opening, the airliner's touchdown, the trim car, the overhead bins, a searchlight striking up, her
+  // boosters cutting out; and the towed banner's rope, the halyard's pulley under a subtitle of its own.
+  const ENGINE_CAR_HEARD = 96;
+  sounds.zeppelin_engine = { subtitle: `subtitles.${ID}.zeppelin_engine`, sounds: [{ name: `${ID}:zeppelin_engine`, attenuation_distance: ENGINE_CAR_HEARD }] };
+  for (const name of ["telegraph_ring", "telegraph_answer", "helm_notch", "control_stop", "crane_ratchet", "crane_latch", "clamp_lock", "clamp_release",
+    "canopy_open", "touchdown", "trim_car_roll", "bin_open", "bin_close", "searchlight_on", "booster_cutout"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
+  sounds.tow_rope = { subtitle: `subtitles.${ID}.tow_rope`, sounds: [{ name: `${ID}:flag_halyard` }] };
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);

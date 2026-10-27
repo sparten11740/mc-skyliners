@@ -1065,6 +1065,302 @@ function hullEcho(dry, wet) {
   writeSound("speed_boost", hullEcho(dry, 0.25), 0.85);
 }
 
+// The sounds of the night's sound pass, each with a noise of its own so none shifts another's: the zeppelin's engine
+// cars, her telegraphs and wheels, the controls' end stops, the sky crane, the flight deck's clamps, a parachute
+// opening, the airliner's touchdown, the trim car, the overhead bins and the searchlights.
+/** A heavy strike at a time in seconds: a low partial falling in pitch as it dies, with a crack of noise as it hits. */
+function thunk(samples, start, low, weight, noise) {
+  let phase = 0;
+  const begin = Math.round(start * RATE);
+  const end = Math.min(samples.length, begin + Math.round(0.5 * RATE));
+  for (let i = begin; i < end; i++) {
+    const t = (i - begin) / RATE;
+    phase += (2 * Math.PI * (low + 3 * low * Math.exp(-t / 0.02))) / RATE;
+    const crack = t < 0.01 ? (noise() * 2 - 1) * (1 - t / 0.01) : 0;
+    samples[i] += weight * (Math.exp(-t / 0.1) * Math.sin(phase) + 0.5 * crack);
+  }
+}
+/** A short metallic click at a time in seconds: a few milliseconds of noise through a resonance round its pitch. */
+function click(samples, start, pitch, gain, noise) {
+  const burst = new Float64Array(Math.round(0.025 * RATE));
+  for (let i = 0; i < Math.round(0.004 * RATE); i++) {
+    burst[i] = (noise() * 2 - 1) * (1 - i / (0.004 * RATE));
+  }
+  const rung = resonance(burst, pitch, 6);
+  const begin = Math.round(start * RATE);
+  for (let i = 0; i < rung.length && begin + i < samples.length; i++) {
+    samples[begin + i] += gain * rung[i] * 6;
+  }
+}
+/** A brass gong struck at a time in seconds: its note with a bell's inharmonic partials, dying away. */
+function gong(samples, start, frequency, decay, gain) {
+  for (let i = Math.round(start * RATE); i < samples.length; i++) {
+    const t = i / RATE - start;
+    const envelope = Math.min(1, t * 800) * Math.exp(-t / decay);
+    samples[i] += gain * envelope * (Math.sin(2 * Math.PI * frequency * t) + 0.5 * Math.sin(2 * Math.PI * frequency * 2.76 * t) * Math.exp(-t / 0.15)
+      + 0.25 * Math.sin(2 * Math.PI * frequency * 5.4 * t) * Math.exp(-t / 0.06));
+  }
+}
+/** Crossfades a sound rendered a little long, its tail over its head, into a seamless loop this many seconds long. */
+function seamless(samples, seconds, fadeSeconds) {
+  const length = Math.round(seconds * RATE);
+  const fade = Math.round(fadeSeconds * RATE);
+  const loop = samples.slice(0, length);
+  for (let i = 0; i < fade; i++) {
+    const w = i / fade;
+    loop[i] = samples[length + i] * (1 - w) + samples[i] * w;
+  }
+  return loop;
+}
+// A zeppelin's engine car (see ZeppelinEngineSounds): a big Maybach diesel thrumming, its cylinders' firing a pulse
+// train at 75 a second through its exhaust stack's resonances, a deep sub of the crankshaft under it, and the
+// propeller's beat, a whup of air nine times a second over a hiss of propwash. Every part repeats a whole number of
+// times in its four seconds, so the loop has no seam.
+{
+  const noise = ownRandom(0x4d617962);
+  const seconds = 4;
+  const n = Math.round((seconds + 0.5) * RATE);
+  const pulses = new Float64Array(n);
+  const firing = 75;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const within = (t * firing) % 1;
+    pulses[i] = Math.exp(-within * 9) * (1 + 0.15 * Math.sin(2 * Math.PI * 1.75 * t));
+  }
+  const stack = resonance(pulses, 180, 3);
+  const bark = resonance(pulses, 420, 5);
+  const samples = new Float64Array(n);
+  let wash = 0;
+  let warm = 0;
+  let warmer = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    wash += 0.05 * ((noise() * 2 - 1) - wash);
+    const beat = 0.65 + 0.35 * Math.sin(2 * Math.PI * 9 * t);
+    const sub = Math.sin(2 * Math.PI * 37.5 * t) + 0.4 * Math.sin(2 * Math.PI * 75 * t);
+    // Through two one-pole low-passes at some 1.2 kHz: a big diesel thrums, it does not hiss.
+    warm += 0.16 * (Math.tanh(1.6 * stack[i] + 0.7 * bark[i]) + 1.8 * wash * beat - warm);
+    warmer += 0.16 * (warm - warmer);
+    samples[i] = warmer + 0.45 * sub;
+  }
+  writeSound("zeppelin_engine", seamless(samples, seconds, 0.5), 0.8);
+}
+// An engine-order telegraph rung (see TelegraphBlock): its handle's detents clacking over, then its brass gong struck
+// twice, ding-ding; and its answer from an engine car, the repeater's single lower ring.
+{
+  const noise = ownRandom(0x54656c65);
+  const samples = new Float64Array(Math.round(1.4 * RATE));
+  click(samples, 0, 3000, 0.6, noise);
+  click(samples, 0.06, 2600, 0.5, noise);
+  gong(samples, 0.12, 1250, 0.5, 1);
+  gong(samples, 0.4, 1250, 0.6, 1);
+  writeSound("telegraph_ring", samples, 0.8);
+  const answer = new Float64Array(Math.round(1.2 * RATE));
+  click(answer, 0, 2400, 0.5, noise);
+  gong(answer, 0.05, 940, 0.6, 1);
+  writeSound("telegraph_answer", answer, 0.7);
+}
+// A ship's wheel turned a notch (see HelmBlock): two hollow knocks of its wooden spokes, and its steering chain's
+// rattle.
+{
+  const noise = ownRandom(0x48656c6d);
+  const samples = new Float64Array(Math.round(0.45 * RATE));
+  const knock = new Float64Array(samples.length);
+  for (const at of [0, 0.07]) {
+    for (let i = 0; i < Math.round(0.015 * RATE); i++) {
+      knock[Math.round(at * RATE) + i] += (noise() * 2 - 1) * (1 - i / (0.015 * RATE));
+    }
+  }
+  const wood = resonance(knock, 700, 8);
+  for (let i = 0; i < samples.length; i++) {
+    samples[i] = 4 * wood[i];
+  }
+  for (let k = 0; k < 10; k++) {
+    click(samples, 0.1 + k * 0.025, 1800 + 300 * noise(), 0.25 * (1 - k / 10), noise);
+  }
+  writeSound("helm_notch", samples, 0.7);
+}
+// A control pushed past its last notch, a wheel, telegraph, lever or winch at its stop: a dull wooden-and-iron thud.
+{
+  const noise = ownRandom(0x53746f70);
+  const samples = new Float64Array(Math.round(0.5 * RATE));
+  thunk(samples, 0, 110, 1, noise);
+  click(samples, 0, 900, 0.3, noise);
+  writeSound("control_stop", samples, 0.7);
+}
+// The sky crane's winch turning (see CraneWinchBlockEntity): a quarter second of its ratchet, three pawl clicks over
+// the drum's low rumble and the rope's creak, played over and over while it hoists or lowers; and its hook's latch,
+// catching or letting go, an iron clunk ringing, and a jingle of chain.
+{
+  const noise = ownRandom(0x52617463);
+  const samples = new Float64Array(Math.round(0.25 * RATE));
+  let rumble = 0;
+  let creak = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    rumble += 0.01 * ((noise() * 2 - 1) - rumble);
+    creak = Math.sin(2 * Math.PI * 300 * t + 2 * Math.sin(2 * Math.PI * 23 * t));
+    samples[i] = 6 * rumble * (0.7 + 0.3 * Math.sin(2 * Math.PI * 40 * t)) + 0.05 * creak;
+  }
+  for (const at of [0.01, 0.093, 0.176]) {
+    click(samples, at, 2400, 0.9, noise);
+  }
+  writeSound("crane_ratchet", samples, 0.7);
+  const latch = new Float64Array(Math.round(0.9 * RATE));
+  thunk(latch, 0, 80, 1, noise);
+  gong(latch, 0, 900, 0.12, 0.3);
+  for (let k = 0; k < 8; k++) {
+    click(latch, 0.05 + 0.03 * k + 0.02 * noise(), 3200 + 800 * noise(), 0.35 * (1 - k / 8), noise);
+  }
+  writeSound("crane_latch", latch, 0.8);
+}
+// The flight deck's docking clamps (see DeckClampBlockEntity): locking, a hydraulic hiss of their rams into the steel
+// thunk of their jaws closing; releasing, the jaws knocked open and the hiss letting the pressure go.
+{
+  const noise = ownRandom(0x436c616d);
+  const hiss = (samples, from, to, rising) => {
+    let previous = 0;
+    for (let i = Math.round(from * RATE); i < Math.round(to * RATE); i++) {
+      const t = (i / RATE - from) / (to - from);
+      const white = noise() * 2 - 1;
+      const high = white - previous;
+      previous = white;
+      samples[i] += 0.5 * high * (rising ? Math.min(1, t * 3) : Math.min(1, (1 - t) * 3)) * Math.min(1, t * 20);
+    }
+  };
+  const lock = new Float64Array(Math.round(1.1 * RATE));
+  hiss(lock, 0, 0.4, true);
+  thunk(lock, 0.38, 70, 1, noise);
+  gong(lock, 0.38, 520, 0.15, 0.3);
+  gong(lock, 0.38, 1180, 0.08, 0.15);
+  writeSound("clamp_lock", lock, 0.85);
+  const release = new Float64Array(Math.round(1.1 * RATE));
+  thunk(release, 0, 90, 0.8, noise);
+  gong(release, 0, 640, 0.1, 0.2);
+  hiss(release, 0.05, 0.75, false);
+  writeSound("clamp_release", release, 0.8);
+}
+// A parachute's canopy opening (see Parachute): the rustle of it unpacking, sweeping up, then the whump of the air
+// filling it with a crack of cloth, and two flaps as it settles.
+{
+  const noise = ownRandom(0x43616e6f);
+  const samples = new Float64Array(Math.round(1.2 * RATE));
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = noise() * 2 - 1;
+    const centre = 400 + 2100 * Math.min(1, t / 0.35);
+    const tune = 2 * Math.sin((Math.PI * centre) / RATE);
+    low += tune * band;
+    band += tune * (white - low - 0.6 * band);
+    samples[i] = 0.5 * band * Math.min(1, t / 0.05) * Math.max(0, 1 - t / 0.4);
+  }
+  thunk(samples, 0.38, 60, 1.1, noise);
+  for (const [at, gain] of [[0.62, 0.45], [0.86, 0.3]]) {
+    const flap = new Float64Array(Math.round(0.08 * RATE));
+    for (let i = 0; i < flap.length; i++) {
+      flap[i] = (noise() * 2 - 1) * Math.sin(Math.PI * i / flap.length);
+    }
+    const cloth = resonance(flap, 350, 1.5);
+    for (let i = 0; i < cloth.length; i++) {
+      samples[Math.round(at * RATE) + i] += gain * 3 * cloth[i];
+    }
+  }
+  writeSound("canopy_open", samples, 0.8);
+}
+// The airliner's main gear touching down (see CameraShake): the thump of the legs taking her weight and the tyres'
+// chirp as they spin up, sweeping down from 2.4 to 1.2 kHz, with a short rumble of the runway after it.
+{
+  const noise = ownRandom(0x546f7563);
+  const samples = new Float64Array(Math.round(1.3 * RATE));
+  thunk(samples, 0, 55, 1, noise);
+  let phase = 0;
+  let rumble = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    if (t < 0.18) {
+      phase += (2 * Math.PI * (2400 - 1200 * (t / 0.18))) / RATE;
+      samples[i] += 0.35 * Math.sin(phase) * Math.sin(Math.PI * t / 0.18) * (1 + 0.5 * (noise() * 2 - 1));
+    }
+    rumble += 0.02 * ((noise() * 2 - 1) - rumble);
+    samples[i] += 4 * rumble * Math.min(1, t / 0.1) * Math.exp(-t / 0.6);
+  }
+  writeSound("touchdown", samples, 0.85);
+}
+// The trim car rolling along its rail a block (see TrimWinchBlockEntity): a rumble of its wheels bumping over the
+// rail's joints, and the clink of its haul chain.
+{
+  const noise = ownRandom(0x5472696d);
+  const samples = new Float64Array(Math.round(0.6 * RATE));
+  let low = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    low += 0.015 * ((noise() * 2 - 1) - low);
+    samples[i] = 6 * low * (0.6 + 0.4 * Math.max(0, Math.sin(2 * Math.PI * 6 * t))) * Math.sin(Math.PI * t / 0.6);
+  }
+  for (const at of [0.05, 0.22, 0.39]) {
+    click(samples, at, 3000, 0.4, noise);
+  }
+  writeSound("trim_car_roll", samples, 0.7);
+}
+// An overhead bin (see OverheadBinBlockEntity): opening, its plastic latch snapping and the lid swinging up on its
+// damped hinge; closing, the lid's hollow thunk shut and the latch catching.
+{
+  const noise = ownRandom(0x42696e73);
+  const open = new Float64Array(Math.round(0.6 * RATE));
+  click(open, 0, 4000, 0.8, noise);
+  let previous = 0;
+  for (let i = Math.round(0.03 * RATE); i < open.length; i++) {
+    const t = i / RATE - 0.03;
+    const white = noise() * 2 - 1;
+    open[i] += 0.12 * (white - previous) * Math.sin(Math.PI * Math.min(1, t / 0.45));
+    previous = white;
+  }
+  writeSound("bin_open", open, 0.6);
+  const close = new Float64Array(Math.round(0.5 * RATE));
+  thunk(close, 0, 250, 0.9, noise);
+  click(close, 0.02, 4200, 0.6, noise);
+  writeSound("bin_close", close, 0.6);
+}
+// A searchlight switched on (see SearchlightHandleBlockEntity): its contactor's clunk, the arc striking up in a
+// crackle, settling into a hum at the mains' hundred hertz with its harmonics.
+{
+  const noise = ownRandom(0x53656172);
+  const samples = new Float64Array(Math.round(1.4 * RATE));
+  thunk(samples, 0, 90, 0.8, noise);
+  for (let i = Math.round(0.05 * RATE); i < samples.length; i++) {
+    const t = i / RATE - 0.05;
+    const crackle = noise() < 0.02 ? (noise() * 2 - 1) * Math.exp(-t / 0.3) : 0;
+    const hum = Math.min(1, t / 0.4) * (Math.sin(2 * Math.PI * 100 * t) + 0.4 * Math.sin(2 * Math.PI * 200 * t) + 0.2 * Math.sin(2 * Math.PI * 300 * t));
+    samples[i] += 0.8 * crackle + 0.15 * hum * Math.min(1, (1.35 - t) / 0.3);
+  }
+  writeSound("searchlight_on", samples, 0.7);
+}
+// A zeppelin's boosters cutting out after a speed boost (see BoostButtonBlockEntity): their roar falling away in a
+// downward whoosh, a pop as the flames go out, and a hiss of the thrusters cooling.
+{
+  const noise = ownRandom(0x43757420);
+  const samples = new Float64Array(Math.round(2.2 * RATE));
+  let low = 0;
+  let band = 0;
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const white = noise() * 2 - 1;
+    const centre = 2000 * Math.exp(-t / 0.4) + 150;
+    const tune = 2 * Math.sin((Math.PI * centre) / RATE);
+    low += tune * band;
+    band += tune * (white - low - 0.7 * band);
+    const fall = Math.exp(-t / 0.5);
+    const hiss = (white - previous) * 0.06 * Math.min(1, t / 0.3) * Math.exp(-t / 1.2);
+    previous = white;
+    samples[i] = 0.8 * band * fall + hiss;
+  }
+  thunk(samples, 0.25, 70, 0.5, noise);
+  writeSound("booster_cutout", samples, 0.75);
+}
+
 // Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
 // shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
 {

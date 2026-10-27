@@ -7,7 +7,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,13 +28,13 @@ public class OverheadBinBlockEntity extends RandomizableContainerBlockEntity {
     private final ContainerOpenersCounter openers = new ContainerOpenersCounter() {
         @Override
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            sound(SoundEvents.BARREL_OPEN);
+            sound(AerolargeRegistry.BIN_OPEN.get());
             setOpen(state, true);
         }
 
         @Override
         protected void onClose(Level level, BlockPos pos, BlockState state) {
-            sound(SoundEvents.BARREL_CLOSE);
+            sound(AerolargeRegistry.BIN_CLOSE.get());
             setOpen(state, false);
         }
 
@@ -106,7 +105,7 @@ public class OverheadBinBlockEntity extends RandomizableContainerBlockEntity {
 
     private void sound(SoundEvent sound) {
         if (level != null) {
-            level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, 0.5F, 1.3F + level.random.nextFloat() * 0.1F);
+            level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, 0.6F, 0.95F + level.random.nextFloat() * 0.1F);
         }
     }
 

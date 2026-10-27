@@ -63,10 +63,13 @@ public class DeckClampBlockEntity extends BlockEntity {
     private static final int MOST_PARTS = 512;
     /** How many looks a clamp that held a plane before a save waits for it to be loaded again. */
     private static final int RELOCK_LOOKS = 20;
-    /** The low note a refused plane gets, and the clang of closing and the clank of opening, their pitches. */
+    /**
+     * The pitch of the low note a refused plane gets; how loud the clamps lock and open, heard once for a plane from
+     * the clamp holding it; and the least a tank must take to be heard gurgling, in millibuckets.
+     */
     private static final float REFUSED_PITCH = 0.5F;
-    private static final float CLANG_PITCH = 0.6F;
-    private static final float CLANK_PITCH = 0.9F;
+    private static final float CLAMP_VOLUME = 1.2F;
+    private static final int HEARD_FILLING = 250;
 
     /** The plane its jaws are closed on, and whether it is this clamp that holds the lock. */
     @Nullable
@@ -155,7 +158,9 @@ public class DeckClampBlockEntity extends BlockEntity {
             findTanks(level);
         }
         level.setBlock(worldPosition, getBlockState().setValue(DeckClampBlock.CLOSED, true), Block.UPDATE_ALL);
-        level.playSound(null, worldPosition, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.5F, CLANG_PITCH);
+        if (holding) {
+            level.playSound(null, worldPosition, AerolargeRegistry.CLAMP_LOCK.get(), SoundSource.BLOCKS, CLAMP_VOLUME, 1.0F);
+        }
         setChanged();
     }
 
@@ -196,27 +201,27 @@ public class DeckClampBlockEntity extends BlockEntity {
         }
     }
 
-    /** Tops the plane's tanks up with the fuel each holds and fills its batteries, with a gurgle if any went in. */
+    /** Tops the plane's tanks up with the fuel each holds and fills its batteries, with a gurgle if much went in. */
     private void refuel(ServerLevel level) {
-        boolean filled = false;
+        int filled = 0;
         for (BlockPos at : tanks) {
-            filled |= topUp(level.getCapability(Capabilities.FluidHandler.BLOCK, at, null));
+            filled += topUp(level.getCapability(Capabilities.FluidHandler.BLOCK, at, null));
             IEnergyStorage battery = level.getCapability(Capabilities.EnergyStorage.BLOCK, at, null);
-            filled |= battery != null && battery.receiveEnergy(Integer.MAX_VALUE, false) > 0;
+            filled += battery != null && battery.receiveEnergy(Integer.MAX_VALUE, false) > 0 ? HEARD_FILLING : 0;
         }
-        if (filled) {
+        if (filled >= HEARD_FILLING) {
             level.playSound(null, worldPosition, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 0.4F, 0.8F);
         }
     }
 
-    /** Each tank holding a fuel topped up with it; whether any took some. */
-    private static boolean topUp(@Nullable IFluidHandler handler) {
-        boolean filled = false;
+    /** Each tank holding a fuel topped up with it; how much went in, in millibuckets. */
+    private static int topUp(@Nullable IFluidHandler handler) {
+        int filled = 0;
         for (int tank = 0; handler != null && tank < handler.getTanks(); tank++) {
             FluidStack in = handler.getFluidInTank(tank);
             int room = handler.getTankCapacity(tank) - in.getAmount();
             if (!in.isEmpty() && room > 0 && in.is(FUEL)) {
-                filled |= handler.fill(in.copyWithAmount(room), IFluidHandler.FluidAction.EXECUTE) > 0;
+                filled += handler.fill(in.copyWithAmount(room), IFluidHandler.FluidAction.EXECUTE);
             }
         }
         return filled;
@@ -227,12 +232,14 @@ public class DeckClampBlockEntity extends BlockEntity {
         if (plane == null && !getBlockState().getValue(DeckClampBlock.CLOSED)) {
             return;
         }
+        if (holder) {
+            level.playSound(null, worldPosition, AerolargeRegistry.CLAMP_RELEASE.get(), SoundSource.BLOCKS, CLAMP_VOLUME, 1.0F);
+        }
         letGo();
         plane = null;
         settled = 0;
         waited = 0;
         level.setBlock(worldPosition, getBlockState().setValue(DeckClampBlock.CLOSED, false), Block.UPDATE_ALL);
-        level.playSound(null, worldPosition, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.8F, CLANK_PITCH);
         setChanged();
     }
 

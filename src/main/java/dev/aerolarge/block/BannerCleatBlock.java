@@ -77,7 +77,7 @@ public class BannerCleatBlock extends HorizontalDirectionalBlock implements Enti
         if (!level.isClientSide) {
             boolean out = !state.getValue(STREAMING);
             level.setBlock(pos, state.setValue(STREAMING, out), Block.UPDATE_ALL);
-            level.playSound(null, pos, AerolargeRegistry.FLAG_HALYARD_SOUND.get(), SoundSource.BLOCKS, 1.0F, out ? RUNNING_OUT : HAULING_IN);
+            level.playSound(null, pos, AerolargeRegistry.TOW_ROPE.get(), SoundSource.BLOCKS, 1.0F, out ? RUNNING_OUT : HAULING_IN);
             if (out) {
                 level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_ELYTRA.value(), SoundSource.BLOCKS, 1.0F, FILLING);
             }

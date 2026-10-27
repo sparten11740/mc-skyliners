@@ -1,6 +1,7 @@
 package dev.aerolarge.parachute;
 
 import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.AerolargeRegistry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -81,7 +81,7 @@ public final class SafetyCanopy {
 
     private static void open(ServerPlayer player) {
         tell(player, true);
-        player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_ELYTRA.value(), SoundSource.PLAYERS, 1.0F, 0.7F);
+        player.level().playSound(null, player.blockPosition(), AerolargeRegistry.CANOPY_OPEN.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     /** Opens or closes the player's canopy on the server, and tells them and everyone near. */

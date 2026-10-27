@@ -3,7 +3,6 @@ package dev.aerolarge.parachute;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.LandingTargetBlockEntity;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -59,7 +58,7 @@ public final class Parachute {
     /** Opens the player's parachute, with the snap of the canopy filling. */
     public static void open(Player player) {
         worn(player).set(AerolargeRegistry.PARACHUTE_OPEN.get(), true);
-        player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_ELYTRA.value(), SoundSource.PLAYERS, 1.0F, 0.7F);
+        player.level().playSound(null, player.blockPosition(), AerolargeRegistry.CANOPY_OPEN.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     /**

@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -66,7 +67,7 @@ public class CarrierLeverBlock extends HorizontalDirectionalBlock {
             level.setBlock(pos, state.setValue(RELEASED, down), Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6F, down ? 0.6F : 0.8F);
             if (down) {
-                level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6F, 0.7F);
+                level.playSound(null, pos, AerolargeRegistry.PLUG_DOOR_HISS.get(), SoundSource.BLOCKS, 0.6F, 0.8F);
             }
             release(server, pos, down);
         }

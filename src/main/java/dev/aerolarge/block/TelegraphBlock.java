@@ -1,10 +1,10 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeRegistry;
 import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
@@ -31,6 +31,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * them itself while it flies. FACING is the way whoever works it looks; the dial faces them.
  */
 public class TelegraphBlock extends HorizontalDirectionalBlock {
+    /** The pitch its gong is struck at for the slowest order, and how much higher for each faster one. */
+    private static final float ORDER_PITCH = 0.9F;
+    private static final float ORDER_PITCH_STEP = 0.04F;
     private static final MapCodec<TelegraphBlock> CODEC = simpleCodec(TelegraphBlock::new);
     public static final EnumProperty<Order> ORDER = EnumProperty.create("order", Order.class);
     public static final EnumProperty<Engines> ENGINES = EnumProperty.create("engines", Engines.class);
@@ -104,6 +107,7 @@ public class TelegraphBlock extends HorizontalDirectionalBlock {
         Order[] orders = Order.values();
         int at = Math.clamp(state.getValue(ORDER).ordinal() + (player.isShiftKeyDown() ? -1 : 1), 0, orders.length - 1);
         if (orders[at] == state.getValue(ORDER)) {
+            EndStop.thud(level, pos);
             return InteractionResult.CONSUME;
         }
         if (!level.isClientSide) {
@@ -112,14 +116,13 @@ public class TelegraphBlock extends HorizontalDirectionalBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** Sets the telegraph to an order, ringing its bell twice as a telegraph is rung; nothing if it says so already. */
+    /** Sets the telegraph to an order, its gong struck twice as a telegraph is rung; nothing if it says so already. */
     public static void ring(Level level, BlockPos pos, BlockState rung) {
         if (level.getBlockState(pos).equals(rung)) {
             return;
         }
         level.setBlock(pos, rung, Block.UPDATE_ALL);
-        float pitch = 1.2F + 0.1F * rung.getValue(ORDER).ordinal();
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 0.8F, pitch);
-        level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 0.6F, pitch * 1.25F);
+        float pitch = ORDER_PITCH + ORDER_PITCH_STEP * rung.getValue(ORDER).ordinal();
+        level.playSound(null, pos, AerolargeRegistry.TELEGRAPH_RING.get(), SoundSource.BLOCKS, 0.8F, pitch);
     }
 }
