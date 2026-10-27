@@ -1641,12 +1641,14 @@ the split that holds it. Its propellers drive it at the speed set, ahead or aste
 engines harder than the starboard ones or the other way round, astern on one side and ahead on the other to turn on the
 spot, a quarter turn in about half a minute. Set to fly to a pin it steers its middle for it, slowing as it comes near,
 and hovers with its middle over it; with the pin off its nose it slows down more, and with the pin abeam or behind it,
-overshot say, it stops and turns on the spot to face it first. Set to land there, it comes down once it hovers, holding
-itself over the pin all the way. Told to Land, it stops, holding the way it points, and sinks gently straight down. On
-the ground it rests on its wheels, its burners holding nearly all its weight, its engines stopped, and switches itself
-off with a bell. With nobody aboard for a minute it comes down where it is. Still on the ground a minute after it was
-engaged, too heavy for its burners (built over with too much, say), it rests again and switches itself off with a thud,
-saying so; built without Create Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
+overshot say, it stops and turns on the spot to face it first. Set to land there, it comes down along its approach,
+never higher than a gentle glide down to 20 blocks over the pin, and the rest of the way once it hovers, holding itself
+over the pin all the way. Told to Land, it stops, holding the way it points, and sinks straight down, briskly from high
+up (a block and a half a second) and gently near the ground (a block a second). On the ground it rests on its wheels,
+its burners holding most of its weight, its engines stopped, and switches itself off with a bell. With nobody aboard for
+a minute it comes down where it is. Still on the ground a minute after it was engaged, too heavy for its burners (built
+over with too much, say), it rests again and switches itself off with a thud, saying so; built without Create
+Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
 
 Nobody is hurt falling from a zeppelin: a striped safety canopy, the parachute's, opens over anyone who was aboard a
 moment ago and has fallen a few blocks, off the boarding stairs under its belly in flight, say, or from the gangway

@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
  * propellers, ahead or astern, at the speed set, and turns it by driving the port engines harder than the starboard
  * ones or the other way round, astern on one side and ahead on the other to turn it on the spot. It flies a heading,
  * round a circle, or to a pin, slowing as it comes near and hovering over it; set to come down at the pin, or told to
- * come down where it is, it sinks gently to the ground, rests on its wheels with the burners holding nearly all its
+ * come down where it is, it sinks gently to the ground, rests on its wheels with the burners holding most of its
  * weight, and stops its engines.
  */
 public final class ZeppelinPilot {
@@ -64,13 +64,16 @@ public final class ZeppelinPilot {
      */
     private static final int PILOT_FLAME = 1;
     /**
-     * The climb asked for per block of height still to go, in blocks a second, and the fastest it climbs and sinks;
-     * sinking to land, as it comes down to the ground.
+     * The climb asked for per block of height still to go, in blocks a second, and the fastest it climbs and sinks.
+     * Coming down to land, the sink asked for per block over the ground, from the slowest, onto the ground, to the
+     * fastest, high up, so that it comes down briskly and touches down gently.
      */
     private static final double HEIGHT_GAIN = 0.05;
     private static final double MAX_CLIMB = 2;
     private static final double MAX_SINK = 1.5;
+    private static final double LANDING_GAIN = 0.06;
     private static final double LANDING_SINK = 1;
+    private static final double FASTEST_LANDING = 3;
     /** How full its burners may be at its ceiling, as a share of all they burn: headroom for the trims and the split. */
     private static final double CEILING_SHARE = 0.85;
     /**
@@ -81,8 +84,11 @@ public final class ZeppelinPilot {
     private static final double LIFT_LEARN = 0.0004;
     private static final double LIFT_TRIM_LIMIT = 0.2;
     private static final double MOST_SHARE = 0.3;
-    /** On the ground, resting on its wheels, it holds this share of its weight up with hot air. */
-    private static final double RESTING = 0.9;
+    /**
+     * On the ground, resting on its wheels, it holds this share of its weight up with hot air: a whole step of the
+     * burners' signal under what floats it, or more, so that the signal's rounding never leaves it floating off again.
+     */
+    private static final double RESTING = 0.8;
     /**
      * The fore-and-aft split of the hot air per degree the nose is up, and per degree a second it is rising, as a share
      * of each cell's burning taken from the forward cells and given to the aft ones (or back); how fast the split that
@@ -113,19 +119,22 @@ public final class ZeppelinPilot {
     /** How far the nose is held up or down with the elevator wheel turned all the way, flown by hand, in degrees. */
     private static final double HAND_NOSE = 8;
     /**
-     * Flying to a pin: the speed it slows to per block nearer than its slowing distance, so it comes in gently and
-     * stops over it; how near counts as over it, and how slow as stopped.
+     * Flying to a pin: the speed it slows to per block nearer than its slowing distance, so it comes in gently, and the
+     * least it creeps on at, slower than counts as stopped, until it is over the pin; how near counts as over it, and
+     * how slow as stopped.
      */
     private static final double APPROACH_SLOWING = 0.08;
+    private static final double APPROACH_LEAST = 0.8;
     private static final double OVER_PIN = 6;
     private static final double STOPPED = 1;
     /**
      * Coming down: how high over the ground, in blocks, and how slowly sinking, in blocks a second, it may be and count
      * as down, once it has been so for this many ticks; measured under the control car, it may never read nothing at
-     * all, standing over a dip or with its stern down first on higher ground.
+     * all, standing over a dip or with its stern down first on higher ground, and pressing down on its wheels, it
+     * jitters on them a little.
      */
     private static final double SETTLED_HEIGHT = 3;
-    private static final double SETTLED_SINK = 0.2;
+    private static final double SETTLED_SINK = 0.3;
     private static final int SETTLED_TICKS = 20;
     /**
      * Rising off the ground: how many ticks it tries before it gives up, too heavy for its burners to lift, and how
@@ -143,6 +152,13 @@ public final class ZeppelinPilot {
     private static final double LEVEL_OFF = 8;
     /** How far it has risen off the ground, in blocks, before the engines start on the way up. */
     private static final double ENGINES_CLEAR = 15;
+    /**
+     * Flying to a pin to land at it: how high over the ground it may come down to on the way, in blocks, over the pin
+     * and for each block it is still away from it, so that it comes down along its approach rather than all the way
+     * over the pin, its engines running until it is there.
+     */
+    private static final double GLIDE_FLOOR = 20;
+    private static final double GLIDE = 0.25;
 
     /**
      * A gas cell's burners: their relays, as offsets from the autopilot, and how far ahead of the cells' middle the
@@ -271,7 +287,8 @@ public final class ZeppelinPilot {
         boolean overPin = orders.lateral() == AutopilotBlockEntity.Lateral.DESTINATION && distance < OVER_PIN && Math.abs(state.airspeed()) < STOPPED;
         boolean rising = orders.phase() == AutopilotBlockEntity.Phase.TAKEOFF;
         boolean comingDown = orders.phase() == AutopilotBlockEntity.Phase.LAND || !rising && orders.landAtPin() && overPin;
-        double climb = comingDown ? -LANDING_SINK : Mth.clamp(HEIGHT_GAIN * (orders.altitude() - state.position().y), -MAX_SINK, MAX_CLIMB);
+        double altitude = altitude(orders, state, radio, distance);
+        double climb = comingDown ? -landingSink(radio) : Mth.clamp(HEIGHT_GAIN * (altitude - state.position().y), -MAX_SINK, MAX_CLIMB);
         burn(level, origin, state, mass, climb, pitch, pitchRate);
         boolean upShip = rising && radio < ENGINES_CLEAR;
         if (upShip || comingDown && radio < ENGINES_CLEAR) {
@@ -290,7 +307,24 @@ public final class ZeppelinPilot {
         if (rising) {
             return upShip(radio, orders.phase());
         }
-        return comingDown ? AutopilotBlockEntity.Phase.LAND : heightPhase(orders.altitude() - state.position().y);
+        return comingDown ? AutopilotBlockEntity.Phase.LAND : heightPhase(altitude - state.position().y);
+    }
+
+    /**
+     * The height it flies at: the one set, or, flying to a pin to land at it, no higher than its glide down to it over
+     * the ground under it.
+     */
+    private static double altitude(Orders orders, SableFlight.State state, double radio, double distance) {
+        if (!orders.landAtPin() || orders.lateral() != AutopilotBlockEntity.Lateral.DESTINATION) {
+            return orders.altitude();
+        }
+        double ground = state.position().y - radio;
+        return Math.min(orders.altitude(), ground + GLIDE_FLOOR + GLIDE * Math.max(0, distance - OVER_PIN));
+    }
+
+    /** How fast it sinks coming down to land, from how high over the ground it is, in blocks a second. */
+    private static double landingSink(double radio) {
+        return Mth.clamp(LANDING_GAIN * radio, LANDING_SINK, FASTEST_LANDING);
     }
 
     /**
@@ -409,7 +443,7 @@ public final class ZeppelinPilot {
     }
 
     /**
-     * On the ground, done: the burners holding nearly all its weight, so it rests light on its wheels, the engines
+     * On the ground, done: the burners holding most of its weight, so it rests light on its wheels, the engines
      * stopped. What it learnt of its height's trim on the way down, pressing on the ground, is forgotten.
      */
     void rest(ServerLevel level, BlockPos origin, SableFlight.State state, double mass) {
@@ -479,7 +513,8 @@ public final class ZeppelinPilot {
             return orders.speed();
         }
         double facing = Math.max(0, Math.cos(Math.toRadians(offNose)));
-        return Math.min(orders.speed(), APPROACH_SLOWING * Math.max(0, distance - OVER_PIN / 2)) * facing;
+        double slowing = distance > OVER_PIN ? Math.max(APPROACH_LEAST, APPROACH_SLOWING * (distance - OVER_PIN / 2)) : APPROACH_SLOWING * Math.max(0, distance - OVER_PIN / 2);
+        return Math.min(orders.speed(), slowing) * facing;
     }
 
     /** The heading it steers for: the one set, the way round its circle, or toward the pin (held once over it). */
