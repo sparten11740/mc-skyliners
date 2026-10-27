@@ -17,7 +17,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 
 /**
- * {@code /aerolarge build <pos> <north|east|south|west> [furnished|zeppelin]}: builds an airliner, or a zeppelin, for
+ * {@code /aerolarge build <pos> <north|east|south|west> [furnished|zeppelin [furnished]]}: builds an airliner, or a
+ * zeppelin, for
  * server operators without a blueprint in hand, its nose tip at pos and its tail stretching away the given way. Unlike
  * the blueprint it builds through whatever is in the way, and reports how much that was.
  */
@@ -32,7 +33,8 @@ final class AerolargeCommand {
                 .then(Commands.literal(along.getSerializedName())
                     .executes(context -> build(context, along, false))
                     .then(Commands.literal("furnished").executes(context -> build(context, along, true)))
-                    .then(Commands.literal("zeppelin").executes(context -> buildZeppelin(context, along)))));
+                    .then(Commands.literal("zeppelin").executes(context -> buildZeppelin(context, along, false))
+                        .then(Commands.literal("furnished").executes(context -> buildZeppelin(context, along, true))))));
         }
         dispatcher.register(Commands.literal(Aerolarge.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
     }
@@ -41,8 +43,8 @@ final class AerolargeCommand {
         return build(context, along, AirframeLayout.create(AerolargeConfig.SCALE.get(), furnished), "commands.aerolarge.build");
     }
 
-    private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along) throws CommandSyntaxException {
-        return build(context, along, ZeppelinLayout.create(), "commands.aerolarge.build_zeppelin");
+    private static int buildZeppelin(CommandContext<CommandSourceStack> context, Direction along, boolean furnished) throws CommandSyntaxException {
+        return build(context, along, ZeppelinLayout.create(furnished), "commands.aerolarge.build_zeppelin");
     }
 
     private static int build(CommandContext<CommandSourceStack> context, Direction along, Layout layout, String said) throws CommandSyntaxException {

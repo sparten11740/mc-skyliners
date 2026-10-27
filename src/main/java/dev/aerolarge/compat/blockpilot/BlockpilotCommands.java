@@ -82,7 +82,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin")
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("aerolarge:build zeppelin"));
     }
@@ -174,7 +174,8 @@ public final class BlockpilotCommands {
             throw new CommandException("busy");
         }
         Layout layout = switch (args.word("what")) {
-            case "zeppelin" -> ZeppelinLayout.create();
+            case "zeppelin" -> ZeppelinLayout.create(false);
+            case "furnished_zeppelin" -> ZeppelinLayout.create(true);
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };

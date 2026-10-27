@@ -4048,7 +4048,7 @@ function crewLockerLang() {
   };
 }
 
-for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint"]) {
+for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint", "furnished_zeppelin_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
 
@@ -5575,6 +5575,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "item.aerolarge.furnished_airliner_blueprint.tooltip": "A double-deck airliner fitted with a pool, a gym hall and a lounge",
   "item.aerolarge.zeppelin_blueprint": "Zeppelin Blueprint",
   "item.aerolarge.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
+  "item.aerolarge.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
+  "item.aerolarge.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",
   "item.aerolarge.airliner_blueprint.usage": "Use on the ground: the tail stretches away the way you face. Sneak to build through anything in the way.",
   "item.aerolarge.control_tower_blueprint": "Control Tower Blueprint",
   "item.aerolarge.control_tower_blueprint.tooltip": "An airfield's control tower: a glass cab with a radio, a radar and a transponder",

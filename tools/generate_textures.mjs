@@ -787,6 +787,7 @@ function towerFromTheSide(x, y) {
 blueprint("airliner_blueprint", false);
 blueprint("furnished_airliner_blueprint", true);
 blueprint("zeppelin_blueprint", false, zeppelinFromTheSide);
+blueprint("furnished_zeppelin_blueprint", true, zeppelinFromTheSide);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 

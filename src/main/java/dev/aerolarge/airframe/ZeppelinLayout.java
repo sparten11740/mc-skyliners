@@ -157,7 +157,7 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /** The finished layout: its lowest blocks (the control car's wheel and the lower fin's) at y 0, its nose at z 0. */
-    public static ZeppelinLayout create() {
+    public static ZeppelinLayout create(boolean furnished) {
         ZeppelinLayout layout = new ZeppelinLayout(AirframePalette.balloon());
         layout.cover();
         layout.rings();
@@ -171,6 +171,9 @@ public final class ZeppelinLayout implements Layout {
             layout.engineCar(engine);
         }
         layout.fins();
+        if (furnished) {
+            new ZeppelinDecks(layout).furnish();
+        }
         layout.countAir();
         return layout;
     }
@@ -196,6 +199,19 @@ public final class ZeppelinLayout implements Layout {
     /** Whether nothing of the zeppelin stands at the block yet: inside the hull, its open air. */
     boolean isOpen(int x, int y, int z) {
         return !cells.containsKey(new BlockPos(x, y, z));
+    }
+
+    /**
+     * How far out to starboard the outermost open block on a deck is, at a row and a station along the hull: inside
+     * the hull, with the floor under it; 0 where there is none. The hull is the same to port.
+     */
+    int wallX(int y, int z) {
+        for (int x = reach(); x > 0; x--) {
+            if (isOpen(x, y, z) && inHull(x, y, z) && !isOpen(x, y - 1, z)) {
+                return x;
+            }
+        }
+        return 0;
     }
 
     void clear(int x, int y, int z) {
@@ -520,11 +536,11 @@ public final class ZeppelinLayout implements Layout {
         }
     }
 
-    private int lowerDeckRow() {
+    int lowerDeckRow() {
         return (int) Math.round(LOWER_DECK * SCALE) - 1 + deckBase();
     }
 
-    private int upperDeckRow() {
+    int upperDeckRow() {
         return (int) Math.round(UPPER_DECK * SCALE) - 1 + deckBase();
     }
 

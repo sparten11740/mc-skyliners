@@ -44,6 +44,7 @@ banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops
   deck, galleries round the tall rooms (see The upper deck).
 - **Zeppelin Blueprint**: a Hindenburg-sized zeppelin, 490 blocks long, with its control car, decks, gas cells, Sky
   Shaft and Sky Deck (see The zeppelin).
+- **Furnished Zeppelin Blueprint**: the same zeppelin with its passenger decks furnished (see The zeppelin).
 
 Use a blueprint on the ground: the nose goes just past the block you click and the tail stretches away the way you face.
 While you hold one, a see-through miniature of the airliner or the zeppelin floats over the block you aim at, turned the
@@ -1380,9 +1381,9 @@ stops there (On the Numbers).
 A rigid airship in the Hindenburg's style, as big as the real one at the airliner's scale: about 490 blocks long and 82
 across, its fins reaching some 100 blocks up from the ground, as long as three airliners nose to tail. It is always
 built at that size, whatever `scale` the server config sets for the airliner. The Zeppelin Blueprint builds one as an
-airliner's blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin`, its nose tip
-at the position and its tail stretching away the way given, through whatever stands there; it takes a few tens of
-seconds to go up.
+airliner's blueprint does, and operators with `/aerolarge build <pos> <north|east|south|west> zeppelin [furnished]`, its
+nose tip at the position and its tail stretching away the way given, through whatever stands there; it takes a few tens
+of seconds to go up.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1399,6 +1400,15 @@ second last, nearly the whole length of the hull. In the belly below lie the pas
 an upper deck with long promenade windows down both sides, slanting with the hull's curve. Stairs climb from the lower
 deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
 climbs from the control car up its neck to a corridor running aft to the decks.
+
+The Furnished Zeppelin Blueprint fits the decks out from the airliner's furniture, as the Hindenburg's were laid out.
+On the lower deck the boarding hall at the front has bamboo in planters along its walls; the galley beside the stairs
+has stainless worktops and stowage, a coffee machine on its middle worktop; and aft of the stairs lie the sleeping
+cabins, bunks along both walls, each blanket a different soft colour and every reading light on. On the upper deck,
+blue armchairs stand along both promenades facing out of the slanting windows; the dining room at the front has
+tables set for four, a red armchair at each end; and aft on the port side the lounge has a bar with stools before its
+back bar, the coffee machine on the bar, and bean bags beyond it. Everything works as it does aboard the airliner:
+sit in the chairs, stools and bean bags, brew a coffee, switch a bunk's reading light on and off.
 
 The Sky Shaft climbs to the top. Just aft of the middle, where a ring stands between two cells' rounded ends, a gap in
 the gangway's rail leads to a climbing rope inside a cage of girders. It rises past the glowing cells, some 40 blocks,
@@ -1554,15 +1564,15 @@ is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works th
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, from an
 `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its souvenir model (`SouvenirModelBlock`), and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck, and `ZeppelinCellGallery` the gallery inside the
-middle cell. `ZeppelinControlCar` fits out its control room and wires the control head to every burner, engine and hand
-control; `ZeppelinControls` reads the hand controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its
-`HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlock`) to fly by hand, and moves them to show what the
-autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the
-autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it
-from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves
-out a sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take
-every sound channel there is.
+engine's signal; `ZeppelinSkyDeck` lays the Sky Shaft and the Sky Deck, `ZeppelinCellGallery` the gallery inside the
+middle cell, and `ZeppelinDecks` the furnished zeppelin's furniture. `ZeppelinControlCar` fits out its control room and
+wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
+(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
+`BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
+hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
+`ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and
+`SableFlight.keepLoaded` keeps it loaded once it is assembled. `Earshot` leaves out a sound that starts too far off to
+be heard, so a zeppelin's burners crackling at the far end of it do not take every sound channel there is.
 Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that can also be painted by
 hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door

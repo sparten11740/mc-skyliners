@@ -1528,8 +1528,14 @@ public final class AerolargeRegistry {
     );
     /** The Hindenburg-sized zeppelin, always at its own size. */
     public static final DeferredItem<AirframeBlueprintItem> ZEPPELIN_BLUEPRINT = ITEMS.register(
-        "zeppelin_blueprint", () -> new AirframeBlueprintItem(ZeppelinLayout::create, () -> MODEL_ZEPPELIN.get().defaultBlockState(),
+        "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(false), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
             ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.zeppelin_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
+    /** The same zeppelin with its passenger decks furnished: cabins, a galley, a dining room, a lounge and promenades. */
+    public static final DeferredItem<AirframeBlueprintItem> FURNISHED_ZEPPELIN_BLUEPRINT = ITEMS.register(
+        "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(true),
+            () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.furnished_zeppelin_blueprint.tooltip",
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
@@ -1546,7 +1552,8 @@ public final class AerolargeRegistry {
 
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
-        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
+        new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT,
+            CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, GEAR_BAY_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,

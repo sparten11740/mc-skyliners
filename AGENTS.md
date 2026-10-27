@@ -136,11 +136,11 @@ feature as a player meets it, and its Building section says which classes do wha
   - `camera at <pos> look <pos>` and `screenshot 1280 hud=off` photograph what the build cannot show; look at every
     screenshot taken. `option gamma 1` brightens dark spaces, and the reply says `inside` when the camera is in a
     solid block.
-  - Aerolarge gives Blockpilot commands of its own (`help aerolarge`): `aerolarge:build airliner|furnished|zeppelin`
-    lays one down in front of the player and waits until it stands; `aerolarge:autopilot fly|land|off [altitude=]
-    [speed=] [heading=] [pin=x,z] [land=]` sets the nearest autopilot as its screen would, assembling first; and
-    `aerolarge:zeppelin` reads a zeppelin's flight (phase, height, climb, speed, pitch, heading, mass, each cell's
-    burner signal, the engines, what its pilot has learnt), to `sample` through a flight. `aerolarge:assembly`, before
-    a zeppelin first flies, counts the blocks its assembly takes along and names those of its own it would leave
-    behind, touching the rest only along an edge or not at all: a layout should leave none. A zeppelin's control head
-    is in its control car under the bow.
+  - Aerolarge gives Blockpilot commands of its own (`help aerolarge`): `aerolarge:build
+    airliner|furnished|zeppelin|furnished_zeppelin` lays one down in front of the player and waits until it stands;
+    `aerolarge:autopilot fly|land|off [altitude=] [speed=] [heading=] [pin=x,z] [land=]` sets the nearest autopilot as
+    its screen would, assembling first; and `aerolarge:zeppelin` reads a zeppelin's flight (phase, height, climb, speed,
+    pitch, heading, mass, each cell's burner signal, the engines, what its pilot has learnt), to `sample` through a
+    flight. `aerolarge:assembly`, before a zeppelin first flies, counts the blocks its assembly takes along and names
+    those of its own it would leave behind, touching the rest only along an edge or not at all: a layout should leave
+    none. A zeppelin's control head is in its control car under the bow.
