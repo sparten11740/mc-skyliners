@@ -85,6 +85,11 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
      */
     abstract void clicked(double x, double z, boolean marked);
 
+    /** What features of the mod put on the map besides the transponders and the players: nothing, unless it says so. */
+    List<MapMarker> extras(Level level) {
+        return List.of();
+    }
+
     /** Whether a transponder's marker shows: all do, unless the map says otherwise. */
     boolean shows(Contact contact) {
         return true;
@@ -153,14 +158,17 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
     }
 
     /**
-     * The transponders' markers and over them the other players' faces, kept inside the map, and what the one pointed
-     * at says.
+     * The transponders' markers, over them what the mod's features put on the map and over those the other players'
+     * faces, kept inside the map, and what the one pointed at says.
      */
     private void markers(GuiGraphics graphics, Level level, int mouseX, int mouseY) {
         MapPainter.View view = view();
         graphics.enableScissor(getX(), getY(), getRight(), getBottom());
         for (Contact contact : shown(level)) {
             MarkerArt.draw(graphics, contact, getX() + view.pixelX(contact.x()), getY() + view.pixelY(contact.z()));
+        }
+        for (MapMarker extra : extras(level)) {
+            extra.draw(graphics, getX() + view.pixelX(extra.x()), getY() + view.pixelY(extra.z()));
         }
         for (PlayerContact player : players(level)) {
             MarkerArt.draw(graphics, player, getX() + view.pixelX(player.x()), getY() + view.pixelY(player.z()));
@@ -174,12 +182,19 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
         }
     }
 
-    /** What the face or the marker under the pointer says, a face before a marker, which it is drawn over; or nothing. */
+    /**
+     * What the face or the marker under the pointer says, a face before a feature's marker before a transponder's, as
+     * each is drawn over the next; or nothing.
+     */
     private List<Component> pointedAt(Level level, int mouseX, int mouseY) {
         Vec3 from = from(level);
         PlayerContact player = nearest(players(level), mouseX, mouseY, MarkerArt.FACE_RADIUS);
         if (player != null) {
             return MarkerArt.describe(player, from.x, from.z);
+        }
+        MapMarker extra = nearest(extras(level), mouseX, mouseY, MarkerArt.FACE_RADIUS);
+        if (extra != null) {
+            return extra.describe(from.x, from.z);
         }
         Contact contact = nearest(shown(level), mouseX, mouseY, MarkerArt.RADIUS);
         return contact != null ? MarkerArt.describe(contact, from.x, from.z) : List.of();
@@ -193,11 +208,18 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
         return RadarPicture.others(level).stream().filter(this::shows).toList();
     }
 
-    /** The face or the marker a click this near takes, a face before a marker, which it is drawn over. */
+    /**
+     * The face or the marker a click this near takes, a face before a feature's marker before a transponder's, as each
+     * is drawn over the next.
+     */
     @Nullable
     private OnTheMap marked(Level level, double mouseX, double mouseY) {
         PlayerContact player = nearest(players(level), mouseX, mouseY, SNAP);
-        return player != null ? player : nearest(shown(level), mouseX, mouseY, SNAP);
+        if (player != null) {
+            return player;
+        }
+        MapMarker extra = nearest(extras(level), mouseX, mouseY, SNAP);
+        return extra != null ? extra : nearest(shown(level), mouseX, mouseY, SNAP);
     }
 
     /** What of these is nearest a place on the screen, if one is within this many pixels of it. */

@@ -1500,6 +1500,17 @@ higher. Under the autopilot the car is rolled a little at a time toward the end 
 her forward and aft cells, the wheel turning to show it; at speed it mostly rests at the forward end, her burners
 holding the rest. The server config's `trimCar` leaves it off zeppelins built from then on.
 
+In the observation lounge at the back of the control car, by its port windows over the glass floor, stands the Lookout's
+Glass: a long brass glass on a teak post. Use it and you look through it, the land round and under the ship brought ten
+times nearer inside a spyglass's frame. A green pennant at the middle of the view stands on the land you could mark, a
+red cross where there is nothing to mark: sky, the ship's own hull in the way, or land too far off (256 blocks at most)
+or not loaded yet. Use it again to mark the spot: a column of white smoke rises from it, the ship's bell strikes twice,
+and a pennant with your face on it is dropped on the autopilot's map there, saying who spotted it when pointed at, to be
+clicked as the pin like a player's face. Each lookout has one flag, moved by their next mark, four at most stand at once
+and each comes down after ten minutes. Alone aboard while the autopilot flies, your flag is made its pin straight away,
+as nobody else is there to pick it. Step, jump or sneak to step back from the glass. The server config's `lookout`
+leaves it out of zeppelins built from then on, and off, the glasses already built mark nothing.
+
 And somewhere aboard is a secret. One length of the gangway's grating towards the stern is a Secret Hatch, just like the
 rest of it but for a musical note drifting up out of it now and then: use it and it swings open, a rope leading down
 through it into a black room hung under the gangway, with no other way in. It is a techno club: a dance floor of black
@@ -1706,9 +1717,12 @@ and `ShipsPlaqueRenderer` engraving the plaque, and `ZeppelinFlankScreen` stands
 answered, and `ZeppelinTrimCar` hangs the rail whose `TrimWinchBlock` hauls the trim car as its trim wheel or the
 autopilot says, its `BubbleLevelBlock` drawn by `BubbleLevelRenderer`, and `ZeppelinTechnoRoom` hides the room under its
 `SecretHatchBlock`, whose `TechnoDeckBlock` plays it through `TechnoRoom` on the client, its lights drawn by
-`TechnoRoomRenderer`; a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out
-its control room and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand
-controls (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
+`TechnoRoomRenderer`, and `ZeppelinLookout` stands the `LookoutGlassBlock` in the control car, looked through by
+`LookoutView` and drawn by `LookoutGlassRenderer`, whose spots `LookoutSpot` checks and drops as flags on the
+`LookoutGlassBlockEntity`, `LookoutFlags` putting them on the autopilot's map (each a `MapMarker` on `DestinationMap`'s
+list); a feature is taken out of the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room
+and wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
+(`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and
 `BurnerLeverBlock`) to fly by hand, and moves them to show what the autopilot does; `ZeppelinPilot` flies it, from the
 hot air its mass needs in the air where it is, through the autopilot's block entity, which `Craft` tells what it flies;
 `ZeppelinAssembly` gathers the blocks Sable assembles it from through `SableFlight.assemble`, and

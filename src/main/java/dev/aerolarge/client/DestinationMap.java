@@ -6,6 +6,9 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Runway;
 import dev.aerolarge.radar.Contact;
 import dev.aerolarge.radar.PlayerContact;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -23,9 +26,10 @@ import net.minecraft.world.phys.Vec3;
  * The autopilot's map, on its settings panel while it is set to fly to a pin (see {@link AutopilotSettingsScreen}): a
  * {@link MapWidget} with the airliner where it is, pointing the way it goes, the pin with the circle the airliner will
  * fly round it, set to land there the strip of land the autopilot has picked to land on near it once it has, and the
- * transponders' markers but for the airliner's own, and the faces of the other players but those aboard. A click drops
- * the pin: where a player stands, on a transponder's marker or a village when the click is close to one, so each is
- * easy to pick, else where it was clicked. It opens on the airliner, or on the pin if there is one, whose coordinates
+ * transponders' markers but for the airliner's own, the faces of the other players but those aboard, and what the
+ * mod's features put on it, such as the lookouts' flags (see {@link MapMarker}). A click drops the pin: where a player
+ * stands, on a lookout's flag, a transponder's marker or a village when the click is close to one, so each is easy to
+ * pick, else where it was clicked. It opens on the airliner, or on the pin if there is one, whose coordinates
  * it shows beside its middle's.
  */
 final class DestinationMap extends MapWidget {
@@ -40,6 +44,11 @@ final class DestinationMap extends MapWidget {
     /** The runway picked near the pin: how many pixels wide, and its colour. */
     private static final int RUNWAY_WIDTH = 1;
     private static final int RUNWAY = 0xF0F2F5;
+    /**
+     * What the mod's features put on the map of an airliner's autopilot, besides the transponders and the players: a
+     * feature is taken off the map with its line on the list.
+     */
+    private static final List<BiFunction<Level, BlockEntity, List<MapMarker>>> MARKERS = List.of(LookoutFlags::on);
 
     private final BlockPos at;
     private final Supplier<BlockEntity> autopilot;
@@ -80,6 +89,20 @@ final class DestinationMap extends MapWidget {
     @Override
     Vec3 from(Level level) {
         return SableClient.toWorld(level, Vec3.atCenterOf(at));
+    }
+
+    /** What the mod's features put on this autopilot's map, such as its lookouts' flags. */
+    @Override
+    List<MapMarker> extras(Level level) {
+        BlockEntity blockEntity = autopilot.get();
+        if (blockEntity == null) {
+            return List.of();
+        }
+        List<MapMarker> extras = new ArrayList<>();
+        for (BiFunction<Level, BlockEntity, List<MapMarker>> source : MARKERS) {
+            extras.addAll(source.apply(level, blockEntity));
+        }
+        return extras;
     }
 
     /** All but the airliner's own transponder, which its arrow stands for. */

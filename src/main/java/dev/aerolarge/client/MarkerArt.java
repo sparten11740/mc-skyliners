@@ -11,6 +11,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
@@ -93,9 +94,17 @@ final class MarkerArt {
 
     /** A player's skin, as the player list has it; a default one while it has not been fetched. */
     private static PlayerSkin skin(PlayerContact player) {
+        return skin(player.id());
+    }
+
+    /**
+     * The skin of a player by who they are, as the player list has it; a default one while it has not been fetched,
+     * or once they have gone.
+     */
+    static PlayerSkin skin(UUID id) {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        PlayerInfo info = connection != null ? connection.getPlayerInfo(player.id()) : null;
-        return info != null ? info.getSkin() : DefaultPlayerSkin.get(player.id());
+        PlayerInfo info = connection != null ? connection.getPlayerInfo(id) : null;
+        return info != null ? info.getSkin() : DefaultPlayerSkin.get(id);
     }
 
     /**
@@ -122,7 +131,7 @@ final class MarkerArt {
     }
 
     /** Where something on the map is, and how far it is from a place. */
-    private static void where(List<Component> lines, double x, double z, double fromX, double fromZ) {
+    static void where(List<Component> lines, double x, double z, double fromX, double fromZ) {
         lines.add(Component.translatable("screen.aerolarge.map.contact.where", Mth.floor(x), Mth.floor(z)));
         long distance = Math.round(Math.hypot(x - fromX, z - fromZ));
         lines.add(Component.translatable("screen.aerolarge.map.contact.distance", distance));

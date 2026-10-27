@@ -1064,6 +1064,31 @@ function gearRamp(t, from, to) {
   writeSound("techno_track", samples.map((v) => Math.tanh(v * 1.4)), 0.9);
 }
 
+// The ship's bell struck twice as a lookout marks a spot through the Lookout's Glass, heard at the glass and in the
+// control car: a bronze bell's partials, a hum an octave down, the minor third and the fifth over the note and the
+// octave above, each dying away faster the higher it is, and the clapper's bright clack at each strike, ding-ding, as
+// a watch's bells are rung in pairs. Its own noise, so it never shifts the sounds above.
+{
+  const shipsBell = ownRandom(0x62656c6c);
+  const NOTE = 784;
+  const PARTIALS = [[0.5, 0.25, 2.2], [1, 1, 1.6], [1.19, 0.35, 1.0], [1.5, 0.3, 0.8], [2, 0.45, 0.6], [2.51, 0.15, 0.35], [3.01, 0.1, 0.25]];
+  const STRIKES = [0, 0.42];
+  const CLACK = 0.006;
+  const samples = new Float64Array(Math.round(3 * RATE));
+  for (const start of STRIKES) {
+    for (let i = Math.round(start * RATE); i < samples.length; i++) {
+      const t = i / RATE - start;
+      for (const [ratio, gain, decay] of PARTIALS) {
+        samples[i] += gain * Math.min(1, t * 2000) * Math.exp(-t / decay) * Math.sin(2 * Math.PI * NOTE * ratio * t);
+      }
+      if (t < CLACK) {
+        samples[i] += 0.6 * (shipsBell() * 2 - 1) * (1 - t / CLACK);
+      }
+    }
+  }
+  writeSound("lookout_bell", samples);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.

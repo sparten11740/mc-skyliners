@@ -114,6 +114,8 @@ import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LiveryBoardBlock;
 import dev.aerolarge.block.LiveryBoardBlockEntity;
+import dev.aerolarge.block.LookoutGlassBlock;
+import dev.aerolarge.block.LookoutGlassBlockEntity;
 import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LiftPanelBlock;
@@ -1600,6 +1602,13 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOL));
     /** The secret techno room's track, a minute of build and drop, looped while anyone is in the room. */
     public static final DeferredHolder<SoundEvent, SoundEvent> TECHNO_TRACK = sound("techno_track");
+    /** The Lookout's Glass in a zeppelin's control car, and the ship's bell struck twice as a lookout marks a spot. */
+    public static final DeferredBlock<LookoutGlassBlock> LOOKOUT_GLASS = BLOCKS.registerBlock(
+        "lookout_glass", LookoutGlassBlock::new, metal(MapColor.GOLD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LookoutGlassBlockEntity>> LOOKOUT_GLASS_ENTITY =
+        BLOCK_ENTITIES.register("lookout_glass", () -> BlockEntityType.Builder.of(LookoutGlassBlockEntity::new, LOOKOUT_GLASS.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> LOOKOUT_BELL = sound("lookout_bell");
     /** An engine repeater in a zeppelin's engine car, answering the control car's orders for its engine. */
     public static final DeferredBlock<EngineRepeaterBlock> ENGINE_REPEATER = BLOCKS.registerBlock(
         "engine_repeater", EngineRepeaterBlock::new, metal(MapColor.GOLD).noOcclusion()
@@ -1638,6 +1647,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SPEAKER_ITEM = ITEMS.registerSimpleBlockItem(SPEAKER);
     public static final DeferredItem<BlockItem> DANCE_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(DANCE_FLOOR);
     public static final DeferredItem<BlockItem> CLUB_WALL_ITEM = ITEMS.registerSimpleBlockItem(CLUB_WALL);
+    public static final DeferredItem<BlockItem> LOOKOUT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LOOKOUT_GLASS);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
     public static final DeferredItem<BlockItem> BUBBLE_LEVEL_ITEM = ITEMS.registerSimpleBlockItem(BUBBLE_LEVEL);
@@ -1731,7 +1741,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

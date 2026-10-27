@@ -7,6 +7,7 @@ import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CurtainBlock;
 import dev.aerolarge.block.DiscoBallBlockEntity;
 import dev.aerolarge.block.EngineCoreBlockEntity;
+import dev.aerolarge.block.LookoutGlassBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AirstairRenderer;
@@ -51,6 +52,8 @@ import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
+import dev.aerolarge.client.LookoutGlassRenderer;
+import dev.aerolarge.client.LookoutView;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
 import dev.aerolarge.client.PaperPlaneRenderer;
@@ -173,6 +176,15 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::shake);
+        NeoForge.EVENT_BUS.addListener(LookoutView::tick);
+        NeoForge.EVENT_BUS.addListener(LookoutView::fov);
+        NeoForge.EVENT_BUS.addListener(LookoutView::turn);
+        NeoForge.EVENT_BUS.addListener(LookoutView::input);
+        NeoForge.EVENT_BUS.addListener(LookoutView::movement);
+        NeoForge.EVENT_BUS.addListener(LookoutView::hand);
+        NeoForge.EVENT_BUS.addListener(LookoutView::highlight);
+        NeoForge.EVENT_BUS.addListener(LookoutView::guiLayer);
+        NeoForge.EVENT_BUS.addListener(LookoutView::loggingOut);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));
@@ -188,6 +200,7 @@ public final class AerolargeClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(BeanBagBlock::itemTint, AerolargeRegistry.BEAN_BAG_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
+        LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
     }
@@ -196,6 +209,8 @@ public final class AerolargeClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "outside_camera"), PassengerCameras::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "lightning_flash"), LightningFlash::overlay);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "blast_flash"), BlastFlash::overlay);
+        // Where the spyglass's own round is drawn, under the hotbar.
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "lookout_glass"), LookoutView::overlay);
         // Under the chat, the titles and the player list, which go over it while they show.
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "pilot_hud"), PilotHud::overlay);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "atc_headset"), AtcHeadset::overlay);
@@ -244,6 +259,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.BUBBLE_LEVEL_ENTITY.get(), context -> new BubbleLevelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TECHNO_DECK_ENTITY.get(), context -> new TechnoRoomRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.LOOKOUT_GLASS_ENTITY.get(), context -> new LookoutGlassRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

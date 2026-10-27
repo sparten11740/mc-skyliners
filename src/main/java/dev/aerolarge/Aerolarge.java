@@ -39,6 +39,7 @@ import dev.aerolarge.compat.Blockpilot;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.horn.ShipHorn;
+import dev.aerolarge.lookout.LookoutSpot;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
 import dev.aerolarge.parachute.SafetyCanopy;
@@ -144,12 +145,13 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("23")
+        event.registrar("24")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
+            .playToServer(LookoutSpot.TYPE, LookoutSpot.STREAM_CODEC, LookoutSpot::handle)
             .playToClient(HandPlacedBlocks.TYPE, HandPlacedBlocks.STREAM_CODEC,
                 (payload, context) -> HandPlaced.told(context.player().level(), payload))
             .playToClient(DecompressionPush.TYPE, DecompressionPush.STREAM_CODEC,

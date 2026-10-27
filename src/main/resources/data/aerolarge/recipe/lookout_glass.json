@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "S",
+    "C",
+    "F"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:spyglass"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "F": {
+      "item": "minecraft:dark_oak_fence"
+    }
+  },
+  "result": {
+    "id": "aerolarge:lookout_glass",
+    "count": 1
+  }
+}

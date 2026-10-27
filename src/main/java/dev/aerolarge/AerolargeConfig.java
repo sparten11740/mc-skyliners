@@ -46,6 +46,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_REPEATERS;
     public static final ModConfigSpec.BooleanValue TRIM_CAR;
     public static final ModConfigSpec.BooleanValue TECHNO_ROOM;
+    public static final ModConfigSpec.BooleanValue LOOKOUT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -302,6 +303,13 @@ public final class AerolargeConfig {
                 "you walk in, builds and drops. Zeppelins already built keep theirs."
             )
             .define("technoRoom", true);
+        LOOKOUT = builder
+            .comment(
+                "Whether a zeppelin is built with the Lookout's Glass in her control car, through which a spot on the land is marked",
+                "with a flag carrying the lookout's face, to be picked on the autopilot's map as its pin. Off, the glasses already built",
+                "mark nothing."
+            )
+            .define("lookout", true);
         builder.pop();
 
         SPEC = builder.build();

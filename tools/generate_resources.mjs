@@ -687,6 +687,31 @@ cubes.propeller = null;
   write(`assets/${ID}/models/item/flag_halyard.json`, { parent: `${ID}:block/flag_halyard` });
   dropsItself("flag_halyard");
   cubes.flag_halyard = null;
+  // The Lookout's Glass in the control car's lounge (see LookoutGlassBlock): a teak post on a foot, a brass yoke on its
+  // top and in it a long brass glass, its sunshade forward and its eyepiece aft, tilted up a step toward the horizon
+  // ahead, at a lookout's waist, so that looking out over it they never look into it.
+  const wood = `${ID}:block/zeppelin_wood`;
+  const tilt = { origin: [8, 12, 8], axis: "x", angle: 22.5 };
+  write(`assets/${ID}/models/block/lookout_glass.json`, {
+    parent: "minecraft:block/block",
+    textures: { wood, brass, eyepiece: "minecraft:block/black_concrete", particle: brass },
+    elements: [
+      patched([4, 0, 4], [12, 1, 12], "#wood"),
+      patched([7, 1, 7], [9, 10, 9], "#wood"),
+      patched([5.5, 10, 7], [10.5, 11, 9], "#brass"),
+      patched([5.5, 11, 7], [6.5, 13, 9], "#brass"),
+      patched([9.5, 11, 7], [10.5, 13, 9], "#brass"),
+      patched([6.5, 10.5, 2], [9.5, 13.5, 15], "#brass", tilt),
+      patched([6, 10, -1], [10, 14, 2], "#brass", tilt),
+      patched([7, 11, 15], [9, 13, 17.5], "#eyepiece", tilt),
+    ],
+  });
+  write(`assets/${ID}/blockstates/lookout_glass.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/lookout_glass`, y }])),
+  });
+  write(`assets/${ID}/models/item/lookout_glass.json`, { parent: `${ID}:block/lookout_glass` });
+  dropsItself("lookout_glass");
+  cubes.lookout_glass = null;
 }
 // A ship's plaque (see ShipsPlaqueBlock): a brass plate on the wall, a sixteenth thick, its engraving drawn by its
 // renderer once its zeppelin is christened (see ShipsPlaqueRenderer); and the Christening Bottle broken on her nose.
@@ -776,6 +801,8 @@ function zeppelinControlsLang() {
     "block.aerolarge.speaker": "Speaker",
     "block.aerolarge.dance_floor": "Dance Floor",
     "block.aerolarge.club_wall": "Club Wall",
+    "block.aerolarge.lookout_glass": "Lookout's Glass",
+    "subtitles.aerolarge.lookout_bell": "Ship's bell strikes twice",
     "subtitles.aerolarge.techno_track": "Techno pounds",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
@@ -970,9 +997,9 @@ function atcLang() {
   Object.assign(sounds, airPocketSounds());
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
-  // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells and
-  // the pulley of its flag halyard.
-  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard"]) {
+  // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
+  // pulley of its flag halyard and the ship's bell a lookout's spot is struck with.
+  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard", "lookout_bell"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
@@ -1395,6 +1422,18 @@ function dropsItself(name) {
     pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:${name}` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
     random_sequence: `${ID}:blocks/${name}`,
   });
+}
+// A part of one texture whose faces each take a patch of it as big as the face from the texture's corner, so a part
+// reaching out of its block, over its top, is textured as one inside it would be.
+function patched(from, to, texture, rotation) {
+  const [width, height, depth] = [0, 1, 2].map((axis) => Math.min(16, Math.abs(to[axis] - from[axis])));
+  const patches = {
+    north: [0, 0, width, height], south: [0, 0, width, height], east: [0, 0, depth, height], west: [0, 0, depth, height],
+    up: [0, 0, width, depth], down: [0, 0, width, depth],
+  };
+  const element = { from, to, faces: Object.fromEntries(Object.entries(patches).map(([face, uv]) => [face, { texture, uv }])) };
+  if (rotation) element.rotation = rotation;
+  return element;
 }
 // A box of a model, every face showing the texture over the part of it the box covers; turned about an axis if a
 // rotation is given.
@@ -5350,7 +5389,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5425,6 +5464,7 @@ shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark
 shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
+shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraft:copper_ingot", F: "minecraft:dark_oak_fence" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
 shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
 shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
@@ -5793,6 +5833,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.passenger_screen.camera.nose": "NOSE GEAR",
   "screen.aerolarge.passenger_screen.camera.front": "FRONT",
   "screen.aerolarge.passenger_screen.camera_hint": "%s: next camera    %s: back to the cabin",
+  "screen.aerolarge.lookout.hint": "%s: drop your flag there    %s: step back",
   "message.aerolarge.passenger_screen.not_assembled": "The outside cameras come on once the airliner is assembled",
   "message.aerolarge.passenger_screen.no_cameras": "This airliner has no outside cameras: it has no autopilot to fix them to",
   "block.aerolarge.seatbelt_sign": "Seatbelt Sign",
@@ -5931,6 +5972,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "screen.aerolarge.radar.title": "Tower Radar",
   "screen.aerolarge.radar.map": "Radar map",
   "screen.aerolarge.map.contact.where": "X %s, Z %s",
+  "screen.aerolarge.map.lookout_flag": "Spotted by %s",
   "screen.aerolarge.map.contact.distance": "%s blocks away",
   "screen.aerolarge.map.contact.flight": "Height %s, speed %s blocks a second",
   "marker.aerolarge.icon.tower": "Control tower",

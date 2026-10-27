@@ -803,6 +803,14 @@
       }
     ]
   },
+  "lookout_bell": {
+    "subtitle": "subtitles.aerolarge.lookout_bell",
+    "sounds": [
+      {
+        "name": "aerolarge:lookout_bell"
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [
