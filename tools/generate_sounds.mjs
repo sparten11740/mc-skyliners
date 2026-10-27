@@ -961,6 +961,109 @@ function gearRamp(t, from, to) {
   writeSound("flag_halyard", samples, 0.8);
 }
 
+// The secret techno room's track, a minute long at 128 beats a minute, looped while anyone is in the room: eight bars
+// of kick, hats and a rolling bass; eight bars of build, a snare roll quickening from eighths to thirty-seconds and a
+// noise sweep rising over it, the kick dropping out for the last two bars and half a beat of silence before the drop;
+// then the drop itself, on the downbeat of bar seventeen, half a minute in: a huge sub-bass boom falling from 90 to 32
+// hertz under a full kick, an offbeat saw bass through a minor progression, chord stabs on the offbeats, claps on two
+// and four and open hats, for sixteen bars, back round to the start.
+{
+  const techno = ownRandom(0x7465636b);
+  const beat = 60 / 128;
+  const bar = beat * 4;
+  const length = bar * 32;
+  const samples = new Float64Array(Math.round(length * RATE));
+  const add = (start, duration, voice) => {
+    const from = Math.round(start * RATE);
+    const count = Math.min(Math.round(duration * RATE), samples.length - from);
+    for (let i = 0; i < count; i++) {
+      samples[from + i] += voice(i / RATE);
+    }
+  };
+  const kick = (start, punch) =>
+    add(start, 0.45, (t) => {
+      const phase = 2 * Math.PI * (45 * t + (110 / 18) * (1 - Math.exp(-18 * t)));
+      return punch * (Math.sin(phase) * Math.exp(-t * 7) + (t < 0.004 ? (techno() * 2 - 1) * 0.6 : 0));
+    });
+  const hat = (start, open, level) => {
+    let last = 0;
+    add(start, open ? 0.22 : 0.05, (t) => {
+      const noise = techno() * 2 - 1;
+      const high = noise - last;
+      last = noise;
+      return high * level * Math.exp(-t * (open ? 14 : 70));
+    });
+  };
+  const snare = (start, level, pitch) =>
+    add(start, 0.16, (t) => level * (((techno() * 2 - 1) * 0.7 + Math.sin(2 * Math.PI * pitch * t) * 0.4) * Math.exp(-t * 26)));
+  const clap = (start) =>
+    add(start, 0.2, (t) => (techno() * 2 - 1) * 0.55 * (Math.exp(-((t % 0.012) * 300)) * (t < 0.036 ? 1 : 0) + Math.exp(-t * 18) * (t >= 0.036 ? 1 : 0)));
+  // A saw note through a one-pole low-pass filter, its cutoff opening and closing over the note.
+  const sawNote = (start, duration, frequency, level, bright) => {
+    let filtered = 0;
+    add(start, duration, (t) => {
+      const saw = 2 * ((frequency * t) % 1) - 1;
+      const cutoff = 0.04 + bright * Math.exp(-t * 9);
+      filtered += cutoff * (saw - filtered);
+      return filtered * level * Math.min(1, t * 300) * Math.min(1, (duration - t) * 200);
+    });
+  };
+  // A chord stab: five detuned saws for each note, opening bright and closing fast.
+  const stab = (start, notes, level) => {
+    for (const note of notes) {
+      for (const detune of [-0.012, -0.005, 0, 0.005, 0.012]) {
+        sawNote(start, beat * 0.45, note * (1 + detune), level / 5, 0.5);
+      }
+    }
+  };
+  const roots = [55, 43.65, 65.41, 49];
+  const chords = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
+  for (let b = 0; b < 32; b++) {
+    const at = b * bar;
+    const drop = b >= 16;
+    const build = b >= 8 && b < 16;
+    const chord = Math.floor(b / 2) % 4;
+    for (let q = 0; q < 4; q++) {
+      const t = at + q * beat;
+      if (!(build && b >= 14) && !(b === 15 && q === 3)) {
+        kick(t, drop ? 1 : 0.8);
+      }
+      hat(t + beat / 2, drop, drop ? 0.22 : 0.16);
+      if (!build || b < 14) {
+        sawNote(t + beat / 2, beat * 0.4, roots[chord] * (drop ? 1 : 2), drop ? 0.55 : 0.3, drop ? 0.35 : 0.12);
+        sawNote(t + beat * 0.75, beat * 0.2, roots[chord] * (drop ? 1 : 2), drop ? 0.4 : 0.22, drop ? 0.25 : 0.08);
+      }
+      if (drop) {
+        stab(t + beat / 2, chords[chord], 0.5);
+      }
+      if (drop && (q === 1 || q === 3)) {
+        clap(t);
+      }
+    }
+    if (build) {
+      const steps = b < 12 ? 8 : b < 14 ? 16 : 32;
+      for (let k = 0; k < steps; k++) {
+        const loud = 0.15 + 0.5 * ((b - 8) * steps + k) / (8 * steps);
+        snare(at + (k * bar) / steps, loud, 180 + (b - 8) * 40);
+      }
+    }
+  }
+  // The rise into the drop: noise swelling over the last four bars of the build, a sine sweeping up under it.
+  let phase = 0;
+  add(12 * bar, 4 * bar - beat / 2, (t) => {
+    const share = t / (4 * bar);
+    phase += (2 * Math.PI * (200 + 1800 * share * share)) / RATE;
+    return ((techno() * 2 - 1) * 0.25 + Math.sin(phase) * 0.15) * share * share;
+  });
+  // The drop's boom: a sub-bass falling from 90 to 32 hertz, ringing on for three seconds.
+  let boom = 0;
+  add(16 * bar, 3.2, (t) => {
+    boom += (2 * Math.PI * (32 + 58 * Math.exp(-t * 2.2))) / RATE;
+    return Math.sin(boom) * 1.6 * Math.exp(-t * 0.9) * Math.min(1, t * 400);
+  });
+  writeSound("techno_track", samples.map((v) => Math.tanh(v * 1.4)), 0.9);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PNP",
+    "PNP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:black_concrete"
+    },
+    "N": {
+      "item": "minecraft:note_block"
+    }
+  },
+  "result": {
+    "id": "aerolarge:speaker",
+    "count": 2
+  }
+}

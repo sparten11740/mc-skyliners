@@ -73,6 +73,8 @@ import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
+import dev.aerolarge.client.TechnoRoom;
+import dev.aerolarge.client.TechnoRoomRenderer;
 import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.client.TowerRadarRenderer;
 import dev.aerolarge.client.TransponderRenderer;
@@ -169,6 +171,8 @@ public final class AerolargeClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, AerolargeRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
+        NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
+        NeoForge.EVENT_BUS.addListener(TechnoRoom::shake);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));
@@ -239,6 +243,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.BUBBLE_LEVEL_ENTITY.get(), context -> new BubbleLevelRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.TECHNO_DECK_ENTITY.get(), context -> new TechnoRoomRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

@@ -3617,6 +3617,36 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (x % 4 === 0 || y % 4 === 0) return GRATING;
     return CLEAR;
   }, 2);
+  // The secret techno room: black speaker cabinets, a big cone and a little horn on their fronts, a grille on their
+  // sides; the DJ deck's top with its two turntables and the mixer between them, its sides black with a line of neon;
+  // the dance floor's black glass tiles; and the walls' black foam, a pattern of little pyramids.
+  const CAB = [0x16, 0x16, 0x1a];
+  texture(blockOutput, "speaker_front", (x, y) => {
+    const cone = Math.hypot(x + 0.5 - 8, y + 0.5 - 10);
+    const horn = Math.hypot(x + 0.5 - 8, y + 0.5 - 3.5);
+    if (cone < 1.2) return [0x60, 0x62, 0x6a];
+    if (cone < 5.5) return Math.floor(cone) % 2 === 0 ? [0x2a, 0x2a, 0x30] : [0x3a, 0x3a, 0x42];
+    if (horn < 1.8) return [0x48, 0x4a, 0x52];
+    return x === 0 || y === 0 || x === 15 || y === 15 ? [0x26, 0x26, 0x2c] : CAB;
+  }, 1);
+  texture(blockOutput, "speaker_side", (x, y) => ((x + y) % 2 === 0 ? [0x20, 0x20, 0x26] : CAB), 1);
+  texture(blockOutput, "techno_deck_top", (x, y) => {
+    const left = Math.hypot(x + 0.5 - 4, y + 0.5 - 8);
+    const right = Math.hypot(x + 0.5 - 12, y + 0.5 - 8);
+    const disc = Math.min(left, right);
+    if (disc < 0.8) return [0xd0, 0xd0, 0xd8];
+    if (disc < 3.3) return Math.floor(disc * 2) % 2 === 0 ? [0x14, 0x14, 0x18] : [0x22, 0x22, 0x28];
+    if (x === 8 && y >= 4 && y <= 12) return [0x40, 0x40, 0x48];
+    if ((x === 7 || x === 9) && y % 3 === 0 && y >= 4 && y <= 12) return y % 2 === 0 ? [0xff, 0x2b, 0xd6] : [0x2b, 0xe6, 0xff];
+    return CAB;
+  }, 1);
+  texture(blockOutput, "techno_deck_side", (x, y) => (y === 3 ? [0x2b, 0xe6, 0xff] : CAB), 1);
+  texture(blockOutput, "dance_floor", (x, y) => (x === 0 || y === 0 ? [0x30, 0x30, 0x3a] : [0x10, 0x10, 0x16]), 1);
+  texture(blockOutput, "club_wall", (x, y) => {
+    const u = x % 4;
+    const v = y % 4;
+    return u + v < 3 ? [0x2a, 0x2a, 0x30] : u > v ? [0x1c, 0x1c, 0x22] : [0x14, 0x14, 0x18];
+  }, 1);
   texture(blockOutput, "propeller_hub", (x, y) => {
     const r = Math.hypot(x - 7.5, y - 7.5);
     if (r < 3) return STEEL_DARK;

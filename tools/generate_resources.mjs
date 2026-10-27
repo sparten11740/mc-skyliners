@@ -38,6 +38,8 @@ const cubes = {
   festive_garland: "minecraft:cutout",
   festive_bow: null,
   zeppelin_catwalk: "minecraft:cutout",
+  dance_floor: null,
+  club_wall: null,
 };
 // Cubes whose blockstate is written with their other models below, and cubes with faces of their own, written below.
 const OWN_BLOCKSTATES = new Set(["cabin_light"]);
@@ -513,6 +515,50 @@ cubes.propeller = null;
   // drawn by its renderer (see BubbleLevelRenderer).
   const iron = "minecraft:block/anvil";
   const chain = "minecraft:block/chain";
+  // The secret techno room: its hatch, closed just like the gangway's grating and open only a frame round its edge;
+  // its speakers and its DJ deck, each turned to face the way it looks.
+  const catwalk = `${ID}:block/zeppelin_catwalk`;
+  write(`assets/${ID}/models/block/secret_hatch.json`, { parent: "minecraft:block/cube_all", render_type: "minecraft:cutout", textures: { all: catwalk } });
+  write(`assets/${ID}/models/block/secret_hatch_open.json`, {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:cutout",
+    textures: { grating: catwalk, particle: catwalk },
+    elements: [solid([0, 14, 0], [16, 16, 1], "#grating"), solid([0, 14, 15], [16, 16, 16], "#grating"), solid([0, 14, 1], [1, 16, 15], "#grating"),
+      solid([15, 14, 1], [16, 16, 15], "#grating")],
+  });
+  write(`assets/${ID}/blockstates/secret_hatch.json`, {
+    variants: { "open=false": { model: `${ID}:block/secret_hatch` }, "open=true": { model: `${ID}:block/secret_hatch_open` } },
+  });
+  write(`assets/${ID}/models/item/secret_hatch.json`, { parent: `${ID}:block/secret_hatch` });
+  dropsItself("secret_hatch");
+  cubes.secret_hatch = null;
+  write(`assets/${ID}/models/block/speaker.json`, {
+    parent: "minecraft:block/orientable",
+    textures: { front: `${ID}:block/speaker_front`, side: `${ID}:block/speaker_side`, top: `${ID}:block/speaker_side` },
+  });
+  write(`assets/${ID}/blockstates/speaker.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/speaker`, y }])),
+  });
+  write(`assets/${ID}/models/item/speaker.json`, { parent: `${ID}:block/speaker` });
+  dropsItself("speaker");
+  cubes.speaker = null;
+  write(`assets/${ID}/models/block/techno_deck.json`, {
+    parent: "minecraft:block/block",
+    textures: { top: `${ID}:block/techno_deck_top`, side: `${ID}:block/techno_deck_side`, particle: `${ID}:block/techno_deck_side` },
+    elements: [{
+      from: [0, 0, 0], to: [16, 13, 16],
+      faces: {
+        up: { texture: "#top" }, down: { texture: "#side" }, north: { texture: "#side", uv: [0, 3, 16, 16] }, south: { texture: "#side", uv: [0, 3, 16, 16] },
+        east: { texture: "#side", uv: [0, 3, 16, 16] }, west: { texture: "#side", uv: [0, 3, 16, 16] },
+      },
+    }],
+  });
+  write(`assets/${ID}/blockstates/techno_deck.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/techno_deck`, y }])),
+  });
+  write(`assets/${ID}/models/item/techno_deck.json`, { parent: `${ID}:block/techno_deck` });
+  dropsItself("techno_deck");
+  cubes.techno_deck = null;
   write(`assets/${ID}/models/block/trim_car.json`, {
     parent: "minecraft:block/block",
     textures: { iron, brass, particle: iron },
@@ -725,6 +771,12 @@ function zeppelinControlsLang() {
     "block.aerolarge.trim_winch": "Trim Winch",
     "block.aerolarge.trim_car": "Trim Car",
     "block.aerolarge.bubble_level": "Bubble Level",
+    "block.aerolarge.techno_deck": "DJ Deck",
+    "block.aerolarge.secret_hatch": "Secret Hatch",
+    "block.aerolarge.speaker": "Speaker",
+    "block.aerolarge.dance_floor": "Dance Floor",
+    "block.aerolarge.club_wall": "Club Wall",
+    "subtitles.aerolarge.techno_track": "Techno pounds",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
     "block.aerolarge.festive_garland": "Festive Garland",
@@ -923,6 +975,8 @@ function atcLang() {
   for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
+  sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -5372,6 +5426,11 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
+shaped("speaker", ["PNP", "PNP"], { P: "minecraft:black_concrete", N: "minecraft:note_block" }, 2);
+shaped("dance_floor", ["GLG"], { G: "minecraft:black_stained_glass", L: "minecraft:glowstone_dust" }, 2);
+shaped("club_wall", ["WW", "WW"], { W: "minecraft:black_wool" }, 4);
+shaped("techno_deck", ["NJN", "CCC"], { N: "minecraft:note_block", J: "minecraft:jukebox", C: "minecraft:black_concrete" }, 1);
+shaped("secret_hatch", ["T", "G"], { T: "minecraft:iron_trapdoor", G: `${ID}:zeppelin_catwalk` }, 1);
 shaped("trim_wheel", ["SSS", "S S", "SSS"], { S: "minecraft:stick" }, 1);
 shaped("bubble_level", ["GLG", "PPP"], { G: "minecraft:gold_nugget", L: "minecraft:lime_stained_glass_pane", P: "minecraft:dark_oak_slab" }, 1);
 shaped("trim_winch", ["ICI", "I I"], { I: "minecraft:iron_ingot", C: "minecraft:chain" }, 1);

@@ -802,5 +802,14 @@
         "name": "aerolarge:flag_halyard"
       }
     ]
+  },
+  "techno_track": {
+    "subtitle": "subtitles.aerolarge.techno_track",
+    "sounds": [
+      {
+        "name": "aerolarge:techno_track",
+        "stream": true
+      }
+    ]
   }
 }

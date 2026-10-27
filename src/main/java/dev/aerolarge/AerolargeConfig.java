@@ -45,6 +45,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
     public static final ModConfigSpec.BooleanValue ENGINE_REPEATERS;
     public static final ModConfigSpec.BooleanValue TRIM_CAR;
+    public static final ModConfigSpec.BooleanValue TECHNO_ROOM;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -295,6 +296,12 @@ public final class AerolargeConfig {
                 "nose level by weight. Zeppelins already built keep theirs."
             )
             .define("trimCar", true);
+        TECHNO_ROOM = builder
+            .comment(
+                "Whether a zeppelin is built with a secret techno room under her gangway, reached by a hidden hatch: its music starts as",
+                "you walk in, builds and drops. Zeppelins already built keep theirs."
+            )
+            .define("technoRoom", true);
         builder.pop();
 
         SPEC = builder.build();
