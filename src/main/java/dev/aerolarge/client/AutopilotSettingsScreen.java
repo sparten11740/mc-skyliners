@@ -9,6 +9,7 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity.CircleSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Settings;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.UnstickAirliner;
@@ -18,10 +19,12 @@ import dev.aerolarge.client.PanelArt.CloseButton;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.PanelArt.IconButton;
 import dev.aerolarge.client.PanelArt.Look;
+import dev.aerolarge.client.PanelArt.Pictures;
 import dev.aerolarge.client.PanelArt.ValueBox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -175,34 +178,28 @@ public class AutopilotSettingsScreen extends Screen {
     private static final int GLASS = 0xFF05080D;
     private static final int PICTURE_FAINT = 0xFF6A7380;
 
-    private static final Icon AIRLINER = Icon.of("autopilot/airliner");
-    private static final Icon AIRLINER_SIDE = Icon.of("autopilot/airliner_side");
-    private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
-    private static final Icon ENGAGE = Icon.of("autopilot/engage");
     private static final Icon APPLY = Icon.of("autopilot/apply");
     private static final Icon DISENGAGE = Icon.of("autopilot/disengage");
-    private static final Icon LAND = Icon.of("autopilot/land");
     private static final Icon UNSTUCK = Icon.of("autopilot/unstuck");
     private static final Icon PIN = Icon.of("autopilot/destination");
-    private static final Icon LAND_AT_PIN = Icon.of("autopilot/land_at_pin");
 
     /**
      * The ways it can fly, along the bottom of the steering, like road signs, hardest left out to hardest right: the
-     * flight deck's turns (see {@link AutopilotBlockEntity.Button}), with their pictures.
+     * flight deck's turns (see {@link AutopilotBlockEntity.Button}), each with its picture of what it flies.
      */
     private enum Turn {
-        TIGHT_LEFT(Button.TIGHT_LEFT, PanelArt.TURN_TIGHT_LEFT),
-        GENTLE_LEFT(Button.GENTLE_LEFT, PanelArt.TURN_GENTLE_LEFT),
-        STRAIGHT(Button.STRAIGHT, PanelArt.STRAIGHT_ON),
-        GENTLE_RIGHT(Button.GENTLE_RIGHT, PanelArt.TURN_GENTLE_RIGHT),
-        TIGHT_RIGHT(Button.TIGHT_RIGHT, PanelArt.TURN_TIGHT_RIGHT);
+        TIGHT_LEFT(Button.TIGHT_LEFT, Pictures::tightLeft),
+        GENTLE_LEFT(Button.GENTLE_LEFT, Pictures::gentleLeft),
+        STRAIGHT(Button.STRAIGHT, Pictures::straightOn),
+        GENTLE_RIGHT(Button.GENTLE_RIGHT, Pictures::gentleRight),
+        TIGHT_RIGHT(Button.TIGHT_RIGHT, Pictures::tightRight);
 
         final Button button;
-        final Icon icon;
+        final Function<Pictures, Icon> picture;
 
-        Turn(Button button, Icon icon) {
+        Turn(Button button, Function<Pictures, Icon> picture) {
             this.button = button;
-            this.icon = icon;
+            this.picture = picture;
         }
 
         Component label() {
@@ -326,14 +323,14 @@ public class AutopilotSettingsScreen extends Screen {
         int buttonY = top + ACTIONS_Y;
         Component engageLabel = Component.translatable(takeoff ? "screen.aerolarge.autopilot_settings.take_off" : "screen.aerolarge.autopilot_settings.engage");
         engage = addRenderableWidget(new IconButton(x, buttonY, 2 * buttonWidth + ACTION_GAP, ACTION_HEIGHT, engageLabel,
-            takeoff ? TAKE_OFF : ENGAGE, PanelArt.GREEN, true, this::engage));
+            takeoff ? pictures().takeOff() : pictures().cruise(), PanelArt.GREEN, true, this::engage));
         apply = addRenderableWidget(new IconButton(x, buttonY, buttonWidth, ACTION_HEIGHT, Component.translatable("screen.aerolarge.autopilot_settings.apply"),
             APPLY, PanelArt.GREEN, false, () -> send(SetAutopilot.Action.FLY)));
         disengage = addRenderableWidget(new IconButton(x + buttonWidth + ACTION_GAP, buttonY, buttonWidth, ACTION_HEIGHT,
             Component.translatable("screen.aerolarge.autopilot_settings.disengage"), DISENGAGE, PanelArt.RED, false, () -> send(SetAutopilot.Action.OFF)));
         int lastX = x + 2 * (buttonWidth + ACTION_GAP);
         land = addRenderableWidget(new IconButton(lastX, buttonY, buttonWidth, ACTION_HEIGHT,
-            Component.translatable("screen.aerolarge.autopilot_settings.land"), LAND, PanelArt.AMBER, false, () -> send(SetAutopilot.Action.LAND)));
+            Component.translatable("screen.aerolarge.autopilot_settings.land"), pictures().land(), PanelArt.AMBER, false, () -> send(SetAutopilot.Action.LAND)));
         unstuck = addRenderableWidget(new IconButton(lastX, buttonY, buttonWidth, ACTION_HEIGHT,
             Component.translatable("screen.aerolarge.autopilot_settings.unstuck"), UNSTUCK, PanelArt.CYAN, true, this::unstick));
         int closeX = left + WIDTH - PanelArt.BORDER - CLOSE_INSET - CloseButton.SIZE;
@@ -346,6 +343,12 @@ public class AutopilotSettingsScreen extends Screen {
     private AutopilotBlockEntity autopilot() {
         Level level = minecraft != null ? minecraft.level : null;
         return level != null && level.getBlockEntity(pos) instanceof AutopilotBlockEntity autopilot ? autopilot : null;
+    }
+
+    /** The pictures of what the autopilot flies, the airliner's or the zeppelin's. */
+    private Pictures pictures() {
+        AutopilotBlockEntity autopilot = autopilot();
+        return Pictures.of(autopilot != null ? autopilot.craft() : Craft.AIRLINER);
     }
 
     private static Direction nose(AutopilotBlockEntity autopilot) {
@@ -520,7 +523,7 @@ public class AutopilotSettingsScreen extends Screen {
         // The world dimmed behind it, as behind a container, rather than blurred: the flight goes on.
         renderTransparentBackground(graphics);
         PanelArt.drawFrame(graphics, left, top, left + WIDTH, top + HEIGHT);
-        PanelArt.drawTitleBar(graphics, font, AIRLINER, title, left, top, left + WIDTH);
+        PanelArt.drawTitleBar(graphics, font, pictures().emblem(), title, left, top, left + WIDTH);
         int x = left + PanelArt.BORDER + PADDING;
         PanelArt.drawGlass(graphics, x, top + GLASS_Y, x + CONTENT, top + GLASS_Y + GLASS_HEIGHT);
     }
@@ -946,7 +949,7 @@ public class AutopilotSettingsScreen extends Screen {
             if (ghost != null) {
                 bug(graphics, turnTo(ghost), AutopilotDeskArt.GHOST & PanelArt.MAGENTA);
             }
-            AIRLINER.draw(graphics, footX() - Icon.SIZE / 2, footY() - Icon.SIZE, 1, true);
+            pictures().fromAbove().draw(graphics, footX() - Icon.SIZE / 2, footY() - Icon.SIZE, 1, true);
             String set = String.format(Locale.ROOT, "%03d°", ghost != null ? ghost : heading.value());
             int colour = ghost != null ? PanelArt.WHITE : steering ? PanelArt.CYAN : PanelArt.GREY;
             graphics.drawString(font, set, getRight() - font.width(set) - 4, getY() + 4, colour, false);
@@ -1039,17 +1042,18 @@ public class AutopilotSettingsScreen extends Screen {
             }
             AutopilotBlockEntity autopilot = autopilot();
             Level level = autopilot != null ? autopilot.getLevel() : null;
+            Icon craft = pictures().fromTheSide();
             if (attitude(partialTick) != null && level != null) {
                 int now = yOf(SableClient.toWorld(level, Vec3.atCenterOf(pos)).y);
                 if (Math.abs(now - set) > CLIMB_DRAWN) {
                     dotted(graphics, planeX + Icon.SIZE / 2.0, now, planeX + Icon.SIZE / 2.0, set, PanelArt.WHITE);
                 }
-                AIRLINER_SIDE.draw(graphics, planeX, now - Icon.SIZE / 2, 1, PICTURE_FAINT);
+                craft.draw(graphics, planeX, now - Icon.SIZE / 2, 1, PICTURE_FAINT);
             }
-            AIRLINER_SIDE.draw(graphics, planeX, set - Icon.SIZE / 2, 1, PanelArt.GREEN);
+            craft.draw(graphics, planeX, set - Icon.SIZE / 2, 1, PanelArt.GREEN);
             Integer ghost = ghost(mouseX, mouseY);
             if (ghost != null) {
-                AIRLINER_SIDE.draw(graphics, planeX, yOf(ghost) - Icon.SIZE / 2, 1, PanelArt.shade(PanelArt.GREEN, SKY_GHOST));
+                craft.draw(graphics, planeX, yOf(ghost) - Icon.SIZE / 2, 1, PanelArt.shade(PanelArt.GREEN, SKY_GHOST));
             }
             String number = String.valueOf(ghost != null ? ghost : altitude.value());
             graphics.drawString(font, number, x0 + 3, getY() + SKY_FRAME + 3, ghost != null ? PanelArt.WHITE : PanelArt.GREEN, true);
@@ -1095,7 +1099,7 @@ public class AutopilotSettingsScreen extends Screen {
             int colour = turn == Turn.STRAIGHT ? PanelArt.CYAN : PanelArt.MAGENTA;
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), colour, chosen && look == Look.IDLE ? Look.HOT : look, false);
             int sink = look == Look.PRESSED ? 1 : 0;
-            turn.icon.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+            turn.picture.apply(pictures()).draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
         }
     }
 
@@ -1160,7 +1164,7 @@ public class AutopilotSettingsScreen extends Screen {
             Look look = look();
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.MAGENTA, look, false);
             int sink = look == Look.PRESSED ? 1 : 0;
-            Icon icon = circle == CircleSize.TIGHT ? PanelArt.TURN_TIGHT_RIGHT : PanelArt.TURN_GENTLE_RIGHT;
+            Icon icon = circle == CircleSize.TIGHT ? pictures().tightRight() : pictures().gentleRight();
             icon.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
         }
     }
@@ -1197,7 +1201,7 @@ public class AutopilotSettingsScreen extends Screen {
             Look look = look();
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, look, landAtPin);
             int sink = look == Look.PRESSED ? 1 : 0;
-            LAND_AT_PIN.draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
+            pictures().landAtPin().draw(graphics, getX() + (width - Icon.SIZE) / 2, getY() + (height - Icon.SIZE) / 2 + sink, 1, true);
         }
     }
 }

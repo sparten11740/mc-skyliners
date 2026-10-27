@@ -4,6 +4,7 @@ import dev.aerolarge.Aerolarge;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.CircleSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
+import dev.aerolarge.autopilot.Craft;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -79,25 +80,9 @@ final class PanelArt {
     private static final float LAMP_GLINT = 0.6F;
 
     private static final ResourceLocation BEZEL = texture("panel/bezel");
-    /** The autopilot's pictures: what it is doing, and how it steers. */
+    /** The autopilot's pictures that are the same whatever it flies: switched off, and flying to a pin. */
     private static final Icon OFF_PICTURE = Icon.of("autopilot/disengage");
-    private static final Icon TAKE_OFF = Icon.of("autopilot/take_off");
-    private static final Icon CLIMB = Icon.of("autopilot/climb");
-    private static final Icon CRUISE = Icon.of("autopilot/engage");
-    private static final Icon DESCEND = Icon.of("autopilot/descend");
-    private static final Icon LAND = Icon.of("autopilot/land");
-    private static final Icon ROLL_OUT = Icon.of("autopilot/roll_out");
     private static final Icon PIN = Icon.of("autopilot/destination");
-    /**
-     * The ways it flies, like road signs: the path from a small airliner's nose, straight on or round a half circle to
-     * the left or right, tightly or gently; on the flight deck's controls, the settings screen and wherever it says how
-     * it steers.
-     */
-    static final Icon STRAIGHT_ON = Icon.of("autopilot/straight_on");
-    static final Icon TURN_TIGHT_LEFT = Icon.of("autopilot/turn_tight_left");
-    static final Icon TURN_GENTLE_LEFT = Icon.of("autopilot/turn_gentle_left");
-    static final Icon TURN_GENTLE_RIGHT = Icon.of("autopilot/turn_gentle_right");
-    static final Icon TURN_TIGHT_RIGHT = Icon.of("autopilot/turn_tight_right");
     private static final int BEZEL_TILE = 16;
 
     private PanelArt() {
@@ -115,30 +100,6 @@ final class PanelArt {
             return new Icon(PanelArt.texture(name));
         }
 
-        /** The picture of what the autopilot is doing: the settings' buttons' pictures where it has one, else its own. */
-        static Icon phase(Phase phase) {
-            return switch (phase) {
-                case OFF -> OFF_PICTURE;
-                case TAKEOFF -> TAKE_OFF;
-                case CLIMB -> CLIMB;
-                case CRUISE -> CRUISE;
-                case DESCENT -> DESCEND;
-                case LAND -> LAND;
-                case ROLLOUT -> ROLL_OUT;
-            };
-        }
-
-        /** The picture of how the autopilot steers, and how tightly it circles, as on its controls. */
-        static Icon lateral(Lateral lateral, CircleSize circle) {
-            boolean tight = circle == CircleSize.TIGHT;
-            return switch (lateral) {
-                case HEADING -> STRAIGHT_ON;
-                case ORBIT_LEFT -> tight ? TURN_TIGHT_LEFT : TURN_GENTLE_LEFT;
-                case ORBIT_RIGHT -> tight ? TURN_TIGHT_RIGHT : TURN_GENTLE_RIGHT;
-                case DESTINATION -> PIN;
-            };
-        }
-
         /** Draws it, darkened while what it stands for cannot be used. */
         void draw(GuiGraphics graphics, int x, int y, int scale, boolean usable) {
             draw(graphics, x, y, scale, usable ? 0xFFFFFFFF : PICTURE_OFF);
@@ -150,6 +111,67 @@ final class PanelArt {
             int size = SIZE * scale;
             graphics.blit(texture, x, y, size, size, 0, 0, SIZE, SIZE, SIZE, SIZE);
             graphics.setColor(1F, 1F, 1F, 1F);
+        }
+    }
+
+    /**
+     * The autopilot's pictures of what it flies, the airliner's or the zeppelin's, so that a zeppelin's screens show a
+     * zeppelin where an airliner's show an airliner: itself as it is best known, for a title bar, the airliner from
+     * above and the zeppelin from the side; itself from above, nose up, and from the side, nose right; what the
+     * autopilot is doing, as its settings' buttons show it; the ways it flies, like road signs, the path from a small
+     * one's nose, straight on or round a half circle to the left or right, tightly or gently; and its height over the
+     * ground, on the pilots' HUD. The zeppelin rises from the ground and settles onto it anywhere, needing no runway,
+     * and has no roll-out after landing.
+     */
+    record Pictures(Icon emblem, Icon fromAbove, Icon fromTheSide, Icon takeOff, Icon climb, Icon cruise, Icon descend, Icon land, Icon rollOut,
+                    Icon landAtPin, Icon straightOn, Icon tightLeft, Icon gentleLeft, Icon gentleRight, Icon tightRight, Icon groundHeight) {
+        static final Pictures AIRLINER = drawn("autopilot/", "airliner", "airliner", "roll_out");
+        static final Pictures ZEPPELIN = drawn("autopilot/zeppelin_", "zeppelin", "zeppelin_side", "land");
+
+        /**
+         * The pictures named with a prefix (from tools/generate_textures.mjs): but for itself and its emblem, which
+         * are named apart, and the picture it rolls out with, which may be another of its own.
+         */
+        private static Pictures drawn(String prefix, String itself, String emblem, String rollOut) {
+            return new Pictures(Icon.of("autopilot/" + emblem), Icon.of("autopilot/" + itself), Icon.of("autopilot/" + itself + "_side"),
+                Icon.of(prefix + "take_off"), Icon.of(prefix + "climb"), Icon.of(prefix + "engage"), Icon.of(prefix + "descend"),
+                Icon.of(prefix + "land"), Icon.of(prefix + rollOut), Icon.of(prefix + "land_at_pin"), Icon.of(prefix + "straight_on"),
+                Icon.of(prefix + "turn_tight_left"), Icon.of(prefix + "turn_gentle_left"), Icon.of(prefix + "turn_gentle_right"),
+                Icon.of(prefix + "turn_tight_right"), Icon.of(prefix + "ground_height"));
+        }
+
+        /** The pictures of what an autopilot flies. */
+        static Pictures of(Craft craft) {
+            return switch (craft) {
+                case AIRLINER -> AIRLINER;
+                case ZEPPELIN -> ZEPPELIN;
+            };
+        }
+
+        /**
+         * The picture of what the autopilot is doing: the settings' buttons' pictures where it has one, else its own.
+         */
+        Icon phase(Phase phase) {
+            return switch (phase) {
+                case OFF -> OFF_PICTURE;
+                case TAKEOFF -> takeOff;
+                case CLIMB -> climb;
+                case CRUISE -> cruise;
+                case DESCENT -> descend;
+                case LAND -> land;
+                case ROLLOUT -> rollOut;
+            };
+        }
+
+        /** The picture of how the autopilot steers, and how tightly it circles, as on its controls. */
+        Icon lateral(Lateral lateral, CircleSize circle) {
+            boolean tight = circle == CircleSize.TIGHT;
+            return switch (lateral) {
+                case HEADING -> straightOn;
+                case ORBIT_LEFT -> tight ? tightLeft : gentleLeft;
+                case ORBIT_RIGHT -> tight ? tightRight : gentleRight;
+                case DESTINATION -> PIN;
+            };
         }
     }
 

@@ -8,6 +8,7 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.client.PanelArt.Icon;
+import dev.aerolarge.client.PanelArt.Pictures;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -112,12 +113,14 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
         ScreenDrawing.disc(shapes, matrix, LAMP_X, TOP_ROW, LAMP_RADIUS, 12, 3 * LAYER, lamp);
         int tint = on ? PICTURE_ON : PICTURE_OFF;
         boolean circling = autopilot.lateral() == Lateral.ORBIT_LEFT || autopilot.lateral() == Lateral.ORBIT_RIGHT;
+        Pictures pictures = Pictures.of(autopilot.craft());
+        Icon steering = pictures.lateral(autopilot.lateral(), autopilot.circle());
         // Pictures before text: text takes its own buffer, which ends the one the shapes went into.
-        picture(buffers, matrix, Icon.phase(autopilot.phase()), PHASE_X, TOP_ROW, BIG_PICTURE, tint);
-        picture(buffers, matrix, Icon.lateral(autopilot.lateral(), autopilot.circle()), LATERAL_X, TOP_ROW, BIG_PICTURE, tint);
+        picture(buffers, matrix, pictures.phase(autopilot.phase()), PHASE_X, TOP_ROW, BIG_PICTURE, tint);
+        picture(buffers, matrix, steering, LATERAL_X, TOP_ROW, BIG_PICTURE, tint);
         picture(buffers, matrix, ALTITUDE, LAMP_X, ROWS[0], SMALL_PICTURE, tint);
         picture(buffers, matrix, SPEED, LAMP_X, ROWS[1], SMALL_PICTURE, tint);
-        picture(buffers, matrix, circling ? Icon.lateral(autopilot.lateral(), autopilot.circle()) : HEADING, LAMP_X, ROWS[2], SMALL_PICTURE, tint);
+        picture(buffers, matrix, circling ? steering : HEADING, LAMP_X, ROWS[2], SMALL_PICTURE, tint);
         Font font = Minecraft.getInstance().font;
         boolean set = autopilot.targetSpeed() > 0;
         String heading = circling ? String.valueOf(Math.round(autopilot.orbitRadius()))

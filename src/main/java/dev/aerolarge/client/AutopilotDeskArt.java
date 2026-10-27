@@ -15,6 +15,7 @@ import dev.aerolarge.block.CockpitKeys.Function;
 import dev.aerolarge.block.CockpitKeys.Key;
 import dev.aerolarge.block.CockpitKeys.Sky;
 import dev.aerolarge.client.PanelArt.Icon;
+import dev.aerolarge.client.PanelArt.Pictures;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -206,9 +207,9 @@ final class AutopilotDeskArt {
     private static final int PICTURE_OFF = 0xFF8A8A8A;
     private static final int PIN_UNLIT = 0x40FFFFFF;
 
-    private static final Icon ENGAGE = Icon.of("autopilot/engage");
-    private static final Icon AIRLINER = Icon.of("autopilot/airliner");
-    private static final Icon AIRLINER_SIDE = Icon.of("autopilot/airliner_side");
+    private static final Icon ENGAGE = Pictures.AIRLINER.cruise();
+    private static final Icon AIRLINER = Pictures.AIRLINER.fromAbove();
+    private static final Icon AIRLINER_SIDE = Pictures.AIRLINER.fromTheSide();
     private static final Icon PIN = Icon.of("autopilot/destination");
 
     /** The desk's controls, by what they work. */
@@ -536,11 +537,11 @@ final class AutopilotDeskArt {
     /** A turn's picture: the path flown from a small airliner's nose. */
     private static Icon turnIcon(Function turn) {
         return switch (turn) {
-            case TIGHT_LEFT -> PanelArt.TURN_TIGHT_LEFT;
-            case GENTLE_LEFT -> PanelArt.TURN_GENTLE_LEFT;
-            case GENTLE_RIGHT -> PanelArt.TURN_GENTLE_RIGHT;
-            case TIGHT_RIGHT -> PanelArt.TURN_TIGHT_RIGHT;
-            default -> PanelArt.STRAIGHT_ON;
+            case TIGHT_LEFT -> Pictures.AIRLINER.tightLeft();
+            case GENTLE_LEFT -> Pictures.AIRLINER.gentleLeft();
+            case GENTLE_RIGHT -> Pictures.AIRLINER.gentleRight();
+            case TIGHT_RIGHT -> Pictures.AIRLINER.tightRight();
+            default -> Pictures.AIRLINER.straightOn();
         };
     }
 

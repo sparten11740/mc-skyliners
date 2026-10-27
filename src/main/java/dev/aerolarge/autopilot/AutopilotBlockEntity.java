@@ -646,13 +646,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.wheelsBelow = wheelsBelow;
         zeppelin.configure(cells, ahead, astern, gasAbove, middleAft);
         linksChecked = true;
-        setChanged();
+        changed();
     }
 
     /** Wired when a zeppelin is built: its control car's hand controls, as offsets from it. */
     public void wireZeppelinControls(BlockPos rudder, BlockPos elevator, BlockPos port, BlockPos starboard, BlockPos lever) {
         zeppelin.wireControls(rudder, elevator, port, starboard, lever);
         setChanged();
+    }
+
+    /** What it flies, on the clients as on the server, whose pictures its screens show. */
+    public Craft craft() {
+        return craft;
     }
 
     /** How it is working a zeppelin, for play-testing; null for an airliner's. */
@@ -807,7 +812,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         return relay.hasProperty(ThrustRelayBlock.POWER) && relay.getValue(ThrustRelayBlock.POWER) > 0;
     }
 
-    /** The autopilot nearest to a position on the server, within {@link #FLIGHT_DECK} of it; null for none. */
+    /** The autopilot nearest to a position, on either side, within {@link #FLIGHT_DECK} of it; null for none. */
     @Nullable
     public static AutopilotBlockEntity nearest(Level level, BlockPos pos) {
         AutopilotBlockEntity nearest = null;
@@ -2394,6 +2399,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        // In the save and in the update the clients are sent alike, for the pictures they draw it with; saved before
+        // there were zeppelins: an airliner's.
+        craft = parse(Craft.class, tag.getString("Craft"), Craft.AIRLINER);
         // The update sent to clients carries only the targets; the full save also has the wiring.
         if (tag.contains("Relays")) {
             Rotation turn = Turning.since(tag, getBlockState());
@@ -2420,8 +2428,6 @@ public class AutopilotBlockEntity extends BlockEntity {
             flyOnceAboard = tag.contains("FlyOnceAboard") ? Settings.load(tag.getCompound("FlyOnceAboard")) : null;
             flyOnceAboardFor = tag.hasUUID("FlyOnceAboardFor") ? tag.getUUID("FlyOnceAboardFor") : null;
             flyOnceAboardSeat = tag.contains("FlyOnceAboardSeat") ? Turning.turn(BlockPos.of(tag.getLong("FlyOnceAboardSeat")), turn) : null;
-            // Saved before there were zeppelins: an airliner's.
-            craft = parse(Craft.class, tag.getString("Craft"), Craft.AIRLINER);
             if (craft == Craft.ZEPPELIN) {
                 zeppelin.load(tag.getCompound("Zeppelin"), turn);
             }
@@ -2498,6 +2504,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         CompoundTag tag = new CompoundTag();
         saveTargets(tag);
         tag.putBoolean("Stuck", stuck);
+        tag.putString("Craft", craft.name());
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         surfaces.saveShown(tag);

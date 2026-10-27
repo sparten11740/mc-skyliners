@@ -1966,32 +1966,38 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   });
   // The way it flies: the path from the nose of a small airliner at the bottom, an arrowhead at its end. Straight on;
   // or round a half circle of a radius, to the right, or mirrored to the left. The airliner is drawn pixel by pixel,
-  // too small for the shape the larger pictures share to hold together.
+  // too small for the shape the larger pictures share to hold together; so is the zeppelin, a cigar with its tailplanes,
+  // in its own set of these.
   const SMALL_AIRLINER = ["..##..", ".####.", "######", "..##..", ".####."];
-  const smallAirliner = (x, y, cx) => SMALL_AIRLINER[y - 11]?.[x - Math.round(cx - 3)] === "#";
+  const SMALL_ZEPPELIN = ["..##..", ".####.", ".####.", "#.##.#", "..##.."];
   const path = (x, y, points) => points.slice(1).some((point, i) => onSegment(x, y, points[i], point, 1.7));
-  icon(autopilotOutput, "straight_on", (x, y) => {
-    if (smallAirliner(x, y, 7.5)) return INK;
-    return path(x, y, [[7.5, 10], [7.5, 4]]) || inTriangle(x, y, [4.6, 4.8], [10.4, 4.8], [7.5, 0.6]) ? CYAN : null;
-  });
   const TURN_FROM = 3.5;
   const TURN_MIDDLE = 6.5;
-  for (const [size, radius] of [["gentle", 4], ["tight", 2.5]]) {
-    for (const [side, mirror] of [["left", true], ["right", false]]) {
-      const end = TURN_FROM + 2 * radius;
-      const arc = Array.from({ length: 13 }, (_, k) => {
-        const angle = Math.PI - (Math.PI * k) / 12;
-        return [TURN_FROM + radius + radius * Math.cos(angle), TURN_MIDDLE - radius * Math.sin(angle)];
-      });
-      const points = [[TURN_FROM, 10], [TURN_FROM, TURN_MIDDLE], ...arc, [end, TURN_MIDDLE + 1.5]];
-      icon(autopilotOutput, `turn_${size}_${side}`, (px, y) => {
-        const x = mirror ? 15 - px : px;
-        if (smallAirliner(x, y, TURN_FROM)) return INK;
-        const head = inTriangle(x, y, [end - 2.6, TURN_MIDDLE + 1.4], [end + 2.6, TURN_MIDDLE + 1.4], [end, TURN_MIDDLE + 4.6]);
-        return path(x, y, points) || head ? MAGENTA : null;
-      });
+  const steering = (prefix, sprite) => {
+    const small = (x, y, cx) => sprite[y - 11]?.[x - Math.round(cx - 3)] === "#";
+    icon(autopilotOutput, `${prefix}straight_on`, (x, y) => {
+      if (small(x, y, 7.5)) return INK;
+      return path(x, y, [[7.5, 10], [7.5, 4]]) || inTriangle(x, y, [4.6, 4.8], [10.4, 4.8], [7.5, 0.6]) ? CYAN : null;
+    });
+    for (const [size, radius] of [["gentle", 4], ["tight", 2.5]]) {
+      for (const [side, mirror] of [["left", true], ["right", false]]) {
+        const end = TURN_FROM + 2 * radius;
+        const arc = Array.from({ length: 13 }, (_, k) => {
+          const angle = Math.PI - (Math.PI * k) / 12;
+          return [TURN_FROM + radius + radius * Math.cos(angle), TURN_MIDDLE - radius * Math.sin(angle)];
+        });
+        const points = [[TURN_FROM, 10], [TURN_FROM, TURN_MIDDLE], ...arc, [end, TURN_MIDDLE + 1.5]];
+        icon(autopilotOutput, `${prefix}turn_${size}_${side}`, (px, y) => {
+          const x = mirror ? 15 - px : px;
+          if (small(x, y, TURN_FROM)) return INK;
+          const head = inTriangle(x, y, [end - 2.6, TURN_MIDDLE + 1.4], [end + 2.6, TURN_MIDDLE + 1.4], [end, TURN_MIDDLE + 4.6]);
+          return path(x, y, points) || head ? MAGENTA : null;
+        });
+      }
     }
-  }
+  };
+  steering("", SMALL_AIRLINER);
+  steering("zeppelin_", SMALL_ZEPPELIN);
   // A runway along the bottom, with its centre line.
   const runway = (x, y, from, to) => (y === 14 && x >= from && x <= to ? (x % 3 === 0 ? INK : RUNWAY) : null);
   icon(autopilotOutput, "take_off", (x, y) => (airliner(x, y, 8.5, 6.5, 45, 0.85) ? GREEN : runway(x, y, 0, 8)));
@@ -2023,14 +2029,18 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (x >= 14 && y >= 3 && y <= 11) return RED;
     return runway(x, y, 0, 15);
   });
+  // Under a craft at the top, how high it is: an arrow up to it and one down to the ground, grass over earth.
+  const EARTH = [0x7a, 0x4e, 0x26];
+  const heightOverGround = (x, y) => {
+    if (arrow(x, y, 7.5, 6, 9, true) || arrow(x, y, 7.5, 10, 12, false)) return CYAN;
+    if (y === 13) return GREEN;
+    return y >= 14 ? EARTH : null;
+  };
   icon(autopilotOutput, "ground_height", (x, y) => {
     const fin = y <= 2 && x >= 1 && x <= 1 + y;
     const fuselage = (y === 3 || y === 4) && x >= 1 && x <= 13 - (y === 3 ? 1 : 0);
     const nose = y === 4 && x === 14;
-    if (fin || fuselage || nose) return INK;
-    if (arrow(x, y, 7.5, 6, 9, true) || arrow(x, y, 7.5, 10, 12, false)) return CYAN;
-    if (y === 13) return GREEN;
-    return y >= 14 ? [0x7a, 0x4e, 0x26] : null;
+    return fin || fuselage || nose ? INK : heightOverGround(x, y);
   });
   // Fly to a pin: a map pin, a round red head with a white dot in it on a point, over a magenta ring round its foot,
   // the circle flown round it.
@@ -2044,14 +2054,13 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   });
   // Land at the pin: the amber airliner settling onto the runway, as Land has it but smaller, by a small red map pin
   // standing at the runway's far end.
-  icon(autopilotOutput, "land_at_pin", (x, y) => {
+  const smallPin = (x, y) => {
     const head = Math.hypot(x - 12, y - 3.5);
     if (head <= 0.9) return INK;
     if (head <= 2.6) return x < 12 && y < 4 ? [0xf0, 0x50, 0x44] : [0xd0, 0x30, 0x28];
-    if (y >= 6 && y <= 9 && Math.abs(x - 12) <= (9 - y) * 0.6 + 0.2) return [0xb0, 0x24, 0x1e];
-    if (airliner(x, y, 5.5, 7, 135, 0.7)) return AMBER;
-    return runway(x, y, 1, 15);
-  });
+    return y >= 6 && y <= 9 && Math.abs(x - 12) <= (9 - y) * 0.6 + 0.2 ? [0xb0, 0x24, 0x1e] : null;
+  };
+  icon(autopilotOutput, "land_at_pin", (x, y) => smallPin(x, y) ?? (airliner(x, y, 5.5, 7, 135, 0.7) ? AMBER : runway(x, y, 1, 15)));
   icon(autopilotOutput, "unstuck", (x, y) => {
     const fin = y >= 1 && y <= 3 && x >= 1 && x <= y;
     const fuselage = (y === 4 && x >= 1 && x <= 12) || (y === 5 && x >= 1 && x <= 14);
@@ -2065,6 +2074,66 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     }
     return y === 15 ? GREEN : null;
   });
+
+  // The zeppelin's autopilot's pictures: the airliner's, the zeppelin in the airliner's place. Its hull, as long as a
+  // picture is wide, blunt at the nose and running to a point at the tail, and a fin out from its tail either side,
+  // swept back to a tip short of that point, so that it reads as an airship and not a rocket: whether a point so far
+  // along it from its middle (forward positive) and so far out from its axis lies within them.
+  const ZEPPELIN_LENGTH = 7.2;
+  const zeppelinShape = (along, out, breadth, span) => {
+    if (Math.abs(along) > ZEPPELIN_LENGTH) return false;
+    const t = Math.abs(along) / ZEPPELIN_LENGTH;
+    const hull = along >= 0 ? t ** 3 + (out / breadth) ** 2 <= 1 : out <= breadth * Math.sqrt(1 - t ** 1.6);
+    const fin = out <= span && along >= -6.2 + (out - 1.5) * 0.15 && along <= -3.8 - (out - 1.5) * 0.75;
+    return hull || fin;
+  };
+  // From above, its nose on a bearing (degrees clockwise from up), its middle at (cx, cy): a little broader than from
+  // the side, to read as a body seen whole, its fins the horizontal ones.
+  const zeppelin = (x, y, cx, cy, bearing, size = 1) => {
+    const turn = (bearing * Math.PI) / 180;
+    const dx = (x - cx) / size;
+    const dy = (y - cy) / size;
+    const along = dx * Math.sin(turn) - dy * Math.cos(turn);
+    const out = Math.abs(dx * Math.cos(turn) + dy * Math.sin(turn));
+    return zeppelinShape(along, out, 3, 4.6);
+  };
+  // From the side, its nose to the right and raised by a tilt (degrees), its middle at (cx, cy): the hull, a fin above
+  // and below its tail and the control car under its bow.
+  const zeppelinSide = (x, y, cx, cy, tilt, size = 1) => {
+    const turn = (tilt * Math.PI) / 180;
+    const dx = (x - cx) / size;
+    const dy = (y - cy) / size;
+    const along = dx * Math.cos(turn) - dy * Math.sin(turn);
+    const up = -dx * Math.sin(turn) - dy * Math.cos(turn);
+    const car = along >= 2 && along <= 4 && up >= -3.2 && up <= -2;
+    return zeppelinShape(along, Math.abs(up), 2.4, 3.8) || car;
+  };
+  // The ground a zeppelin rises from and settles onto anywhere, needing no runway: grass over earth along the bottom.
+  const ground = (x, y, from, to) => (x < from || x > to || y < 14 ? null : y === 14 ? GREEN_DARK : EARTH);
+  icon(autopilotOutput, "zeppelin", (x, y) => (zeppelin(x, y, 7.5, 7.5, 0) ? INK : null));
+  icon(autopilotOutput, "zeppelin_side", (x, y) => (zeppelinSide(x, y, 7.5, 7.5, 0) ? (y >= 9 ? PALE : INK) : null));
+  // Take off: the green zeppelin rising off the ground, an arrow up under it. Land: the amber one settling, the arrow
+  // down.
+  icon(autopilotOutput, "zeppelin_take_off", (x, y) => {
+    if (zeppelinSide(x, y, 8, 5, 10, 0.85)) return GREEN;
+    return arrow(x, y, 7.5, 9, 13, true) ? INK : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "zeppelin_land", (x, y) => {
+    if (zeppelinSide(x, y, 7.5, 5.5, 0, 0.85)) return AMBER;
+    return arrow(x, y, 7.5, 9, 13, false) ? INK : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "zeppelin_engage", (x, y) => {
+    if (zeppelinSide(x, y, 9, 7.5, 0, 0.85)) return GREEN;
+    return x <= 1 && (y === 4 || y === 7 || y === 8 || y === 11) ? INK : null;
+  });
+  icon(autopilotOutput, "zeppelin_climb", (x, y) => (zeppelinSide(x, y, 9.5, 6.5, 20, 0.8) ? GREEN : arrow(x, y, 2.5, 8, 15, true) ? INK : null));
+  icon(autopilotOutput, "zeppelin_descend", (x, y) => (zeppelinSide(x, y, 9.5, 8.5, -20, 0.8) ? GREEN : arrow(x, y, 2.5, 0, 7, false) ? INK : null));
+  icon(autopilotOutput, "zeppelin_land_at_pin", (x, y) => {
+    const pin = smallPin(x, y);
+    if (pin || zeppelinSide(x, y, 5.5, 6.5, 0, 0.7)) return pin ?? AMBER;
+    return arrow(x, y, 5.5, 10, 13, false) ? INK : ground(x, y, 1, 15);
+  });
+  icon(autopilotOutput, "zeppelin_ground_height", (x, y) => (zeppelinSide(x, y, 7.5, 2.5, 0) ? INK : heightOverGround(x, y)));
 
   // Air traffic control talking (see AtcHeadset): a pilot's headset, its band over the top, a white ear cup either side
   // and the microphone on its boom round to the mouth, with the radio's green lamp lit in the corner.

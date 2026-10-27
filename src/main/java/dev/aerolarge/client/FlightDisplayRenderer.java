@@ -3,8 +3,10 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
+import dev.aerolarge.client.PanelArt.Pictures;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,6 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -25,7 +28,8 @@ import org.joml.Matrix4f;
  * ground, the horizon tilted against the bank and moved with the pitch, a pitch ladder, the yellow aircraft symbol)
  * with airspeed on the left, altitude on the right, vertical speed under it and the heading at the bottom. The values
  * come from the airliner's pose as the client draws it, so the display moves as smoothly as the airliner does. On an
- * airliner that is not assembled it shows a standby screen. It is only drawn with the camera in front of it.
+ * airliner or zeppelin that is not assembled it shows a standby screen. It is only drawn with the camera in front of
+ * it.
  */
 public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayBlockEntity> {
     /** The screen's half width and half height on the block face, in blocks. */
@@ -45,9 +49,9 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final float STANDBY_PICTURE = 0.13F;
     /**
      * What to press to fly while the airliner stands as blocks: the picture on the autopilot's on/off key, whose press
-     * has the Physics Assembler assemble the airliner and takes off.
+     * has the Physics Assembler assemble the airliner and takes off. A zeppelin's display shows the zeppelin's own.
      */
-    static final ResourceLocation ASSEMBLE = PanelArt.Icon.of("autopilot/engage").texture();
+    static final ResourceLocation ASSEMBLE = Pictures.AIRLINER.cruise().texture();
     /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
     private static final float TEXT_LIFT = 0.005F;
@@ -80,23 +84,30 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
         pose.translate(0, 0, SURFACE);
         long staticSeed = display.getLevel() == null ? 0 : display.getBlockPos().asLong() + display.getLevel().getGameTime();
-        draw(pose, buffers, attitude, staticSeed);
+        draw(pose, buffers, attitude, staticSeed, standby(display));
         pose.popPose();
+    }
+
+    /** The standby screen's picture of what to press: the one on the nearby autopilot's on/off key, if there is one. */
+    private static ResourceLocation standby(FlightDisplayBlockEntity display) {
+        Level level = display.getLevel();
+        AutopilotBlockEntity autopilot = level != null ? AutopilotBlockEntity.nearest(level, display.getBlockPos()) : null;
+        return autopilot != null ? Pictures.of(autopilot.craft()).cruise().texture() : ASSEMBLE;
     }
 
     /**
      * Draws the display round the pose's origin, {@link #HALF_WIDTH} and {@link #HALF_HEIGHT} out each way and facing
-     * out along its z: the standby screen without an attitude to show, the autopilot's start picture over its words,
-     * and static over it all just after lightning struck, its specks picked by the seed.
+     * out along its z: the standby screen without an attitude to show, the autopilot's start picture given over its
+     * words, and static over it all just after lightning struck, its specks picked by the seed.
      */
-    static void draw(PoseStack pose, MultiBufferSource buffers, @Nullable SableClient.Attitude attitude, long staticSeed) {
+    static void draw(PoseStack pose, MultiBufferSource buffers, @Nullable SableClient.Attitude attitude, long staticSeed, ResourceLocation standby) {
         Matrix4f matrix = pose.last().pose();
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(fill, matrix, -HALF_WIDTH, -HALF_HEIGHT, HALF_WIDTH, HALF_HEIGHT, 0, BLACK);
 
         Font font = Minecraft.getInstance().font;
         if (attitude == null) {
-            ScreenDrawing.picture(buffers, matrix, ASSEMBLE, 0, STANDBY_PICTURE_Y, STANDBY_PICTURE, TEXT_LIFT, 0xFFFFFFFF);
+            ScreenDrawing.picture(buffers, matrix, standby, 0, STANDBY_PICTURE_Y, STANDBY_PICTURE, TEXT_LIFT, 0xFFFFFFFF);
             text(font, pose, buffers, "STBY", 0, 0, GREEN);
             text(font, pose, buffers, "ASSEMBLE TO FLY", 0, -0.12F, WHITE);
             return;

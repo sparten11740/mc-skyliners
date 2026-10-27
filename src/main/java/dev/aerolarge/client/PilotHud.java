@@ -12,6 +12,7 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.client.HudLayout.Box;
 import dev.aerolarge.client.HudLayout.Placement;
 import dev.aerolarge.client.PanelArt.Icon;
+import dev.aerolarge.client.PanelArt.Pictures;
 import dev.aerolarge.client.ScreenDrawing.Align;
 import dev.aerolarge.item.PilotHelmetItem;
 import java.util.List;
@@ -216,7 +217,6 @@ public final class PilotHud {
     private static final int TARGET = 0xFFFF80F4;
     private static final int WARNING = AutopilotScreenRenderer.AMBER;
 
-    private static final Icon GROUND_HEIGHT = Icon.of("autopilot/ground_height");
     private static final String PHASE_KEY = "message.aerolarge.autopilot.phase.";
     private static final String COMPASS_KEY = "screen.aerolarge.passenger_screen.compass.";
     private static final Component AP_OFF = Component.translatable("screen.aerolarge.pilot_hud.off");
@@ -418,6 +418,7 @@ public final class PilotHud {
         float fade = Math.min(1, (Util.getMillis() - bootedAt) / FADE_IN_MILLIS);
         AutopilotBlockEntity autopilot = held.autopilot;
         Targets targets = Targets.of(autopilot);
+        Pictures pictures = Pictures.of(autopilot.craft());
         Window window = minecraft.getWindow();
         float pixelsPerUnit = pixelsPerUnit(window);
         float unit = pixelsPerUnit / (float) window.getGuiScale();
@@ -431,11 +432,11 @@ public final class PilotHud {
         HelmetVisor.draw(graphics, curve, OPACITY * fade, OUTLINE * fade, List.of(
             new HelmetVisor.Part(at.attitude(), ATTITUDE_REACH, painter(graphics, font, pixelsPerUnit, canvas -> attitude(canvas, reading))),
             new HelmetVisor.Part(at.speed(), speedReach,
-                painter(graphics, font, pixelsPerUnit, canvas -> speedTape(canvas, autopilot.phase(), reading, targets.speed(), speedReach.left()))),
+                painter(graphics, font, pixelsPerUnit, canvas -> speedTape(canvas, pictures, autopilot.phase(), reading, targets.speed(), speedReach.left()))),
             new HelmetVisor.Part(at.altitude(), ALTITUDE_REACH,
-                painter(graphics, font, pixelsPerUnit, canvas -> altitudeTape(canvas, reading, targets.altitude()))),
+                painter(graphics, font, pixelsPerUnit, canvas -> altitudeTape(canvas, pictures, reading, targets.altitude()))),
             new HelmetVisor.Part(at.heading(), HEADING_REACH,
-                painter(graphics, font, pixelsPerUnit, canvas -> headingScale(canvas, autopilot, reading, targets.heading())))));
+                painter(graphics, font, pixelsPerUnit, canvas -> headingScale(canvas, pictures, autopilot, reading, targets.heading())))));
     }
 
     /** A part's painter: drawing onto a canvas through the GUI's pose as the visor has set it up for the part. */
@@ -523,7 +524,7 @@ public final class PilotHud {
      * The speed, round the middle of its tape's spine: the tape, its bug and trend arrow, the speed set over its
      * numbers, and out beyond them, as far as the given edge, a picture of what the autopilot is doing over its name.
      */
-    private static void speedTape(Canvas canvas, Phase phase, Reading reading, double target, float left) {
+    private static void speedTape(Canvas canvas, Pictures pictures, Phase phase, Reading reading, double target, float left) {
         Tape tape = new Tape(0, 1, reading.airspeed(), UNITS_PER_SPEED, 0);
         tape.draw(canvas, SPEED_TICK, SPEED_LABEL);
         if (Math.abs(reading.trend()) >= TREND_MIN) {
@@ -539,7 +540,7 @@ public final class PilotHud {
 
         float middle = (left + tape.spine() - TAPE_NUMBERS - COLUMN_GAP) / 2;
         canvas.flush();
-        canvas.icon(Icon.phase(phase), middle - Icon.SIZE / 2F, -Icon.SIZE);
+        canvas.icon(pictures.phase(phase), middle - Icon.SIZE / 2F, -Icon.SIZE);
         canvas.text(phaseName(phase), middle, ICON_GAP + TEXT_MIDDLE, phase == Phase.OFF ? WARNING : HUD, Align.CENTRE);
     }
 
@@ -565,7 +566,7 @@ public final class PilotHud {
      * numbers, the height set over them, and out beyond the climb bar the wheels' height above the ground over the
      * climb or sink.
      */
-    private static void altitudeTape(Canvas canvas, Reading reading, double target) {
+    private static void altitudeTape(Canvas canvas, Pictures pictures, Reading reading, double target) {
         Tape tape = new Tape(0, -1, reading.altitude(), UNITS_PER_BLOCK, Double.NEGATIVE_INFINITY);
         tape.draw(canvas, ALTITUDE_TICK, ALTITUDE_LABEL);
         if (!Double.isNaN(reading.radio())) {
@@ -589,7 +590,7 @@ public final class PilotHud {
             canvas.triangle(arrowX, arrowY + 4, arrowX + 4, arrowY - 3, arrowX - 4, arrowY - 3, WARNING);
         }
         canvas.flush();
-        canvas.icon(GROUND_HEIGHT, x, radioY);
+        canvas.icon(pictures.groundHeight(), x, radioY);
         if (!Double.isNaN(reading.radio())) {
             canvas.text(String.valueOf(Math.round(reading.radio())), textX, radioY + Icon.SIZE / 2F, HUD, Align.LEFT);
         }
@@ -608,7 +609,7 @@ public final class PilotHud {
      * caret under it, the heading set as a magenta bug, and beside it the autopilot's mode, straight on or round a
      * circle, with the heading or the circle's radius set.
      */
-    private static void headingScale(Canvas canvas, AutopilotBlockEntity autopilot, Reading reading, double target) {
+    private static void headingScale(Canvas canvas, Pictures pictures, AutopilotBlockEntity autopilot, Reading reading, double target) {
         double heading = reading.heading();
         float span = HEADING_HALF_WIDTH / UNITS_PER_DEGREE;
         for (int bearing = Mth.ceil((heading - span) / HEADING_TICK) * HEADING_TICK; bearing <= heading + span; bearing += HEADING_TICK) {
@@ -631,7 +632,7 @@ public final class PilotHud {
         if (autopilot.phase() != Phase.OFF) {
             float middle = -LONG_TICK;
             canvas.flush();
-            canvas.icon(Icon.lateral(autopilot.lateral(), autopilot.circle()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
+            canvas.icon(pictures.lateral(autopilot.lateral(), autopilot.circle()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
             String set = autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))
                 : !Double.isNaN(target) ? String.format(Locale.ROOT, "%03d", Math.round(target) % 360) : "";
             canvas.text(set, HEADING_HALF_WIDTH + ICON_GAP, middle, TARGET, Align.LEFT);

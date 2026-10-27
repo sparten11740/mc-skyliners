@@ -1442,7 +1442,10 @@ autopilot's control head behind it between the two engine telegraphs, a flight d
 wall under the windows, the elevator wheel and the burner lever along the port wall, looking out of its windows, and the
 flight map on the back wall by the ladder. The transponder shows the zeppelin on the maps and the tower's radar as a
 white airship. Use the control head to open the autopilot's settings, the airliner's own screen, its speed dial running
-from stopped to 25 blocks a second. The zeppelin is too big for the Physics Assembler, so it is not glued: engaging the
+from stopped to 25 blocks a second. Its pictures show the zeppelin wherever the airliner's show the airliner: in the title
+bar, at the foot of the compass, in the turns and the sky, and on Take Off, which lifts it off the grass with an arrow
+up, and on Land, which settles it with an arrow down, with no runway in either. The control head's own screen, the pilot
+helmet's HUD and the flight display's standby picture show it too. The zeppelin is too big for the Physics Assembler, so it is not glued: engaging the
 autopilot assembles it through Sable, every block of its own and everything built inside its hull, but not the ground
 under it or the trees beside it.
 

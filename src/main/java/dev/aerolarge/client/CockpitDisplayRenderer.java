@@ -231,7 +231,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         pose.pushPose();
         pose.translate(width / 2, height / 2, 2 * LAYER);
         pose.scale(scale, scale, scale);
-        FlightDisplayRenderer.draw(pose, buffers, attitude, display.getBlockPos().asLong() + level.getGameTime());
+        FlightDisplayRenderer.draw(pose, buffers, attitude, display.getBlockPos().asLong() + level.getGameTime(), FlightDisplayRenderer.ASSEMBLE);
         pose.popPose();
     }
 
