@@ -305,16 +305,15 @@ final class AtcRadio {
 
     private void transmit(ServerLevel level, BlockEntity autopilot, Vec3 flightDeck, Transmission transmission) {
         long now = level.getGameTime();
-        airtime.take(now, transmission.ticks);
+        List<ServerPlayer> listeners = level.players().stream().filter(player -> hears(player, autopilot, flightDeck)).toList();
+        airtime.take(now, transmission.ticks, new Airtime.Said(listeners, transmission.sound.value().getLocation()));
         if (transmission == Transmission.CLEARED_FOR_TAKEOFF) {
             clearingUntil = now + transmission.ticks;
         }
         float volume = AerolargeConfig.ATC_VOLUME.get().floatValue();
         long seed = level.getRandom().nextLong();
-        for (ServerPlayer player : level.players()) {
-            if (hears(player, autopilot, flightDeck)) {
-                player.connection.send(new ClientboundSoundEntityPacket(transmission.sound, SoundSource.VOICE, player, volume, 1.0F, seed));
-            }
+        for (ServerPlayer player : listeners) {
+            player.connection.send(new ClientboundSoundEntityPacket(transmission.sound, SoundSource.VOICE, player, volume, 1.0F, seed));
         }
     }
 

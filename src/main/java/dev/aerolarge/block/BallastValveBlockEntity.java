@@ -1,6 +1,8 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.VoiceLength;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -55,6 +57,13 @@ public class BallastValveBlockEntity extends BlockEntity {
     private static final long STEADY_MILLIS = 45;
     private static final int STEADY_TICKS = 10;
     private static final long WAIT_MOST = 200;
+    /**
+     * How long the take-off is held, at most, for her control car to fall quiet before the beats begin, so that the
+     * officer's call never comes over a cabin announcement: the longest one may run, and a little more. And how long
+     * the call runs, in ticks, if its sound cannot be read.
+     */
+    private static final long QUIET_MOST = 320;
+    private static final int CALL_LENGTH = 40;
     /**
      * How long the hold may go unasked before it is given up, in ticks, its beats and all: the autopilot switched off
      * as she waits on the lines, or the ship gone.
@@ -135,10 +144,30 @@ public class BallastValveBlockEntity extends BlockEntity {
         }
     }
 
-    private void start(long now) {
+    /** The beats begin, the floor in her control car held for them until the officer's call is over. */
+    private void start(ServerLevel level, long now) {
         asked = NONE;
         started = now;
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.zeppelinFraming(level, worldPosition);
+        if (autopilot != null) {
+            autopilot.holdFloor(CALL + VoiceLength.ticks(AerolargeRegistry.UP_SHIP_CALL, CALL_LENGTH));
+        }
         changed();
+    }
+
+    /**
+     * Whether the beats may begin, so long after the take-off asked to be held: the server ticking steadily and her
+     * control car quiet, or each waited for as long as it may be.
+     */
+    private boolean ready(ServerLevel level, long waited) {
+        boolean steady = steadyTicks >= STEADY_TICKS || waited >= WAIT_MOST - 1;
+        return steady && (quiet(level) || waited >= WAIT_MOST + QUIET_MOST - 1);
+    }
+
+    /** Whether nothing is being said in her control car: no cabin announcement, which the beats wait for. */
+    private boolean quiet(ServerLevel level) {
+        AutopilotBlockEntity autopilot = AutopilotBlockEntity.zeppelinFraming(level, worldPosition);
+        return autopilot == null || autopilot.quiet();
     }
 
     /** Gives the take-off on the lines up, its beats and all, for every client too. */
@@ -156,9 +185,12 @@ public class BallastValveBlockEntity extends BlockEntity {
         }
     }
 
-    /** Whether a take-off asked to be held is waiting for the server to tick steadily before its beats begin. */
+    /**
+     * Whether a take-off asked to be held is waiting for its beats to begin: for the server to tick steadily, and her
+     * control car to fall quiet.
+     */
     private boolean waiting(long now) {
-        return asked != NONE && now >= asked && now - asked < WAIT_MOST;
+        return asked != NONE && now >= asked && now - asked < WAIT_MOST + QUIET_MOST;
     }
 
     /**
@@ -188,10 +220,10 @@ public class BallastValveBlockEntity extends BlockEntity {
         long millis = Util.getMillis();
         steadyTicks = lastTickMillis != 0 && millis - lastTickMillis >= STEADY_MILLIS ? steadyTicks + 1 : 0;
         lastTickMillis = millis;
-        // Begun a tick before the wait runs out at the latest, so her pilot, ticking before or after it, never finds
+        // Begun a tick before each wait runs out at the latest, so her pilot, ticking before or after it, never finds
         // her let go before the beats have begun.
-        if (asked != NONE && (steadyTicks >= STEADY_TICKS || now - asked >= WAIT_MOST - 1)) {
-            start(now);
+        if (asked != NONE && ready(level, now - asked)) {
+            start(level, now);
         }
         long since = since(now);
         boolean onTheLines = asked != NONE || since >= 0 && since < RELEASE;

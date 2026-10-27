@@ -24,8 +24,9 @@ import net.minecraft.world.phys.Vec3;
  * about the cabin. The same calm British woman's voice makes the cabin announcements (see {@link CabinAnnouncements}).
  * Climbing away and touching down gently are milestones for everyone aboard, too (see {@link FirstFlight}).
  *
- * <p>A callout cannot wait, so it takes the flight deck's {@link Airtime} whatever else is being said; air traffic
- * control asks first whether one is due soon (see {@link #quietFor}), so as not to be talked over.
+ * <p>A callout cannot wait, so it takes the flight deck's {@link Airtime} whatever else is being said, cutting short
+ * an announcement or a transmission it comes in over; the cabin announcements and air traffic control ask first
+ * whether one is due soon (see {@link #quietFor} and {@link #mayCall}), so that only a warning out of the blue does.
  */
 final class Callouts {
     /** Radio altitudes called out on the way down, in blocks, from the highest. */
@@ -60,8 +61,8 @@ final class Callouts {
      */
     private static final int WARNING_REPEAT = 80;
     /**
-     * How long a callout is given to be said, in ticks: tools/generate_sounds.mjs keeps every one shorter (its
-     * CALLOUT_LONGEST).
+     * How long a callout whose sound cannot be read is given to be said, in ticks: tools/generate_sounds.mjs keeps
+     * every one shorter (its CALLOUT_LONGEST).
      */
     private static final int SPOKEN = 70;
     /**
@@ -74,6 +75,8 @@ final class Callouts {
     private static final int LOOKAHEAD_MARGIN = 20;
     /** Everyone this close to the flight deck hears the callouts: everyone aboard. */
     private static final double HEARING = 64;
+    /** No game time: never watched. */
+    private static final long NEVER = Long.MIN_VALUE;
 
     private boolean calledV1;
     private boolean calledRotate;
@@ -87,6 +90,8 @@ final class Callouts {
     /** Whether it is rolling along the ground, or has rotated and not yet climbed away: before "positive rate". */
     private boolean rolling;
     private int warningCooldown;
+    /** The game time it last watched an assembled airliner, or {@link #NEVER}. */
+    private long watched = NEVER;
     private final Airtime airtime;
 
     Callouts(Airtime airtime) {
@@ -95,6 +100,7 @@ final class Callouts {
 
     /** One tick of watching: says whatever the airliner has just come to, to everyone aboard. */
     void watch(ServerLevel level, SableFlight.State state, double wheelsBelow, Supplier<List<ServerPlayer>> aboard) {
+        watched = level.getGameTime();
         Vec3 position = state.position();
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(position.x), Mth.floor(position.z));
         double radio = position.y - 0.5 - wheelsBelow - ground;
@@ -168,6 +174,15 @@ final class Callouts {
     }
 
     /**
+     * Whether a callout may come over the next so many ticks from this game time: while it watches an assembled
+     * airliner, one not foreseen to be quiet (see {@link #quietFor}); never while it watches none, a zeppelin's
+     * among them.
+     */
+    boolean mayCall(long now, int ticks) {
+        return watched != NEVER && now - watched <= 1 && !quietFor(ticks);
+    }
+
+    /**
      * Whether nothing is foreseen to be called out over the next so many ticks, from how the airliner went on the last
      * tick watched: not along the ground, nor lifting off before "positive rate"; not coming down where a height or
      * "retard" will be called within that time at the rate it sinks; and not banked or sinking near enough to a
@@ -194,7 +209,9 @@ final class Callouts {
 
     /** Plays the callout to everyone aboard, each hearing it from where they stand as they move about. */
     private void say(ServerLevel level, Vec3 position, Holder<SoundEvent> sound) {
-        airtime.take(level.getGameTime(), SPOKEN);
+        long now = level.getGameTime();
+        airtime.interrupt(now);
+        airtime.take(now, VoiceLength.ticks(sound, SPOKEN));
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : level.players()) {
             if (player.position().distanceToSqr(position) < HEARING * HEARING) {

@@ -5,6 +5,7 @@ import dev.aerolarge.block.Announcement;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
@@ -23,31 +24,43 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * switch, and the one for a sleep turns its cabin lights down.
  *
  * <p>One at a time, and not over and over: one asked for while anything else is said on the flight deck (another
- * announcement, a callout or air traffic control, all sharing its {@link Airtime}) waits for it to end (only the latest
- * one asked for waits), and one made in the last {@link #REPEAT} ticks is not made again, so pressing the autopilot
- * screen's buttons again and again does not make a chorus of them. Where each one stands in that, the panel shows.
+ * announcement, a callout or air traffic control, all sharing its {@link Airtime}), or while a callout is foreseen
+ * before it would end, waits for that to end (only the latest one asked for waits), and one made in the last
+ * {@link #REPEAT} ticks is not made again, so pressing the autopilot screen's buttons again and again does not make a
+ * chorus of them. Each holds the floor for as long as it runs (see {@link VoiceLength}); a callout nobody could
+ * foresee, a warning, cuts it short. Where each one stands in that, the panel shows.
  */
 public final class CabinAnnouncements {
     /**
-     * How long an announcement is given to play, chime and all, in ticks: tools/generate_sounds.mjs keeps every one
-     * shorter (its ANNOUNCEMENT_LONGEST).
+     * How long an announcement whose sound cannot be read is given to play, chime and all, in ticks:
+     * tools/generate_sounds.mjs keeps every one shorter (its ANNOUNCEMENT_LONGEST).
      */
     private static final int LONGEST = 15 * 20;
     /** Ticks after an announcement is asked for within which the same one is not made again: twenty seconds. */
     private static final int REPEAT = 20 * 20;
+    /**
+     * How long an announcement waits for anyone to be aboard to hear it, in ticks after it was asked for: a zeppelin
+     * just assembled to take off carries nobody for a moment, until those aboard are found riding it, while the server
+     * catches up on the ticks the assembly took.
+     */
+    private static final int AUDIENCE_WAIT = 10 * 20;
 
     /** When each announcement was last asked for, in game time. */
     private final Map<Announcement, Long> asked = new EnumMap<>(Announcement.class);
     private final Airtime airtime;
+    private final Callouts callouts;
     @Nullable
     private Announcement waiting;
-    /** The announcement last made, and the game time at which the time it was given to play ends. */
+    /** The announcement last made, the game time at which it ends, and whom it was played to. */
     @Nullable
     private Announcement onAir;
     private long onAirUntil;
+    @Nullable
+    private Airtime.Said heard;
 
-    CabinAnnouncements(Airtime airtime) {
+    CabinAnnouncements(Airtime airtime, Callouts callouts) {
         this.airtime = airtime;
+        this.callouts = callouts;
     }
 
     /**
@@ -64,11 +77,14 @@ public final class CabinAnnouncements {
             return;
         }
         asked.put(announcement, now);
-        if (!airtime.free(now)) {
+        if (!clear(now, announcement) || !play(level, autopilot, announcement)) {
             waiting = announcement;
-        } else {
-            play(level, autopilot, announcement);
         }
+    }
+
+    /** Whether an announcement may be made at this game time: nothing else said, nor a callout due before it ends. */
+    private boolean clear(long now, Announcement announcement) {
+        return airtime.free(now) && !callouts.mayCall(now, VoiceLength.ticks(announcement.sound, LONGEST));
     }
 
     /**
@@ -90,20 +106,33 @@ public final class CabinAnnouncements {
         return last != null && now - last < REPEAT ? Announcement.Standing.RESTING : Announcement.Standing.READY;
     }
 
+    /** Whether an announcement waits its turn, or for someone aboard to hear it. */
+    boolean waiting() {
+        return waiting != null;
+    }
+
     /** Each tick: makes the one waiting, once whatever is being said on the flight deck has ended. */
     void tick(BlockEntity autopilot) {
-        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && airtime.free(level.getGameTime())) {
-            Announcement next = waiting;
+        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && clear(level.getGameTime(), waiting) && play(level, autopilot, waiting)) {
             waiting = null;
-            play(level, autopilot, next);
         }
     }
 
-    private void play(ServerLevel level, BlockEntity autopilot, Announcement announcement) {
+    /**
+     * Makes the announcement to everyone aboard; whether it was made, which it is not while nobody is aboard to hear
+     * it, for a moment after it was asked for.
+     */
+    private boolean play(ServerLevel level, BlockEntity autopilot, Announcement announcement) {
         long now = level.getGameTime();
-        airtime.take(now, LONGEST);
+        List<ServerPlayer> aboard = Aboard.players(autopilot);
+        if (aboard.isEmpty() && now - asked.getOrDefault(announcement, now) < AUDIENCE_WAIT) {
+            return false;
+        }
+        int length = VoiceLength.ticks(announcement.sound, LONGEST);
+        heard = new Airtime.Said(aboard, announcement.sound.value().getLocation());
+        airtime.take(now, length, this::cutShort);
         onAir = announcement;
-        onAirUntil = now + LONGEST;
+        onAirUntil = now + length;
         if (announcement.seatbelts != null) {
             seatbelts(level, autopilot, announcement.seatbelts);
         }
@@ -111,9 +140,18 @@ public final class CabinAnnouncements {
             CabinLightsBlock.set(level, autopilot, announcement.lights);
         }
         long seed = level.getRandom().nextLong();
-        for (ServerPlayer player : Aboard.players(autopilot)) {
+        for (ServerPlayer player : aboard) {
             player.connection.send(new ClientboundSoundEntityPacket(announcement.sound, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
         }
+        return true;
+    }
+
+    /** The announcement being made is cut short for a callout: stopped for everyone who heard it, and over. */
+    private void cutShort() {
+        if (heard != null) {
+            heard.run();
+        }
+        onAirUntil = 0;
     }
 
     /** Switches the seatbelt signs on or off at the airliner's seatbelt switch, on the flight deck by its autopilot. */

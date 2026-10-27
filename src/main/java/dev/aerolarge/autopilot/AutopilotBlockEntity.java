@@ -595,7 +595,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private int unattended;
     private final Airtime airtime = new Airtime();
     private final Callouts callouts = new Callouts(airtime);
-    private final CabinAnnouncements announcements = new CabinAnnouncements(airtime);
+    private final CabinAnnouncements announcements = new CabinAnnouncements(airtime, callouts);
     private final AtcRadio atc = new AtcRadio(airtime, callouts);
     private final Turbulence turbulence = new Turbulence();
     private final AirPockets airPockets = new AirPockets();
@@ -920,6 +920,24 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Where a cabin announcement stands now, for the announcement panel to show. */
     public Announcement.Standing standing(Announcement announcement) {
         return level == null ? Announcement.Standing.READY : announcements.standing(announcement, level.getGameTime());
+    }
+
+    /**
+     * Whether nothing is being said in its flight deck's hearing now, nor waits to be: no announcement, callout or
+     * transmission.
+     */
+    public boolean quiet() {
+        return level == null || airtime.free(level.getGameTime()) && !announcements.waiting();
+    }
+
+    /**
+     * Something else aboard is said in its flight deck's hearing for so many ticks from now, as a zeppelin's ground
+     * officer calls "Up ship!": the cabin announcements and air traffic control wait for it.
+     */
+    public void holdFloor(int ticks) {
+        if (level != null) {
+            airtime.take(level.getGameTime(), ticks);
+        }
     }
 
     /**

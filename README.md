@@ -356,14 +356,16 @@ is a radio call instead. A Tower Radio (craftable) is for the airfield: whatever
 radio. A radio call crackles in for everyone near any radio within 4096 blocks, the handsets of airliners in flight
 included. Either way the message is left out of ordinary chat; use the handset or radio again to put it down.
 
-The autopilot makes announcements of its own, in the flight deck's voice after the same chime, and everyone aboard
-hears them wherever they are in the cabin. Set to take off (Take Off, on the ground), it welcomes everyone aboard and
-asks the cabin crew to be seated for take-off; set to land (Land), it asks everyone back to their seats and the crew to
-be seated for landing; and once the airliner has landed and stopped, however it was flown (on the autopilot or on the
-thrust levers), it welcomes everyone to their destination and lets them go. As crews do, it switches the seatbelt signs
-on with the take-off and landing announcements (which opens the curtains), and off again once stopped after landing,
-so everyone can get up. Announcements never talk over each other: one asked for while another plays waits for it to
-end, and the same one is not made again within twenty seconds, however often the buttons are pressed.
+The autopilot makes announcements of its own, in the flight deck's voice after the same chime, and everyone aboard hears
+them wherever they are in the cabin. Set to take off (Take Off, on the ground), it welcomes everyone aboard and asks the
+cabin crew to be seated for take-off; set to land (Land), it asks everyone back to their seats and the crew to be seated
+for landing; and once the airliner has landed and stopped, however it was flown (on the autopilot or on the thrust
+levers), it welcomes everyone to their destination and lets them go. As crews do, it switches the seatbelt signs on with
+the take-off and landing announcements (which opens the curtains), and off again once stopped after landing, so everyone
+can get up. Announcements never talk over each other, nor over the callouts: one asked for while another plays, or just
+before a callout is due, waits for it to end, and the same one is not made again within twenty seconds, however often
+the buttons are pressed. Only a warning nobody could see coming ("bank angle", "pull up") cuts an announcement short, to
+be heard.
 
 On the flight deck's back wall, left of the door as you face it from the seats, is the announcement panel, a slim
 quarter of a block deep: nine tiles, three by three, each making one announcement in the same voice when pressed (use
@@ -1514,13 +1516,14 @@ leaves it out of zeppelins built from then on, and off, the glasses already buil
 Taking off from the ground, she is held a moment on her lines, as the Hindenburg was at Lakehurst. Her ground handlers
 stand round her in navy with white caps, each on a manila line made fast to her hull: two on a line from under each side
 of her bow, two at each side of the control car, one under each flank and one under each side of her stern, her ground
-officer in his white-covered cap with its gold badge ahead of the car. The ship's bell rings, a short blast of his
-whistle bids them hold fast, her bow's water ballast pours out of her belly in a stream with a drumming roar, and on his
-call "Up ship!", his arm raised and a long blast of the whistle, they all let go together: the lines fall, the handlers
-step back and stand watching her rise, and fade away. Each stands on the ground at their station; over water, or where
-there is no ground, there is nobody. They are drawn by each player's game and are no creatures, nothing to bump into or
-hit. A zeppelin already floating rises at once. The server config's `upShip` switches it off, and leaves the Water
-Ballast Valve under her gangway out of zeppelins built from then on.
+officer in his white-covered cap with its gold badge ahead of the car. Once her take-off announcement is over, so that
+nobody talks over it, the ship's bell rings, a short blast of his whistle bids them hold fast, her bow's water ballast
+pours out of her belly in a stream with a drumming roar, and on his call "Up ship!", his arm raised and a long blast of
+the whistle, they all let go together: the lines fall, the handlers step back and stand watching her rise, and fade
+away. Each stands on the ground at their station; over water, or where there is no ground, there is nobody. They are
+drawn by each player's game and are no creatures, nothing to bump into or hit. A zeppelin already floating rises at
+once. The server config's `upShip` switches it off, and leaves the Water Ballast Valve under her gangway out of
+zeppelins built from then on.
 
 Passenger screens look through her outside cameras, as an airliner's do: one at the foot of the windows before each
 armchair on her promenades, turned to whoever sits in it, and one on the control car's back wall beside the Ship's
