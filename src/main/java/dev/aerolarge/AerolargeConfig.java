@@ -40,6 +40,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SKY_DECK_LAUNCH;
     public static final ModConfigSpec.BooleanValue HORN;
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
+    public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -258,6 +259,12 @@ public final class AerolargeConfig {
                 "navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep theirs, and keep their paint."
             )
             .define("liveryBoard", true);
+        SHIPS_COLOURS = builder
+            .comment(
+                "Whether a zeppelin is built with a flagstaff on its Sky Deck: a banner hoisted at its halyard flies from it as a great",
+                "flag, and is painted on the zeppelin's top and bottom fins. Zeppelins already built keep theirs."
+            )
+            .define("shipsColours", true);
         builder.pop();
 
         SPEC = builder.build();

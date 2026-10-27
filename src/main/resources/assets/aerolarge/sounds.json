@@ -794,5 +794,13 @@
         "name": "aerolarge:sleigh_bells"
       }
     ]
+  },
+  "flag_halyard": {
+    "subtitle": "subtitles.aerolarge.flag_halyard",
+    "sounds": [
+      {
+        "name": "aerolarge:flag_halyard"
+      }
+    ]
   }
 }

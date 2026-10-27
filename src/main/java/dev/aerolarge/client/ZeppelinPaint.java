@@ -1,6 +1,7 @@
 package dev.aerolarge.client;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.airframe.FinArt;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
@@ -27,13 +28,22 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * Each tick it takes a fresh look at the zeppelins' autopilots, as their blocks send them, into a list the threads
  * that mesh the world's sections read as it stands; and as a repaint sweeps along a zeppelin, from its nose to its
  * tail, it has the sections the new paint has reached since the tick before meshed again, so the paint moves along it
- * a slice at a time, and the rest is never meshed again for it.
+ * a slice at a time, and the rest is never meshed again for it. The ship's colours, flown over its Sky Deck, are
+ * painted over the livery on its fins (see {@link ShipsColours}), and the fins meshed again as they go up or come down.
  */
 public final class ZeppelinPaint {
-    /** A zeppelin as this client paints it, and how far aft of its nose the new paint has reached, in blocks. */
-    private record Painted(BoundingBox box, BlockPos min, BlockPos max, Direction nose, Livery livery, Livery before, double reached) {
+    /**
+     * A zeppelin as this client paints it, how far aft of its nose the new paint has reached, in blocks, and the
+     * picture its fins are painted with, null for none.
+     */
+    private record Painted(BoundingBox box, BlockPos min, BlockPos max, Direction nose, Livery livery, Livery before, double reached,
+                           @Nullable int[] fins) {
         int colour(BlockPos pos, boolean fabric) {
             Livery.Spot spot = Livery.Spot.of(pos, min, max, nose);
+            int pixel = fabric && fins != null ? FinArt.pixel(spot) : -1;
+            if (pixel >= 0) {
+                return fins[pixel];
+            }
             return (spot.along() < reached ? livery : before).colour(spot, fabric);
         }
     }
@@ -78,7 +88,7 @@ public final class ZeppelinPaint {
         List<Painted> now = new ArrayList<>();
         Map<BlockPos, Painted> seen = new HashMap<>();
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(level)) {
-            Painted zeppelin = paint(autopilot, level.getGameTime());
+            Painted zeppelin = paint(level, autopilot);
             if (zeppelin != null) {
                 now.add(zeppelin);
                 seen.put(autopilot.getBlockPos().immutable(), zeppelin);
@@ -90,26 +100,37 @@ public final class ZeppelinPaint {
         MESHED.putAll(seen);
     }
 
-    /** A zeppelin's paint as its autopilot has it at a game time; null for an airliner's, or one not built from a layout. */
+    /** A zeppelin's paint as its autopilot has it now; null for an airliner's, or one not built from a layout. */
     @Nullable
-    private static Painted paint(AutopilotBlockEntity autopilot, long time) {
+    private static Painted paint(ClientLevel level, AutopilotBlockEntity autopilot) {
         BoundingBox box = autopilot.craft() == Craft.ZEPPELIN ? autopilot.frame() : null;
         if (box == null) {
             return null;
         }
         long start = autopilot.repaintStart();
-        double share = start < 0 ? 1 : Math.min(1, (time - start) / (double) Livery.REPAINT_TICKS);
+        double share = start < 0 ? 1 : Math.min(1, (level.getGameTime() - start) / (double) Livery.REPAINT_TICKS);
         double reached = share >= 1 ? Double.MAX_VALUE : share * SWEEP_LENGTH;
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
         return new Painted(box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            autopilot.livery(), autopilot.repaintedFrom(), reached);
+            autopilot.livery(), autopilot.repaintedFrom(), reached, ShipsColours.fins(level, box));
     }
 
     /**
-     * Has the sections of a zeppelin meshed again where its paint differs from what was meshed for it: the slice the
-     * new paint has swept over since, or all of it when it is new to this client, or painted anew at once.
+     * Has the sections of a zeppelin meshed again where its paint differs from what was meshed for it: where its
+     * livery has changed, and its fins, if its colours have gone up or come down.
      */
     private static void remesh(@Nullable Painted before, Painted after) {
+        remeshLivery(before, after);
+        if ((before == null ? null : before.fins()) != after.fins()) {
+            remesh(after, FinArt.FRONT, FinArt.BACK);
+        }
+    }
+
+    /**
+     * Has the sections of a zeppelin meshed again where its livery differs from what was meshed for it: the slice the
+     * new paint has swept over since, or all of it when it is new to this client, or painted anew at once.
+     */
+    private static void remeshLivery(@Nullable Painted before, Painted after) {
         if (before == null) {
             if (after.livery() != Livery.SILVER || after.before() != Livery.SILVER) {
                 remesh(after, 0, SWEEP_LENGTH);

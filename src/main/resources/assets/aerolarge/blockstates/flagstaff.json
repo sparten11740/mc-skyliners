@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "up=false": {
+      "model": "aerolarge:block/flagstaff"
+    },
+    "up=true": {
+      "model": "aerolarge:block/flagstaff_top"
+    }
+  }
+}

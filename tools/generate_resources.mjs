@@ -542,6 +542,50 @@ cubes.propeller = null;
   dropsItself("burner_lever");
   cubes.burner_lever = null;
 }
+// The ship's colours on the Sky Deck (see FlagHalyardBlock): a white flagstaff, its topmost length carrying a gilded
+// truck, and its foot, a brass plate with the staff going on up from it and a horn cleat on the side the flag flies,
+// a coil of the halyard hung under it. The flag and the halyard's line up the staff are drawn by its renderer (see
+// ShipsColoursRenderer).
+{
+  const pole = "minecraft:block/white_concrete";
+  const brass = `${ID}:block/zeppelin_brass`;
+  for (const top of [false, true]) {
+    write(`assets/${ID}/models/block/flagstaff${top ? "_top" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { pole, truck: "minecraft:block/gold_block", particle: pole },
+      elements: top ? [solid([6.5, 0, 6.5], [9.5, 13, 9.5], "#pole"), solid([5.5, 13, 5.5], [10.5, 16, 10.5], "#truck")] : [solid([6.5, 0, 6.5], [9.5, 16, 9.5], "#pole")],
+    });
+  }
+  write(`assets/${ID}/blockstates/flagstaff.json`, { variants: { "up=false": { model: `${ID}:block/flagstaff` }, "up=true": { model: `${ID}:block/flagstaff_top` } } });
+  write(`assets/${ID}/models/item/flagstaff.json`, { parent: `${ID}:block/flagstaff_top` });
+  dropsItself("flagstaff");
+  cubes.flagstaff = null;
+  write(`assets/${ID}/models/block/flag_halyard.json`, {
+    parent: "minecraft:block/block",
+    textures: { pole, brass, rope: `${ID}:block/climbing_rope`, particle: brass },
+    elements: [
+      solid([3, 0, 3], [13, 2, 13], "#brass"),
+      solid([6.5, 2, 6.5], [9.5, 16, 9.5], "#pole"),
+      solid([7.5, 5, 5.5], [8.5, 6, 6.5], "#brass"),
+      solid([7.5, 8, 5.5], [8.5, 9, 6.5], "#brass"),
+      solid([7.5, 4, 4.5], [8.5, 10, 5.5], "#brass"),
+      solid([6, 2, 4], [10, 5, 5], "#rope"),
+    ],
+  });
+  write(`assets/${ID}/blockstates/flag_halyard.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/flag_halyard`, y }])),
+  });
+  write(`assets/${ID}/models/item/flag_halyard.json`, { parent: `${ID}:block/flag_halyard` });
+  dropsItself("flag_halyard");
+  cubes.flag_halyard = null;
+}
+function shipsColoursLang() {
+  return {
+    "block.aerolarge.flag_halyard": "Flag Halyard",
+    "block.aerolarge.flagstaff": "Flagstaff",
+    "subtitles.aerolarge.flag_halyard": "Halyard pulley squeaks",
+  };
+}
 function zeppelinControlsLang() {
   return {
     "block.aerolarge.rudder_wheel": "Rudder Wheel",
@@ -734,8 +778,9 @@ function atcLang() {
   Object.assign(sounds, airPocketSounds());
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
-  // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks.
-  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells"]) {
+  // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells and
+  // the pulley of its flag halyard.
+  for (const name of ["zeppelin_horn", "zeppelin_horn_echo", "sleigh_bells", "flag_halyard"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   write(`assets/${ID}/sounds.json`, sounds);
@@ -5111,7 +5156,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5184,6 +5229,8 @@ shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("paper_plane_box", ["PPP", "PCP", "PPP"], { P: `${ID}:paper_plane`, C: "minecraft:chest" }, 1);
 shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark_oak_planks" }, 1);
 shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
+shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
+shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
@@ -5764,6 +5811,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...towerInstrumentsLang(),
   ...zeppelinLang(),
   ...zeppelinControlsLang(),
+  ...shipsColoursLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

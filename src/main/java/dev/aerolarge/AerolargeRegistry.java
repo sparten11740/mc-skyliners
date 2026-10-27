@@ -68,6 +68,9 @@ import dev.aerolarge.block.EngineCoreBlock;
 import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.ExitSignBlock;
 import dev.aerolarge.block.FairingBlock;
+import dev.aerolarge.block.FlagHalyardBlock;
+import dev.aerolarge.block.FlagHalyardBlockEntity;
+import dev.aerolarge.block.FlagstaffBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.block.FlightMapBlock;
@@ -1527,6 +1530,17 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );
+    /** The ship's colours on the Sky Deck: the halyard they are hoisted at and the flagstaff they fly from. */
+    public static final DeferredBlock<FlagHalyardBlock> FLAG_HALYARD = BLOCKS.registerBlock(
+        "flag_halyard", FlagHalyardBlock::new, metal(MapColor.GOLD).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlagHalyardBlockEntity>> FLAG_HALYARD_ENTITY =
+        BLOCK_ENTITIES.register("flag_halyard", () -> BlockEntityType.Builder.of(FlagHalyardBlockEntity::new, FLAG_HALYARD.get()).build(null));
+    public static final DeferredBlock<FlagstaffBlock> FLAGSTAFF = BLOCKS.registerBlock(
+        "flagstaff", FlagstaffBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    /** The halyard's pulley squeaking as the colours run up the staff, and down. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FLAG_HALYARD_SOUND = sound("flag_halyard");
     /** The zeppelin's horn and its echo off the ground (see {@link dev.aerolarge.horn.ShipHorn}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN = sound("zeppelin_horn");
     public static final DeferredHolder<SoundEvent, SoundEvent> ZEPPELIN_HORN_ECHO = sound("zeppelin_horn_echo");
@@ -1542,6 +1556,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
     public static final DeferredItem<BlockItem> HORN_CORD_ITEM = ITEMS.registerSimpleBlockItem(HORN_CORD);
     public static final DeferredItem<BlockItem> LIVERY_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_BOARD);
+    public static final DeferredItem<BlockItem> FLAG_HALYARD_ITEM = ITEMS.registerSimpleBlockItem(FLAG_HALYARD);
+    public static final DeferredItem<BlockItem> FLAGSTAFF_ITEM = ITEMS.registerSimpleBlockItem(FLAGSTAFF);
     public static final DeferredItem<BlockItem> FESTIVE_GARLAND_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_GARLAND);
     public static final DeferredItem<BlockItem> FESTIVE_BOW_ITEM = ITEMS.registerSimpleBlockItem(FESTIVE_BOW);
 
@@ -1627,7 +1643,8 @@ public final class AerolargeRegistry {
             POOL_DECK_TILE_ITEM, POOL_MOSAIC_ITEM, POOL_COPING_ITEM, POOL_STEPS_ITEM, POOL_LADDER_ITEM
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
-            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
+            ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, BURNER_LEVER_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
         )),

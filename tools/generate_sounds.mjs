@@ -933,6 +933,34 @@ function gearRamp(t, from, to) {
   writeSound("sleigh_bells", samples, 0.7);
 }
 
+// The flag halyard's pulley as the colours run up the staff, hand over hand: each pull a rustle of rope through the
+// hands and a squeak of the sheave at the top of the staff, a little higher or lower each time.
+{
+  const pulley = ownRandom(0x666c6167);
+  const length = 2.1;
+  const pulls = 8;
+  const pullLength = 0.22;
+  const samples = new Float64Array(Math.round(length * RATE));
+  const pull = (start) => {
+    const pitch = 1050 + pulley() * 350;
+    const squeak = 0.09 + pulley() * 0.05;
+    let rope = 0;
+    let phase = 0;
+    const from = Math.round(start * RATE);
+    for (let i = 0; i < Math.round(pullLength * RATE) && from + i < samples.length; i++) {
+      const t = i / RATE;
+      rope += (pulley() * 2 - 1 - rope) * 0.35;
+      phase += (2 * Math.PI * pitch * (1 + 0.12 * Math.min(1, t / squeak) + 0.02 * Math.sin(2 * Math.PI * 38 * t))) / RATE;
+      const sheave = t < squeak ? (Math.sin(phase) + 0.35 * Math.sin(2 * phase) + 0.15 * Math.sin(3 * phase)) * Math.sin((Math.PI * t) / squeak) : 0;
+      samples[from + i] += rope * 0.18 * Math.sin(Math.PI * (t / pullLength)) + sheave * 0.3;
+    }
+  };
+  for (let k = 0; k < pulls; k++) {
+    pull((k * (length - pullLength)) / pulls + pulley() * 0.03);
+  }
+  writeSound("flag_halyard", samples, 0.8);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.
