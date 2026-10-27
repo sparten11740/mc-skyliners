@@ -1401,14 +1401,14 @@ an upper deck with long promenade windows down both sides, slanting with the hul
 deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
 climbs from the control car up its neck to a corridor running aft to the decks.
 
-The Furnished Zeppelin Blueprint fits the decks out from the airliner's furniture, as the Hindenburg's were laid out.
-On the lower deck the boarding hall at the front has bamboo in planters along its walls; the galley beside the stairs
-has stainless worktops and stowage, a coffee machine on its middle worktop; and aft of the stairs lie the sleeping
-cabins, bunks along both walls, each blanket a different soft colour and every reading light on. On the upper deck,
-blue armchairs stand along both promenades facing out of the slanting windows; the dining room at the front has
-tables set for four, a red armchair at each end; and aft on the port side the lounge has a bar with stools before its
-back bar, the coffee machine on the bar, and bean bags beyond it. Everything works as it does aboard the airliner:
-sit in the chairs, stools and bean bags, brew a coffee, switch a bunk's reading light on and off.
+The Furnished Zeppelin Blueprint fits the decks out from the airliner's furniture, as the Hindenburg's were laid out. On
+the lower deck the boarding hall at the front has bamboo in planters along its walls; the galley beside the stairs has
+stainless worktops and stowage, a coffee machine on its middle worktop; and aft of the stairs lie the sleeping cabins,
+bunks along both walls, each blanket a different soft colour and every reading light on. On the upper deck, blue
+armchairs stand along both promenades facing out of the slanting windows; the dining room at the front has tables set
+for four, two red armchairs down either side; and aft on the port side the lounge has a bar with stools before its back
+bar, the coffee machine on the bar, and bean bags beyond it. Everything works as it does aboard the airliner: sit in the
+chairs, stools and bean bags, brew a coffee, switch a bunk's reading light on and off.
 
 The Sky Shaft climbs to the top. Just aft of the middle, where a ring stands between two cells' rounded ends, a gap in
 the gangway's rail leads to a climbing rope inside a cage of girders. It rises past the glowing cells, some 40 blocks,
@@ -1417,10 +1417,10 @@ corner, a gantry over the hatch that the rope hangs from, and a mast whose red b
 any ladder is climbed, and step off fore or aft at the top. Like a ladder it slows a fall, so nobody is hurt slipping
 down it.
 
-Another rope climbs into a balloon. At the middle cell, the biggest, a gap in the gangway's rail leads to a caged rope
-up through an open mouth in the cell's floor into its hot air, to a little railed gallery among its glowing burners, lit
-at its corners. The hot air stays put over the open mouth, as it does over a hot air balloon's open throat, so the cell
-lifts as before.
+Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
+rail leads to a caged rope up through an open mouth in the cell's floor into its hot air, to a little railed gallery
+among its glowing burners, lit at its corners. The hot air stays put over the open mouth, as it does over a hot air
+balloon's open throat, so the cell lifts as before.
 
 How it flies: the zeppelin is lifted by real hot air. Each cell holds hot air burners, and the hot air they fill it with
 lifts it, as Create Aeronautics' balloons do, the more the harder they burn and the less the thinner the air, so the

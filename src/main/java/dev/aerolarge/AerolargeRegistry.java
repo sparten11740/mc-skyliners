@@ -2,7 +2,6 @@ package dev.aerolarge;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.block.AirstairBlockEntity;
@@ -267,7 +266,7 @@ public final class AerolargeRegistry {
      * the airliner, in its way as it takes off.
      */
     private static final float ONLY_EVER_PLACED = Float.MAX_VALUE;
-    /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see {@link AirframeBlueprintItem}). */
+    /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
 
@@ -1531,7 +1530,7 @@ public final class AerolargeRegistry {
         "zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(false), () -> MODEL_ZEPPELIN.get().defaultBlockState(),
             ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.zeppelin_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
     );
-    /** The same zeppelin with its passenger decks furnished: cabins, a galley, a dining room, a lounge and promenades. */
+    /** The same zeppelin with its decks furnished: cabins, a galley, a dining room, a lounge and promenades. */
     public static final DeferredItem<AirframeBlueprintItem> FURNISHED_ZEPPELIN_BLUEPRINT = ITEMS.register(
         "furnished_zeppelin_blueprint", () -> new AirframeBlueprintItem(() -> ZeppelinLayout.create(true),
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge.furnished_zeppelin_blueprint.tooltip",

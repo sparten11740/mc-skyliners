@@ -333,10 +333,12 @@ public final class ZeppelinLayout implements Layout {
 
     /**
      * The gas cells: each a balloon of envelope in its own colour, every block of the ellipsoid that touches its
-     * outside, hollow within, hung from the crown (see {@link #hangers}); on its floor, a little over the lowest point,
-     * its burners in two rows across the middle, each with a relay beside it giving it the signal it burns at (see
-     * {@link ThrustRelayBlock}), its pilot flame lit to start with. Nothing else stands within a cell, and nothing that
-     * changes ever stands in its walls, so Aeronautics finds each balloon once and never again.
+     * outside (see {@link #onCellWall}), hollow within, hung from the crown (see {@link #hangers}); on its floor, a
+     * little over the lowest point, its burners in two rows across the middle, each with a relay beside it giving it
+     * the signal it burns at (see {@link ThrustRelayBlock}), its pilot flame lit to start with. Nothing else stands
+     * within a cell but the gallery in one of them, which never changes, its rope up through an open mouth in that
+     * cell's floor, over which the hot air stays put (see {@link ZeppelinCellGallery}); and nothing that changes
+     * ever stands in a cell's walls, so Aeronautics finds each balloon once and never again.
      */
     private void gasCells() {
         for (int cell = 0; cell < CELLS; cell++) {
@@ -605,7 +607,7 @@ public final class ZeppelinLayout implements Layout {
      * {@link CabinRailBlock}): along every flight's open sides and round the landing, the stairs climbing through the
      * hull's open inside, where a fall is long.
      */
-    private void railAlong(int x, int y, int z, Direction edge) {
+    void railAlong(int x, int y, int z, Direction edge) {
         BlockState rail = AerolargeRegistry.CABIN_RAIL.get().defaultBlockState();
         set(x, y + 1, z, CabinRailBlock.along(stateAt(x, y + 1, z), edge, stateAt(x, y, z), rail));
     }

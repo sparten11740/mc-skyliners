@@ -37,7 +37,7 @@ final class ZeppelinDecks {
      */
     private static final int GALLEY_FROM = 25;
     private static final int GALLEY_TO = 30;
-    /** How far aft of the decks' middle the cabins start, and how far apart the bunks lie along each wall, in blocks. */
+    /** How far aft of the decks' middle the cabins start, and how far apart the bunks lie along a wall, in blocks. */
     private static final int CABINS_FROM = 2;
     private static final int BUNK_SPACING = 3;
     /** How far in from the promenade windows its armchairs stand, and how far apart, in blocks. */
@@ -49,7 +49,7 @@ final class ZeppelinDecks {
     private static final int TABLE_SPACING = 6;
     /** How far out from the middle the dining room's two columns of tables stand, either side, in blocks. */
     private static final int[] TABLES_OUT = {5, 11};
-    /** The lounge's bar: how far aft of the decks' middle it starts, how long it is, and how far out to port it stands. */
+    /** The lounge's bar: how far aft of the decks' middle it starts, its length and how far out to port, in blocks. */
     private static final int BAR_FROM = 8;
     private static final int BAR_LENGTH = 8;
     private static final int BAR_OUT = 10;
@@ -61,7 +61,7 @@ final class ZeppelinDecks {
     private static final DyeColor[] SOFT = {DyeColor.LIGHT_BLUE, DyeColor.PINK, DyeColor.LIME, DyeColor.YELLOW, DyeColor.ORANGE, DyeColor.PURPLE};
 
     private final ZeppelinLayout layout;
-    private int colours;
+    private int coloursUsed;
 
     ZeppelinDecks(ZeppelinLayout layout) {
         this.layout = layout;
@@ -136,7 +136,7 @@ final class ZeppelinDecks {
         }
     }
 
-    /** The dining room's tables, in two columns either side, each table two bar counters with an armchair at each end. */
+    /** The dining room's tables, two columns either side, each two bar counters with two armchairs down each side. */
     private void dining(int front, int upper) {
         for (int z = front + DINING_FROM; z + 1 <= front + DINING_TO; z += TABLE_SPACING) {
             for (int out : TABLES_OUT) {
@@ -212,6 +212,6 @@ final class ZeppelinDecks {
     }
 
     private DyeColor nextColour() {
-        return SOFT[colours++ % SOFT.length];
+        return SOFT[coloursUsed++ % SOFT.length];
     }
 }

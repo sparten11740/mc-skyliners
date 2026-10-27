@@ -18,9 +18,8 @@ import net.minecraft.server.level.ServerLevel;
 
 /**
  * {@code /aerolarge build <pos> <north|east|south|west> [furnished|zeppelin [furnished]]}: builds an airliner, or a
- * zeppelin, for
- * server operators without a blueprint in hand, its nose tip at pos and its tail stretching away the given way. Unlike
- * the blueprint it builds through whatever is in the way, and reports how much that was.
+ * zeppelin, for server operators without a blueprint in hand, its nose tip at pos and its tail stretching away the
+ * given way. Unlike the blueprint it builds through whatever is in the way, and reports how much that was.
  */
 final class AerolargeCommand {
     private AerolargeCommand() {

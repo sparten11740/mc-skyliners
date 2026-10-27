@@ -19,8 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class SouvenirModelBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<SouvenirModelBlock> CODEC = simpleCodec(SouvenirModelBlock::new);
-    /** The model on its stand, wings or fins and all, whichever way it points. */
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 12, 15);
+    /** The model on its stand, the airliner's wings or the zeppelin's fins and all, whichever way it points. */
+    private static final VoxelShape SHAPE = Block.box(1, 0, 0, 15, 13, 16);
 
     public SouvenirModelBlock(Properties properties) {
         super(properties);
