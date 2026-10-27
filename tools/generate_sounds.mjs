@@ -33,6 +33,20 @@ function random() {
   return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
 }
 
+/**
+ * A random sequence of its own, from a seed, for a sound added after the others: drawing from the shared one would
+ * change every sound after it in the file.
+ */
+function ownRandom(start) {
+  let own = start;
+  return () => {
+    own = (own + 0x6d2b79f5) | 0;
+    let value = Math.imul(own ^ (own >>> 15), 1 | own);
+    value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /** Writes samples, from -1 to 1, as a 16-bit mono PCM WAV at the generator's rate or the one given, in hertz. */
 function writeWav(path, samples, rate = RATE) {
   const data = Buffer.alloc(samples.length * 2);
@@ -870,6 +884,7 @@ function gearRamp(t, from, to) {
 // breath of air, a slow waver as the air rushes through, and a long fall as the cord is let go; and its echo off the
 // ground far below, the same blast muffled, softer and smeared, a tail on its end as from rolling country.
 {
+  const hornRandom = ownRandom(0x486f726e);
   const length = 2.6;
   const notes = [98, 123.47];
   const blast = (t) => Math.min(1, t / 0.18) * (t < 1.9 ? 1 : Math.max(0, 1 - (t - 1.9) / 0.7));
@@ -885,7 +900,7 @@ function gearRamp(t, from, to) {
         reed += Math.sin(phases[n] * k) / k ** 1.2;
       }
     });
-    const breath = (random() * 2 - 1) * 0.08 * Math.exp(-t / 0.25);
+    const breath = (hornRandom() * 2 - 1) * 0.08 * Math.exp(-t / 0.25);
     horn[i] = reed * blast(t) * 0.25 + breath;
   }
   writeSound("zeppelin_horn", horn);
