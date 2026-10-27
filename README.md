@@ -1485,6 +1485,13 @@ turn it, as the rudder does; with both at stop and the rudder hard over, it turn
 too thin for the burners to lift it further, the lever and the elevator have nothing more to give. With nobody aboard
 for a minute, the autopilot comes down where it is, flown by hand or not.
 
+A Horn Cord hangs from the control car's roof to starboard, just aft of the control head. Pull it and the zeppelin's
+horn sounds, a deep two-tone blast heard some 300 blocks off, from the ship as it flies; the villagers and animals on
+the ground under it turn and look up at it for a few seconds. In flight its echo comes back up off the ground, the later
+the higher it flies, a second for every hundred blocks or so, so the height is heard, as an airship's echo altimeter
+told it by the echo of a bang. The server config's `horn` leaves the cord off zeppelins built from then on; one can be
+crafted from two string over dark oak planks and hung anywhere.
+
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
 height set, 60 blocks above the ground to start with, where it levels off. It goes no higher than its ceiling, where its
@@ -1599,8 +1606,9 @@ as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`,
 engine's signal. Once the hull stands, `ZeppelinLayout` lays its features, each a `ZeppelinPiece` of its own on one
 list, as the blueprint's `ZeppelinOptions` ask: `ZeppelinSkyDeck` the Sky Shaft and the Sky Deck, `ZeppelinCellGallery`
 the gallery inside the middle cell, `ZeppelinDecks` the furnished zeppelin's furniture, `ZeppelinLights` its lights
-(`NavLightBlock`s, their glow drawn by `NavLightRenderer`) and `ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light
-and `PaperPlaneBoxBlock`; a feature is taken out of
+(`NavLightBlock`s, their glow drawn by `NavLightRenderer`), `ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light
+and `PaperPlaneBoxBlock`, and `ZeppelinHornCord` the `HornCordBlock` that `ShipHorn` sounds the horn from, its echo and
+the mobs looking up; a feature is taken out of
 the zeppelin with its line on the list. `ZeppelinControlCar` fits out its control room and
 wires the control head to every burner, engine and hand control; `ZeppelinControls` reads the hand controls
 (`HelmBlock`, whose wheel `HelmRenderer` draws turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and

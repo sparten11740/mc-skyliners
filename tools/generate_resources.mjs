@@ -475,6 +475,24 @@ cubes.propeller = null;
       orders.map((order) => [`engines=${side},facing=${facing},order=${order}`, { model: `${ID}:block/engine_telegraph_${side}_${order}`, y }])))),
   });
   write(`assets/${ID}/models/item/engine_telegraph.json`, { parent: `${ID}:block/engine_telegraph_port_stop` });
+  // The horn cord: a rope hanging from the ceiling with a wooden handle across its end, drawn lower while pulled.
+  for (const [pulled, drop] of [["false", 0], ["true", 2]]) {
+    write(`assets/${ID}/models/block/horn_cord${pulled === "true" ? "_pulled" : ""}.json`, {
+      parent: "minecraft:block/block",
+      render_type: "minecraft:cutout",
+      textures: { rope: `${ID}:block/climbing_rope`, handle: "minecraft:block/stripped_dark_oak_log", particle: `${ID}:block/climbing_rope` },
+      elements: [
+        { from: [7.5, 5 - drop, 7.5], to: [8.5, 16, 8.5], faces: Object.fromEntries(["north", "south", "east", "west"].map((f) => [f, { texture: "#rope" }])) },
+        { from: [5, 2 - drop, 7], to: [11, 5 - drop, 9], faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((f) => [f, { texture: "#handle" }])) },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/horn_cord.json`, {
+    variants: { "powered=false": { model: `${ID}:block/horn_cord` }, "powered=true": { model: `${ID}:block/horn_cord_pulled` } },
+  });
+  write(`assets/${ID}/models/item/horn_cord.json`, { parent: `${ID}:block/horn_cord` });
+  dropsItself("horn_cord");
+  cubes.horn_cord = null;
   dropsItself("engine_telegraph");
   cubes.engine_telegraph = null;
   for (let heat = 0; heat <= 4; heat++) {
@@ -504,6 +522,9 @@ function zeppelinControlsLang() {
     "block.aerolarge.rudder_wheel": "Rudder Wheel",
     "block.aerolarge.elevator_wheel": "Elevator Wheel",
     "block.aerolarge.engine_telegraph": "Engine Telegraph",
+    "block.aerolarge.horn_cord": "Horn Cord",
+    "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
+    "subtitles.aerolarge.zeppelin_horn_echo": "Horn echoes off the ground",
     "block.aerolarge.burner_lever": "Burner Lever",
   };
 }
@@ -676,6 +697,10 @@ function atcLang() {
   Object.assign(sounds, airPocketSounds());
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
+  // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks.
+  for (const name of ["zeppelin_horn", "zeppelin_horn_echo"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
@@ -5049,7 +5074,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5120,6 +5145,7 @@ shaped("jump_light", ["R", "L", "G"], { R: "minecraft:red_dye", L: "minecraft:re
 shaped("jump_switch", ["L", "P"], { L: "minecraft:lever", P: `${ID}:instrument_panel` }, 1);
 shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("paper_plane_box", ["PPP", "PCP", "PPP"], { P: `${ID}:paper_plane`, C: "minecraft:chest" }, 1);
+shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark_oak_planks" }, 1);
 shaped("landing_target", ["WRW", "RWR", "WRW"], { W: "minecraft:white_carpet", R: "minecraft:red_carpet" }, 1);
 shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:redstone_lamp" }, 2);
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);

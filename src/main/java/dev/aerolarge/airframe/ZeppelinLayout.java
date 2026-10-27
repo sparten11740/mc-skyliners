@@ -136,7 +136,8 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinSkyDeckLaunch::new,
         ZeppelinCellGallery::new,
         ZeppelinDecks::new,
-        ZeppelinLights::new);
+        ZeppelinLights::new,
+        ZeppelinHornCord::new);
 
     private final AirframePalette.Balloon palette;
     /** Every block of the zeppelin that is not the air inside its hull, by position relative to the nose's tip. */
@@ -160,6 +161,8 @@ public final class ZeppelinLayout implements Layout {
     private final double[] radii;
     /** Where the stairs up from the decks reach the gangway, a row along it, once they are laid. */
     private int stairsTop;
+    /** The control car's box, once it is laid. */
+    private Car car;
     /** How many blocks of air {@link #inOrder} hands over, found once everything else stands. */
     private int air = -1;
 
@@ -664,7 +667,7 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /** The control car's box, in blocks: its front and back walls' rows, its half width, its floor and roof rows. */
-    private record Car(int front, int back, int half, int floor, int roof) {
+    record Car(int front, int back, int half, int floor, int roof) {
         int lounge() {
             return (front + back) / 2;
         }
@@ -688,6 +691,7 @@ public final class ZeppelinLayout implements Layout {
             set(0, car.roof(), z, AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState());
         }
         new ZeppelinControlCar(this).fit(car.front(), car.back(), car.floor());
+        this.car = car;
         // The wheel the zeppelin rests on at the bow, under the car's middle.
         set(0, car.floor() - 1, car.lounge(), AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
         neck(car.back() - 1, car.floor() + 1, car.roof());
@@ -947,6 +951,11 @@ public final class ZeppelinLayout implements Layout {
     /** Each engine car's pod's middle on its axis, by its engine's number less one, by layout position. */
     List<BlockPos> engineCars() {
         return engineCars;
+    }
+
+    /** The control car's box, in blocks, under the bow. */
+    Car car() {
+        return car;
     }
 
     /** The row the hull's axis runs along. */

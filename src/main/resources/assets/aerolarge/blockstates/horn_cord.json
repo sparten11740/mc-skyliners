@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "aerolarge:block/horn_cord"
+    },
+    "powered=true": {
+      "model": "aerolarge:block/horn_cord_pulled"
+    }
+  }
+}

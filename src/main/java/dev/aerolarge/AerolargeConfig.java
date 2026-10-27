@@ -38,6 +38,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SAFETY_CANOPY;
     public static final ModConfigSpec.BooleanValue NAVIGATION_LIGHTS;
     public static final ModConfigSpec.BooleanValue SKY_DECK_LAUNCH;
+    public static final ModConfigSpec.BooleanValue HORN;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -243,6 +244,13 @@ public final class AerolargeConfig {
                 "holding a landing target and signal flares on its Sky Deck. Zeppelins already built keep theirs."
             )
             .define("skyDeckLaunch", true);
+        HORN = builder
+            .comment(
+                "Whether a zeppelin is built with a horn cord in its control car: pulled, a deep two-tone horn heard far off, villagers and",
+                "animals below looking up, and in flight its echo off the ground, back the later the higher it flies. Zeppelins already",
+                "built keep theirs."
+            )
+            .define("horn", true);
         builder.pop();
 
         SPEC = builder.build();

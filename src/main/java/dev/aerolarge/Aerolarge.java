@@ -38,6 +38,7 @@ import dev.aerolarge.client.TransponderScreen;
 import dev.aerolarge.compat.Blockpilot;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.SlideRide;
+import dev.aerolarge.horn.ShipHorn;
 import dev.aerolarge.parachute.OpenParachute;
 import dev.aerolarge.parachute.Parachute;
 import dev.aerolarge.parachute.SafetyCanopy;
@@ -117,6 +118,7 @@ public final class Aerolarge {
                 RadarSurvey.tick(level);
                 HandPlaced.tick(level);
                 SelfDestruct.tick(level);
+                ShipHorn.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
@@ -136,6 +138,7 @@ public final class Aerolarge {
                 RunwayBuild.drop(level);
                 RadarSurvey.unload(level);
                 SelfDestruct.drop(level);
+                ShipHorn.drop(level);
             }
         });
     }

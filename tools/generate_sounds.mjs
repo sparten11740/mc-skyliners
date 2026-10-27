@@ -866,6 +866,43 @@ function gearRamp(t, from, to) {
   writeSound("gear_horn", samples, 0.7);
 }
 
+// The zeppelin's horn: a deep two-tone blast, two reedy notes a major third apart sounding together, swelling in with a
+// breath of air, a slow waver as the air rushes through, and a long fall as the cord is let go; and its echo off the
+// ground far below, the same blast muffled, softer and smeared, a tail on its end as from rolling country.
+{
+  const length = 2.6;
+  const notes = [98, 123.47];
+  const blast = (t) => Math.min(1, t / 0.18) * (t < 1.9 ? 1 : Math.max(0, 1 - (t - 1.9) / 0.7));
+  const horn = new Float64Array(Math.round(length * RATE));
+  const phases = notes.map(() => 0);
+  for (let i = 0; i < horn.length; i++) {
+    const t = i / RATE;
+    const waver = 1 + 0.004 * Math.sin(2 * Math.PI * 4.5 * t);
+    let reed = 0;
+    notes.forEach((note, n) => {
+      phases[n] += (2 * Math.PI * note * waver) / RATE;
+      for (let k = 1; k <= 9; k++) {
+        reed += Math.sin(phases[n] * k) / k ** 1.2;
+      }
+    });
+    const breath = (random() * 2 - 1) * 0.08 * Math.exp(-t / 0.25);
+    horn[i] = reed * blast(t) * 0.25 + breath;
+  }
+  writeSound("zeppelin_horn", horn);
+  const echoLength = 3.4;
+  const echo = new Float64Array(Math.round(echoLength * RATE));
+  let low = 0;
+  for (let i = 0; i < echo.length; i++) {
+    const at = [0, 0.18, 0.41].reduce((sum, delay, k) => {
+      const j = i - Math.round(delay * RATE);
+      return sum + (j >= 0 && j < horn.length ? horn[j] * [1, 0.45, 0.2][k] : 0);
+    }, 0);
+    low += 0.06 * (at - low);
+    echo[i] = low;
+  }
+  writeSound("zeppelin_horn_echo", echo, 0.6);
+}
+
 // Dropping into an air pocket, with its own noise, so it never shifts the sounds above: the air rushing past as the
 // cabin falls away, everything loose in it rattling (the overhead bins, the trolleys, the galley's carts), then the
 // thud through the airframe as the air catches it again, and the rattle settling.

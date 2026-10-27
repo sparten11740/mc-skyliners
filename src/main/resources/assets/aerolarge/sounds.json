@@ -770,5 +770,21 @@
         "stream": true
       }
     ]
+  },
+  "zeppelin_horn": {
+    "subtitle": "subtitles.aerolarge.zeppelin_horn",
+    "sounds": [
+      {
+        "name": "aerolarge:zeppelin_horn"
+      }
+    ]
+  },
+  "zeppelin_horn_echo": {
+    "subtitle": "subtitles.aerolarge.zeppelin_horn_echo",
+    "sounds": [
+      {
+        "name": "aerolarge:zeppelin_horn_echo"
+      }
+    ]
   }
 }
