@@ -20,6 +20,7 @@ import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
+import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
 import dev.ryanhcode.sable.neoforge.event.ForgeSableSubLevelContainerReadyEvent;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -39,6 +40,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -304,6 +306,16 @@ public final class SableFlight {
      */
     public static boolean sendOut(Entity entity) {
         return SABLE && Access.sendOut(entity);
+    }
+
+    /**
+     * Lets go of the speed an assembled airliner carried something alive at, which Sable keeps on it once it is off,
+     * losing only a hundredth of it a tick: what is thrown clear as an airliner blows up stops where it blew up.
+     */
+    public static void letGo(LivingEntity entity) {
+        if (SABLE) {
+            Access.letGo(entity);
+        }
     }
 
     /**
@@ -673,6 +685,10 @@ public final class SableFlight {
             entity.setDeltaMovement(entity.getDeltaMovement().add(carried));
             moved(entity);
             return true;
+        }
+
+        static void letGo(LivingEntity entity) {
+            ((LivingEntityMovementExtension) entity).sable$getInheritedVelocity().zero();
         }
 
         /** Tells the clients at once that the entity moved between the world and an airliner's blocks. */

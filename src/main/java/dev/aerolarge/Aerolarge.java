@@ -34,6 +34,7 @@ import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.TerrainMap;
+import dev.aerolarge.client.ThrownClear;
 import dev.aerolarge.client.TransponderScreen;
 import dev.aerolarge.compat.Blockpilot;
 import dev.aerolarge.compat.SableFlight;
@@ -52,6 +53,7 @@ import dev.aerolarge.radio.Broadcasts;
 import dev.aerolarge.selfdestruct.BlastPayload;
 import dev.aerolarge.selfdestruct.SelfDestruct;
 import dev.aerolarge.selfdestruct.SelfDestructAlarmPayload;
+import dev.aerolarge.selfdestruct.ThrownClearPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -145,7 +147,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("24")
+        event.registrar("25")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -186,6 +188,8 @@ public final class Aerolarge {
             .playToClient(SelfDestructAlarmPayload.TYPE, SelfDestructAlarmPayload.STREAM_CODEC,
                 (payload, context) -> SelfDestructWarning.alarm(payload.ticks()))
             .playToClient(BlastPayload.TYPE, BlastPayload.STREAM_CODEC,
-                (payload, context) -> BlastFlash.blast(payload.shake(), payload.flash()));
+                (payload, context) -> BlastFlash.blast(payload.shake(), payload.flash()))
+            .playToClient(ThrownClearPayload.TYPE, ThrownClearPayload.STREAM_CODEC,
+                (payload, context) -> ThrownClear.thrown());
     }
 }

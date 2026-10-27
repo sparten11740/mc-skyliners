@@ -86,6 +86,7 @@ import dev.aerolarge.client.TailCameraFeed;
 import dev.aerolarge.client.TechnoRoom;
 import dev.aerolarge.client.TechnoRoomRenderer;
 import dev.aerolarge.client.TerrainMap;
+import dev.aerolarge.client.ThrownClear;
 import dev.aerolarge.client.TowedBanner;
 import dev.aerolarge.client.TowerRadarRenderer;
 import dev.aerolarge.client.TransponderRenderer;
@@ -196,6 +197,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(TowedBanner::tick);
         NeoForge.EVENT_BUS.addListener(TowedBanner::stage);
         NeoForge.EVENT_BUS.addListener(TowedBanner::loggingOut);
+        NeoForge.EVENT_BUS.addListener(ThrownClear::tick);
+        NeoForge.EVENT_BUS.addListener(ThrownClear::loggingOut);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::shake);
         NeoForge.EVENT_BUS.addListener(LookoutView::tick);
         NeoForge.EVENT_BUS.addListener(LookoutView::fov);

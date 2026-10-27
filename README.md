@@ -300,9 +300,10 @@ the airliner (Ultrasplosive need not be installed): a blinding white flash and a
 fire bursting out all over where the airliner was, its wings and tail too, round a fireball in the middle, sparks and
 burning embers flying out of it, a ring of dust racing out from it (along the ground if the ground is near), a column
 of smoke rising into a small mushroom cloud that hangs on a while, and a huge bang, heard later the further off you
-are, with a long rumble after it. Everyone who was aboard falls clear in the middle of it, their parachute opens by
-itself as soon as they fall free, and they float down under it, steering it the way they walk; a fall too short for it
-to open does not hurt either. A villager passenger or a pet aboard floats down slowly. Nothing round the airliner is
+are, with a long rumble after it. Everyone who was aboard falls clear in the middle of it, stopped where she blew up
+however fast she flew, so they see the fire burst all round them; their parachute opens by itself as soon as they fall
+free, and they float down under it, steering it the way they walk; a fall too short for it to open does not hurt
+either. A villager passenger or a pet aboard floats down slowly. Nothing round the airliner is
 touched: the explosion breaks no blocks, sets nothing alight and hurts nobody.
 
 The button only works on an airliner of this mod's, built from its blueprint, and only blows up the airliner it is
@@ -1786,7 +1787,7 @@ clearer's turret out of its hatch, turned toward the newest of its bolts, and `L
 its barrel as it is turned; its `LaserTurretBlockEntity` fires them, from its muzzle under the nose, at what
 `LaserAim`'s rays find in the way; `SelfDestructButtonBlockEntity` arms the self-destruct button, and `SelfDestruct`
 sounds its alarm aboard and blows its airliner up, taking it away through `SableFlight.remove` once the level's tick is
-over, as `Blast` plays the explosion out in particles (`BlastPuffParticle`) and sounds, and `BlastFlash`, `CameraShake`
+over, stopping those thrown clear where it blew up (`ThrownClear` on their clients), as `Blast` plays the explosion out in particles (`BlastPuffParticle`) and sounds, and `BlastFlash`, `CameraShake`
 and `SelfDestructWarning` show it on screen; `GearBayRenderer` draws a landing gear leg swinging up or down, and its
 doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going up and puts them back coming
 down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras' pictures for the flight deck's

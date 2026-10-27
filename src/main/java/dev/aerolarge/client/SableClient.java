@@ -13,6 +13,7 @@ import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.EntityMovementExtension;
+import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
 import dev.ryanhcode.sable.network.client.SubLevelSnapshotInterpolator.Snapshot;
 import dev.ryanhcode.sable.render.water_occlusion.WaterOcclusionRenderer;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
@@ -30,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -162,6 +164,16 @@ public final class SableClient {
     @Nullable
     static UUID airliner(BlockEntity blockEntity) {
         return SABLE && blockEntity.getLevel() != null ? Access.airliner(blockEntity) : null;
+    }
+
+    /**
+     * Lets go of the speed an assembled airliner carried a player at, which Sable keeps on them once they are off it,
+     * losing only a hundredth of it a tick (see {@link ThrownClear}).
+     */
+    static void letGo(LivingEntity entity) {
+        if (SABLE) {
+            Access.letGo(entity);
+        }
     }
 
     /**
@@ -405,6 +417,10 @@ public final class SableClient {
         static UUID airliner(BlockEntity blockEntity) {
             ClientSubLevel airliner = Sable.HELPER.getContainingClient(blockEntity);
             return airliner == null ? null : airliner.getUniqueId();
+        }
+
+        static void letGo(LivingEntity entity) {
+            ((LivingEntityMovementExtension) entity).sable$getInheritedVelocity().zero();
         }
 
         /** Turns Sable's water occlusion on or off; whether it was on. */

@@ -257,8 +257,8 @@ public final class SelfDestruct {
     }
 
     /**
-     * A player aboard as the airliner blows up: out of their seat, where they sat in the world, a parachute on, and a
-     * first landing that does not hurt.
+     * A player aboard as the airliner blows up: out of their seat, where they sat in the world, brought to a stop there
+     * (see {@link #stop}), a parachute on, and a first landing that does not hurt.
      */
     private static void bailOut(ServerPlayer player) {
         if (player.isSpectator()) {
@@ -270,6 +270,7 @@ public final class SelfDestruct {
         if (seated || SableFlight.inPlot(player)) {
             player.teleportTo(at.x, at.y, at.z);
         }
+        stop(player);
         wearParachute(player);
         player.fallDistance = 0;
         PROTECTED.put(player.getUUID(), player.level().getGameTime() + PROTECTION);
@@ -290,10 +291,26 @@ public final class SelfDestruct {
         player.level().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
-    /** Anything else alive aboard: out of its seat, out into the world, floating down slowly. */
+    /**
+     * Brings someone thrown clear of the airliner to a stop where it blew up. Carried on at its speed, which Sable keeps
+     * on whatever leaves it, they sailed on some 400 blocks ahead of the fireball, which stays where it blew up: from a
+     * flight deck at cruise, the airliner only vanished. A player's own client moves them, so it is told to stop them
+     * too (see {@link ThrownClearPayload}).
+     */
+    private static void stop(LivingEntity entity) {
+        SableFlight.letGo(entity);
+        entity.setDeltaMovement(Vec3.ZERO);
+        entity.hurtMarked = true;
+        if (entity instanceof ServerPlayer player) {
+            PacketDistributor.sendToPlayer(player, ThrownClearPayload.INSTANCE);
+        }
+    }
+
+    /** Anything else alive aboard: out of its seat, out into the world, stopped, floating down slowly. */
     private static void floatDown(LivingEntity entity) {
         entity.stopRiding();
         SableFlight.sendOut(entity);
+        stop(entity);
         entity.fallDistance = 0;
         entity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, SLOW_FALL));
         PROTECTED.put(entity.getUUID(), entity.level().getGameTime() + PROTECTION);
