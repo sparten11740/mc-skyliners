@@ -25,6 +25,7 @@ import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CarriedAboard;
 import dev.aerolarge.client.CloudlessCabin;
 import dev.aerolarge.client.CockpitDisplayRenderer;
+import dev.aerolarge.client.BubbleLevelRenderer;
 import dev.aerolarge.client.CockpitDoorRenderer;
 import dev.aerolarge.client.ContrailParticle;
 import dev.aerolarge.client.DiscoBallRenderer;
@@ -237,6 +238,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.BUBBLE_LEVEL_ENTITY.get(), context -> new BubbleLevelRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AUTOPILOT_ENTITY.get(), AutopilotRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.PASSENGER_SCREEN_ENTITY.get(), context -> new PassengerScreenRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), context -> new TailCameraDisplayRenderer());

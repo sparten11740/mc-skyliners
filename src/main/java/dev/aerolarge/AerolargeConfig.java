@@ -44,6 +44,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
     public static final ModConfigSpec.BooleanValue ENGINE_REPEATERS;
+    public static final ModConfigSpec.BooleanValue TRIM_CAR;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -287,6 +288,13 @@ public final class AerolargeConfig {
                 "lamp, and a rope down from each to climb up by. Zeppelins already built keep theirs."
             )
             .define("engineRepeaters", true);
+        TRIM_CAR = builder
+            .comment(
+                "Whether a zeppelin is built with a trim car: a heavy car hauled fore and aft on a rail under her gangway, pitching her as it",
+                "moves, set from a trim wheel in her control car, where a bubble level shows her pitch; the autopilot moves it to hold her",
+                "nose level by weight. Zeppelins already built keep theirs."
+            )
+            .define("trimCar", true);
         builder.pop();
 
         SPEC = builder.build();

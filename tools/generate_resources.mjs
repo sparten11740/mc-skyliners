@@ -449,7 +449,7 @@ cubes.propeller = null;
       solid([5.5, 13, 6], [10.5, 15, 10], "#wood"),
     ],
   });
-  for (const name of ["rudder_wheel", "elevator_wheel"]) {
+  for (const name of ["rudder_wheel", "elevator_wheel", "trim_wheel"]) {
     write(`assets/${ID}/blockstates/${name}.json`, {
       variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
         [...Array(9).keys()].map((turn) => [`facing=${facing},turn=${turn}`, { model: `${ID}:block/helm_pedestal`, y }]))),
@@ -508,6 +508,41 @@ cubes.propeller = null;
         { model: `${ID}:block/engine_repeater_${order}${answered === "true" ? "_answered" : ""}`, y }])))),
   });
   write(`assets/${ID}/models/item/engine_repeater.json`, { parent: `${ID}:block/engine_repeater_stop_answered` });
+  // The trim car: a heavy iron ballast car hung by its brass wheels from the rail over it; the winch hauling it, an
+  // iron drum wound with chain; and the bubble level, a wooden stand under its glass tube, the spirit and the bubble
+  // drawn by its renderer (see BubbleLevelRenderer).
+  const iron = "minecraft:block/anvil";
+  const chain = "minecraft:block/chain";
+  write(`assets/${ID}/models/block/trim_car.json`, {
+    parent: "minecraft:block/block",
+    textures: { iron, brass, particle: iron },
+    elements: [solid([2, 0, 2], [14, 11, 14], "#iron"), solid([4, 11, 3], [12, 16, 5], "#brass"), solid([4, 11, 11], [12, 16, 13], "#brass")],
+  });
+  write(`assets/${ID}/blockstates/trim_car.json`, { variants: { "": { model: `${ID}:block/trim_car` } } });
+  write(`assets/${ID}/models/item/trim_car.json`, { parent: `${ID}:block/trim_car` });
+  dropsItself("trim_car");
+  cubes.trim_car = null;
+  write(`assets/${ID}/models/block/trim_winch.json`, {
+    parent: "minecraft:block/block",
+    render_type: "minecraft:cutout",
+    textures: { iron, chain, particle: iron },
+    elements: [solid([3, 4, 1], [13, 14, 15], "#iron"), solid([6.5, 0, 6.5], [9.5, 4, 9.5], "#chain")],
+  });
+  write(`assets/${ID}/blockstates/trim_winch.json`, { variants: { "": { model: `${ID}:block/trim_winch` } } });
+  write(`assets/${ID}/models/item/trim_winch.json`, { parent: `${ID}:block/trim_winch` });
+  dropsItself("trim_winch");
+  cubes.trim_winch = null;
+  write(`assets/${ID}/models/block/bubble_level.json`, {
+    parent: "minecraft:block/block",
+    textures: { wood, brass, particle: wood },
+    elements: [solid([2, 0, 5], [14, 4, 11], "#wood"), solid([1, 4, 6.5], [2.5, 8, 9.5], "#brass"), solid([13.5, 4, 6.5], [15, 8, 9.5], "#brass")],
+  });
+  write(`assets/${ID}/blockstates/bubble_level.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/bubble_level`, y }])),
+  });
+  write(`assets/${ID}/models/item/bubble_level.json`, { parent: `${ID}:block/bubble_level` });
+  dropsItself("bubble_level");
+  cubes.bubble_level = null;
   dropsItself("engine_repeater");
   cubes.engine_repeater = null;
   // The livery board: a board three sixteenths thick standing at the back of its block, its swatches on its front.
@@ -686,6 +721,10 @@ function zeppelinControlsLang() {
     "block.aerolarge.elevator_wheel": "Elevator Wheel",
     "block.aerolarge.engine_telegraph": "Engine Telegraph",
     "block.aerolarge.engine_repeater": "Engine Repeater",
+    "block.aerolarge.trim_wheel": "Trim Wheel",
+    "block.aerolarge.trim_winch": "Trim Winch",
+    "block.aerolarge.trim_car": "Trim Car",
+    "block.aerolarge.bubble_level": "Bubble Level",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
     "block.aerolarge.festive_garland": "Festive Garland",
@@ -711,6 +750,12 @@ write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {
   priority: 1002,
   selector: `#${ID}:zeppelin_fabric`,
   properties: { "sable:mass": 0.1 },
+});
+// The trim car is heavy, some four parts in a hundred of the zeppelin, so moving it fore and aft pitches her.
+write(`data/${ID}/physics_block_properties/trim_car.json`, {
+  priority: 1003,
+  selector: `${ID}:trim_car`,
+  properties: { "sable:mass": 1200 },
 });
 function zeppelinLang() {
   return {
@@ -5251,7 +5296,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "engine_repeater", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5327,6 +5372,10 @@ shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:y
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("ships_plaque", ["CNC"], { C: "minecraft:copper_ingot", N: "minecraft:gold_nugget" }, 1);
+shaped("trim_wheel", ["SSS", "S S", "SSS"], { S: "minecraft:stick" }, 1);
+shaped("bubble_level", ["GLG", "PPP"], { G: "minecraft:gold_nugget", L: "minecraft:lime_stained_glass_pane", P: "minecraft:dark_oak_slab" }, 1);
+shaped("trim_winch", ["ICI", "I I"], { I: "minecraft:iron_ingot", C: "minecraft:chain" }, 1);
+shaped("trim_car", ["III", "IBI", "III"], { I: "minecraft:iron_ingot", B: "minecraft:iron_block" }, 1);
 shaped("engine_repeater", ["B", "G", "C"], { B: "minecraft:bell", G: "minecraft:gold_ingot", C: "minecraft:copper_ingot" }, 1);
 shaped("picture_board", ["GGG", "RDB", "PPP"], { G: "minecraft:glass_pane", R: "minecraft:redstone", D: "minecraft:glowstone_dust", B: "minecraft:stone_button", P: "minecraft:dark_oak_planks" }, 1);
 shaped("christening_bottle", ["N", "S", "B"], { N: "minecraft:gold_nugget", S: "minecraft:sweet_berries", B: "minecraft:glass_bottle" }, 1);
