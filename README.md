@@ -1429,11 +1429,13 @@ touches the rest of a body, and a cell standing free in its bay would float off 
 crown on girders, the burners and their relays stand on girder posts down to the cells' floors, the gangway stands on
 posts down to the rings, and the decks' floors run out to the cover. The fabric weighs a tenth of a block (its own
 `physics_block_properties`, over the airframe's `#sable:super_light`), so a ship of this size, some 32,000 of Sable's
-units, is carried by a few dozen burners. The burners are built with their pilot flames lit, and the relay beside each
-sets how hard it burns. The engines' creative thrusters (Create Propulsion's, as the airliner's) sit in the engine cars
-round the propellers' hubs, eight pushing ahead and two astern in each, without flames: an airship's engines turn
-propellers. Without Create Aeronautics the cells are made of the zeppelin's own fabric and it is a building;
-`burnerBlock` and `envelopeBlock` in the server config's `zeppelin` section name the blocks it is built with.
+units, is carried by its burners, over a hundred of them, a dozen in each of the biggest cells: burning flat out they
+would lift it half again as much as floats it at sea level, so it flies high over an ordinary world's hills with plenty
+in hand. The burners are built with their pilot flames lit, and the relay beside each sets how hard it burns. The
+engines' creative thrusters (Create Propulsion's, as the airliner's) sit in the engine cars round the propellers' hubs,
+eight pushing ahead and two astern in each, without flames: an airship's engines turn propellers. Without Create
+Aeronautics the cells are made of the zeppelin's own fabric and it is a building; `burnerBlock` and `envelopeBlock` in
+the server config's `zeppelin` section name the blocks it is built with.
 
 Its control car is its flight deck, laid out as the Hindenburg's was: the rudder wheel at the front windows, the
 autopilot's control head behind it between the two engine telegraphs, a flight display and the transponder on the low

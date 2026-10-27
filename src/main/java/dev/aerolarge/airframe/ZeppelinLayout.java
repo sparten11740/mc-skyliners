@@ -52,9 +52,11 @@ public final class ZeppelinLayout implements Layout {
     /**
      * How many burners stand in the biggest gas cell, in two rows across its floor; smaller cells, toward either end,
      * have fewer, by their floor's area, and at least {@link #LEAST_BURNERS}. Each burner lifts as much as its
-     * relay asks, up to 750 kpg at sea level.
+     * relay asks, up to 750 kpg at sea level. Twelve in the biggest give the zeppelin twice the lift that floats it
+     * at sea level, enough to fly high over the hills of an ordinary world and still be far from full; with six it
+     * could barely climb 60 blocks over the sea, at full burn.
      */
-    private static final int MOST_BURNERS = 6;
+    private static final int MOST_BURNERS = 12;
     private static final int LEAST_BURNERS = 2;
     /**
      * How far apart the burners stand across the cell, in blocks: a relay between neighbours and open gas round each.
