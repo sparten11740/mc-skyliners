@@ -56,6 +56,8 @@ public final class ZeppelinPilot {
     private static final double MAX_CLIMB = 2;
     private static final double MAX_SINK = 1.5;
     private static final double LANDING_SINK = 1;
+    /** How full its burners may be at its ceiling, as a share of all they burn: headroom for the trims and the split. */
+    private static final double CEILING_SHARE = 0.85;
     /**
      * The share of hot air over what floats it asked for per block a second it climbs too slowly, how fast the share
      * that holds its height is learnt (a tick, per block a second off), and the most either goes either way.
@@ -300,6 +302,20 @@ public final class ZeppelinPilot {
         lastClimb = climb;
         lastSplit = split;
         setBurners(level, origin, floats(state, mass) * (1 + share), split);
+    }
+
+    /**
+     * The highest it floats with its burners near full, in world blocks at the autopilot: where the thinning air leaves
+     * its hot air too little lift for its mass, short of full by a share, for the trims and the split fore and aft to
+     * work in. NaN without burners, a mass or air.
+     */
+    double ceiling(SableFlight.State state, double mass) {
+        double most = CEILING_SHARE * burners * BURNER_GAS;
+        double air = state.air() * Math.exp(-THINNING * gasAbove);
+        if (Double.isNaN(mass) || mass <= 0 || most <= 0 || air <= 0) {
+            return Double.NaN;
+        }
+        return state.position().y + Math.log(air * HOT_AIR * most / mass) / THINNING;
     }
 
     /**

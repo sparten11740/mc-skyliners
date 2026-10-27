@@ -1465,7 +1465,9 @@ for a minute, the autopilot comes down where it is, flown by hand or not.
 
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
-height set, 60 blocks above the ground to start with, where it levels off. It holds the height by its burners alone,
+height set, 60 blocks above the ground to start with, where it levels off. It goes no higher than its ceiling, where its
+burners near full can lift it no further in the thinning air: worked out from its mass once it is assembled, the
+settings screen's height stops there, so a heavily built zeppelin flies lower. It holds the height by its burners alone,
 working out from its mass and the thinning air how much hot air floats it, and learns what more its trim needs; it holds
 its nose level by burning the cells forward of its middle lower and those aft higher, or the other way round, and learns
 the split that holds it. Its propellers drive it at the speed set, ahead or astern, and it turns by driving the port

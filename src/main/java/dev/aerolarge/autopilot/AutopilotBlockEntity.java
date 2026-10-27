@@ -1058,7 +1058,7 @@ public class AutopilotBlockEntity extends BlockEntity {
     private Settings touched(Button button, double along, Settings now, double heading) {
         return switch (button) {
             case SPEED -> now.withSpeed(touchedSpeed(along));
-            case ALTITUDE -> now.withAltitude(touchedAltitude(along, runwayAltitude, highestAltitude(level)));
+            case ALTITUDE -> now.withAltitude(touchedAltitude(along, runwayAltitude, ceiling(level)));
             case HEADING -> now.withHeading(touchedBearing(bearing(heading), along));
             case STRAIGHT -> now.withHeading(bearing(heading));
             case TIGHT_LEFT, GENTLE_LEFT, GENTLE_RIGHT, TIGHT_RIGHT -> now.withCircle(button.way, button.size);
@@ -1138,7 +1138,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         boolean assembles = state == null
             && (craft == Craft.ZEPPELIN ? built() && SableFlight.installed() && zeppelin.wired() : level instanceof ServerLevel server && assemblerAt(server) != null);
         double gravity = state != null ? state.gravity() : SableFlight.gravity(level, Vec3.atCenterOf(worldPosition));
-        OpenAutopilotScreen.Limits limits = new OpenAutopilotScreen.Limits(Mth.ceil(floor), Mth.floor(Math.max(floor, highestAltitude(level))),
+        OpenAutopilotScreen.Limits limits = new OpenAutopilotScreen.Limits(Mth.ceil(floor), Mth.floor(Math.max(floor, ceiling(level))),
             craft.minSpeed, craft.maxSpeed, craft.amberFrom, craft.redFrom);
         PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF, assembles, limits,
             (float) gravity));
@@ -1196,7 +1196,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         landAtPin = settings.landAtPin();
         targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), craft.minSpeed, craft.maxSpeed);
         double floor = lowestAltitude(runwayAltitude);
-        targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, highestAltitude(level)));
+        targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, ceiling(level)));
         // The circle's size follows from how tightly it is set to circle at the speed set: set faster or slower while
         // circling, it comes round a new circle beside it, as it would picked afresh.
         circle = settings.circle();
@@ -1389,7 +1389,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         double heading = state != null ? state.heading() : nose().toYRot();
         int climb = craft == Craft.ZEPPELIN ? ZEPPELIN_CLIMB : AerolargeConfig.AUTOPILOT_CLIMB.get();
         double cruise = craft == Craft.ZEPPELIN ? ZEPPELIN_CRUISE : AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get();
-        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + climb, highestAltitude(level)), Mth.clamp(cruise, craft.minSpeed, craft.maxSpeed),
+        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + climb, ceiling(level)), Mth.clamp(cruise, craft.minSpeed, craft.maxSpeed),
             heading);
     }
 
@@ -1774,6 +1774,18 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     public static double highestAltitude(Level level) {
         return level.getMaxBuildHeight() - CEILING_MARGIN;
+    }
+
+    /**
+     * The highest height it can be set to hold: an airliner's {@link #highestAltitude}, and an assembled zeppelin's no
+     * higher than its burners can lift it (see {@link ZeppelinPilot#ceiling}), so it is never sent climbing for good
+     * at full burn toward a height it never reaches.
+     */
+    private double ceiling(Level level) {
+        double highest = highestAltitude(level);
+        SableFlight.State state = craft == Craft.ZEPPELIN ? SableFlight.read(this, nose()) : null;
+        double floats = state == null ? Double.NaN : zeppelin.ceiling(state, SableFlight.mass(this));
+        return Double.isNaN(floats) ? highest : Math.min(highest, floats);
     }
 
     private void fly(ServerLevel level, SableFlight.State state) {
