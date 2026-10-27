@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.CircleSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
@@ -68,11 +69,12 @@ final class AutopilotDeskArt {
     private static final int ROUND = 48;
     private static final int PATH_PIECES = 12;
     /**
-     * The speedometer, shared with the settings screen's: the speeds its band turns amber and red at, in blocks a
-     * second, and its ticks, every so many blocks a second, numbered every so many.
+     * The speedometer: the speeds its band turns amber and red at, the airliner's (see {@link Craft}), in blocks a
+     * second, and its ticks, every so many blocks a second, numbered every so many, which the settings screen's dial
+     * spaces its own ticks from.
      */
-    static final int AMBER_FROM = 60;
-    static final int RED_FROM = 100;
+    static final int AMBER_FROM = Craft.AIRLINER.amberFrom;
+    static final int RED_FROM = Craft.AIRLINER.redFrom;
     static final int SPEED_TICK = 10;
     static final int SPEED_NUMBER = 30;
     /**

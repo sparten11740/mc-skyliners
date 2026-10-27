@@ -2,10 +2,13 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,9 +62,22 @@ public record AirframePalette(
         BlockState envelope(String colour) {
             return block(envelope.replace("{colour}", colour)).orElse(AerolargeRegistry.ZEPPELIN_FABRIC.get().defaultBlockState());
         }
+
+        /**
+         * The blocks it names, the burner, the thruster and the envelope in every colour: for the zeppelin's assembly.
+         */
+        public Set<Block> blocks() {
+            Set<Block> blocks = new HashSet<>();
+            burner.ifPresent(state -> blocks.add(state.getBlock()));
+            engine.ifPresent(state -> blocks.add(state.getBlock()));
+            for (DyeColor colour : DyeColor.values()) {
+                block(envelope.replace("{colour}", colour.getSerializedName())).ifPresent(state -> blocks.add(state.getBlock()));
+            }
+            return blocks;
+        }
     }
 
-    static Balloon balloon() {
+    public static Balloon balloon() {
         return new Balloon(block(AerolargeConfig.BURNER_BLOCK.get()), AerolargeConfig.ENVELOPE_BLOCK.get(), block(AerolargeConfig.ENGINE_BLOCK.get()));
     }
 

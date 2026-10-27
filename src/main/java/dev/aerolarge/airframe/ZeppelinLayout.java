@@ -353,10 +353,14 @@ public final class ZeppelinLayout implements Layout {
         return balloons.get(cell).contains(x / SCALE, (y + 0.5) / SCALE, (z + 0.5) / SCALE);
     }
 
-    /** Whether a block of a cell touches its outside on a face: its envelope. */
+    /**
+     * Whether a block of a cell touches its outside on a face, along an edge or at a corner: its envelope. Only the
+     * blocks touching it on a face would meet the cell's floor and roof edge to edge where the envelope steps in, and
+     * assembling the zeppelin takes only blocks touching face to face, leaving the floor, and its burners, behind.
+     */
     private boolean onCellWall(int cell, int x, int y, int z) {
-        for (Direction side : Direction.values()) {
-            if (!inCell(cell, x + side.getStepX(), y + side.getStepY(), z + side.getStepZ())) {
+        for (BlockPos beside : BlockPos.betweenClosed(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1)) {
+            if (!inCell(cell, beside.getX(), beside.getY(), beside.getZ())) {
                 return true;
             }
         }
@@ -640,6 +644,7 @@ public final class ZeppelinLayout implements Layout {
         for (int z = car.front() + 2; z < car.back(); z += LAMP_SPACING / 2) {
             set(0, car.roof(), z, AerolargeRegistry.CABIN_LIGHT.get().defaultBlockState());
         }
+        new ZeppelinControlCar(this).fit(car.front(), car.back(), car.floor());
         // The wheel the zeppelin rests on at the bow, under the car's middle.
         set(0, car.floor() - 1, car.lounge(), AerolargeRegistry.LANDING_GEAR_TIRE.get().defaultBlockState());
         neck(car.back() - 1, car.floor() + 1, car.roof());
@@ -878,5 +883,36 @@ public final class ZeppelinLayout implements Layout {
     @Override
     public String message(String what) {
         return "message.aerolarge.zeppelin_" + what;
+    }
+
+    /** Sets up the block entity at a layout position once it stands, as the fitting says. */
+    void fit(BlockPos at, Fitting fitting) {
+        fittings.put(at, fitting);
+    }
+
+    /** Each gas cell's burners' relays, bow first, by layout position. */
+    List<List<BlockPos>> burnerRelays() {
+        return burnerRelays;
+    }
+
+    /** Each engine's relays that drive it ahead, by its number less one, by layout position. */
+    Map<Integer, List<BlockPos>> aheadRelays() {
+        return aheadRelays;
+    }
+
+    /** Each engine's relays that drive it astern, by its number less one, by layout position. */
+    Map<Integer, List<BlockPos>> asternRelays() {
+        return asternRelays;
+    }
+
+    /** Two opposite corners of the box round every block of the zeppelin. */
+    List<BlockPos> frameCorners() {
+        BlockPos min = null;
+        BlockPos max = null;
+        for (BlockPos pos : cells.keySet()) {
+            min = min == null ? pos : BlockPos.min(min, pos);
+            max = max == null ? pos : BlockPos.max(max, pos);
+        }
+        return min == null ? List.of(BlockPos.ZERO, BlockPos.ZERO) : List.of(min, max);
     }
 }

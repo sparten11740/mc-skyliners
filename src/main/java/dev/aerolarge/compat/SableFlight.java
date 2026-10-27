@@ -1,9 +1,11 @@
 package dev.aerolarge.compat;
 
 import dev.aerolarge.Aboard;
+import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.AirstairStepBlock;
 import dev.aerolarge.block.SlideStepBlock;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.block.BlockSubLevelLiftProvider;
 import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.entity.EntitySubLevelUtil;
@@ -12,6 +14,7 @@ import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
+import dev.ryanhcode.sable.api.sublevel.ticket.SubLevelLoadingTicketType;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
@@ -23,6 +26,7 @@ import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.plot.LevelPlot;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -31,7 +35,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -150,6 +156,38 @@ public final class SableFlight {
     /** Where a point among an assembled airliner's blocks is in the world; the point itself anywhere else. */
     public static Vec3 toWorld(Level level, Vec3 point) {
         return SABLE ? Access.toWorld(level, point) : point;
+    }
+
+    /** Whether Sable is installed, which flies the airframes: without it they stand as buildings. */
+    public static boolean installed() {
+        return SABLE;
+    }
+
+    /**
+     * How heavy the assembled airframe the block entity is part of is, in Sable's units (a plain block weighs one); NaN
+     * when it is not part of one. What a zeppelin's autopilot works out the hot air it needs from.
+     */
+    public static double mass(BlockEntity blockEntity) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel ? Access.mass(blockEntity) : Double.NaN;
+    }
+
+    /**
+     * Assembles blocks standing in the world into one flying body, as Sable's own command does, however many there are:
+     * a zeppelin, far more than the Physics Assembler takes. The body's anchor is the given block, its bounds the box
+     * round the blocks. Whether it assembled: not without Sable, nor with nothing given.
+     */
+    public static boolean assemble(ServerLevel level, BlockPos anchor, List<BlockPos> blocks, BoundingBox box) {
+        return SABLE && !blocks.isEmpty() && Access.assemble(level, anchor, blocks, box);
+    }
+
+    /**
+     * Keeps the assembled airframe the block entity is part of loaded, or lets it go again: a zeppelin is far longer
+     * than the land loaded round anyone aboard reaches, and left to itself Sable would unload it, everyone aboard
+     * dropping out of the sky, once the land under its middle is unloaded behind a pilot riding in its bow. Whether it
+     * is kept now: false when it is not part of one.
+     */
+    public static boolean keepLoaded(BlockEntity blockEntity, boolean kept) {
+        return SABLE && blockEntity.getLevel() instanceof ServerLevel && Access.keepLoaded(blockEntity, kept);
     }
 
     /**
@@ -474,6 +512,39 @@ public final class SableFlight {
 
         static boolean aboard(Level level, Vec3 point) {
             return Sable.HELPER.getContaining(level, point) != null;
+        }
+
+        /**
+         * The ticket an airframe is kept loaded by, its own kind, so Sable keeps it apart from any other mod's. Sable
+         * reads a saved ticket back only by a kind it knows when the level loads: this one is made as this class is
+         * first loaded, by {@link SableFlight#watch} while the mod is constructed, before any level is.
+         */
+        private static final SubLevelLoadingTicketType<Unit> KEPT =
+            SubLevelLoadingTicketType.create(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "kept_aloft"), Unit.CODEC);
+
+        static boolean keepLoaded(BlockEntity blockEntity, boolean kept) {
+            if (!(Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe) || !(blockEntity.getLevel() instanceof ServerLevel level)) {
+                return false;
+            }
+            ServerSubLevelContainer container = SubLevelContainer.getContainer(level);
+            if (container == null) {
+                return false;
+            }
+            if (kept) {
+                container.addForceLoadTicket(airframe, KEPT, Unit.INSTANCE);
+            } else {
+                container.removeForceLoadTicket(airframe, KEPT, Unit.INSTANCE);
+            }
+            return kept;
+        }
+
+        static double mass(BlockEntity blockEntity) {
+            return Sable.HELPER.getContaining(blockEntity) instanceof ServerSubLevel airframe ? airframe.getMassTracker().getMass() : Double.NaN;
+        }
+
+        static boolean assemble(ServerLevel level, BlockPos anchor, List<BlockPos> blocks, BoundingBox box) {
+            BoundingBox3i bounds = new BoundingBox3i(box.minX() - 1, box.minY() - 1, box.minZ() - 1, box.maxX() + 1, box.maxY() + 1, box.maxZ() + 1);
+            return !SubLevelAssemblyHelper.assembleBlocks(level, anchor, blocks, bounds).getMassTracker().isInvalid();
         }
 
         static void jolt(BlockEntity blockEntity, Vec3 change) {

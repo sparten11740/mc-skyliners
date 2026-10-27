@@ -128,6 +128,8 @@ public class AutopilotSettingsScreen extends Screen {
     private static final int SHORT_TICK = 3;
     private static final int SPEED_NUMBERS_IN = 13;
     private static final int BUG = 5;
+    /** The round steps the speed dial's marks are spaced in, for whatever speeds it shows, in blocks a second. */
+    private static final int[] NICE_STEPS = {1, 2, 5, 10, 20, 30, 50, 100};
     /**
      * The speedometer's bug: how far apart its strokes fan, in radians for each pixel out from the band; and the room
      * under its number at the dial's foot, in pixels.
@@ -248,6 +250,8 @@ public class AutopilotSettingsScreen extends Screen {
     private boolean hopping;
     /** The map the pin is dropped on, in the steering's place while it flies to the pin. */
     private final DestinationMap map;
+    /** The heights and speeds it can be set to, and where its speed dial turns amber and red. */
+    private final OpenAutopilotScreen.Limits limits;
 
     private AutopilotSettingsScreen(OpenAutopilotScreen opened) {
         super(Component.translatable("screen.aerolarge.autopilot_settings.title"));
@@ -259,9 +263,10 @@ public class AutopilotSettingsScreen extends Screen {
         lateral = settings.lateral();
         circle = settings.circle();
         landAtPin = settings.landAtPin();
-        speed = new Typed("speed", PanelArt.AMBER, settings.speed(), AutopilotBlockEntity.MIN_SPEED, AutopilotBlockEntity.MAX_SPEED, false);
+        limits = opened.limits();
+        speed = new Typed("speed", PanelArt.AMBER, settings.speed(), limits.minSpeed(), limits.maxSpeed(), false);
         heading = new Typed("heading", PanelArt.CYAN, settings.heading(), 0, LAST_BEARING, true);
-        altitude = new Typed("altitude", PanelArt.GREEN, settings.altitude(), opened.minAltitude(), opened.maxAltitude(), false);
+        altitude = new Typed("altitude", PanelArt.GREEN, settings.altitude(), limits.minAltitude(), limits.maxAltitude(), false);
         BlockPos pin = lateral == Lateral.DESTINATION ? settings.destination() : null;
         map = new DestinationMap(steeringWidth(), TURNS_Y + TURN_HEIGHT, pos, this::autopilot, pin, this::circleRadius);
     }
@@ -783,6 +788,17 @@ public class AutopilotSettingsScreen extends Screen {
             return getY() + DIAL_MIDDLE;
         }
 
+        /** A step between the airliner's dial's marks, as much smaller as this dial's speeds are, in round numbers. */
+        private int step(int airliner) {
+            double wanted = airliner * (speed.max() - speed.min()) / (double) (AutopilotBlockEntity.MAX_SPEED - AutopilotBlockEntity.MIN_SPEED);
+            for (int nice : NICE_STEPS) {
+                if (nice >= wanted) {
+                    return nice;
+                }
+            }
+            return airliner;
+        }
+
         /** Where a speed lies round the dial, in radians anticlockwise from the right, as on the flight deck's. */
         private double angle(double set) {
             return new Dial(0, 0, 1).angle(speed.share(set));
@@ -798,14 +814,18 @@ public class AutopilotSettingsScreen extends Screen {
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.AMBER, isHovered() ? Look.HOT : Look.IDLE, false);
             PanelArt.drawDisc(graphics, middleX(), middleY(), DIAL_RADIUS + 2, GLASS);
-            band(graphics, speed.min(), AutopilotDeskArt.AMBER_FROM, PanelArt.GREEN);
-            band(graphics, AutopilotDeskArt.AMBER_FROM, AutopilotDeskArt.RED_FROM, PanelArt.AMBER);
-            band(graphics, AutopilotDeskArt.RED_FROM, speed.max(), PanelArt.RED);
-            for (int each = speed.min(); each <= speed.max(); each += AutopilotDeskArt.SPEED_TICK) {
-                int length = each % AutopilotDeskArt.SPEED_NUMBER == 0 ? LONG_TICK : SHORT_TICK;
+            int amber = limits.amberFrom();
+            int red = limits.redFrom();
+            band(graphics, speed.min(), amber, PanelArt.GREEN);
+            band(graphics, amber, red, PanelArt.AMBER);
+            band(graphics, red, speed.max(), PanelArt.RED);
+            int tick = step(AutopilotDeskArt.SPEED_TICK);
+            int numbered = step(AutopilotDeskArt.SPEED_NUMBER);
+            for (int each = speed.min(); each <= speed.max(); each += tick) {
+                int length = each % numbered == 0 ? LONG_TICK : SHORT_TICK;
                 spoke(graphics, each, DIAL_RADIUS - BAND - length, DIAL_RADIUS - BAND, 1, PanelArt.WHITE);
             }
-            for (int each = speed.min(); each <= speed.max(); each += AutopilotDeskArt.SPEED_NUMBER) {
+            for (int each = speed.min(); each <= speed.max(); each += numbered) {
                 String number = String.valueOf(each);
                 double a = angle(each);
                 int x = (int) Math.round(middleX() + Math.cos(a) * (DIAL_RADIUS - BAND - SPEED_NUMBERS_IN)) - font.width(number) / 2;

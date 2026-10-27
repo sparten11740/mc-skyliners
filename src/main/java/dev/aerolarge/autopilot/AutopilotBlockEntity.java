@@ -461,6 +461,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final double GENTLE_WIDEST = 2500;
     private static final double GENTLE_WIDER = 1.3;
     private static final double DEFAULT_RADIUS = 600;
+    /**
+     * A zeppelin engaged on the ground rises this far above it, in blocks, and cruises at this speed, in blocks a
+     * second.
+     */
+    private static final int ZEPPELIN_CLIMB = 60;
+    private static final double ZEPPELIN_CRUISE = 15;
     /** How far above the runway the lowest height it can be set to hold is, in blocks. */
     private static final int LOWEST_ABOVE_RUNWAY = 40;
     /**
@@ -602,6 +608,16 @@ public class AutopilotBlockEntity extends BlockEntity {
     private boolean landAtPin;
     /** Landing near the pin: the land surveyed, the runway found and the approach to it. */
     private final PinLanding pinLanding = new PinLanding();
+    /** What it flies; an autopilot saved before there were zeppelins flies an airliner. */
+    private Craft craft = Craft.AIRLINER;
+    /** How it flies a zeppelin, and what it works there; unused for an airliner. */
+    private final ZeppelinPilot zeppelin = new ZeppelinPilot();
+    /**
+     * Whether it keeps its zeppelin loaded (see {@link SableFlight#keepLoaded}), as last set; null until it has looked
+     * since loading, Sable keeping the ticket in the save meanwhile.
+     */
+    @Nullable
+    private Boolean keptLoaded;
 
     public AutopilotBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.AUTOPILOT_ENTITY.get(), pos, state);
@@ -615,6 +631,31 @@ public class AutopilotBlockEntity extends BlockEntity {
         this.controls = List.copyOf(controls);
         linksChecked = true;
         setChanged();
+    }
+
+    /**
+     * Wired when a zeppelin is built: it flies a zeppelin, its gas cells' burners and its engines' relays as offsets
+     * from it, how far its hot air stands above it, how far aft of it the cells' middle is, and how far its block
+     * stands above the bottom of its wheels.
+     */
+    public void configureZeppelin(List<ZeppelinPilot.Cell> cells, Map<Integer, List<BlockPos>> ahead, Map<Integer, List<BlockPos>> astern,
+                                  double gasAbove, double middleAft, int wheelsBelow) {
+        craft = Craft.ZEPPELIN;
+        this.wheelsBelow = wheelsBelow;
+        zeppelin.configure(cells, ahead, astern, gasAbove, middleAft);
+        linksChecked = true;
+        setChanged();
+    }
+
+    /** How it is working a zeppelin, for play-testing; null for an airliner's. */
+    @Nullable
+    public ZeppelinPilot.Report zeppelinReport() {
+        return craft == Craft.ZEPPELIN ? zeppelin.report() : null;
+    }
+
+    /** The autopilots loaded in a level, on either side. */
+    public static List<AutopilotBlockEntity> loaded(Level level) {
+        return LOADED.in(level);
     }
 
     /** Wired when the airliner is built: the landing gear lever, as an offset from it; null without retractable gear. */
@@ -656,12 +697,18 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     public static boolean framing(Level level, BlockPos pos) {
         for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
-            if (autopilot.frameFrom != null && autopilot.frameTo != null
-                && BoundingBox.fromCorners(autopilot.worldPosition.offset(autopilot.frameFrom), autopilot.worldPosition.offset(autopilot.frameTo)).isInside(pos)) {
+            BoundingBox frame = autopilot.frame();
+            if (frame != null && frame.isInside(pos)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** The box round the blocks its blueprint laid, where they stand now; null for an autopilot put down by hand. */
+    @Nullable
+    public BoundingBox frame() {
+        return built() ? BoundingBox.fromCorners(worldPosition.offset(frameFrom), worldPosition.offset(frameTo)) : null;
     }
 
     public Phase phase() {
@@ -826,6 +873,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (assembling()) {
             return Component.translatable("message.aerolarge.autopilot.still_assembling");
         }
+        if (craft == Craft.ZEPPELIN) {
+            return assembleZeppelin(server, player, settings);
+        }
         BlockPos at = assemblerAt(server);
         if (at == null) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
@@ -846,6 +896,33 @@ public class AutopilotBlockEntity extends BlockEntity {
         flyOnceAboardSeat = null;
         setChanged();
         return Component.translatable("message.aerolarge.autopilot.assembly_failed", failed);
+    }
+
+    /**
+     * Fly asked for while the zeppelin is not assembled: assembled through Sable from the blocks in its frame (see
+     * {@link ZeppelinAssembly}), too many for the Physics Assembler, the autopilot then flying the settings on its
+     * first tick aboard as {@link #assembleToFly} does for an airliner.
+     */
+    private Component assembleZeppelin(ServerLevel server, ServerPlayer player, Settings settings) {
+        BoundingBox frame = frame();
+        if (frame == null || !SableFlight.installed()) {
+            return Component.translatable("message.aerolarge.autopilot.not_assembled");
+        }
+        if (!zeppelin.wired()) {
+            return Component.translatable("message.aerolarge.autopilot.no_burners");
+        }
+        assemblingSince = server.getGameTime();
+        flyOnceAboard = settings;
+        flyOnceAboardFor = player.getUUID();
+        flyOnceAboardSeat = null;
+        setChanged();
+        if (SableFlight.assemble(server, worldPosition, ZeppelinAssembly.blocks(server, worldPosition, frame), frame)) {
+            return Component.translatable("message.aerolarge.autopilot.assembling_zeppelin");
+        }
+        flyOnceAboard = null;
+        flyOnceAboardFor = null;
+        setChanged();
+        return Component.translatable("message.aerolarge.autopilot.not_assembled");
     }
 
     /**
@@ -1019,6 +1096,25 @@ public class AutopilotBlockEntity extends BlockEntity {
             BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
     }
 
+    /** What its settings screen is filled in with now: what it flies, or, switched off, what engaging it would fly. */
+    public Settings offered() {
+        return level == null ? flying() : offered(offeredPlan(level, SableFlight.read(this, nose())));
+    }
+
+    private Plan offeredPlan(Level level, @Nullable SableFlight.State state) {
+        if (phase == Phase.OFF) {
+            return plan(level, state);
+        }
+        // Circling, the heading offered is the way it is going, to fly straight on from.
+        double heading = lateral == Lateral.HEADING || state == null ? targetHeading : state.heading();
+        return new Plan(phase, runwayAltitude, targetAltitude, targetSpeed, heading);
+    }
+
+    private Settings offered(Plan plan) {
+        return new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
+            phase != Phase.OFF ? lateral : Lateral.HEADING, circle, BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
+    }
+
     /**
      * Opens the settings screen for a player, filled in with what the autopilot flies now or, switched off, what
      * engaging it now would fly, and the lowest and highest heights it can be set to hold.
@@ -1028,21 +1124,16 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         SableFlight.State state = SableFlight.read(this, nose());
-        Plan plan;
-        if (phase != Phase.OFF) {
-            // Circling, the heading offered is the way it is going, to fly straight on from.
-            double heading = lateral == Lateral.HEADING || state == null ? targetHeading : state.heading();
-            plan = new Plan(phase, runwayAltitude, targetAltitude, targetSpeed, heading);
-        } else {
-            plan = plan(level, state);
-        }
-        Settings settings = new Settings((int) Math.round(plan.speed()), (int) Math.round(plan.altitude()), bearing(plan.heading()),
-            phase != Phase.OFF ? lateral : Lateral.HEADING, circle, BlockPos.containing(orbitX, 0, orbitZ), landAtPin);
+        Plan plan = offeredPlan(level, state);
+        Settings settings = offered(plan);
         double floor = lowestAltitude(plan.runway());
-        boolean assembles = state == null && level instanceof ServerLevel server && assemblerAt(server) != null;
+        boolean assembles = state == null
+            && (craft == Craft.ZEPPELIN ? built() && SableFlight.installed() && zeppelin.wired() : level instanceof ServerLevel server && assemblerAt(server) != null);
         double gravity = state != null ? state.gravity() : SableFlight.gravity(level, Vec3.atCenterOf(worldPosition));
-        PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF, assembles,
-            Mth.ceil(floor), Mth.floor(Math.max(floor, highestAltitude(level))), (float) gravity));
+        OpenAutopilotScreen.Limits limits = new OpenAutopilotScreen.Limits(Mth.ceil(floor), Mth.floor(Math.max(floor, highestAltitude(level))),
+            craft.minSpeed, craft.maxSpeed, craft.amberFrom, craft.redFrom);
+        PacketDistributor.sendToPlayer(player, new OpenAutopilotScreen(worldPosition, settings, plan.phase() == Phase.TAKEOFF, assembles, limits,
+            (float) gravity));
     }
 
     /**
@@ -1071,9 +1162,15 @@ public class AutopilotBlockEntity extends BlockEntity {
             return refused;
         }
         boolean engaging = phase == Phase.OFF;
+        if (engaging && craft == Craft.ZEPPELIN && !zeppelin.wired()) {
+            return Component.translatable("message.aerolarge.autopilot.no_burners");
+        }
         if (engaging) {
             engage(level, state);
-            if (phase == Phase.TAKEOFF) {
+            if (phase == Phase.TAKEOFF && craft == Craft.ZEPPELIN) {
+                // A zeppelin rises straight up on its hot air, with no runway and no clearance to wait for.
+                announcements.announce(Announcement.TAKEOFF, this);
+            } else if (phase == Phase.TAKEOFF) {
                 // Airstairs and slides down on the ground would hold it where it stands: they go away first.
                 if (level instanceof ServerLevel server) {
                     stowing.start(server, worldPosition);
@@ -1089,7 +1186,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Whatever is set, a runway near the pin is given up; still set to land there, it looks for one afresh.
         pinLanding.abandon();
         landAtPin = settings.landAtPin();
-        targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), MIN_SPEED, MAX_SPEED);
+        targetSpeed = Mth.clamp(unlessSame(targetSpeed, settings.speed()), craft.minSpeed, craft.maxSpeed);
         double floor = lowestAltitude(runwayAltitude);
         targetAltitude = Mth.clamp(unlessSame(targetAltitude, settings.altitude()), floor, Math.max(floor, highestAltitude(level)));
         // The circle's size follows from how tightly it is set to circle at the speed set: set faster or slower while
@@ -1171,6 +1268,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (phase == Phase.OFF) {
             engage(level, state);
         }
+        if (craft == Craft.ZEPPELIN) {
+            return comeDown(state);
+        }
         if (phase != Phase.LAND && level instanceof ServerLevel serverLevel) {
             // The tower clears it to land, then the cabin hears the landing announcement.
             atc.approach(serverLevel, this, state, radio);
@@ -1184,6 +1284,20 @@ public class AutopilotBlockEntity extends BlockEntity {
         targetSpeed = approachSpeed();
         changed();
         return Component.translatable("message.aerolarge.autopilot.landing", compass(targetHeading));
+    }
+
+    /**
+     * A zeppelin told to land: it stops where it is, holding the way it points, and sinks gently straight down to the
+     * ground, where it rests on its wheels (see {@link ZeppelinPilot}).
+     */
+    private Component comeDown(SableFlight.State state) {
+        announcements.announce(Announcement.LANDING, this);
+        phase = Phase.LAND;
+        lateral = Lateral.HEADING;
+        targetHeading = state.heading();
+        targetSpeed = 0;
+        changed();
+        return Component.translatable("message.aerolarge.autopilot.coming_down");
     }
 
     /** The speed it starts the approach at: a little above the rotation speed, within the speeds it flies. */
@@ -1236,6 +1350,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         thrustTrim = CRUISE_THRUST;
         pitchHold = 0;
         climbingOut = phase == Phase.TAKEOFF;
+        if (craft == Craft.ZEPPELIN) {
+            zeppelin.engage(state);
+        }
         gearRaised = false;
         lastPitch = state.pitch();
         lastRoll = state.roll();
@@ -1257,13 +1374,15 @@ public class AutopilotBlockEntity extends BlockEntity {
             double radio = radioAltitude(level, state);
             if (radio > AIRBORNE) {
                 return new Plan(Phase.CRUISE, state.position().y - radio, Math.round(state.position().y),
-                    Math.round(Mth.clamp(state.airspeed(), MIN_SPEED, MAX_SPEED)), state.heading());
+                    Math.round(Mth.clamp(state.airspeed(), craft.minSpeed, craft.maxSpeed)), state.heading());
             }
         }
         double runway = state != null ? state.position().y : Vec3.atCenterOf(worldPosition).y;
         double heading = state != null ? state.heading() : nose().toYRot();
-        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + AerolargeConfig.AUTOPILOT_CLIMB.get(), highestAltitude(level)),
-            Mth.clamp(AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get(), MIN_SPEED, MAX_SPEED), heading);
+        int climb = craft == Craft.ZEPPELIN ? ZEPPELIN_CLIMB : AerolargeConfig.AUTOPILOT_CLIMB.get();
+        double cruise = craft == Craft.ZEPPELIN ? ZEPPELIN_CRUISE : AerolargeConfig.AUTOPILOT_CRUISE_SPEED.get();
+        return new Plan(Phase.TAKEOFF, runway, Math.min(runway + climb, highestAltitude(level)), Mth.clamp(cruise, craft.minSpeed, craft.maxSpeed),
+            heading);
     }
 
     /** The lowest height it can be set to hold, in world blocks: a little above the runway it took off from. */
@@ -1315,6 +1434,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (autopilot.flyOnceAboard != null) {
             autopilot.flyOnceAboard(serverLevel);
         }
+        if (autopilot.craft == Craft.ZEPPELIN) {
+            autopilot.zeppelinTick(serverLevel, flight);
+            return;
+        }
         autopilot.callouts.watch(serverLevel, flight, autopilot.wheelsBelow, () -> Aboard.players(autopilot));
         double radio = autopilot.radioAltitude(serverLevel, flight);
         autopilot.turbulence.tick(serverLevel, autopilot, flight.position(), radio, flight.airspeed());
@@ -1340,6 +1463,94 @@ public class AutopilotBlockEntity extends BlockEntity {
         autopilot.watchArrival(flight, clear);
         autopilot.atc.tick(serverLevel, autopilot, flight, radio, autopilot.phase);
         autopilot.showSurfaces(serverLevel);
+    }
+
+    /**
+     * Each tick of an assembled zeppelin's: lightning strikes it in a storm and it notes the villages below, as an
+     * airliner does; it comes down by itself once nobody has been aboard a while; engaged, it flies (see
+     * {@link ZeppelinPilot}), until it is down on the ground and rests there, switching itself off.
+     */
+    private void zeppelinTick(ServerLevel level, SableFlight.State flight) {
+        keepAloft(level);
+        double radio = radioAltitude(level, flight);
+        lightning.tick(level, this, flight.position(), radio);
+        VillageSpotter.tick(level, this, flight.position());
+        watchUnattended(level, flight, radio);
+        if (phase != Phase.OFF) {
+            ZeppelinPilot.Orders orders = new ZeppelinPilot.Orders(phase, targetAltitude, targetSpeed, targetHeading, lateral, orbitX, orbitZ,
+                orbitRadius, landAtPin);
+            follow(level, flight, zeppelin.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this)));
+        }
+        watchArrival(flight, radio + flight.apex() - flight.position().y > AIRBORNE);
+    }
+
+    /**
+     * Goes on in the phase the zeppelin's pilot flies it in: switched off, it has either rested on the ground or, still
+     * rising, given up too heavy; coming down at a pin, the cabin is told it is landing.
+     */
+    private void follow(ServerLevel level, SableFlight.State flight, Phase next) {
+        if (next == Phase.OFF && phase == Phase.TAKEOFF) {
+            tooHeavy(level, flight);
+            return;
+        }
+        if (next == Phase.OFF) {
+            restZeppelin(level, flight);
+            return;
+        }
+        if (next == Phase.LAND && phase != Phase.LAND) {
+            announcements.announce(Announcement.LANDING, this);
+        }
+        if (next != phase) {
+            phase = next;
+            changed();
+        }
+    }
+
+    /**
+     * Keeps the zeppelin loaded while it flies or anyone is aboard, so the land unloaded behind a pilot riding in its
+     * bow does not take it out of the sky under them; parked with nobody aboard, it is let go, to be loaded and
+     * unloaded with the land round it as anything else is. Looked at every {@link #ABOARD_LOOK} ticks.
+     */
+    private void keepAloft(ServerLevel level) {
+        if (keptLoaded != null && Math.floorMod(level.getGameTime() + worldPosition.asLong(), ABOARD_LOOK) != 0) {
+            return;
+        }
+        boolean wanted = phase != Phase.OFF || !Aboard.players(this).isEmpty();
+        if (keptLoaded == null || keptLoaded != wanted) {
+            keptLoaded = SableFlight.keepLoaded(this, wanted);
+        }
+    }
+
+    /**
+     * Taken away for good (see {@link dev.aerolarge.block.AutopilotBlock#onRemove}): it lets go of the zeppelin it kept
+     * loaded. Not when its chunk merely unloads, which would forget the ticket Sable saves with it.
+     */
+    public void removed() {
+        if (Boolean.TRUE.equals(keptLoaded)) {
+            SableFlight.keepLoaded(this, false);
+            keptLoaded = false;
+        }
+    }
+
+    /**
+     * Still on the ground a minute after it was told to rise, too heavy for its burners: it rests there again and
+     * switches itself off with a thud, saying why.
+     */
+    private void tooHeavy(ServerLevel level, SableFlight.State flight) {
+        zeppelin.rest(level, worldPosition, flight, SableFlight.mass(this));
+        phase = Phase.OFF;
+        changed();
+        thud();
+        tell(level, flight.position(), Component.translatable("message.aerolarge.autopilot.too_heavy"));
+    }
+
+    /** Down on the ground: it rests there on its wheels, the engines stopped, and switches itself off with a bell. */
+    private void restZeppelin(ServerLevel level, SableFlight.State flight) {
+        zeppelin.rest(level, worldPosition, flight, SableFlight.mass(this));
+        phase = Phase.OFF;
+        landAtPin = false;
+        changed();
+        level.playSound(null, worldPosition, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 1.0F, 1.2F);
     }
 
     /** Tells the clients how far to swing the control surfaces' panels, once that has moved on (see {@link ControlSurfaces}). */
@@ -2012,6 +2223,9 @@ public class AutopilotBlockEntity extends BlockEntity {
         for (Channel channel : Channel.values()) {
             drive(serverLevel, channel, 0);
         }
+        if (craft == Craft.ZEPPELIN) {
+            zeppelin.stop(serverLevel, worldPosition);
+        }
         resyncControls(serverLevel);
         serverLevel.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
     }
@@ -2053,7 +2267,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (!linksChecked) {
             linksChecked = true;
             // The steering and brake relays of a leg folded up are away with it, not lost.
-            List<BlockPos> links = Stream.concat(relays.values().stream().flatMap(List::stream), controls.stream())
+            List<BlockPos> links = Stream.concat(Stream.concat(relays.values().stream().flatMap(List::stream), controls.stream()), zeppelin.links().stream())
                 .filter(link -> !GearBayBlockEntity.stows(level, worldPosition.offset(link))).toList();
             Turning.mend(level, worldPosition, links, AutopilotBlockEntity::linked, this::turnLinks);
         }
@@ -2072,6 +2286,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         gearLever = Turning.turn(gearLever, turn);
         assembler = Turning.turn(assembler, turn);
         surfaces.turn(turn);
+        zeppelin.turn(turn);
         setChanged();
     }
 
@@ -2114,6 +2329,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         if (flyOnceAboardSeat != null) {
             tag.putLong("FlyOnceAboardSeat", flyOnceAboardSeat.asLong());
+        }
+        tag.putString("Craft", craft.name());
+        if (craft == Craft.ZEPPELIN) {
+            tag.put("Zeppelin", zeppelin.save());
         }
         tag.putBoolean("Governing", governing);
         tag.putBoolean("ClimbingOut", climbingOut);
@@ -2174,6 +2393,11 @@ public class AutopilotBlockEntity extends BlockEntity {
             flyOnceAboard = tag.contains("FlyOnceAboard") ? Settings.load(tag.getCompound("FlyOnceAboard")) : null;
             flyOnceAboardFor = tag.hasUUID("FlyOnceAboardFor") ? tag.getUUID("FlyOnceAboardFor") : null;
             flyOnceAboardSeat = tag.contains("FlyOnceAboardSeat") ? Turning.turn(BlockPos.of(tag.getLong("FlyOnceAboardSeat")), turn) : null;
+            // Saved before there were zeppelins: an airliner's.
+            craft = parse(Craft.class, tag.getString("Craft"), Craft.AIRLINER);
+            if (craft == Craft.ZEPPELIN) {
+                zeppelin.load(tag.getCompound("Zeppelin"), turn);
+            }
             governing = tag.getBoolean("Governing");
             climbingOut = tag.getBoolean("ClimbingOut");
             // Held for a clearance the tower, not saved, has forgotten: it goes on at once, with the announcement.

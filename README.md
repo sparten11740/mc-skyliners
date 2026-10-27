@@ -520,7 +520,7 @@ Numbers.
 Switched off, the settings start from what engaging would fly, and engaging (the wide glowing button, or Enter)
 flies them. Engaged on an airliner not yet assembled, the autopilot first has its Physics Assembler assemble it, as a
 Create deployer works the assembler, and engages with the settings once the airliner is assembled, telling everyone
-aboard. The Take Off button greys out the moment it is pressed, with "Assembling the airliner..." on the screen, and
+aboard. The Take Off button greys out the moment it is pressed, with "Assembling..." on the screen, and
 comes back if the airliner cannot be assembled; asked again meanwhile, the autopilot only says it is still assembling.
 Whoever engaged it from a seat stays in it: assembling moves the seat, and the autopilot sits them back down.
 With no assembler aboard, or one that cannot assemble it, it says so and why.
@@ -1129,7 +1129,9 @@ on it can. Sneaking with a wrench (Create's will do), or sneaking in creative mo
 airliner apart on purpose, or to take back a panel put in the wrong spot.
 
 Only the blocks the blueprint laid are held so, and only while they are part of an airliner: inside the Super Glue the
-blueprint glues it with, or among its blocks once it is assembled. The same blocks anywhere else, as the runway's
+blueprint glues it with, or among its blocks once it is assembled. A zeppelin, which is not glued, is held where it
+stands only while its control car is loaded: a player far enough aft along its 490 blocks that the land under the car
+unloads can take it apart there, until it has flown once. The same blocks anywhere else, as the runway's
 lights and the control tower's glass, lights, panels and seats are, break as any other block does. So does one placed
 by hand, a nav light or a panel added to a finished airliner say, glued in or flying; a Create deployer places by hand
 too, a schematicannon does not. An airliner taken apart again forgets which of its blocks were placed by hand.
@@ -1399,16 +1401,39 @@ zeppelin rises until the thinning air balances it and floats there, at a height 
 touches the rest of a body, and a cell standing free in its bay would float off on its own, so the cells hang from the
 crown on girders, the burners and their relays stand on girder posts down to the cells' floors, the gangway stands on
 posts down to the rings, and the decks' floors run out to the cover. The fabric weighs a tenth of a block (its own
-`physics_block_properties`, over the airframe's `#sable:super_light`), so a ship of this size, some 27,000 of Sable's
+`physics_block_properties`, over the airframe's `#sable:super_light`), so a ship of this size, some 32,000 of Sable's
 units, is carried by a few dozen burners. The burners are built with their pilot flames lit, and the relay beside each
 sets how hard it burns. The engines' creative thrusters (Create Propulsion's, as the airliner's) sit in the engine cars
 round the propellers' hubs, eight pushing ahead and two astern in each, without flames: an airship's engines turn
 propellers. Without Create Aeronautics the cells are made of the zeppelin's own fabric and it is a building;
 `burnerBlock` and `envelopeBlock` in the server config's `zeppelin` section name the blocks it is built with.
 
-Too big for the Physics Assembler, the zeppelin is not glued. For now it stands as a building until it is assembled with
-Sable's own `/sable assemble area` over its box; it then rests on its wheels, its pilot flames lifting little, and
-floats up once its relays are set higher.
+Its control car is its flight deck: the autopilot's control head stands in the middle of the control room, a step back
+from the windows, with a flight display and the transponder on the low wall under the windows either side of it and the
+flight map on the back wall by the ladder. Use the control head to open the autopilot's settings, the airliner's own
+screen, its speed dial running from stopped to 25 blocks a second. The zeppelin is too big for the Physics Assembler, so
+it is not glued: engaging the autopilot assembles it through Sable, every block of its own and everything built inside
+its hull, but not the ground under it or the trees beside it.
+
+Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
+until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
+height set, 60 blocks above the ground to start with, where it levels off. It holds the height by its burners alone,
+working out from its mass and the thinning air how much hot air floats it, and learns what more its trim needs; it holds
+its nose level by burning the cells forward of its middle lower and those aft higher, or the other way round, and learns
+the split that holds it. Its propellers drive it at the speed set, ahead or astern, and it turns by driving the port
+engines harder than the starboard ones or the other way round, astern on one side and ahead on the other to turn on the
+spot, a quarter turn in about half a minute. Set to fly to a pin it steers its middle for it, slowing as it comes near,
+and hovers with its middle over it; with the pin off its nose it slows down more, and with the pin abeam or behind it,
+overshot say, it stops and turns on the spot to face it first. Set to land there, it comes down once it hovers, holding
+itself over the pin all the way. Told to Land, it stops, holding the way it points, and sinks gently straight down. On
+the ground it rests on its wheels, its burners holding nearly all its weight, its engines stopped, and switches itself
+off with a bell. With nobody aboard for a minute it comes down where it is. Still on the ground a minute after it was
+engaged, too heavy for its burners (built over with too much, say), it rests again and switches itself off with a thud,
+saying so; built without Create Aeronautics, it has no burners at all, and its autopilot says so instead of engaging.
+
+A zeppelin is far longer than the land loaded round anyone aboard reaches: someone riding in its bow leaves its middle
+in land unloaded behind them. So while it flies, or anyone is aboard, it keeps itself loaded (a loading ticket of
+Sable's); parked with nobody aboard, it is loaded and unloaded with the land round it as anything else is.
 
 The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk grating
 and the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
@@ -1489,7 +1514,11 @@ zeppelin's geometry lives in `ZeppelinShape` (the Hindenburg's measurements in m
 is cut into blocks by `ZeppelinLayout`, which keeps only its blocks and works the air inside its hull out from the shape
 as it hands it over; both airframes go up through `AirframeBuild` as a `Layout`, kept as packed positions, and
 `PropellerRenderer` draws a zeppelin's propellers behind their `PropellerBlock` hubs, which spin them with their
-engine's signal. Assets are generated: `node tools/generate_textures.mjs` writes the textures
+engine's signal. `ZeppelinControlCar` fits out its control room and wires the control head to every burner and engine;
+`ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through the autopilot's block entity,
+which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles it from through
+`SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded while it flies or anyone is aboard.
+Assets are generated: `node tools/generate_textures.mjs` writes the textures
 (ordinary PNGs that can also be painted by hand), and `node tools/generate_resources.mjs <vanilla-assets-dir>` the
 blockstates, models, loot tables, tags, recipes and lang file. The door and the call button are vanilla's iron door
 and stone button retextured, so their files come from vanilla's: pass the folder the client resources jar
