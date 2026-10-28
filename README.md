@@ -1811,7 +1811,7 @@ they fire, and two rings of four side jets in its skin, near the nose and near t
 fins are its legs; between them a crew ladder, the pool's chrome ladder up a column beside the door, climbs to a step in
 front of the doorway. Inside, over an engine room, stories stand one above another round a glass lift shaft up the
 middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the front, but on the
-entry story, where the door is), and the cockpit sits in the glass of the nose, the autopilot's control head facing the
+entry story, where the door is, and on the observation deck, which has a band of glass all round instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the
 front between two flight displays. The windows' glass bulges out of the skin in a dome, the sun glinting off it, and
 sits inside in a recess lined with steel; it dims electrically: use one to darken its glass a step, from clear through
 light and medium to dark, and once more to clear it again, a chime falling as it darkens.
@@ -1826,6 +1826,23 @@ there, easing off and in, at up to six blocks a second, while its motor hums; on
 going down, and the doors open to let you out. It never closes on anyone in the doorway or moves with a door open, and
 no one gets off between floors. While she counts down, flies or lands, it stands at a floor with its doors open and
 takes no rides, and an amber bar lies across its boards.
+
+Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
+round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
+the skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather
+leave her in flight, crew lockers along both sides and armchairs at the back to wait for the lift in. The galley and
+mess has galley units curving round the back either side of its window, an oven in each run and a coffee machine,
+and four tables with an armchair either side, two of them by the side windows. The bunk room has bunk beds two high at
+each of the four diagonals, their reading lights on, and a crew locker for each. The greenhouse has raised moss beds in
+a ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in them, a cherry tree at two diagonals
+and an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its
+ceiling, its bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep
+curving round the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its
+edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the
+window. The techno club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals,
+four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round her left side with
+stools. The observation deck, her highest story, sees all round through its band of smoked glass: a lookout glass
+looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out.
 
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
@@ -1990,7 +2007,7 @@ it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it lo
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
-her livery selector); its
+her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` to `RocketObservationDeck`); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a

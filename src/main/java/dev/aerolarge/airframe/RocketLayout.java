@@ -78,12 +78,22 @@ public final class RocketLayout implements Layout {
     private static final int HEAD_BACK = 4;
     /** The fins: one between each two of the four ways. */
     private static final int[][] FINS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-    /** The features laid once the body stands, in this order (see {@link RocketPiece}). */
+    /**
+     * The features laid once the body stands, in this order (see {@link RocketPiece}): the pool before the greenhouse
+     * under it, whose canopy keeps clear of the pool's channel hanging into it.
+     */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
         RocketCameraDisplay::new,
         RocketLiverySelector::new,
-        RocketLift::new);
+        RocketLift::new,
+        RocketEntry::new,
+        RocketMess::new,
+        RocketBunks::new,
+        RocketPool::new,
+        RocketGreenhouse::new,
+        RocketClub::new,
+        RocketObservationDeck::new);
     /**
      * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector
      * stand against runs: the selector's row and the display's two over it.
@@ -201,7 +211,7 @@ public final class RocketLayout implements Layout {
         cells.put(new BlockPos(x, y, z), state);
     }
 
-    private BlockState stateAt(int x, int y, int z) {
+    BlockState stateAt(int x, int y, int z) {
         return cells.getOrDefault(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
     }
 
@@ -213,6 +223,21 @@ public final class RocketLayout implements Layout {
     /** Whether a block's middle lies inside the body, a skin's thickness in from its surface. */
     boolean inside(int x, int y, int z) {
         return surface.depth(x, y + 0.5, z) < -1;
+    }
+
+    /** Whether a block's middle lies at least so many blocks in from the body's surface. */
+    boolean inFrom(int x, int y, int z, double blocks) {
+        return surface.depth(x, y + 0.5, z) < -blocks;
+    }
+
+    /** The highest row of a story, its index from the entry story up: under the next floor, or the cockpit's. */
+    int storyTop(int story) {
+        return (story + 1 < floors.size() ? floors.get(story + 1) : noseFoot) - 1;
+    }
+
+    /** How far the body's inside reaches out from its axis, in blocks: its radius. */
+    double radius() {
+        return radius;
     }
 
     /** How far out the body reaches at most, fins and all, in blocks. */

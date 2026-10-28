@@ -44,6 +44,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
     public static final ModConfigSpec.BooleanValue CAMERA_DISPLAY;
     public static final ModConfigSpec.BooleanValue ROCKET_LIFT;
+    public static final ModConfigSpec.BooleanValue ROCKET_ROOMS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -422,6 +423,13 @@ public final class AerolargeConfig {
                 "open, and rockets already built keep theirs."
             )
             .define("lift", true);
+        ROCKET_ROOMS = builder
+            .comment(
+                "Whether a rocket's stories are built furnished, each its room: the entry, the galley and mess, the bunk room, the",
+                "greenhouse, the swimming pool, the techno club and the observation deck (the cargo bay and the lab are their own). Off,",
+                "her stories are bare. Rockets already built keep theirs."
+            )
+            .define("rooms", true);
         builder.pop();
 
         SPEC = builder.build();
