@@ -1786,6 +1786,14 @@ the hot air burners' `burnerSmoke`) are there from the title screen. The server 
 loaded, from the pause menu's Mods button while playing in single player; they are kept in
 `config/aerolarge-server.toml`, on a dedicated server in its own.
 
+Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
+into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a
+second. As an experiment, `landAhead` in the server config (off by default) loads the land ahead of anyone flying
+aboard an airliner or a zeppelin a little before they see it, `landAheadChunks` chunks past the edge of their view (8
+by default), a few at a time while the server has time to spare. Over new land it takes about a third off each of
+those moments and leaves half as many long ones. Generating the world beforehand, with a mod such as Chunky, does
+more: over land made before, they are smaller still.
+
 ## Building
 
 ```sh
@@ -1846,7 +1854,8 @@ gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only place
 mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn without losing their beams, which Create's
 own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
-the player's view while the camera is inside a hull in the cloud layer. The zeppelin's geometry lives in `ZeppelinShape`
+the player's view while the camera is inside a hull in the cloud layer; `LandAhead` asks for the land ahead of a player
+flying aboard, past what they see, a few chunks at a time. The zeppelin's geometry lives in `ZeppelinShape`
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
 blocks and working the air inside its hull out from the shape as it hands it over, its burners turned down to what a

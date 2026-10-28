@@ -6385,6 +6385,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.assemblerBlock": "Assembler Block",
   "aerolarge.configuration.wheelMountBlock": "Wheel Mount Block",
   "aerolarge.configuration.tireItem": "Tire Item",
+  "aerolarge.configuration.landAhead": "Land Ahead (Experimental)",
+  "aerolarge.configuration.landAheadChunks": "Land Ahead Distance",
   "aerolarge.configuration.cabin": "Cabin",
   "aerolarge.configuration.turbulence": "Turbulence",
   "aerolarge.configuration.decompression": "Decompression",

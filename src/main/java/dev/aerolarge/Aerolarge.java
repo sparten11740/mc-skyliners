@@ -122,6 +122,7 @@ public final class Aerolarge {
                 HandPlaced.tick(level);
                 SelfDestruct.tick(level);
                 ShipHorn.tick(level);
+                LandAhead.tick(level);
             }
         });
         NeoForge.EVENT_BUS.addListener(LevelEvent.Save.class, event -> {
@@ -142,6 +143,7 @@ public final class Aerolarge {
                 RadarSurvey.unload(level);
                 SelfDestruct.drop(level);
                 ShipHorn.drop(level);
+                LandAhead.drop(level);
             }
         });
     }

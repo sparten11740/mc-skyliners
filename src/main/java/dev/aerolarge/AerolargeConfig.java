@@ -18,6 +18,8 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.ConfigValue<String> WHEEL_MOUNT_BLOCK;
     public static final ModConfigSpec.ConfigValue<String> TIRE_ITEM;
     public static final ModConfigSpec.BooleanValue RETRACTABLE_GEAR;
+    public static final ModConfigSpec.BooleanValue LAND_AHEAD;
+    public static final ModConfigSpec.IntValue LAND_AHEAD_CHUNKS;
     public static final ModConfigSpec.IntValue AUTOPILOT_CLIMB;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_ROTATE_SPEED;
     public static final ModConfigSpec.DoubleValue AUTOPILOT_CRUISE_SPEED;
@@ -127,6 +129,17 @@ public final class AerolargeConfig {
                 "switched off later the gear can still be lowered but no longer raised."
             )
             .define("retractableGear", true);
+        LAND_AHEAD = builder
+            .comment(
+                "Experimental: whether the land ahead of a player flying aboard an airliner or a zeppelin (any of Sable's bodies) is loaded",
+                "a little before they see it, a few chunks at a time while the server has time to spare, and generated where nobody has",
+                "been. Without it, flying over new land the server generates a row of it all at once each time the player crosses into",
+                "another chunk, and holds up its tick while it does."
+            )
+            .define("landAhead", false);
+        LAND_AHEAD_CHUNKS = builder
+            .comment("How far past the edge of what each player sees the land ahead is loaded, in chunks.")
+            .defineInRange("landAheadChunks", 8, 1, 32);
         builder.pop();
 
         builder.push("autopilot");

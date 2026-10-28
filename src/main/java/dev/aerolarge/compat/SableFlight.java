@@ -145,6 +145,11 @@ public final class SableFlight {
         return SABLE && Access.ridesAny(entity);
     }
 
+    /** How fast the assembled airliner the entity rides flies where it stands, in blocks a second; still for none. */
+    public static Vec3 ridingVelocity(Entity entity) {
+        return SABLE ? Access.ridingVelocity(entity) : Vec3.ZERO;
+    }
+
     /**
      * Whether two block entities are both part of one assembled airliner: the same one of Sable's flying bodies, not
      * merely two that fly side by side; false when either is not part of one.
@@ -551,6 +556,12 @@ public final class SableFlight {
 
         static boolean ridesAny(Entity entity) {
             return Sable.HELPER.getTrackingOrVehicleSubLevel(entity) != null;
+        }
+
+        static Vec3 ridingVelocity(Entity entity) {
+            SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
+            return airliner == null ? Vec3.ZERO
+                : Sable.HELPER.getVelocity(entity.level(), airliner, airliner.logicalPose().transformPositionInverse(entity.position()));
         }
 
         static boolean sameAirliner(BlockEntity one, BlockEntity other) {
