@@ -1,12 +1,12 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.AerolargeRegistry;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -92,7 +92,7 @@ public class ParkingBrakeBlock extends HorizontalDirectionalBlock implements Ent
         if (!level.isClientSide) {
             boolean set = !state.getValue(SET);
             level.setBlock(pos, state.setValue(SET, set), Block.UPDATE_ALL);
-            level.playSound(null, pos, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.4F, set ? 1.4F : 1.7F);
+            level.playSound(null, pos, AerolargeRegistry.CRANE_RATCHET.get(), SoundSource.BLOCKS, 0.5F, set ? 1.3F : 1.6F);
             if (level.getBlockEntity(pos) instanceof Control control) {
                 control.resync();
             }

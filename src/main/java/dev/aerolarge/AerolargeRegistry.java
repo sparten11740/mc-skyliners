@@ -1705,6 +1705,8 @@ public final class AerolargeRegistry {
     /** A finger squeaking across a misted window, and the autopilot's disconnect warning as it lets go. */
     public static final DeferredHolder<SoundEvent, SoundEvent> GLASS_SQUEAK = sound("glass_squeak");
     public static final DeferredHolder<SoundEvent, SoundEvent> AUTOPILOT_OFF = sound("autopilot_off");
+    /** The airliner's landing gear lever thrown, out of its detent and home with a clunk. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEAR_LEVER_SOUND = sound("gear_lever");
     /** A floodlight under a zeppelin, lit from dusk to dawn and lighting the land under her. */
     public static final DeferredBlock<FloodlightBlock> FLOODLIGHT = BLOCKS.registerBlock(
         "floodlight", FloodlightBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(FloodlightBlock.LIT) ? 15 : 0)

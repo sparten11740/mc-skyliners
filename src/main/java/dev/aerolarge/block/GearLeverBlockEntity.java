@@ -131,7 +131,7 @@ public class GearLeverBlockEntity extends BlockEntity {
         BlockState state = getBlockState();
         if (state.getValue(GearLeverBlock.DOWN) != down) {
             level.setBlock(worldPosition, state.setValue(GearLeverBlock.DOWN, down), Block.UPDATE_ALL);
-            level.playSound(null, worldPosition, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, LEVER_VOLUME, down ? 1.3F : 1.6F);
+            level.playSound(null, worldPosition, AerolargeRegistry.GEAR_LEVER_SOUND.get(), SoundSource.BLOCKS, LEVER_VOLUME, down ? 0.95F : 1.05F);
         }
         follow(level, legs(level), down);
     }

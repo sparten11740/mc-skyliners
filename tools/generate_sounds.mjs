@@ -1399,6 +1399,23 @@ function seamless(samples, seconds, fadeSeconds) {
   writeSound("autopilot_off", samples, 0.6);
 }
 
+// The airliner's landing gear lever thrown (see GearLeverBlockEntity): pulled out of its detent with a click, swung
+// through its gate and dropped home with a heavy clunk of the knob's stop.
+{
+  const noise = ownRandom(0x4765616c);
+  const samples = new Float64Array(Math.round(0.6 * RATE));
+  click(samples, 0, 2200, 0.5, noise);
+  let previous = 0;
+  for (let i = Math.round(0.02 * RATE); i < Math.round(0.16 * RATE); i++) {
+    const white = noise() * 2 - 1;
+    samples[i] += 0.05 * (white - previous);
+    previous = white;
+  }
+  thunk(samples, 0.16, 140, 1, noise);
+  click(samples, 0.16, 1500, 0.4, noise);
+  writeSound("gear_lever", samples, 0.75);
+}
+
 // Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
 // shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
 {

@@ -1023,6 +1023,14 @@
       }
     ]
   },
+  "gear_lever": {
+    "subtitle": "subtitles.aerolarge.gear_lever",
+    "sounds": [
+      {
+        "name": "aerolarge:gear_lever"
+      }
+    ]
+  },
   "tow_rope": {
     "subtitle": "subtitles.aerolarge.tow_rope",
     "sounds": [
