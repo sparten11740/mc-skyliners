@@ -29,6 +29,10 @@ final class RocketShape {
     static final double FIN_FOOT = 9;
     static final double FIN_TIP_TOP = 8;
     static final double FIN_ROOT_TOP = 22;
+    /** How far a fin reaches ahead or to the side for each metre it reaches out between the four ways. */
+    static final double DIAGONAL = Math.sqrt(0.5);
+    /** How far ahead of her axis her frontmost blocks reach: her front fins' tips. */
+    static final double FRONT_REACH = FIN_TIP * DIAGONAL;
     /** The nose cone's curve: a tangent ogive's, its radius of curvature from its length and the body's radius. */
     private static final double OGIVE = (RADIUS * RADIUS + NOSE * NOSE) / (2 * RADIUS);
 

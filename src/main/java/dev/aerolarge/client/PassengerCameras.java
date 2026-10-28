@@ -2,7 +2,6 @@ package dev.aerolarge.client;
 
 import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.airframe.CameraSpot;
-import dev.aerolarge.airframe.ZeppelinCamera;
 import dev.aerolarge.autopilot.Craft;
 import java.util.List;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
@@ -127,12 +126,13 @@ public final class PassengerCameras {
     }
 
     /**
-     * The cameras of an airframe of a kind this player looks through, in order: all of them but a zeppelin's flyby
-     * camera when it is switched off on this client (see {@link AerolargeClientConfig#FLYBY_CAMERA}).
+     * The cameras of an airframe of a kind this player looks through, in order: all of them but one circling the ship,
+     * as a zeppelin's flyby camera does, when that is switched off on this client (see
+     * {@link AerolargeClientConfig#FLYBY_CAMERA}).
      */
     private static List<CameraSpot> shown(Craft craft) {
         boolean flyby = AerolargeClientConfig.FLYBY_CAMERA.get();
-        return CameraSpot.of(craft).stream().filter(camera -> flyby || camera != ZeppelinCamera.FLYBY).toList();
+        return CameraSpot.of(craft).stream().filter(camera -> flyby || camera.orbitRadius() <= 0).toList();
     }
 
     /** The local player has used a passenger screen: look through the first camera, if the airliner has them. */

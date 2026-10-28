@@ -1816,6 +1816,12 @@ glass bulges out of the skin in a dome, the sun glinting off it, and sits inside
 electrically: use one to darken its glass a step, from clear through light and medium to dark, and once more to clear
 it again, a chime falling as it darkens.
 
+Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
+config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
+the whole of her from well out, sky blue; then up her side, from low by the door to her nose against the sky, orange;
+and the landing leg, out on her front right fin's tip, looking in under her at the ground she lands on, green. Its
+buttons show where each camera is on an outline of her, and its test card carries her badge.
+
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set. There
 it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
@@ -1964,7 +1970,8 @@ show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mas
 the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
-as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder); its
+as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
+`RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`).

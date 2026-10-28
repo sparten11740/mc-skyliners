@@ -292,9 +292,9 @@ public final class AerolargeConfig {
             .define("liveryBoard", true);
         CAMERA_DISPLAY = builder
             .comment(
-                "Whether a zeppelin is built with a camera display over the livery selector in her control car, showing her outside",
-                "cameras live as the airliner's flight deck shows its own, the flyby camera circling her at first, so a new paint",
-                "is seen sweeping over her. Zeppelins already built keep theirs."
+                "Whether a zeppelin is built with a camera display over the livery selector in her control car, and a rocket with one",
+                "in her cockpit, showing their outside cameras live as the airliner's flight deck shows its own, the camera circling",
+                "them at first, so a new paint is seen going over them. Zeppelins and rockets already built keep theirs."
             )
             .define("cameraDisplay", true);
         SHIPS_COLOURS = builder

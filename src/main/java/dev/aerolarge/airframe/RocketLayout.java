@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -74,7 +75,8 @@ public final class RocketLayout implements Layout {
     private static final int[][] FINS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     /** The features laid once the body stands, in this order (see {@link RocketPiece}). */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
-        RocketLadder::new);
+        RocketLadder::new,
+        RocketCameraDisplay::new);
 
     private final AirframePalette.Balloon palette;
     private final double scale;
@@ -183,6 +185,44 @@ public final class RocketLayout implements Layout {
             }
         }
         return 0;
+    }
+
+    /** The row of the cockpit's floor, at the nose's foot. */
+    int cockpitFloor() {
+        return noseFoot;
+    }
+
+    /**
+     * Where something flat standing against the skin on the rocket's right, out to the east, goes over a span of rows
+     * and of blocks along it: as far out as it can stand over all of them, just inside the skin where the skin comes
+     * furthest in, so it touches the skin there; nothing where the skin is not there across them.
+     */
+    OptionalInt againstRightSkin(int fromY, int toY, int fromZ, int toZ) {
+        int along = toZ - fromZ + 1;
+        int blocks = along * (toY - fromY + 1);
+        int found = Integer.MAX_VALUE;
+        for (int block = 0; block < blocks; block++) {
+            int x = insideRightSkin(fromY + block / along, fromZ + block % along);
+            if (x == Integer.MIN_VALUE) {
+                return OptionalInt.empty();
+            }
+            found = Math.min(found, x);
+        }
+        return OptionalInt.of(found);
+    }
+
+    /**
+     * The last open block going out to the right from beside the lift shaft at a row and a block along, just inside
+     * the skin; {@link Integer#MIN_VALUE} for none.
+     */
+    private int insideRightSkin(int y, int z) {
+        int out = (int) Math.ceil(radius) + 2;
+        for (int x = SHAFT + 1; x <= out; x++) {
+            if (!isOpen(x, y, z)) {
+                return x > SHAFT + 1 ? x - 1 : Integer.MIN_VALUE;
+            }
+        }
+        return Integer.MIN_VALUE;
     }
 
     /**

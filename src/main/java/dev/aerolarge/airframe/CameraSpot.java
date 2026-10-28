@@ -64,7 +64,11 @@ public interface CameraSpot {
 
     /** The cameras an airframe of a kind has, in the order a passenger screen steps through them. */
     static List<CameraSpot> of(Craft craft) {
-        return craft == Craft.ZEPPELIN ? List.of(ZeppelinCamera.values()) : List.of(OutsideCamera.values());
+        return switch (craft) {
+            case AIRLINER -> List.of(OutsideCamera.values());
+            case ZEPPELIN -> List.of(ZeppelinCamera.values());
+            case ROCKET -> List.of(RocketCamera.values());
+        };
     }
 
     /**
@@ -72,7 +76,11 @@ public interface CameraSpot {
      * a distance back from the nose and a height above the ground, in metres as the cameras are placed.
      */
     static List<double[][]> sideView(Craft craft) {
-        return craft == Craft.ZEPPELIN ? ZeppelinCamera.SIDE_VIEW : OutsideCamera.SIDE_VIEW;
+        return switch (craft) {
+            case AIRLINER -> OutsideCamera.SIDE_VIEW;
+            case ZEPPELIN -> ZeppelinCamera.SIDE_VIEW;
+            case ROCKET -> RocketCamera.SIDE_VIEW;
+        };
     }
 
     /** The camera of this name, of whichever airframe it is, or the fallback for a name no camera has. */

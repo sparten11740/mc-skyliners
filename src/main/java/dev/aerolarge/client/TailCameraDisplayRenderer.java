@@ -115,7 +115,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     /**
      * Each airframe seen from behind on the test card's badge, as boxes from its middle in shares of the badge's height
      * (x0, y0, x1, y1). The airliner: the wings, the tailplane, the fuselage, the fin and the four engines under the
-     * wings. The zeppelin: her round hull, in steps, and her four fins in a cross through it.
+     * wings. The zeppelin: her round hull, in steps, and her four fins in a cross through it. The rocket: her body, her
+     * nose narrowing in steps over it, and the fins standing out either side of her foot.
      */
     private static final Map<Craft, double[][]> BADGES = Map.of(
         Craft.AIRLINER, new double[][]{
@@ -134,6 +135,15 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             {-0.12, -0.22, 0.12, 0.22},
             {-0.42, -0.02, 0.42, 0.02},
             {-0.02, -0.42, 0.02, 0.42},
+        },
+        Craft.ROCKET, new double[][]{
+            {-0.09, -0.28, 0.09, 0.18},
+            {-0.065, 0.18, 0.065, 0.27},
+            {-0.035, 0.27, 0.035, 0.36},
+            {-0.27, -0.42, -0.09, -0.30},
+            {-0.19, -0.30, -0.09, -0.14},
+            {0.09, -0.42, 0.27, -0.30},
+            {0.09, -0.30, 0.19, -0.14},
         });
 
     @Override
