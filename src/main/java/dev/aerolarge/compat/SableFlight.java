@@ -559,8 +559,9 @@ public final class SableFlight {
         }
 
         static Vec3 ridingVelocity(Entity entity) {
+            // Blown up or taken away this tick, it is still the one ridden until Sable lets go, but has no body left.
             SubLevel airliner = Sable.HELPER.getTrackingOrVehicleSubLevel(entity);
-            return airliner == null ? Vec3.ZERO
+            return airliner == null || airliner.isRemoved() ? Vec3.ZERO
                 : Sable.HELPER.getVelocity(entity.level(), airliner, airliner.logicalPose().transformPositionInverse(entity.position()));
         }
 
