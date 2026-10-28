@@ -8,7 +8,11 @@ import dev.aerolarge.compat.SableFlight;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
@@ -32,8 +36,10 @@ import net.minecraft.world.phys.Vec3;
  * sinks, and the sinking carries it on forward, so it settles into a long gentle glide; it wavers from side to side
  * as it goes, and drifts one way or the other a little, as no two paper planes fold alike. Touching anything solid or
  * water, it lands and lies there as a paper plane to pick up; a player it flies into catches it, and so does one
- * using it in flight. It moves the same on both sides, so it glides smoothly between updates; only the server takes
- * it aboard an airliner and sends it out again.
+ * using it in flight. It flies the same on both sides, from the same throw and on the same clock (its age goes to
+ * clients with it), so a client draws it gliding smoothly between updates, easing it toward where the server has it
+ * rather than putting it there: a busy server runs slower than its clients, and each update would pull it back. Only
+ * the server takes it aboard an airliner and sends it out again.
  *
  * <p>Inside an assembled airliner's hull it lives among the airliner's blocks, in Sable's plot, and Sable carries it
  * along with them (see {@link SableFlight#keepWithCabin}), so it glides through the cabin's air as the basketball
@@ -88,6 +94,13 @@ public class PaperPlane extends Entity {
     private static final TicketType<Integer> GLIDING = TicketType.create(Aerolarge.MOD_ID + ":paper_plane", Integer::compare, 30);
     private static final int GLIDING_REACH = 3;
     private static final int GLIDING_RENEWAL = 10;
+    /**
+     * On a client, the share of the way to where the server last had it that its plane is eased each tick, and how far
+     * from there, in blocks, it is put there at once instead: further than it glides between updates, as when the
+     * server takes it aboard an airliner or sends it out.
+     */
+    private static final double EASING = 0.1;
+    private static final double PUT_THERE = 4;
 
     @Nullable
     private UUID thrower;
@@ -95,6 +108,8 @@ public class PaperPlane extends Entity {
     /** Where in the world it was thrown from, and whether that was aboard an airliner in flight. */
     private Vec3 origin = Vec3.ZERO;
     private boolean thrownInFlight;
+    /** On a client, how far its plane still has to be eased to where the server last had it, in blocks. */
+    private Vec3 offServer = Vec3.ZERO;
 
     public PaperPlane(EntityType<? extends PaperPlane> type, Level level) {
         super(type, level);
@@ -126,7 +141,9 @@ public class PaperPlane extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide) {
+        if (level().isClientSide) {
+            easeToServer();
+        } else {
             SableFlight.keepWithCabin(this);
             keepLandGoing();
         }
@@ -171,7 +188,8 @@ public class PaperPlane extends Entity {
         }
         Vec3 next = new Vec3(x, y, z);
         next = next.scale(Math.max(0, 1 - DRAG - DRAG_PER_SPEED * next.length()));
-        setYRot((float) Math.toDegrees(yaw));
+        // Turned the short way from where it points, never across from +180 to -180: drawn, it would spin round.
+        setYRot(getYRot() + Mth.wrapDegrees((float) Math.toDegrees(yaw) - getYRot()));
         setXRot((float) Math.toDegrees(Math.atan2(-next.y, next.horizontalDistance())));
         return next;
     }
@@ -229,6 +247,41 @@ public class PaperPlane extends Entity {
         if (down && !isRemoved() && !SableFlight.inPlot(this) && thrower() instanceof ServerPlayer player) {
             LandingTargetBlockEntity.scorePlane(player, position());
         }
+    }
+
+    /** On a client, a share of the way still to go to where the server last had it. */
+    private void easeToServer() {
+        Vec3 step = offServer.scale(EASING);
+        offServer = offServer.subtract(step);
+        setPos(position().add(step));
+    }
+
+    /**
+     * On a client, where the server has it now: eased toward a little each tick (see {@link #easeToServer}), or put
+     * there at once when it is far off.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+        Vec3 server = new Vec3(x, y, z);
+        if (server.distanceToSqr(position()) > PUT_THERE * PUT_THERE) {
+            super.lerpTo(x, y, z, yRot, xRot, steps);
+            setOldPosAndRot();
+            offServer = Vec3.ZERO;
+            return;
+        }
+        offServer = server.subtract(position());
+    }
+
+    /** Its age goes to clients with it, so they waver it as the server does. */
+    @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+        return new ClientboundAddEntityPacket(this, serverEntity, tickCount);
+    }
+
+    @Override
+    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
+        super.recreateFromPacket(packet);
+        tickCount = packet.getData();
     }
 
     /** Who threw it, if they are still about. */
