@@ -632,6 +632,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final ZeppelinPilot zeppelin = new ZeppelinPilot();
     /** How it flies a rocket, and what it works there; unused for the others. */
     private final RocketPilot rocket = new RocketPilot();
+    /** Its rocket welcoming everyone aboard to space as she climbs past its edge. */
+    private final EdgeOfSpace space = new EdgeOfSpace();
     /** How far into its rocket's countdown it last sounded it, in ticks, so each second is heard once. */
     private int countHeard;
     /**
@@ -1700,14 +1702,16 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Each tick of an assembled rocket's: it is kept loaded, as a zeppelin is; lightning strikes it in a storm and it
-     * notes the villages below; engaged, it flies (see {@link RocketPilot}) until it has come down on its fins and
-     * stood there a moment, switching itself off with a bell.
+     * notes the villages below; everyone aboard is welcomed to space as it climbs past the edge of space (see
+     * {@link EdgeOfSpace}); engaged, it flies (see {@link RocketPilot}) until it has come down on its fins and stood
+     * there a moment, switching itself off with a bell.
      */
     private void rocketTick(ServerLevel level, SableFlight.State flight) {
         keepLoaded(level);
         double radio = radioAltitude(level, flight);
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
+        space.watch(level, this, flight);
         if (phase != Phase.OFF) {
             RocketPilot.Orders orders = new RocketPilot.Orders(phase, targetAltitude, lateral == Lateral.DESTINATION, orbitX, orbitZ);
             Phase next = rocket.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this));

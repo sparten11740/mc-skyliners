@@ -1878,7 +1878,9 @@ by y 1,200; the stars come out from y 500, by day too, and by the edge of space 
 night shows from the ground; the sun burns white, with no sunrise in it; the clouds far below fade away between y 500
 and 800, and the rain and snow with them. The land she rose from fades into a hazy blue planet as it falls behind, its
 rim curving away under the horizon under a thin glow of air, dipping further the higher she goes. Her camera display
-shows it as its cameras see it. The client config's `spaceSky` leaves the sky as the game draws it.
+shows it as its cameras see it. As she reaches the edge of space on the way up, the cabin chime sounds and her flight
+deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves the sky as
+the game draws it.
 
 ### Settings
 
@@ -2030,7 +2032,7 @@ by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running 
 `LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
 round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
 planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; `EdgeOfSpace` holds the height space
-begins at.
+begins at, and welcomes everyone aboard to space as she climbs past it.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

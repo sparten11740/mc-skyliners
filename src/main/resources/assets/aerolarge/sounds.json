@@ -197,6 +197,15 @@
       }
     ]
   },
+  "announcement_space": {
+    "subtitle": "subtitles.aerolarge.announcement_space",
+    "sounds": [
+      {
+        "name": "aerolarge:announcement_space",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "atc_cleared_for_takeoff": {
     "subtitle": "subtitles.aerolarge.atc_cleared_for_takeoff",
     "sounds": [

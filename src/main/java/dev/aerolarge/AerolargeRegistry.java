@@ -378,6 +378,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SLEEP = sound("announcement_sleep");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_LANDING = sound("announcement_landing");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL = sound("announcement_arrival");
+    /** The rocket's welcome to space, after the chime, as she climbs past its edge (see {@code EdgeOfSpace}). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SPACE = sound("announcement_space");
     /** The two-tone chime before a cabin announcement, and the crackle of a radio call. */
     public static final DeferredHolder<SoundEvent, SoundEvent> PA_CHIME = sound("pa_chime");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_CRACKLE = sound("radio_crackle");

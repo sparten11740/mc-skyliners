@@ -2073,6 +2073,17 @@ if (speaker) {
   }
 }
 
+// The rocket's flight deck welcoming everyone aboard to space as she climbs past its edge (see EdgeOfSpace): made as a
+// cabin announcement is, the chime and then the voice, but not one of the announcement panel's. Its second phrase also
+// makes it long enough for the loudness normaliser, which levels only from three seconds long, to bring it level with
+// the announcements.
+const SPACE_WELCOME = { announcement_space: "Welcome to space. | Enjoy the view." };
+if (speaker) {
+  await say(speaker, SPACE_WELCOME, VOICE.announcement);
+  writeVoiced("announcement_space", announcement(trim(readWav(join(scratch, "announcement_space.voiced.wav")))), VOICE.announcement,
+    ANNOUNCEMENT_LONGEST);
+}
+
 // The ground officer's call as a zeppelin is let go from her handlers' lines (see BallastValveBlockEntity): a British
 // man's voice, Kokoro's George, shouted through a megaphone, its horn's narrow band and hard middle, and the field's
 // echo after it. Tune it here.
