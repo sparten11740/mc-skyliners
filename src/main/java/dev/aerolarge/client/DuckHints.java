@@ -48,11 +48,14 @@ public final class DuckHints {
         }
         Player player = Minecraft.getInstance().player;
         Vec3 middle = Vec3.atCenterOf(pos);
-        if (player == null || player.distanceToSqr(SableClient.toWorld(level, middle)) > RANGE * RANGE || found(duck, player)) {
+        // Heard where the duck is in the world: aboard an airliner in flight its block is in Sable's plot, where a
+        // sound played on this client alone is heard by nobody.
+        Vec3 heard = SableClient.toWorld(level, middle);
+        if (player == null || player.distanceToSqr(heard) > RANGE * RANGE || found(duck, player)) {
             return;
         }
         duck.wiggle();
-        level.playLocalSound(middle.x, middle.y, middle.z, AerolargeRegistry.RUBBER_DUCK_SQUEAK.get(), SoundSource.BLOCKS, VOLUME, PITCH, false);
+        level.playLocalSound(heard.x, heard.y, heard.z, AerolargeRegistry.RUBBER_DUCK_SQUEAK.get(), SoundSource.BLOCKS, VOLUME, PITCH, false);
         level.addParticle(ParticleTypes.NOTE, middle.x, pos.getY() + NOTE_HEIGHT + RubberDuckBlock.lift(duck.getBlockState()), middle.z, NOTE_COLOUR, 0, 0);
     }
 

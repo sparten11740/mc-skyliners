@@ -54,12 +54,12 @@ feature as a player meets it, and its Building section says which classes do wha
 - **Other mods.** Sable is touched only in `compat/SableFlight` (server) and `client/SableClient` (client), each behind
   a `ModList` check. The exceptions are `SableFlight.fitsAboard`, which the client also calls for its own player's pose,
   `SableFlight.aboard`, which `FrameProtection` calls on both sides, and `SableFlight.toWorld`, by which the sky crane's
-  `CraneHook` hangs from her winch on clients too. Veil is touched only in `TailCameraFeed`, `VeilLights` and
-  `mixin/AdvancedFboImplMixin`. Blockpilot, the play-testing client mod, is touched only in `compat/blockpilot`,
-  compiled only when Blockpilot's API is in the local Maven repository and reached by name from `compat/Blockpilot`
-  behind a `ModList` check. Create Propulsion and Create Aeronautics' Simulated and Offroad are
-  named only by registry id in `AerolargeConfig` and resolved in `AirframePalette`. Create and Sable are compiled
-  against, never bundled.
+  `CraneHook` hangs from her winch on clients too and blocks' client-side chimes sound where the block is in flight.
+  Veil is touched only in `TailCameraFeed`, `VeilLights` and `mixin/AdvancedFboImplMixin`. Blockpilot, the
+  play-testing client mod, is touched only in `compat/blockpilot`, compiled only when Blockpilot's API is in the local
+  Maven repository and reached by name from `compat/Blockpilot` behind a `ModList` check. Create Propulsion and Create
+  Aeronautics' Simulated and Offroad are named only by registry id in `AerolargeConfig` and resolved in
+  `AirframePalette`. Create and Sable are compiled against, never bundled.
 - **Geometry.** New airframe geometry is drawn in `AirframeShape`'s metres in the layout's nose-north frame and turns
   with `AirframeBuild.Placement`, never in world coordinates. Block entities that need data once placed get it through
   a `Fitting`, whose offsets turn with the placement. `CabinFitOut` only furnishes open cabin space or replaces cabin

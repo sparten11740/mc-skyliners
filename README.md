@@ -224,7 +224,8 @@ retard), and warns of too much bank ("Bank angle. Please do not do that.") or si
 is not a test."), whoever flies. The same voice makes the autopilot's cabin announcements (see below), as on an
 airline's recorded announcements, over the cabin's loudspeakers.
 Riding the airliner, the camera rumbles on the runway, thumps on touchdown and sways a little in flight; turn that
-off with `cameraShake` in the client config.
+off with `cameraShake` in the client config. Whatever it is set to, the wheels are heard touching down, a thump of the
+legs taking her weight and a chirp of the tyres spinning up, louder the harder she lands.
 
 ### Landing gear
 

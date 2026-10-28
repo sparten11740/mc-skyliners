@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.aerolarge.compat.SableFlight;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -107,13 +109,15 @@ public class SuitcaseBlock extends HorizontalDirectionalBlock implements EntityB
     /** A golden suitcase's hint: while a player is near, it glints, and now and then chimes faintly. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!golden || level.getNearestPlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, GLINT_RANGE, false) == null) {
+        // Where it is in the world, aboard an airliner in flight far from its block in Sable's plot.
+        Vec3 there = SableFlight.toWorld(level, Vec3.atCenterOf(pos));
+        if (!golden || level.getNearestPlayer(there.x, there.y, there.z, GLINT_RANGE, false) == null) {
             return;
         }
         level.addParticle(ParticleTypes.WAX_ON, pos.getX() + 0.2 + random.nextDouble() * 0.6, pos.getY() + 0.2 + random.nextDouble() * 0.8,
             pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0, 0);
         if (random.nextFloat() < CHIME_CHANCE) {
-            level.playLocalSound(pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, CHIME_VOLUME, 1.6F + random.nextFloat() * 0.4F, false);
+            level.playLocalSound(there.x, there.y, there.z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, CHIME_VOLUME, 1.6F + random.nextFloat() * 0.4F, false);
         }
     }
 

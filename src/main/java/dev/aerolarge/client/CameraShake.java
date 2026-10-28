@@ -32,6 +32,8 @@ public final class CameraShake {
      * the wheels' chirp and thump is a cue of its own, heard whatever the camera shake is set to.
      */
     private static final float HEARD_THUMP = 0.1F;
+    /** How fast, in blocks a second, a touchdown counts as a landing run, its tyres chirping however soft it is. */
+    private static final double LANDING_RUN = 10;
     private static final float SOFTEST = 0.4F;
     private static final float HARDEST = 1.0F;
     private static final float THUMP_FADE = 0.82F;
@@ -109,9 +111,12 @@ public final class CameraShake {
         pocketTicks = 0;
     }
 
-    /** The wheels touching down, as hard as given, a share of the hardest: their thump and the tyres' chirp. */
-    private static void touchdown(Player player, float hard) {
-        if (hard >= HEARD_THUMP) {
+    /**
+     * The wheels touching down, as hard as given, a share of the hardest, at a speed in blocks a second: their thump
+     * and the tyres' chirp, heard at any landing run, however soft, and at a hard enough bump.
+     */
+    private static void touchdown(Player player, float hard, double speed) {
+        if (speed >= LANDING_RUN || hard >= HEARD_THUMP) {
             player.level().playLocalSound(player.getX(), player.getY(), player.getZ(), AerolargeRegistry.TOUCHDOWN.get(), SoundSource.BLOCKS,
                 Mth.lerp(hard, SOFTEST, HARDEST), 1.0F, false);
         }
@@ -138,7 +143,7 @@ public final class CameraShake {
         boolean onGround = GROUND.onGround(ride);
         if (onGround && !wasOnGround) {
             thump = Math.min(MAX_THUMP, (float) lastSink * THUMP_PER_SINK);
-            touchdown(player, thump / MAX_THUMP);
+            touchdown(player, thump / MAX_THUMP, speed);
         }
         if (onGround) {
             rumble = RUMBLE * (float) Math.min(1, speed / RUMBLE_SPEED);

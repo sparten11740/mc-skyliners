@@ -113,7 +113,9 @@ public class SecretBookshelfBlock extends DoorBlock {
             }
         }
         if (random.nextFloat() < SHIMMER_CHANCE) {
-            level.playLocalSound(pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, SHIMMER_VOLUME, 1.2F + random.nextFloat() * 0.4F, false);
+            // Heard where it is in the world, aboard an airliner in flight far from its block in Sable's plot.
+            Vec3 there = SableFlight.toWorld(level, Vec3.atCenterOf(pos));
+            level.playLocalSound(there.x, there.y, there.z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, SHIMMER_VOLUME, 1.2F + random.nextFloat() * 0.4F, false);
         }
     }
 
