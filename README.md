@@ -1397,7 +1397,7 @@ its engine cars are a quarter slimmer and stand nearer the hull, with shorter pr
 push a third as hard, as she weighs a third as much; she climbs to some 175 blocks over the ground. The Half-Size
 Zeppelin Blueprints build one, plain, furnished or festive, with everything below, each piece as big as the full ship's
 wherever it fits: only the colours and the crest painted on her and the flank screens are made to fit her smaller fins
-and flanks, and the techno room is a little shorter.
+and flanks, the techno room is a little shorter, and she has no flight deck for the flying carrier.
 
 Outside, a silver fabric cover is cut to the hull's curve block by block, as the airliner's skin is: a blunt rounded
 nose, a long full middle and a long taper to a point at the stern, where four fins stand in a cross. A glazed control
@@ -1631,18 +1631,19 @@ it. The hook weighs nothing on her flight. Should the winch be taken away, the h
 animal floating down slowly and a chest coming down on a parachute. The server config's `skyCrane` leaves it out of
 zeppelins built from then on, and off, the winches already built do nothing.
 
-The flying carrier, experimental and off until switched on with `flyingCarrier` in the server config: a zeppelin built
-then has a flight deck along her crown, forward of the Sky Deck where her crown runs level, a 15 by 60 strip of dark
-non-slip deck with white lines along its edges and a dashed line down its middle, bulbs along its edges to find it by at
-night, four docking clamps set into it, yellow jaws lying flat with a red lamp between, and a yellow Clamp Release Lever
-at its forward port corner. Land a plane of your own on it (one built with Create Aeronautics, or anything else Sable
-flies), coming in over her bow while she hovers or creeps along, and once it has rested on the deck a second the clamps
-lock it down with a hiss of their rams and a thunk, their jaws raised and their lamps green: it rides with her however
-she flies, turns or climbs, and every two seconds its tanks are topped up with the fuel they hold (whatever the modpack
-counts as fuel, and water for steam engines) and its batteries filled, with a gurgle. A plane heavier than a tenth of
-her is refused with a low note. Pull the release lever down, with a hiss, and every clamp opens and stays open so the
-plane can take off; push it back up and they lock the next plane that rests there (before her first flight it only gives
-a low note). Locked planes stay locked through a save. Off, the decks already built hold nothing.
+The flying carrier, experimental and off until switched on with `flyingCarrier` in the server config: a full-size
+zeppelin built then has a flight deck along her crown (a half-size one has none), forward of the Sky Deck where her
+crown runs level, a 15 by 60 strip of dark non-slip deck with white lines along its edges and a dashed line down its
+middle, bulbs along its edges to find it by at night, four docking clamps set into it, yellow jaws lying flat with a red
+lamp between, and a yellow Clamp Release Lever at its forward port corner. Land a plane of your own on it (one built
+with Create Aeronautics, or anything else Sable flies), coming in over her bow while she hovers or creeps along, and
+once it has rested on the deck a second the clamps lock it down with a hiss of their rams and a thunk, their jaws raised
+and their lamps green: it rides with her however she flies, turns or climbs, and every two seconds its tanks are topped
+up with the fuel they hold (whatever the modpack counts as fuel, and water for steam engines) and its batteries filled,
+with a gurgle. A plane heavier than a tenth of her is refused with a low note. Pull the release lever down, with a hiss,
+and every clamp opens and stays open so the plane can take off; push it back up and they lock the next plane that rests
+there (before her first flight it only gives a low note). Locked planes stay locked through a save. Off, the decks
+already built hold nothing.
 
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she

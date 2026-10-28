@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * its full width and so its crown level, a dark non-slip deck with white lines along its edges and a dashed line down
  * its middle, bulbs along its edges, four docking clamps set into it either side of the middle line (see
  * {@link dev.aerolarge.block.DeckClampBlock}) and the release lever at its forward port corner. A plane lands on it
- * along her, over her bow, and is locked down and refuelled. The same size at every size, as the planes are; laid over
- * the crown's line of bulbs where it runs, on the crown's top row, so it is assembled with her. The
- * {@code flyingCarrier} switch, off until switched on, leaves it off a zeppelin built from then on.
+ * along her, over her bow, and is locked down and refuelled. Laid over the crown's line of bulbs where it runs, on the
+ * crown's top row, so it is assembled with her. Only the full-size zeppelin has one. The {@code flyingCarrier} switch,
+ * off until switched on, leaves it off a zeppelin built from then on.
  */
 final class ZeppelinFlightDeck implements ZeppelinPiece {
     /**
@@ -48,12 +48,6 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
     @Override
     public boolean wanted(ZeppelinOptions options) {
         return AerolargeConfig.FLYING_CARRIER.get();
-    }
-
-    /** Along the crown, wherever it runs level at the size. */
-    @Override
-    public boolean fits(ZeppelinSize size) {
-        return true;
     }
 
     @Override
