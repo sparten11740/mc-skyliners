@@ -10,6 +10,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -25,9 +27,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * left as seen from outside, its row from the top), its glass bulging a little out of the skin (see
  * {@code client.OvalWindowModel}). Its glass dims electrically: using any piece of it darkens the whole window's glass
  * a step, from clear through light, medium and dark and back to clear, with a chime that falls as it darkens. Only the
- * glass darkens: its frame and the skin round it, and the light it lets in, stay as they are. Each piece is the inner half of its block, where the skin's cut runs through the block's middle
- * out to the four ways round a round body, so it sits flush with the skin beside it. Only the blueprints place it;
- * broken, it gives back glass.
+ * glass darkens: its frame and the skin round it, and the light it lets in, stay as they are. Each piece is the inner
+ * half of its block, where the skin's cut runs through the block's middle out to the four ways round a round body, so
+ * it sits flush with the skin beside it. It turns with the ship as she is built facing any way. Only the blueprints
+ * place it; broken, it gives back glass.
  */
 public class OvalWindowBlock extends TransparentBlock {
     private static final MapCodec<OvalWindowBlock> CODEC = simpleCodec(OvalWindowBlock::new);
@@ -69,6 +72,21 @@ public class OvalWindowBlock extends TransparentBlock {
     /** A piece of a window looking out one way, by its column from the left as seen from outside and its row. */
     public BlockState piece(Direction facing, int column, int row) {
         return defaultBlockState().setValue(FACING, facing).setValue(COLUMN, column).setValue(ROW, row);
+    }
+
+    /** A window turns with the ship it is set in, as she is built facing another way. */
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    /** Mirrored, a window looks out the mirrored way, and its columns from the left run the other way round. */
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        if (mirror == Mirror.NONE) {
+            return state;
+        }
+        return state.setValue(FACING, mirror.mirror(state.getValue(FACING))).setValue(COLUMN, COLUMNS - 1 - state.getValue(COLUMN));
     }
 
     @Override
