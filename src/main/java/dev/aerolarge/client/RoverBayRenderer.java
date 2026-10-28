@@ -20,8 +20,9 @@ import org.joml.Quaternionf;
  * The rocket's rover bay (see {@link RoverBayBlockEntity}), drawn from the middle of its door's sill out of plain
  * coloured boxes: the door, in her livery outside, folding down outward on its hinge into a platform whose deck, its
  * inner face, is grey ribbed plate edged in yellow and black hazard stripes, held by two stay chains from the
- * doorway's top corners; the light curtain glowing red across the open doorway's sill; the yellow boom sliding out of
- * its housing on the wall over the doorway as the door opens; and, while the rover is not on its hook, the boom's
+ * doorway's top corners; the rover's cradle inside, its rails, stop bar and glowing charging pad; the light curtain
+ * glowing red across the open doorway's sill; the yellow boom sliding out of its housing on the wall over the doorway
+ * as the door opens; and, while the rover is not on its hook, the boom's
  * trolley with the hook wound up under it, waiting over the platform or at the boom's tip. Laid out as the bay's route
  * is (see {@link RoverRoute}): out of her along +z, up along +y, from the hinge.
  */
@@ -70,6 +71,24 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
     private static final float HOOK_HALF = 0.08F;
     private static final float HOOK_HEIGHT = 0.22F;
     private static final int IRON = 0xFF8A8D91;
+    /**
+     * The rover's cradle on the bay's floor: its two rails, how far out from its middle they lie either side, their
+     * half width and height, and how far they reach ahead of and behind its middle; the stop bar across its front, so
+     * far ahead of its middle, and its half depth; and the charging pad between the rails, its half width and half
+     * length, and its glowing strip's half width, in blocks.
+     */
+    private static final float RAIL_OUT = 1.3F;
+    private static final float RAIL_HALF = 0.08F;
+    private static final float RAIL_HEIGHT = 0.06F;
+    private static final float RAIL_REACH = 1.6F;
+    private static final float STOP_AHEAD = 1.65F;
+    private static final float STOP_HALF = 0.06F;
+    private static final float PAD_HALF_WIDTH = 0.45F;
+    private static final float PAD_HALF_LENGTH = 0.8F;
+    private static final float CHARGE_HALF = 0.08F;
+    private static final float PAD_HEIGHT = 0.03F;
+    private static final int PAD = 0xFF2A2D33;
+    private static final int CHARGE = 0xFF40D0F0;
     /** How far round the door's middle its boom and platform reach, for when it is drawn, in blocks. */
     private static final double REACH = RoverRoute.BOOM_OUT + 1;
     /**
@@ -86,6 +105,7 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
         pose.translate(0.5, 0, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-bay.facing().toYRot()));
         door(pose, consumer, light, open, skin(bay));
+        cradle(pose.last(), consumer, light);
         if (open > 0) {
             curtain(pose.last(), consumer);
         }
@@ -136,6 +156,27 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
         for (float side : new float[]{-HALF_WIDTH + CHAIN_HALF, HALF_WIDTH - CHAIN_HALF}) {
             bar(pose, consumer, light, CHAIN, new Vec3(side, tall, 0), new Vec3(side, far.y, far.z), CHAIN_HALF);
         }
+    }
+
+    /**
+     * The rover's cradle on the floor inside the door: two yellow rails either side of where its wheels stand, a stop
+     * bar in yellow and black across its front, and between the rails a dark charging pad with a cyan strip glowing
+     * down its middle.
+     */
+    private static void cradle(PoseStack.Pose at, VertexConsumer consumer, int light) {
+        float middle = (float) -RoverRoute.CRADLE_IN;
+        for (float side : new float[]{-RAIL_OUT, RAIL_OUT}) {
+            FlatQuads.box(consumer, at, light, HAZARD_YELLOW, side - RAIL_HALF, 0, middle - RAIL_REACH, side + RAIL_HALF, RAIL_HEIGHT, middle + RAIL_REACH);
+        }
+        int stripes = Math.round(2 * RAIL_OUT / STRIPE_LENGTH);
+        for (int stripe = 0; stripe < stripes; stripe++) {
+            float from = -RAIL_OUT + stripe * STRIPE_LENGTH;
+            FlatQuads.box(consumer, at, light, stripe % 2 == 0 ? HAZARD_YELLOW : HAZARD_BLACK, from, 0, middle + STOP_AHEAD - STOP_HALF,
+                from + STRIPE_LENGTH, RAIL_HEIGHT, middle + STOP_AHEAD + STOP_HALF);
+        }
+        FlatQuads.box(consumer, at, light, PAD, -PAD_HALF_WIDTH, 0, middle - PAD_HALF_LENGTH, PAD_HALF_WIDTH, PAD_HEIGHT, middle + PAD_HALF_LENGTH);
+        FlatQuads.box(consumer, at, LightTexture.FULL_BRIGHT, CHARGE, -CHARGE_HALF, PAD_HEIGHT, middle - PAD_HALF_LENGTH + CHARGE_HALF, CHARGE_HALF,
+            PAD_HEIGHT + PLATE, middle + PAD_HALF_LENGTH - CHARGE_HALF);
     }
 
     /** The light curtain across the open doorway's sill: two posts at its jambs and three red beams between them. */
