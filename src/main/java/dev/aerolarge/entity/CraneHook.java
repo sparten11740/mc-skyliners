@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -51,8 +52,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.common.CommonHooks;
 import org.joml.Vector3f;
 
 /**
@@ -89,7 +89,7 @@ public class CraneHook extends Entity {
     private static final float HOOK_SIZE = 0.5F;
     /** The shortest and longest the rope runs out, from under the car's floor to the hook, in blocks. */
     public static final double SHORTEST = 1.5;
-    public static final double LONGEST = 48;
+    public static final double LONGEST = 64;
     /** How fast the winch hoists and lowers, in blocks a tick: three blocks a second. */
     private static final double WINDING = 0.15;
     /** How much rope it pays out past a hook resting on something, in blocks: slack, rather than piling up. */
@@ -390,10 +390,11 @@ public class CraneHook extends Entity {
             return;
         }
         BlockPos feet = blockPosition();
+        // Each position kept as its own: the stream hands out one cursor, moved on to every block in turn.
         BlockPos.betweenClosedStream(feet.offset(-CARGO_REACH, -1, -CARGO_REACH), feet.offset(CARGO_REACH, 0, CARGO_REACH))
             .filter(pos -> level.getBlockState(pos).is(CARGO))
-            .min(Comparator.comparingDouble(pos -> pos.distToCenterSqr(position())))
             .map(BlockPos::immutable)
+            .min(Comparator.comparingDouble(pos -> pos.distToCenterSqr(position())))
             .ifPresent(at -> net(level, at));
     }
 
@@ -404,7 +405,7 @@ public class CraneHook extends Entity {
         }
         if (entity instanceof OwnableEntity owned && owned.getOwnerUUID() != null) {
             Player owner = level.getPlayerByUUID(owned.getOwnerUUID());
-            BlockEntity winch = level.getBlockEntity(winch());
+            BlockEntity winch = winchHere(level);
             return owner != null && winch != null && Aboard.isAboard(owner, winch);
         }
         return true;
@@ -424,10 +425,12 @@ public class CraneHook extends Entity {
      * claims and spawn protection may refuse.
      */
     private void net(ServerLevel level, BlockPos at) {
-        BlockEntity winch = level.getBlockEntity(winch());
-        ServerPlayer operator = winch instanceof CraneWinchBlockEntity crane ? crane.operator(level) : null;
+        ServerPlayer operator = operator(level);
         BlockState state = level.getBlockState(at);
-        if (operator == null || NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, at, state, operator)).isCanceled()) {
+        if (!state.is(CARGO)) {
+            return;
+        }
+        if (!mayWork(level, operator, at) || CommonHooks.fireBlockBreak(level, operator.gameMode.getGameModeForPlayer(), operator, at, state).isCanceled()) {
             catching = false;
             letGoAt = length();
             stopWinch = true;
@@ -436,6 +439,11 @@ public class CraneHook extends Entity {
         }
         ItemStack carried = new ItemStack(state.getBlock());
         BlockEntity held = level.getBlockEntity(at);
+        if (held instanceof RandomizableContainer unopened) {
+            // A chest never opened yet is filled from its loot first, or its loot would spill as it is lifted and come
+            // again wherever it is set down.
+            unopened.unpackLootTable(operator);
+        }
         if (held != null) {
             carried.applyComponents(held.collectComponents());
             Clearable.tryClear(held);
@@ -447,6 +455,29 @@ public class CraneHook extends Entity {
         resize(1, 1);
         lastTop = null;
         caught(level);
+    }
+
+    /** Whoever last worked the hook's winch, if it is loaded and they are about. */
+    @Nullable
+    private ServerPlayer operator(ServerLevel level) {
+        return winchHere(level) instanceof CraneWinchBlockEntity crane ? crane.operator(level) : null;
+    }
+
+    /**
+     * Whether whoever works the winch may take or set down a block at a place: someone works it, and it is not in the
+     * spawn's protection or out of bounds for them.
+     */
+    private static boolean mayWork(ServerLevel level, @Nullable ServerPlayer operator, BlockPos at) {
+        return operator != null && level.mayInteract(operator, at);
+    }
+
+    /**
+     * Its winch's block entity, if the winch's place among her blocks is loaded; never loading her plot to look, as
+     * when she has gone.
+     */
+    @Nullable
+    private BlockEntity winchHere(ServerLevel level) {
+        return level.isLoaded(winch()) ? level.getBlockEntity(winch()) : null;
     }
 
     /** A chest one half of a pair stands alone in the net, and wherever it is set down. */
@@ -477,7 +508,7 @@ public class CraneHook extends Entity {
 
     /** Whether its load rests on the ground under a lowering winch while she hardly moves: time to let go of it. */
     private boolean resting(ServerLevel level) {
-        BlockEntity winch = level.getBlockEntity(winch());
+        BlockEntity winch = winchHere(level);
         boolean lowering = winch != null && winch.getBlockState().getBlock() instanceof CraneWinchBlock
             && winch.getBlockState().getValue(CraneWinchBlock.NOTCH) == CraneWinchBlock.LOWER;
         Vec3 moving = lastTop == null ? Vec3.ZERO : top().subtract(lastTop);
@@ -503,7 +534,7 @@ public class CraneHook extends Entity {
         }
         BlockPos at = blockPosition();
         BlockState state = cargoBlock().orElse(Block.byItem(cargo.getItem()).defaultBlockState());
-        if (level.getBlockState(at).canBeReplaced()) {
+        if (level.getBlockState(at).canBeReplaced() && mayWork(level, operator(level), at)) {
             level.setBlock(at, state, Block.UPDATE_ALL);
             BlockEntity placed = level.getBlockEntity(at);
             if (placed != null) {
