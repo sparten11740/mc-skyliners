@@ -1822,6 +1822,13 @@ the whole of her from well out, sky blue; then up her side, from low by the door
 and the landing leg, out on her front right fin's tip, looking in under her at the ground she lands on, green. Its
 buttons show where each camera is on an outline of her, and its test card carries her badge.
 
+Under it stands her livery selector (the server config's `liveryBoard` leaves it out), as the zeppelin's does, with
+pictures of her laid on her side in her six liveries: the comic-book moon rocket's red and white checks, white with
+black roll stripes, silver with a red nose and fins (as she is built), the airliner's white with a blue cheatline up
+each side and blue fins, polar red with white fins, and midnight blue with gold stars all over her. The one she wears
+is framed in gold. Use a picture and the new paint runs down her from her nose to her foot over a minute, with a
+brush's sound; it is a tint, so no block of her changes, and her windows' frames take it too.
+
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set. There
 it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
@@ -1971,10 +1978,13 @@ the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssemb
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
-`RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s); its
+`RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
+her livery selector); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
-`Craft` of its own gives its screens its pictures (`PanelArt.Pictures`).
+`Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `Livery` paints her as it does a zeppelin,
+by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
+`LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

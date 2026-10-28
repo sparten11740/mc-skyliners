@@ -286,8 +286,8 @@ public final class AerolargeConfig {
         LIVERY_BOARD = builder
             .comment(
                 "Whether a zeppelin is built with a livery selector under the camera display in its control car, its pictures of her repainting",
-                "her in silver, cream, navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep their",
-                "livery board or selector, and keep their paint."
+                "her in silver, cream, navy grey, the airliner's colours, polar red or midnight blue, and a rocket with one in her cockpit, in",
+                "moon-rocket checks, roll stripes, red trim and the last three. Ships already built keep their selector and their paint."
             )
             .define("liveryBoard", true);
         CAMERA_DISPLAY = builder

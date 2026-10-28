@@ -13,6 +13,9 @@ import org.joml.Vector3f;
  * shade for the way it faces baked into its colour, so a curved face brightens and darkens smoothly round it.
  */
 final class ModelQuads {
+    /** A quad its block's colour handler leaves as it is. */
+    static final int NO_TINT = -1;
+
     private ModelQuads() {
     }
 
@@ -28,8 +31,14 @@ final class ModelQuads {
      * it faces baked into its colour and no other shading or corner darkening.
      */
     static BakedQuad bake(Corner[] quad, TextureAtlasSprite sprite, Direction side, boolean round) {
+        return bake(quad, sprite, side, round, NO_TINT);
+    }
+
+    /** The same, tinted as its block's colour handler tints this index (see {@code RegisterColorHandlersEvent}). */
+    static BakedQuad bake(Corner[] quad, TextureAtlasSprite sprite, Direction side, boolean round, int tint) {
         QuadBakingVertexConsumer builder = new QuadBakingVertexConsumer();
         builder.setSprite(sprite);
+        builder.setTintIndex(tint);
         builder.setDirection(side);
         builder.setShade(!round);
         builder.setHasAmbientOcclusion(!round);

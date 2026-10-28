@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.LiveryBoardBlock;
 import dev.aerolarge.block.LiverySelectorBlock;
@@ -19,10 +20,10 @@ import org.joml.Matrix4f;
 
 /**
  * Draws a livery selector (see {@link LiverySelectorBlock}) over the whole of its face (see {@link WideScreenFace}):
- * dark wood in a lighter frame, and on it the six liveries, each a picture of the zeppelin side on, her nose to the
- * right, painted in it as she would be (see {@link LiveryPreview}), on a patch of sky; the one she wears is framed in
- * gold. While she is being repainted it draws her painters' cradles too (see {@link PaintersCradles}), so it is drawn
- * as far off as the whole zeppelin is seen. Away from a zeppelin its pictures are of a full-size one.
+ * dark wood in a lighter frame, and on it the six liveries of the ship it paints, each a picture of her side on, her
+ * nose to the right, painted in it as she would be (see {@link LiveryPreview}), on a patch of sky; the one she wears is
+ * framed in gold. While a zeppelin is being repainted it draws her painters' cradles too (see {@link PaintersCradles}),
+ * so it is drawn as far off as the whole ship is seen. Away from a ship its pictures are of a full-size zeppelin.
  */
 public class LiverySelectorRenderer implements BlockEntityRenderer<LiverySelectorBlockEntity> {
     /** The lighter frame round the face, and the sky round a picture inside its patch, in blocks. */
@@ -40,7 +41,7 @@ public class LiverySelectorRenderer implements BlockEntityRenderer<LiverySelecto
     @Override
     public void render(LiverySelectorBlockEntity selector, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Level level = selector.getLevel();
-        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.zeppelin(level, selector.getBlockPos());
+        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.painted(level, selector.getBlockPos());
         BlockState state = selector.getBlockState();
         pose.pushPose();
         WideScreenFace.onto(pose, state);
@@ -56,26 +57,29 @@ public class LiverySelectorRenderer implements BlockEntityRenderer<LiverySelecto
         ScreenDrawing.rect(shapes, matrix, 0, 0, width, height, 0, FRAME_WOOD);
         ScreenDrawing.rect(shapes, matrix, FRAME, FRAME, width - FRAME, height - FRAME, LAYER, BOARD);
         ZeppelinSize size = autopilot != null ? autopilot.zeppelinSize() : ZeppelinSize.FULL;
+        Craft craft = autopilot != null ? autopilot.craft() : Craft.ZEPPELIN;
         Livery worn = autopilot != null ? autopilot.livery() : null;
-        int columns = LiveryBoardBlock.SWATCHES[0].length;
-        for (int k = 0; k < LiveryBoardBlock.SWATCHES.length * columns; k++) {
-            Livery livery = LiveryBoardBlock.SWATCHES[k / columns][k % columns];
-            swatch(matrix, shapes, LiverySelectorBlock.cell(k / columns, k % columns, height), livery, size, livery == worn);
+        Livery[][] swatches = Livery.swatches(craft);
+        int columns = Livery.SWATCH_COLUMNS;
+        for (int k = 0; k < Livery.SWATCH_ROWS * columns; k++) {
+            Livery livery = swatches[k / columns][k % columns];
+            swatch(matrix, shapes, LiverySelectorBlock.cell(k / columns, k % columns, height), livery, craft, size, livery == worn);
         }
     }
 
     /** A livery's picture: a patch of sky, gold round it if she wears the livery, and her on it, as big as fits. */
-    private static void swatch(Matrix4f matrix, VertexConsumer shapes, Box cell, Livery livery, ZeppelinSize size, boolean worn) {
+    private static void swatch(Matrix4f matrix, VertexConsumer shapes, Box cell, Livery livery, Craft craft, ZeppelinSize size, boolean worn) {
         if (worn) {
             ScreenDrawing.rect(shapes, matrix, cell.x0() - GOLD_RIM, cell.y0() - GOLD_RIM, cell.x1() + GOLD_RIM, cell.y1() + GOLD_RIM, 2 * LAYER, GOLD);
         }
         ScreenDrawing.rect(shapes, matrix, cell.x0(), cell.y0(), cell.x1(), cell.y1(), 3 * LAYER, SKY);
-        double aspect = LiveryPreview.aspect(size);
+        boolean rocket = craft == Craft.ROCKET;
+        double aspect = rocket ? LiveryPreview.rocketAspect() : LiveryPreview.aspect(size);
         double width = Math.min(cell.x1() - cell.x0() - 2 * SKY_ROUND, (cell.y1() - cell.y0() - 2 * SKY_ROUND) * aspect);
         double height = width / aspect;
         double left = (cell.x0() + cell.x1() - width) / 2;
         double bottom = (cell.y0() + cell.y1() - height) / 2;
-        for (LiveryPreview.Run run : LiveryPreview.of(livery, size)) {
+        for (LiveryPreview.Run run : rocket ? LiveryPreview.ofRocket(livery) : LiveryPreview.of(livery, size)) {
             ScreenDrawing.rect(shapes, matrix, left + run.x0() * width, bottom + run.y0() * height, left + run.x1() * width, bottom + run.y1() * height,
                 4 * LAYER, run.colour());
         }

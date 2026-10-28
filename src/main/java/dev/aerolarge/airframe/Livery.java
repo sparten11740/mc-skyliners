@@ -1,15 +1,18 @@
 package dev.aerolarge.airframe;
 
+import dev.aerolarge.autopilot.Craft;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
 /**
- * How a zeppelin is painted: its cover, and the fabric of its fins, its control car and its engine cars. A zeppelin's
- * autopilot keeps its livery and sends it to the clients, which draw each block of its cover and fabric tinted the
- * colour its livery gives the spot the block is on (see the client's {@code ZeppelinPaint}): a zeppelin is repainted
- * without a block of it changing, so its balloons, its mass and its assembly are as they were. Its cover's own
- * texture is a pale weave for the tint to colour. Saved by name; one not known any more is silver.
+ * How a zeppelin or a rocket is painted: its cover, and the fabric of its fins (a zeppelin's control car and engine
+ * cars too). Its autopilot keeps its livery and sends it to the clients, which draw each block of its cover and fabric
+ * tinted the colour its livery gives the spot the block is on (see the client's {@code ZeppelinPaint}): it is
+ * repainted without a block of it changing, so a zeppelin's balloons, the mass and the assembly are as they were. The
+ * cover's own texture is a pale weave for the tint to colour. Each kind of ship has six liveries of its own to pick
+ * from (see {@link #swatches}), some of them shared; a zeppelin's spot is measured along her, a rocket's up her and
+ * round her (see {@link #rocketColour}). Saved by name; one not known any more is silver.
  */
 public enum Livery {
     /** Silver dope, as the Hindenburg's: the zeppelin as it is built. */
@@ -25,6 +28,17 @@ public enum Livery {
             return fabric || spot.alongFlank(CHEATLINE_FROM, CHEATLINE_TO) && spot.round() >= CHEATLINE_TOP && spot.round() <= CHEATLINE_BOTTOM
                 ? fabric() : hull();
         }
+
+        /**
+         * On a rocket, her fins are blue and a cheatline runs on up from each of them to her nose, between her
+         * windows, which stand out to the four ways.
+         */
+        @Override
+        public int rocketColour(RocketSpot spot, boolean fin) {
+            double fromDiagonal = Math.abs(Math.floorMod(Math.round(spot.round()), (long) QUARTER_TURN) - QUARTER_TURN / 2);
+            boolean onLine = fromDiagonal <= ROCKET_CHEATLINE_HALF && spot.height() <= RocketShape.NOSE_BASE / RocketShape.HEIGHT;
+            return fin || onLine ? fabric() : hull();
+        }
     },
     /** Polar red, as an expedition's to the ice, with white fins and cars. */
     POLAR(0xCC3A2E, 0xF4F4F4),
@@ -32,7 +46,13 @@ public enum Livery {
     MIDNIGHT(0x26335E, 0x1C2548) {
         @Override
         public int colour(Spot spot, boolean fabric) {
-            return !fabric && spot.round() <= STARS_DOWN_TO && Math.floorMod(HashCommon.mix(spot.seed()), (long) STAR_ONE_IN) == 0 ? STAR : super.colour(spot, fabric);
+            return !fabric && spot.round() <= STARS_DOWN_TO && star(spot.seed()) ? STAR : super.colour(spot, fabric);
+        }
+
+        /** On a rocket, her stars are all round her, nose and all, but never on a window's frame. */
+        @Override
+        public int rocketColour(RocketSpot spot, boolean fin) {
+            return !fin && !spot.window() && star(spot.seed()) ? STAR : super.rocketColour(spot, fin);
         }
     },
     /**
@@ -60,7 +80,45 @@ public enum Livery {
         public String[] cellColours() {
             return FESTIVE_CELLS;
         }
+    },
+    /**
+     * The comic-book moon rocket's: red and white checks all over her, a band of them for each story (see
+     * {@link RocketSpot#band}), each check out to one of the four ways or between them, so each window sits in one
+     * check and each fin is checked up its length.
+     */
+    CHECKER(0xCC2A24, 0xF4F4F4) {
+        @Override
+        public int rocketColour(RocketSpot spot, boolean fin) {
+            long round = Math.round(spot.round() / CHECK_ROUND);
+            return Math.floorMod(round + spot.band(), 2) == 0 ? hull() : fabric();
+        }
+    },
+    /**
+     * White with black roll stripes, as the first big rockets were painted to show how they turned: her front and back
+     * quarters black on her entry story and every third story over it, her sides white there, split between them on
+     * the diagonals so each window is all one colour, and her fins black.
+     */
+    ROLL(0xF4F4F4, 0x1A1A1A) {
+        @Override
+        public int rocketColour(RocketSpot spot, boolean fin) {
+            boolean frontOrBack = Math.floorMod(Math.round(spot.round() / QUARTER_TURN), 2) == 0;
+            boolean striped = spot.band() >= 0 && spot.band() % ROLL_EVERY == 0 && spot.band() < spot.stories();
+            return fin || frontOrBack && striped ? fabric() : hull();
+        }
+    },
+    /** Silver, with her fins and her nose red. */
+    RED_TRIM(0xD5D5D5, 0xCC2A24) {
+        @Override
+        public int rocketColour(RocketSpot spot, boolean fin) {
+            return fin || spot.nose() ? fabric() : hull();
+        }
     };
+
+    /** Each kind of ship's liveries, as its livery board and livery selector show them: two rows of three. */
+    public static final int SWATCH_ROWS = 2;
+    public static final int SWATCH_COLUMNS = 3;
+    private static final Livery[][] ZEPPELIN_SWATCHES = {{SILVER, CREAM, NAVY}, {AIRLINE, POLAR, MIDNIGHT}};
+    private static final Livery[][] ROCKET_SWATCHES = {{CHECKER, ROLL, RED_TRIM}, {AIRLINE, POLAR, MIDNIGHT}};
 
     /** How long a repaint takes to sweep from the nose to the tail, in ticks: a minute. */
     public static final int REPAINT_TICKS = 60 * 20;
@@ -75,6 +133,14 @@ public enum Livery {
     private static final int STAR_ONE_IN = 89;
     private static final double STARS_DOWN_TO = 120;
     private static final int STAR = 0xFFD866;
+    /** A quarter of a turn round a rocket, in degrees. */
+    private static final double QUARTER_TURN = 90;
+    /** How far round either side of its diagonal each of a rocket's cheatlines in the airliner's colours reaches. */
+    private static final double ROCKET_CHEATLINE_HALF = 5;
+    /** How far round her each of the moon rocket's checks reaches, in degrees. */
+    private static final double CHECK_ROUND = 45;
+    /** The roll stripes are on her entry story and every so many stories over it. */
+    private static final int ROLL_EVERY = 3;
     /**
      * The festive livery: how far round from the crown its snow reaches, in degrees; how far either side of a ring its
      * band reaches and how much of that is its white edge, in blocks; its colours, and its cells'.
@@ -94,10 +160,26 @@ public enum Livery {
         this.fabric = fabric;
     }
 
-    /** The colour a spot is tinted: of the cover there, or of the fabric of a fin or a car. */
+    /** The colour a spot on a zeppelin is tinted: of the cover there, or of the fabric of a fin or a car. */
     public int colour(Spot spot, boolean fabric) {
         return fabric ? this.fabric : hull;
     }
+
+    /** The colour a spot on a rocket is tinted: of the cover there, or of a fin. */
+    public int rocketColour(RocketSpot spot, boolean fin) {
+        return fin ? fabric : hull;
+    }
+
+    /** The liveries a kind of ship is painted in from its livery board and livery selector, in their rows. */
+    public static Livery[][] swatches(Craft craft) {
+        return craft == Craft.ROCKET ? ROCKET_SWATCHES : ZEPPELIN_SWATCHES;
+    }
+
+    /** Whether a block is one of the gold stars midnight blue is scattered with, from the number its position gives. */
+    private static boolean star(long seed) {
+        return Math.floorMod(HashCommon.mix(seed), (long) STAR_ONE_IN) == 0;
+    }
+
 
     int hull() {
         return hull;
@@ -128,6 +210,54 @@ public enum Livery {
             }
         }
         return SILVER;
+    }
+
+    /**
+     * Where a block sits on a rocket: how far up her it is, as a share of her height from her fins' feet to her nose's
+     * tip; how far round her it is from her front, where her door is, clockwise seen from above, in degrees; which band
+     * of her it is in, and how many stories she has (see {@link #band}); whether it is the frame round a window, which
+     * is painted all one colour, as the middle of the window is; and a number from its position that a pattern can
+     * scatter by. Her stories are the bands under the first of her nose's.
+     */
+    public record RocketSpot(double height, double round, int band, int stories, boolean window, long seed) {
+        /**
+         * How many rows tall a band of her is outside her stories, under her entry story and over her cockpit's floor,
+         * and about how tall a story is: one taller than half as much again is cut into bands about as tall.
+         */
+        private static final int BAND_ROWS = 9;
+
+        /** Whether it is on her nose cone, over the body. */
+        public boolean nose() {
+            return height >= RocketShape.NOSE_BASE / RocketShape.HEIGHT;
+        }
+
+        /**
+         * The band of a rocket a row up from her fins' feet is in, from her stories' floors (the cockpit's last): her
+         * entry story is band 0 and each story over it the next, so a pattern that goes by bands keeps each story's
+         * windows in one; under her entry story the bands run down from -1, and from her cockpit's floor up on from
+         * her stories, each {@link #BAND_ROWS} tall.
+         */
+        public static int band(int row, int[] floors) {
+            int first = floors[0];
+            int cockpit = floors[floors.length - 1];
+            if (row < first) {
+                return -1 - (first - 1 - row) / BAND_ROWS;
+            }
+            int band = 0;
+            for (int story = 0; story + 1 < floors.length; story++) {
+                int bands = bands(floors[story + 1] - floors[story]);
+                if (row < floors[story + 1]) {
+                    return band + Math.min((row - floors[story]) / BAND_ROWS, bands - 1);
+                }
+                band += bands;
+            }
+            return band + (row - cockpit) / BAND_ROWS;
+        }
+
+        /** How many bands a story so many rows tall is cut into. */
+        private static int bands(int rows) {
+            return Math.max(1, Math.round(rows / (float) BAND_ROWS));
+        }
     }
 
     /**

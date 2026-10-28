@@ -32,7 +32,7 @@ public class LiveryBoardRenderer implements BlockEntityRenderer<LiveryBoardBlock
     @Override
     public void render(LiveryBoardBlockEntity board, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Level level = board.getLevel();
-        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.zeppelin(level, board.getBlockPos());
+        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.painted(level, board.getBlockPos());
         if (autopilot == null) {
             return;
         }

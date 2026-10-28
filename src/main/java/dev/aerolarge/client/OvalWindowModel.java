@@ -26,10 +26,13 @@ import org.joml.Vector4f;
  * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, its glass a
  * thin dome bulging out of the skin over the whole oval, each piece drawing its share of it, baked once as the models
  * load. Outside, the dome rises from the skin's cut, steepest at its foot as a bubble's; inside, the same glass is seen
- * as a bowl at the back of an oval recess, lined round with the rim's steel, through a hole in the inner face. Its JSON
- * names the loader, the piece and the textures of its glass (its piece of the oval as seen from outside), of the inner
- * face with its hole, of the recess's lining and of its edges: {@code {"loader": "aerolarge:oval_window", "column": 0,
- * "row": 0, "textures": {"glass": ..., "inside": ..., "reveal": ..., "edge": ..., "particle": ...}}}.
+ * as a bowl at the back of an oval recess, lined round with the rim's steel, through a hole in the inner face with a
+ * steel lip. The cover's weave round the oval, outside and in, and its edges are tinted as the cover is, in the ship's
+ * livery (see {@code ZeppelinPaint}); the glass, its rim and the steel are not. Its JSON names the loader, the piece
+ * and the textures of its glass (its piece of the oval as seen from outside, its weave hidden under the frame), of the
+ * frame over it, of the inner face with its hole, of the lip round the hole, of the recess's lining and of its edges:
+ * {@code {"loader": "aerolarge:oval_window", "column": 0, "row": 0, "textures": {"glass": ..., "frame": ..., "inside":
+ * ..., "lip": ..., "reveal": ..., "edge": ..., "particle": ...}}}.
  *
  * <p>It is drawn looking north, then turned the way its block state says. Its flat faces on the block's sides are lit
  * as a block's sides are and culled against what stands against them; the dome, the bowl and the lining each get the
@@ -67,6 +70,10 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private static final List<Direction> EDGES = List.of(Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN);
     /** How many corners a quad has. */
     private static final int QUAD = 4;
+    /** The tint index of the faces painted as the cover is. */
+    private static final int COVER_TINT = 0;
+    /** How far in front of the faces they lie on the frame over the glass and the lip inside stand, in pixels. */
+    private static final float OVER = 0.02F;
 
     /** The piece drawn: its column from the left as seen from outside and its row from the top. */
     private final int column;
@@ -94,11 +101,29 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         for (int face = 0; face < LINING; face++) {
             liningFace(modelBuilder, spriteGetter.apply(owner.getMaterial("reveal")), face, turn);
         }
+        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), SKIN - OVER, Direction.NORTH, COVER_TINT, turn);
+        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("lip")), BLOCK + OVER, Direction.SOUTH, ModelQuads.NO_TINT, turn);
         side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), turn);
         TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
         for (Direction side : EDGES) {
             side(modelBuilder, side, edge, turn);
         }
+    }
+
+    /**
+     * A flat face across the whole piece at a depth into the block looking north, in pixels, facing out or in: the
+     * frame over the glass outside, or the lip over the inner face; tinted as given.
+     */
+    private static void flat(IModelBuilder<?> builder, TextureAtlasSprite sprite, float depth, Direction facing, int tint, Transformation turn) {
+        float z = depth / BLOCK;
+        Vector3f[] corners = facing == Direction.NORTH
+            ? new Vector3f[]{new Vector3f(1, 1, z), new Vector3f(1, 0, z), new Vector3f(0, 0, z), new Vector3f(0, 1, z)}
+            : new Vector3f[]{new Vector3f(0, 1, z), new Vector3f(0, 0, z), new Vector3f(1, 0, z), new Vector3f(1, 1, z)};
+        Corner[] quad = new Corner[QUAD];
+        for (int k = 0; k < QUAD; k++) {
+            quad[k] = turned(corners[k], facing.step(), 1 - corners[k].x(), 1 - corners[k].y(), turn);
+        }
+        builder.addUnculledFace(ModelQuads.bake(quad, sprite, nearest(quad), true, tint));
     }
 
     /**
@@ -196,9 +221,9 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /**
-     * One of the piece's flat sides, lit as a block's side is and culled against what stands against it: its inner
-     * face, with the hole the dome is seen through, mirrored so the oval reads whole from inside, and its edges round
-     * it.
+     * One of the piece's flat sides, lit as a block's side is, culled against what stands against it and tinted as the
+     * cover is: its inner face, with the hole the dome is seen through, mirrored so the oval reads whole from inside,
+     * and its edges round it.
      */
     private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, Transformation turn) {
         float[] bounds = new float[Direction.values().length];
@@ -218,7 +243,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             quad[k] = turned(at, facing, uv[0], uv[1], turn);
         }
         Direction turnedSide = Direction.rotate(turn.getMatrix(), side);
-        builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false));
+        builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false, COVER_TINT));
     }
 
     /** The texture over a point of a flat side: the inner face as the glass seen from outside, the edges as a box's. */

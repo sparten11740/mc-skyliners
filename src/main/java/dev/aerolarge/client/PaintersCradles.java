@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.airframe.Livery;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.LiveryBoardBlock;
 import javax.annotation.Nullable;
@@ -42,8 +43,14 @@ final class PaintersCradles {
     private PaintersCradles() {
     }
 
-    /** The cradles of a zeppelin while she is being repainted, drawn from a block at a place; nothing otherwise. */
+    /**
+     * The cradles of a zeppelin while she is being repainted, drawn from a block at a place; nothing otherwise, nor for
+     * a rocket, whose new paint runs down her with none.
+     */
     static void draw(Level level, BlockPos from, AutopilotBlockEntity autopilot, float partialTick, PoseStack pose, MultiBufferSource buffers) {
+        if (autopilot.craft() != Craft.ZEPPELIN) {
+            return;
+        }
         long start = autopilot.repaintStart();
         double share = start < 0 ? 1 : (level.getGameTime() + partialTick - start) / Livery.REPAINT_TICKS;
         if (share >= 0 && share < 1) {
@@ -54,7 +61,7 @@ final class PaintersCradles {
 
     /** The whole zeppelin's box, which a board or selector at a place draws her cradles along; its block for none. */
     static AABB box(@Nullable Level level, BlockPos from) {
-        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.zeppelin(level, from);
+        AutopilotBlockEntity autopilot = level == null ? null : LiveryBoardBlock.painted(level, from);
         BoundingBox box = autopilot == null ? null : autopilot.frame();
         return box == null ? new AABB(from) : AABB.of(box).inflate(4);
     }

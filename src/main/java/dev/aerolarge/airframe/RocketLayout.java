@@ -76,7 +76,15 @@ public final class RocketLayout implements Layout {
     /** The features laid once the body stands, in this order (see {@link RocketPiece}). */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
-        RocketCameraDisplay::new);
+        RocketCameraDisplay::new,
+        RocketLiverySelector::new);
+    /**
+     * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector
+     * stand against runs: the selector's row and the display's two over it.
+     */
+    private static final int COCKPIT_WALL_ROWS = 3;
+    /** The livery she is built in, one of her own (see {@link Livery#swatches}). */
+    private static final Livery BUILT_IN = Livery.RED_TRIM;
 
     private final AirframePalette.Balloon palette;
     private final double scale;
@@ -117,11 +125,45 @@ public final class RocketLayout implements Layout {
     private RocketLayout(AirframePalette.Balloon palette, double scale) {
         this.palette = palette;
         this.scale = scale;
-        this.height = (int) Math.round(RocketShape.HEIGHT * scale);
+        this.height = heightRows(scale);
         this.radius = RocketShape.RADIUS * scale;
-        this.bottom = Math.max((int) Math.round(RocketShape.BASE * scale), EXHAUST_CLEAR);
+        this.bottom = bottomRow(scale);
         this.base = bottom / scale;
-        this.noseFoot = (int) Math.round(RocketShape.NOSE_BASE * scale);
+        this.noseFoot = noseFootRow(scale);
+    }
+
+    /** How tall a rocket built at a scale stands, in rows. */
+    static int heightRows(double scale) {
+        return (int) Math.round(RocketShape.HEIGHT * scale);
+    }
+
+    /** The row of a rocket's flat bottom at a scale. */
+    private static int bottomRow(double scale) {
+        return Math.max((int) Math.round(RocketShape.BASE * scale), EXHAUST_CLEAR);
+    }
+
+    /** The row of a rocket's nose's foot at a scale, the cockpit's floor. */
+    private static int noseFootRow(double scale) {
+        return (int) Math.round(RocketShape.NOSE_BASE * scale);
+    }
+
+    /**
+     * The floors' rows of a rocket built at a scale, from the entry story up as many as fit under the cockpit, and
+     * last the cockpit's floor.
+     */
+    static int[] storyRows(double scale) {
+        int noseFoot = noseFootRow(scale);
+        List<Integer> rows = new ArrayList<>();
+        int floor = bottomRow(scale) + ENGINE_ROOM;
+        for (int story : STORIES) {
+            if (floor + story > noseFoot) {
+                break;
+            }
+            rows.add(floor);
+            floor += story;
+        }
+        rows.add(noseFoot);
+        return rows.stream().mapToInt(Integer::intValue).toArray();
     }
 
     /** The finished rocket at the configured scale: its fins' feet at y 0, its axis through x 0, z 0. */
@@ -190,6 +232,16 @@ public final class RocketLayout implements Layout {
     /** The row of the cockpit's floor, at the nose's foot. */
     int cockpitFloor() {
         return noseFoot;
+    }
+
+    /**
+     * Where the things standing against the cockpit's glass on her right go, so many blocks wide along it, their middle
+     * level with her axis: just inside the glass where it comes furthest in over the wall's rows, the same for all of
+     * them, so they stand flush one over another; nothing where the glass is not there across them.
+     */
+    OptionalInt cockpitWall(int columns) {
+        int first = -columns / 2;
+        return againstRightSkin(noseFoot + 1, noseFoot + COCKPIT_WALL_ROWS, first, first + columns - 1);
     }
 
     /**
@@ -287,14 +339,10 @@ public final class RocketLayout implements Layout {
 
     /** The stories' floors, from the entry story up as many as fit under the cockpit, each out to the skin. */
     private void stories() {
-        int floor = bottom + ENGINE_ROOM;
-        for (int story : STORIES) {
-            if (floor + story > noseFoot) {
-                break;
-            }
-            floors.add(floor);
-            floorAt(floor);
-            floor += story;
+        int[] rows = storyRows(scale);
+        for (int story = 0; story < rows.length - 1; story++) {
+            floors.add(rows[story]);
+            floorAt(rows[story]);
         }
         floorAt(noseFoot);
     }
@@ -524,11 +572,13 @@ public final class RocketLayout implements Layout {
     /**
      * Wires the control head once it stands: each engine bell's relays and the side jets' relays, as offsets from it
      * turned as the rocket was placed, the jets by the way each pushes it as seen from the head facing the front; how
-     * far its block stands above the fins' feet; and the box round the rocket's blocks.
+     * far its block stands above the fins' feet; her stories' floors; the livery she is built in; and the box round
+     * the rocket's blocks.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = bells.stream().map(relays -> offsets(at, relays, rotation)).toList();
-        autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY());
+        autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY(), storyRows(scale));
+        autopilot.paint(BUILT_IN);
         int reach = reach();
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-reach, 0, -reach), new BlockPos(reach, height, reach)), rotation);
         autopilot.frame(frame.get(0), frame.get(1));

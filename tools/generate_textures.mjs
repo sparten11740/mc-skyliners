@@ -3606,7 +3606,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // The same weave a shade lighter, undoped, for a livery to tint (see Livery): silver tints it back to the cover's own
   // grey, any other livery to its colour.
   const UNDOPED = 1.2;
-  texture(blockOutput, "zeppelin_skin", (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED))), 3);
+  const undoped = (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED)));
+  texture(blockOutput, "zeppelin_skin", undoped, 3);
   // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall, one texture for each block of it
   // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
   // polished steel rim, set in the cover's weave. The glass is a dome (see OvalWindowModel, whose oval this is): clear
@@ -3682,10 +3683,14 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     for (let row = 0; row < OVAL_ROWS; row++) {
       OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `oval_window_${column}_${row}_dim${dim}`,
         (x, y) => ovalWindow(column * SIZE + x, row * SIZE + y, tint), 3));
-      texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => {
-        const out = outsideOval(column * SIZE + x, row * SIZE + y);
-        if (out > OVAL_HOLE + HOLE_LIP) return fabric(x, y);
-        return out > OVAL_HOLE ? OVAL_RIM : [0, 0, 0, 0];
+      // The weave round the oval, outside and in, is the cover's undoped weave for the livery's tint to colour, as the
+      // cover's own; the steel lip round the hole inside is a layer of its own, which the tint leaves steel.
+      const out = (x, y) => outsideOval(column * SIZE + x, row * SIZE + y);
+      texture(blockOutput, `oval_window_${column}_${row}_frame`, (x, y) => (out(x, y) > OVAL_HOLE ? undoped(x, y) : CLEAR), 3);
+      texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => (out(x, y) > OVAL_HOLE + HOLE_LIP ? undoped(x, y) : CLEAR), 3);
+      texture(blockOutput, `oval_window_${column}_${row}_lip`, (x, y) => {
+        const o = out(x, y);
+        return o > OVAL_HOLE && o <= OVAL_HOLE + HOLE_LIP ? OVAL_RIM : CLEAR;
       }, 3);
     }
   }

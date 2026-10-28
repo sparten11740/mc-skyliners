@@ -1,11 +1,14 @@
 package dev.aerolarge.client;
 
+import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.RocketSilhouette;
 import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotBlock;
+import dev.aerolarge.block.OvalWindowBlock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,22 +26,26 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
- * The zeppelins as this client paints them, each in its livery (see {@link Livery}): the tint each block of a cover
- * and of the fabric is drawn with, from the livery of the zeppelin whose box it lies in, silver where it is in none.
- * Each tick it takes a fresh look at the zeppelins' autopilots, as their blocks send them, into a list the threads
- * that mesh the world's sections read as it stands; and as a repaint sweeps along a zeppelin, from its nose to its
- * tail, it has the sections the new paint has reached since the tick before meshed again, so the paint moves along it
- * a slice at a time, and the rest is never meshed again for it. Over the livery go what its features paint on it (see
+ * The zeppelins and rockets as this client paints them, each in its livery (see {@link Livery}): the tint each block
+ * of a cover and of the fabric (and the frame round a rocket's windows) is drawn with, from the livery of the ship
+ * whose box it lies in, silver where it is in none. Each tick it takes a fresh look at their autopilots, as their
+ * blocks send them, into a list the threads that mesh the world's sections read as it stands; and as a repaint sweeps
+ * over a ship, along a zeppelin from its nose to its tail and down a rocket from her nose to her foot, it has the
+ * sections the new paint has reached since the tick before meshed again, so the paint moves over it a slice at a time,
+ * and the rest is never meshed again for it. Over a zeppelin's livery go what its features paint on it (see
  * {@link PaintOverlay}), the ship's colours on its fins among them, each meshed again where it is as it comes and goes.
  */
 public final class ZeppelinPaint {
     /**
-     * A zeppelin as this client paints it, how far aft of its nose the new paint has reached, in blocks, and what its
-     * features paint over it.
+     * A zeppelin or a rocket as this client paints it, how far from its nose the new paint has reached, in blocks (aft
+     * along a zeppelin, down a rocket), and what its features paint over it.
      */
-    private record Painted(BoundingBox box, BlockPos min, BlockPos max, Direction nose, ZeppelinSize size, Livery livery, Livery before,
-                           double reached, List<PaintOverlay> overlays) {
-        int colour(BlockPos pos, boolean fabric) {
+    private record Painted(Craft craft, BoundingBox box, BlockPos min, BlockPos max, Direction nose, ZeppelinSize size, Livery livery,
+                           Livery before, double reached, List<PaintOverlay> overlays, int[] stories) {
+        int colour(BlockPos pos, boolean fabric, boolean window) {
+            if (craft == Craft.ROCKET) {
+                return rocketColour(pos, fabric, window);
+            }
             Livery.Spot spot = Livery.Spot.of(pos, min, max, nose, size);
             Livery under = spot.along() < reached ? livery : before;
             for (PaintOverlay overlay : overlays) {
@@ -49,7 +56,32 @@ public final class ZeppelinPaint {
             }
             return under.colour(spot, fabric);
         }
+
+        /**
+         * A rocket's block's colour: by how far up her it is, in which of her stories, and how far round her from her
+         * front, clockwise seen from above, her axis up the middle of her box.
+         */
+        private int rocketColour(BlockPos pos, boolean fin, boolean window) {
+            double down = max.getY() + 1 - (pos.getY() + 0.5);
+            double height = 1 - down / (max.getY() + 1 - min.getY());
+            double ahead = along(pos, nose);
+            double right = along(pos, nose.getClockWise());
+            double round = (Math.toDegrees(Math.atan2(right, ahead)) + FULL_TURN) % FULL_TURN;
+            int band = Livery.RocketSpot.band(pos.getY() - min.getY(), stories);
+            int cockpit = Livery.RocketSpot.band(stories[stories.length - 1], stories);
+            Livery under = down < reached ? livery : before;
+            return under.rocketColour(new Livery.RocketSpot(height, round, band, cockpit, window, pos.asLong()), fin);
+        }
+
+        /** How far a block's middle lies out from the middle of the box the way given, in blocks. */
+        private double along(BlockPos pos, Direction way) {
+            double middle = (min.getX() + max.getX() + 1) / 2.0 * way.getStepX() + (min.getZ() + max.getZ() + 1) / 2.0 * way.getStepZ();
+            return (pos.getX() + 0.5) * way.getStepX() + (pos.getZ() + 0.5) * way.getStepZ() - middle;
+        }
     }
+
+    /** A whole turn round a rocket, in degrees. */
+    private static final double FULL_TURN = 360;
 
     /** What the features paint over a zeppelin's livery, one line each: taking a feature out is taking out its line. */
     private static final List<PaintOverlay.Source> OVERLAYS = List.of(
@@ -64,17 +96,31 @@ public final class ZeppelinPaint {
     private ZeppelinPaint() {
     }
 
-    /** The tint a block of a zeppelin's cover or fabric is drawn with where it stands. */
+    /**
+     * The tint a block of a ship's cover or fabric, or a rocket's window's frame, is drawn with where it stands: a
+     * window's frame all one colour, as the cover is where the window's middle is.
+     */
     public static int tint(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int tintIndex) {
         boolean fabric = state.is(AerolargeRegistry.ZEPPELIN_FABRIC.get());
-        if (pos != null) {
+        boolean window = state.getBlock() instanceof OvalWindowBlock;
+        BlockPos at = window && pos != null ? windowMiddle(state, pos) : pos;
+        if (at != null) {
             for (Painted zeppelin : painted) {
-                if (zeppelin.box().isInside(pos)) {
-                    return zeppelin.colour(pos, fabric);
+                if (zeppelin.box().isInside(at)) {
+                    return zeppelin.colour(at, fabric, window);
                 }
             }
         }
         return Livery.SILVER.colour(new Livery.Spot(0, 0, 0, 0, ZeppelinSize.FULL), fabric);
+    }
+
+    /**
+     * Where the middle of the window a piece of a rocket's oval window is part of goes by: its middle column, in its
+     * top row (see {@link OvalWindowBlock}).
+     */
+    private static BlockPos windowMiddle(BlockState piece, BlockPos pos) {
+        Direction left = piece.getValue(OvalWindowBlock.FACING).getClockWise();
+        return pos.relative(left, piece.getValue(OvalWindowBlock.COLUMN) - OvalWindowBlock.COLUMNS / 2).above(piece.getValue(OvalWindowBlock.ROW));
     }
 
     /** The tint the cover and the fabric are drawn with in hand: silver. */
@@ -105,19 +151,35 @@ public final class ZeppelinPaint {
         MESHED.putAll(seen);
     }
 
-    /** A zeppelin's paint as its autopilot has it now; null for an airliner's, or one not built from a layout. */
+    /** A zeppelin's or a rocket's paint as its autopilot has it now; null for an airliner's, or one not laid out. */
     @Nullable
     private static Painted paint(ClientLevel level, AutopilotBlockEntity autopilot) {
-        BoundingBox box = autopilot.craft() == Craft.ZEPPELIN ? autopilot.frame() : null;
+        Craft craft = autopilot.craft();
+        BoundingBox box = craft != Craft.AIRLINER ? autopilot.frame() : null;
         if (box == null) {
             return null;
         }
         long start = autopilot.repaintStart();
         double share = start < 0 ? 1 : Math.min(1, (level.getGameTime() - start) / (double) Livery.REPAINT_TICKS);
-        double reached = share >= 1 ? Double.MAX_VALUE : share * Livery.sweep(autopilot.zeppelinSize());
+        double reached = share >= 1 ? Double.MAX_VALUE : share * sweep(craft, box, autopilot.zeppelinSize());
         Direction nose = autopilot.getBlockState().getValue(AutopilotBlock.FACING);
-        return new Painted(box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
-            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays(level, box, autopilot.zeppelinSize()));
+        List<PaintOverlay> overlays = craft == Craft.ZEPPELIN ? overlays(level, box, autopilot.zeppelinSize()) : List.of();
+        return new Painted(craft, box, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), nose,
+            autopilot.zeppelinSize(), autopilot.livery(), autopilot.repaintedFrom(), reached, overlays, stories(autopilot));
+    }
+
+    /**
+     * A rocket's stories' floors, rows up from her fins' feet, as her autopilot keeps them; for one built before it
+     * kept them, as one is built at the configured scale.
+     */
+    private static int[] stories(AutopilotBlockEntity autopilot) {
+        int[] kept = autopilot.rocketStories();
+        return kept.length > 0 ? kept : RocketSilhouette.stories(AerolargeConfig.SCALE.get());
+    }
+
+    /** How far from its nose a repaint sweeps over a ship, in blocks: aft along a zeppelin, down all of a rocket. */
+    private static double sweep(Craft craft, BoundingBox box, ZeppelinSize size) {
+        return craft == Craft.ROCKET ? box.getYSpan() : Livery.sweep(size);
     }
 
     /** What the features paint over a zeppelin's livery now, in its box, on a hull of its size. */
@@ -150,13 +212,13 @@ public final class ZeppelinPaint {
      * new paint has swept over since, or all of it when it is new to this client, or painted anew at once.
      */
     private static void remeshLivery(@Nullable Painted before, Painted after) {
+        double sweep = sweep(after.craft(), after.box(), after.size());
         if (before == null) {
             if (after.livery() != Livery.SILVER || after.before() != Livery.SILVER) {
-                remesh(after, 0, Livery.sweep(after.size()));
+                remesh(after, 0, sweep);
             }
             return;
         }
-        double sweep = Livery.sweep(after.size());
         if (before.livery() != after.livery() && after.reached() == Double.MAX_VALUE) {
             remesh(after, 0, sweep);
             return;
@@ -168,9 +230,16 @@ public final class ZeppelinPaint {
         }
     }
 
-    /** Has the sections of a zeppelin meshed again from so far aft of its nose to so far, in blocks. */
+    /**
+     * Has the sections of a ship meshed again from so far from its nose to so far, in blocks: aft along a zeppelin,
+     * down a rocket.
+     */
     private static void remesh(Painted zeppelin, double from, double to) {
         BoundingBox box = zeppelin.box();
+        if (zeppelin.craft() == Craft.ROCKET) {
+            remeshRows(box, box.maxY() + 1 - (int) Math.ceil(to), box.maxY() + 1 - (int) Math.floor(from));
+            return;
+        }
         Direction nose = zeppelin.nose();
         int tip = nose.getAxisDirection() == Direction.AxisDirection.POSITIVE ? (nose.getAxis() == Direction.Axis.X ? box.maxX() : box.maxZ())
             : (nose.getAxis() == Direction.Axis.X ? box.minX() : box.minZ());
@@ -185,6 +254,16 @@ public final class ZeppelinPaint {
         for (BlockPos section : BlockPos.betweenClosed(SectionPos.blockToSectionCoord(x0), SectionPos.blockToSectionCoord(box.minY()),
             SectionPos.blockToSectionCoord(z0), SectionPos.blockToSectionCoord(x1), SectionPos.blockToSectionCoord(box.maxY()),
             SectionPos.blockToSectionCoord(z1))) {
+            Minecraft.getInstance().levelRenderer.setSectionDirty(section.getX(), section.getY(), section.getZ());
+        }
+    }
+
+    /** Has the sections of a ship's box meshed again from one row up to another, in blocks. */
+    private static void remeshRows(BoundingBox box, int from, int to) {
+        int low = SectionPos.blockToSectionCoord(Math.max(from, box.minY()));
+        int high = SectionPos.blockToSectionCoord(Math.min(to, box.maxY()));
+        for (BlockPos section : BlockPos.betweenClosed(SectionPos.blockToSectionCoord(box.minX()), low, SectionPos.blockToSectionCoord(box.minZ()),
+            SectionPos.blockToSectionCoord(box.maxX()), high, SectionPos.blockToSectionCoord(box.maxZ()))) {
             Minecraft.getInstance().levelRenderer.setSectionDirty(section.getX(), section.getY(), section.getZ());
         }
     }

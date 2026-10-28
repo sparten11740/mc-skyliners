@@ -5,9 +5,11 @@
   "row": 0,
   "textures": {
     "glass": "aerolarge:block/oval_window_1_0_dim0",
+    "frame": "aerolarge:block/oval_window_1_0_frame",
     "inside": "aerolarge:block/oval_window_1_0_inside",
+    "lip": "aerolarge:block/oval_window_1_0_lip",
     "reveal": "aerolarge:block/oval_window_reveal",
-    "edge": "aerolarge:block/zeppelin_fabric",
+    "edge": "aerolarge:block/zeppelin_skin",
     "particle": "aerolarge:block/oval_window_1_0_dim0"
   }
 }

@@ -1112,7 +1112,11 @@ function zeppelinControlsLang() {
     "livery.aerolarge.airline": "the airliner's colours",
     "livery.aerolarge.polar": "polar red",
     "livery.aerolarge.midnight": "midnight blue",
+    "livery.aerolarge.checker": "moon-rocket checks",
+    "livery.aerolarge.roll": "black and white roll stripes",
+    "livery.aerolarge.red_trim": "silver with red trim",
     "message.aerolarge.livery_board.repainting": "Repainting in %s: watch the painters' cradle sweep along",
+    "message.aerolarge.livery_board.repainting_rocket": "Repainting in %s: watch the new paint run down her from her nose",
     "message.aerolarge.livery_board.no_zeppelin": "This board paints the zeppelin whose control car it stands in",
     "subtitles.aerolarge.zeppelin_horn": "Zeppelin's horn sounds",
     "subtitles.aerolarge.zeppelin_hull": "Wind booms through the hull",
@@ -3424,11 +3428,11 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 }
 // The rocket's oval window (see OvalWindowBlock): each block of it at each step of its dimming, the inner half of its
 // block, its glass a dome over the oval in a recess lined with steel, baked by the mod's own "oval_window" loader (see
-// OvalWindowModel), its edges the cover's weave where they meet the skin. Modelled looking north, turned for the other
-// ways. It gives back glass.
+// OvalWindowModel), its frame and its edges the cover's undoped weave, tinted in the ship's livery as the cover is.
+// Modelled looking north, turned for the other ways. It gives back glass.
 {
   const variants = {};
-  const edge = `${ID}:block/zeppelin_fabric`;
+  const edge = `${ID}:block/zeppelin_skin`;
   for (let column = 0; column < 3; column++) {
     for (let row = 0; row < 4; row++) {
       for (let dim = 0; dim < 4; dim++) {
@@ -3436,7 +3440,10 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
         const glass = `${ID}:block/${name}`;
         write(`assets/${ID}/models/block/${name}.json`, {
           loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row,
-          textures: { glass, inside: `${ID}:block/oval_window_${column}_${row}_inside`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass },
+          textures: {
+            glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside`,
+            lip: `${ID}:block/oval_window_${column}_${row}_lip`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass,
+          },
         });
         for (const [facing, y] of Object.entries(yRot)) {
           variants[`column=${column},dim=${dim},facing=${facing},row=${row}`] = { model: `${ID}:block/${name}`, y };

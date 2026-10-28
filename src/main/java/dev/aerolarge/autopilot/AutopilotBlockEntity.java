@@ -635,6 +635,12 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How far into its rocket's countdown it last sounded it, in ticks, so each second is heard once. */
     private int countHeard;
     /**
+     * Its rocket's stories' floors, rows up from her fins' feet, from the entry story up, the cockpit's floor last, as
+     * she was built, on the clients as on the server, so her livery can follow them (see {@link Livery.RocketSpot});
+     * none for one built before they were kept, or for any other airframe.
+     */
+    private int[] rocketStories = new int[0];
+    /**
      * How its zeppelin is painted; while a repaint sweeps along it, how it was painted before, and the game time the
      * repaint began, -1 for none (see {@link Livery}).
      */
@@ -686,11 +692,12 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Wired when a rocket is built: it flies a rocket, its engine bells' relays and its two rings of side jets as
-     * offsets from it, and how far its block stands above the fins' feet.
+     * offsets from it, how far its block stands above the fins' feet, and her stories' floors, as rows over them.
      */
-    public void configureRocket(List<List<BlockPos>> bells, RocketPilot.Jets top, RocketPilot.Jets bottom, int wheelsBelow) {
+    public void configureRocket(List<List<BlockPos>> bells, RocketPilot.Jets top, RocketPilot.Jets bottom, int wheelsBelow, int[] stories) {
         craft = Craft.ROCKET;
         this.wheelsBelow = wheelsBelow;
+        rocketStories = stories.clone();
         rocket.configure(bells, top, bottom);
         linksChecked = true;
         changed();
@@ -713,6 +720,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** What it says when it has nothing to fly a zeppelin or a rocket with. */
     private Component unwired() {
         return Component.translatable(craft == Craft.ROCKET ? "message.aerolarge.autopilot.no_engines" : "message.aerolarge.autopilot.no_burners");
+    }
+
+    /** Its rocket's stories' floors as she was built, rows up from her fins' feet; none if they are not known. */
+    public int[] rocketStories() {
+        return rocketStories.clone();
     }
 
     /** What its rocket's pilot is doing, for play-testing; null for any other airframe. */
@@ -2740,10 +2752,14 @@ public class AutopilotBlockEntity extends BlockEntity {
             tag.putLong("FrameFrom", frameFrom.asLong());
             tag.putLong("FrameTo", frameTo.asLong());
         }
+        if (rocketStories.length > 0) {
+            tag.putIntArray("RocketStories", rocketStories);
+        }
     }
 
     /** Turned as its block has turned since it was saved, as its other links are (see {@link Turning}). */
     private void loadFrame(CompoundTag tag) {
+        rocketStories = tag.getIntArray("RocketStories");
         if (!tag.contains("FrameFrom")) {
             return;
         }

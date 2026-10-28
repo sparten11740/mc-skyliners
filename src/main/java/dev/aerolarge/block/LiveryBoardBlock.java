@@ -40,7 +40,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class LiveryBoardBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<LiveryBoardBlock> CODEC = simpleCodec(LiveryBoardBlock::new);
     /** The swatches in their rows, top row first, each row from the left as the board is seen. */
-    public static final Livery[][] SWATCHES = {{Livery.SILVER, Livery.CREAM, Livery.NAVY}, {Livery.AIRLINE, Livery.POLAR, Livery.MIDNIGHT}};
+    public static final Livery[][] SWATCHES = Livery.swatches(Craft.ZEPPELIN);
     /** How thick the board is, in sixteenths of a block, standing at the back of its block. */
     public static final int THICKNESS = 3;
     private static final Map<Direction, VoxelShape> SHAPES = Map.of(
@@ -93,11 +93,12 @@ public class LiveryBoardBlock extends HorizontalDirectionalBlock implements Enti
      * scrape of a brush and the livery's name; nothing for none picked, and a word if no zeppelin is about to paint.
      */
     public static void repaint(ServerLevel server, BlockPos pos, Player player, @Nullable Livery livery) {
-        AutopilotBlockEntity autopilot = zeppelin(server, pos);
+        AutopilotBlockEntity autopilot = painted(server, pos);
         if (livery != null && autopilot != null) {
             autopilot.repaint(livery);
             server.playSound(null, pos, SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS, 1.0F, 0.8F);
-            player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.repainting",
+            String repainting = autopilot.craft() == Craft.ROCKET ? "repainting_rocket" : "repainting";
+            player.displayClientMessage(Component.translatable("message.aerolarge.livery_board." + repainting,
                 Component.translatable("livery.aerolarge." + livery.name().toLowerCase(Locale.ROOT))), true);
         } else if (autopilot == null) {
             player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.no_zeppelin"), true);
@@ -118,11 +119,14 @@ public class LiveryBoardBlock extends HorizontalDirectionalBlock implements Enti
         return column >= 0 && column < 3 ? SWATCHES[row][column] : null;
     }
 
-    /** The zeppelin a board paints: the one whose autopilot is nearest it, on its flight deck; null for none. */
+    /**
+     * The zeppelin or rocket a board or a selector paints, by its autopilot: the one whose autopilot is nearest it, in
+     * her control car or cockpit; null for none, or for an airliner's.
+     */
     @Nullable
-    public static AutopilotBlockEntity zeppelin(Level level, BlockPos pos) {
+    public static AutopilotBlockEntity painted(Level level, BlockPos pos) {
         AutopilotBlockEntity autopilot = AutopilotBlockEntity.nearest(level, pos);
-        return autopilot != null && autopilot.craft() == Craft.ZEPPELIN && autopilot.frame() != null ? autopilot : null;
+        return autopilot != null && autopilot.craft() != Craft.AIRLINER && autopilot.frame() != null ? autopilot : null;
     }
 
     @Nullable
