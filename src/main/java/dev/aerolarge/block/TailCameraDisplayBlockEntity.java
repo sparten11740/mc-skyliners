@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.airframe.CameraSpot;
 import dev.aerolarge.airframe.OutsideCamera;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -18,27 +19,29 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Which outside camera the display shows, picked with its buttons (see {@link CameraButtons}) and the same for everyone
- * looking at it: the fin's at first. The picture itself is drawn from that camera live, on the client, as its renderer
- * draws it.
+ * looking at it: an airliner's fin camera at first, or the camera a zeppelin's display is built showing. The camera it
+ * shows says whose cameras its buttons pick among, so a zeppelin's display keeps to hers. The picture itself is drawn
+ * from that camera live, on the client, as its renderer draws it.
  */
 public class TailCameraDisplayBlockEntity extends BlockEntity implements CameraScreen {
-    private OutsideCamera camera = OutsideCamera.TAIL;
+    private CameraSpot camera = OutsideCamera.TAIL;
 
     public TailCameraDisplayBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.TAIL_CAMERA_DISPLAY_ENTITY.get(), pos, state);
     }
 
     @Override
-    public OutsideCamera camera() {
+    public CameraSpot camera() {
         return camera;
     }
 
     /** The middle of its blocks, from this one, the first on the left of the bottom row, to the last. */
     @Override
     public Vec3 faceMiddle() {
-        Direction facing = getBlockState().getValue(TailCameraDisplayBlock.FACING);
-        BlockPos last = worldPosition.relative(TailCameraDisplayBlock.right(facing), TailCameraDisplayBlock.COLUMNS - 1)
-            .above(TailCameraDisplayBlock.ROWS - 1);
+        BlockState state = getBlockState();
+        Direction facing = state.getValue(TailCameraDisplayBlock.FACING);
+        BlockPos last = worldPosition.relative(TailCameraDisplayBlock.right(facing), TailCameraDisplayBlock.columns(state) - 1)
+            .above(TailCameraDisplayBlock.rows(state) - 1);
         return Vec3.atCenterOf(worldPosition).add(Vec3.atCenterOf(last)).scale(0.5);
     }
 
@@ -51,11 +54,13 @@ public class TailCameraDisplayBlockEntity extends BlockEntity implements CameraS
 
     @Override
     public double faceReach() {
-        return Math.sqrt(TailCameraDisplayBlock.COLUMNS * TailCameraDisplayBlock.COLUMNS + TailCameraDisplayBlock.ROWS * TailCameraDisplayBlock.ROWS + 1) / 2;
+        int columns = TailCameraDisplayBlock.columns(getBlockState());
+        int rows = TailCameraDisplayBlock.rows(getBlockState());
+        return Math.sqrt(columns * columns + rows * rows + 1) / 2;
     }
 
-    /** Shows another camera, for everyone looking at the display. */
-    public void look(OutsideCamera camera) {
+    /** Shows another camera, one of its airframe's, for everyone looking at the display. */
+    public void look(CameraSpot camera) {
         if (camera == this.camera) {
             return;
         }
@@ -75,7 +80,7 @@ public class TailCameraDisplayBlockEntity extends BlockEntity implements CameraS
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        camera = OutsideCamera.named(tag.getString("Camera"), OutsideCamera.TAIL);
+        camera = CameraSpot.named(tag.getString("Camera"), OutsideCamera.TAIL);
     }
 
     @Override

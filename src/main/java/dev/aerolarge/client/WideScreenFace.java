@@ -8,11 +8,11 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The face of a wide screen (see {@link WideScreenBlock}) that its renderer draws on, from the block holding it:
  * upright, on the front of the slim screen; tilted, on the screen plate across the blocks' diagonal, which makes the
- * face taller.
+ * face taller. A screen more than a row tall is drawn as one a row tall at its rows' scale, its picture, words and
+ * buttons all grown with it: in the pose {@link #onto} leaves, it is {@link #width} wide and {@link #height} tall.
  */
 final class WideScreenFace {
-    /** The whole face, in blocks: as wide as the screen, as tall as its rows upright or its diagonal tilted. */
-    static final double WIDTH = WideScreenBlock.COLUMNS;
+    /** A row of the face, in blocks: as tall as the row upright, or as its diagonal tilted. */
     static final double UPRIGHT_HEIGHT = WideScreenBlock.UPRIGHT_HEIGHT;
     static final double TILTED_HEIGHT = WideScreenBlock.TILTED_HEIGHT;
     /** The upright face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
@@ -25,12 +25,20 @@ final class WideScreenFace {
     private WideScreenFace() {
     }
 
-    /** How tall the face of a screen in this state is, in blocks. */
+    /** How wide the face of a screen in this state is, at its rows' scale: its columns over its rows. */
+    static double width(BlockState state) {
+        return (double) WideScreenBlock.columns(state) / WideScreenBlock.rows(state);
+    }
+
+    /** How tall the face of a screen in this state is, at its rows' scale: a row's height. */
     static double height(BlockState state) {
         return state.getValue(WideScreenBlock.TILTED) ? TILTED_HEIGHT : UPRIGHT_HEIGHT;
     }
 
-    /** Moves the pose from the block holding the screen onto its face: x to the viewer's right and y up, from its bottom left corner. */
+    /**
+     * Moves the pose from the block holding the screen onto its face: x to the viewer's right and y up, from its bottom
+     * left corner, at its rows' scale.
+     */
     static void onto(PoseStack pose, BlockState state) {
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-state.getValue(WideScreenBlock.FACING).toYRot()));
@@ -42,5 +50,7 @@ final class WideScreenFace {
         } else {
             pose.translate(-0.5, -0.5, UPRIGHT_FACE);
         }
+        float scale = WideScreenBlock.rows(state);
+        pose.scale(scale, scale, 1);
     }
 }

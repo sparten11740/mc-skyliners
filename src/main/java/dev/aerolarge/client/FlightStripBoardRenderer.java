@@ -29,6 +29,8 @@ import org.joml.Matrix4f;
  * band's corner; with none, it says there is no traffic.
  */
 public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStripBoardBlockEntity> {
+    /** The face's width, in blocks: the board is always a wide screen of its own size. */
+    private static final double WIDTH = FlightStripBoardBlock.COLUMNS;
     /** The bezel round the board, the band of the columns' names along its top and each strip's height, in blocks. */
     private static final double BEZEL = 0.05;
     private static final double BAND = 0.1;
@@ -83,8 +85,8 @@ public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStrip
         WideScreenFace.onto(pose, state);
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-        ScreenDrawing.rect(shapes, matrix, 0, 0, WideScreenFace.WIDTH, height, 0, CASING);
-        ScreenDrawing.rect(shapes, matrix, BEZEL, top, WideScreenFace.WIDTH - BEZEL, height - BEZEL, LAYER, BAND_COLOUR);
+        ScreenDrawing.rect(shapes, matrix, 0, 0, WIDTH, height, 0, CASING);
+        ScreenDrawing.rect(shapes, matrix, BEZEL, top, WIDTH - BEZEL, height - BEZEL, LAYER, BAND_COLOUR);
         for (int i = 0; i < shown.size(); i++) {
             stripShape(shapes, matrix, shown.get(i), top - i * ROW, i);
         }
@@ -98,7 +100,7 @@ public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStrip
             stripText(font, pose, buffers, shown.get(i), top - (i + 0.5) * ROW);
         }
         if (strips.isEmpty()) {
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "none"), WideScreenFace.WIDTH / 2, top / 2, TEXT_LIFT, TEXT, GREY,
+            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + "none"), WIDTH / 2, top / 2, TEXT_LIFT, TEXT, GREY,
                 ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
@@ -107,7 +109,7 @@ public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStrip
     /** A strip's backing under its top edge, alternately lighter and darker, and its colour bar. */
     private static void stripShape(VertexConsumer shapes, Matrix4f matrix, FlightStrip strip, double stripTop, int row) {
         double bottom = stripTop - ROW + GAP;
-        ScreenDrawing.rect(shapes, matrix, BEZEL, bottom, WideScreenFace.WIDTH - BEZEL, stripTop, LAYER, row % 2 == 0 ? STRIP : STRIP_ALTERNATE);
+        ScreenDrawing.rect(shapes, matrix, BEZEL, bottom, WIDTH - BEZEL, stripTop, LAYER, row % 2 == 0 ? STRIP : STRIP_ALTERNATE);
         ScreenDrawing.rect(shapes, matrix, BAR_LEFT, bottom, BAR_RIGHT, stripTop, 2 * LAYER, strip.contact().colour().argb());
     }
 
@@ -134,7 +136,7 @@ public class FlightStripBoardRenderer implements BlockEntityRenderer<FlightStrip
         label(font, pose, buffers, "phase", PHASE_X, y, ScreenDrawing.Align.LEFT);
         if (pages > 1) {
             Component count = Component.translatable(KEY + "page", page + 1, pages);
-            ScreenDrawing.text(font, pose, buffers, count, WideScreenFace.WIDTH - 2 * BEZEL, y, TEXT_LIFT, BAND_TEXT, WHITE, ScreenDrawing.Align.RIGHT);
+            ScreenDrawing.text(font, pose, buffers, count, WIDTH - 2 * BEZEL, y, TEXT_LIFT, BAND_TEXT, WHITE, ScreenDrawing.Align.RIGHT);
         }
     }
 

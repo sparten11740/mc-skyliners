@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import static dev.aerolarge.airframe.AirframeShape.*;
 
+import dev.aerolarge.autopilot.Craft;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,26 +11,27 @@ import java.util.List;
  * like an A380's own. Each is placed in the airliner's measurements (see {@link AirframeShape}): metres to starboard of
  * the centreline, above the ground under the wheels, and back from the tip of the nose, so it scales with the airframe.
  * It looks this many degrees to the right of the nose and up from level, through a lens this many degrees wide from top
- * to bottom.
+ * to bottom. Each has a colour of its own, so the four tell apart at a glance: sky blue on the fin, green on the wing,
+ * orange by the nose gear and pink in front of the nose.
  */
 public enum OutsideCamera implements CameraSpot {
     /**
      * Four metres over the tip of the fin and five behind it, looking forward and down over the whole airliner, its
      * wingtips at the edges of the wide lens.
      */
-    TAIL(0, bellyHeight() + HEIGHT + FIN_HEIGHT + 4, FIN_ROOT_LEADING_EDGE + FIN_SWEEP * FIN_HEIGHT + FIN_TIP_CHORD + 5, 0, -20, 100),
+    TAIL(0, bellyHeight() + HEIGHT + FIN_HEIGHT + 4, FIN_ROOT_LEADING_EDGE + FIN_SWEEP * FIN_HEIGHT + FIN_TIP_CHORD + 5, 0, -20, 100, 0xFF46C8F0),
     /**
      * A metre and a half out from the right side of the fuselage, above the trailing edge of the wing root, looking
      * out and a little forward along the wing at both engines, the wingtip at the right edge.
      */
-    WING(WIDTH / 2 + 1.5, bellyHeight() + 6.5, WING_ROOT_LEADING_EDGE + WING_ROOT_CHORD, 75, -15, 90),
+    WING(WIDTH / 2 + 1.5, bellyHeight() + 6.5, WING_ROOT_LEADING_EDGE + WING_ROOT_CHORD, 75, -15, 90, 0xFF46E070),
     /** A metre under the belly, four behind the nose gear, looking ahead past its wheels and down the runway. */
-    NOSE(0, bellyHeight() - 1, NOSE_GEAR_Z + 4, 0, -10, 80),
+    NOSE(0, bellyHeight() - 1, NOSE_GEAR_Z + 4, 0, -10, 80, 0xFFFF8A3C),
     /**
      * Right in front of the flight deck, at the tip of the nose and level with the pilots' eyes, looking ahead and
      * fifteen degrees down at what lies before the airliner: the runway coming up to meet it as it lands.
      */
-    FRONT(0, bellyHeight() + Windscreen.EYES, 0, 0, -15, 80);
+    FRONT(0, bellyHeight() + Windscreen.EYES, 0, 0, -15, 80, 0xFFFF6FAE);
 
     /** The fuselage's side view is cut into slices this long, in metres. */
     private static final double SLICE = 2;
@@ -48,14 +50,26 @@ public enum OutsideCamera implements CameraSpot {
     public final double yaw;
     public final double pitch;
     public final double fov;
+    private final int colour;
 
-    OutsideCamera(double across, double up, double back, double yaw, double pitch, double fov) {
+    OutsideCamera(double across, double up, double back, double yaw, double pitch, double fov, int colour) {
         this.across = across;
         this.up = up;
         this.back = back;
         this.yaw = yaw;
         this.pitch = pitch;
         this.fov = fov;
+        this.colour = colour;
+    }
+
+    @Override
+    public Craft craft() {
+        return Craft.AIRLINER;
+    }
+
+    @Override
+    public int colour() {
+        return colour;
     }
 
     @Override

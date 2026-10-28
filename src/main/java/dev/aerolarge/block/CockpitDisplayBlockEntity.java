@@ -389,7 +389,7 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             return work(level, CockpitKeys.at(slopeKeys(), touch.across(), touch.up()), touch, player);
         }
         return switch (shows()) {
-            case CAMERA -> !cameraKeysOnSlope() && look(CameraButtons.at(touch.across(), touch.up()));
+            case CAMERA -> !cameraKeysOnSlope() && look(CameraButtons.at(List.of(OutsideCamera.values()), touch.across(), touch.up()));
             case MAP -> zoom();
             case SYSTEMS -> work(level, CockpitKeys.at(screenKeys(), touch.across(), touch.up()), touch, player);
             case FLIGHT -> false;

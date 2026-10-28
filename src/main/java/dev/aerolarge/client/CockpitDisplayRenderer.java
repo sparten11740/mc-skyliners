@@ -11,6 +11,7 @@ import dev.aerolarge.block.CameraButtons;
 import dev.aerolarge.block.CockpitDisplayBlock;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.CockpitKeys;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -194,7 +195,7 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     @Nullable
     private static Box keyAt(CockpitDisplayBlockEntity display, CockpitDisplayBlockEntity.Panel panel, Pointer pointer) {
         if (!pointer.onSlope() && display.shows() == CockpitDisplayBlock.Shows.CAMERA && !display.cameraKeysOnSlope()) {
-            OutsideCamera camera = CameraButtons.at(pointer.across(), pointer.up());
+            OutsideCamera camera = CameraButtons.at(List.of(OutsideCamera.values()), pointer.across(), pointer.up());
             double left = camera == null ? 0 : CameraButtons.left(camera);
             return camera == null ? null : new Box(left, CameraButtons.INSET, left + CameraButtons.WIDTH, CameraButtons.INSET + CameraButtons.HEIGHT);
         }

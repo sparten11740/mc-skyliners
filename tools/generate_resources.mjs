@@ -4425,14 +4425,18 @@ cubes.flight_display = null;
       ...steps,
     ],
   });
-  wideScreen("tail_camera_display", "tail_camera_display");
+  // The large display a zeppelin's control car has is the same slim screen, block for block, four wide and two tall.
+  wideScreen("tail_camera_display", "tail_camera_display", ["large=false", "large=true"]);
 }
 // A wide screen (see WideScreenBlock) drawn with the models given, upright or tilted, and its item a picture of its
-// own; only part 0 drops it, so the whole screen gives back one.
-function wideScreen(name, model) {
+// own; only part 0 drops it, so the whole screen gives back one. Its parts run as far as the largest wide screen's
+// (WideScreenBlock.MOST_PARTS); a block with a size of its own lists the values of the property that picks it.
+function wideScreen(name, model, sizes = [""]) {
+  const parts = [0, 1, 2, 3, 4, 5, 6, 7];
   write(`assets/${ID}/blockstates/${name}.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2].flatMap((part) => [false, true].map((tilted) =>
-      [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/${model}${tilted ? "_tilted" : ""}`, y }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => sizes.flatMap((size) => parts.flatMap((part) =>
+      [false, true].map((tilted) => [[`facing=${facing}`, size, `part=${part}`, `tilted=${tilted}`].filter(Boolean).join(","),
+        { model: `${ID}:block/${model}${tilted ? "_tilted" : ""}`, y }]))))),
   });
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
   write(`data/${ID}/loot_table/blocks/${name}.json`, {

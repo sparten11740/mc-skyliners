@@ -28,27 +28,33 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A wide screen, {@link #COLUMNS} blocks wide and {@link #ROWS} tall, its renderer drawing all of it: the tail camera
- * display on the flight deck and the control tower's flight strip board. Every block of it is this block; PART says
- * which, counting along the bottom row from the viewer's left and then up, and part 0 holds the block entity the whole
- * screen is drawn from. FACING is the way the screen faces. Upright, it is a slim screen with its back to whatever it
- * is fixed to. TILTED, it hangs from a ceiling like an overhead monitor: the screen runs across each block's diagonal,
- * from the bottom edge of its back up to the top edge of the side it faces, along the ceiling, so it looks down toward
- * FACING at 45 degrees and whoever is out that way and below looks straight up at it; behind it the casing fills the
- * block out to its top and back. Placed by hand against a wall it stands upright, put up against the underside of a
- * block it hangs tilted, and anywhere else it stands upright facing whoever puts it there; it needs the room for all of
- * it and puts every part up at once. Taking any part away takes the whole screen, which drops one screen from part 0.
+ * A wide screen, {@link #COLUMNS} blocks wide and {@link #ROWS} tall unless its block makes it bigger (see
+ * {@link #columnsOf}), its renderer drawing all of it: the tail camera display on the flight deck, the larger one in a
+ * zeppelin's control car, and the control tower's flight strip board. Every block of it is this block; PART says which,
+ * counting along the bottom row from the viewer's left and then up, and part 0 holds the block entity the whole screen
+ * is drawn from. FACING is the way the screen faces. Upright, it is a slim screen with its back to whatever it is fixed
+ * to. TILTED, it hangs from a ceiling like an overhead monitor: the screen runs across each block's diagonal, from the
+ * bottom edge of its back up to the top edge of the side it faces, along the ceiling, so it looks down toward FACING at
+ * 45 degrees and whoever is out that way and below looks straight up at it; behind it the casing fills the block out to
+ * its top and back; a screen more than a row tall only ever stands upright. Placed by hand, a screen is its block's own
+ * size: against a wall it stands upright, put up against the underside of a block it hangs tilted, and anywhere else it
+ * stands upright facing whoever puts it there; it needs the room for all of it and puts every part up at once. Taking
+ * any part away takes the whole screen, which drops one screen from part 0.
  */
 public abstract class WideScreenBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final int COLUMNS = 3;
     public static final int ROWS = 1;
-    public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
+    /**
+     * The most parts any wide screen has: the large camera display's, four by two (see {@link TailCameraDisplayBlock}).
+     */
+    private static final int MOST_PARTS = 8;
+    public static final IntegerProperty PART = IntegerProperty.create("part", 0, MOST_PARTS - 1);
     public static final BooleanProperty TILTED = BooleanProperty.create("tilted");
     /** How thick the upright screen is, in pixels of its block, standing against the back of it. */
     public static final int DEPTH = 3;
-    /** How tall the face its renderer draws on is, in blocks: its rows upright, or tilted, its diagonal. */
-    public static final double UPRIGHT_HEIGHT = ROWS;
-    public static final double TILTED_HEIGHT = Math.sqrt(2) * ROWS;
+    /** How tall the face its renderer draws on is for each row, in blocks: the row upright, or tilted, its diagonal. */
+    public static final double UPRIGHT_HEIGHT = 1;
+    public static final double TILTED_HEIGHT = Math.sqrt(2);
     /** How many steps the tilted screen's filled half is made of for collision and selection. */
     private static final int TILTED_STEPS = 4;
     private static final Map<Direction, VoxelShape> UPRIGHT_SHAPES = new EnumMap<>(Direction.class);
@@ -95,15 +101,40 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
         return facing.getCounterClockWise();
     }
 
-    /** Where a part of the screen is, from the part holding it. */
-    private static BlockPos part(BlockPos origin, Direction facing, int part) {
-        return origin.relative(right(facing), part % COLUMNS).above(part / COLUMNS);
+    /** How many blocks wide a screen in this state is, of this block: {@link #COLUMNS}, unless the block says more. */
+    protected int columnsOf(BlockState state) {
+        return COLUMNS;
+    }
+
+    /** How many blocks tall a screen in this state is, of this block: {@link #ROWS}, unless the block says more. */
+    protected int rowsOf(BlockState state) {
+        return ROWS;
+    }
+
+    /** How many blocks wide a wide screen in this state is. */
+    public static int columns(BlockState state) {
+        return ((WideScreenBlock) state.getBlock()).columnsOf(state);
+    }
+
+    /** How many blocks tall a wide screen in this state is. */
+    public static int rows(BlockState state) {
+        return ((WideScreenBlock) state.getBlock()).rowsOf(state);
+    }
+
+    private static int parts(BlockState state) {
+        return columns(state) * rows(state);
+    }
+
+    /** Where a part of a screen so many blocks wide is, from the part holding it. */
+    private static BlockPos part(BlockPos origin, Direction facing, int part, int columns) {
+        return origin.relative(right(facing), part % columns).above(part / columns);
     }
 
     /** Where the part holding the screen is, from any part. */
     public static BlockPos origin(BlockState state, BlockPos pos) {
         int part = state.getValue(PART);
-        return pos.relative(right(state.getValue(FACING)), -(part % COLUMNS)).below(part / COLUMNS);
+        int columns = columns(state);
+        return pos.relative(right(state.getValue(FACING)), -(part % columns)).below(part / columns);
     }
 
     /** Where on a screen's face it was touched, in blocks from the face's bottom left corner as the viewer sees it. */
@@ -135,7 +166,7 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
         if (tilted) {
             at = ontoDiagonal(at, Vec3.atLowerCornerOf(facing.getNormal()), look);
         }
-        double up = (at.y + 0.5) * (tilted ? TILTED_HEIGHT : UPRIGHT_HEIGHT) / ROWS;
+        double up = (at.y + 0.5) * (tilted ? TILTED_HEIGHT : UPRIGHT_HEIGHT);
         return new Touch(at.dot(Vec3.atLowerCornerOf(right(facing).getNormal())) + 0.5, up);
     }
 
@@ -164,13 +195,14 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
         boolean tilted = clicked == Direction.DOWN;
         Direction facing = clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite();
         Level level = context.getLevel();
-        for (int part = 1; part < COLUMNS * ROWS; part++) {
-            BlockPos at = part(context.getClickedPos(), facing, part);
+        BlockState placed = defaultBlockState();
+        for (int part = 1; part < parts(placed); part++) {
+            BlockPos at = part(context.getClickedPos(), facing, part, columns(placed));
             if (level.isOutsideBuildHeight(at) || !level.getWorldBorder().isWithinBounds(at) || !level.getBlockState(at).canBeReplaced(context)) {
                 return null;
             }
         }
-        return defaultBlockState().setValue(FACING, facing).setValue(TILTED, tilted);
+        return placed.setValue(FACING, facing).setValue(TILTED, tilted);
     }
 
     /** The rest of the screen goes up beside the part placed. */
@@ -180,8 +212,8 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
             return;
         }
         Direction facing = state.getValue(FACING);
-        for (int part = 1; part < COLUMNS * ROWS; part++) {
-            level.setBlock(part(pos, facing, part), state.setValue(PART, part), Block.UPDATE_ALL);
+        for (int part = 1; part < parts(state); part++) {
+            level.setBlock(part(pos, facing, part, columns(state)), state.setValue(PART, part), Block.UPDATE_ALL);
         }
     }
 
@@ -190,9 +222,9 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbour, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
         Direction facing = state.getValue(FACING);
         BlockPos origin = origin(state, pos);
-        for (int part = 0; part < COLUMNS * ROWS; part++) {
-            if (part(origin, facing, part).equals(neighbourPos) && !(neighbour.is(this) && neighbour.getValue(FACING) == facing
-                && neighbour.getValue(PART) == part && neighbour.getValue(TILTED) == state.getValue(TILTED))) {
+        for (int part = 0; part < parts(state); part++) {
+            // The part there must be this screen's: the same block in the same state but for its part.
+            if (part(origin, facing, part, columns(state)).equals(neighbourPos) && neighbour != state.setValue(PART, part)) {
                 return Blocks.AIR.defaultBlockState();
             }
         }
@@ -205,8 +237,8 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
         if (!level.isClientSide && player.isCreative()) {
             BlockPos origin = origin(state, pos);
             Direction facing = state.getValue(FACING);
-            for (int part = 0; part < COLUMNS * ROWS; part++) {
-                BlockPos at = part(origin, facing, part);
+            for (int part = 0; part < parts(state); part++) {
+                BlockPos at = part(origin, facing, part, columns(state));
                 if (!at.equals(pos) && level.getBlockState(at).is(this)) {
                     level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
                 }

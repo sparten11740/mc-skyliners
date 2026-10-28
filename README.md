@@ -1748,6 +1748,18 @@ The paint is only drawn, so no block changes and the zeppelin flies as before. T
 leaves the board off zeppelins built from then on, which keep their paint; one can be crafted from a red, a yellow and
 a blue dye over three dark oak planks.
 
+Just aft of the Livery Board, at eye height on the same wall, hangs a camera display like the airliner's flight deck
+one, but four blocks wide and two tall, showing her outside cameras live: the flyby camera at first, circling the whole
+ship, so whoever repaints her watches the new paint sweep over her, painters' cradles and all. Three buttons along its
+bottom left pick the camera, each a little zeppelin seen from the side with a big dot where its camera is: sky blue
+over her for the flyby camera, orange at the bow and green under the control car. The one shown is lit white with a
+white rim, its name is on the picture's label beside a camera in its colour, and everyone sees the camera picked. The
+flyby camera's picture reaches past the far end of the ship, so none of her is lost in the fog, but beyond your own
+render distance the land is not drawn. Until she first flies the display shows its test card, a zeppelin seen from
+behind, and ASSEMBLE TO FLY beside the green zeppelin. The client's `tailCameraFeed`, `tailCameraFps` and
+`tailCameraResolution` settings apply to it as to the airliner's, and the server config's `cameraDisplay` leaves it
+out of zeppelins built from then on.
+
 Engaged on the ground, it weighs off and rises straight up, a couple of blocks a second at most, its burners roaring up
 until it floats, then a little more; its engines start once it is 15 blocks clear of the ground, and it climbs on to the
 height set, 60 blocks above the ground to start with, where it levels off. It goes no higher than its ceiling, where its
@@ -1854,8 +1866,9 @@ sounds its alarm aboard and blows its airliner up, taking it away through `Sable
 over, stopping those thrown clear where it blew up (`ThrownClear` on their clients), as `Blast` plays the explosion out in particles (`BlastPuffParticle`) and sounds, and `BlastFlash`, `CameraShake`
 and `SelfDestructWarning` show it on screen; `GearBayRenderer` draws a landing gear leg swinging up or down, and its
 doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going up and puts them back coming
-down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras' pictures for the flight deck's
-camera displays through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue
+down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras' pictures, each a `CameraSpot`
+of its airframe, for the flight deck's camera displays and the larger one `ZeppelinCameraDisplay` hangs in a zeppelin's
+control car, through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue
 light at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod
 gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the mixin

@@ -1,13 +1,14 @@
 package dev.aerolarge.block;
 
-import dev.aerolarge.airframe.OutsideCamera;
+import dev.aerolarge.airframe.CameraSpot;
+import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * The buttons along the bottom left of the flight deck's camera screens (see {@link CameraScreen}), one for
- * each outside camera in a row, each a little airliner seen from the side with a dot where its camera is; the one the
- * display shows is lit. Touching one shows its camera. Laid out on the display's face, in blocks from its bottom left
- * corner: the server finds the button touched by the same layout its renderer draws them by.
+ * The buttons along the bottom left of the camera screens (see {@link CameraScreen}), one for each of its airframe's
+ * outside cameras in a row, each a little airliner or zeppelin seen from the side with a dot where its camera is; the
+ * one the display shows is lit. Touching one shows its camera. Laid out on the display's face, in blocks from its
+ * bottom left corner: the server finds the button touched by the same layout its renderer draws them by.
  */
 public final class CameraButtons {
     /** From the face's bottom left corner to the first button's, in blocks: past the bezel, and a margin inside it. */
@@ -20,18 +21,21 @@ public final class CameraButtons {
     private CameraButtons() {
     }
 
-    /** A camera's button's left edge, in blocks from the face's left edge. */
-    public static double left(OutsideCamera camera) {
-        return INSET + camera.ordinal() * (WIDTH + GAP);
+    /** A camera's button's left edge, in blocks from the face's left edge, in the row of its airframe's cameras. */
+    public static double left(CameraSpot camera) {
+        return INSET + camera.alongside().indexOf(camera) * (WIDTH + GAP);
     }
 
-    /** The camera whose button is at a place on the face, in blocks from its bottom left corner; null for none. */
+    /**
+     * The camera among these, one airframe's in order, whose button is at a place on the face, in blocks from its
+     * bottom left corner; null for none.
+     */
     @Nullable
-    public static OutsideCamera at(double across, double up) {
+    public static <T extends CameraSpot> T at(List<T> cameras, double across, double up) {
         if (up < INSET || up > INSET + HEIGHT) {
             return null;
         }
-        for (OutsideCamera camera : OutsideCamera.values()) {
+        for (T camera : cameras) {
             double left = left(camera);
             if (across >= left && across <= left + WIDTH) {
                 return camera;

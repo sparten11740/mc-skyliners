@@ -42,6 +42,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue SKY_DECK_LAUNCH;
     public static final ModConfigSpec.BooleanValue HORN;
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
+    public static final ModConfigSpec.BooleanValue CAMERA_DISPLAY;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -288,6 +289,13 @@ public final class AerolargeConfig {
                 "navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep theirs, and keep their paint."
             )
             .define("liveryBoard", true);
+        CAMERA_DISPLAY = builder
+            .comment(
+                "Whether a zeppelin is built with a camera display over the livery board in her control car, showing her outside",
+                "cameras live as the airliner's flight deck shows its own, the flyby camera circling her at first, so a new paint",
+                "is seen sweeping over her. Zeppelins already built keep theirs."
+            )
+            .define("cameraDisplay", true);
         SHIPS_COLOURS = builder
             .comment(
                 "Whether a zeppelin is built with a flagstaff on its Sky Deck: a banner hoisted at its halyard flies from it as a great",

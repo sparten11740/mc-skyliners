@@ -9,9 +9,10 @@ import net.minecraft.world.phys.Vec3;
  * airliner's frame, held level in it: its place, the way it looks and its up. The airliner carries it as it flies; see
  * {@link #view} for where it is in the world as the airliner is drawn. One that circles the ship circles its place in
  * the world, so far out and so far above it, once in so many ticks of the view's own clock, looking at it, round and
- * round without a break.
+ * round without a break; and it knows how far from it the far end of the ship can be, in blocks: out to the place it
+ * circles, amidships, and on past it as far as her nose is from it (nothing, for a fixed camera).
  */
-record CameraMount(Vec3 point, Vec3 forward, Vec3 up, double orbitRadius, double orbitRise, double orbitTicks) {
+record CameraMount(Vec3 point, Vec3 forward, Vec3 up, double orbitRadius, double orbitRise, double orbitTicks, double farthest) {
     /** The camera fixed to the airliner with this frame, built at this many blocks a metre. */
     static CameraMount on(SableClient.Frame frame, double scale, CameraSpot camera) {
         Vec3 nose = Vec3.atLowerCornerOf(frame.nose().getNormal());
@@ -24,7 +25,8 @@ record CameraMount(Vec3 point, Vec3 forward, Vec3 up, double orbitRadius, double
         Vec3 level = nose.scale(Math.cos(yaw)).add(starboard.scale(Math.sin(yaw)));
         Vec3 forward = level.scale(Math.cos(pitch)).add(above.scale(Math.sin(pitch)));
         Vec3 up = level.scale(-Math.sin(pitch)).add(above.scale(Math.cos(pitch)));
-        return new CameraMount(point, forward, up, camera.orbitRadius() * scale, camera.orbitRise() * scale, camera.orbitSeconds() * 20);
+        double farthest = camera.orbitRadius() > 0 ? (Math.hypot(camera.orbitRadius(), camera.orbitRise()) + camera.back()) * scale : 0;
+        return new CameraMount(point, forward, up, camera.orbitRadius() * scale, camera.orbitRise() * scale, camera.orbitSeconds() * 20, farthest);
     }
 
     /** The camera in the world as the airliner is drawn at this partial tick; null once no airliner holds it. */

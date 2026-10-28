@@ -4,8 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeClientConfig;
-import dev.aerolarge.AerolargeConfig;
-import dev.aerolarge.airframe.OutsideCamera;
+import dev.aerolarge.airframe.CameraSpot;
 import dev.aerolarge.block.CameraScreen;
 import foundry.veil.api.client.render.VeilLevelPerspectiveRenderer;
 import foundry.veil.api.client.render.framebuffer.AdvancedFbo;
@@ -44,14 +43,15 @@ import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
 /**
- * The live pictures on the flight deck's camera displays (any {@link CameraScreen}: the camera display, and the camera
- * panel of the curved row of screens): the world drawn from one of each assembled airliner's outside cameras (see
- * {@link OutsideCamera}), whichever a display is set to, into a small picture of its own, which every display aboard
- * that airliner set to that camera shows. A picture is drawn only while one of its displays was in view
- * and within {@link #REACH} blocks in the frame before, at most {@code tailCameraFps} times a second and one picture a
- * frame. It reaches as far as the {@code tailCameraRenderDistance} setting or the player's own render distance,
- * whichever is less. Once none of its displays has been seen for a while, the picture is thrown away; with no display
- * about, nothing is drawn or kept.
+ * The live pictures on the camera displays (any {@link CameraScreen}: the flight deck's camera display and the camera
+ * panel of its curved row of screens, and a zeppelin's camera display): the world drawn from one of each assembled
+ * airliner's or zeppelin's outside cameras (see {@link CameraSpot}), whichever a display is set to, into a small
+ * picture of its own, which every display aboard set to that camera shows. A camera that circles the ship circles by a
+ * clock of the picture's own, which stands still while the game is paused. A picture is drawn only while one of its
+ * displays was in view and within {@link #REACH} blocks in the frame before, at most {@code tailCameraFps} times a
+ * second and one picture a frame. It reaches as far as the {@code tailCameraRenderDistance} setting or the player's own
+ * render distance, whichever is less; a camera circling a zeppelin holds its fog off past her far end. Once none of its
+ * displays has been seen for a while, the picture is thrown away; with no display about, nothing is drawn or kept.
  *
  * <p>The picture is drawn before each frame, outside the frame's own drawing of the world, by Veil's perspective
  * renderer. Veil comes inside Sable's jar, so it is there whenever an airliner can be assembled, and it is made for
@@ -95,6 +95,11 @@ public final class TailCameraFeed {
      * ({@link GameRenderer#getDepthFar}): well past the fog, so nothing short of the fog is cut off.
      */
     private static final float FAR = 4;
+    /**
+     * How far past the far end of the ship the fog of a camera circling her ends, in blocks: fog thickens over the last
+     * tenth of its reach, at most 64 blocks, so all of her stands clear of it.
+     */
+    private static final double FOG_MARGIN = 64;
 
     private static final Map<Key, Feed> FEEDS = new HashMap<>();
     /** Counts the frames, so a display seen in one frame is drawn for in the next. */
@@ -115,8 +120,8 @@ public final class TailCameraFeed {
     private TailCameraFeed() {
     }
 
-    /** A picture is an airliner's from one of its cameras. */
-    private record Key(UUID airliner, OutsideCamera camera) {
+    /** A picture is an airliner's or a zeppelin's from one of its cameras. */
+    private record Key(UUID airliner, CameraSpot camera) {
     }
 
     /**
@@ -125,7 +130,7 @@ public final class TailCameraFeed {
      * {@link Util#getMillis} and compared by difference.
      */
     private static final class Feed {
-        final OutsideCamera camera;
+        final CameraSpot camera;
         final ResourceLocation texture;
         @Nullable
         CameraMount mount;
@@ -137,6 +142,8 @@ public final class TailCameraFeed {
         long drawDue;
         /** Whether the picture has been drawn at all, so there is something to show. */
         boolean ready;
+        /** How far a circling camera has come round, in game ticks since the picture was first asked for. */
+        double circled;
 
         Feed(Key key, long now) {
             camera = key.camera();
@@ -182,8 +189,11 @@ public final class TailCameraFeed {
             if (feed.mount == null && now - feed.mountDue >= 0) {
                 feed.mountDue = now + RETRY_AFTER;
                 SableClient.Frame airlinerFrame = SableClient.frame(screen);
-                // The server's settings, the airliner's scale among them, reach the client as it joins.
-                feed.mount = airlinerFrame != null ? CameraMount.on(airlinerFrame, AerolargeConfig.SCALE.get(), feed.camera) : null;
+                // An airliner's scale is the server's setting, which reaches the client as it joins; a zeppelin's is
+                // her size's.
+                feed.mount = airlinerFrame != null
+                    ? CameraMount.on(airlinerFrame, CameraSpot.scale(airlinerFrame.craft(), airlinerFrame.size()), feed.camera)
+                    : null;
             }
         }
         return feed != null && feed.ready ? feed.texture : null;
@@ -265,7 +275,9 @@ public final class TailCameraFeed {
             return;
         }
         Feed due = null;
+        float ticks = event.getPartialTick().getGameTimeDeltaTicks();
         for (Feed feed : FEEDS.values()) {
+            feed.circled += ticks;
             if (feed.mount != null && feed.seenFrame >= frame - 1 && now - feed.drawDue >= 0 && (due == null || feed.drawDue - due.drawDue < 0)) {
                 due = feed;
             }
@@ -280,7 +292,7 @@ public final class TailCameraFeed {
         LevelRenderer levelRenderer = minecraft.levelRenderer;
         SectionRenderDispatcher sections = levelRenderer.getSectionRenderDispatcher();
         // The partial tick Sable draws the airliners with.
-        SableClient.View view = feed.mount.view(deltaTracker.getGameTimeDeltaPartialTick(false));
+        SableClient.View view = feed.mount.view(deltaTracker.getGameTimeDeltaPartialTick(false), feed.circled);
         if (sections == null || view == null) {
             return;
         }
@@ -309,9 +321,12 @@ public final class TailCameraFeed {
             gameRenderer.setPanoramicMode(true);
             // As far as the setting asks, but never past the player's own render distance: only that much of the world
             // is loaded and built round the player. Veil draws with it as the game's render distance, so the world's
-            // own fog closes in at the edge of the picture, as it does at the edge of the player's view.
-            float renderDistance = Math.min(minecraft.options.getEffectiveRenderDistance(),
-                AerolargeClientConfig.TAIL_CAMERA_RENDER_DISTANCE.get());
+            // own fog closes in at the edge of the picture, as it does at the edge of the player's view. A camera
+            // circling a zeppelin stands so far out that the fog would hide most of her: its fog reaches past her far
+            // end, while Veil still draws no more of the world than is built round the player, so beyond that the
+            // land is not there.
+            float settled = Math.min(minecraft.options.getEffectiveRenderDistance(), AerolargeClientConfig.TAIL_CAMERA_RENDER_DISTANCE.get());
+            float renderDistance = feed.mount.farthest() > 0 ? Math.max(settled, (float) ((feed.mount.farthest() + FOG_MARGIN) / 16)) : settled;
             Target target = feed.target;
             SableClient.withoutWaterOcclusion(() -> target.draw(lens, view, feed.camera, renderDistance, deltaTracker));
             feed.ready = true;
@@ -351,8 +366,8 @@ public final class TailCameraFeed {
      * The vertical field of view of a picture of this width over its height, in radians: as wide as the camera's lens on
      * a 16:9 screen.
      */
-    private static float fieldOfView(double aspect, OutsideCamera camera) {
-        double halfWidth = Math.tan(Math.toRadians(camera.fov) / 2) * LENS_ASPECT;
+    private static float fieldOfView(double aspect, CameraSpot camera) {
+        double halfWidth = Math.tan(Math.toRadians(camera.fov()) / 2) * LENS_ASPECT;
         return (float) (2 * Math.atan(halfWidth / aspect));
     }
 
@@ -379,7 +394,7 @@ public final class TailCameraFeed {
          * picture opaque: the world's drawing leaves the sky's alpha clear, and the displays draw the picture blended
          * by its alpha, which would let the screen behind show through the sky.
          */
-        void draw(Entity lens, SableClient.View view, OutsideCamera camera, float renderDistance, DeltaTracker deltaTracker) {
+        void draw(Entity lens, SableClient.View view, CameraSpot camera, float renderDistance, DeltaTracker deltaTracker) {
             Vector3f forward = view.forward().toVector3f().normalize();
             Vector3f up = view.up().toVector3f();
             up.sub(new Vector3f(forward).mul(up.dot(forward))).normalize();
