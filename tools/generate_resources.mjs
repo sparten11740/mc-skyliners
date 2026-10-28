@@ -6708,6 +6708,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.discoLights": "Disco Ball Spots",
   "aerolarge.configuration.cloudlessCabin": "Cloudless Cabin",
   "aerolarge.configuration.spaceSky": "Space Sky",
+  "aerolarge.configuration.shootingStars": "Shooting Stars",
   "aerolarge.configuration.burnerSmoke": "Burner Smoke",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
   "message.aerolarge.autopilot.coming_down": "Coming down here, straight down to the ground",

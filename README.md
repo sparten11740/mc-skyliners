@@ -1914,13 +1914,17 @@ As she climbs, the sky turns to space round her. From y 400 it deepens through d
 by y 1,200; the stars come out from y 500, by day too, and by the edge of space they are all out, more of them than a
 night shows from the ground; the sun burns white, with no sunrise in it; the clouds far below fade away between y 500
 and 800, and the rain and snow with them. The land she rose from fades into a hazy blue planet as it falls behind, its
-rim curving away under the horizon under a thin glow of air, dipping further the higher she goes. Her camera display
-shows it as its cameras see it. As she reaches the edge of space on the way up, the cabin chime sounds and her flight
-deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves the sky as
-the game draws it. With the server config's experimental `rocket.lowGravity` on, everyone aboard feels light while she
-is at the edge of space or over it, with a soft rising glide and a puff of sparkles at their feet: a jump rises three
-blocks and hangs nearly two seconds, and a fall of seven blocks does not hurt. Their weight comes back, with the glide
-falling, the moment they leave her, and as she comes back down, once they next stand on something.
+rim curving away under the horizon under a thin glow of air, dipping further the higher she goes. From y 500, where the
+stars are out, a shooting star streaks across the sky every four to ten seconds, a white head with a tail fading to pale
+blue, gone within a second, and one in ten is a bigger green fireball; from the edge of space they burn up below her
+instead, streaking over the planet just under its rim. Space is silent: they make no sound. Everyone aboard sees the
+same ones. Her camera display shows it all as its cameras see it. As she reaches the edge of space on the way up, the
+cabin chime sounds and her flight deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client
+config's `spaceSky` leaves the sky as the game draws it, and `shootingStars` keeps its stars still. With the server
+config's experimental `rocket.lowGravity` on, everyone aboard feels light while she is at the edge of space or over it,
+with a soft rising glide and a puff of sparkles at their feet: a jump rises three blocks and hangs nearly two seconds,
+and a fall of seven blocks does not hurt. Their weight comes back, with the glide falling, the moment they leave her,
+and as she comes back down, once they next stand on something.
 
 Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six
 wheels on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on
@@ -1951,9 +1955,9 @@ its bay's panel, its antenna's tip turning from red to green.
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
-rocket's `spaceSky`, and the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open
-only while a world is loaded, from the pause menu's Mods button while playing in single player; they are kept in
-`config/aerolarge-server.toml`, on a dedicated server in its own.
+rocket's `spaceSky` and `shootingStars`, and the hot air burners' `burnerSmoke`) are there from the title screen. The
+server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
+they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
 into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a
@@ -2096,8 +2100,9 @@ on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `Lif
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
 `LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
 round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
-planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; `EdgeOfSpace` holds the height space
-begins at, and welcomes everyone aboard to space as she climbs past it; `SpaceGravity` makes them light up there.
+planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; last of space it has `ShootingStars`
+draw the shooting star of the moment, each worked out from the game's time alone so every client sees the same one;
+`EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she climbs past it; `SpaceGravity` makes them light up there.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

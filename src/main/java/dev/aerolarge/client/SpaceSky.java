@@ -46,16 +46,18 @@ import org.joml.Vector3f;
  * <p>NeoForge has no event for the sky's colour, and taking over the overworld's sky would fight any other mod that
  * does, so space is drawn over the game's own sky, right after it ({@code AFTER_SKY}): a dome round the camera, as
  * opaque as the height calls for and in the colour of the sky there; the stars, the sun and the moon over it, since it
- * hides the game's own; then the planet under the rim and the glow along it. The land fades into the fog's colour at
- * the edge of the world drawn, and the fog takes the planet's colour (see {@link #fog}), so the land meets the planet
- * without a seam. The clouds fade through the colour the game draws them in, set just before it draws them and put back
- * once the weather is drawn; gone, they are left out altogether by the cabin's hold on them (see
+ * hides the game's own; then the planet under the rim and the glow along it, and last, now and then, a shooting star
+ * (see {@link ShootingStars}), over the planet when it burns up below the camera. The land fades into the fog's colour
+ * at the edge of the world drawn, and the fog takes the planet's colour (see {@link #fog}), so the land meets the
+ * planet without a seam. The clouds fade through the colour the game draws them in, set just before it draws them and
+ * put back once the weather is drawn; gone, they are left out altogether by the cabin's hold on them (see
  * {@link CloudlessCabin}).
  *
  * <p>All of it goes by the camera each drawing of the world is from, not by the player, so a camera display's picture
  * (see {@link TailCameraFeed}) shows space as its camera sees it. Only in a world with the overworld's sky, never with
  * the camera in water, lava or powder snow, blinded, in a boss's fog, or with the {@code spaceSky} setting off. Under y
- * 400 nothing is drawn or changed; over it, six small draws a frame, the dome and the stars kept on the graphics card.
+ * 400 nothing is drawn or changed; over it, six small draws a frame, the dome and the stars kept on the graphics card,
+ * and a seventh while a shooting star streaks.
  */
 public final class SpaceSky {
     /** How high the camera must be for anything of space to show, in world blocks: under it, the sky is the game's. */
@@ -190,11 +192,13 @@ public final class SpaceSky {
         RenderSystem.enableBlend();
         Matrix4f pose = event.getModelViewMatrix();
         Matrix4f projection = event.getProjectionMatrix();
+        float starlight = Math.max(STARS_BRIGHTEST * ramp(height, STARS_FROM, STARS_OUT), level.getStarBrightness(partialTick));
         drawDome(pose, projection, skyAt(height).scale(day), opacity);
-        drawHeavens(pose, projection, level, partialTick, height, opacity);
+        drawHeavens(pose, projection, level, partialTick, starlight, opacity);
         double dip = Math.min(DIP_MOST, DIP_FROM + (height - SPACE_FROM) * DIP_A_BLOCK);
         drawPlanet(pose, dip, planetRed, planetGreen, planetBlue);
         drawGlow(pose, dip, Math.max(day, GLOW_NIGHT), opacity);
+        ShootingStars.draw(pose, level, partialTick, height, dip, starsShown(starlight, opacity));
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
@@ -290,7 +294,7 @@ public final class SpaceSky {
     }
 
     /** How far a height is from one to another, as a share, eased in and out. */
-    private static float ramp(double height, double from, double to) {
+    static float ramp(double height, double from, double to) {
         float along = (float) Mth.clamp((height - from) / (to - from), 0, 1);
         return along * along * (3 - 2 * along);
     }
@@ -320,9 +324,10 @@ public final class SpaceSky {
 
     /**
      * The stars, the sun and the moon, turned with the time of day as the game turns its own and added to the sky
-     * behind them as it adds its own, the stars as bright as the height or the night makes them.
+     * behind them as it adds its own, the stars as bright as the height or the night makes them (given, on the scale
+     * the game's stars are set by).
      */
-    private static void drawHeavens(Matrix4f view, Matrix4f projection, ClientLevel level, float partialTick, double height, float opacity) {
+    private static void drawHeavens(Matrix4f view, Matrix4f projection, ClientLevel level, float partialTick, float starlight, float opacity) {
         PoseStack pose = new PoseStack();
         pose.mulPose(view);
         pose.mulPose(Axis.YP.rotationDegrees(-90.0F));
@@ -330,10 +335,19 @@ public final class SpaceSky {
         Matrix4f turned = pose.last().pose();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ZERO);
-        float starlight = Math.max(STARS_BRIGHTEST * ramp(height, STARS_FROM, STARS_OUT), level.getStarBrightness(partialTick));
         drawStars(turned, projection, starlight, opacity);
         drawSun(turned, opacity);
         drawMoon(turned, level.getMoonPhase(), opacity);
+    }
+
+    /**
+     * How bright the stars show, as a share of their brightest, from 0 to 1: as bright as given, on the scale the
+     * game's own are, in a colour as bright as that and as opaque again, fading in with the dome (see
+     * {@link #drawStars}).
+     */
+    private static float starsShown(float light, float opacity) {
+        float share = light / STARS_BRIGHTEST;
+        return share * share * opacity;
     }
 
     /** The stars, as bright as given, on the scale the game's own are, fading in with the dome. */

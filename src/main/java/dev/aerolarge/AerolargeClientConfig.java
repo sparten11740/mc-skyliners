@@ -18,6 +18,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue FLOODLIGHT_LIGHT;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
     public static final ModConfigSpec.BooleanValue SPACE_SKY;
+    public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -86,6 +87,11 @@ public final class AerolargeClientConfig {
                 "y 1,200, the stars come out by day too, the sun burns white, the clouds below fade away and the land fades into a",
                 "blue planet curving away under a glow of air. Off, the sky up there is the game's own.")
             .define("spaceSky", true);
+        SHOOTING_STARS = builder
+            .comment("In the space sky (see spaceSky), from y 500 up, a shooting star every four to ten seconds, as bright as the stars",
+                "are there: across the sky overhead, and from the edge of space, at y 1,000, over the planet just under its rim,",
+                "where they burn up below you; one in ten is a bigger green fireball. Off, the stars there keep still.")
+            .define("shootingStars", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")
