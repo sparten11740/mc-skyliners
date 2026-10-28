@@ -34,6 +34,12 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N17 | 23:10 | Posters | A poster block (FACING × COLUMN × ROW × poster), thin, no collision, assembled with her, broken as one. Four: solar system 6×2, black hole 4×3 (Jan's Kurzgesagt-style request, original artwork), quasar 3×4 upright, Earthrise 4×3 with the rocket | Paintings are entities and would be left behind at assembly; blocks are deterministic | Panel |
 | N18 | 23:10 | Rocket sound and voice | Ignition, an engine loop following thrust, cut-off, side-jet puffs, a countdown voice over the radio, touchdown; "Welcome to space" | Visual and audio designer | Panel |
 | N19 | 23:12 | Ninth story | Nine stories at scale 2, one for each room; the tall top story split | Each planned room needs a floor | Lead |
+| N20 | 23:40 | Room layout rule | Furniture placed by distance out and angle round, so rooms come out round at every scale; every room keeps clear the shaft and a walkway round it, the way out to the front, the windows' fronts and a ring along the skin (for walking round and for the LED strips); what does not fit is left out | One rule for seven rooms, and room for the LED agent's strips without coordinating cell by cell | Lead |
+| N21 | 23:48 | Greenhouse | Moss beds, ferns, flowers, bamboo, two cherry and two azalea trees, glow berry vines, rather than the airliner's planters | Seen in game: little planters in a 12-row room looked bare from above and at eye level | Lead |
+| N22 | 23:48 | Swimming pool | A C-shaped channel two deep round her back, its bottom glass hanging into the greenhouse's ceiling; deck with bean bags at the front | A ring round the shaft leaves no deck at scale 2; the glass bottom gives the greenhouse a look up at the swimmers | Lead |
+| N23 | 23:49 | Observation deck windows | A band of smoked glass all round (rows 1–5) in place of its oval windows | An observation deck should see the whole horizon; seen in game from y 1,400 it shows the planet's rim all round | Lead |
+| N24 | 23:58 | Ceiling setting's name | `rocket.ceiling` (the space agent's `rocketCeiling`), beside `rocket.lift`, `rocket.rooms`, `rocket.posters`, `rocket.ledStrips` | One section, short names | Lead |
+| N25 | 00:00 | Order of pieces | Rooms, then posters, then LED strips last | The strips fill in round whatever else stands; the posters need the shaft's back clear | Lead |
 
 ## Work done
 
@@ -48,6 +54,14 @@ Commits on main, newest last, with the versions handed out.
   the car, its hum and chimes; parked open in flight. Play-tested: up and down the whole shaft (entry to cockpit), the
   doorway boarding (no drop), riders' feet on the floor, set down at each landing's exit, getting off between floors
   refused, the chime and door sounds, parked open at the cockpit through a hop with the car carried in her plot.
+- alpha.166: her oval windows turn with her when she is built facing another way (the posters agent spotted it); her
+  stories furnished (N20–N23); space (N12: her ceiling at y 1,400, the space sky, the welcome); the LED strips (N13);
+  the space posters (N17), also placeable by hand. Play-tested at scale 2 in a fresh rocket: every room from above and
+  at eye level; the four posters; the LED strips on every story, a panel's swatch turning the observation deck's strips
+  pink with a chime; a flight to y 1,400 and back from the observation deck (clouds at 450, the planet's rim and stars
+  at 800, near-black at 1,050, space at 1,400; the welcome heard once on the way up); assembly leaves no block
+  behind. Not tried yet: the cockpit's LED console, the other modes, posters placed and broken by hand, rooms at
+  scales other than 2, the rotated rocket's rooms.
 
 ## Background agents
 
@@ -56,7 +70,11 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 
 - Posters (N17), LED strips (N13), going to space (N12), the rover (N14, N15): from 23:15.
 - The lab with its tardigrade (N16), the rocket's sound and voice (N18): from 23:35.
+- Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58.
 
 ## For Jan to look at
 
-- Nothing yet.
+- N14: the rover lowered on a winch rope from a platform at the cargo bay door, not down a ramp.
+- N23: the observation deck's band of smoked glass in place of its oval windows.
+- The side jets switch on and off several times a second in a hover (heard as thruster start and stop sounds at
+  volume 0 in the sound log); it has not been looked into.
