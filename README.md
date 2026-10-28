@@ -1781,10 +1781,10 @@ telegraph rings for the port engines, on its red plate; they fly a zeppelin only
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
-`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, and `cloudlessCabin`)
-are there from the title screen. The server settings open only while a world is loaded, from the pause menu's Mods
-button while playing in single player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its
-own.
+`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, and
+the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open only while a world is
+loaded, from the pause menu's Mods button while playing in single player; they are kept in
+`config/aerolarge-server.toml`, on a dedicated server in its own.
 
 ## Building
 
