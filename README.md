@@ -1641,8 +1641,8 @@ lock it down with a hiss of their rams and a thunk, their jaws raised and their 
 she flies, turns or climbs, and every two seconds its tanks are topped up with the fuel they hold (whatever the modpack
 counts as fuel, and water for steam engines) and its batteries filled, with a gurgle. A plane heavier than a tenth of
 her is refused with a low note. Pull the release lever down, with a hiss, and every clamp opens and stays open so the
-plane can take off; push it back up and they lock the next plane that rests there. Locked planes stay locked through a
-save. Off, the decks already built hold nothing.
+plane can take off; push it back up and they lock the next plane that rests there (before her first flight it only gives
+a low note). Locked planes stay locked through a save. Off, the decks already built hold nothing.
 
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
 blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she

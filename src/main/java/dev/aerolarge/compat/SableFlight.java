@@ -193,7 +193,8 @@ public final class SableFlight {
     /**
      * Another of Sable's flying bodies, a player's plane, resting on an assembled airframe round a block of it: one
      * reaching into the space over the block's top, so many blocks across either way and so many up, its middle over
-     * the block's top, moving at no more than so many blocks a second against the airframe; its id, or null for none.
+     * the block's top, moving at no more than so many blocks a second against the airframe, the heaviest of them; its
+     * id, or null for none.
      */
     @Nullable
     public static UUID restingOver(BlockEntity blockEntity, double across, double up, double still) {
@@ -616,12 +617,18 @@ public final class SableFlight {
             Vec3 top = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 0.5, 0);
             Vec3 low = own.logicalPose().transformPosition(top.add(-across, 0, -across));
             Vec3 high = own.logicalPose().transformPosition(top.add(across, up, across));
+            // The heaviest: a plane's wheels are bodies of their own, resting there with it.
+            SubLevel heaviest = null;
             for (SubLevel other : Sable.HELPER.getAllIntersecting(level, new BoundingBox3d(low, high))) {
-                if (other != own && restingOn(level, own, other, top.y, still)) {
-                    return other.getUniqueId();
+                if (other != own && restingOn(level, own, other, top.y, still) && (heaviest == null || mass(other) > mass(heaviest))) {
+                    heaviest = other;
                 }
             }
-            return null;
+            return heaviest == null ? null : heaviest.getUniqueId();
+        }
+
+        private static double mass(SubLevel body) {
+            return body instanceof ServerSubLevel server ? server.getMassTracker().getMass() : 0;
         }
 
         /** Whether a body's middle is over a height among an airframe's blocks, and it moves with the airframe. */

@@ -26,8 +26,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The flight deck's release lever at its forward corner: a yellow-and-black lever on an iron stand. Up, the deck's
  * clamps lock down any plane come to rest on it (see {@link DeckClampBlockEntity}); used, it goes down with a hiss and
- * every clamp of the zeppelin opens and stays open, so a plane can take off; used again, it goes back up. RELEASED is
- * whether it is down; FACING is the way whoever works it looks.
+ * every clamp of the zeppelin opens and stays open, so a plane can take off; used again, it goes back up. Before she
+ * first flies it only gives a low note. RELEASED is whether it is down; FACING is the way whoever works it looks.
  */
 public class CarrierLeverBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<CarrierLeverBlock> CODEC = simpleCodec(CarrierLeverBlock::new);
@@ -62,7 +62,10 @@ public class CarrierLeverBlock extends HorizontalDirectionalBlock {
     /** Down or back up, with a click and, going down, the hiss of the clamps' rams letting go. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel server) {
+        if (level instanceof ServerLevel server && SableFlight.bodyAt(level, pos) == null) {
+            // Standing parked as blocks, she has no clamps to work yet: the lever stays as it is.
+            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
+        } else if (level instanceof ServerLevel server) {
             boolean down = !state.getValue(RELEASED);
             level.setBlock(pos, state.setValue(RELEASED, down), Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6F, down ? 0.6F : 0.8F);
