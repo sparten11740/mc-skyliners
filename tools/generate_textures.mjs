@@ -23,7 +23,7 @@ const BLUE_RIVET = [0x2b, 0x52, 0xa8];
 const GLASS = [0x2a, 0x3c, 0x55, 0xb0];
 const GLASS_SHINE = [0x8f, 0xb4, 0xd6, 0xc8];
 const COCKPIT_GLASS = [0x5e, 0x80, 0x9c, 0x80];
-const SMOKED_GLASS = [0x10, 0x12, 0x14, 0xa8];
+const SMOKED_GLASS = [0x10, 0x12, 0x14, 0x70];
 const FRAME_DARK = [0x3a, 0x40, 0x48];
 const CARPET = [0x5a, 0x63, 0x73];
 const CARPET_DARK = [0x4b, 0x53, 0x62];
@@ -168,7 +168,8 @@ texture(blockOutput, "cockpit_window", (x, y) => {
 texture(blockOutput, "cockpit_glass", () => COCKPIT_GLASS);
 
 // The rocket's smoked glass round her cockpit: an even near-black grey, darker than the windscreen's blue but clear
-// enough to see out of by day, so it looks the same however many panes a look passes through.
+// enough to see out of by day. Each of its faces is drawn, so a look passes through two of them as through any glass:
+// together they are about as dark as one pane of the windscreen's tint at 0xA8.
 texture(blockOutput, "smoked_glass", () => SMOKED_GLASS);
 
 // Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.

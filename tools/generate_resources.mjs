@@ -376,7 +376,7 @@ for (const [name, skin, renderType, part, singlePane, tinted] of [
   ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
   ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
   ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
-  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", true, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", false, false],
   ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });

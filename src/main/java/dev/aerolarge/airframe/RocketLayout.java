@@ -303,10 +303,7 @@ public final class RocketLayout implements Layout {
         }
     }
 
-    /**
-     * What the skin is made of at a row: smoked glass round the cockpit, cut to the nose's curve and drawn as one pane
-     * however thick it runs, as the airliner's windscreen is, the cover elsewhere.
-     */
+    /** What the skin is made of at a row: smoked glass round the cockpit, cut to the nose's curve, the cover elsewhere. */
     private BlockState skinAt(int y) {
         return y > noseFoot && y <= noseFoot + COCKPIT_GLASS ? AerolargeRegistry.SMOKED_GLASS.get().defaultBlockState()
             : AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState();
