@@ -3609,15 +3609,34 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "zeppelin_skin", (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED))), 3);
   // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall, one texture for each block of it
   // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
-  // polished steel rim, set in the cover's weave, a glint across its upper left. Clear, the glass is nearly clear to
-  // look out of; dimmed, the glass alone darkens a step at a time to a deep smoked blue, its frame left as it is. The
-  // oval's size is OvalWindowModel's, which bulges it out of the skin.
+  // polished steel rim, set in the cover's weave. The glass is a dome (see OvalWindowModel, whose oval this is): clear
+  // in its middle to look out of, it catches more of the sky toward its edge, where it turns away, and a soft
+  // highlight sits high on its upper left, as on a bubble. Dimmed, the glass alone darkens a step at a time to a deep
+  // smoked blue, its frame left as it is. Inside, the weave runs round an oval hole the dome is seen through, and the
+  // reveal between them is the rim's steel, darkening as it goes in.
   const OVAL_COLUMNS = 3;
   const OVAL_ROWS = 4;
   const OVAL_WIDE = 21;
   const OVAL_TALL = 29;
   const OVAL_RIM = [0xa4, 0xac, 0xb6];
-  const OVAL_DIMS = [[0xa8, 0xcc, 0xe6, 0x48], [0x5e, 0x7c, 0x98, 0x90], [0x2c, 0x3e, 0x56, 0xc8], [0x10, 0x18, 0x26, 0xf4]];
+  const OVAL_DIMS = [[0xa8, 0xcc, 0xe6, 0x40], [0x5e, 0x7c, 0x98, 0x90], [0x2c, 0x3e, 0x56, 0xc8], [0x10, 0x18, 0x26, 0xf0]];
+  // The sky the glass catches toward its edge, and how much of it at the very edge.
+  const OVAL_SKY = [0xdc, 0xec, 0xf8];
+  const OVAL_SKY_EDGE = 0.55;
+  // The dome's shape, as OvalWindowModel bakes it: how far it bulges at its middle, in pixels, and the power its
+  // height falls by toward its foot.
+  const DOME_BULGE = 6;
+  const DOME_PROFILE = 0.6;
+  // The highlight: the sun's glint off the dome, from high on the left in front of it, where the dome faces halfway
+  // between the sun and whoever looks at it, bright at its heart and fainter round it.
+  const SUN = [-0.5, -0.62, 0.6];
+  const GLINT = 0.985;
+  const GLINT_HALO = 0.955;
+  const HIGHLIGHT = [0xf4, 0xfa, 0xff];
+  // Where the hole inside and the reveal round it begin, in pixels outside the oval's edge, the rim's outer edge, and
+  // how wide the steel lip round the hole is, which the reveal's lining runs into.
+  const OVAL_HOLE = 2.4;
+  const HOLE_LIP = 1.5;
   const middleX = (OVAL_COLUMNS * SIZE) / 2;
   const middleY = (OVAL_ROWS * SIZE) / 2;
   // How far a pixel lies outside the oval's edge, in pixels, negative inside: the oval's equation over its slope.
@@ -3628,20 +3647,49 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const slope = 2 * Math.hypot(dx / OVAL_WIDE ** 2, dy / OVAL_TALL ** 2);
     return level / Math.max(slope, 1e-6);
   };
+  const mix = (a, b, share) => a.map((c, i) => Math.round(c + (b[i] - c) * share));
+  const halfway = (() => {
+    const sun = Math.hypot(...SUN);
+    const h = [SUN[0] / sun, SUN[1] / sun, SUN[2] / sun + 1];
+    const length = Math.hypot(...h);
+    return h.map((c) => c / length);
+  })();
+  // How squarely the dome at a pixel faces halfway between the sun and the eye: 1 where the glint is brightest.
+  const glint = (dx, dy) => {
+    const within = Math.max(1 - (dx / OVAL_WIDE) ** 2 - (dy / OVAL_TALL) ** 2, 0.05);
+    const slope = DOME_BULGE * DOME_PROFILE * within ** (DOME_PROFILE - 1);
+    const normal = [2 * slope * dx / OVAL_WIDE ** 2, 2 * slope * dy / OVAL_TALL ** 2, 1];
+    const length = Math.hypot(...normal);
+    return normal.reduce((sum, c, i) => sum + (c / length) * halfway[i], 0);
+  };
+  const domeGlass = (x, y, tint) => {
+    const across = (x + 0.5 - middleX) / OVAL_WIDE;
+    const down = (y + 0.5 - middleY) / OVAL_TALL;
+    const facing = glint(x + 0.5 - middleX, y + 0.5 - middleY);
+    if (facing > GLINT_HALO) return [...HIGHLIGHT, facing > GLINT ? 0xd8 : 0x88];
+    const edge = Math.min(1, across ** 2 + down ** 2) ** 2;
+    const [r, g, b, a] = tint;
+    return [...mix([r, g, b], OVAL_SKY, edge * OVAL_SKY_EDGE), Math.round(a + (0xe0 - a) * edge * OVAL_SKY_EDGE)];
+  };
   const ovalWindow = (x, y, tint) => {
     const out = outsideOval(x, y);
-    if (out > 2.4) return fabric(x % SIZE, y % SIZE);
+    if (out > OVAL_HOLE) return fabric(x % SIZE, y % SIZE);
     if (out > 1.0) return OVAL_RIM;
     if (out > -0.4) return FRAME_DARK;
-    const glint = x + y - (middleX + middleY) * 0.55;
-    return glint >= 0 && glint < 3 && x < middleX && y < middleY ? GLASS_SHINE : tint;
+    return domeGlass(x, y, tint);
   };
   for (let column = 0; column < OVAL_COLUMNS; column++) {
     for (let row = 0; row < OVAL_ROWS; row++) {
       OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `oval_window_${column}_${row}_dim${dim}`,
         (x, y) => ovalWindow(column * SIZE + x, row * SIZE + y, tint), 3));
+      texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => {
+        const out = outsideOval(column * SIZE + x, row * SIZE + y);
+        if (out > OVAL_HOLE + HOLE_LIP) return fabric(x, y);
+        return out > OVAL_HOLE ? OVAL_RIM : [0, 0, 0, 0];
+      }, 3);
     }
   }
+  texture(blockOutput, "oval_window_reveal", (x, y) => mix(OVAL_RIM, FRAME_DARK, (y / (SIZE - 1)) * 0.6), 2);
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
   // LiveryBoardBlock lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with
   // its white fins, midnight blue with gold stars), each where LiveryBoardRenderer frames the one the zeppelin wears.

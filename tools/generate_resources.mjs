@@ -3423,8 +3423,9 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   cubes.cabin_window_shell = null;
 }
 // The rocket's oval window (see OvalWindowBlock): each block of it at each step of its dimming, the inner half of its
-// block bulging out over the oval, baked by the mod's own "oval_window" loader (see OvalWindowModel), its edges the
-// cover's weave where they meet the skin. Modelled looking north, turned for the other ways. It gives back glass.
+// block, its glass a dome over the oval in a recess lined with steel, baked by the mod's own "oval_window" loader (see
+// OvalWindowModel), its edges the cover's weave where they meet the skin. Modelled looking north, turned for the other
+// ways. It gives back glass.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_fabric`;
@@ -3434,7 +3435,8 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
         const name = `oval_window_${column}_${row}_dim${dim}`;
         const glass = `${ID}:block/${name}`;
         write(`assets/${ID}/models/block/${name}.json`, {
-          loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row, textures: { glass, edge, particle: glass },
+          loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row,
+          textures: { glass, inside: `${ID}:block/oval_window_${column}_${row}_inside`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass },
         });
         for (const [facing, y] of Object.entries(yRot)) {
           variants[`column=${column},dim=${dim},facing=${facing},row=${row}`] = { model: `${ID}:block/${name}`, y };

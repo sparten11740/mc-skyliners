@@ -5,6 +5,8 @@
   "row": 0,
   "textures": {
     "glass": "aerolarge:block/oval_window_2_0_dim3",
+    "inside": "aerolarge:block/oval_window_2_0_inside",
+    "reveal": "aerolarge:block/oval_window_reveal",
     "edge": "aerolarge:block/zeppelin_fabric",
     "particle": "aerolarge:block/oval_window_2_0_dim3"
   }

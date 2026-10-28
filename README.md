@@ -1811,8 +1811,9 @@ near the nose and near the bottom, that hold it upright. Its fins are its legs; 
 chrome ladder up a column beside the door, climbs to a step in front of the doorway. Inside, over an engine room,
 stories stand one above another round a glass lift shaft up the middle, a doorway into the shaft on each and a big
 oval window out to each side and the back (and the front, but on the entry story, where the door is), and the cockpit
-sits in the glass of the nose, the autopilot's control head facing the front between two flight displays. The windows
-bulge a little out of the skin, and their glass dims electrically: use one to darken its glass a step, from clear
+sits in the glass of the nose, the autopilot's control head facing the front between two flight displays. The windows'
+glass bulges out of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel; it dims
+electrically: use one to darken its glass a step, from clear
 through light and medium to dark, and once more to clear it again, a chime falling as it darkens.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
