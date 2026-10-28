@@ -92,6 +92,12 @@ public final class RocketPilot {
     private static final double TILT_DAMPING = 6;
     /** How strong a signal drives an engine or a jet at most. */
     private static final int FULL = 15;
+    /**
+     * How far the signal asked of its engines together must move from the one they were set to before they are set
+     * anew, in steps. Rounded afresh each tick, a cruise's thrust wobbling between two steps would set an engine back
+     * and forth several times a second, and each change of a thruster is sent to every client.
+     */
+    private static final double SIGNAL_HOLD = 0.75;
     /** How much one creative thruster pushes at the configured setting 99 and full signal, in Sable's units. */
     private static final double THRUSTER_PUSH = 10_000;
 
@@ -173,6 +179,8 @@ public final class RocketPilot {
     /** What it last set, for its report: the share of full thrust, each jet's signal and the climb it wanted. */
     private double lastShare;
     private final int[] jetSignals = new int[8];
+    /** The signal its engines were last set to together. */
+    private int lastTotal;
     private double lastClimb;
 
     void configure(List<List<BlockPos>> bells, Jets top, Jets bottom) {
@@ -374,7 +382,8 @@ public final class RocketPilot {
     /** Every engine at the share of full thrust given, the signals spread so their sum gives it as nearly as it can. */
     private void engines(ServerLevel level, BlockPos origin, double share) {
         lastShare = Mth.clamp(share, 0, 1);
-        int total = (int) Math.round(lastShare * FULL * engines);
+        int total = held(lastShare * FULL * engines, lastTotal);
+        lastTotal = total;
         int each = total / Math.max(1, engines);
         int engine = 0;
         for (List<BlockPos> bell : bells) {
@@ -417,6 +426,11 @@ public final class RocketPilot {
     /** The signal a push asks of a jet: as strong as the push, up to full. */
     private static int signal(double push) {
         return (int) Math.round(Mth.clamp(Math.abs(push), 0, FULL));
+    }
+
+    /** The signal asked for, held at the one set last until it moves {@link #SIGNAL_HOLD} from it, then the nearest. */
+    private static int held(double wanted, int last) {
+        return Math.abs(wanted - last) < SIGNAL_HOLD ? last : (int) Math.round(wanted);
     }
 
     Report report() {
@@ -467,6 +481,7 @@ public final class RocketPilot {
         settled = 0;
         lastShare = 0;
         lastClimb = 0;
+        lastTotal = 0;
         Arrays.fill(jetSignals, 0);
     }
 
