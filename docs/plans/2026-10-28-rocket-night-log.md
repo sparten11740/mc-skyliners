@@ -70,7 +70,11 @@ Commits on main, newest last, with the versions handed out.
   launch control counting her down over the radio (N26–N28). Play-tested: the take-off announcement, then "ten" to
   "one" a second apart and "lift-off!", the ignition and the aboard rumble; a cruise at y 1,400 (no jet puffs, the jets
   staying under signal 3); the landing announcement, "Touchdown.", the thunk and cut-off, the arrival announcement and
-  the lift's doors opening. Not heard from the ground outside her yet (the roar's place as she flies).
+  the lift's doors opening. From the ground 55 blocks off, the roar rises with her (logged 29, 110, 176 blocks up).
+  Also seen on alpha.167: the cockpit's LED console (with all chosen, a swatch repaints every story, with a chime); a
+  poster put up by hand on a wall and broken in survival (the whole poster comes down, one comes back); the rooms at
+  scale 3 (all there, their middles emptier) and built facing east; a scale-1 rocket (four stories, the panels by the
+  shaft, no room furniture, as it does not fit).
 
 ## Background agents
 
