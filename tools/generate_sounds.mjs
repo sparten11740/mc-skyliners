@@ -1909,6 +1909,124 @@ const blastNoise = (() => {
   writeSound("space_heavy", glide(880, 440), 0.5);
 }
 
+// The lift's music, played in the car as it rides (see the client's LiftSounds), with a random sequence of its own so
+// the sounds above are unchanged: sixteen seconds of bossa nova at 120 beats a minute in F, eight bars of Fmaj7, Dm9,
+// Gm7 and C9 played twice round, looped for as long as a ride lasts. An electric piano, each key a sine with the bell
+// partial of its struck tine ringing over it for a moment, comps the chords on the bossa's clave and plays the tune
+// over them, its hook in the first bar and a half, since a hop of one floor lasts under three seconds; a plucked sine
+// bass steps between each chord's root and fifth, long then short, as bossa basses do; and a soft shaker ticks the
+// eighths, the offbeats a little harder. The players lay back a few milliseconds behind the beat and never quite strike
+// two notes alike. Every note is written round the loop and has stopped before its end, and the piano's tremolo turns a
+// whole number of times in it, so it plays on without a seam, and each ride's music starts from silence on the hook.
+{
+  const bossa = ownRandom(0x426f7373);
+  const beat = 60 / 120;
+  const length = Math.round(8 * 4 * beat * RATE);
+  const piano = new Float64Array(length);
+  const band = new Float64Array(length);
+  // How hard each part plays: a key of the tune, a key of a chord, a string of the bass and a shake of the shaker.
+  const [tuneTouch, chordTouch, bassTouch, shakerTouch] = [0.3, 0.12, 0.36, 0.15];
+  // The piano's tremolo, in turns a second (72 round the loop) and as a share of its loudness.
+  const [tremoloRate, tremoloDepth] = [4.5, 0.12];
+  // How hard the mix is driven into a soft tape-like saturation, which rounds off only its rare loudest peaks.
+  const drive = 0.9;
+  // Writes a voice into a track from a beat on for so many seconds, wrapping round from the loop's end to its head.
+  const add = (track, at, seconds, voice) => {
+    const from = Math.round(at * beat * RATE);
+    for (let i = 0; i < Math.round(seconds * RATE); i++) {
+      track[(from + i) % length] += voice(i / RATE);
+    }
+  };
+  const hertz = (note) => 440 * 2 ** ((note - 69) / 12);
+  // How late a player plays a note, in beats, up to so many: never early, so nothing struck on the loop's first beat
+  // sounds before it.
+  const late = (beats) => bossa() * beats;
+  // How hard a player strikes a note, as a share of the part's touch: a little different every time.
+  const touch = (part) => part * (0.88 + 0.24 * bossa());
+  // A key of the electric piano, a MIDI note held from a beat for so many beats and let go over 80 milliseconds: a
+  // sine dying slowly away, warmed by its pickup's octave for a moment, and the bell partial of its tine's second mode,
+  // 6.27 times its pitch, ringing over it for the first few hundredths of a second.
+  const key = (at, beats, note, level) => {
+    const frequency = hertz(note);
+    const sounding = beats * beat + 0.08;
+    add(piano, at + late(0.02), sounding, (t) => {
+      const envelope = Math.min(1, t / 0.003) * Math.exp(-t / 1.4) * Math.min(1, (sounding - t) / 0.08);
+      return level * envelope * (Math.sin(2 * Math.PI * frequency * t)
+        + 0.12 * Math.exp(-t / 0.3) * Math.sin(4 * Math.PI * frequency * t)
+        + 0.3 * Math.exp(-t / 0.04) * Math.sin(2 * Math.PI * 6.27 * frequency * t));
+    });
+  };
+  // A string of the bass plucked at a beat and stopped just before the next note: a sine dying away, its octave there
+  // only in the pluck's first moment.
+  const pluck = (at, beats, note) => {
+    const frequency = hertz(note);
+    const sounding = beats * beat - 0.01;
+    const level = touch(bassTouch);
+    add(band, at + late(0.015), sounding, (t) => {
+      const envelope = Math.min(1, t / 0.004) * Math.exp(-t / 0.7) * Math.min(1, (sounding - t) / 0.03);
+      return level * envelope * (Math.sin(2 * Math.PI * frequency * t)
+        + 0.35 * Math.exp(-t / 0.12) * Math.sin(4 * Math.PI * frequency * t));
+    });
+  };
+  // A shake of the shaker at a beat: the beads' hiss, high noise swelling in over 12 milliseconds and dying away.
+  const shake = (at, level) => {
+    let last = 0;
+    add(band, at + late(0.01), 0.15, (t) => {
+      const noise = bossa() * 2 - 1;
+      const hiss = noise - last;
+      last = noise;
+      return level * hiss * (t < 0.012 ? t / 0.012 : Math.exp(-(t - 0.012) / 0.035));
+    });
+  };
+  // Each bar's chord, as MIDI notes: the bass's root and the fifth it steps to, and the piano's voicing over them.
+  const chords = [
+    { root: 41, fifth: 36, voicing: [53, 57, 60, 64] }, // Fmaj7: F A C E over F
+    { root: 38, fifth: 45, voicing: [50, 53, 60, 64] }, // Dm9: D F C E over D
+    { root: 43, fifth: 38, voicing: [53, 58, 62, 67] }, // Gm7: F Bb D G over G
+    { root: 36, fifth: 43, voicing: [52, 58, 62, 67] }, // C9: E Bb D G over C
+  ];
+  // The bass's steps through each bar, as their beat, length in beats and whether it plays the root or the fifth.
+  const bassSteps = [[0, 1.5, "root"], [1.5, 0.5, "fifth"], [2, 1.5, "fifth"], [3.5, 0.5, "root"]];
+  // The eighths of each two bars the piano strikes its chord on, each held a beat: the bossa's clave.
+  const clave = [0, 3, 6, 10, 13];
+  // The tune, as each note's beat, length in beats and MIDI note: its hook falling from the major seventh over the
+  // first bar and a half, an answer down through Gm7 and C9, the hook again rising higher at its end, and a climb back
+  // up through C9 into the hook at the loop's head.
+  const tune = [
+    [0, 1.5, 76], [1.5, 0.5, 74], [2, 0.5, 72], [2.5, 1, 69], [3.5, 1.5, 72],
+    [5, 0.5, 69], [5.5, 1, 74], [6.5, 1.5, 76],
+    [8.5, 0.5, 77], [9, 0.5, 76], [9.5, 1, 74], [10.5, 0.5, 70], [11, 1, 74],
+    [12.5, 0.5, 67], [13, 0.5, 70], [13.5, 1, 74], [14.5, 1.5, 72],
+    [16, 1.5, 76], [17.5, 0.5, 74], [18, 0.5, 72], [18.5, 1, 69], [19.5, 1.5, 72],
+    [21, 0.5, 69], [21.5, 1, 74], [22.5, 1.5, 77],
+    [24.5, 0.5, 74], [25, 0.5, 72], [25.5, 1, 70], [26.5, 0.5, 69], [27, 1, 67],
+    [28.5, 0.5, 67], [29, 0.5, 69], [29.5, 0.5, 70], [30, 1, 72], [31, 0.75, 74],
+  ];
+  for (let bar = 0; bar < 8; bar++) {
+    const chord = chords[bar % 4];
+    for (const [step, beats, which] of bassSteps) {
+      pluck(bar * 4 + step, beats, chord[which]);
+    }
+    for (let eighth = 0; eighth < 8; eighth++) {
+      shake(bar * 4 + eighth / 2, touch(shakerTouch) * (eighth % 2 === 1 ? 1 : 0.65));
+    }
+  }
+  // A chord struck on the piano at a beat, its keys all struck alike and held a beat.
+  const strike = (at, chord) => {
+    const level = touch(chordTouch);
+    chord.voicing.forEach((note) => key(at, 1, note, level));
+  };
+  for (let bar = 0; bar < 8; bar += 2) {
+    clave.forEach((eighth) => strike(bar * 4 + eighth / 2, chords[(bar + Math.floor(eighth / 8)) % 4]));
+  }
+  for (const [at, beats, note] of tune) {
+    key(at, beats, note, touch(tuneTouch));
+  }
+  const tremolo = (i) => 1 + tremoloDepth * Math.sin(2 * Math.PI * tremoloRate * i / RATE);
+  const music = piano.map((sample, i) => Math.tanh(drive * (sample * tremolo(i) + band[i])));
+  writeSound("lift_music", music, 0.8);
+}
+
 // The rocket's engines (see the client's RocketRoar and the autopilot's RocketSounds), each sound with a random
 // sequence of its own, so the sounds above are unchanged. Her roar, a seamless loop played while her bells fire: a deep
 // rumble of exhaust, brown noise low-passed near 700 hertz and slowly surging; the hiss of the gas, a band round 2.5

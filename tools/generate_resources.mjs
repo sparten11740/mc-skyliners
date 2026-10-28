@@ -1385,6 +1385,15 @@ function rocketSoundsLang() {
   for (const name of ["space_light", "space_heavy"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  // Its music, played in the car as it rides: at LIFT_MUSIC_VOLUME of the level it is written at, a little softer than
+  // the lift's other sounds, and heard only in the car and right by it, falling away to nothing LIFT_MUSIC_HEARD blocks
+  // off.
+  const LIFT_MUSIC_VOLUME = 0.35;
+  const LIFT_MUSIC_HEARD = 4;
+  sounds.lift_music = {
+    subtitle: `subtitles.${ID}.lift_music`,
+    sounds: [{ name: `${ID}:lift_music`, volume: LIFT_MUSIC_VOLUME, attenuation_distance: LIFT_MUSIC_HEARD }],
+  };
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);
@@ -6559,6 +6568,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.lift_chime_down": "Lift chimes, going down",
   "subtitles.aerolarge.space_light": "You feel light",
   "subtitles.aerolarge.space_heavy": "Your weight comes back",
+  "subtitles.aerolarge.lift_music": "Lift music",
   "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",

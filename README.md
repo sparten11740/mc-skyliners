@@ -1824,9 +1824,11 @@ icon on its story's colour (a doorway for the entry, then a crate, a fork and kn
 flask, a telescope, and her nose for the cockpit), the board's own floor framed in white and the car's lit. Touch a
 floor and the car comes, its doors slide open with a soft rush, you step in, and after a moment it closes and glides
 there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two
-going down, and the doors open to let you out. It never closes on anyone in the doorway or moves with a door open, and
-no one gets off between floors. While she counts down, flies or lands, it stands at a floor with its doors open and
-takes no rides, and an amber bar lies across its boards.
+going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an
+electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the
+Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone
+in the doorway or moves with a door open, and no one gets off between floors. While she counts down, flies or lands,
+it stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards.
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
@@ -2098,14 +2100,15 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
 on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
-`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing. `Livery` paints her as it does a zeppelin,
-by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
-`LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
-round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
-planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the
-northern lights along the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the
-game's time alone so every client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone
-aboard to space as she climbs past it; `SpaceGravity` makes them light up there.
+`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing; on the client `LiftSounds` plays
+a riding car's hum, and its music for whoever rides it or stands right by it. `Livery` paints her as it does a zeppelin,
+by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
+pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space round any
+camera far over the top of the world, over the game's own sky, the fog the land fades into taking the planet's colour,
+and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
+the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every
+client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
+climbs past it; `SpaceGravity` makes them light up there.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

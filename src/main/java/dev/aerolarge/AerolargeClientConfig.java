@@ -20,6 +20,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue SPACE_SKY;
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue AURORA;
+    public static final ModConfigSpec.BooleanValue LIFT_MUSIC;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -97,6 +98,10 @@ public final class AerolargeClientConfig {
             .comment("In the space sky (see spaceSky), by night from y 600 up, the northern lights: a ribbon along the planet's rim to",
                 "the north, green at its foot and violet at its top, rippling slowly. Off, the night there is dark.")
             .define("aurora", true);
+        LIFT_MUSIC = builder
+            .comment("Play soft bossa nova in a lift's car while it rides, as lifts do, heard in the car and right by it, as loud as",
+                "the Jukebox/Note Blocks volume sets. Off, the car only hums.")
+            .define("liftMusic", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")

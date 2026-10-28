@@ -1320,6 +1320,16 @@
       }
     ]
   },
+  "lift_music": {
+    "subtitle": "subtitles.aerolarge.lift_music",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_music",
+        "volume": 0.35,
+        "attenuation_distance": 4
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

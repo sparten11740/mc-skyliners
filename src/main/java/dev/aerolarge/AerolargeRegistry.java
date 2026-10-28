@@ -660,6 +660,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_HUM = sound("lift_hum");
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_UP = sound("lift_chime_up");
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_DOWN = sound("lift_chime_down");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_MUSIC = sound("lift_music");
 
     // The rocket's sound and voice (see dev.aerolarge.autopilot.RocketSounds and the client's RocketRoar).
     /** Her engines' roar, looped while they fire, swelled and pitched with their thrust; and as it is heard aboard. */
