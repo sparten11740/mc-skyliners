@@ -187,7 +187,7 @@ looking fifteen degrees down at the runway coming up to meet the airliner. The c
 same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is drawn small,
 a few times a second, and only while a screen showing it is in sight within 32 blocks; every screen aboard the same
 airliner set to the same camera shows the same picture. Without one it shows a test card: colour bars with the
-airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY beside the same green airliner while the
+airliner seen from behind, and under them NO SIGNAL, or ASSEMBLE TO FLY, then the same green airliner, while the
 airliner stands as blocks. That is also what it shows with a shader pack (Iris, Oculus) or Fabulous graphics, or with
 `tailCameraFeed` off in the client config, where `tailCameraFps`, `tailCameraResolution` and
 `tailCameraRenderDistance` also set how often, how sharp and how far the picture is drawn. It is drawn at most ten
@@ -1756,7 +1756,7 @@ over her for the flyby camera, orange at the bow and green under the control car
 white rim, its name is on the picture's label beside a camera in its colour, and everyone sees the camera picked. The
 flyby camera's picture reaches past the far end of the ship, so none of her is lost in the fog, but beyond your own
 render distance the land is not drawn. Until she first flies the display shows its test card, a zeppelin seen from
-behind, and ASSEMBLE TO FLY beside the green zeppelin. The client's `tailCameraFeed`, `tailCameraFps` and
+behind, and ASSEMBLE TO FLY, then the green zeppelin. The client's `tailCameraFeed`, `tailCameraFps` and
 `tailCameraResolution` settings apply to it as to the airliner's, and the server config's `cameraDisplay` leaves it
 out of zeppelins built from then on.
 

@@ -86,9 +86,11 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double BARS = 2 / 3.0;
     /**
      * How far out each way the autopilot's start picture in the band reaches while waiting to be assembled, as a share
-     * of the band's height, for whoever cannot read the words beside it.
+     * of the band's height, for whoever cannot read the words it follows, and the gap between them, in blocks: after
+     * the words, clear of the camera buttons along the bottom left.
      */
     private static final double STANDBY_PICTURE = 0.4;
+    private static final double STANDBY_GAP = 0.03;
     /** The badge with the airframe on it: its height, as a share of the bars', and its width over its height. */
     private static final double BADGE = 0.75;
     private static final double BADGE_SHAPE = 1.3;
@@ -174,13 +176,14 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             // The picture and the text last: each takes its own buffer, which ends the one the shapes went into.
             boolean standby = SableClient.ride(screen) == null;
             double band = BEZEL + (height - 2 * BEZEL) * (1 - BARS);
+            Component words = Component.translatable(KEY + (standby ? "standby" : "no_signal"));
             if (standby) {
                 double half = (band - BEZEL) * STANDBY_PICTURE;
+                double after = width / 2 + font.width(words) * TEXT / 2 + STANDBY_GAP + half;
                 ResourceLocation craft = PanelArt.Pictures.of(screen.camera().craft()).cruise().texture();
-                ScreenDrawing.picture(buffers, matrix, craft, BEZEL + half * 1.6, (BEZEL + band) / 2, half, TEXT_LIFT, WHITE);
+                ScreenDrawing.picture(buffers, matrix, craft, after, (BEZEL + band) / 2, half, TEXT_LIFT, WHITE);
             }
-            ScreenDrawing.text(font, pose, buffers, Component.translatable(KEY + (standby ? "standby" : "no_signal")), width / 2, (BEZEL + band) / 2,
-                TEXT_LIFT, TEXT, WHITE, ScreenDrawing.Align.CENTRE);
+            ScreenDrawing.text(font, pose, buffers, words, width / 2, (BEZEL + band) / 2, TEXT_LIFT, TEXT, WHITE, ScreenDrawing.Align.CENTRE);
         }
     }
 
