@@ -13,14 +13,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A floodlight's block entity (see {@link FloodlightBlock}): on the server it switches the light on as the sky
- * darkens, at dusk or under a storm, and off again once it is light, looking now and then; on the clients it is kept
- * track of for the light each throws (see the client's {@code Floodlights}). Every light of a zeppelin looks at the same
- * ticks, so they come on and go off together.
+ * A floodlight's block entity (see {@link FloodlightBlock}): on the server it switches the light on, and keeps it on by
+ * day as by night, looking now and then; on the clients it is kept track of for the light each throws (see the
+ * client's {@code Floodlights}). Every light of a zeppelin looks at the same ticks, so they come on together.
  */
 public class FloodlightBlockEntity extends BlockEntity {
     private static final Loaded<FloodlightBlockEntity> LOADED = new Loaded<>(FloodlightBlockEntity.class, true);
-    /** How often the light looks at the sky, in ticks. */
+    /** How often the light looks whether it is on, in ticks. */
     private static final int LOOK_TICKS = 40;
     /** How loud it comes on, heard aboard over the hull's boom. */
     private static final float COMING_ON = 0.8F;
@@ -47,20 +46,16 @@ public class FloodlightBlockEntity extends BlockEntity {
     }
 
     /**
-     * Once a tick, on the server: now and then, lit while the sky is dark (at night, or under a storm by day), coming
-     * on with the clunk of its contactor and the crackle of its lamp striking up.
+     * Once a tick, on the server: now and then, lit if it is not yet, coming on with the clunk of its contactor and the
+     * crackle of its lamp striking up. It stays on, day and night: by night it lights the land under her, and by day
+     * the shade her hull casts on it (see the client's {@code GreatShadow}).
      */
     void serverTick(ServerLevel level) {
-        if (level.getGameTime() % LOOK_TICKS != 0) {
+        if (level.getGameTime() % LOOK_TICKS != 0 || lit()) {
             return;
         }
-        boolean dark = level.isNight();
-        if (dark != lit()) {
-            level.setBlock(worldPosition, getBlockState().setValue(FloodlightBlock.LIT, dark), Block.UPDATE_ALL);
-            if (dark) {
-                level.playSound(null, worldPosition, AerolargeRegistry.SEARCHLIGHT_ON.get(), SoundSource.BLOCKS, COMING_ON, 1.0F);
-            }
-        }
+        level.setBlock(worldPosition, getBlockState().setValue(FloodlightBlock.LIT, true), Block.UPDATE_ALL);
+        level.playSound(null, worldPosition, AerolargeRegistry.SEARCHLIGHT_ON.get(), SoundSource.BLOCKS, COMING_ON, 1.0F);
     }
 
     @Override

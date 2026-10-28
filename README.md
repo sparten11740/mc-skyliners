@@ -1415,18 +1415,21 @@ lights nothing up round them but reads from the ground the whole length of the s
 airliner's lights glow the same way. The server config's `navigationLights` leaves them off zeppelins built from then
 on.
 
-From dusk to dawn, and under a storm by day, floodlights under the control car and along the keel come on of their own
-accord with the clunk of their contactors and the crackle of their lamps striking up, flat black lamps whose lenses glow
-warm white, and throw their light down and a little ahead onto the land under her, so those aboard see where she is
-going at night and those below see her coming. It is real light, through Veil (which comes with Sable), as the cabin's
-night lights are; the client config's `floodlightLight` turns it off and draws a pool of light on the ground under each
-lamp instead, as there always is with Iris installed. The server config's `floodlights` leaves them off zeppelins built
+Floodlights hang under the control car and along the keel, flat black lamps whose lenses glow warm white. They come on
+of their own accord as soon as she is built, with the clunk of their contactors and the crackle of their lamps striking
+up, and stay on by day and night, throwing their light down and a little ahead onto the land under her: at night so
+those aboard see where she is going and those below see her coming, and by day into the shade of her hull, where her
+great shadow lies over the land. It is real light, through Veil (which comes with Sable), as the cabin's night lights
+are; the client config's `floodlightLight` turns it off and draws a pool of light on the ground under each lamp
+instead, as there always is with Iris installed. The server config's `floodlights` leaves them off zeppelins built
 from then on.
 
 By day, flying, she casts her great shadow on the land under her, hull and fins, from where the sun is: right under her
 and sharp-edged at noon, thrown off and drawn out long, its edges soft, as the sun sinks, fading away near sunrise and
 sunset, in rain and at night. It darkens the tops of the trees and the water as well as the ground, and is only drawn:
-the light under her is as it ever was. The client config's `greatShadow` turns it off.
+the light under her is as it ever was. Where her floodlights shine into it, it is lighter, the more so the lower she
+flies: flying low, landing or parked, the ground they light under her is as bright as in the sun, and from a cruise
+high up her shadow there is still lifted by half or less. The client config's `greatShadow` turns it off.
 
 The Festive Zeppelin Blueprint, in the creative tab, builds the furnished zeppelin dressed for Christmas: frosted
 silver with snow on its crown and a red band edged white round it at every ring, its fins and engine cars green, its

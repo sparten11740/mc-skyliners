@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.logging.LogUtils;
 import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.block.FloodlightBlockEntity;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,10 @@ import org.slf4j.Logger;
  * airliner at that partial tick, so it flies with her. Where Veil's lights cannot be drawn ({@link VeilLights#USABLE}),
  * with the {@code floodlightLight} setting off, or once drawing them has failed, a pool of light is drawn on the ground
  * under each instead, as a searchlight's is (see {@link SearchlightBeams}).
+ *
+ * <p>By day the lights shine into the shade of the hull, which this client draws over the land (see
+ * {@link GreatShadow}): where each light's pool falls ({@link #pools}), the shadow is drawn the lighter the nearer the
+ * light is to the ground.
  */
 public final class Floodlights {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -69,6 +74,12 @@ public final class Floodlights {
      */
     private static final float POOL = 0.35F;
     private static final double POOL_LIFT = 0.003;
+    /**
+     * How far from the ground a light lifts her shadow wholly at the middle of its pool, in blocks; twice as far off,
+     * half of it, and so on, so flying low, landing or parked the ground under her is bright, and from a cruise high
+     * up her shadow is lifted half or less.
+     */
+    private static final double LIFTS_SHADOW = 64;
     /** The lights drawn, each by its floodlight. */
     private static final Map<FloodlightBlockEntity, Lit> LIT = new HashMap<>();
     /** Veil's buffers, kept on while the lights are near. */
@@ -93,6 +104,33 @@ public final class Floodlights {
         double now = Double.NaN;
         /** The game tick the ground was last looked for at. */
         long lookedAt = Long.MIN_VALUE;
+    }
+
+    /**
+     * Where a lit floodlight's light falls on the land: the middle of its pool, how wide it is, and how much of her
+     * shadow it lifts there, a share.
+     */
+    public record Pool(double x, double z, double radius, double lift) {
+        /** How much of her shadow the light lifts at a point, a share: most at the middle, none past the edge. */
+        public double liftAt(double atX, double atZ) {
+            double off = Math.hypot(atX - x, atZ - z) / radius;
+            return off >= 1 ? 0 : lift * (1 - off * off);
+        }
+    }
+
+    /** The pools of light the lit floodlights near the camera throw on the land, as their ships lie this tick. */
+    public static List<Pool> pools(ClientLevel level, Vec3 camera) {
+        List<Pool> pools = new ArrayList<>();
+        for (FloodlightBlockEntity light : near(level, camera)) {
+            SableClient.View seen = SableClient.view(lens(light), light.aim(), new Vec3(0, 1, 0), 1);
+            Vec3 from = seen != null ? seen.eye() : lens(light);
+            Vec3 ground = SearchlightBeams.ground(level, from, seen != null ? seen.forward() : light.aim(), REACH);
+            if (ground != null) {
+                double reach = ground.distanceTo(from);
+                pools.add(new Pool(ground.x, ground.z, reach * POOL, Math.min(1, LIFTS_SHADOW / reach)));
+            }
+        }
+        return pools;
     }
 
     /** Before each frame: lights the nearest lit floodlights, and places their light as their ships lie. */

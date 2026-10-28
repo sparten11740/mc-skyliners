@@ -7,11 +7,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The zeppelin's floodlights (see {@link dev.aerolarge.block.FloodlightBlock}), lighting the land under her and ahead
- * from dusk to dawn: two under the control car's floor near its front, either side of its middle, and a line along her
- * keel, each throwing its light down and a little ahead. Each hangs from the car's floor or her cover, face to face,
- * so it is assembled with her; one whose place is taken, by the beacon under the belly or the boarding stairs, is left
- * out. The {@code floodlights} switch leaves them off a zeppelin built from then on.
+ * The zeppelin's floodlights (see {@link dev.aerolarge.block.FloodlightBlock}), lighting the land under her and ahead,
+ * by night and in the shade of her hull by day: two under the control car's floor near its front, either side of its
+ * middle, and a line along her keel, each throwing its light down and a little ahead. Each hangs from the car's floor
+ * or her cover, face to face, so it is assembled with her; one whose place is taken, by the beacon under the belly or
+ * the boarding stairs, is left out. The {@code floodlights} switch leaves them off a zeppelin built from then on.
  */
 final class ZeppelinFloodlights implements ZeppelinPiece {
     /** How far either side of the middle the car's lights hang, and how far aft of its front, in blocks. */

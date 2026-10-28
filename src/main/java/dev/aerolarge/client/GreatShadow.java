@@ -29,7 +29,8 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * as the sun sinks it is thrown further off and drawn out long, its edges softening as they would in the sun, and it
  * fades away near sunrise and sunset, thrown far off by a low sun, in rain, and at night. It lies over the top of the
  * highest block in each column, treetops and water too, darkening it: it is only drawn, the light under her is as it
- * ever was.
+ * ever was. Where her lit floodlights' light falls on it, it is drawn the lighter the nearer they are to the ground
+ * (see {@link Floodlights#pools}).
  *
  * <p>It is worked out afresh every {@link #REFRESH_TICKS} ticks, only over the ground her box could shade: first once for
  * each cell of {@link #CELL} by {@link #CELL} columns, by whether the line from its middle toward the sun passes
@@ -113,6 +114,8 @@ public final class GreatShadow {
 
     private static final List<Strip> STRIPS = new ArrayList<>();
     private static float strength;
+    /** Where the lit floodlights' light falls on the land, as it was when the shadow was last worked out. */
+    private static List<Floodlights.Pool> pools = List.of();
 
     private GreatShadow() {
     }
@@ -130,6 +133,7 @@ public final class GreatShadow {
         STRIPS.clear();
         Vec3 sun = sun(level);
         strength = strength(level, sun);
+        pools = strength > 0 ? Floodlights.pools(level, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()) : List.of();
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(level)) {
             Hull hull = strength > 0 && autopilot.craft() == Craft.ZEPPELIN ? hull(level, autopilot, sun) : null;
             if (hull != null) {
@@ -309,7 +313,8 @@ public final class GreatShadow {
         for (int x = fromX; x <= toX; x++) {
             int own = cells.at(x, z);
             int height = own == 0 ? Integer.MIN_VALUE : ground.at(x);
-            int shade = height == Integer.MIN_VALUE ? 0 : own > 0 ? own : shade(hull, x + 0.5, height, z + 0.5);
+            int cast = height == Integer.MIN_VALUE ? 0 : own > 0 ? own : shade(hull, x + 0.5, height, z + 0.5);
+            int shade = cast > 0 ? lit(cast, x + 0.5, z + 0.5) : 0;
             if (openFrom != Integer.MIN_VALUE && (shade != openShade || height != openGround)) {
                 STRIPS.add(new Strip(openFrom, x - 1, z, openGround, openShade));
                 openFrom = Integer.MIN_VALUE;
@@ -323,6 +328,15 @@ public final class GreatShadow {
         if (openFrom != Integer.MIN_VALUE) {
             STRIPS.add(new Strip(openFrom, toX, z, openGround, openShade));
         }
+    }
+
+    /** A column's shade, lifted by the floodlights' light where it falls there (see {@link Floodlights#pools}). */
+    private static int lit(int shade, double x, double z) {
+        double lift = 0;
+        for (Floodlights.Pool pool : pools) {
+            lift = Math.max(lift, pool.liftAt(x, z));
+        }
+        return (int) Math.round(shade * (1 - lift));
     }
 
     /**

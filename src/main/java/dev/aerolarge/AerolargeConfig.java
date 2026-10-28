@@ -356,8 +356,8 @@ public final class AerolargeConfig {
             .define("searchlights", true);
         FLOODLIGHTS = builder
             .comment(
-                "Whether a zeppelin is built with floodlights under her control car and along her keel, coming on at dusk and",
-                "under a storm and lighting the land under her and ahead. Zeppelins already built keep theirs."
+                "Whether a zeppelin is built with floodlights under her control car and along her keel, always on, lighting the land",
+                "under her and ahead, by day the shade of her hull. Zeppelins already built keep theirs."
             )
             .define("floodlights", true);
         SKYWRITING = builder

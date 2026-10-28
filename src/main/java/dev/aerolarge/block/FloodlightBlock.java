@@ -25,9 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A floodlight hung under a zeppelin, under her control car and along her keel: a flat black lamp with a wide lens on
  * its underside, its hood on the side away from FACING, so it throws its light down and a little ahead, the way FACING
- * points (see {@link FloodlightBlockEntity}). It comes on of its own accord as dusk falls or a storm darkens the sky,
- * and goes off again by day; LIT, its lens glows, and its light falls on the land under her (see the client's
- * {@code Floodlights}), so those aboard see where she is going and those below see her coming.
+ * points (see {@link FloodlightBlockEntity}). It comes on of its own accord once she is built and stays on, day and
+ * night; LIT, its lens glows, and its light falls on the land under her (see the client's {@code Floodlights}), by
+ * day into the shade of her hull, so those aboard see where she is going and those below see her coming.
  */
 public class FloodlightBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<FloodlightBlock> CODEC = simpleCodec(FloodlightBlock::new);
