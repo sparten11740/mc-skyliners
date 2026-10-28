@@ -35,8 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@link RocketPilot}). Side jets in its skin, a ring of four near the nose and another near the bottom, push it
  * sideways and tilt it, which is how it stays upright. Inside, over an engine room, stories one above another round a
  * glass lift shaft up the middle, each floor's edge against the skin, a dimmable oval window out to each of the four
- * ways; the cockpit sits in the glass of the nose's lower part, its control head facing the front. The features
- * laid into it once it stands are pieces of their own (see {@link RocketPiece}).
+ * ways; the cockpit sits in the airliner's windscreen glass round the nose's lower part, its control head facing the
+ * front. The features laid into it once it stands are pieces of their own (see {@link RocketPiece}).
  *
  * <p>Sable flies the rocket as one body only as far as its blocks touch, face to face: the floors run out to the skin,
  * the fins are two blocks thick where they run between the four ways, and the shaft stands on the floors.
@@ -299,9 +299,12 @@ public final class RocketLayout implements Layout {
         }
     }
 
-    /** What the skin is made of at a row: glass round the cockpit, the cover elsewhere. */
+    /**
+     * What the skin is made of at a row: the airliner's windscreen glass round the cockpit, cut to the nose's curve and
+     * drawn as one pane however thick it runs, the cover elsewhere.
+     */
     private BlockState skinAt(int y) {
-        return y > noseFoot && y <= noseFoot + COCKPIT_GLASS ? AerolargeRegistry.HULL_GLASS.get().defaultBlockState()
+        return y > noseFoot && y <= noseFoot + COCKPIT_GLASS ? AerolargeRegistry.COCKPIT_GLASS.get().defaultBlockState()
             : AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState();
     }
 
