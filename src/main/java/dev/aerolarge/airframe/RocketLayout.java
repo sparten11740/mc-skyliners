@@ -49,8 +49,12 @@ public final class RocketLayout implements Layout {
     private static final int EXHAUST_CLEAR = 11;
     /** How many rows the engine room over the bottom takes, up to the first story's floor. */
     private static final int ENGINE_ROOM = 5;
-    /** The stories' heights, floor to floor, from the entry story up, in rows: a player's size at every scale. */
-    private static final int[] STORIES = {9, 10, 9, 9, 12, 12, 11, 12};
+    /**
+     * The stories' heights, floor to floor, from the entry story up, in rows: a player's size at every scale. At the
+     * default scale all nine fit, one for each of her rooms (entry, cargo bay, galley and mess, bunk room, greenhouse,
+     * swimming pool, techno club, lab, observation deck); a smaller rocket has the lower of them.
+     */
+    private static final int[] STORIES = {9, 10, 9, 9, 12, 12, 11, 12, 14};
     /** How far out from the axis the lift shaft's glass walls stand, in blocks: three blocks of shaft inside them. */
     static final int SHAFT = 2;
     /** How wide and tall the front door is, in blocks, over the entry story's floor. */
