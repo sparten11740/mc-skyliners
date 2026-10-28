@@ -4,9 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.Aerolarge;
-import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairFlight;
-import dev.aerolarge.block.PlugDoorBlock;
+import dev.aerolarge.block.Airstairs;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
@@ -21,19 +20,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Draws the integral airstairs from their controller, wherever they are between stowed and down (see
- * {@link AirstairFlight}): the hatch below the door, and the flight with its treads, stringers and handrails, as the
- * controller's clock says between the last tick and this one. Drawn in the served door's own frame, so they come out
- * of the right door whichever way the airliner was built, and aboard an assembled airliner wherever it stands. Each
+ * Draws integral airstairs from their controller, wherever they are between stowed and down (see
+ * {@link AirstairFlight}): an airliner's hatch below its door, and the flight with its treads, stringers and handrails,
+ * as the controller's clock says between the last tick and this one. Drawn in the stairs' own frame (see
+ * {@link Airstairs}), the served door's or a zeppelin's lower deck's at the head of her boarding stairs, so they come
+ * out the right way whichever way the airliner or zeppelin was built, and aboard one assembled wherever it stands. Each
  * part is lit by the light where it is.
  */
-public class AirstairRenderer implements BlockEntityRenderer<AirstairBlockEntity> {
+public class AirstairRenderer<T extends BlockEntity & Airstairs> implements BlockEntityRenderer<T> {
     /** How far off the stairs are still drawn, in blocks: they are big enough to see from across the apron. */
     private static final int VIEW_DISTANCE = 256;
     /** How far the stairs and their bay reach from the controller, in blocks, past the flight's own length. */
@@ -54,17 +54,16 @@ public class AirstairRenderer implements BlockEntityRenderer<AirstairBlockEntity
     }
 
     @Override
-    public void render(AirstairBlockEntity airstairs, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int overlay) {
+    public void render(T airstairs, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int overlay) {
         Level level = airstairs.getLevel();
         AirstairFlight.Motion motion = airstairs.motion(partialTick);
-        BlockPos door = airstairs.served();
-        if (level == null || motion == null || door == null) {
+        Airstairs.Frame frame = airstairs.frame();
+        if (level == null || motion == null || frame == null) {
             return;
         }
-        BlockState part = level.getBlockState(door);
-        Direction out = part.getValue(PlugDoorBlock.FACING);
-        Painter paint = new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)), level, door, out, PlugDoorBlock.right(part));
-        BlockPos from = door.subtract(airstairs.getBlockPos());
+        Direction out = frame.out();
+        Painter paint = new Painter(buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)), level, frame.at(), out, frame.right());
+        BlockPos from = frame.at().subtract(airstairs.getBlockPos());
         pose.pushPose();
         pose.translate(from.getX(), from.getY(), from.getZ());
         pose.translate(0.5, 0, 0.5);
@@ -79,7 +78,7 @@ public class AirstairRenderer implements BlockEntityRenderer<AirstairBlockEntity
      * close by outside the hull hides that section, while the stairs out on the apron are in plain view.
      */
     @Override
-    public boolean shouldRenderOffScreen(AirstairBlockEntity airstairs) {
+    public boolean shouldRenderOffScreen(T airstairs) {
         return true;
     }
 
@@ -88,26 +87,26 @@ public class AirstairRenderer implements BlockEntityRenderer<AirstairBlockEntity
         return VIEW_DISTANCE;
     }
 
-    /** Everything round the door, as far as the stairs reach down and out, and the bay reaches in. */
+    /** Everything round the controller, as far as the stairs reach down and out, and the bay reaches in. */
     @Override
-    public AABB getRenderBoundingBox(AirstairBlockEntity airstairs) {
+    public AABB getRenderBoundingBox(T airstairs) {
         AirstairFlight.Motion motion = airstairs.motion(0);
         int reach = (motion == null ? 0 : motion.rise()) + REACH_MARGIN;
         return new AABB(airstairs.getBlockPos()).inflate(reach);
     }
 
     /**
-     * Where the boxes go: the buffer, and the light each is drawn with, found where its middle is, from the door's
+     * Where the boxes go: the buffer, and the light each is drawn with, found where its middle is, from the stairs'
      * frame (x across to the right, y up, z out with the hull's face at z 1) back to the block it is in.
      */
-    private record Painter(VertexConsumer consumer, Level level, BlockPos door, Direction out, Direction right) {
+    private record Painter(VertexConsumer consumer, Level level, BlockPos frame, Direction out, Direction right) {
         TextureAtlasSprite sprite(ResourceLocation texture) {
             return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
         }
 
         int light(Matrix4f box, Vector3f min, Vector3f max) {
             Vector3f middle = box.transformPosition(new Vector3f(min).add(max).mul(0.5F));
-            BlockPos at = door.relative(right, Mth.floor(middle.x)).above(Mth.floor(middle.y)).relative(out, Mth.floor(middle.z));
+            BlockPos at = frame.relative(right, Mth.floor(middle.x)).above(Mth.floor(middle.y)).relative(out, Mth.floor(middle.z));
             return SableClient.light(level, at);
         }
 

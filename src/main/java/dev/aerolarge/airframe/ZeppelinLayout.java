@@ -4,6 +4,8 @@ import static dev.aerolarge.airframe.ZeppelinShape.*;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.ZeppelinPilot;
+import dev.aerolarge.block.AirstairControllerBlockEntity;
+import dev.aerolarge.block.AirstairFlight;
 import dev.aerolarge.block.BoardingStairsBlockEntity;
 import dev.aerolarge.block.CabinRailBlock;
 import dev.aerolarge.block.CabinStairsBlock;
@@ -114,11 +116,13 @@ public final class ZeppelinLayout implements Layout {
     private static final int UPPER_FLIGHT_AFT = 2;
     private static final int FLIGHT_WIDTH = 2;
     /**
-     * The boarding stairs up through the belly: how far either side of the middle, and how many rows into the decks
-     * they start.
+     * The boarding stairs up through the belly: how far either side of the middle their outer column is, and how many
+     * rows into the decks their foot is.
      */
     private static final int BOARDING_ACROSS = 3;
     private static final int BOARDING_AFT = 6;
+    /** How long a bay, in blocks, the boarding stairs' folded flight may take under the deck's floor, at most. */
+    private static final int BOARDING_BAY = 4;
     /**
      * How square to the side the cover has to face for a promenade window there: the sideways share of its outward
      * direction.
@@ -838,49 +842,69 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /**
-     * Boarding stairs up through the belly from the ground to the lower deck, cut through the cover: a straight flight
-     * climbing aft, a block wide, opened up no further than a row over the deck; and beside its head on the deck, its
-     * button, which folds the flight away into the belly, and the cover and the deck's floor back over it, as she flies
-     * (see {@link BoardingStairsBlockEntity}). Everything the flight changes folds away, so with it up the hull is as
-     * it would be without it.
+     * Boarding stairs up through the belly from the ground to the lower deck: the airliner's airstairs, two blocks wide
+     * (see {@link AirstairFlight}), from the given column inward, their head on the deck and their foot on the ground at
+     * the given row, coming down forward; built folded away under the deck's floor, to come down as soon as she stands
+     * on the ground. Their hatch is everything of hers in the well they swing down through, from the floor down through
+     * the cover, as far forward as the folded flight lies and the steps pass inside her; beside their head on the deck
+     * stands their button, which keeps them (see {@link BoardingStairsBlockEntity}).
      */
-    private void boardingStairs(int x, int deck, int z) {
-        Map<BlockPos, BlockState> before = flightColumn(x, deck, z);
-        for (int y = 0; y <= deck; y++) {
-            step(x, y, z + y, Direction.SOUTH, deck + 1);
-        }
-        for (int y = 0; y < deck; y++) {
-            railAlong(x, y, z + y, Direction.WEST);
-            railAlong(x, y, z + y, Direction.EAST);
-        }
-        BlockPos button = new BlockPos(x + Integer.signum(x), deck + 1, z + deck);
-        List<BoardingStairsBlockEntity.Fold> folds = new ArrayList<>();
-        before.forEach((at, was) -> addFold(folds, at, was, button));
+    private void boardingStairs(int x, int deck, int foot) {
+        int outboard = Integer.signum(x);
+        // Seen from outside, from forward, looking aft up the flight: its left column is the one to the east.
+        int left = Math.max(x, x - outboard);
+        int rise = deck + 1;
+        int fitting = AirstairFlight.sectionsFor(rise, BOARDING_BAY);
+        int sections = fitting > 0 ? fitting : AirstairFlight.MOST_SECTIONS;
+        int headRow = foot + rise;
+        BlockPos head = new BlockPos(left, deck + 1, headRow);
+        BlockPos button = new BlockPos(x + outboard, deck + 1, headRow);
+        int well = Math.max((int) Math.ceil(AirstairFlight.bayLength(rise, sections)) + 1, stepsInside(head, rise));
+        List<AirstairControllerBlockEntity.Step> hatch = new ArrayList<>();
+        box(left - 1, 0, headRow - well, left, deck, headRow - 1, (at, y, along) -> addHatch(hatch, at, y, along, button));
         set(button.getX(), button.getY(), button.getZ(), AerolargeRegistry.BOARDING_STAIRS_BUTTON.get().defaultBlockState()
             .setValue(ButtonBlock.FACE, AttachFace.FLOOR).setValue(ButtonBlock.FACING, Direction.SOUTH));
-        fit(button, (blockEntity, rotation) -> rigStairs(blockEntity, folds, rotation));
+        fit(button, (blockEntity, rotation) -> rigAirstairs(blockEntity, head.subtract(button), rise, sections, hatch, rotation));
     }
 
-    /** What stands in a flight of boarding stairs' column of the layout, every row it reaches, open air as air. */
-    private Map<BlockPos, BlockState> flightColumn(int x, int deck, int z) {
-        Map<BlockPos, BlockState> column = new HashMap<>();
-        box(x, 0, z, x, deck + 1, z + deck, (at, y, along) -> column.put(new BlockPos(at, y, along), stateAt(at, y, along)));
-        return column;
+    /**
+     * How far forward from their head the steps of a flight of boarding stairs pass through something of hers: the
+     * last step down, in either column, where it or the {@link #HEADROOM} over it, the room for whoever climbs it, is
+     * not open air.
+     */
+    private int stepsInside(BlockPos head, int rise) {
+        int inside = 0;
+        for (int down = 1; down <= rise; down++) {
+            inside = openOver(head.getX(), head.getY() - down, head.getZ() - down)
+                && openOver(head.getX() - 1, head.getY() - down, head.getZ() - down) ? inside : down;
+        }
+        return inside;
     }
 
-    /** A block of the flight's column that the flight changed, to fold away with it, as an offset from its button. */
-    private void addFold(List<BoardingStairsBlockEntity.Fold> folds, BlockPos at, BlockState was, BlockPos button) {
-        BlockState now = stateAt(at.getX(), at.getY(), at.getZ());
-        if (!now.equals(was)) {
-            folds.add(new BoardingStairsBlockEntity.Fold(at.subtract(button), now, was));
+    /** Whether a block and the {@link #HEADROOM} over it are all open air. */
+    private boolean openOver(int x, int y, int z) {
+        for (int up = 0; up <= HEADROOM; up++) {
+            if (!stateAt(x, y + up, z).isAir()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** A block of hers in a flight's well, for its hatch, as an offset from the flight's button. */
+    private void addHatch(List<AirstairControllerBlockEntity.Step> hatch, int x, int y, int z, BlockPos button) {
+        BlockState state = stateAt(x, y, z);
+        if (!state.isAir()) {
+            hatch.add(new AirstairControllerBlockEntity.Step(new BlockPos(x, y, z).subtract(button), state));
         }
     }
 
-    /** Hands a flight's button its folds, turned as the zeppelin was placed. */
-    private static void rigStairs(BlockEntity blockEntity, List<BoardingStairsBlockEntity.Fold> folds, Rotation rotation) {
+    /** Hands a flight's button its airstairs, turned as the zeppelin was placed: built nose north, they come down north. */
+    private static void rigAirstairs(BlockEntity blockEntity, BlockPos head, int rise, int sections, List<AirstairControllerBlockEntity.Step> hatch,
+                                     Rotation rotation) {
         if (blockEntity instanceof BoardingStairsBlockEntity stairs) {
-            stairs.rig(folds.stream().map(fold -> new BoardingStairsBlockEntity.Fold(fold.at().rotate(rotation), fold.down().rotate(rotation),
-                fold.up().rotate(rotation))).toList());
+            stairs.rigAirstairs(head.rotate(rotation), rotation.rotate(Direction.NORTH), rotation.rotate(Direction.WEST), rise, sections,
+                hatch.stream().map(part -> new AirstairControllerBlockEntity.Step(part.offset().rotate(rotation), part.state().rotate(rotation))).toList());
         }
     }
 

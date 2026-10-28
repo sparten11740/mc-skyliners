@@ -21,6 +21,11 @@ import org.joml.Vector3f;
  * </ol>
  * Everything is measured in blocks, in the door's own frame as {@code PlugDoorRenderer} draws it: x across the
  * doorway to the right as seen from outside, y up from the sill, z out, the hull's outer face at z 1.
+ *
+ * <p>A zeppelin's boarding stairs are the same flight hung in her belly ({@link Motion#belly}), their sill the lower
+ * deck's floor at the head of the stairs and z out along the way they come down: stowed, the folded flight lies level
+ * in the row under the floor, right over the hatch its controller opens in her cover, so it slides nowhere and has no
+ * hatch of its own to draw; it swings straight down as soon as the hatch is open, and runs out to the ground.
  */
 public final class AirstairFlight {
     /** When each step of coming out ends, in ticks from stowed: 4.6 seconds in all. */
@@ -90,10 +95,10 @@ public final class AirstairFlight {
     /**
      * The airstairs at a moment: how far through coming out ({@code ticks}, 0 stowed to {@link #OUT}), how many blocks
      * they reach down ({@code length}), how many they are built to reach ({@code rise}) and in how many sections; how
-     * far in from the door's face the hull's skin over the bay's mouth lies, and how deep the mouth is; and whether the
-     * hatch is off the mouth.
+     * far in from the door's face the hull's skin over the bay's mouth lies, and how deep the mouth is; whether the
+     * hatch is off the mouth; and whether they hang in a zeppelin's belly rather than in an airliner's door.
      */
-    public record Motion(float ticks, int length, int rise, int sections, float hatchInset, int mouth, boolean hatchOpen) {
+    public record Motion(float ticks, int length, int rise, int sections, float hatchInset, int mouth, boolean hatchOpen, boolean belly) {
     }
 
     /**
@@ -128,7 +133,7 @@ public final class AirstairFlight {
     /** Draws the hatch and the flight as they are at the moment. */
     public static void draw(Motion motion, Sink sink) {
         float t = motion.ticks();
-        if (motion.hatchOpen()) {
+        if (motion.hatchOpen() && !motion.belly()) {
             hatch(motion, ease(clamp(t / HATCH)), sink);
         }
         if (t <= 0 && !motion.hatchOpen()) {
@@ -172,7 +177,8 @@ public final class AirstairFlight {
 
     /**
      * The flight's pose at the moment: in the bay, then slid out level under the sill, then raised and swung down to
-     * its slope, where it stays as its sections run out.
+     * its slope, where it stays as its sections run out. In a zeppelin's belly it lies over its hatch already, and
+     * swings down as soon as the hatch is open.
      */
     private static Pose pose(Motion motion, float t) {
         Bounds level = Bounds.level(motion.rise(), motion.sections());
@@ -180,8 +186,9 @@ public final class AirstairFlight {
         float clear = CLEARANCE - level.minU;
         float lowered = (MOUTH_TOP + MOUTH_BOTTOM) / 2 - (level.maxY + level.minY) / 2;
         float stowed = -(level.maxU + clear) - motion.mouth() - CLEARANCE;
-        float slide = ease(clamp((t - HATCH) / (SLIDE - HATCH)));
-        float swing = clamp((t - SLIDE) / (SWING - SLIDE));
+        float slide = motion.belly() ? 1 : ease(clamp((t - HATCH) / (SLIDE - HATCH)));
+        float swingFrom = motion.belly() ? HATCH : SLIDE;
+        float swing = clamp((t - swingFrom) / (SWING - swingFrom));
         float lift = ease(clamp(swing / 0.6F));
         float tilt = ease(clamp((swing - 0.3F) / 0.7F));
         return new Pose(SLOPE * (1 - tilt), clear * (1 - tilt) + stowed * (1 - slide), lowered * (1 - lift));

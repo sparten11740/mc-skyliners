@@ -1,0 +1,321 @@
+package dev.aerolarge.block;
+
+import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.compat.SableFlight;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+
+/**
+ * A zeppelin's boarding stairs as integral airstairs (see {@link AirstairFlight}): the airliner's flight, two blocks
+ * wide, hung in her belly, its sill the lower deck's floor at the head of the stairs, coming down along {@link #out}
+ * to the ground. Stowed, it lies folded level in the row under the deck's floor, behind its hatch: the patch of her
+ * cover under it, the floor over it and whatever stands between, as the airliner's hatch is its hull's skin. Coming
+ * down, the hatch's blocks are taken away with the clunk of its latch, the flight swings down through the opening, its
+ * sections run out to the ground and its handrails rise, to the hum of the motor; once down, the steps it is walked on
+ * are laid (see {@link AirstairSteps}). Going away it waits, with a chime, until nobody is on it, runs back, and the
+ * hatch's blocks come back last. Its button keeps it and works it with the rest of her stairs (see
+ * {@link BoardingStairsBlockEntity}); the server runs it and tells every client where it is going, each client running
+ * the same clock to draw it in between.
+ */
+final class BellyAirstairs {
+    /** While someone stands on the stairs, how often folding looks again whether they have stepped off. */
+    private static final int CLEAR_CHECK_TICKS = 10;
+    private static final float MOTOR_VOLUME = 0.9F;
+    private static final float LATCH_VOLUME = 1.0F;
+    /** The latch clunks higher coming free than going home. */
+    private static final float UNLATCH_PITCH = 1.25F;
+
+    private final BoardingStairsBlockEntity button;
+    /**
+     * Where the stairs' frame stands, from their button: the floor's block at their head, whose bottom is the sill;
+     * the way out, down the flight, and the way to the right seen from outside.
+     */
+    private final BlockPos head;
+    private final Direction out;
+    private final Direction right;
+    /** How many blocks the flight comes down from the sill to the ground she stands on, and in how many sections. */
+    private final int rise;
+    private final int sections;
+    /** The hatch, shut: where each block of it is from the button, and what it is. */
+    private final List<AirstairControllerBlockEntity.Step> hatch;
+    /** Out or coming out; and how far through coming out, in ticks, now and a tick ago. */
+    private boolean deploying;
+    private int ticks;
+    private int lastTicks;
+    /** How many blocks down the stairs reach this time. */
+    private int length;
+    /** Folding is held up by someone on the stairs; the chime has sounded. */
+    private boolean held;
+    private int cooldown;
+    /** Whether the steps are laid, a foot below them, and the hatch's blocks taken away. */
+    private boolean laid;
+    private boolean foot;
+    private boolean hatchOpen;
+
+    BellyAirstairs(BoardingStairsBlockEntity button, BlockPos head, Direction out, Direction right, int rise, int sections,
+                   List<AirstairControllerBlockEntity.Step> hatch) {
+        this.button = button;
+        this.head = head;
+        this.out = out;
+        this.right = right;
+        this.rise = rise;
+        this.sections = sections;
+        this.hatch = List.copyOf(hatch);
+    }
+
+    /** Whether the stairs are down, or on their way down. */
+    boolean down() {
+        return deploying;
+    }
+
+    /** Whether the stairs are all away and staying that way: folded under the floor, the hatch shut. */
+    boolean stowed() {
+        return !deploying && ticks == 0 && !hatchOpen;
+    }
+
+    Airstairs.Frame frame() {
+        return new Airstairs.Frame(button.getBlockPos().offset(head), out, right);
+    }
+
+    /** Where a step goes: so far down from the sill and as far out, in one of the flight's two columns. */
+    private BlockPos step(int down, int column) {
+        return button.getBlockPos().offset(head).relative(right, column).relative(out, down).below(down);
+    }
+
+    /** Where the stairs are between the last tick and this one, to draw them; null while stowed behind the shut hatch. */
+    @Nullable
+    AirstairFlight.Motion motion(float partialTick) {
+        if (ticks == 0 && lastTicks == 0 && !hatchOpen) {
+            return null;
+        }
+        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, 0, 1, hatchOpen, true);
+    }
+
+    /** Whether a block is one of the steps laid under the flight. */
+    boolean holds(Level level, BlockPos pos) {
+        return laid && level == button.getLevel() && AirstairSteps.holds(this::step, laidDown(), pos);
+    }
+
+    private int laidDown() {
+        return length + (foot ? 1 : 0);
+    }
+
+    /** Sets the stairs off down or up, unless they are already going that way. */
+    void go(ServerLevel level, boolean toDown) {
+        if (toDown && !deploying) {
+            deploy(level);
+        } else if (!toDown && deploying) {
+            fold(level);
+        }
+    }
+
+    /** Sets the stairs coming down, unless something stands in the way right under the hatch. */
+    private void deploy(ServerLevel level) {
+        if (ticks == 0) {
+            int reach = AirstairSteps.reach(level, this::step, rise, this::inHatch);
+            if (reach < AirstairFlight.shortest(rise, sections)) {
+                level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+                return;
+            }
+            length = reach;
+            openHatch(level);
+            sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, UNLATCH_PITCH);
+        }
+        deploying = true;
+        held = false;
+        if (ticks < AirstairFlight.OUT) {
+            sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+        }
+    }
+
+    /** Sets the stairs going away: at once, or once nobody is on them. */
+    private void fold(ServerLevel level) {
+        deploying = false;
+        if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, length))) {
+            held = true;
+            cooldown = CLEAR_CHECK_TICKS;
+            level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1.0F, 0.7F);
+            return;
+        }
+        takeUp(level);
+        sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+    }
+
+    /** Whether a block is part of the hatch, which the flight takes away as it comes down. */
+    private boolean inHatch(BlockPos cell) {
+        BlockPos from = cell.subtract(button.getBlockPos());
+        return hatch.stream().anyMatch(part -> part.offset().equals(from));
+    }
+
+    /** Once a tick, on the server: the stairs a tick further on their way, waiting while someone is on them. */
+    void tick(ServerLevel level) {
+        lastTicks = ticks;
+        if (held) {
+            waitForClear(level);
+            return;
+        }
+        if (deploying && ticks < AirstairFlight.OUT) {
+            ticks++;
+            if (ticks == AirstairFlight.HATCH || ticks == AirstairFlight.SWING || ticks == AirstairFlight.EXTEND) {
+                sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+            }
+            if (ticks == AirstairFlight.OUT) {
+                foot = AirstairSteps.lay(level, this::step, length, out.getOpposite());
+                laid = true;
+                sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
+            }
+            button.sync();
+        } else if (!deploying && (ticks > 0 || hatchOpen)) {
+            ticks = Math.max(0, ticks - 1);
+            if (ticks == AirstairFlight.EXTEND || ticks == AirstairFlight.SWING || ticks == AirstairFlight.HATCH) {
+                sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+            }
+            if (ticks == 0) {
+                closeHatch(level);
+                sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
+            }
+            button.sync();
+        }
+    }
+
+    /** Held up by someone on the stairs: now and then a look whether they have stepped off, and then away. */
+    private void waitForClear(ServerLevel level) {
+        if (--cooldown > 0) {
+            return;
+        }
+        cooldown = CLEAR_CHECK_TICKS;
+        if (!AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, length))) {
+            held = false;
+            takeUp(level);
+            sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
+            button.sync();
+        }
+    }
+
+    /** On a client, each tick: the same clock the server runs, toward where the stairs are going. */
+    void clientTick() {
+        lastTicks = ticks;
+        if (!held) {
+            ticks = Math.clamp(ticks + (deploying ? 1 : -1), 0, AirstairFlight.OUT);
+        }
+    }
+
+    private void takeUp(ServerLevel level) {
+        AirstairSteps.takeUp(level, this::step, laidDown());
+        laid = false;
+        foot = false;
+    }
+
+    /** Takes the hatch's blocks away, as it opens. */
+    private void openHatch(ServerLevel level) {
+        for (AirstairControllerBlockEntity.Step part : hatch) {
+            BlockPos at = button.getBlockPos().offset(part.offset());
+            if (level.getBlockState(at).is(part.state().getBlock())) {
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+        hatchOpen = true;
+    }
+
+    /** Puts the hatch's blocks back as they were, where nothing else has taken their place. */
+    private void closeHatch(ServerLevel level) {
+        for (AirstairControllerBlockEntity.Step part : hatch) {
+            BlockPos at = button.getBlockPos().offset(part.offset());
+            BlockState there = level.getBlockState(at);
+            if (there.isAir() || there.canBeReplaced()) {
+                level.setBlock(at, part.state(), Block.UPDATE_ALL);
+            }
+        }
+        hatchOpen = false;
+    }
+
+    /** Whether she stands on the ground: something solid in the world at the foot of a whole flight, or just under it. */
+    boolean onGround(ServerLevel level) {
+        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+            BlockPos foot = step(rise, column);
+            if (solidInWorld(level, foot) || solidInWorld(level, foot.below())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether the world has something solid where a block of hers is, under her rather than among her blocks. */
+    private static boolean solidInWorld(ServerLevel level, BlockPos pos) {
+        Vec3 at = SableFlight.toWorld(level, Vec3.atCenterOf(pos));
+        return AirstairSteps.IN_THE_WAY.test(level.getBlockState(BlockPos.containing(at)));
+    }
+
+    /** A sound from the head of the stairs, where the hatch is. */
+    private void sound(ServerLevel level, SoundEvent sound, float volume, float pitch) {
+        level.playSound(null, step(1, 0), sound, SoundSource.BLOCKS, volume, pitch);
+    }
+
+    void save(CompoundTag tag) {
+        tag.put("Head", NbtUtils.writeBlockPos(head));
+        tag.putString("Out", out.getSerializedName());
+        tag.putString("Right", right.getSerializedName());
+        tag.putInt("Rise", rise);
+        tag.putInt("Sections", sections);
+        ListTag parts = new ListTag();
+        for (AirstairControllerBlockEntity.Step part : hatch) {
+            CompoundTag entry = new CompoundTag();
+            entry.put("Offset", NbtUtils.writeBlockPos(part.offset()));
+            entry.put("State", NbtUtils.writeBlockState(part.state()));
+            parts.add(entry);
+        }
+        tag.put("Hatch", parts);
+        tag.putBoolean("Deploying", deploying);
+        tag.putInt("Ticks", ticks);
+        tag.putInt("Length", length);
+        tag.putBoolean("Held", held);
+        tag.putBoolean("Laid", laid);
+        tag.putBoolean("Foot", foot);
+        tag.putBoolean("HatchOpen", hatchOpen);
+    }
+
+    /** The stairs as saved, turned by the quarter turn their button has turned since (see {@link Turning}). */
+    static BellyAirstairs load(BoardingStairsBlockEntity button, CompoundTag tag, Rotation turn, HolderLookup.Provider registries) {
+        Direction out = Direction.byName(tag.getString("Out"));
+        Direction right = Direction.byName(tag.getString("Right"));
+        List<AirstairControllerBlockEntity.Step> parts = new ArrayList<>();
+        for (Tag entry : tag.getList("Hatch", Tag.TAG_COMPOUND)) {
+            CompoundTag part = (CompoundTag) entry;
+            parts.add(new AirstairControllerBlockEntity.Step(NbtUtils.readBlockPos(part, "Offset").orElse(BlockPos.ZERO),
+                NbtUtils.readBlockState(registries.lookupOrThrow(Registries.BLOCK), part.getCompound("State"))).turned(turn));
+        }
+        int rise = Math.max(0, tag.getInt("Rise"));
+        BellyAirstairs stairs = new BellyAirstairs(button, Turning.turn(NbtUtils.readBlockPos(tag, "Head").orElse(BlockPos.ZERO), turn),
+            turn.rotate(out == null ? Direction.NORTH : out), turn.rotate(right == null ? Direction.WEST : right), rise,
+            Math.clamp(tag.getInt("Sections"), 1, AirstairFlight.MOST_SECTIONS), parts);
+        stairs.deploying = tag.getBoolean("Deploying");
+        stairs.ticks = Math.clamp(tag.getInt("Ticks"), 0, AirstairFlight.OUT);
+        stairs.lastTicks = stairs.ticks;
+        stairs.length = Math.clamp(tag.getInt("Length"), 0, rise);
+        stairs.held = tag.getBoolean("Held");
+        stairs.laid = tag.getBoolean("Laid");
+        stairs.foot = tag.getBoolean("Foot");
+        stairs.hatchOpen = tag.getBoolean("HatchOpen");
+        return stairs;
+    }
+}

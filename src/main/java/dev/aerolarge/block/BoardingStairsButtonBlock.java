@@ -42,8 +42,11 @@ public class BoardingStairsButtonBlock extends LitButtonBlock implements EntityB
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return !level.isClientSide && type == AerolargeRegistry.BOARDING_STAIRS_ENTITY.get()
-            ? (tickLevel, pos, tickState, stairs) -> ((BoardingStairsBlockEntity) stairs).serverTick((ServerLevel) tickLevel)
-            : null;
+        if (type != AerolargeRegistry.BOARDING_STAIRS_ENTITY.get()) {
+            return null;
+        }
+        return level.isClientSide
+            ? (tickLevel, pos, tickState, stairs) -> ((BoardingStairsBlockEntity) stairs).clientTick()
+            : (tickLevel, pos, tickState, stairs) -> ((BoardingStairsBlockEntity) stairs).serverTick((ServerLevel) tickLevel);
     }
 }

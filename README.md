@@ -1447,13 +1447,18 @@ axial gangway, an open aluminium grating with glass rails and lamps along its ed
 second last, nearly the whole length of the hull. In the belly below lie the passenger decks: a lower deck, and over it
 an upper deck with long promenade windows down both sides, slanting with the hull's curve. Stairs climb from the lower
 deck to the upper and on up to the gangway; boarding stairs come up through the belly from the ground, and a ladder
-climbs from the control car up its neck to a corridor running aft to the decks. The boarding stairs fold away into the
-belly as soon as she moves, a row at a time from their foot, the hull's cover closing over them, with the airliner's
-airstairs' motor and latch; once she is down on the ground again after flying they come down of their own accord, as far
-as the ground lets them. A lit amber button with a staircase on it, the airstairs' own, stands at the head of each
-flight on the lower deck, and another low on the outside of the control car's port side, to call them down from the
-ground: pressing any of them folds all her boarding stairs away or brings them down, while she stands still; moving, it
-only sounds a low note.
+climbs from the control car up its neck to a corridor running aft to the decks. Her boarding stairs are the airliner's
+airstairs, two blocks wide: two flights, one either side of the middle, coming down forward from the lower deck
+through stairwells in its floor, open treads with yellow nosings between aluminium stringers and a handrail along each
+side, walked like any stairs. They fold away as soon as she moves, with the airliner's airstairs' motor and latch: the
+handrails go down, the lower sections run in, the flight swings up flat under the deck's floor, and her cover and the
+floor close over it. Once she is down on the ground again after flying, or as soon as she is built, they come down of
+their own accord, as far as the ground lets them; going away, they wait with a chime until nobody is on them. A lit
+amber button with a staircase on it, the airstairs' own, stands at the head of each flight on the lower deck, and
+another low on the outside of the control car's port side, to call them down from the ground: pressing any of them
+folds all her boarding stairs away or brings them down, while she stands still; moving, it only sounds a low note. A
+zeppelin built before keeps her stairs of blocks, a block wide, which fold away into her belly a row at a time from
+their foot.
 
 Aboard, you hear her hull: the hollow boom of the wind over her cover ringing through the great space inside, louder the
 faster she flies, and now and then a girder groaning somewhere round you, echoing away through the hull. The client
@@ -1838,7 +1843,8 @@ behind each running engine, a picture on strips turned to the camera; `PlugDoorR
 swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining into,
 only the quads of it that face the camera; `CockpitDoorRenderer` draws the cockpit door's panel the same way, swinging
 about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and going away, as
-`AirstairFlight` builds and moves them, from their `AirstairBlockEntity`; `SlideRenderer` draws an evacuation slide
+`AirstairFlight` builds and moves them, from their `AirstairBlockEntity`, `AirstairSteps` laying the steps they are
+walked on; `SlideRenderer` draws an evacuation slide
 inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
 `SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `LaserTurretRenderer` draws the laser path
 clearer's turret out of its hatch, turned toward the newest of its bolts, and `LaserBolts` those bolts, from the tip of
@@ -1863,7 +1869,8 @@ flying aboard, past what they see, a few chunks at a time. The zeppelin's geomet
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
 blocks and working the air inside its hull out from the shape as it hands it over, its burners turned down to what a
 small cell holds by `Burners`, and its boarding stairs folded away and brought down by the `BoardingStairsBlockEntity`
-of the `BoardingStairsButtonBlock` at the head of each flight; both airframes go up through `AirframeBuild` as a
+of the `BoardingStairsButtonBlock` at the head of each flight, as `BellyAirstairs`, the airliner's airstairs hung in
+her belly, which `AirstairRenderer` draws as it does the airliner's; both airframes go up through `AirframeBuild` as a
 `Layout`, kept as packed positions, from an `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its
 souvenir model (`SouvenirModelBlock`), and `PropellerRenderer` draws a zeppelin's propellers behind their
 `PropellerBlock` hubs, which spin them with their engine's signal. Once the hull stands, `ZeppelinLayout` lays its

@@ -5,7 +5,6 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,7 +27,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -49,7 +47,7 @@ import net.minecraft.world.phys.Vec3;
  * found in the hull below the door, the flight sliding into the hold behind it. One built before the plug doors keeps
  * its old stairs.
  */
-public class AirstairBlockEntity extends AirstairControllerBlockEntity {
+public class AirstairBlockEntity extends AirstairControllerBlockEntity implements Airstairs {
     /** While someone stands on the stairs, how often folding looks again whether they have stepped off. */
     private static final int CLEAR_CHECK_TICKS = 10;
     /** How often stairs that are out look whether the airliner has started to move, in ticks. */
@@ -64,14 +62,6 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     private static final float LATCH_VOLUME = 1.0F;
     /** The latch clunks higher coming free than going home. */
     private static final float UNLATCH_PITCH = 1.25F;
-    /**
-     * How far over the ground the foot's plate stands at least, in blocks: lower, and the bottom tread is within a step
-     * of the ground anyway, and the airliner might come to rest on the plate.
-     */
-    private static final double FOOT_CLEARANCE = 0.05;
-    /** What stands in the stairs' way, in the world or aboard: anything solid but their own steps. */
-    private static final Predicate<BlockState> IN_THE_WAY =
-        state -> !state.isAir() && !state.canBeReplaced() && !(state.getBlock() instanceof AirstairStepBlock);
 
     /** How many blocks the flight comes down from the sill to the wheels' ground, and in how many sections. */
     private int rise;
@@ -91,7 +81,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     private int cooldown;
     /** Whether the steps are laid, and the hatch's skin is off. */
     private boolean laid;
-    /** Whether a foot was laid with them, below the bottom step (see {@link #layFoot}). */
+    /** Whether a foot was laid with them, below the bottom step (see {@link AirstairSteps#lay}). */
     private boolean foot;
     private boolean hatchOpen;
     /**
@@ -147,6 +137,18 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     @Override
     protected boolean folded() {
         return integral() ? !deploying && ticks == 0 && !hatchOpen : super.folded();
+    }
+
+    /** The served door's frame: its bottom left part, the way it faces, and its right as seen from outside. */
+    @Nullable
+    @Override
+    public Frame frame() {
+        BlockPos door = served();
+        if (door == null || level == null) {
+            return null;
+        }
+        BlockState part = level.getBlockState(door);
+        return new Frame(door, part.getValue(PlugDoorBlock.FACING), PlugDoorBlock.right(part));
     }
 
     /** The served door's bottom left part, where it is; null when the controller serves no plug door. */
@@ -321,29 +323,17 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
      * stowed behind the shut hatch, or old stairs of blocks.
      */
     @Nullable
+    @Override
     public AirstairFlight.Motion motion(float partialTick) {
         if (rise <= 0 || standing() || ticks == 0 && lastTicks == 0 && !hatchOpen) {
             return null;
         }
-        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, hatchInset, mouth(), hatchOpen);
+        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, hatchInset, mouth(), hatchOpen, false);
     }
 
     /** How far down the stairs could come this time: blocks clear all the way from the door, up to their whole rise. */
     private int reach(ServerLevel level) {
-        for (int down = 1; down <= rise; down++) {
-            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
-                BlockPos step = step(down, column);
-                if (step == null) {
-                    return 0;
-                }
-                for (BlockPos cell : new BlockPos[]{step, step.above()}) {
-                    if (SableFlight.find(level, SableFlight.toWorld(level, Vec3.atCenterOf(cell)), IN_THE_WAY) != null) {
-                        return down - 1;
-                    }
-                }
-            }
-        }
-        return rise;
+        return AirstairSteps.reach(level, this::step, rise, cell -> false);
     }
 
     /**
@@ -362,68 +352,20 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
     }
 
     /** Whether a block is one of the steps this controller has laid. */
+    @Override
     public boolean holds(Level level, BlockPos pos) {
-        if (!laid || level != this.level) {
-            return false;
-        }
-        for (int down = 1; down <= laidDown(); down++) {
-            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
-                if (pos.equals(step(down, column))) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return laid && level == this.level && AirstairSteps.holds(this::step, laidDown(), pos);
     }
 
-    /** Lays the steps under the flight, each with a guard over it holding its side's handrail. */
+    /** Lays the steps under the flight, each with a guard over it holding its side's handrail, and the foot below. */
     private void lay(ServerLevel level) {
         BlockPos door = served();
         if (door == null) {
             return;
         }
         Direction up = level.getBlockState(door).getValue(PlugDoorBlock.FACING).getOpposite();
-        BlockState block = AerolargeRegistry.AIRSTAIR_STEP.get().defaultBlockState();
-        for (int down = 1; down <= length; down++) {
-            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
-                BlockPos step = step(down, column);
-                AirstairStepBlock.Edge edge = column == 0 ? AirstairStepBlock.Edge.LEFT : AirstairStepBlock.Edge.RIGHT;
-                place(level, step, AirstairStepBlock.step(block, up));
-                place(level, step.above(), AirstairStepBlock.guard(block, up, edge));
-            }
-        }
-        foot = layFoot(level, AirstairStepBlock.foot(block, up));
+        foot = AirstairSteps.lay(level, this::step, length, up);
         laid = true;
-    }
-
-    /**
-     * Lays the foot below the bottom step in each column where it is wanted (see {@link AirstairStepBlock}): an
-     * assembled airliner rides on its suspension, which can stand the bottom tread higher over the ground than anyone
-     * steps up without a jump, and the foot's plate, half way between them, bridges it. Only where the ground fills the
-     * middle of the foot's block but stays below its top, the plate at least {@link #FOOT_CLEARANCE} over it; never on
-     * the ground's own blocks, under stairs that stand on them. Gives whether any was laid.
-     */
-    private boolean layFoot(ServerLevel level, BlockState foot) {
-        boolean laidAny = false;
-        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
-            BlockPos at = step(length + 1, column);
-            if (at != null && wantsFoot(level, at)) {
-                laidAny |= place(level, at, foot);
-            }
-        }
-        return laidAny;
-    }
-
-    /** Whether the ground under the foot's block, in the world, stands high enough and low enough for its plate. */
-    private static boolean wantsFoot(ServerLevel level, BlockPos at) {
-        Vec3 plate = SableFlight.toWorld(level, Vec3.atCenterOf(at).add(0, 0.5, 0));
-        BlockPos below = BlockPos.containing(plate.x, plate.y - 0.5, plate.z);
-        BlockState ground = level.getBlockState(below);
-        if (!IN_THE_WAY.test(ground)) {
-            return false;
-        }
-        double top = below.getY() + ground.getCollisionShape(level, below).max(Direction.Axis.Y);
-        return plate.y - top >= FOOT_CLEARANCE;
     }
 
     /** How far down the laid steps reach, the foot below the bottom step included. */
@@ -431,43 +373,16 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity {
         return length + (foot ? 1 : 0);
     }
 
-    /** Puts a block where there is room for it: air, or something as easily replaced as grass. Gives whether it did. */
-    private static boolean place(ServerLevel level, BlockPos at, BlockState state) {
-        BlockState there = level.getBlockState(at);
-        if (there.isAir() || there.canBeReplaced()) {
-            level.setBlock(at, state, Block.UPDATE_ALL);
-            return true;
-        }
-        return false;
-    }
-
     /** Takes the steps up, and the guards with them; only the steps' own blocks, whatever stands in their place. */
     private void takeUp(ServerLevel level) {
-        for (int down = 1; down <= laidDown(); down++) {
-            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
-                BlockPos step = step(down, column);
-                for (BlockPos cell : step == null ? new BlockPos[0] : new BlockPos[]{step.above(), step}) {
-                    if (level.getBlockState(cell).getBlock() instanceof AirstairStepBlock) {
-                        level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                    }
-                }
-            }
-        }
+        AirstairSteps.takeUp(level, this::step, laidDown());
         laid = false;
         foot = false;
     }
 
     /** Whether anyone is on the steps, or in the way just over them. */
     private boolean anyoneOn(ServerLevel level) {
-        List<AABB> spots = new ArrayList<>();
-        for (int down = 1; down <= length; down++) {
-            BlockPos left = step(down, 0);
-            BlockPos right = step(down, AirstairFlight.WIDTH - 1);
-            if (left != null && right != null) {
-                spots.add(AABB.encapsulatingFullBlocks(left, right.above(2)));
-            }
-        }
-        return anyoneIn(level, spots);
+        return anyoneIn(level, AirstairSteps.spots(this::step, length));
     }
 
     /**

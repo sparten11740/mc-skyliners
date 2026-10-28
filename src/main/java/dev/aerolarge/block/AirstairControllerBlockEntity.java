@@ -226,6 +226,14 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
      * world, or aboard an assembled airliner, where everyone is seen in the airliner's frame.
      */
     protected boolean anyoneIn(ServerLevel level, List<AABB> spots) {
+        return anyoneIn(level, worldPosition, spots);
+    }
+
+    /**
+     * Whether anyone alive is in any of the boxes, given among the blocks of whatever holds a block: where it stands in
+     * the world, or aboard an assembled airliner or zeppelin, where everyone is seen in its frame.
+     */
+    static boolean anyoneIn(ServerLevel level, BlockPos holder, List<AABB> spots) {
         if (spots.isEmpty()) {
             return false;
         }
@@ -237,7 +245,7 @@ public abstract class AirstairControllerBlockEntity extends BlockEntity {
         Vec3 middle = SableFlight.toWorld(level, all.getCenter());
         double reach = Math.sqrt(all.getXsize() * all.getXsize() + all.getYsize() * all.getYsize() + all.getZsize() * all.getZsize()) / 2 + 2;
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(middle, middle).inflate(reach), LivingEntity::isAlive)) {
-            Vec3 centre = SableFlight.toPlot(level, worldPosition, entity.getBoundingBox().getCenter(), false);
+            Vec3 centre = SableFlight.toPlot(level, holder, entity.getBoundingBox().getCenter(), false);
             AABB box = AABB.ofSize(centre, entity.getBbWidth(), entity.getBbHeight(), entity.getBbWidth());
             for (AABB spot : spots) {
                 if (spot.intersects(box)) {
