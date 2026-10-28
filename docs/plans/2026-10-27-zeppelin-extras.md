@@ -112,8 +112,16 @@ classes already, `coverAt` names its block directly):
 
 ## Outcome
 
-So far (alpha.127): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck launch (with
-paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board, 5 Festive
-blueprint, 6 Ship's colours, 7 Christening, 8 Flank screen, 9 Answer the Telegraph, 10 Trim car, and the secret techno
-room Jan asked for, 11 Lookout's flag, 12 Up Ship!, 13 Flyby camera, 14 Searchlights, 15 Skywriting, and the fixes from
-Jan's play-testing; and the hole at the nose's tip mended, and the control car faired into the hull.
+All 21 are built (alpha.146): the groundwork (pieces, options, `aerolarge:layout`), 1 Dressed for night, 2 Sky Deck
+launch (with paper planes that no longer freeze and are scored at landing targets), 3 Horn and echo, 4 Livery board, 5
+Festive blueprint, 6 Ship's colours, 7 Christening, 8 Flank screen, 9 Answer the Telegraph, 10 Trim car, and the
+secret techno room Jan asked for, 11 Lookout's flag, 12 Up Ship!, 13 Flyby camera, 14 Searchlights, 15 Skywriting, 16
+The Great Shadow, 17 Zeppelin Post, 18 Breath on the glass, 19 Towed banner, 20 Sky crane (glued builds left for
+later), and 21 Flying carrier (experimental, off until switched on); the fixes from Jan's play-testing, the half-size
+zeppelin, the speed boost and the floodlights he asked for; the hole at the nose's tip mended, and the control car
+faired into the hull. Then a night's pass over the whole mod: the sound design (her engine cars' drone, which had
+none, the telegraphs, wheels, controls' stops, crane, clamps, canopy, touchdown and more), the airliner's self-destruct
+seen in flight, and fixes from a review of the night's code.
+
+Later: planting the flag; glued builds on the sky crane, through a Sable rope; a docked plane's mass counted by her
+pilot.
