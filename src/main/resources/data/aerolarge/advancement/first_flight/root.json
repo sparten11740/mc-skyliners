@@ -10,7 +10,9 @@
       "translate": "advancements.aerolarge.first_flight.root.description"
     },
     "frame": "task",
-    "background": "aerolarge:textures/block/airframe_panel.png"
+    "background": "aerolarge:textures/block/airframe_panel.png",
+    "show_toast": false,
+    "announce_to_chat": false
   },
   "criteria": {
     "done": {

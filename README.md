@@ -1372,17 +1372,17 @@ the plumes it was built with, so it may show both until it is built again.
 
 ### First Flight advancements
 
-The First Flight tab of the advancements marks the milestones: aboard as the airliner climbs away from the runway
-(Cleared for Takeoff), trying to get up with the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower
-than a block a second (Butter Landing), a basket scored in flight (Swish at 30,000 Feet), a parachute landing within
-a block of a target (Perfect Jump), a care package down within 10 blocks of a burning flare (Special Delivery), a
-villager passenger's fare (Frequent Flyer), emeralds spent at a duty-free counter (Duty Free), a paper plane thrown
-out of an airliner in flight coming down 100 blocks away (Air Mail), a dive into the moon pool off its springboard
-or its tower while the airliner flies, 15 metres or more above the ground (Cannonball), the three golden suitcases
-hidden in the hold (Lost and Found), a vacuum toilet flushed in flight, its blue ice let go 15 metres or more above
-the ground (Blue Ice), the five rubber ducks hidden aboard (Duck Hunt), and an espresso, a cappuccino and a mocha
-taken from a coffee machine (Barista), and aboard as the autopilot lands on a runway laid down from its blueprint and
-stops there (On the Numbers).
+The First Flight tab of the advancements, there from the moment a world is joined without a toast or a word in chat,
+marks the milestones: aboard as the airliner climbs away from the runway (Cleared for Takeoff), trying to get up with
+the seatbelt signs on (Buckle Up), aboard for a touchdown sinking slower than a block a second (Butter Landing), a
+basket scored in flight (Swish at 30,000 Feet), a parachute landing within a block of a target (Perfect Jump), a care
+package down within 10 blocks of a burning flare (Special Delivery), a villager passenger's fare (Frequent Flyer),
+emeralds spent at a duty-free counter (Duty Free), a paper plane thrown out of an airliner in flight coming down 100
+blocks away (Air Mail), a dive into the moon pool off its springboard or its tower while the airliner flies, 15 metres
+or more above the ground (Cannonball), the three golden suitcases hidden in the hold (Lost and Found), a vacuum toilet
+flushed in flight, its blue ice let go 15 metres or more above the ground (Blue Ice), the five rubber ducks hidden
+aboard (Duck Hunt), and an espresso, a cappuccino and a mocha taken from a coffee machine (Barista), and aboard as the
+autopilot lands on a runway laid down from its blueprint and stops there (On the Numbers).
 
 ### The zeppelin
 

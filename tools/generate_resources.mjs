@@ -5947,8 +5947,9 @@ barRecipes();
 dutyFreeKioskRecipes();
 towerInstrumentsRecipes();
 
-// The First Flight advancements. The first opens the tab on joining a world; each of the rest has one criterion,
-// "done", that only the mod grants, when it happens (see FirstFlight).
+// The First Flight advancements. The first opens the tab on joining a world, quietly, as vanilla's tabs open: no toast
+// and no line in chat for something nobody did. Each of the rest has one criterion, "done", that only the mod grants,
+// when it happens (see FirstFlight).
 const FIRST_FLIGHT = [
   // name, parent, icon, frame, title, description
   ["root", null, "airliner_blueprint", "task", "First Flight", "Airliners, from the runway to the jet stream"],
@@ -5973,7 +5974,7 @@ for (const [name, parent, icon, frame] of FIRST_FLIGHT) {
       title: { translate: `advancements.${ID}.first_flight.${name}.title` },
       description: { translate: `advancements.${ID}.first_flight.${name}.description` },
       frame,
-      ...(parent ? {} : { background: `${ID}:textures/block/airframe_panel.png` }),
+      ...(parent ? {} : { background: `${ID}:textures/block/airframe_panel.png`, show_toast: false, announce_to_chat: false }),
     },
     criteria: { done: { trigger: parent ? "minecraft:impossible" : "minecraft:tick" } },
   });
