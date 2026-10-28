@@ -11,14 +11,14 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The camera display in the control car, the airliner's own in its large size (see {@link TailCameraDisplayBlock}),
  * showing her outside cameras live (see {@link ZeppelinCamera}): upright on the starboard wall at eye height, its back
- * to the windows, beside the livery board and aft of it, away from the elevator wheel, so whoever repaints her watches
- * the new paint sweep over her. It shows the flyby camera at first, which sees her broadside as it circles her. It
+ * to the windows, over the livery selector and away from the elevator wheel, so whoever repaints her watches the new
+ * paint sweep over her. It shows the flyby camera at first, which sees her broadside as it circles her. It
  * stands against the car's wall face to face, so it is assembled with the zeppelin, and holds nothing up.
  */
 final class ZeppelinCameraDisplay implements ZeppelinPiece {
     /**
-     * How far aft of the car's front its forward edge is, a block aft of the livery board, and how high over the floor
-     * its bottom row is, in blocks.
+     * How far aft of the car's front its forward edge is, over the livery selector's, and how high over the floor its
+     * bottom row is, in blocks.
      */
     private static final int BACK = 8;
     private static final int UP = 2;

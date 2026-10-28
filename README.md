@@ -1437,7 +1437,7 @@ gas cells red and green within; fairy lights round every ring, red, gold, green 
 another so they seem to chase round; a wreath of evergreen garland dotted with berries round the tip of its nose, a red
 bow under it; a gold star in place of the red beacon on its mast; and sleigh bells ringing with its engines as they
 turn, heard all over the ship aboard and from its propellers below. Operators build one with `/aerolarge build <pos>
-<north|east|south|west> zeppelin festive`. Its livery board can repaint it in any of the board's liveries; its cells,
+<north|east|south|west> zeppelin festive`. Its livery selector can repaint it in any of its liveries; its cells,
 lights, wreath and star stay. The Festive Garland and Festive Bow its wreath is made of are in the creative tab too.
 
 Inside, the cover is held up by seventeen rings of blue lattice girders, and in the sixteen bays between them hang its
@@ -1738,17 +1738,20 @@ off the ground, the later the higher it flies, a second for every hundred blocks
 airship's echo altimeter told it by the echo of a bang. The server config's `horn` leaves the cord off zeppelins built
 from then on; one can be crafted from two string over dark oak planks and hung anywhere.
 
-A Livery Board stands against the control car's starboard wall, painted with six swatches in two rows of three:
-Hindenburg silver, Graf Zeppelin cream and navy grey; the airliner's colours (white, with a blue cheatline down each
-flank and its fins and engine cars blue), polar red with white fins, and midnight blue scattered with gold stars. Use a
-swatch and the zeppelin is repainted in it, on the ground or in flight: with the scrape of a brush the new paint sweeps
-from the nose to the tail over a minute, a painters' cradle on each flank riding its edge, a plank platform with a rail
-and a pot of paint slung on ropes over the hull from the crown; the board frames the swatch the zeppelin wears in gold.
-The paint is only drawn, so no block changes and the zeppelin flies as before. The server config's `liveryBoard`
-leaves the board off zeppelins built from then on, which keep their paint; one can be crafted from a red, a yellow and
-a blue dye over three dark oak planks.
+Under the camera display, just over the floor on the control car's starboard wall, stands the Livery Selector, a wooden
+board four blocks wide with six pictures of the zeppelin on it in two rows of three, each painted in one of her liveries
+just as she would be: Hindenburg silver, Graf Zeppelin cream and navy grey; the airliner's colours (white, with a blue
+cheatline down each flank and its fins and engine cars blue), polar red with white fins, and midnight blue scattered
+with gold stars. Use a picture and the zeppelin is repainted in it, on the ground or in flight: with the scrape of a
+brush the new paint sweeps from the nose to the tail over a minute, a painters' cradle on each flank riding its edge, a
+plank platform with a rail and a pot of paint slung on ropes over the hull from the crown, and the camera display over
+the selector shows it happening; the selector frames the livery the zeppelin wears in gold. The paint is only drawn, so
+no block changes and the zeppelin flies as before. The server config's `liveryBoard` leaves the selector off zeppelins
+built from then on, which keep their paint. Zeppelins built before it keep their Livery Board, six painted swatches on
+one block, which repaints her the same way. A Livery Board can be crafted from a red, a yellow and a blue dye over three
+dark oak planks, and a Livery Selector from a Livery Board between two dark oak planks.
 
-Just aft of the Livery Board, at eye height on the same wall, hangs a camera display like the airliner's flight deck
+Over the Livery Selector, at eye height on the same wall, hangs a camera display like the airliner's flight deck
 one, but four blocks wide and two tall, showing her outside cameras live: the flyby camera at first, circling the whole
 ship, so whoever repaints her watches the new paint sweep over her, painters' cradles and all. Three buttons along its
 bottom left pick the camera, each a little zeppelin seen from the side with a big dot where its camera is: sky blue
@@ -1891,8 +1894,9 @@ features, each a `ZeppelinPiece` of its own on one list, as the blueprint's `Zep
 Sky Shaft and the Sky Deck, `ZeppelinCellGallery` the gallery inside the middle cell, `ZeppelinDecks` the furnished
 zeppelin's furniture, `ZeppelinLights` its lights (`NavLightBlock`s, their glow drawn by `NavLightRenderer`),
 `ZeppelinSkyDeckLaunch` the Sky Deck's rack, jump light and `PaperPlaneBoxBlock`, `ZeppelinHornCord` the `HornCordBlock`
-that `ShipHorn` sounds the horn from, its echo and the mobs looking up, and `ZeppelinLiveryBoard` the
-`LiveryBoardBlock`, whose `LiveryBoardRenderer` draws the painters' cradle; a zeppelin's `Livery` is kept by its
+that `ShipHorn` sounds the horn from, its echo and the mobs looking up, and `ZeppelinLiverySelector` the
+`LiverySelectorBlock`, whose `LiverySelectorRenderer` draws a `LiveryPreview` of her in each livery and, as the
+`LiveryBoardRenderer` of the older `LiveryBoardBlock` does, her `PaintersCradles`; a zeppelin's `Livery` is kept by its
 autopilot, and `ZeppelinPaint` tints its cover (the shell model's `tint_index`) and fabric by it on the client, and
 `ZeppelinFestive` dresses a festive zeppelin (`SleighBells` rings with its engines on the client), and `ZeppelinColours`
 stands the flagstaff on the Sky Deck, its colours hoisted at a `FlagHalyardBlock`, flown by `ShipsColoursRenderer` and

@@ -131,6 +131,8 @@ import dev.aerolarge.block.LandingTargetBlock;
 import dev.aerolarge.block.LandingTargetBlockEntity;
 import dev.aerolarge.block.LiveryBoardBlock;
 import dev.aerolarge.block.LiveryBoardBlockEntity;
+import dev.aerolarge.block.LiverySelectorBlock;
+import dev.aerolarge.block.LiverySelectorBlockEntity;
 import dev.aerolarge.block.LookoutGlassBlock;
 import dev.aerolarge.block.MailSackBlock;
 import dev.aerolarge.block.LookoutGlassBlockEntity;
@@ -1582,6 +1584,11 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiveryBoardBlockEntity>> LIVERY_BOARD_ENTITY =
         BLOCK_ENTITIES.register("livery_board", () -> BlockEntityType.Builder.of(LiveryBoardBlockEntity::new, LIVERY_BOARD.get()).build(null));
+    public static final DeferredBlock<LiverySelectorBlock> LIVERY_SELECTOR = BLOCKS.registerBlock(
+        "livery_selector", LiverySelectorBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiverySelectorBlockEntity>> LIVERY_SELECTOR_ENTITY =
+        BLOCK_ENTITIES.register("livery_selector", () -> BlockEntityType.Builder.of(LiverySelectorBlockEntity::new, LIVERY_SELECTOR.get()).build(null));
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );
@@ -1785,6 +1792,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BURNER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(BURNER_LEVER);
     public static final DeferredItem<BlockItem> HORN_CORD_ITEM = ITEMS.registerSimpleBlockItem(HORN_CORD);
     public static final DeferredItem<BlockItem> LIVERY_BOARD_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_BOARD);
+    public static final DeferredItem<BlockItem> LIVERY_SELECTOR_ITEM = ITEMS.registerSimpleBlockItem(LIVERY_SELECTOR);
     public static final DeferredItem<BlockItem> FLAG_HALYARD_ITEM = ITEMS.registerSimpleBlockItem(FLAG_HALYARD);
     public static final DeferredItem<BlockItem> FLAGSTAFF_ITEM = ITEMS.registerSimpleBlockItem(FLAGSTAFF);
     public static final DeferredItem<BlockItem> SHIPS_PLAQUE_ITEM = ITEMS.registerSimpleBlockItem(SHIPS_PLAQUE);
@@ -1919,7 +1927,7 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM

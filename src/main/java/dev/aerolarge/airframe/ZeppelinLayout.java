@@ -182,7 +182,7 @@ public final class ZeppelinLayout implements Layout {
         ZeppelinDecks::new,
         ZeppelinLights::new,
         ZeppelinHornCord::new,
-        ZeppelinLiveryBoard::new,
+        ZeppelinLiverySelector::new,
         ZeppelinCameraDisplay::new,
         ZeppelinFestive::new,
         ZeppelinColours::new,

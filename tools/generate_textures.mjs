@@ -3571,6 +3571,26 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return column >= 0 && row >= 0 ? swatches[row][column](x - SWATCH_COLUMNS[column], y - SWATCH_ROWS[row]) : BOARD;
   }, 2);
   texture(blockOutput, "livery_board_side", (x, y) => (y % 4 === 0 ? BOARD : BOARD_FRAME), 3);
+  // The livery selector in the hand: a wide board of the same wood in its frame, and on it a little zeppelin on sky in
+  // each livery, in the board's two rows of three: silver, cream and navy grey; white with its blue cheatline, red with
+  // a white fin, and midnight blue with a gold star.
+  const SELECTOR_SKY = [0xbf, 0xdd, 0xf5];
+  const hulls = [[SILVER, [0xef, 0xe0, 0xbc], [0x7e, 0x87, 0x91]], [[0xf4, 0xf6, 0xf8], [0xcc, 0x3a, 0x2e], [0x26, 0x33, 0x5e]]];
+  const marks = [[null, null, null], [(x, y) => (y === 2 ? [0x2f, 0x5b, 0xc0] : null), (x, y) => (x === 0 && y === 0 ? [0xf4, 0xf4, 0xf4] : null),
+    (x, y) => (x === 1 && y === 1 ? [0xff, 0xd8, 0x66] : null)]];
+  texture(itemOutput, "livery_selector", (x, y) => {
+    if (y < 3 || y > 12) return CLEAR;
+    if (x === 0 || x === 15 || y === 3 || y === 12) return BOARD_FRAME;
+    const column = [1, 6, 11].findIndex((left) => x >= left && x < left + 4);
+    const row = [4, 8].findIndex((top) => y >= top && y < top + 3);
+    if (column < 0 || row < 0) return BOARD;
+    const cx = x - [1, 6, 11][column];
+    const cy = y - [4, 8][row];
+    const hull = cy === 1 || (cx >= 1 && cx <= 2) || (cx === 0 && cy === 0);
+    if (!hull) return SELECTOR_SKY;
+    const mark = marks[row][column] ? marks[row][column](cx, cy) : null;
+    return mark || hulls[row][column];
+  }, 0);
   // A festive zeppelin's wreath: evergreen garland, sprigs of dark and light needles with gaps between, a red berry
   // here and there and a glint of gold tinsel; and the red satin of its bow, a sheen across its folds.
   texture(blockOutput, "festive_garland", (x, y) => {

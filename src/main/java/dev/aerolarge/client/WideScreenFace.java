@@ -12,8 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * buttons all grown with it: in the pose {@link #onto} leaves, it is {@link #width} wide and {@link #height} tall.
  */
 final class WideScreenFace {
-    /** A row of the face, in blocks: as tall as the row upright, or as its diagonal tilted. */
-    static final double UPRIGHT_HEIGHT = WideScreenBlock.UPRIGHT_HEIGHT;
+    /** A row of the tilted face, in blocks: as tall as its diagonal. */
     static final double TILTED_HEIGHT = WideScreenBlock.TILTED_HEIGHT;
     /** The upright face, from the middle of the block toward the way it faces, lifted just off the slim screen. */
     private static final float UPRIGHT_FACE = -0.5F + WideScreenBlock.DEPTH / 16F + 0.002F;
@@ -32,7 +31,7 @@ final class WideScreenFace {
 
     /** How tall the face of a screen in this state is, at its rows' scale: a row's height. */
     static double height(BlockState state) {
-        return state.getValue(WideScreenBlock.TILTED) ? TILTED_HEIGHT : UPRIGHT_HEIGHT;
+        return WideScreenBlock.rowHeight(state);
     }
 
     /**

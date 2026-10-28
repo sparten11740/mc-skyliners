@@ -1103,6 +1103,7 @@ function zeppelinControlsLang() {
     "subtitles.aerolarge.techno_track": "Techno pounds",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
+    "block.aerolarge.livery_selector": "Livery Selector",
     "block.aerolarge.festive_garland": "Festive Garland",
     "block.aerolarge.festive_bow": "Festive Bow",
     "livery.aerolarge.silver": "Hindenburg silver",
@@ -4406,17 +4407,18 @@ cubes.flight_display = null;
 // edge along the bottom of its back (a thin slab through the middle turned 45 degrees and stretched to reach both
 // edges), its glass looking down and out the way it faces, over steps of the dark casing that fill the half behind it
 // out to the top and back. Only part 0 drops the display, so the whole screen gives back one.
-{
+// The livery selector is the same slim board in the livery board's dark wood, its pictures drawn by its renderer.
+function slimScreenModels(name, screen, casing) {
   const depth = 3;
-  write(`assets/${ID}/models/block/tail_camera_display.json`, boxes(
-    { screen: `${ID}:block/tail_camera_display`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+  write(`assets/${ID}/models/block/${name}.json`, boxes(
+    { screen, casing, particle: casing },
     [[[0, 0, 16 - depth], [16, 16, 16], { north: "#screen", all: "#casing" }]],
   ));
   const all = (texture) => ({ north: { texture }, south: { texture }, east: { texture }, west: { texture }, up: { texture }, down: { texture } });
   const steps = [1, 2, 3, 4, 5, 6, 7].map((k) => ({ from: [0, 2 * k, 16 - 2 * k], to: [16, 2 * k + 2, 16], faces: all("#casing") }));
-  write(`assets/${ID}/models/block/tail_camera_display_tilted.json`, {
+  write(`assets/${ID}/models/block/${name}_tilted.json`, {
     parent: "minecraft:block/block",
-    textures: { screen: `${ID}:block/tail_camera_display`, casing: `${ID}:block/passenger_screen_casing`, particle: `${ID}:block/passenger_screen_casing` },
+    textures: { screen, casing, particle: casing },
     elements: [
       {
         from: [0, 7.75, 0], to: [16, 8.25, 16], rotation: { origin: [8, 8, 8], axis: "x", angle: 45, rescale: true },
@@ -4425,9 +4427,12 @@ cubes.flight_display = null;
       ...steps,
     ],
   });
-  // The large display a zeppelin's control car has is the same slim screen, block for block, four wide and two tall.
-  wideScreen("tail_camera_display", "tail_camera_display", ["large=false", "large=true"]);
 }
+slimScreenModels("tail_camera_display", `${ID}:block/tail_camera_display`, `${ID}:block/passenger_screen_casing`);
+// The large display a zeppelin's control car has is the same slim screen, block for block, four wide and two tall.
+wideScreen("tail_camera_display", "tail_camera_display", ["large=false", "large=true"]);
+slimScreenModels("livery_selector", `${ID}:block/livery_board_side`, `${ID}:block/livery_board_side`);
+wideScreen("livery_selector", "livery_selector");
 // A wide screen (see WideScreenBlock) drawn with the models given, upright or tilted, and its item a picture of its
 // own; only part 0 drops it, so the whole screen gives back one. Its parts run as far as the largest wide screen's
 // (WideScreenBlock.MOST_PARTS); a block with a size of its own lists the values of the property that picks it.
@@ -5730,7 +5735,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -5811,6 +5816,8 @@ shaped("parachute_rack", ["PPP", "P P", "PPP"], { P: `${ID}:parachute` }, 1);
 shaped("paper_plane_box", ["PPP", "PCP", "PPP"], { P: `${ID}:paper_plane`, C: "minecraft:chest" }, 1);
 shaped("horn_cord", ["S", "S", "P"], { S: "minecraft:string", P: "minecraft:dark_oak_planks" }, 1);
 shaped("livery_board", ["RYB", "PPP"], { R: "minecraft:red_dye", Y: "minecraft:yellow_dye", B: "minecraft:blue_dye", P: "minecraft:dark_oak_planks" }, 1);
+// The livery selector: a livery board between two more dark oak planks, its swatches painted out as pictures.
+shaped("livery_selector", ["PLP"], { L: `${ID}:livery_board`, P: "minecraft:dark_oak_planks" }, 1);
 shaped("flagstaff", ["W", "S", "S"], { W: "minecraft:white_dye", S: "minecraft:stick" }, 2);
 shaped("flag_halyard", ["S", "F", "C"], { S: "minecraft:string", F: `${ID}:flagstaff`, C: "minecraft:copper_ingot" }, 1);
 shaped("lookout_glass", ["S", "C", "F"], { S: "minecraft:spyglass", C: "minecraft:copper_ingot", F: "minecraft:dark_oak_fence" }, 1);

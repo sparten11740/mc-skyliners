@@ -121,6 +121,11 @@ public abstract class WideScreenBlock extends HorizontalDirectionalBlock impleme
         return ((WideScreenBlock) state.getBlock()).rowsOf(state);
     }
 
+    /** How tall a row of the face of a screen in this state is, in blocks: the row upright, or tilted, its diagonal. */
+    public static double rowHeight(BlockState state) {
+        return state.getValue(TILTED) ? TILTED_HEIGHT : UPRIGHT_HEIGHT;
+    }
+
     private static int parts(BlockState state) {
         return columns(state) * rows(state);
     }

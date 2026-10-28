@@ -285,13 +285,14 @@ public final class AerolargeConfig {
             .define("horn", true);
         LIVERY_BOARD = builder
             .comment(
-                "Whether a zeppelin is built with a livery board in its control car, its swatches repainting the zeppelin in silver, cream,",
-                "navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep theirs, and keep their paint."
+                "Whether a zeppelin is built with a livery selector under the camera display in its control car, its pictures of her repainting",
+                "her in silver, cream, navy grey, the airliner's colours, polar red or midnight blue. Zeppelins already built keep their",
+                "livery board or selector, and keep their paint."
             )
             .define("liveryBoard", true);
         CAMERA_DISPLAY = builder
             .comment(
-                "Whether a zeppelin is built with a camera display over the livery board in her control car, showing her outside",
+                "Whether a zeppelin is built with a camera display over the livery selector in her control car, showing her outside",
                 "cameras live as the airliner's flight deck shows its own, the flyby camera circling her at first, so a new paint",
                 "is seen sweeping over her. Zeppelins already built keep theirs."
             )

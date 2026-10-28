@@ -83,18 +83,25 @@ public class LiveryBoardBlock extends HorizontalDirectionalBlock implements Enti
             return InteractionResult.PASS;
         }
         if (level instanceof ServerLevel server) {
-            Livery livery = swatch(facing, hit.getLocation().subtract(Vec3.atCenterOf(pos)));
-            AutopilotBlockEntity autopilot = zeppelin(server, pos);
-            if (livery != null && autopilot != null) {
-                autopilot.repaint(livery);
-                server.playSound(null, pos, SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS, 1.0F, 0.8F);
-                player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.repainting",
-                    Component.translatable("livery.aerolarge." + livery.name().toLowerCase(Locale.ROOT))), true);
-            } else if (autopilot == null) {
-                player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.no_zeppelin"), true);
-            }
+            repaint(server, pos, player, swatch(facing, hit.getLocation().subtract(Vec3.atCenterOf(pos))));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * A livery picked on a board or a selector at a place, on the server: its zeppelin is repainted in it, with the
+     * scrape of a brush and the livery's name; nothing for none picked, and a word if no zeppelin is about to paint.
+     */
+    public static void repaint(ServerLevel server, BlockPos pos, Player player, @Nullable Livery livery) {
+        AutopilotBlockEntity autopilot = zeppelin(server, pos);
+        if (livery != null && autopilot != null) {
+            autopilot.repaint(livery);
+            server.playSound(null, pos, SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS, 1.0F, 0.8F);
+            player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.repainting",
+                Component.translatable("livery.aerolarge." + livery.name().toLowerCase(Locale.ROOT))), true);
+        } else if (autopilot == null) {
+            player.displayClientMessage(Component.translatable("message.aerolarge.livery_board.no_zeppelin"), true);
+        }
     }
 
     /**
