@@ -51,11 +51,14 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * finding her frame searches her blocks for her autopilot.
  */
 public final class TowedBanner {
-    /** How long the tow rope is, from her tail to the banner, and how tall the banner is and how long, in blocks. */
-    private static final double ROPE = 20;
-    private static final double HEIGHT = 10;
-    private static final double LONGEST = 72;
-    private static final double SHORTEST = 24;
+    /**
+     * How long the tow rope is, from her tail to the banner, and how tall the banner is and how long, in blocks: sized
+     * to read against a full-size zeppelin's 490-block hull, and as big behind a half-size one.
+     */
+    private static final double ROPE = 24;
+    private static final double HEIGHT = 14;
+    private static final double LONGEST = 100;
+    private static final double SHORTEST = 34;
     /**
      * How the banner streams back with her speed: the tangent of its angle from hanging straight down for each square
      * block a second, so it streams some 80 degrees back at 10 blocks a second; and slower than this, in blocks a
@@ -64,15 +67,16 @@ public final class TowedBanner {
     private static final double DRAG = 0.0567;
     private static final double STILL = 0.5;
     /**
-     * How much higher over the ground under it her tail must be than the rope and banner reach hanging straight down,
-     * for it to stream, in blocks.
+     * How much higher over the ground under it her tail must be than the rope and banner reach down as they stream,
+     * all their length hanging straight down while she is still and less the faster she flies, for it to stream, in
+     * blocks.
      */
     private static final double CLEARANCE = 8;
     /**
      * How far its free end flutters either way at most, in blocks, at {@link #FAST} or faster, in blocks a second; how
      * many waves run along it; and how fast they run, in radians a tick.
      */
-    private static final double FLUTTER = 1.8;
+    private static final double FLUTTER = 2.5;
     private static final double FAST = 12;
     private static final double WAVES = 2.5;
     private static final double WAVE_SPEED = 0.6;
@@ -189,7 +193,7 @@ public final class TowedBanner {
         ZeppelinSilhouette shape = ZeppelinSilhouette.of(frame.size());
         Vec3 plotTail = frame.origin().add(0, shape.axis(), 0).add(Vec3.atLowerCornerOf(frame.nose().getOpposite().getNormal()).scale(shape.length()));
         SableClient.View tail = SableClient.view(plotTail, Vec3.atLowerCornerOf(frame.nose().getOpposite().getNormal()), new Vec3(0, 1, 0), partialTick);
-        if (tail == null || tail.eye().y - ground(level, tail.eye()) < ROPE + picture.length() + CLEARANCE) {
+        if (tail == null) {
             return;
         }
         Vec3 velocity = new Vec3(ride.velocity().x(), ride.velocity().y(), ride.velocity().z());
@@ -197,6 +201,10 @@ public final class TowedBanner {
         double speed = back.length();
         back = speed > STILL ? back.normalize() : new Vec3(tail.forward().x, 0, tail.forward().z).normalize();
         double slant = Math.atan(DRAG * speed * speed);
+        double reach = (ROPE + picture.length()) * Math.cos(slant) + HEIGHT * Math.sin(slant);
+        if (tail.eye().y - ground(level, tail.eye()) < reach + CLEARANCE) {
+            return;
+        }
         Vec3 along = back.scale(Math.sin(slant)).add(0, -Math.cos(slant), 0);
         Vec3 side = new Vec3(-back.z, 0, back.x);
         Vec3 up = side.cross(along).normalize();
