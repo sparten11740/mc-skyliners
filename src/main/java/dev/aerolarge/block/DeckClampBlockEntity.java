@@ -49,10 +49,10 @@ public class DeckClampBlockEntity extends BlockEntity {
     private static final int SETTLED_LOOKS = 2;
     /**
      * How far across the deck either way and fore and aft a clamp looks for a plane, and how far over the deck, its
-     * wheels' suspension under it, in blocks: the four clamps between them cover the deck's middle, so a plane small or
-     * large is found wherever it comes to rest there.
+     * wheels' suspension under it, in blocks: the four clamps between them cover the deck's width and most of its
+     * length, so a plane small or large is found wherever it comes to rest there.
      */
-    private static final double ACROSS = 7;
+    private static final double ACROSS = 12;
     private static final double REACH = 4;
     /** How fast a plane may still move against her to count as resting on the deck, in blocks a second. */
     private static final double STILL = 0.5;

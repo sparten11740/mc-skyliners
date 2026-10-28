@@ -1632,7 +1632,7 @@ animal floating down slowly and a chest coming down on a parachute. The server c
 zeppelins built from then on, and off, the winches already built do nothing.
 
 The flying carrier, experimental and off until switched on with `flyingCarrier` in the server config: a zeppelin built
-then has a flight deck along her crown, forward of the Sky Deck where her crown runs level, a 9 by 40 strip of dark
+then has a flight deck along her crown, forward of the Sky Deck where her crown runs level, a 15 by 60 strip of dark
 non-slip deck with white lines along its edges and a dashed line down its middle, a bulb at each corner, four docking
 clamps set into it, yellow jaws lying flat with a red lamp between, and a yellow Clamp Release Lever at its forward
 port corner. Land a plane of your own on it (one built with Create Aeronautics, or anything else Sable flies),

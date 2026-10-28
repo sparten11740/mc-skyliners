@@ -5,6 +5,8 @@ import static dev.aerolarge.airframe.ZeppelinShape.*;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CarrierLeverBlock;
+import dev.aerolarge.block.ShellBlock;
+import dev.aerolarge.block.ShellGeometry;
 import dev.aerolarge.block.NavLightBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
@@ -24,12 +26,12 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
      * How far either side of the middle the deck reaches, how long it is, and how far forward of the Sky Deck it ends,
      * in blocks.
      */
-    private static final int HALF_WIDTH = 4;
-    private static final int DECK_LENGTH = 40;
+    private static final int HALF_WIDTH = 7;
+    private static final int DECK_LENGTH = 60;
     private static final int GAP = 4;
     /** How far either side of the middle the clamps are, and how far fore and aft of the deck's middle, in blocks. */
-    private static final int CLAMP_OUT = 2;
-    private static final int CLAMP_ALONG = 6;
+    private static final int CLAMP_OUT = 3;
+    private static final int CLAMP_ALONG = 9;
     /** How many rows the middle line's dashes and their gaps are long. */
     private static final int DASH = 2;
     /** How high over the crown the deck is looked for, in blocks: past the bulbs along it. */
@@ -60,6 +62,7 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
         for (int z = front; z <= aft; z++) {
             clearBulb(z);
             for (int x = -HALF_WIDTH; x <= HALF_WIDTH; x++) {
+                plinth(x, y, z);
                 layout.set(x, y, z, deckAt(x, z, front).defaultBlockState());
             }
         }
@@ -84,11 +87,27 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
 
     /** The crown's top at a row, the cover or fabric, under any bulb on it. */
     private int crownTop(int z) {
+        return crownTop(0, z);
+    }
+
+    /** The crown's top at a column, the cover or fabric, under any bulb on it. */
+    private int crownTop(int x, int z) {
         int top = layout.axis() + (int) Math.ceil(RADIUS * layout.scale()) + LOOK_FROM;
-        while (top > layout.axis() && !crown(layout.stateAt(0, top, z))) {
+        while (top > layout.axis() && !crown(layout.stateAt(x, top, z))) {
             top--;
         }
         return top;
+    }
+
+    /**
+     * Cover laid up from the crown to under the deck at a column, where the crown curves away under the deck's edge,
+     * so the deck stands on her rather than over a gap.
+     */
+    private void plinth(int x, int deck, int z) {
+        BlockState cover = ShellBlock.withShape(AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState(), ShellGeometry.WHOLE);
+        for (int y = crownTop(x, z) + 1; y < deck; y++) {
+            layout.set(x, y, z, cover);
+        }
     }
 
     /** The crown's bulb at a row, if one stands there, taken away: the deck is laid over the line of bulbs. */
