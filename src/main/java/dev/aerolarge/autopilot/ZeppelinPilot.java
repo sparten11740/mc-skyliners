@@ -114,6 +114,11 @@ public final class ZeppelinPilot {
     private static final double LEARNING_SPEED = 1;
     private static final double ASTERN_BOOST = 4;
     /**
+     * How far from an engine's signal the thrust asked of it must be before the signal is changed, in signal steps:
+     * more than half a step, so a thrust between two steps holds one of them rather than flipping between them.
+     */
+    private static final double SIGNAL_HOLD = 0.75;
+    /**
      * Turning: the engines' signal split per degree off the heading, taken off per degree a second it is turning
      * (damping), and the most it splits by.
      */
@@ -595,12 +600,21 @@ public final class ZeppelinPilot {
             if (!answered(level, frame, engine, push / FULL_SIGNAL, byHand)) {
                 continue;
             }
-            int forward = Mth.clamp((int) Math.round(push), 0, FULL_SIGNAL);
-            int back = Mth.clamp((int) Math.round(-push * ASTERN_BOOST), 0, FULL_SIGNAL);
             int key = engine * 2;
-            setEngine(level, origin, key, ahead.getOrDefault(engine, List.of()), forward);
-            setEngine(level, origin, key + 1, astern.getOrDefault(engine, List.of()), back);
+            setEngine(level, origin, key, ahead.getOrDefault(engine, List.of()), held(key, push));
+            setEngine(level, origin, key + 1, astern.getOrDefault(engine, List.of()), held(key + 1, -push * ASTERN_BOOST));
         }
+    }
+
+    /**
+     * The signal for so much thrust from an engine's relays: the one they were set to last, until the thrust is
+     * {@link #SIGNAL_HOLD} from it, then the nearest. Rounded afresh each tick, a cruise's thrust between two steps
+     * flipped her engines' signals several times a second, and each flip has every client redraw her engine cars.
+     */
+    private int held(int key, double thrust) {
+        double wanted = Mth.clamp(thrust, 0, FULL_SIGNAL);
+        Integer last = engineSignals.get(key);
+        return last != null && Math.abs(wanted - last) < SIGNAL_HOLD ? last : (int) Math.round(wanted);
     }
 
     /**
