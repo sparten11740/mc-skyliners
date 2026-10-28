@@ -368,6 +368,74 @@
       }
     ]
   },
+  "rocket_roar": {
+    "subtitle": "subtitles.aerolarge.rocket_roar",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_roar",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_roar_aboard": {
+    "subtitle": "subtitles.aerolarge.rocket_roar_aboard",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_roar_aboard"
+      }
+    ]
+  },
+  "rocket_ignition": {
+    "subtitle": "subtitles.aerolarge.rocket_ignition",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_ignition",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_ignition_aboard": {
+    "subtitle": "subtitles.aerolarge.rocket_ignition_aboard",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_ignition_aboard"
+      }
+    ]
+  },
+  "rocket_cutoff": {
+    "subtitle": "subtitles.aerolarge.rocket_cutoff",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_cutoff",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_cutoff_aboard": {
+    "subtitle": "subtitles.aerolarge.rocket_cutoff_aboard",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_cutoff_aboard"
+      }
+    ]
+  },
+  "rocket_jet_puff": {
+    "subtitle": "subtitles.aerolarge.rocket_jet_puff",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_jet_puff"
+      }
+    ]
+  },
+  "rocket_touchdown": {
+    "subtitle": "subtitles.aerolarge.rocket_touchdown",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_touchdown",
+        "attenuation_distance": 160
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.aerolarge.pa_chime",
     "sounds": [

@@ -1258,6 +1258,32 @@ function atcLang() {
   return Object.fromEntries(Object.entries(ATC_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 }
 
+// The rocket's sound and voice (see tools/generate_sounds.mjs, the client's RocketRoar and the autopilot's
+// RocketSounds). Her engines' roar, their ignition and cut-off and her touchdown on her fins, heard as far as
+// ROCKET_HEARD blocks off, out across the ground round her and up her whole height; the same heard aboard, round the
+// listener; and her side jets' puffs, near them.
+const ROCKET_HEARD = 160;
+const ROCKET_SUBTITLES = {
+  rocket_roar: "Rocket engines roar",
+  rocket_roar_aboard: "Rocket engines rumble",
+  rocket_ignition: "Rocket engines ignite",
+  rocket_ignition_aboard: "Rocket engines ignite",
+  rocket_cutoff: "Rocket engines cut off",
+  rocket_cutoff_aboard: "Rocket engines cut off",
+  rocket_jet_puff: "Side jet puffs",
+  rocket_touchdown: "Rocket lands on her fins",
+};
+function rocketSounds() {
+  const far = ["rocket_roar", "rocket_ignition", "rocket_cutoff", "rocket_touchdown"];
+  return Object.fromEntries(Object.keys(ROCKET_SUBTITLES).map((name) => [name, {
+    subtitle: `subtitles.${ID}.${name}`,
+    sounds: [far.includes(name) ? { name: `${ID}:${name}`, attenuation_distance: ROCKET_HEARD } : { name: `${ID}:${name}` }],
+  }]));
+}
+function rocketSoundsLang() {
+  return Object.fromEntries(Object.entries(ROCKET_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+}
+
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.
 {
   // How far an engine is heard, in blocks: from the flight deck and the far end of the cabin, and out on the ground
@@ -1274,6 +1300,7 @@ function atcLang() {
     sounds[name] = heardAboard(name);
   }
   Object.assign(sounds, atcSounds());
+  Object.assign(sounds, rocketSounds());
   sounds.pa_chime = { subtitle: `subtitles.${ID}.pa_chime`, sounds: [{ name: `${ID}:pa_chime` }] };
   sounds.radio_crackle = { subtitle: `subtitles.${ID}.radio_crackle`, sounds: [{ name: `${ID}:radio_crackle` }] };
   sounds.seatbelt_ding = { subtitle: `subtitles.${ID}.seatbelt_ding`, sounds: [{ name: `${ID}:seatbelt_ding` }] };
@@ -6293,6 +6320,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.engine": "Jet engine roars",
   ...VOICE_LANG,
   ...atcLang(),
+  ...rocketSoundsLang(),
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",

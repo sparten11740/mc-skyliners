@@ -1895,6 +1895,12 @@ once and switches itself off with a bell. Without a pin it comes back down where
 in the air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
 autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
 
+Her flight is heard as well as seen. At lift-off her engines light with a crack and a deep whoomp and their roar swells
+in. The roar follows her thrust, louder and higher the harder they push, and carries far across the ground; aboard, it
+comes through her hull as a deep rumble wherever you stand. Her side jets puff as they hold her upright. Landing, her
+fins take her weight with a heavy thunk and a hiss of their dampers, and her engines cut off, falling away with a pop,
+her hot bells ticking as they cool.
+
 She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may
 not go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
 are as they are lower down, only longer. Her settings screen's sky reaches as high, numbered more sparsely so the
@@ -2068,6 +2074,8 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 `LedControlsArt`.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
+`RocketSounds` puffs her side jets on the server and shows the clients how hard her engines fire, from which
+`RocketRoar` plays their roar, ignition, cut-off and her touchdown.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

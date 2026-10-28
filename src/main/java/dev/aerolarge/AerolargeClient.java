@@ -77,6 +77,7 @@ import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
+import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.SearchlightBeams;
@@ -234,6 +235,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(SearchlightBeams::stage);
         NeoForge.EVENT_BUS.addListener(SkyTrails::tick);
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
+        // A rocket's engines heard as they fire: her roar, its ignition and cut-off, and her touchdown.
+        NeoForge.EVENT_BUS.addListener(RocketRoar::tick);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));

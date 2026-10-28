@@ -636,6 +636,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final EdgeOfSpace space = new EdgeOfSpace();
     /** How far into its rocket's countdown it last sounded it, in ticks, so each second is heard once. */
     private int countHeard;
+    /** Its rocket's side jets heard as they fire, and how hard her engines fire as the clients are shown it. */
+    private final RocketSounds rocketSounds = new RocketSounds();
     /**
      * Its rocket's stories' floors, rows up from her fins' feet, from the entry story up, the cockpit's floor last, as
      * she was built, on the clients as on the server, so her livery can follow them (see {@link Livery.RocketSpot});
@@ -733,6 +735,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     @Nullable
     public RocketPilot.Report rocketReport() {
         return craft == Craft.ROCKET ? rocket.report() : null;
+    }
+
+    /** How hard its rocket's engines fire, on the clients as on the server, whose roar follows it: a share of full. */
+    public float rocketThrust() {
+        return rocketSounds.thrust();
     }
 
     /** What it flies, on the clients as on the server, whose pictures its screens show. */
@@ -1723,6 +1730,10 @@ public class AutopilotBlockEntity extends BlockEntity {
                 phase = next;
                 changed();
             }
+        }
+        // Her side jets' puffs, and her engines' thrust shown to the clients, who play her roar by it.
+        if (rocketSounds.tick(level, worldPosition, rocket)) {
+            changed();
         }
         watchArrival(flight, radio + flight.apex() - flight.position().y > AIRBORNE);
     }
@@ -2746,6 +2757,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         loadRunway(tag);
         // Only ever in the update sent to clients: the server finds it afresh each tick.
         stuck = tag.getBoolean("Stuck");
+        rocketSounds.loadShown(tag);
         loadFrame(tag);
     }
 
@@ -2813,6 +2825,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         saveFrame(tag);
         Turning.save(tag, getBlockState());
         surfaces.saveShown(tag);
+        rocketSounds.saveShown(tag);
         return tag;
     }
 

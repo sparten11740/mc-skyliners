@@ -1819,6 +1819,252 @@ const blastNoise = (() => {
   writeSound("lift_chime_down", down, 0.6);
 }
 
+// The rocket's engines (see the client's RocketRoar and the autopilot's RocketSounds), each sound with a random
+// sequence of its own, so the sounds above are unchanged. Her roar, a seamless loop played while her bells fire: a deep
+// rumble of exhaust, brown noise low-passed near 700 hertz and slowly surging; the hiss of the gas, a band round 2.5
+// kilohertz twelve decibels under the rumble; the crackle of the shock waves in her plumes, some forty sharp pops a
+// second; and a 32 hertz sub, felt more than heard. Aboard, the same roar comes through her hull as a rumble, its hiss
+// and crackle gone. As her engines light at lift-off: the crack of them catching, a deep whoomp sweeping up from 30 to
+// 55 hertz, and the roar swelling in as its low-pass opens, handing over to the loop as the client fades it in. As
+// they stop: the roar falling away as its low-pass closes, a pop as the flames go out, and her hot bells ticking as
+// they cool. Each of these is written to the loop's own scale, so it is as loud beside the roar as it should be, and
+// heard aboard through her hull as the roar is. A side jet firing: a short pssht of gas round 3 kilohertz. Touching
+// down: a heavy thunk round 45 hertz as her fins take her weight, a clank of their feet, and the hiss and groan of
+// their dampers as she settles. Tune it all here.
+const ROCKET = {
+  // The loop, and how much longer it is rendered to crossfade its tail over its head, in seconds.
+  loop: 4,
+  crossfade: 0.5,
+  // The rumble's low-pass, the hiss's band and how far under the rumble the hiss is, in hertz and decibels; and how
+  // loud the crackle is beside the rumble, as a share of the rumble's root mean square.
+  rumbleCutoff: 700,
+  hissCentre: 2500,
+  hissUnder: 12,
+  crackleShare: 0.35,
+  // Crackles a second, and the sub's pitch, in hertz, and how loud it is beside the rumble, as a share.
+  crackles: 40,
+  sub: 32,
+  subShare: 0.8,
+  // The surge: how far the rumble swells and eases, as a share, at a few whole turns round the loop.
+  surge: [[3, 0.12, 0.7], [7, 0.08, 2.1]],
+  // The hull's low-pass on the roar heard aboard, in hertz, taken twice.
+  aboardCutoff: 220,
+  // Past this, as a multiple of the rumble's root mean square, the peaks are rounded off, so the crackle and the crack
+  // do not leave the roar quiet once it is normalised.
+  soft: 3,
+  // The peak the loop is written at; the ignition and the cut-off share its scale.
+  level: 0.85,
+  // The client's handover at lift-off (RocketRoar's IGNITION_LEAD and IGNITION_RISE): the loop rises in so many
+  // seconds after the ignition starts, over so many more.
+  handoverAt: 0.75,
+  handover: 1.25,
+  // The client's fade of the loop at cut-off (RocketRoar's CUTOFF_FADE), in seconds.
+  fadeOut: 0.2,
+};
+
+/** The highest any sample reaches either way. */
+function peakOf(samples) {
+  let peak = 0;
+  samples.forEach((s) => (peak = Math.max(peak, Math.abs(s))));
+  return peak;
+}
+
+/** The root mean square of samples. */
+function rms(samples) {
+  let sum = 0;
+  samples.forEach((s) => (sum += s * s));
+  return Math.sqrt(sum / samples.length);
+}
+
+/** The samples through a two-pole low-pass at the cutoff given, in hertz, its q a Butterworth's. */
+function lowPassed(input, cutoff) {
+  const out = new Float64Array(input.length);
+  const w = (2 * Math.PI * cutoff) / RATE;
+  const alpha = Math.sin(w) / (2 * Math.SQRT1_2);
+  const cos = Math.cos(w);
+  const [b0, b1, a0, a1, a2] = [(1 - cos) / 2, 1 - cos, 1 + alpha, -2 * cos, 1 - alpha];
+  let [x1, x2, y1, y2] = [0, 0, 0, 0];
+  for (let i = 0; i < input.length; i++) {
+    const y = (b0 * input[i] + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2) / a0;
+    [x2, x1, y2, y1] = [x1, input[i], y1, y];
+    out[i] = y;
+  }
+  return out;
+}
+
+/** Crossfades noise rendered a little long, its tail over its head at an even power, into a seamless loop. */
+function seamlessNoise(samples, seconds, fadeSeconds) {
+  const length = Math.round(seconds * RATE);
+  const fade = Math.round(fadeSeconds * RATE);
+  const loop = samples.slice(0, length);
+  for (let i = 0; i < fade; i++) {
+    const w = ((i / fade) * Math.PI) / 2;
+    loop[i] = samples[length + i] * Math.cos(w) + samples[i] * Math.sin(w);
+  }
+  return loop;
+}
+
+/**
+ * A rocket's roar for so many seconds, from a random sequence of its own, its three parts apart, none yet levelled:
+ * the rumble, brown noise through a low-pass at cutoff(t) hertz, surging; the hiss, a band of noise round
+ * ROCKET.hissCentre; and the crackle, pops coming at crackles(t) a second, each a sharp push of air and its smaller
+ * pull back, mostly outward. Times t in seconds.
+ */
+function rocketRoar(seconds, own, cutoff, crackles) {
+  const n = Math.round(seconds * RATE);
+  const rumble = new Float64Array(n);
+  const white = new Float64Array(n);
+  const crackle = new Float64Array(n);
+  const pop = Float64Array.from({ length: Math.round(0.003 * RATE) }, (_, i) => Math.exp(-i / (0.00025 * RATE)) - 0.45 * Math.exp(-i / (0.0009 * RATE)));
+  let brown = 0;
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    white[i] = own() * 2 - 1;
+    // Brown noise, its slow drift let leak away under some 35 hertz.
+    brown = (brown + 0.02 * white[i]) * 0.995;
+    // A state variable low-pass, so its cutoff may move as it goes.
+    const tune = 2 * Math.sin((Math.PI * cutoff(t)) / RATE);
+    low += tune * band;
+    band += tune * (brown - low - Math.SQRT2 * band);
+    const surge = ROCKET.surge.reduce((sum, [turns, depth, phase]) => sum + depth * Math.sin((2 * Math.PI * turns * t) / ROCKET.loop + phase), 1);
+    rumble[i] = low * surge;
+    if (own() < crackles(t) / RATE) {
+      const strength = (0.4 + 0.6 * own() ** 2) * (own() < 0.85 ? 1 : -1);
+      for (let k = 0; k < pop.length && i + k < n; k++) {
+        crackle[i + k] += strength * pop[k];
+      }
+    }
+  }
+  return { rumble, hiss: resonance(white, ROCKET.hissCentre, 0.9), crackle };
+}
+
+/** Rounds off peaks past ROCKET.soft, a multiple of the rumble's root mean square. */
+function softened(samples) {
+  return samples.map((s) => ROCKET.soft * Math.tanh(s / ROCKET.soft));
+}
+{
+  const roarRandom = ownRandom(0x526f6172);
+  const rendered = ROCKET.loop + ROCKET.crossfade;
+  const steady = rocketRoar(rendered, roarRandom, () => ROCKET.rumbleCutoff, () => ROCKET.crackles);
+  // Levelled once from the steady roar, and the same levels for the ignition and the cut-off: the rumble's root mean
+  // square one, the hiss and the crackle set beside it.
+  const gain = {
+    rumble: 1 / rms(steady.rumble),
+    hiss: 10 ** (-ROCKET.hissUnder / 20) / rms(steady.hiss),
+    crackle: ROCKET.crackleShare / rms(steady.crackle),
+  };
+  const mix = (parts, rumbleAt, hissAt, crackleAt) => {
+    const mixed = new Float64Array(parts.rumble.length);
+    for (let i = 0; i < mixed.length; i++) {
+      const t = i / RATE;
+      mixed[i] = rumbleAt(t) * gain.rumble * parts.rumble[i] + hissAt(t) * gain.hiss * parts.hiss[i] + crackleAt(t) * gain.crackle * parts.crackle[i];
+    }
+    return mixed;
+  };
+  const noise = seamlessNoise(mix(steady, () => 1, () => 1, () => 1), ROCKET.loop, ROCKET.crossfade);
+  // The sub, a whole number of turns round the loop, so it needs no crossfade.
+  const loop = softened(noise.map((s, i) => s + ROCKET.subShare * (Math.sin((2 * Math.PI * ROCKET.sub * i) / RATE) + 0.3 * Math.sin((4 * Math.PI * ROCKET.sub * i) / RATE))));
+  const scale = ROCKET.level / peakOf(loop);
+  writeSound("rocket_roar", loop, ROCKET.level);
+  // Aboard: filtered round the loop twice and the second turn kept, so the filter carries over its seam. The ignition
+  // and the cut-off heard aboard go through the same hull, written to the muffled loop's scale.
+  const hull = (samples) => lowPassed(lowPassed(samples, ROCKET.aboardCutoff), ROCKET.aboardCutoff);
+  const twice = new Float64Array(2 * loop.length);
+  twice.set(loop);
+  twice.set(loop, loop.length);
+  const aboard = hull(twice).slice(loop.length);
+  const aboardScale = ROCKET.level / peakOf(aboard);
+  writeSound("rocket_roar_aboard", aboard, ROCKET.level);
+
+  // The ignition. The loop rises in over the handover: the ignition's roar falls away under it at an even power.
+  const ignitionLength = ROCKET.handoverAt + ROCKET.handover + 0.2;
+  const handedOver = (t) => Math.max(0, Math.min(1, (t - ROCKET.handoverAt) / ROCKET.handover));
+  const swell = (t) => gearRamp(t, 0, 0.5) * Math.sqrt(1 - handedOver(t) ** 2);
+  const lighting = rocketRoar(ignitionLength, roarRandom, (t) => 120 + (ROCKET.rumbleCutoff - 120) * gearRamp(t, 0.05, 1.0), (t) => ROCKET.crackles * gearRamp(t, 0.25, 0.9));
+  const ignition = mix(lighting, swell, (t) => swell(t) * gearRamp(t, 0.3, 1.0), swell);
+  let phase = 0;
+  let fireball = 0;
+  for (let i = 0; i < ignition.length; i++) {
+    const t = i / RATE;
+    const white = roarRandom() * 2 - 1;
+    const crack = t < 0.012 ? 5 * white * Math.exp(-t / 0.003) : 0;
+    phase += (2 * Math.PI * (30 + 25 * gearRamp(t, 0, 0.4))) / RATE;
+    const whoomp = Math.min(1, t / 0.02) * Math.exp(-Math.max(0, t - 0.08) / 0.4) * (Math.sin(phase) + 0.35 * Math.sin(2 * phase) + 0.12 * Math.sin(3 * phase));
+    fireball += 0.02 * (white - fireball);
+    ignition[i] = (ignition[i] + crack + 3.5 * whoomp + 12 * fireball * Math.exp(-t / 0.3)) * Math.min(1, (ignitionLength - t) / 0.05);
+  }
+  const lit = softened(ignition);
+  writeSound("rocket_ignition", lit, peakOf(lit) * scale);
+  const litAboard = hull(lit);
+  writeSound("rocket_ignition_aboard", litAboard, peakOf(litAboard) * aboardScale);
+
+  // The cut-off. The loop fades out over its first moment: the cut-off's roar comes in under it at an even power, then
+  // falls away as its low-pass closes.
+  const cutoffLength = 3.2;
+  const fading = (t) => Math.max(0, 1 - t / ROCKET.fadeOut);
+  const falling = (t) => Math.sqrt(1 - fading(t) ** 2) * Math.exp(-Math.max(0, t - ROCKET.fadeOut) / 0.35);
+  const dying = rocketRoar(cutoffLength, roarRandom, (t) => 90 + (ROCKET.rumbleCutoff - 90) * Math.exp(-t / 0.3), (t) => ROCKET.crackles * Math.exp(-t / 0.2));
+  const cutoff = mix(dying, falling, (t) => falling(t) * Math.exp(-t / 0.15), falling);
+  thunk(cutoff, 0.38, 50, 2.5, roarRandom);
+  let vent = 0;
+  for (let i = Math.round(0.3 * RATE); i < cutoff.length; i++) {
+    const t = i / RATE;
+    const white = roarRandom() * 2 - 1;
+    cutoff[i] += 0.12 * (white - vent) * Math.exp(-(t - 0.3) / 1.0);
+    vent = white;
+  }
+  for (let t = 0.7; t < cutoffLength - 0.1; t += -Math.log(1 - roarRandom()) / (0.8 + 8 * Math.exp(-(t - 0.7) / 0.8))) {
+    const pitch = 2600 + 3400 * roarRandom();
+    click(cutoff, t, pitch, 0.3 + 0.4 * roarRandom(), roarRandom);
+    gearRing(cutoff, t + 0.001, pitch * 1.13, 0.15 * roarRandom());
+  }
+  const out = softened(cutoff);
+  writeSound("rocket_cutoff", out, peakOf(out) * scale);
+  const outAboard = hull(out);
+  writeSound("rocket_cutoff_aboard", outAboard, peakOf(outAboard) * aboardScale);
+
+  // A side jet firing: about 120 milliseconds of gas round 3 kilohertz, bursting in, and its valve's click.
+  const puff = new Float64Array(Math.round(0.15 * RATE));
+  const gas = resonance(Float64Array.from(puff, () => roarRandom() * 2 - 1), 3000, 1.3);
+  let previous = 0;
+  for (let i = 0; i < puff.length; i++) {
+    const t = i / RATE;
+    const white = roarRandom() * 2 - 1;
+    const envelope = Math.min(1, t / 0.004) * Math.max(0, 1 - t / 0.12) ** 1.5;
+    puff[i] = envelope * (3 * gas[i] + 0.25 * (white - previous));
+    previous = white;
+  }
+  click(puff, 0, 1800, 0.3, roarRandom);
+  writeSound("rocket_jet_puff", puff, 0.8);
+
+  // Touching down: the thunk of her weight coming onto her fins, falling to some 45 hertz with a crack as they meet the
+  // ground; a clank of their feet; and their dampers taking it up, a hiss of oil through their valves, fluttering, and
+  // the groan of the struts as they sink.
+  const touchdown = new Float64Array(Math.round(1.5 * RATE));
+  let thump = 0;
+  let grit = 0;
+  let oil = 0;
+  let strut = 0;
+  for (let i = 0; i < touchdown.length; i++) {
+    const t = i / RATE;
+    const white = roarRandom() * 2 - 1;
+    thump += (2 * Math.PI * (45 + 60 * Math.exp(-t / 0.03))) / RATE;
+    const weight = Math.min(1, t / 0.002) * Math.exp(-t / 0.25) * Math.tanh(1.6 * (Math.sin(thump) + 0.4 * Math.sin(2 * thump) + 0.15 * Math.sin(3 * thump)));
+    grit += 0.3 * (white - grit);
+    const crack = t < 0.012 ? 0.6 * grit * (1 - t / 0.012) : 0;
+    oil += 0.25 * (white - oil);
+    const hiss = t > 0.06 ? Math.min(1, (t - 0.06) / 0.04) * Math.exp(-(t - 0.06) / 0.5) * (1 + 0.15 * Math.sin(2 * Math.PI * 17 * t)) * (white - oil) : 0;
+    strut += (2 * Math.PI * (130 - 40 * Math.min(1, t / 0.8))) / RATE;
+    const groan = t > 0.05 && t < 1.0 ? Math.sin((Math.PI * (t - 0.05)) / 0.95) * (Math.sin(strut) + 0.3 * Math.sin(2 * strut) + 0.1 * Math.sin(3 * strut)) : 0;
+    touchdown[i] = weight + crack + 0.28 * hiss + 0.12 * groan;
+  }
+  gearRing(touchdown, 0.003, 240, 0.12);
+  gearRing(touchdown, 0.003, 590, 0.08);
+  writeSound("rocket_touchdown", touchdown, 0.9);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
 // recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
 // through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along

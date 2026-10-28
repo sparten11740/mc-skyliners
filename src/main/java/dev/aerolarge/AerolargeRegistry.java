@@ -646,6 +646,20 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_HUM = sound("lift_hum");
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_UP = sound("lift_chime_up");
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_DOWN = sound("lift_chime_down");
+
+    // The rocket's engines (see dev.aerolarge.autopilot.RocketSounds and the client's RocketRoar).
+    /** Her engines' roar, looped while they fire, swelled and pitched with their thrust; and as it is heard aboard. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR = sound("rocket_roar");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR_ABOARD = sound("rocket_roar_aboard");
+    /** Her engines lighting at lift-off, and cutting off; and each as it is heard aboard. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_IGNITION = sound("rocket_ignition");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_IGNITION_ABOARD = sound("rocket_ignition_aboard");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_CUTOFF = sound("rocket_cutoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_CUTOFF_ABOARD = sound("rocket_cutoff_aboard");
+    /** One of her side jets firing from rest. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_JET_PUFF = sound("rocket_jet_puff");
+    /** Her fins taking her weight as she lands. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_TOUCHDOWN = sound("rocket_touchdown");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
     );

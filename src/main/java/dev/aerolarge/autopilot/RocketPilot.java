@@ -461,11 +461,22 @@ public final class RocketPilot {
     }
 
     /**
-     * At rest on the ground or switched off: every engine and jet let go. Its relays are never sent to the clients:
-     * nothing there reads them, and each sent would have them redraw that part of the rocket.
+     * At rest on the ground or switched off: every engine and jet let go, and its report says so, as her sounds follow
+     * it (see {@link RocketSounds}). Its relays are never sent to the clients: nothing there reads them, and each sent
+     * would have them redraw that part of the rocket.
      */
     void rest(ServerLevel level, BlockPos origin) {
         Relays.drive(level, origin, links(), 0, false);
+        lastShare = 0;
+        Arrays.fill(jetSignals, 0);
+    }
+
+    /**
+     * Each side jet's relay, as an offset from the control head, in the order its report gives their signals (near
+     * the nose ahead, right, back and left, then near the bottom); null where there is none.
+     */
+    List<BlockPos> jetRelays() {
+        return Arrays.asList(top.ahead(), top.right(), top.back(), top.left(), bottom.ahead(), bottom.right(), bottom.back(), bottom.left());
     }
 
     /** Told to land, or switched off in the air: it comes down where it is now, rather than where it was going. */
