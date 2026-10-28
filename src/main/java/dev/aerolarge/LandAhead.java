@@ -23,8 +23,8 @@ import net.minecraft.world.phys.Vec3;
  * are asked for nearest first, a few at once and none while the server is behind, and each is kept loaded for a while,
  * until the player's own view has reached it. Over new land that takes about a third off each crossing and half the
  * longest hold-ups. What is left is mostly the new land settling as it starts to tick round the player, its leaves and
- * its water, which done ahead as well cost the server more than it saved. Experimental, and off unless
- * {@code landAhead} is set in the server config.
+ * its water, which done ahead as well cost the server more than it saved. The server config's {@code landAhead}
+ * switches it off.
  */
 public final class LandAhead {
     /** How fast a body must fly, in blocks a second, for the land ahead of those aboard to be loaded. */

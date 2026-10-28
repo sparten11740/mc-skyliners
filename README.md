@@ -1788,11 +1788,11 @@ loaded, from the pause menu's Mods button while playing in single player; they a
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
 into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a
-second. As an experiment, `landAhead` in the server config (off by default) loads the land ahead of anyone flying
-aboard an airliner or a zeppelin a little before they see it, `landAheadChunks` chunks past the edge of their view (8
-by default), a few at a time while the server has time to spare. Measured aboard the zeppelin over new land, it took a
-third to two fifths off each of those moments and most of the longest. Generating the world beforehand, with a mod
-such as Chunky, does about as much on its own, and with both the moments came to about two fifths of what they were.
+second. So the server loads the land ahead of anyone flying aboard an airliner or a zeppelin a little before they see
+it, `landAheadChunks` chunks past the edge of their view (8 by default), a few at a time while it has time to spare;
+`landAhead` in the server config turns that off. Measured aboard the zeppelin over new land, it took a third to two
+fifths off each of those moments and most of the longest. Generating the world beforehand, with a mod such as Chunky,
+does about as much on its own, and with both the moments came to about two fifths of what they were.
 
 ## Building
 

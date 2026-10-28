@@ -131,12 +131,12 @@ public final class AerolargeConfig {
             .define("retractableGear", true);
         LAND_AHEAD = builder
             .comment(
-                "Experimental: whether the land ahead of a player flying aboard an airliner or a zeppelin (any of Sable's bodies) is loaded",
-                "a little before they see it, a few chunks at a time while the server has time to spare, and generated where nobody has",
-                "been. Without it, flying over new land the server generates a row of it all at once each time the player crosses into",
-                "another chunk, and holds up its tick while it does."
+                "Whether the land ahead of a player flying aboard an airliner or a zeppelin (any of Sable's bodies) is loaded a little",
+                "before they see it, a few chunks at a time while the server has time to spare, and generated where nobody has been.",
+                "Without it, flying over new land the server generates a row of it all at once each time the player crosses into another",
+                "chunk, and holds up its tick while it does."
             )
-            .define("landAhead", false);
+            .define("landAhead", true);
         LAND_AHEAD_CHUNKS = builder
             .comment("How far past the edge of what each player sees the land ahead is loaded, in chunks.")
             .defineInRange("landAheadChunks", 8, 1, 32);
