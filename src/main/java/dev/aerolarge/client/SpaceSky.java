@@ -46,18 +46,18 @@ import org.joml.Vector3f;
  * <p>NeoForge has no event for the sky's colour, and taking over the overworld's sky would fight any other mod that
  * does, so space is drawn over the game's own sky, right after it ({@code AFTER_SKY}): a dome round the camera, as
  * opaque as the height calls for and in the colour of the sky there; the stars, the sun and the moon over it, since it
- * hides the game's own; then the planet under the rim and the glow along it, and last, now and then, a shooting star
- * (see {@link ShootingStars}), over the planet when it burns up below the camera. The land fades into the fog's colour
- * at the edge of the world drawn, and the fog takes the planet's colour (see {@link #fog}), so the land meets the
- * planet without a seam. The clouds fade through the colour the game draws them in, set just before it draws them and
- * put back once the weather is drawn; gone, they are left out altogether by the cabin's hold on them (see
- * {@link CloudlessCabin}).
+ * hides the game's own; then the planet under the rim and the glow along it; by night the northern lights along the
+ * rim (see {@link Aurora}); and last, now and then, a shooting star (see {@link ShootingStars}), over the planet when
+ * it burns up below the camera. The land fades into the fog's colour at the edge of the world drawn, and the fog takes
+ * the planet's colour (see {@link #fog}), so the land meets the planet without a seam. The clouds fade through the
+ * colour the game draws them in, set just before it draws them and put back once the weather is drawn; gone, they are
+ * left out altogether by the cabin's hold on them (see {@link CloudlessCabin}).
  *
  * <p>All of it goes by the camera each drawing of the world is from, not by the player, so a camera display's picture
  * (see {@link TailCameraFeed}) shows space as its camera sees it. Only in a world with the overworld's sky, never with
  * the camera in water, lava or powder snow, blinded, in a boss's fog, or with the {@code spaceSky} setting off. Under y
  * 400 nothing is drawn or changed; over it, six small draws a frame, the dome and the stars kept on the graphics card,
- * and a seventh while a shooting star streaks.
+ * another by night for the northern lights and another while a shooting star streaks.
  */
 public final class SpaceSky {
     /** How high the camera must be for anything of space to show, in world blocks: under it, the sky is the game's. */
@@ -198,6 +198,7 @@ public final class SpaceSky {
         double dip = Math.min(DIP_MOST, DIP_FROM + (height - SPACE_FROM) * DIP_A_BLOCK);
         drawPlanet(pose, dip, planetRed, planetGreen, planetBlue);
         drawGlow(pose, dip, Math.max(day, GLOW_NIGHT), opacity);
+        Aurora.draw(pose, level, partialTick, height, dip, day);
         ShootingStars.draw(pose, level, partialTick, height, dip, starsShown(starlight, opacity));
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.defaultBlendFunc();

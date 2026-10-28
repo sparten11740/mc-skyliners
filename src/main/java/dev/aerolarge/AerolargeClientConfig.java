@@ -19,6 +19,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
     public static final ModConfigSpec.BooleanValue SPACE_SKY;
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
+    public static final ModConfigSpec.BooleanValue AURORA;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -92,6 +93,10 @@ public final class AerolargeClientConfig {
                 "are there: across the sky overhead, and from the edge of space, at y 1,000, over the planet just under its rim,",
                 "where they burn up below you; one in ten is a bigger green fireball. Off, the stars there keep still.")
             .define("shootingStars", true);
+        AURORA = builder
+            .comment("In the space sky (see spaceSky), by night from y 600 up, the northern lights: a ribbon along the planet's rim to",
+                "the north, green at its foot and violet at its top, rippling slowly. Off, the night there is dark.")
+            .define("aurora", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")
