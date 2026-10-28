@@ -1039,6 +1039,46 @@
       }
     ]
   },
+  "lift_door": {
+    "subtitle": "subtitles.aerolarge.lift_door",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_door"
+      }
+    ]
+  },
+  "lift_start": {
+    "subtitle": "subtitles.aerolarge.lift_start",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_start"
+      }
+    ]
+  },
+  "lift_hum": {
+    "subtitle": "subtitles.aerolarge.lift_hum",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_hum"
+      }
+    ]
+  },
+  "lift_chime_up": {
+    "subtitle": "subtitles.aerolarge.lift_chime_up",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_chime_up"
+      }
+    ]
+  },
+  "lift_chime_down": {
+    "subtitle": "subtitles.aerolarge.lift_chime_down",
+    "sounds": [
+      {
+        "name": "aerolarge:lift_chime_down"
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

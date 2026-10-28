@@ -1770,6 +1770,55 @@ const blastNoise = (() => {
   writeSound("self_destruct_rumble", samples, 0.9);
 }
 
+// The rocket's lift, with a random sequence of its own so the sounds above are unchanged. Its doors: a smooth slide,
+// a soft rush of air over the rumble of their rollers, ending in a soft thunk as they meet their stops. Its motor
+// setting off: the hum of its mains-fed motor coming up, with the whine of its drive rising as it gathers speed. Its
+// hum as the car rides: that motor running, a low 50, 100 and 150 hertz under a quiet whine, every part a whole number
+// of turns round the two-second loop so it plays on without a seam. Its chimes: one bright tone as the car comes in
+// going up, two falling as it comes in going down.
+{
+  const liftRandom = ownRandom(0x4c696674);
+  const door = new Float64Array(Math.round(0.9 * RATE));
+  let low = 0;
+  let band = 0;
+  for (let i = 0; i < door.length; i++) {
+    const t = i / RATE;
+    const white = liftRandom() * 2 - 1;
+    low += 0.04 * (white - low);
+    band += 0.25 * (white - band);
+    const slide = Math.sin(Math.PI * Math.min(1, t / 0.8)) ** 1.5;
+    const rollers = 0.25 * Math.sin(2 * Math.PI * 140 * t) * slide;
+    const thunkAt = t - 0.8;
+    const thunk = thunkAt > 0 ? Math.exp(-thunkAt / 0.03) * (0.9 * Math.sin(2 * Math.PI * 70 * thunkAt) + 0.3 * (liftRandom() * 2 - 1)) : 0;
+    door[i] = slide * 0.6 * (band - low) + rollers + thunk;
+  }
+  writeSound("lift_door", door, 0.6);
+  const hum = (t, level) => level * (0.5 * Math.sin(2 * Math.PI * 50 * t) + 0.35 * Math.sin(2 * Math.PI * 100 * t) + 0.2 * Math.sin(2 * Math.PI * 150 * t));
+  const start = new Float64Array(Math.round(0.8 * RATE));
+  let whinePhase = 0;
+  for (let i = 0; i < start.length; i++) {
+    const t = i / RATE;
+    const rising = Math.min(1, t / 0.6);
+    whinePhase += 2 * Math.PI * (380 + 240 * rising) / RATE;
+    start[i] = hum(t, rising) + 0.12 * rising * Math.sin(whinePhase) + 0.04 * rising * (liftRandom() * 2 - 1);
+  }
+  writeSound("lift_start", start, 0.5);
+  const loop = new Float64Array(Math.round(2 * RATE));
+  for (let i = 0; i < loop.length; i++) {
+    const t = i / RATE;
+    const wobble = 1 + 0.15 * Math.sin(2 * Math.PI * 0.5 * t);
+    loop[i] = hum(t, 1) + 0.1 * wobble * Math.sin(2 * Math.PI * 600 * t);
+  }
+  writeSound("lift_hum", loop, 0.45);
+  const up = new Float64Array(Math.round(1.4 * RATE));
+  bell(up, 0, 1318.51, 0.45);
+  writeSound("lift_chime_up", up, 0.6);
+  const down = new Float64Array(Math.round(1.8 * RATE));
+  bell(down, 0, 1318.51, 0.45);
+  bell(down, 0.35, 1046.5, 0.55);
+  writeSound("lift_chime_down", down, 0.6);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
 // recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
 // through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along

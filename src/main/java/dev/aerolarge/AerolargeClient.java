@@ -58,6 +58,9 @@ import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
+import dev.aerolarge.client.LiftBoardRenderer;
+import dev.aerolarge.client.LiftCarRenderer;
+import dev.aerolarge.client.LiftSounds;
 import dev.aerolarge.client.LiverySelectorRenderer;
 import dev.aerolarge.client.LookoutGlassRenderer;
 import dev.aerolarge.client.LookoutView;
@@ -101,6 +104,7 @@ import dev.aerolarge.client.VeilLights;
 import dev.aerolarge.client.WindSockRenderer;
 import dev.aerolarge.client.ZeppelinEngineSounds;
 import dev.aerolarge.client.ZeppelinPaint;
+import dev.aerolarge.entity.LiftCar;
 import dev.aerolarge.parachute.SafetyCanopy;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -235,6 +239,7 @@ public final class AerolargeClient {
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(BeanBagBlock::itemTint, AerolargeRegistry.BEAN_BAG_ITEM.get()));
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PropellerBlockEntity.clientTicker = ZeppelinEngineSounds::tick;
+        LiftCar.clientTicker = LiftSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
@@ -292,6 +297,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.HELM_ENTITY.get(), context -> new HelmRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_SELECTOR_ENTITY.get(), context -> new LiverySelectorRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());
@@ -323,6 +329,7 @@ public final class AerolargeClient {
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);
+        event.registerEntityRenderer(AerolargeRegistry.LIFT_CAR.get(), LiftCarRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.TROLLEY.get(), TrolleyRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.PAPER_PLANE.get(), PaperPlaneRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BLUE_ICE_CHUNK.get(), BlueIceChunkRenderer::new);
@@ -330,3 +337,4 @@ public final class AerolargeClient {
         event.registerEntityRenderer(AerolargeRegistry.SLIDE_RIDE.get(), NoopRenderer::new);
     }
 }
+

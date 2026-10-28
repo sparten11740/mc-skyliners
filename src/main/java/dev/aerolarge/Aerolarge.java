@@ -38,6 +38,7 @@ import dev.aerolarge.client.ThrownClear;
 import dev.aerolarge.client.TransponderScreen;
 import dev.aerolarge.compat.Blockpilot;
 import dev.aerolarge.compat.SableFlight;
+import dev.aerolarge.entity.LiftCar;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.horn.ShipHorn;
 import dev.aerolarge.lookout.LookoutSpot;
@@ -97,6 +98,8 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(Broadcasts::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Seatbelts::onMount);
         NeoForge.EVENT_BUS.addListener(SlideRide::onMount);
+        NeoForge.EVENT_BUS.addListener(LiftCar::onMount);
+        NeoForge.EVENT_BUS.addListener(LiftCar::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Passengers::onInteract);
         NeoForge.EVENT_BUS.addListener(Passengers::onTick);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);

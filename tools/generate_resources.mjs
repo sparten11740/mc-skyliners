@@ -1332,6 +1332,10 @@ function atcLang() {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   sounds.tow_rope = { subtitle: `subtitles.${ID}.tow_rope`, sounds: [{ name: `${ID}:flag_halyard` }] };
+  // The rocket's lift: its doors sliding, its motor setting off, its hum while the car rides the shaft, and its chimes.
+  for (const name of ["lift_door", "lift_start", "lift_hum", "lift_chime_up", "lift_chime_down"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);
@@ -3459,6 +3463,43 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
     random_sequence: `${ID}:blocks/oval_window`,
   });
   cubes.oval_window = null;
+}
+// The rocket's lift (see LiftMachineBlockEntity). Its machine: a steel housing over the shaft. Its landing doors: a
+// pane of smoked glass in a steel frame across the middle of the doorway, a block wide and two tall; open, it has slid
+// aside into the shaft's wall by the doorway, so it is drawn reaching into the next block. Its picture boards: the slim
+// screen of the camera display and the livery selector, a block wide and two tall, its renderer drawing the floors.
+// Only the blueprints place them, and they give back nothing.
+{
+  write(`assets/${ID}/models/block/lift_machine.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/lift_machine` } });
+  write(`assets/${ID}/blockstates/lift_machine.json`, { variants: { "": { model: `${ID}:block/lift_machine` } } });
+  cubes.lift_machine = null;
+  const variants = {};
+  for (const half of ["lower", "upper"]) {
+    for (const open of [false, true]) {
+      const name = `lift_door_${half}${open ? "_open" : ""}`;
+      const pane = `${ID}:block/lift_door_${half}`;
+      const shift = open ? 14 : 0;
+      const edge = { texture: "#frame" };
+      write(`assets/${ID}/models/block/${name}.json`, {
+        parent: "minecraft:block/block", render_type: "minecraft:translucent", textures: { pane, frame: `${ID}:block/lift_door_frame`, particle: pane },
+        elements: [{
+          from: [shift, 0, 7], to: [16 + shift, 16, 9],
+          faces: { north: { texture: "#pane" }, south: { texture: "#pane" }, east: edge, west: edge, up: edge, down: edge },
+        }],
+      });
+      for (const [facing, y] of Object.entries(yRot)) {
+        variants[`facing=${facing},half=${half},open=${open}`] = { model: `${ID}:block/${name}`, y };
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/lift_door.json`, { variants });
+  cubes.lift_door = null;
+  slimScreenModels("lift_board", `${ID}:block/lift_board_casing`, `${ID}:block/lift_board_casing`);
+  write(`assets/${ID}/blockstates/lift_board.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
+      [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/lift_board${tilted ? "_tilted" : ""}`, y }])))),
+  });
+  cubes.lift_board = null;
 }
 
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
@@ -5853,7 +5894,9 @@ write(`data/${ID}/tags/block/unbreakable_in_frame.json`, tag([
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
 // to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight).
-write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`]));
+write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`]));
+// A lift's car lives among its ship's blocks and goes with them: taken away, it goes too.
+write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`]));
 // What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
 // net, chests, barrels and care packages with all they hold. A camel it catches but cannot lift: too heavy.
 write(`data/${ID}/tags/entity_type/crane_loads.json`, tag(["horse", "donkey", "mule", "llama", "trader_llama", "camel", "skeleton_horse",
@@ -6087,6 +6130,10 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.smoked_glass": "Smoked Glass",
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.oval_window": "Oval Window",
+  "block.aerolarge.lift_machine": "Lift Machine",
+  "block.aerolarge.lift_door": "Lift Door",
+  "block.aerolarge.lift_board": "Lift Board",
+  "entity.aerolarge.lift_car": "Lift Car",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
   "block.aerolarge.hull_relay": "Hull Relay",
@@ -6239,6 +6286,11 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.window_shades.open": "Window shades going up",
   "message.aerolarge.window_shades.closed": "Window shades coming down",
   "subtitles.aerolarge.shade_motor": "Window shade whirrs",
+  "subtitles.aerolarge.lift_door": "Lift doors slide",
+  "subtitles.aerolarge.lift_start": "Lift sets off",
+  "subtitles.aerolarge.lift_hum": "Lift hums",
+  "subtitles.aerolarge.lift_chime_up": "Lift chimes, going up",
+  "subtitles.aerolarge.lift_chime_down": "Lift chimes, going down",
   "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",

@@ -1816,6 +1816,17 @@ front between two flight displays. The windows' glass bulges out of the skin in 
 sits inside in a recess lined with steel; it dims electrically: use one to darken its glass a step, from clear through
 light and medium to dark, and once more to clear it again, a chime falling as it darkens.
 
+A lift rides the glass shaft from the entry story to the cockpit, where the shaft runs on up into a glass booth with the
+lift's machine on its roof (the server config's `rocket.lift` leaves it out). By each landing's sliding doors, and on
+the shaft's back wall inside the car, a picture board lists her floors as she stands, the lowest at the bottom: each an
+icon on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a sprout, waves, a note, a
+flask, a telescope, and her nose for the cockpit), the board's own floor framed in white and the car's lit. Touch a
+floor and the car comes, its doors slide open with a soft rush, you step in, and after a moment it closes and glides
+there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two
+going down, and the doors open to let you out. It never closes on anyone in the doorway or moves with a door open, and
+no one gets off between floors. While she counts down, flies or lands, it stands at a floor with its doors open and
+takes no rides, and an amber bar lies across its boards.
+
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
 the whole of her from well out, sky blue; then up her side, from low by the door to her nose against the sky, orange;
@@ -1982,7 +1993,9 @@ as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`Rock
 her livery selector); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
-`Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `Livery` paints her as it does a zeppelin,
+`Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
+`LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
+on its shaft by a clock both sides share, its `LiftDoorBlock`s and `LiftBoardBlock`s by each landing. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
 `LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a

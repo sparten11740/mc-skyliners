@@ -43,6 +43,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue HORN;
     public static final ModConfigSpec.BooleanValue LIVERY_BOARD;
     public static final ModConfigSpec.BooleanValue CAMERA_DISPLAY;
+    public static final ModConfigSpec.BooleanValue ROCKET_LIFT;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -411,6 +412,16 @@ public final class AerolargeConfig {
                 "Off, the decks already built hold nothing."
             )
             .define("flyingCarrier", false);
+        builder.pop();
+
+        builder.push("rocket");
+        ROCKET_LIFT = builder
+            .comment(
+                "Whether a rocket is built with a lift: a car riding her glass shaft from the entry story to the cockpit, a picture board",
+                "by each landing's sliding doors to pick a floor by its icon. It stands open at a floor while she flies. Off, the shaft is",
+                "open, and rockets already built keep theirs."
+            )
+            .define("lift", true);
         builder.pop();
 
         SPEC = builder.build();

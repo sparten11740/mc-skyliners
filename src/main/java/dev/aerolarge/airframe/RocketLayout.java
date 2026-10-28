@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -81,7 +82,8 @@ public final class RocketLayout implements Layout {
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
         RocketCameraDisplay::new,
-        RocketLiverySelector::new);
+        RocketLiverySelector::new,
+        RocketLift::new);
     /**
      * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector
      * stand against runs: the selector's row and the display's two over it.
@@ -112,6 +114,9 @@ public final class RocketLayout implements Layout {
     private final Map<Direction, BlockPos> bottomJets = new HashMap<>();
     /** How many blocks of air {@link #inOrder} hands over, found once everything else stands. */
     private int air = -1;
+    /** Where the autopilot's control head stands in the cockpit; null before it is laid. */
+    @Nullable
+    private BlockPos head;
 
     /** The body's surface in blocks, as its skin is cut by it: the axis runs through the middle of block 0 each way. */
     private final SurfaceCut.Surface surface = new SurfaceCut.Surface() {
@@ -236,6 +241,12 @@ public final class RocketLayout implements Layout {
     /** The row of the cockpit's floor, at the nose's foot. */
     int cockpitFloor() {
         return noseFoot;
+    }
+
+    /** Where the autopilot's control head stands in the cockpit; null where the cockpit has none. */
+    @Nullable
+    BlockPos autopilot() {
+        return head;
     }
 
     /**
@@ -552,7 +563,7 @@ public final class RocketLayout implements Layout {
     private void cockpit() {
         int y = noseFoot + 1;
         int front = frontWall(y);
-        BlockPos head = new BlockPos(0, y, front + HEAD_BACK);
+        head = new BlockPos(0, y, front + HEAD_BACK);
         set(head.getX(), y, head.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
         for (int side = -1; side <= 1; side += 2) {
             set(side * 2, y, front + 1, AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH));
