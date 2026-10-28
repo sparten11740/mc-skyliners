@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The flying carrier's flight deck: a flat strip laid along the crown forward of the Sky Deck, where the hull runs at
  * its full width and so its crown level, a dark non-slip deck with white lines along its edges and a dashed line down
- * its middle, a bulb at each corner, four docking clamps set into it either side of the middle line (see
+ * its middle, bulbs along its edges, four docking clamps set into it either side of the middle line (see
  * {@link dev.aerolarge.block.DeckClampBlock}) and the release lever at its forward port corner. A plane lands on it
  * along her, over her bow, and is locked down and refuelled. The same size at every size, as the planes are; laid over
  * the crown's line of bulbs where it runs, on the crown's top row, so it is assembled with her. The
@@ -34,6 +34,8 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
     private static final int CLAMP_ALONG = 9;
     /** How many rows the middle line's dashes and their gaps are long. */
     private static final int DASH = 2;
+    /** How many rows apart the bulbs along its edges stand, so a pilot finds it at night. */
+    private static final int EDGE_LIGHTS = 10;
     /** How high over the crown the deck is looked for, in blocks: past the bulbs along it. */
     private static final int LOOK_FROM = 3;
 
@@ -70,7 +72,9 @@ final class ZeppelinFlightDeck implements ZeppelinPiece {
         for (int side = -1; side <= 1; side += 2) {
             layout.set(side * CLAMP_OUT, y, middle - CLAMP_ALONG, AerolargeRegistry.DECK_CLAMP.get().defaultBlockState());
             layout.set(side * CLAMP_OUT, y, middle + CLAMP_ALONG, AerolargeRegistry.DECK_CLAMP.get().defaultBlockState());
-            bulb(side * HALF_WIDTH, y + 1, front);
+            for (int z = front; z < aft; z += EDGE_LIGHTS) {
+                bulb(side * HALF_WIDTH, y + 1, z);
+            }
             bulb(side * HALF_WIDTH, y + 1, aft);
         }
         layout.set(-HALF_WIDTH, y + 1, front + 1, AerolargeRegistry.CARRIER_LEVER.get().defaultBlockState().setValue(CarrierLeverBlock.FACING, Direction.NORTH));
