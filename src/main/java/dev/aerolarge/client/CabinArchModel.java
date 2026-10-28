@@ -8,6 +8,7 @@ import dev.aerolarge.block.CabinArchBlock;
 import dev.aerolarge.client.ArchwayFaces.Face;
 import dev.aerolarge.client.ArchwayFaces.Ring;
 import dev.aerolarge.client.ArchwayFaces.Stretch;
+import dev.aerolarge.client.ModelQuads.Corner;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -27,8 +28,6 @@ import net.neoforged.neoforge.client.model.IModelBuilder;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
 import net.neoforged.neoforge.client.model.geometry.SimpleUnbakedGeometry;
-import net.neoforged.neoforge.client.model.lighting.QuadLighter;
-import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -167,32 +166,13 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
         Direction side = facing(corners);
         for (int i = 1; i + 1 < corners.size(); i += 2) {
             Corner[] quad = {corners.getFirst(), corners.get(i), corners.get(i + 1), corners.get(Math.min(i + 2, corners.size() - 1))};
-            BakedQuad baked = bake(round ? quad : startingAsSides(quad, side), sprite, side, round);
+            BakedQuad baked = ModelQuads.bake(round ? quad : startingAsSides(quad, side), sprite, side, round);
             if (culled) {
                 builder.addCulledFace(side, baked);
             } else {
                 builder.addUnculledFace(baked);
             }
         }
-    }
-
-    /**
-     * A quad baked from its corners: lit as a block's side is, or, round the curve, with each corner's shade for the
-     * way it faces baked into its colour and no other shading or corner darkening.
-     */
-    private static BakedQuad bake(Corner[] quad, TextureAtlasSprite sprite, Direction side, boolean round) {
-        QuadBakingVertexConsumer builder = new QuadBakingVertexConsumer();
-        builder.setSprite(sprite);
-        builder.setDirection(side);
-        builder.setShade(!round);
-        builder.setHasAmbientOcclusion(!round);
-        for (Corner corner : quad) {
-            Vector3f n = corner.normal();
-            int grey = round ? Math.round(255 * QuadLighter.calculateShade(n.x(), n.y(), n.z(), false)) : 255;
-            builder.addVertex(corner.at().x(), corner.at().y(), corner.at().z()).setColor(grey, grey, grey, 255)
-                .setUv(sprite.getU(corner.u()), sprite.getV(corner.v())).setUv2(0, 0).setNormal(n.x(), n.y(), n.z());
-        }
-        return builder.bakeQuad();
     }
 
     /**
@@ -268,12 +248,5 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
             sum.add(corner.normal());
         }
         return Direction.getNearest(sum.x(), sum.y(), sum.z());
-    }
-
-    /**
-     * A corner of a quad: where it is in the block, the way the face looks there, and where on the texture it takes its
-     * colour from, across and down it as a fraction of the texture.
-     */
-    private record Corner(Vector3f at, Vector3f normal, float u, float v) {
     }
 }

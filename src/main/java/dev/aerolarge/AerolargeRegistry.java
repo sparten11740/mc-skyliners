@@ -148,6 +148,7 @@ import dev.aerolarge.block.LinkedControlBlockEntity;
 import dev.aerolarge.block.MotionSensorBlock;
 import dev.aerolarge.block.NavLightBlock;
 import dev.aerolarge.block.NavLightBlockEntity;
+import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.OverheadBinBlock;
 import dev.aerolarge.block.OverheadBinBlockEntity;
 import dev.aerolarge.block.OverheadWcSignBlock;
@@ -607,6 +608,8 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CabinWindowShellBlock> CABIN_WINDOW_SHELL = BLOCKS.registerBlock(
         "cabin_window_shell", properties -> new CabinWindowShellBlock(properties, AerolargeRegistry.CABIN_WINDOW), glass()
     );
+    /** The rocket's big oval windows, each a few blocks of it, with their shades. */
+    public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
     );

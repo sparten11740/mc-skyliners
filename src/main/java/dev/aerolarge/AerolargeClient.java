@@ -64,6 +64,7 @@ import dev.aerolarge.client.LookoutView;
 import dev.aerolarge.client.MistyWindows;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
+import dev.aerolarge.client.OvalWindowModel;
 import dev.aerolarge.client.PaperPlaneRenderer;
 import dev.aerolarge.client.ParachuteControls;
 import dev.aerolarge.client.ParachuteLayer;
@@ -257,6 +258,7 @@ public final class AerolargeClient {
     private static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register(ShellModel.LOADER, ShellModel.READER);
         event.register(CabinArchModel.LOADER, CabinArchModel.READER);
+        event.register(OvalWindowModel.LOADER, OvalWindowModel.READER);
     }
 
     private static void onAddLayers(EntityRenderersEvent.AddLayers event) {

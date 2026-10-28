@@ -3607,6 +3607,41 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // grey, any other livery to its colour.
   const UNDOPED = 1.2;
   texture(blockOutput, "zeppelin_skin", (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED))), 3);
+  // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall, one texture for each block of it
+  // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
+  // polished steel rim, set in the cover's weave, a glint across its upper left. Clear, the glass is nearly clear to
+  // look out of; dimmed, the glass alone darkens a step at a time to a deep smoked blue, its frame left as it is. The
+  // oval's size is OvalWindowModel's, which bulges it out of the skin.
+  const OVAL_COLUMNS = 3;
+  const OVAL_ROWS = 4;
+  const OVAL_WIDE = 21;
+  const OVAL_TALL = 29;
+  const OVAL_RIM = [0xa4, 0xac, 0xb6];
+  const OVAL_DIMS = [[0xa8, 0xcc, 0xe6, 0x48], [0x5e, 0x7c, 0x98, 0x90], [0x2c, 0x3e, 0x56, 0xc8], [0x10, 0x18, 0x26, 0xf4]];
+  const middleX = (OVAL_COLUMNS * SIZE) / 2;
+  const middleY = (OVAL_ROWS * SIZE) / 2;
+  // How far a pixel lies outside the oval's edge, in pixels, negative inside: the oval's equation over its slope.
+  const outsideOval = (x, y) => {
+    const dx = x + 0.5 - middleX;
+    const dy = y + 0.5 - middleY;
+    const level = (dx / OVAL_WIDE) ** 2 + (dy / OVAL_TALL) ** 2 - 1;
+    const slope = 2 * Math.hypot(dx / OVAL_WIDE ** 2, dy / OVAL_TALL ** 2);
+    return level / Math.max(slope, 1e-6);
+  };
+  const ovalWindow = (x, y, tint) => {
+    const out = outsideOval(x, y);
+    if (out > 2.4) return fabric(x % SIZE, y % SIZE);
+    if (out > 1.0) return OVAL_RIM;
+    if (out > -0.4) return FRAME_DARK;
+    const glint = x + y - (middleX + middleY) * 0.55;
+    return glint >= 0 && glint < 3 && x < middleX && y < middleY ? GLASS_SHINE : tint;
+  };
+  for (let column = 0; column < OVAL_COLUMNS; column++) {
+    for (let row = 0; row < OVAL_ROWS; row++) {
+      OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `oval_window_${column}_${row}_dim${dim}`,
+        (x, y) => ovalWindow(column * SIZE + x, row * SIZE + y, tint), 3));
+    }
+  }
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
   // LiveryBoardBlock lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with
   // its white fins, midnight blue with gold stars), each where LiveryBoardRenderer frames the one the zeppelin wears.

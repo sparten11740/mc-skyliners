@@ -1,0 +1,11 @@
+{
+  "loader": "aerolarge:oval_window",
+  "render_type": "minecraft:translucent",
+  "column": 1,
+  "row": 2,
+  "textures": {
+    "glass": "aerolarge:block/oval_window_1_2_dim2",
+    "edge": "aerolarge:block/zeppelin_fabric",
+    "particle": "aerolarge:block/oval_window_1_2_dim2"
+  }
+}

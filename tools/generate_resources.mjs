@@ -3422,6 +3422,34 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   });
   cubes.cabin_window_shell = null;
 }
+// The rocket's oval window (see OvalWindowBlock): each block of it at each step of its dimming, the inner half of its
+// block bulging out over the oval, baked by the mod's own "oval_window" loader (see OvalWindowModel), its edges the
+// cover's weave where they meet the skin. Modelled looking north, turned for the other ways. It gives back glass.
+{
+  const variants = {};
+  const edge = `${ID}:block/zeppelin_fabric`;
+  for (let column = 0; column < 3; column++) {
+    for (let row = 0; row < 4; row++) {
+      for (let dim = 0; dim < 4; dim++) {
+        const name = `oval_window_${column}_${row}_dim${dim}`;
+        const glass = `${ID}:block/${name}`;
+        write(`assets/${ID}/models/block/${name}.json`, {
+          loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row, textures: { glass, edge, particle: glass },
+        });
+        for (const [facing, y] of Object.entries(yRot)) {
+          variants[`column=${column},dim=${dim},facing=${facing},row=${row}`] = { model: `${ID}:block/${name}`, y };
+        }
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/oval_window.json`, { variants });
+  write(`data/${ID}/loot_table/blocks/oval_window.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: "minecraft:glass" }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/oval_window`,
+  });
+  cubes.oval_window = null;
+}
 
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
@@ -6047,6 +6075,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
   "block.aerolarge.hull_glass": "Hull Glass",
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
+  "block.aerolarge.oval_window": "Oval Window",
   "block.aerolarge.thrust_lever": "Thrust Lever",
   "block.aerolarge.thrust_relay": "Thrust Relay",
   "block.aerolarge.hull_relay": "Hull Relay",

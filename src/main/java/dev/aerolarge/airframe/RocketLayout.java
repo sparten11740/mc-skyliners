@@ -6,6 +6,7 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.RocketPilot;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
+import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * exhaust leaving past the four fins' feet, each thruster with a thrust relay over it that the autopilot drives (see
  * {@link RocketPilot}). Side jets in its skin, a ring of four near the nose and another near the bottom, push it
  * sideways and tilt it, which is how it stays upright. Inside, over an engine room, stories one above another round a
- * glass lift shaft up the middle, each floor's edge against the skin; the cockpit sits in the glass of the nose's lower
- * part, its control head facing the front. The features laid into it once it stands are pieces of their own (see
- * {@link RocketPiece}).
+ * glass lift shaft up the middle, each floor's edge against the skin, a dimmable oval window out to each of the four
+ * ways; the cockpit sits in the glass of the nose's lower part, its control head facing the front. The features
+ * laid into it once it stands are pieces of their own (see {@link RocketPiece}).
  *
  * <p>Sable flies the rocket as one body only as far as its blocks touch, face to face: the floors run out to the skin,
  * the fins are two blocks thick where they run between the four ways, and the shaft stands on the floors.
@@ -54,15 +55,8 @@ public final class RocketLayout implements Layout {
     /** How wide and tall the front door is, in blocks, over the entry story's floor. */
     private static final int DOOR_HALF = 1;
     private static final int DOOR_ROWS = 3;
-    /** The rows of portholes over each story's floor, from and to: at a standing player's eyes. */
-    private static final int WINDOW_FROM = 2;
-    private static final int WINDOW_TO = 3;
-    /**
-     * How many portholes look out of each story, evenly round it from the front (beside the fins, those between the
-     * four ways left out), and how far round the skin each reaches either side of its middle, in blocks.
-     */
-    private static final int PORTHOLES = 8;
-    private static final double PORTHOLE_HALF = 1.6;
+    /** How many rows over each story's floor its windows' lowest row is: a standing player's eyes are in the middle. */
+    private static final int WINDOW_FROM = 1;
     /** How many rows of the nose's skin over the cockpit's floor are glass, its windows all round. */
     private static final int COCKPIT_GLASS = 7;
     /**
@@ -134,7 +128,7 @@ public final class RocketLayout implements Layout {
         layout.skin();
         layout.fins();
         layout.stories();
-        layout.portholes();
+        layout.windows();
         layout.shaft();
         layout.door();
         layout.engines();
@@ -193,7 +187,7 @@ public final class RocketLayout implements Layout {
 
     /**
      * The skin: every block the body's surface passes through, cut to it, over the flat bottom; glass all round the
-     * cockpit in the nose (each story's portholes are cut in once its floors stand).
+     * cockpit in the nose (each story's windows are set in once its floors stand).
      */
     private void skin() {
         int out = (int) Math.ceil(radius) + 2;
@@ -225,8 +219,9 @@ public final class RocketLayout implements Layout {
      * bottom's edge down to their feet on the ground.
      */
     private void fins() {
+        int top = (int) Math.ceil(RocketShape.FIN_ROOT_TOP * scale);
         for (int[] fin : FINS) {
-            for (int y = 0; y <= finTop(); y++) {
+            for (int y = 0; y <= top; y++) {
                 finRow(fin, y);
             }
         }
@@ -281,51 +276,46 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * Each story's portholes: the skin's cover glazed in a few blocks round the body, at a standing player's eyes, but
-     * never where a fin stands outside it, which would be all a porthole there showed.
+     * Each story's oval windows (see {@link OvalWindowBlock}): one out to each of the four ways, where the skin runs
+     * straight up and flat across a window's width, but none in front of the entry story, where the door is.
      */
-    private void portholes() {
-        int out = (int) Math.ceil(radius) + 2;
+    private void windows() {
         for (int floor : floors) {
-            for (int y = floor + WINDOW_FROM; y <= floor + WINDOW_TO; y++) {
-                portholeRow(y, out);
+            for (Direction way : Direction.Plane.HORIZONTAL) {
+                window(floor, way);
             }
         }
     }
 
-    private void portholeRow(int y, int out) {
-        for (int x = -out; x <= out; x++) {
-            for (int z = -out; z <= out; z++) {
-                glaze(x, y, z, y <= finTop());
+    /** A story's window looking out one way, set into the skin there; none where the skin is not all cover. */
+    private void window(int floor, Direction way) {
+        if (way == Direction.NORTH && floor == floors.getFirst()) {
+            return;
+        }
+        int pieces = OvalWindowBlock.COLUMNS * OvalWindowBlock.ROWS;
+        Map<BlockPos, BlockState> window = new HashMap<>();
+        for (int piece = 0; piece < pieces; piece++) {
+            int column = piece % OvalWindowBlock.COLUMNS;
+            int row = piece / OvalWindowBlock.COLUMNS;
+            BlockPos at = windowPiece(floor, way, column, row);
+            if (at == null) {
+                return;
             }
+            window.put(at, AerolargeRegistry.OVAL_WINDOW.get().piece(way, column, row));
         }
-    }
-
-    /** A block of the skin glazed, keeping its cut, where it lies in a porthole; on a story beside the fins or not. */
-    private void glaze(int x, int y, int z, boolean besideFins) {
-        BlockState skin = stateAt(x, y, z);
-        BlockState glass = AerolargeRegistry.HULL_GLASS.get().defaultBlockState();
-        int shape = ShellBlock.shape(skin);
-        if (skin.is(AerolargeRegistry.ZEPPELIN_COVER.get()) && inPorthole(x, z, besideFins) && ShellBlock.takes(glass, shape)) {
-            set(x, y, z, ShellBlock.withShape(glass, shape));
-        }
+        cells.putAll(window);
     }
 
     /**
-     * Whether a block across lies in one of a story's portholes, measured round the skin from the nearest's middle;
-     * beside the fins, only those out to the four ways.
+     * Where a piece of a story's window looking out one way goes: in the outermost block of the skin there, its column
+     * from the left as seen from outside and its row from the top; null where that block is not the cover.
      */
-    private boolean inPorthole(int x, int z, boolean besideFins) {
-        double apart = 2 * Math.PI / PORTHOLES;
-        double round = Math.atan2(x, -z);
-        long nearest = Math.round(round / apart);
-        boolean toFin = besideFins && Math.floorMod(nearest, 2) == 1;
-        return !toFin && Math.abs(round - nearest * apart) * radius <= PORTHOLE_HALF;
-    }
-
-    /** The highest row the fins reach, where they meet the body. */
-    private int finTop() {
-        return (int) Math.ceil(RocketShape.FIN_ROOT_TOP * scale);
+    private BlockPos windowPiece(int floor, Direction way, int column, int row) {
+        Direction left = way.getClockWise();
+        int across = OvalWindowBlock.COLUMNS / 2 - column;
+        int y = floor + WINDOW_FROM + OvalWindowBlock.ROWS - 1 - row;
+        BlockPos skin = outermost(way, across * left.getStepX(), y, across * left.getStepZ());
+        return skin != null && stateAt(skin.getX(), y, skin.getZ()).is(AerolargeRegistry.ZEPPELIN_COVER.get()) ? skin : null;
     }
 
     /**
@@ -442,18 +432,20 @@ public final class RocketLayout implements Layout {
 
     private void ring(BlockState engine, int y, Map<Direction, BlockPos> jets) {
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            BlockPos skin = outermost(side, y);
+            BlockPos skin = outermost(side, 0, y, 0);
             if (skin != null) {
                 jets.put(side.getOpposite(), thruster(engine, skin.getX(), y, skin.getZ(), side.getOpposite()));
             }
         }
     }
 
-    /** The outermost block of the skin out from the axis the way given at a row; null for none. */
-    private BlockPos outermost(Direction side, int y) {
+    /**
+     * The outermost block of the skin out the way given at a row, from the axis or a block beside it; null for none.
+     */
+    private BlockPos outermost(Direction side, int fromX, int y, int fromZ) {
         for (int k = (int) Math.ceil(radius) + 2; k > 0; k--) {
-            int x = side.getStepX() * k;
-            int z = side.getStepZ() * k;
+            int x = fromX + side.getStepX() * k;
+            int z = fromZ + side.getStepZ() * k;
             if (!isOpen(x, y, z)) {
                 return new BlockPos(x, y, z);
             }
