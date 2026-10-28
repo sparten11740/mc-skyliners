@@ -488,10 +488,17 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
     /** How far a control jet's signal may wander, in steps of the 15, before the jet is set to it (see {@link #steady}). */
     private static final int JET_STEADY = 1;
+    /**
+     * How far from an engine's signal the thrust wanted of it must be before the engine is set afresh, in steps of the
+     * 15: more than half a step, so a thrust between two steps holds one of them (see {@link #driveEngine}).
+     */
+    private static final double ENGINE_HOLD = 0.75;
 
     private Map<Channel, List<BlockPos>> relays = new EnumMap<>(Channel.class);
     /** The control jets' signals as last set, not saved: set afresh on the first tick after loading. */
     private final Map<Channel, Integer> jetSignals = new EnumMap<>(Channel.class);
+    /** The engines' signals as the autopilot last set them, not saved: set afresh on the first tick after loading. */
+    private final Map<Channel, Integer> engineSignals = new EnumMap<>(Channel.class);
     /** The flight deck controls (thrust levers, tiller, parking brake) it hands back to when it lets go. */
     private List<BlockPos> controls = List.of();
     /**
@@ -1913,7 +1920,7 @@ public class AutopilotBlockEntity extends BlockEntity {
 
         double radio = radioAltitude(level, state);
         double targetPitch;
-        int thrust;
+        double thrust;
         boolean takingOff = phase == Phase.TAKEOFF;
         boolean rollingOut = phase == Phase.ROLLOUT;
         boolean onGround = takingOff || rollingOut;
@@ -2017,11 +2024,11 @@ public class AutopilotBlockEntity extends BlockEntity {
         drive(level, Channel.STEER_LEFT, Math.max(0, -steer));
 
         // Turning right means more thrust on the left engines; the heading grows turning right.
-        int split = Mth.clamp((int) Math.round(YAW_GAIN * headingError - YAW_DAMPING * (turn - wantedTurn)), -YAW_SPLIT, YAW_SPLIT);
-        drive(level, Channel.ENGINE_1, thrust - Math.max(0, -split));
-        drive(level, Channel.ENGINE_2, thrust - Math.max(0, -split));
-        drive(level, Channel.ENGINE_3, thrust - Math.max(0, split));
-        drive(level, Channel.ENGINE_4, thrust - Math.max(0, split));
+        double split = Mth.clamp(YAW_GAIN * headingError - YAW_DAMPING * (turn - wantedTurn), -YAW_SPLIT, YAW_SPLIT);
+        driveEngine(level, Channel.ENGINE_1, thrust - Math.max(0, -split));
+        driveEngine(level, Channel.ENGINE_2, thrust - Math.max(0, -split));
+        driveEngine(level, Channel.ENGINE_3, thrust - Math.max(0, split));
+        driveEngine(level, Channel.ENGINE_4, thrust - Math.max(0, split));
 
         workGear(level, radio, climb, guide);
         lastPitch = pitch;
@@ -2185,13 +2192,13 @@ public class AutopilotBlockEntity extends BlockEntity {
      * hold it. That is learnt only while the engines can still give what it asks; past idle or full, learning would
      * only wind it up.
      */
-    private int holdSpeed(double speed, double target) {
+    private double holdSpeed(double speed, double target) {
         double error = target - speed;
         double signal = thrustTrim + SPEED_GAIN * error;
         if (signal > 0 && signal < 15) {
             thrustTrim = Mth.clamp(thrustTrim + THRUST_TRIM_RATE * Mth.clamp(error, -THRUST_TRIM_LIMIT, THRUST_TRIM_LIMIT), 0, 15);
         }
-        return Mth.clamp((int) Math.round(signal), 0, 15);
+        return Mth.clamp(signal, 0, 15);
     }
 
     /**
@@ -2367,6 +2374,20 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         Relays.drive(level, worldPosition, relays.getOrDefault(channel, List.of()), power, channel.synced());
+    }
+
+    /**
+     * Sets an engine for so much thrust: to the signal it was set to last, until the thrust is {@link #ENGINE_HOLD}
+     * from it, then to the nearest. Rounded afresh each tick, a cruise's thrust between two steps flipped the engines
+     * between them several times a second, and each flip sends every client near the engine's relays and thrusters
+     * afresh, and has it redraw the part of the airliner round them.
+     */
+    private void driveEngine(ServerLevel level, Channel engine, double thrust) {
+        double wanted = Mth.clamp(thrust, 0, 15);
+        Integer last = engineSignals.get(engine);
+        int signal = last != null && Math.abs(wanted - last) < ENGINE_HOLD ? last : (int) Math.round(wanted);
+        engineSignals.put(engine, signal);
+        drive(level, engine, signal);
     }
 
     /**
