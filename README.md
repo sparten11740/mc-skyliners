@@ -1800,6 +1800,29 @@ grating, the propeller (placed by hand, it pulls the way you look, its blades tu
 strongest redstone signal beside it), and the hand controls (placed by hand, each faces whoever places it, and a
 telegraph rings for the port engines, on its red plate; they fly a zeppelin only where its blueprint laid them).
 
+### The rocket
+
+A rocket standing on four fins, as tall as the airliner is long at the scale the server config sets (145 blocks at the
+default 2) and 20 blocks across, a pointed nose on top with a band of glass round the cockpit under it. The Rocket
+Blueprint builds one just past where it is used, its front, with its door, facing you, and operators with `/aerolarge
+build <pos> <north|east|south|west> rocket`. It is driven by Create Propulsion's creative thrusters, which need no fuel:
+five bells of them in its flat bottom, their plumes trailing as they fire, and two rings of four side jets in its skin,
+near the nose and near the bottom, that hold it upright. Its fins are its legs; between them a crew ladder, the pool's
+chrome ladder up a column beside the door, climbs to a step in front of the doorway. Inside, over an engine room,
+stories stand one above another round a glass lift shaft up the middle, a doorway into the shaft on each and eight
+portholes round each at a standing player's eyes, and the cockpit sits in the glass of the nose, the autopilot's
+control head facing the front between two flight displays.
+
+To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
+rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set. There
+it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
+it; once over the pin and no longer drifting it falls back, never faster than six tenths of gravity, so whoever stands
+aboard keeps their feet, and a landing burn catches it, leaning only a little to stop drifting for the last 20 blocks
+and not at all for the last 3, touching down at a block and a half a second. Down on its fins it lets its engines go at
+once and switches itself off with a bell. Without a pin it comes back down where it rose. Told to land, or switched off
+in the air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
+autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
@@ -1937,6 +1960,11 @@ turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlo
 show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
 the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
+The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
+as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder); its
+control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
+`RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
+`Craft` of its own gives its screens its pictures (`PanelArt.Pictures`).
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

@@ -802,6 +802,13 @@ function halfZeppelinFromTheSide(x, y) {
   const car = y === 9 && x >= 5 && x <= 6;
   return hull || fins || car;
 }
+// The rocket standing, nose up: a slim body under a pointed nose, a porthole, and a fin out either side at its foot.
+function rocketFromTheSide(x, y) {
+  const body = y >= 5 && y <= 11 && x >= 6 && x <= 9 && !(y === 7 && x >= 7 && x <= 8);
+  const nose = y >= 2 && y <= 4 && Math.abs(x - 7.5) <= (y - 1) * 0.6;
+  const fins = y >= 9 && y <= 13 && (x === 5 || x === 10 || (y >= 11 && (x === 4 || x === 11)));
+  return body || nose || fins;
+}
 function towerFromTheSide(x, y) {
   const mast = x === 10 && y === 3;
   const roof = y === 4 && x >= 4 && x <= 11;
@@ -817,6 +824,7 @@ blueprint("festive_zeppelin_blueprint", true, zeppelinFromTheSide, [0xe0, 0x2a, 
 blueprint("half_zeppelin_blueprint", false, halfZeppelinFromTheSide);
 blueprint("half_furnished_zeppelin_blueprint", true, halfZeppelinFromTheSide);
 blueprint("half_festive_zeppelin_blueprint", true, halfZeppelinFromTheSide, [0xe0, 0x2a, 0x32]);
+blueprint("rocket_blueprint", false, rocketFromTheSide);
 blueprint("control_tower_blueprint", false, towerFromTheSide);
 blueprint("runway_blueprint", false, runwayFromAbove);
 
@@ -2021,6 +2029,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // in its own set of these.
   const SMALL_AIRLINER = ["..##..", ".####.", "######", "..##..", ".####."];
   const SMALL_ZEPPELIN = ["..##..", ".####.", ".####.", "#.##.#", "..##.."];
+  const SMALL_ROCKET = ["..##..", ".####.", ".####.", ".####.", "#.##.#"];
   const path = (x, y, points) => points.slice(1).some((point, i) => onSegment(x, y, points[i], point, 1.7));
   const TURN_FROM = 3.5;
   const TURN_MIDDLE = 6.5;
@@ -2049,6 +2058,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   };
   steering("", SMALL_AIRLINER);
   steering("zeppelin_", SMALL_ZEPPELIN);
+  steering("rocket_", SMALL_ROCKET);
   // A runway along the bottom, with its centre line.
   const runway = (x, y, from, to) => (y === 14 && x >= from && x <= to ? (x % 3 === 0 ? INK : RUNWAY) : null);
   icon(autopilotOutput, "take_off", (x, y) => (airliner(x, y, 8.5, 6.5, 45, 0.85) ? GREEN : runway(x, y, 0, 8)));
@@ -2185,6 +2195,51 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     return arrow(x, y, 5.5, 10, 13, false) ? INK : ground(x, y, 1, 15);
   });
   icon(autopilotOutput, "zeppelin_ground_height", (x, y) => (zeppelinSide(x, y, 7.5, 2.5, 0) ? INK : heightOverGround(x, y)));
+
+  // The rocket upright, its nose up, its middle at (cx, cy), leaning a tilt (degrees, its nose to the right): a round
+  // body with a porthole under a pointed nose, a swept fin out either side at its foot.
+  const rocketSide = (x, y, cx, cy, tilt = 0, size = 1) => {
+    const turn = (tilt * Math.PI) / 180;
+    const dx = (x - cx) / size;
+    const dy = (y - cy) / size;
+    const across = dx * Math.cos(turn) + dy * Math.sin(turn);
+    const up = dx * Math.sin(turn) - dy * Math.cos(turn);
+    const porthole = Math.hypot(across, up - 1) <= 0.8;
+    const body = up >= -4.5 && up <= 2.5 && Math.abs(across) <= 2.1 && !porthole;
+    const nose = up > 2.5 && up <= 7 && Math.abs(across) <= 2.3 * (1 - (up - 2.5) / 4.5);
+    const fin = up >= -6.5 && up <= -2 && Math.abs(across) > 2.1 && Math.abs(across) <= 2.1 + 1.7 * Math.min(1, (-up - 2) / 2.5);
+    return body || nose || fin;
+  };
+  // Its flame, a fan of fire under its foot, so far under its middle.
+  const FLAME = [0xff, 0x9a, 0x2a];
+  const flame = (x, y, cx, top, length) => y >= top && y <= top + length && Math.abs(x - cx) <= 1.6 * (1 - (y - top) / (length + 1));
+  icon(autopilotOutput, "rocket", (x, y) => {
+    const r = Math.hypot(x - 7.5, y - 7.5);
+    const fin = (Math.abs(x - y) <= 1 || Math.abs(x + y - 15) <= 1) && r <= 7.2;
+    return r <= 4.2 || fin ? INK : null;
+  });
+  icon(autopilotOutput, "rocket_side", (x, y) => (rocketSide(x, y, 7.5, 7.5) ? (x >= 8 ? PALE : INK) : null));
+  // Take off: the green rocket rising on its flame off the ground. Land: the amber one settling on a short flame.
+  icon(autopilotOutput, "rocket_take_off", (x, y) => {
+    if (rocketSide(x, y, 7.5, 5.5, 0, 0.75)) return GREEN;
+    return flame(x, y, 7.5, 10.5, 3) ? FLAME : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "rocket_land", (x, y) => {
+    if (rocketSide(x, y, 7.5, 7, 0, 0.75)) return AMBER;
+    return flame(x, y, 7.5, 12, 1) ? FLAME : ground(x, y, 0, 15);
+  });
+  icon(autopilotOutput, "rocket_engage", (x, y) => {
+    if (rocketSide(x, y, 9, 7.5, 0, 0.85)) return GREEN;
+    return x <= 1 && (y === 4 || y === 7 || y === 8 || y === 11) ? INK : null;
+  });
+  icon(autopilotOutput, "rocket_climb", (x, y) => (rocketSide(x, y, 9.5, 7.5, 10, 0.8) ? GREEN : arrow(x, y, 2.5, 8, 15, true) ? INK : null));
+  icon(autopilotOutput, "rocket_descend", (x, y) => (rocketSide(x, y, 9.5, 7.5, 0, 0.8) ? GREEN : arrow(x, y, 2.5, 0, 7, false) ? INK : null));
+  icon(autopilotOutput, "rocket_land_at_pin", (x, y) => {
+    const pin = smallPin(x, y);
+    if (pin || rocketSide(x, y, 5.5, 6.5, 0, 0.7)) return pin ?? AMBER;
+    return flame(x, y, 5.5, 11, 1) ? FLAME : ground(x, y, 1, 15);
+  });
+  icon(autopilotOutput, "rocket_ground_height", (x, y) => (rocketSide(x, y, 7.5, 5, 0, 0.6) ? INK : heightOverGround(x, y)));
 
   // Air traffic control talking (see AtcHeadset): a pilot's headset, its band over the top, a white ear cup either side
   // and the microphone on its boom round to the mouth, with the radio's green lamp lit in the corner.

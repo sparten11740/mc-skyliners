@@ -3,6 +3,7 @@ package dev.aerolarge;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.airframe.AirframeLayout;
+import dev.aerolarge.airframe.RocketLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
@@ -323,6 +324,7 @@ public final class AerolargeRegistry {
     /** How far up their blocks the souvenir models' bodies' middles are, in sixteenths (see AirframeBlueprintItem). */
     private static final float AIRLINER_MODEL_MIDDLE = 7;
     private static final float ZEPPELIN_MODEL_MIDDLE = 8;
+    private static final float ROCKET_MODEL_MIDDLE = 8;
 
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Aerolarge.MOD_ID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Aerolarge.MOD_ID);
@@ -1425,7 +1427,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> PAPER_PLANE_WHOOSH = sound("paper_plane_whoosh");
     /** A laser pointer to shine about the cabin, which dazzles whoever it catches in the face. */
     public static final DeferredItem<LaserPointerItem> LASER_POINTER = ITEMS.register("laser_pointer", () -> new LaserPointerItem(new Item.Properties().stacksTo(1)));
-    /** Souvenirs: a pilot's cap to wear, and models of the airliner and the zeppelin on their stands. */
+    /** Souvenirs: a pilot's cap to wear, and models of the airliner, the zeppelin and the rocket on their stands. */
     public static final DeferredItem<PilotCapItem> PILOT_CAP = ITEMS.register("pilot_cap", () -> new PilotCapItem(new Item.Properties().stacksTo(1)));
     public static final DeferredBlock<SouvenirModelBlock> MODEL_AIRLINER = BLOCKS.registerBlock(
         "model_airliner", SouvenirModelBlock::new,
@@ -1437,6 +1439,11 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_ZEPPELIN_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ZEPPELIN);
+    public static final DeferredBlock<SouvenirModelBlock> MODEL_ROCKET = BLOCKS.registerBlock(
+        "model_rocket", SouvenirModelBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<BlockItem> MODEL_ROCKET_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ROCKET);
     /**
      * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
      * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.
@@ -1872,6 +1879,11 @@ public final class AerolargeRegistry {
         halfZeppelinBlueprint("half_furnished_zeppelin_blueprint", ZeppelinOptions.FURNISHED);
     public static final DeferredItem<AirframeBlueprintItem> HALF_FESTIVE_ZEPPELIN_BLUEPRINT =
         halfZeppelinBlueprint("half_festive_zeppelin_blueprint", ZeppelinOptions.FESTIVE);
+    /** The rocket, as tall as the airliner is long, standing on its fins. */
+    public static final DeferredItem<AirframeBlueprintItem> ROCKET_BLUEPRINT = ITEMS.register(
+        "rocket_blueprint", () -> new AirframeBlueprintItem(RocketLayout::create, () -> MODEL_ROCKET.get().defaultBlockState(), ROCKET_MODEL_MIDDLE,
+            "item.aerolarge.rocket_blueprint.tooltip", new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
+    );
     /** An airfield's control tower, its radio, radar and transponder in the glass cab on top. */
     public static final DeferredItem<ControlTowerBlueprintItem> CONTROL_TOWER_BLUEPRINT = ITEMS.register(
         "control_tower_blueprint", () -> new ControlTowerBlueprintItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC))
@@ -1895,7 +1907,8 @@ public final class AerolargeRegistry {
     /** The creative tab's sections, in order (see {@link dev.aerolarge.client.TabBanners}). */
     public static final List<TabSection> TAB_SECTIONS = List.of(
         new TabSection("blueprints", List.of(AIRLINER_BLUEPRINT, FURNISHED_AIRLINER_BLUEPRINT, ZEPPELIN_BLUEPRINT, FURNISHED_ZEPPELIN_BLUEPRINT, FESTIVE_ZEPPELIN_BLUEPRINT,
-            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, CONTROL_TOWER_BLUEPRINT, RUNWAY_BLUEPRINT)),
+            HALF_ZEPPELIN_BLUEPRINT, HALF_FURNISHED_ZEPPELIN_BLUEPRINT, HALF_FESTIVE_ZEPPELIN_BLUEPRINT, ROCKET_BLUEPRINT, CONTROL_TOWER_BLUEPRINT,
+            RUNWAY_BLUEPRINT)),
         new TabSection("airframe", List.of(
             AIRFRAME_PANEL_ITEM, AIRFRAME_FAIRING_ITEM, LIVERY_PANEL_ITEM, CABIN_WINDOW_ITEM, COCKPIT_WINDOW_ITEM, CABIN_FLOOR_ITEM, CABIN_LIGHT_ITEM,
             AIRLINER_DOOR_ITEM, ENGINE_INTAKE_ITEM, LANDING_GEAR_ITEM, LANDING_GEAR_TIRE_ITEM, GEAR_BAY_ITEM, NAV_LIGHT_ITEM, AIRSTAIR_CONTROLLER_ITEM,
@@ -1913,7 +1926,7 @@ public final class AerolargeRegistry {
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
-            PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
+            PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM, DISCO_BALL_ITEM,

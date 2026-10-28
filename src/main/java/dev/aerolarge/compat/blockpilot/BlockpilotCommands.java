@@ -6,11 +6,13 @@ import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
 import dev.aerolarge.airframe.Livery;
+import dev.aerolarge.airframe.RocketLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
+import dev.aerolarge.autopilot.RocketPilot;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.ZeppelinAssembly;
 import dev.aerolarge.autopilot.ZeppelinPilot;
@@ -74,6 +76,14 @@ public final class BlockpilotCommands {
             .field("phase", "the autopilot's phase")
             .field("cells", "each gas cell's burner signal, bow first")
             .field("mass", "the zeppelin's mass in Sable's units"));
+        BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("rocket", (context, args) -> rocket())
+            .onServer()
+            .group("aerolarge")
+            .help("what the nearest rocket's autopilot is doing: phase, height, climb, speed across, tilt, mass, thrust, trim, countdown, side jets")
+            .field("phase", "the autopilot's phase")
+            .field("thrust", "the share of full thrust its engines are set to")
+            .field("jets", "each side jet's signal, near the nose ahead, right, back and left, then near the bottom")
+            .field("mass", "the rocket's mass in Sable's units"));
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("autopilot", BlockpilotCommands::autopilot)
             .onServer()
             .group("aerolarge")
@@ -104,7 +114,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.query("layout", (context, args) -> layout(args))
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket")
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe out without building it: how many blocks it has and a fingerprint of them, the same however they are laid out")
             .field("blocks", "its blocks, the air inside its hull among them")
@@ -113,7 +123,7 @@ public final class BlockpilotCommands {
         BlockpilotApi.register(Aerolarge.MOD_ID, CommandSpec.action("build", BlockpilotCommands::build)
             .onServer()
             .group("aerolarge")
-            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin")
+            .keyword("what", "airliner", "furnished", "zeppelin", "furnished_zeppelin", "festive_zeppelin", "rocket")
             .option("size", "how big a zeppelin's hull is, full size if left out", SIZES)
             .help("lays an airframe down with its nose a few blocks ahead of the player, its tail away the way they face, and waits until it stands")
             .example("aerolarge:build zeppelin"));
@@ -144,6 +154,31 @@ public final class BlockpilotCommands {
             .tag("pitch_trim", round(report.pitchTrim()))
             .tag("thrust_trim", round(report.thrustTrim()));
         return Result.ok(fields);
+    }
+
+    private static Result rocket() throws CommandException {
+        ServerPlayer player = player();
+        AutopilotBlockEntity autopilot = nearest(player);
+        RocketPilot.Report report = autopilot == null ? null : autopilot.rocketReport();
+        if (report == null) {
+            return Result.error("no_rocket");
+        }
+        SableFlight.State state = SableFlight.read(autopilot, autopilot.getBlockState().getValue(AutopilotBlock.FACING));
+        Fields fields = new Fields().tag("phase", autopilot.phase().name().toLowerCase(Locale.ROOT));
+        if (state != null) {
+            fields.tag("altitude", round(state.position().y)).tag("climb", round(state.velocity().y))
+                .tag("across", round(Math.hypot(state.velocity().x, state.velocity().z)));
+        }
+        return Result.ok(fields
+            .tag("climb_wanted", round(report.climbWanted()))
+            .tag("tilt_front", round(report.tiltFront()))
+            .tag("tilt_right", round(report.tiltRight()))
+            .tag("target_altitude", Math.round(autopilot.targetAltitude()))
+            .tag("mass", Math.round(SableFlight.mass(autopilot)))
+            .tag("thrust", round(report.thrust()))
+            .tag("trim", round(report.trim()))
+            .tag("countdown", report.counted())
+            .tag("jets", report.jets()));
     }
 
     private static Result assembly() throws CommandException {
@@ -240,6 +275,7 @@ public final class BlockpilotCommands {
             case "zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.PLAIN.sized(size));
             case "furnished_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FURNISHED.sized(size));
             case "festive_zeppelin" -> ZeppelinLayout.create(ZeppelinOptions.FESTIVE.sized(size));
+            case "rocket" -> RocketLayout.create();
             case "furnished" -> AirframeLayout.create(AerolargeConfig.SCALE.get(), true);
             default -> AirframeLayout.create(AerolargeConfig.SCALE.get(), false);
         };

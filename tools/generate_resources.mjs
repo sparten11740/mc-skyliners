@@ -3283,6 +3283,35 @@ function laserPointerLang() {
   dropsItself("model_zeppelin");
   cubes.model_zeppelin = null;
 }
+// The souvenir model rocket, standing on its fins, its front (where its door is) north: a white body built up of boxes
+// stepping in to its pointed nose, a band of cockpit glass under the nose, and four fins out at its foot between the
+// four ways, drawn as four plates. It needs no stand: the blueprint's preview draws it whole.
+{
+  const body = "#body";
+  const model = {
+    parent: "minecraft:block/block",
+    textures: { body: `${ID}:block/zeppelin_fabric`, glass: `${ID}:block/cockpit_glass`, particle: `${ID}:block/zeppelin_fabric` },
+    elements: [
+      solid([6.5, 2, 6.5], [9.5, 10, 9.5], body),
+      solid([6.5, 10, 6.5], [9.5, 11, 9.5], "#glass"),
+      solid([7, 11, 7], [9, 13, 9], body),
+      solid([7.5, 13, 7.5], [8.5, 15, 8.5], body),
+      solid([7.75, 0, 3.5], [8.25, 5, 6.5], body),
+      solid([7.75, 0, 9.5], [8.25, 5, 12.5], body),
+      solid([3.5, 0, 7.75], [6.5, 5, 8.25], body),
+      solid([9.5, 0, 7.75], [12.5, 5, 8.25], body),
+    ],
+  };
+  // Its fins stand between the four ways, as the rocket's do.
+  for (const fin of model.elements.slice(4)) {
+    fin.rotation = { origin: [8, 2.5, 8], axis: "y", angle: 45 };
+  }
+  write(`assets/${ID}/models/block/model_rocket.json`, model);
+  facing("model_rocket");
+  write(`assets/${ID}/models/item/model_rocket.json`, { parent: `${ID}:block/model_rocket` });
+  dropsItself("model_rocket");
+  cubes.model_rocket = null;
+}
 // The duty-free counter, drawn facing north: a cabinet ten pixels tall, and on it a glass showcase with the goods on
 // show inside, lying on the cabinet's top; the glass is see-through, so the whole counter is drawn translucent.
 {
@@ -3314,6 +3343,7 @@ const DUTY_FREE_LANG = {
   "item.aerolarge.pilot_cap": "Pilot Cap",
   "block.aerolarge.model_airliner": "Model Airliner",
   "block.aerolarge.model_zeppelin": "Model Zeppelin",
+  "block.aerolarge.model_rocket": "Model Rocket",
   "item.aerolarge.pilot_helmet": "Pilot Helmet",
   "item.aerolarge.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
   "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
@@ -4742,7 +4772,7 @@ function crewLockerLang() {
 }
 
 for (const name of ["airliner_blueprint", "furnished_airliner_blueprint", "zeppelin_blueprint", "furnished_zeppelin_blueprint", "festive_zeppelin_blueprint",
-  "half_zeppelin_blueprint", "half_furnished_zeppelin_blueprint", "half_festive_zeppelin_blueprint"]) {
+  "half_zeppelin_blueprint", "half_furnished_zeppelin_blueprint", "half_festive_zeppelin_blueprint", "rocket_blueprint"]) {
   write(`assets/${ID}/models/item/${name}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${name}` } });
 }
 
@@ -5735,7 +5765,7 @@ const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
 const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
-  "model_airliner", "model_zeppelin", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
+  "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
 FITTINGS.push(...surfacePanelFittings());
@@ -6317,14 +6347,23 @@ write(`assets/${ID}/lang/en_us.json`, {
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",
   "message.aerolarge.autopilot.coming_down": "Coming down here, straight down to the ground",
   "message.aerolarge.autopilot.assembling_zeppelin": "Assembling the zeppelin: the autopilot takes it from here.",
+  "message.aerolarge.autopilot.assembling_rocket": "Assembling the rocket: the countdown begins as soon as it is ready.",
+  "message.aerolarge.autopilot.no_engines": "This rocket has no engines to fly it with: build it again with Create Propulsion installed.",
+  "message.aerolarge.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
   "message.aerolarge.autopilot.no_burners": "This zeppelin has no burners to lift it: build it again with Create Aeronautics installed.",
   "message.aerolarge.autopilot.too_heavy": "The zeppelin is too heavy for its burners to lift, and stays on the ground.",
   "commands.aerolarge.build_zeppelin": "Building a zeppelin of %s blocks, %s of them over blocks that were in the way",
+  "commands.aerolarge.build_rocket": "Building a rocket of %s blocks, %s of them over blocks that were in the way",
   "item.aerolarge.airliner_blueprint": "Airliner Blueprint",
   "item.aerolarge.furnished_airliner_blueprint": "Furnished Airliner Blueprint",
   "item.aerolarge.airliner_blueprint.tooltip": "A double-deck airliner with an empty cabin, ready to build in",
   "item.aerolarge.furnished_airliner_blueprint.tooltip": "A double-deck airliner fitted with a pool, a gym hall and a lounge",
   "item.aerolarge.zeppelin_blueprint": "Zeppelin Blueprint",
+  "item.aerolarge.rocket_blueprint": "Rocket Blueprint",
+  "item.aerolarge.rocket_blueprint.tooltip": "A rocket as tall as the airliner is long, flown to a pin on the map and landed on its fins",
+  "message.aerolarge.rocket_building": "Building the rocket… %s%%",
+  "message.aerolarge.rocket_built": "The rocket is ready. Use the autopilot in its cockpit, at the top, to fly it.",
+  "message.aerolarge.rocket_too_high": "The rocket would reach past the build height here; build it lower down.",
   "item.aerolarge.zeppelin_blueprint.tooltip": "A Hindenburg-sized zeppelin, 490 blocks long, lifted by sixteen gas cells of hot air",
   "item.aerolarge.furnished_zeppelin_blueprint": "Furnished Zeppelin Blueprint",
   "item.aerolarge.furnished_zeppelin_blueprint.tooltip": "The same zeppelin with cabins, a galley, a dining room, a lounge and its promenades furnished",

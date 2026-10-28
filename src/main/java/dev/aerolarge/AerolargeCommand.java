@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.aerolarge.airframe.AirframeBuild;
 import dev.aerolarge.airframe.AirframeLayout;
 import dev.aerolarge.airframe.Layout;
+import dev.aerolarge.airframe.RocketLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
@@ -37,7 +38,8 @@ final class AerolargeCommand {
                     .then(Commands.literal("furnished").executes(context -> build(context, along, true)))
                     .then(sized(Commands.literal("zeppelin"), along, ZeppelinOptions.PLAIN)
                         .then(sized(Commands.literal("furnished"), along, ZeppelinOptions.FURNISHED))
-                        .then(sized(Commands.literal("festive"), along, ZeppelinOptions.FESTIVE)))));
+                        .then(sized(Commands.literal("festive"), along, ZeppelinOptions.FESTIVE)))
+                    .then(Commands.literal("rocket").executes(context -> build(context, along, RocketLayout.create(), "commands.aerolarge.build_rocket")))));
         }
         dispatcher.register(Commands.literal(Aerolarge.MOD_ID).requires(source -> source.hasPermission(2)).then(build));
     }
