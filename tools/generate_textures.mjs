@@ -4201,7 +4201,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 // apart rather than to scale; a quasar, its blazing core in a tilted disk, its jets running up and down the poster into
 // violet clouds; and Earthrise, a half-lit Earth over the Moon's grey horizon behind a rocket standing on it. Their
 // glows are flat colours in steps, ordered-dithered where one runs into the next, each poster in a thin steel frame.
-// Its back is plain grey board.
+// Its back is plain grey board, and each poster rolled up has an icon of its own picture.
 {
   const hex = (value) => [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
   const ramp = (...values) => values.map(hex);
@@ -4255,7 +4255,26 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const bottom = lattice(i, j + 1, salt) + (lattice(i + 1, j + 1, salt) - lattice(i, j + 1, salt)) * su;
     return top + (bottom - top) * sv;
   };
-  // A poster so many blocks wide and tall: painted whole at 16 pixels a block, framed, and cut into its blocks.
+  // A poster's icon, as its item shows it rolled up: the picture inside its frame shrunk to fit the icon's frame, each
+  // pixel the picture at its middle, so its colours stay as flat as the poster's. Its short side is rounded up, so a
+  // picture's middle row is not missed between two of the icon's.
+  const icon = (name, width, height, paint) => {
+    const fit = (SIZE - 2) / Math.max(width - 2, height - 2);
+    const across = Math.ceil((width - 2) * fit);
+    const down = Math.ceil((height - 2) * fit);
+    const left = Math.floor((SIZE - across - 2) / 2);
+    const top = Math.floor((SIZE - down - 2) / 2);
+    texture(itemOutput, `${name}_poster`, (x, y) => {
+      const u = x - left - 1;
+      const v = y - top - 1;
+      if (u < -1 || v < -1 || u > across || v > down) return CLEAR;
+      if (u === -1 || v === -1) return u === across || v === down ? FRAME_SHADE : FRAME_LIGHT;
+      if (u === across || v === down) return FRAME_SHADE;
+      return paint(1 + Math.floor((u + 0.5) * (width - 2) / across), 1 + Math.floor((v + 0.5) * (height - 2) / down));
+    }, 0);
+  };
+  // A poster so many blocks wide and tall: painted whole at 16 pixels a block, framed, and cut into its blocks; and its
+  // icon.
   const poster = (name, columns, rows, paint) => {
     const width = columns * SIZE;
     const height = rows * SIZE;
@@ -4269,6 +4288,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
         texture(blockOutput, `space_poster_${name}_${column}_${row}`, (x, y) => framed(column * SIZE + x, row * SIZE + y), 0);
       }
     }
+    icon(name, width, height, paint);
   };
   texture(blockOutput, "space_poster_back", () => [0x9a, 0x9e, 0xa4], 3);
 

@@ -202,6 +202,7 @@ import dev.aerolarge.block.SignalFlareBlockEntity;
 import dev.aerolarge.block.SlideControlBlock;
 import dev.aerolarge.block.SlideControlBlockEntity;
 import dev.aerolarge.block.SlideStepBlock;
+import dev.aerolarge.block.SpacePoster;
 import dev.aerolarge.block.SpacePosterBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.SuitcaseBlock;
@@ -268,6 +269,7 @@ import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
 import dev.aerolarge.item.PilotHelmetItem;
+import dev.aerolarge.item.SpacePosterItem;
 import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
@@ -1491,13 +1493,22 @@ public final class AerolargeRegistry {
 
     /**
      * The space posters on the rocket's lift shaft (see {@link SpacePosterBlock}), each a few blocks of thin board that
-     * nothing collides with, quick to tear down; placed only by her blueprint, so no item.
+     * nothing collides with, quick to tear down; and each of them rolled up, to put up by hand (see
+     * {@link SpacePosterItem}).
      */
     public static final DeferredBlock<SpacePosterBlock> SPACE_POSTER = BLOCKS.registerBlock(
         "space_poster", SpacePosterBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SpacePosterBlock.PAPER).noCollission().noOcclusion()
-            .noLootTable().pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+            .pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
     );
+    public static final DeferredItem<SpacePosterItem> BLACK_HOLE_POSTER = ITEMS.register(
+        "black_hole_poster", () -> new SpacePosterItem(SpacePoster.BLACK_HOLE, new Item.Properties()));
+    public static final DeferredItem<SpacePosterItem> SOLAR_SYSTEM_POSTER = ITEMS.register(
+        "solar_system_poster", () -> new SpacePosterItem(SpacePoster.SOLAR_SYSTEM, new Item.Properties()));
+    public static final DeferredItem<SpacePosterItem> QUASAR_POSTER = ITEMS.register(
+        "quasar_poster", () -> new SpacePosterItem(SpacePoster.QUASAR, new Item.Properties()));
+    public static final DeferredItem<SpacePosterItem> EARTHRISE_POSTER = ITEMS.register(
+        "earthrise_poster", () -> new SpacePosterItem(SpacePoster.EARTHRISE, new Item.Properties()));
     /**
      * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
      * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.
@@ -2005,6 +2016,7 @@ public final class AerolargeRegistry {
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,
             SECRET_BOOKSHELF_ITEM, BALL_PIT_ITEM, FAIRY_LIGHTS_ITEM, BUNK_ITEM, BEAN_BAG_ITEM, DISCO_BALL_ITEM,
             SUITCASE_ITEM, GOLDEN_SUITCASE_ITEM, RUBBER_DUCK_ITEM,
+            BLACK_HOLE_POSTER, SOLAR_SYSTEM_POSTER, QUASAR_POSTER, EARTHRISE_POSTER,
             CARGO_NET_ITEM, CARGO_FLOOR_ITEM, BALL_MAT_ITEM, ULD_CONTAINER_ITEM
         )),
         new TabSection("gym", List.of(

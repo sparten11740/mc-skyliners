@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -26,7 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * against the back of its block, the side away from the way it faces, so it hangs flat on whatever stands behind it,
  * and nothing collides with it, so it is walked past as a picture is. The rocket hangs them on her glass lift shaft
  * (see {@code RocketPosters}): blocks, not paintings, as a painting is an entity, which would be left behind when she
- * is assembled. Taking any piece away takes the whole poster, with a painting's tearing sound; it gives back nothing.
+ * is assembled; and a poster rolled up is put up by hand (see {@code SpacePosterItem}). Taking any piece away takes
+ * the whole poster down, with a painting's tearing sound, and it is given back rolled up from its top left piece.
  */
 public class SpacePosterBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<SpacePosterBlock> CODEC = simpleCodec(SpacePosterBlock::new);
@@ -90,6 +93,30 @@ public class SpacePosterBlock extends HorizontalDirectionalBlock {
         return super.updateShape(state, direction, neighbour, level, pos, neighbourPos);
     }
 
+    /**
+     * Broken in creative mode, it takes its top left piece first, the one that gives the poster back, so that nothing
+     * drops as the rest goes with it.
+     */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        BlockPos topLeft = topLeft(state, pos);
+        if (!level.isClientSide && player.isCreative() && !topLeft.equals(pos) && isTopLeft(state, level.getBlockState(topLeft))) {
+            level.setBlock(topLeft, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
+        }
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    /** Where a poster's top left piece is, from any piece of it. */
+    private static BlockPos topLeft(BlockState piece, BlockPos pos) {
+        return pos.relative(right(piece.getValue(FACING)), -piece.getValue(COLUMN)).above(piece.getValue(ROW));
+    }
+
+    /** Whether a block is the top left piece of a poster like a piece's: the same picture, facing the same way. */
+    private static boolean isTopLeft(BlockState piece, BlockState other) {
+        return other.getBlock() instanceof SpacePosterBlock && other.getValue(FACING) == piece.getValue(FACING)
+            && other.getValue(POSTER) == piece.getValue(POSTER) && other.getValue(COLUMN) == 0 && other.getValue(ROW) == 0;
+    }
+
     /** Whether a piece's poster carries on past it the given way: a column or a row more of it there. */
     private static boolean carriesOn(BlockState piece, Direction way) {
         int[] next = next(piece, way);
@@ -98,7 +125,7 @@ public class SpacePosterBlock extends HorizontalDirectionalBlock {
     }
 
     /** Whether a piece's neighbour the given way is the next piece of its poster. */
-    static boolean joins(BlockState piece, Direction way, BlockState neighbour) {
+    private static boolean joins(BlockState piece, Direction way, BlockState neighbour) {
         if (!(neighbour.getBlock() instanceof SpacePosterBlock) || neighbour.getValue(FACING) != piece.getValue(FACING)
             || neighbour.getValue(POSTER) != piece.getValue(POSTER)) {
             return false;

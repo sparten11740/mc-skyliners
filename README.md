@@ -1850,7 +1850,10 @@ its rings; in the lab, the eighth, a black hole, its burning disk bent over it a
 deck at the top, a quasar, its jets running up and down the poster into violet clouds. Each hangs on the back of the
 shaft, or on its side where something stands in the way there, and flies with her as a part of her; a smaller rocket,
 with fewer stories, has only the posters for the stories it has. Nothing bumps into one; break any part of a poster
-and the whole of it comes down, giving back nothing. The server config's `rocket.posters` leaves them out.
+and the whole of it comes down, and is given back rolled up. Rolled up, the four are in the creative tab, each showing
+its picture, and go up on any wall: used on the side of a block, a poster goes up against it, its middle in front of
+the block used, if every block of it has open air to go in and a solid face behind it. The server config's
+`rocket.posters` leaves them out of the rocket.
 
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
@@ -2064,7 +2067,7 @@ begins at, and welcomes everyone aboard to space as she climbs past it.
 modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
 `LedControlsArt`.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
-a picture, the pictures drawn by `tools/generate_textures.mjs`.
+a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that
