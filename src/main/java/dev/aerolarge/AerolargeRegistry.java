@@ -274,6 +274,7 @@ import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -647,7 +648,7 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_UP = sound("lift_chime_up");
     public static final DeferredHolder<SoundEvent, SoundEvent> LIFT_CHIME_DOWN = sound("lift_chime_down");
 
-    // The rocket's engines (see dev.aerolarge.autopilot.RocketSounds and the client's RocketRoar).
+    // The rocket's sound and voice (see dev.aerolarge.autopilot.RocketSounds and the client's RocketRoar).
     /** Her engines' roar, looped while they fire, swelled and pitched with their thrust; and as it is heard aboard. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR = sound("rocket_roar");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR_ABOARD = sound("rocket_roar_aboard");
@@ -660,6 +661,11 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_JET_PUFF = sound("rocket_jet_puff");
     /** Her fins taking her weight as she lands. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_TOUCHDOWN = sound("rocket_touchdown");
+    /** Launch control counting her down over the radio: "one" to "ten", each at its number less one, and "lift-off". */
+    public static final List<DeferredHolder<SoundEvent, SoundEvent>> LAUNCH_COUNT = IntStream.rangeClosed(1, 10).mapToObj(n -> sound("launch_" + n)).toList();
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_LIFTOFF = sound("launch_liftoff");
+    /** The flight deck's voice as she settles on her fins. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_TOUCHDOWN = sound("callout_touchdown");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
     );

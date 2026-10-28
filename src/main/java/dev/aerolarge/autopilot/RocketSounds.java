@@ -1,21 +1,46 @@
 package dev.aerolarge.autopilot;
 
+import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * What is heard of a rocket as she flies, worked out on the server for her autopilot (see {@link AutopilotBlockEntity}
- * and {@link RocketPilot}). Each side jet firing from rest puffs, never so often that a jet flickering on and off
- * rattles. And how hard her engines fire is shown to the clients, who play their roar from it, their ignition as they
- * light and their cut-off as they stop, and her touchdown (see the client's {@code RocketRoar}).
+ * and {@link RocketPilot}). Launch control counts her down over the radio, "ten" to "one" on the seconds of her
+ * countdown and "lift-off" as her engines light, heard by everyone near her, aboard or watching from the ground; it
+ * begins only once the cabin has heard its take-off announcement, as a zeppelin's ground officer waits for her control
+ * car to fall quiet, and holds the flight deck's floor while it counts. Each side jet firing from rest puffs, never so
+ * often that a jet flickering on and off rattles. Down on her fins, the flight deck's voice says "Touchdown." And how
+ * hard her engines fire is shown to the clients, who play their roar from it, their ignition as they light and their
+ * cut-off as they stop, and her touchdown (see the client's {@code RocketRoar}).
  */
 final class RocketSounds {
+    /**
+     * How long her countdown waits at most for the flight deck to fall quiet before it begins, in ticks: as long as the
+     * take-off announcement may run (tools/generate_sounds.mjs's TAKEOFF_LONGEST), and a little more.
+     */
+    private static final int HOLD_MOST = 9 * SharedConstants.TICKS_PER_SECOND;
+    /** Everyone this near her middle hears launch control, in blocks: all of her, and those watching round her feet. */
+    private static final double LAUNCH_HEARD = 128;
+    /**
+     * How long launch control's "lift-off" and the flight deck's "Touchdown." are each given if their sounds cannot be
+     * read, in ticks: tools/generate_sounds.mjs keeps them shorter.
+     */
+    private static final int WORD_LENGTH = 24;
+    private static final int CALLOUT_LENGTH = 40;
     /**
      * How many steps of her engines' thrust the clients are shown, from none to full, and how often at most a change
      * of step is sent, in ticks: often enough for her roar to follow it, seldom enough to cost nothing. Lighting and
@@ -40,24 +65,67 @@ final class RocketSounds {
     /** Long before any game time: never. */
     private static final long NEVER = Long.MIN_VALUE / 2;
 
+    private final Airtime airtime;
+    /** How long her countdown has waited for the flight deck to fall quiet, in ticks. */
+    private int held;
     /** Her engines' thrust as the clients were last shown it, a share of full, 0 at rest; and when it was sent. */
     private float shown;
     private long shownAt = NEVER;
+    /** Whether her engines fired last tick, and whether "Touchdown." has been said since her landing burn began. */
+    private boolean lit;
+    private boolean landed;
     /** When each side jet last fired and last puffed, in her pilot's report's order, and when any jet last puffed. */
     private final long[] jetFired = new long[JETS];
     private final long[] jetPuffed = new long[JETS];
     private long puffed = NEVER;
 
-    RocketSounds() {
+    RocketSounds(Airtime airtime) {
+        this.airtime = airtime;
         Arrays.fill(jetFired, NEVER);
         Arrays.fill(jetPuffed, NEVER);
     }
 
     /**
-     * Each tick of hers, once her pilot has flown: a puff for each side jet firing from rest. Whether the clients are to
-     * be shown how hard her engines fire afresh.
+     * Whether her countdown waits this tick before it begins: set to take off and not yet counting while the flight
+     * deck is not quiet, the cabin hearing its take-off announcement, for {@link #HOLD_MOST} ticks at most.
      */
-    boolean tick(ServerLevel level, BlockPos origin, RocketPilot pilot) {
+    boolean holdsCountdown(AutopilotBlockEntity.Phase phase, int counted, boolean quiet) {
+        if (phase != AutopilotBlockEntity.Phase.TAKEOFF || counted > 0 || quiet || held >= HOLD_MOST) {
+            held = 0;
+            return false;
+        }
+        held++;
+        return true;
+    }
+
+    /**
+     * Launch control's word for the second of her countdown it has come to, so many ticks in: "ten" as it begins, a
+     * number each whole second after, and "lift-off" as it ends. From "ten" on it holds the flight deck's floor until
+     * "lift-off" has been said, cutting short whatever was being said there as it starts.
+     */
+    void count(ServerLevel level, Vec3 middle, int counted) {
+        int left = Mth.clamp(Mth.positiveCeilDiv(RocketPilot.COUNTDOWN - counted, SharedConstants.TICKS_PER_SECOND), 0,
+            AerolargeRegistry.LAUNCH_COUNT.size());
+        long now = level.getGameTime();
+        if (left == AerolargeRegistry.LAUNCH_COUNT.size()) {
+            airtime.interrupt(now);
+        }
+        airtime.take(now, RocketPilot.COUNTDOWN - counted + VoiceLength.ticks(AerolargeRegistry.LAUNCH_LIFTOFF, WORD_LENGTH));
+        Holder<SoundEvent> word = left > 0 ? AerolargeRegistry.LAUNCH_COUNT.get(left - 1) : AerolargeRegistry.LAUNCH_LIFTOFF;
+        long seed = level.getRandom().nextLong();
+        for (ServerPlayer player : level.players()) {
+            if (player.position().distanceToSqr(middle) < LAUNCH_HEARD * LAUNCH_HEARD) {
+                player.connection.send(new ClientboundSoundEntityPacket(word, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+            }
+        }
+    }
+
+    /**
+     * Each tick of hers, once her pilot has flown: a puff for each side jet firing from rest, and "Touchdown." as her
+     * engines stop in her landing burn, down on her fins. Whether the clients are to be shown how hard her engines
+     * fire afresh.
+     */
+    boolean tick(ServerLevel level, BlockPos origin, RocketPilot pilot, AutopilotBlockEntity.Phase phase, BlockEntity autopilot) {
         RocketPilot.Report report = pilot.report();
         List<BlockPos> relays = pilot.jetRelays();
         for (int jet = 0; jet < JETS; jet++) {
@@ -65,6 +133,13 @@ final class RocketSounds {
                 fired(level, origin.offset(relays.get(jet)), jet, report.jets().get(jet));
             }
         }
+        boolean firing = report.thrust() > 0;
+        if (lit && !firing && phase == AutopilotBlockEntity.Phase.LAND && !landed) {
+            landed = true;
+            touchdown(level, autopilot);
+        }
+        landed = landed && phase == AutopilotBlockEntity.Phase.LAND;
+        lit = firing;
         return show(report.thrust(), level.getGameTime());
     }
 
@@ -83,6 +158,17 @@ final class RocketSounds {
         puffed = now;
         float pitch = 1 + (level.getRandom().nextFloat() * 2 - 1) * PUFF_STRAY;
         level.playSound(null, at, AerolargeRegistry.ROCKET_JET_PUFF.get(), SoundSource.BLOCKS, PUFF_VOLUME, pitch);
+    }
+
+    /** "Touchdown.", in the flight deck's voice to everyone aboard, cutting short whatever is being said there. */
+    private void touchdown(ServerLevel level, BlockEntity autopilot) {
+        long now = level.getGameTime();
+        airtime.interrupt(now);
+        airtime.take(now, VoiceLength.ticks(AerolargeRegistry.CALLOUT_TOUCHDOWN, CALLOUT_LENGTH));
+        long seed = level.getRandom().nextLong();
+        for (ServerPlayer player : Aboard.players(autopilot)) {
+            player.connection.send(new ClientboundSoundEntityPacket(AerolargeRegistry.CALLOUT_TOUCHDOWN, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+        }
     }
 
     /**

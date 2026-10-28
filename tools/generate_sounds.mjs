@@ -2114,6 +2114,7 @@ const CALLOUTS = {
   callout_retard: "Retard. Retard.",
   callout_bank_angle: "Bank angle. Please do not do that.",
   callout_pull_up: "Pull up. This is not a test.",
+  callout_touchdown: "Touchdown.",
 };
 // The cabin announcements (see Announcement), each opening with the cabin chime. A "|" is a pause. The ones only the
 // flight deck's announcement panel makes are for the youngest passengers: short, plain words, and nothing to worry about.
@@ -2355,6 +2356,84 @@ if (speaker) {
   writeWav(said, Array.from(shouted, (sample) => (sample / peak) * 0.5), spoken.sampling_rate);
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", OFFICER.megaphone.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", voiced]);
   writeSound("up_ship_call", readWav(voiced), OFFICER.level);
+}
+
+// Launch control counting the rocket down over the radio (see RocketSounds): an American man's voice, Kokoro's
+// Michael, so it is never taken for the flight deck's own, one clip a word, each said on its second of her countdown,
+// "ten" to "one", and "lift-off" as her engines light. Heard as a space centre's loop is: the radio's narrow band,
+// compressed and driven a little, the whole count one transmission, opened by a Quindar tone before "ten" and closed by
+// its lower partner after "lift-off", as the keying tones of Apollo's ground stations were. Tune it here.
+const LAUNCH = {
+  voice: "am_michael",
+  pace: 1.2,
+  radio: [
+    "highpass=f=300:poles=2",
+    "highpass=f=300:poles=2",
+    "lowpass=f=3200:poles=2",
+    "lowpass=f=3200:poles=2",
+    "acompressor=threshold=-28dB:ratio=6:attack=2:release=60:makeup=12dB",
+    "asoftclip=type=tanh:threshold=0.7",
+    "equalizer=f=1700:t=q:w=1.2:g=3",
+  ],
+  // The Quindar tones opening and closing the transmission, in hertz; how long each sounds and the gap between it and
+  // the word, in seconds; and how loud it is beside the voice's peak.
+  quindar: { open: 2525, close: 2475, length: 0.15, gap: 0.04, level: 0.45 },
+  // The peak it is written at: under the flight deck's callouts', as the radio's compression makes it denser.
+  level: 0.7,
+};
+// Her countdown's words, each a clip; the first opens the transmission and the last closes it.
+const LAUNCH_WORDS = {
+  launch_10: "Ten.",
+  launch_9: "Nine.",
+  launch_8: "Eight.",
+  launch_7: "Seven.",
+  launch_6: "Six.",
+  launch_5: "Five.",
+  launch_4: "Four.",
+  launch_3: "Three.",
+  launch_2: "Two.",
+  launch_1: "One.",
+  launch_liftoff: "Liftoff!",
+};
+/**
+ * The longest a word of the count may run, its Quindar tone and all, in seconds, well within the second before the
+ * next; and the longest "lift-off" may, which nothing follows.
+ */
+const LAUNCH_LONGEST = 0.8;
+const LIFTOFF_LONGEST = 1.2;
+
+/** A Quindar tone of the pitch given, in hertz, as long as LAUNCH.quindar has it, at a peak of one. */
+function quindar(frequency) {
+  const { length } = LAUNCH.quindar;
+  return Float64Array.from({ length: Math.round(length * RATE) }, (_, i) => Math.min(1, i / (0.005 * RATE), (length * RATE - i) / (0.005 * RATE))
+    * Math.sin((2 * Math.PI * frequency * i) / RATE));
+}
+
+/** Says one of launch control's words through the radio, its Quindar tone before or after it if it has one. */
+async function launchWord(name, word) {
+  const spoken = await speaker.generate(word, { voice: LAUNCH.voice, speed: LAUNCH.pace });
+  const trimmed = trim(Float64Array.from(spoken.audio), spoken.sampling_rate);
+  const said = join(scratch, `${name}.said.wav`);
+  const voiced = join(scratch, `${name}.voiced.wav`);
+  writeWav(said, Array.from(trimmed, (sample) => (sample / peakOf(trimmed)) * 0.5), spoken.sampling_rate);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", LAUNCH.radio.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", voiced]);
+  const voice = trim(readWav(voiced));
+  const words = Object.keys(LAUNCH_WORDS);
+  const opens = name === words[0];
+  const closes = name === words.at(-1);
+  const tone = opens || closes ? quindar(opens ? LAUNCH.quindar.open : LAUNCH.quindar.close) : new Float64Array(0);
+  const gap = tone.length > 0 ? Math.round(LAUNCH.quindar.gap * RATE) : 0;
+  const samples = new Float64Array(tone.length + gap + voice.length);
+  samples.set(voice, opens ? tone.length + gap : 0);
+  const toneAt = opens ? 0 : voice.length + gap;
+  const level = LAUNCH.quindar.level * peakOf(voice);
+  tone.forEach((sample, i) => (samples[toneAt + i] = sample * level));
+  writeVoiced(name, samples, LAUNCH, closes ? LIFTOFF_LONGEST : LAUNCH_LONGEST);
+}
+if (speaker) {
+  for (const [name, word] of Object.entries(LAUNCH_WORDS)) {
+    await launchWord(name, word);
+  }
 }
 
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight

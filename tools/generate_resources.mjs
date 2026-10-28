@@ -1217,6 +1217,7 @@ const VOICE_SUBTITLES = {
   callout_retard: "Callout: Retard",
   callout_bank_angle: "Callout: Bank angle!",
   callout_pull_up: "Callout: Pull up!",
+  callout_touchdown: "Callout: Touchdown",
   announcement_welcome: "Announcement: Welcome aboard",
   announcement_takeoff: "Announcement: Crew seated for take-off",
   announcement_turbulence: "Announcement: Bumpy air, seatbelts on",
@@ -1261,7 +1262,8 @@ function atcLang() {
 // The rocket's sound and voice (see tools/generate_sounds.mjs, the client's RocketRoar and the autopilot's
 // RocketSounds). Her engines' roar, their ignition and cut-off and her touchdown on her fins, heard as far as
 // ROCKET_HEARD blocks off, out across the ground round her and up her whole height; the same heard aboard, round the
-// listener; and her side jets' puffs, near them.
+// listener, and her side jets' puffs, near them; and launch control's count, played to each listener as the flight
+// deck's voice is (see heardAboard), subtitled with each word.
 const ROCKET_HEARD = 160;
 const ROCKET_SUBTITLES = {
   rocket_roar: "Rocket engines roar",
@@ -1273,15 +1275,29 @@ const ROCKET_SUBTITLES = {
   rocket_jet_puff: "Side jet puffs",
   rocket_touchdown: "Rocket lands on her fins",
 };
+const LAUNCH_SUBTITLES = {
+  launch_10: "Launch control: Ten",
+  launch_9: "Launch control: Nine",
+  launch_8: "Launch control: Eight",
+  launch_7: "Launch control: Seven",
+  launch_6: "Launch control: Six",
+  launch_5: "Launch control: Five",
+  launch_4: "Launch control: Four",
+  launch_3: "Launch control: Three",
+  launch_2: "Launch control: Two",
+  launch_1: "Launch control: One",
+  launch_liftoff: "Launch control: Lift-off!",
+};
 function rocketSounds() {
   const far = ["rocket_roar", "rocket_ignition", "rocket_cutoff", "rocket_touchdown"];
-  return Object.fromEntries(Object.keys(ROCKET_SUBTITLES).map((name) => [name, {
+  const sounds = Object.fromEntries(Object.keys(ROCKET_SUBTITLES).map((name) => [name, {
     subtitle: `subtitles.${ID}.${name}`,
     sounds: [far.includes(name) ? { name: `${ID}:${name}`, attenuation_distance: ROCKET_HEARD } : { name: `${ID}:${name}` }],
   }]));
+  return { ...sounds, ...Object.fromEntries(Object.keys(LAUNCH_SUBTITLES).map((name) => [name, heardAboard(name)])) };
 }
 function rocketSoundsLang() {
-  return Object.fromEntries(Object.entries(ROCKET_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+  return Object.fromEntries(Object.entries({ ...ROCKET_SUBTITLES, ...LAUNCH_SUBTITLES }).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 }
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.

@@ -116,6 +116,15 @@
       }
     ]
   },
+  "callout_touchdown": {
+    "subtitle": "subtitles.aerolarge.callout_touchdown",
+    "sounds": [
+      {
+        "name": "aerolarge:callout_touchdown",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "announcement_welcome": {
     "subtitle": "subtitles.aerolarge.announcement_welcome",
     "sounds": [
@@ -433,6 +442,105 @@
       {
         "name": "aerolarge:rocket_touchdown",
         "attenuation_distance": 160
+      }
+    ]
+  },
+  "launch_10": {
+    "subtitle": "subtitles.aerolarge.launch_10",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_10",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_9": {
+    "subtitle": "subtitles.aerolarge.launch_9",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_9",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_8": {
+    "subtitle": "subtitles.aerolarge.launch_8",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_8",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_7": {
+    "subtitle": "subtitles.aerolarge.launch_7",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_7",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_6": {
+    "subtitle": "subtitles.aerolarge.launch_6",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_6",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_5": {
+    "subtitle": "subtitles.aerolarge.launch_5",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_5",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_4": {
+    "subtitle": "subtitles.aerolarge.launch_4",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_4",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_3": {
+    "subtitle": "subtitles.aerolarge.launch_3",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_3",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_2": {
+    "subtitle": "subtitles.aerolarge.launch_2",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_2",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_1": {
+    "subtitle": "subtitles.aerolarge.launch_1",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_1",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_liftoff": {
+    "subtitle": "subtitles.aerolarge.launch_liftoff",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_liftoff",
+        "attenuation_distance": 1024
       }
     ]
   },

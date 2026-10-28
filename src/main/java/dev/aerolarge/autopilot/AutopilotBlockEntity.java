@@ -376,6 +376,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * before lift-off one whole higher.
      */
     private static final float COUNTDOWN_LOWEST = 0.5F;
+    /** How loud the countdown's notes are, quietly under launch control's voice, as a share of full. */
+    private static final float COUNTDOWN_VOLUME = 0.4F;
     private static final double LEVEL_OFF = 8;
     /** The roll is still gaining speed while it gains more than this, in blocks per second every second. */
     private static final double STILL_ACCELERATING = 0.4;
@@ -636,8 +638,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final EdgeOfSpace space = new EdgeOfSpace();
     /** How far into its rocket's countdown it last sounded it, in ticks, so each second is heard once. */
     private int countHeard;
-    /** Its rocket's side jets heard as they fire, and how hard her engines fire as the clients are shown it. */
-    private final RocketSounds rocketSounds = new RocketSounds();
+    /** What is heard of its rocket as she flies, and how hard her engines fire as the clients are shown it. */
+    private final RocketSounds rocketSounds = new RocketSounds(airtime);
     /**
      * Its rocket's stories' floors, rows up from her fins' feet, from the entry story up, the cockpit's floor last, as
      * she was built, on the clients as on the server, so her livery can follow them (see {@link Livery.RocketSpot});
@@ -1719,10 +1721,12 @@ public class AutopilotBlockEntity extends BlockEntity {
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
         space.watch(level, this, flight);
-        if (phase != Phase.OFF) {
+        // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds).
+        boolean held = rocketSounds.holdsCountdown(phase, rocket.counted(), quiet());
+        if (phase != Phase.OFF && !held) {
             RocketPilot.Orders orders = new RocketPilot.Orders(phase, targetAltitude, lateral == Lateral.DESTINATION, orbitX, orbitZ);
             Phase next = rocket.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this));
-            countDown(level);
+            countDown(level, flight);
             if (next == Phase.OFF) {
                 restRocket(level);
             } else if (next != phase) {
@@ -1731,28 +1735,30 @@ public class AutopilotBlockEntity extends BlockEntity {
                 changed();
             }
         }
-        // Her side jets' puffs, and her engines' thrust shown to the clients, who play her roar by it.
-        if (rocketSounds.tick(level, worldPosition, rocket)) {
+        // Her side jets' puffs and "Touchdown.", and her engines' thrust shown to the clients, who play her roar by it.
+        if (rocketSounds.tick(level, worldPosition, rocket, phase, this)) {
             changed();
         }
         watchArrival(flight, radio + flight.apex() - flight.position().y > AIRBORNE);
     }
 
     /**
-     * The countdown heard in the cockpit, before its voice counts it down: a note each second, rising as lift-off
-     * nears, and a bell as the engines light.
+     * The countdown heard as it begins and then each second: launch control's word (see {@link RocketSounds}), in the
+     * cockpit a note quietly under it rising as lift-off nears, and a bell as the engines light.
      */
-    private void countDown(ServerLevel level) {
+    private void countDown(ServerLevel level, SableFlight.State flight) {
         int counted = rocket.counted();
-        if (phase != Phase.TAKEOFF || counted == countHeard || counted % SharedConstants.TICKS_PER_SECOND != 0) {
+        boolean second = counted == 1 || counted % SharedConstants.TICKS_PER_SECOND == 0;
+        if (phase != Phase.TAKEOFF || counted == countHeard || !second) {
             return;
         }
         countHeard = counted;
+        rocketSounds.count(level, flight.position(), counted);
         float rising = (float) counted / RocketPilot.COUNTDOWN;
         if (counted >= RocketPilot.COUNTDOWN) {
             level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
         } else if (counted > 0) {
-            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1.0F, COUNTDOWN_LOWEST + rising);
+            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, COUNTDOWN_VOLUME, COUNTDOWN_LOWEST + rising);
         }
     }
 
