@@ -376,6 +376,7 @@ for (const [name, skin, renderType, part, singlePane, tinted] of [
   ["airframe_shell", "airframe_panel", "minecraft:solid", `${ID}:airframe_panel`, false, false],
   ["cockpit_glass", "cockpit_glass", "minecraft:translucent", `${ID}:cockpit_window`, true, false],
   ["hull_glass", "hull_glass", "minecraft:translucent", "minecraft:glass", false, false],
+  ["smoked_glass", "smoked_glass", "minecraft:translucent", "minecraft:glass", true, false],
   ["zeppelin_cover", "zeppelin_skin", "minecraft:solid", `${ID}:zeppelin_fabric`, false, true],
 ]) {
   write(`assets/${ID}/blockstates/${name}.json`, { variants: { "": { model: `${ID}:block/${name}` } } });
@@ -6083,6 +6084,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.airframe_shell": "Airframe Shell",
   "block.aerolarge.cockpit_glass": "Cockpit Glass",
   "block.aerolarge.hull_glass": "Hull Glass",
+  "block.aerolarge.smoked_glass": "Smoked Glass",
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.oval_window": "Oval Window",
   "block.aerolarge.thrust_lever": "Thrust Lever",
@@ -6107,6 +6109,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
+  "message.aerolarge.autopilot.off_rocket": "Autopilot off: the rocket rests on her fins, her engines quiet, ready to count down again.",
   "message.aerolarge.autopilot.not_assembled": "The autopilot only flies an assembled airliner, and there is no Physics Assembler aboard to assemble it.",
   "message.aerolarge.autopilot.assembling": "Assembling the airliner: the autopilot takes it from here.",
   "message.aerolarge.autopilot.assembly_failed": "The Physics Assembler could not assemble the airliner: %s",

@@ -617,6 +617,13 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<CockpitGlassBlock> HULL_GLASS = BLOCKS.registerBlock(
         "hull_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
     );
+    /**
+     * Smoked glass cut to the curve, nearly black, for the rocket's cockpit round her nose, drawn as one pane however
+     * thick it runs as the windscreen is; it gives back glass.
+     */
+    public static final DeferredBlock<CockpitGlassBlock> SMOKED_GLASS = BLOCKS.registerBlock(
+        "smoked_glass", properties -> new CockpitGlassBlock(properties, () -> Blocks.GLASS), glass()
+    );
 
     /**
      * The hull's lining (see {@link dev.aerolarge.block.Lining}): the skin cut to the hull's curve where the airliner's

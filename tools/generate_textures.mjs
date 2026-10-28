@@ -23,6 +23,7 @@ const BLUE_RIVET = [0x2b, 0x52, 0xa8];
 const GLASS = [0x2a, 0x3c, 0x55, 0xb0];
 const GLASS_SHINE = [0x8f, 0xb4, 0xd6, 0xc8];
 const COCKPIT_GLASS = [0x5e, 0x80, 0x9c, 0x80];
+const SMOKED_GLASS = [0x10, 0x12, 0x14, 0xa8];
 const FRAME_DARK = [0x3a, 0x40, 0x48];
 const CARPET = [0x5a, 0x63, 0x73];
 const CARPET_DARK = [0x4b, 0x53, 0x62];
@@ -165,6 +166,10 @@ texture(blockOutput, "cockpit_window", (x, y) => {
 // The windscreen cut to the nose's curve: clear glass with a light steel-blue tint and no frame, its own posts being
 // the hull, even all over, so it looks the same however many panes a look passes through.
 texture(blockOutput, "cockpit_glass", () => COCKPIT_GLASS);
+
+// The rocket's smoked glass round her cockpit: an even near-black grey, darker than the windscreen's blue but clear
+// enough to see out of by day, so it looks the same however many panes a look passes through.
+texture(blockOutput, "smoked_glass", () => SMOKED_GLASS);
 
 // Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.
 texture(blockOutput, "hull_glass", (x, y) => (x + y >= 9 && x + y <= 10 ? [0xf2, 0xfa, 0xff, 0x70] : [0xc8, 0xe4, 0xf4, 0x30]), 0);
@@ -3612,15 +3617,15 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
   // polished steel rim, set in the cover's weave. The glass is a dome (see OvalWindowModel, whose oval this is): clear
   // in its middle to look out of, it catches more of the sky toward its edge, where it turns away, and a soft
-  // highlight sits high on its upper left, as on a bubble. Dimmed, the glass alone darkens a step at a time to a deep
-  // smoked blue, its frame left as it is. Inside, the weave runs round an oval hole the dome is seen through, and the
-  // reveal between them is the rim's steel, darkening as it goes in.
+  // highlight sits high on its upper left, as on a bubble. Its glass is a neutral smoked grey, as the cockpit's is, and
+  // dimmed it alone darkens a step at a time to near-black, its frame left as it is. Inside, the weave runs round an
+  // oval hole the dome is seen through, and the reveal between them is the rim's steel, darkening as it goes in.
   const OVAL_COLUMNS = 3;
   const OVAL_ROWS = 4;
   const OVAL_WIDE = 21;
   const OVAL_TALL = 29;
   const OVAL_RIM = [0xa4, 0xac, 0xb6];
-  const OVAL_DIMS = [[0xa8, 0xcc, 0xe6, 0x40], [0x5e, 0x7c, 0x98, 0x90], [0x2c, 0x3e, 0x56, 0xc8], [0x10, 0x18, 0x26, 0xf0]];
+  const OVAL_DIMS = [[0xb8, 0xc4, 0xcc, 0x38], [0x50, 0x57, 0x5e, 0x88], [0x24, 0x28, 0x2c, 0xc0], [0x0c, 0x0e, 0x10, 0xe8]];
   // The sky the glass catches toward its edge, and how much of it at the very edge.
   const OVAL_SKY = [0xdc, 0xec, 0xf8];
   const OVAL_SKY_EDGE = 0.55;

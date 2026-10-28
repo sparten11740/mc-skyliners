@@ -1323,7 +1323,11 @@ public class AutopilotBlockEntity extends BlockEntity {
             if (phase != Phase.OFF) {
                 disengage();
             }
-            return Component.translatable(craft == Craft.ZEPPELIN ? "message.aerolarge.autopilot.off_zeppelin" : "message.aerolarge.autopilot.off");
+            return Component.translatable(switch (craft) {
+                case ZEPPELIN -> "message.aerolarge.autopilot.off_zeppelin";
+                case ROCKET -> "message.aerolarge.autopilot.off_rocket";
+                case AIRLINER -> "message.aerolarge.autopilot.off";
+            });
         }
         if (state == null || level == null) {
             return Component.translatable("message.aerolarge.autopilot.not_assembled");
