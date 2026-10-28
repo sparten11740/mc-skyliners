@@ -44,6 +44,18 @@ Commits on main, newest last, with the versions handed out.
 - alpha.163: her outside cameras and the cockpit's camera display.
 - alpha.164: her six liveries and their selector; the cockpit in windscreen glass.
 - On main since: smoked glass (N6, N8), her own "off" message, the ninth story (N19).
+- alpha.165: her lift (N9–N11): the car riding the glass shaft, sliding doors, picture boards by every landing and in
+  the car, its hum and chimes; parked open in flight. Play-tested: up and down the whole shaft (entry to cockpit), the
+  doorway boarding (no drop), riders' feet on the floor, set down at each landing's exit, getting off between floors
+  refused, the chime and door sounds, parked open at the cockpit through a hop with the car carried in her plot.
+
+## Background agents
+
+Each in a git worktree of its own, briefed with the decisions above and the night's rules (no dev client, no version
+bumps, commits cherry-picked onto main by the lead and play-tested there):
+
+- Posters (N17), LED strips (N13), going to space (N12), the rover (N14, N15): from 23:15.
+- The lab with its tardigrade (N16), the rocket's sound and voice (N18): from 23:35.
 
 ## For Jan to look at
 
