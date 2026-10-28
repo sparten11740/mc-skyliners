@@ -1382,7 +1382,8 @@ blocks away (Air Mail), a dive into the moon pool off its springboard or its tow
 or more above the ground (Cannonball), the three golden suitcases hidden in the hold (Lost and Found), a vacuum toilet
 flushed in flight, its blue ice let go 15 metres or more above the ground (Blue Ice), the five rubber ducks hidden
 aboard (Duck Hunt), and an espresso, a cappuccino and a mocha taken from a coffee machine (Barista), and aboard as the
-autopilot lands on a runway laid down from its blueprint and stops there (On the Numbers).
+autopilot lands on a runway laid down from its blueprint and stops there (On the Numbers), and aboard a rocket as she
+climbs to the edge of space at y 1,000 (Edge of Space).
 
 ### The zeppelin
 

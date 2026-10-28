@@ -881,5 +881,7 @@
   "advancements.aerolarge.first_flight.cannonball.title": "Cannonball",
   "advancements.aerolarge.first_flight.cannonball.description": "Dive into the moon pool off its springboard or its tower while the airliner flies",
   "advancements.aerolarge.first_flight.blue_ice.title": "Blue Ice",
-  "advancements.aerolarge.first_flight.blue_ice.description": "Flush an airliner's toilet in flight and drop blue ice on the world below"
+  "advancements.aerolarge.first_flight.blue_ice.description": "Flush an airliner's toilet in flight and drop blue ice on the world below",
+  "advancements.aerolarge.first_flight.edge_of_space.title": "Edge of Space",
+  "advancements.aerolarge.first_flight.edge_of_space.description": "Be aboard a rocket as she climbs to the edge of space"
 }
