@@ -101,6 +101,12 @@ public class PaperPlane extends Entity {
      */
     private static final double EASING = 0.1;
     private static final double PUT_THERE = 4;
+    /**
+     * On a client, how far its plane's velocity may be from the server's, in blocks a tick, and still be eased toward
+     * it rather than given it at once: more than a lagging server's plane, wavering a few ticks behind, is off from
+     * its client's, and less than the cabin's speed it gains or loses as the server takes it aboard or sends it out.
+     */
+    private static final double TAKE_VELOCITY = 0.25;
 
     @Nullable
     private UUID thrower;
@@ -110,6 +116,23 @@ public class PaperPlane extends Entity {
     private boolean thrownInFlight;
     /** On a client, how far its plane still has to be eased to where the server last had it, in blocks. */
     private Vec3 offServer = Vec3.ZERO;
+    /**
+     * On a client, where the server last had it and how it pointed there, not yet taken in: kept for its next tick, so
+     * of several updates arriving together, as when a lagging server catches up, only the newest counts. An older one,
+     * from before the plane flew on, would put it back.
+     */
+    @Nullable
+    private Vec3 serverAt;
+    private float serverYRot;
+    private float serverXRot;
+    /**
+     * On a client, the velocity the server last gave it, not yet taken in, and how far its plane's still has to be
+     * eased to that, in blocks a tick: given at once, each update would turn its nose with a jerk, as a lagging
+     * server's plane wavers a few ticks behind.
+     */
+    @Nullable
+    private Vec3 serverVelocity;
+    private Vec3 velocityOffServer = Vec3.ZERO;
 
     public PaperPlane(EntityType<? extends PaperPlane> type, Level level) {
         super(type, level);
@@ -249,27 +272,54 @@ public class PaperPlane extends Entity {
         }
     }
 
-    /** On a client, a share of the way still to go to where the server last had it. */
+    /**
+     * On a client, a share of the way still to go to where the server last had it and to the velocity it gave it, or,
+     * when either is far off, given it at once.
+     */
     private void easeToServer() {
+        takeServerPosition();
+        takeServerVelocity();
         Vec3 step = offServer.scale(EASING);
         offServer = offServer.subtract(step);
         setPos(position().add(step));
+        Vec3 speedUp = velocityOffServer.scale(EASING);
+        velocityOffServer = velocityOffServer.subtract(speedUp);
+        setDeltaMovement(getDeltaMovement().add(speedUp));
     }
 
-    /**
-     * On a client, where the server has it now: eased toward a little each tick (see {@link #easeToServer}), or put
-     * there at once when it is far off.
-     */
-    @Override
-    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
-        Vec3 server = new Vec3(x, y, z);
-        if (server.distanceToSqr(position()) > PUT_THERE * PUT_THERE) {
-            super.lerpTo(x, y, z, yRot, xRot, steps);
+    private void takeServerPosition() {
+        if (serverAt != null && serverAt.distanceToSqr(position()) > PUT_THERE * PUT_THERE) {
+            super.lerpTo(serverAt.x, serverAt.y, serverAt.z, serverYRot, serverXRot, 0);
             setOldPosAndRot();
             offServer = Vec3.ZERO;
-            return;
+        } else if (serverAt != null) {
+            offServer = serverAt.subtract(position());
         }
-        offServer = server.subtract(position());
+        serverAt = null;
+    }
+
+    private void takeServerVelocity() {
+        if (serverVelocity != null && serverVelocity.distanceToSqr(getDeltaMovement()) > TAKE_VELOCITY * TAKE_VELOCITY) {
+            super.lerpMotion(serverVelocity.x, serverVelocity.y, serverVelocity.z);
+            velocityOffServer = Vec3.ZERO;
+        } else if (serverVelocity != null) {
+            velocityOffServer = serverVelocity.subtract(getDeltaMovement());
+        }
+        serverVelocity = null;
+    }
+
+    /** On a client, where the server has it now, taken in on its next tick (see {@link #easeToServer}). */
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+        serverAt = new Vec3(x, y, z);
+        serverYRot = yRot;
+        serverXRot = xRot;
+    }
+
+    /** On a client, the velocity the server gave it now, taken in on its next tick (see {@link #easeToServer}). */
+    @Override
+    public void lerpMotion(double x, double y, double z) {
+        serverVelocity = new Vec3(x, y, z);
     }
 
     /** Its age goes to clients with it, so they waver it as the server does. */
