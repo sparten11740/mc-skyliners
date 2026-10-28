@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 
@@ -121,17 +120,7 @@ public class CraneHookRenderer extends EntityRenderer<CraneHook> {
 
     /** A strand of rope between two points, a thin strip turned to face the camera, all in the hook's own place. */
     private static void strand(VertexConsumer consumer, PoseStack.Pose at, int light, Vec3 camera, Vec3 from, Vec3 to, float half) {
-        Vec3 way = to.subtract(from);
-        Vec3 across = way.cross(from.subtract(camera));
-        if (across.lengthSqr() < Mth.EPSILON) {
-            return;
-        }
-        across = across.normalize().scale(half);
-        FlatQuads.quad(consumer, at, light, ROPE, 0, 1, 0,
-            (float) (from.x + across.x), (float) (from.y + across.y), (float) (from.z + across.z),
-            (float) (from.x - across.x), (float) (from.y - across.y), (float) (from.z - across.z),
-            (float) (to.x - across.x), (float) (to.y - across.y), (float) (to.z - across.z),
-            (float) (to.x + across.x), (float) (to.y + across.y), (float) (to.z + across.z));
+        FlatQuads.strand(consumer, at, light, ROPE, camera, from, to, half);
     }
 
     @Override
