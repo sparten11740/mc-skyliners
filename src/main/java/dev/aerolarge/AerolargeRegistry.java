@@ -144,6 +144,11 @@ import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftDoorBlock;
 import dev.aerolarge.block.LiftMachineBlock;
 import dev.aerolarge.block.LiftMachineBlockEntity;
+import dev.aerolarge.block.LedConsoleBlock;
+import dev.aerolarge.block.LedConsoleBlockEntity;
+import dev.aerolarge.block.LedPanelBlock;
+import dev.aerolarge.block.LedPanelBlockEntity;
+import dev.aerolarge.block.LedStripBlock;
 import dev.aerolarge.block.LiftPanelBlock;
 import dev.aerolarge.block.LiftPanelBlockEntity;
 import dev.aerolarge.block.LightCableBlock;
@@ -1634,6 +1639,26 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiverySelectorBlockEntity>> LIVERY_SELECTOR_ENTITY =
         BLOCK_ENTITIES.register("livery_selector", () -> BlockEntityType.Builder.of(LiverySelectorBlockEntity::new, LIVERY_SELECTOR.get()).build(null));
+    /**
+     * The rocket's LED strips round each of her stories, the panel by each story's lift door that sets them, and the
+     * console in her cockpit that sets any story or all of them (see {@link dev.aerolarge.airframe.RocketLedStrips}).
+     * Placed only by the blueprint, so no items, and they give nothing back.
+     */
+    public static final DeferredBlock<LedStripBlock> LED_STRIP = BLOCKS.registerBlock(
+        "led_strip", LedStripBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noCollission().noOcclusion().noLootTable()
+            .lightLevel(LedStripBlock::light)
+    );
+    public static final DeferredBlock<LedPanelBlock> LED_PANEL = BLOCKS.registerBlock(
+        "led_panel", LedPanelBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedPanelBlockEntity>> LED_PANEL_ENTITY =
+        BLOCK_ENTITIES.register("led_panel", () -> BlockEntityType.Builder.of(LedPanelBlockEntity::new, LED_PANEL.get()).build(null));
+    public static final DeferredBlock<LedConsoleBlock> LED_CONSOLE = BLOCKS.registerBlock(
+        "led_console", LedConsoleBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedConsoleBlockEntity>> LED_CONSOLE_ENTITY =
+        BLOCK_ENTITIES.register("led_console", () -> BlockEntityType.Builder.of(LedConsoleBlockEntity::new, LED_CONSOLE.get()).build(null));
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );

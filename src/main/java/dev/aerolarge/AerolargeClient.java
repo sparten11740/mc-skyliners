@@ -55,6 +55,7 @@ import dev.aerolarge.client.HelmRenderer;
 import dev.aerolarge.client.HelmetVisor;
 import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LaserTurretRenderer;
+import dev.aerolarge.client.LedLights;
 import dev.aerolarge.client.LiftPanelRenderer;
 import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
@@ -203,6 +204,8 @@ public final class AerolargeClient {
             AerolargeRegistry.ZEPPELIN_COVER.get(), AerolargeRegistry.ZEPPELIN_FABRIC.get(), AerolargeRegistry.OVAL_WINDOW.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, AerolargeRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
+        // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.
+        LedLights.register(modEventBus);
         NeoForge.EVENT_BUS.addListener(SleighBells::tick);
         NeoForge.EVENT_BUS.addListener(TechnoRoom::tick);
         NeoForge.EVENT_BUS.addListener(HullAmbience::tick);

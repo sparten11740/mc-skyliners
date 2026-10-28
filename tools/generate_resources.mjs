@@ -3503,6 +3503,62 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   cubes.lift_board = null;
 }
 
+// The rocket's LED strips (see LedStripBlock): a thin bar along each side of its block that her skin stands on, lying
+// on the floor or fixed under the ceiling, its faces glowing whatever the light around and tinted in its story's colour
+// (see the client's LedLights); one model for each, drawn along the north side and turned for the others, the bars of
+// a strip along two sides meeting in its corner. The panel by each story's lift door and the console in her cockpit
+// are slim screens of dark glass that their renderers draw over (see LedPanelRenderer and LedConsoleRenderer). All of
+// them are placed only by the blueprint, so they have no items and give nothing back; fitted into her, so breakable,
+// and light as the rest of her is (see FITTINGS).
+{
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const face = (uv) => ({ texture: "#strip", uv, tintindex: 0, ...lit });
+  for (const [half, from, to, flat] of [["floor", [0, 0, 0], [16, 2, 2], "up"], ["ceiling", [0, 14, 0], [16, 16, 2], "down"]]) {
+    write(`assets/${ID}/models/block/led_strip_${half}.json`, {
+      parent: "minecraft:block/block",
+      ambientocclusion: false,
+      textures: { strip: `${ID}:block/led_strip`, particle: `${ID}:block/led_strip` },
+      elements: [{
+        from, to, shade: false,
+        faces: { south: face([0, 7, 16, 9]), [flat]: face([0, 7, 16, 9]), east: face([7, 7, 9, 9]), west: face([7, 7, 9, 9]) },
+      }],
+    });
+  }
+  write(`assets/${ID}/blockstates/led_strip.json`, {
+    multipart: Object.entries(yRot).flatMap(([wall, y]) => ["false", "true"].map((ceiling) => ({
+      when: { [wall]: "true", ceiling },
+      apply: { model: `${ID}:block/led_strip_${ceiling === "true" ? "ceiling" : "floor"}`, y },
+    }))),
+  });
+  cubes.led_strip = null;
+  // A strip is a thin bar of LEDs, next to nothing beside her skin: it weighs a twentieth of a block, overriding the
+  // airframe's quarter (sable:super_light), so her many hundreds of strips hardly add to her weight.
+  write(`data/${ID}/physics_block_properties/led_strip.json`, {
+    priority: 1004,
+    selector: `${ID}:led_strip`,
+    properties: { "sable:mass": 0.05 },
+  });
+  const casing = `${ID}:block/passenger_screen_casing`;
+  for (const name of ["led_panel", "led_console"]) {
+    slimScreenModels(name, casing, casing);
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
+        [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/${name}${tilted ? "_tilted" : ""}`, y }])))),
+    });
+    cubes[name] = null;
+  }
+}
+function ledStripFittings() {
+  return ["led_strip", "led_panel", "led_console"];
+}
+function ledStripLang() {
+  return {
+    "block.aerolarge.led_strip": "LED Strip",
+    "block.aerolarge.led_panel": "LED Panel",
+    "block.aerolarge.led_console": "LED Console",
+  };
+}
+
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
@@ -5871,6 +5927,7 @@ FITTINGS.push(...galleyUnitFittings());
 FITTINGS.push(...planterFittings());
 FITTINGS.push(...barFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
+FITTINGS.push(...ledStripFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -6582,6 +6639,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...towerInstrumentsLang(),
   ...zeppelinLang(),
   ...zeppelinControlsLang(),
+  ...ledStripLang(),
   ...shipsColoursLang(),
   ...christeningLang(),
   ...flankScreenLang(),

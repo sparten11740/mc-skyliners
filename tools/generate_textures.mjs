@@ -4178,4 +4178,22 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }
 }
 
+// The rocket's LED strips (see LedStripBlock): a milky diffuser over a row of LEDs, white so that the strip's tint
+// gives it its story's colour, a little brighter over each LED, in a pale channel along its edges; its model shows the
+// row through the middle. And the glow a lit strip casts on its wall (see LedPanelRenderer): white at the strip, along
+// its top edge, fading away to nothing, which the glow's colour tints as it is added onto the wall.
+{
+  texture(blockOutput, "led_strip", (x, y) => {
+    if (y === 0 || y === 15) return [0xc8, 0xcc, 0xd2];
+    const middle = 1 - Math.abs(y - 7.5) / 8;
+    const led = x % 2 === 0 ? 1 : 0.94;
+    const v = Math.round(0xd8 + 0x27 * middle * led);
+    return [v, v, v];
+  }, 2);
+  texture(miscOutput, "led_wash", (x, y) => {
+    const v = Math.round(255 * (1 - y / 63) ** 2.2);
+    return [v, v, v];
+  }, 0, 4, 64);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

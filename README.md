@@ -1857,6 +1857,23 @@ each side and blue fins, polar red with white fins, and midnight blue with gold 
 is framed in gold. Use a picture and the new paint runs down her from her nose to her foot over a minute, with a
 brush's sound; it is a tint, so no block of her changes, and her windows' frames take it too.
 
+Round every story run two rings of LED strip along the inside of her skin, one along the floor and one under the
+ceiling, stopping short of her windows (the server config's `rocket.ledStrips` leaves them out, and their panels and
+console with them). The slim panel on the other side of each story's lift doors from its picture board sets its strips,
+and every control on it is a picture: a swatch for each of ten colours (cherry, tangerine, sunshine, lime, mint, sky,
+ocean, grape, pink and snow); a sun for each brightness, a dark ring struck through for off, then bigger and with more
+rays for a third, two thirds and full; and a little strip for each way of lighting, doing what it does: steady;
+breathing, brightening and dimming in steps over four seconds; chasing, bands of colour running round the floor one way
+and round the ceiling the other; and club, pulsing on the techno club's 128 beats a minute, its colour and a partner
+colour taking turns. What is set is framed in white, and each touch sounds: a swatch chimes a note of a scale rising
+along the colours, a sun clicks higher the brighter it is, a mode blips. Nothing flashes faster than three times a
+second. The strips give more light the brighter they are, and cast a soft glow up the wall from the floor and down it
+from the ceiling. Most stories start snow white at two thirds; the greenhouse is a full pink grow light, the techno club
+pulses pink and ocean blue, and the observation deck is a dim ocean blue for the stars. Against the glass on the
+cockpit's left stands the LED console, her silhouette along its top laid on her side, each story a band glowing as its
+strips do: touch a band to pick that story, or the little rocket beside it to pick them all, then use the same swatches,
+suns and strips under them. Set for all of her, a change climbs her a story at a time from the entry story up.
+
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set. There
 it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
@@ -2033,6 +2050,11 @@ by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running 
 round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
 planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; `EdgeOfSpace` holds the height space
 begins at, and welcomes everyone aboard to space as she climbs past it.
+`RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
+`LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
+`LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their
+modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
+`LedControlsArt`.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

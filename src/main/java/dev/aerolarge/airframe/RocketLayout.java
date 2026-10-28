@@ -80,7 +80,8 @@ public final class RocketLayout implements Layout {
     private static final int[][] FINS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     /**
      * The features laid once the body stands, in this order (see {@link RocketPiece}): the pool before the greenhouse
-     * under it, whose canopy keeps clear of the pool's channel hanging into it.
+     * under it, whose trees and vines keep clear of the pool's channel hanging into it, and the LED strips last, to
+     * fill in round everything else.
      */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
@@ -93,7 +94,8 @@ public final class RocketLayout implements Layout {
         RocketPool::new,
         RocketGreenhouse::new,
         RocketClub::new,
-        RocketObservationDeck::new);
+        RocketObservationDeck::new,
+        RocketLedStrips::new);
     /**
      * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector
      * stand against runs: the selector's row and the display's two over it.

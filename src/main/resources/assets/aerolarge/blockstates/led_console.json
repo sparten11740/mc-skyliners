@@ -1,0 +1,260 @@
+{
+  "variants": {
+    "facing=north,part=0,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=0,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=1,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=1,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=2,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=2,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=3,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=3,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=4,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=4,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=5,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=5,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=6,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=6,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=north,part=7,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 0
+    },
+    "facing=north,part=7,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 0
+    },
+    "facing=east,part=0,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=0,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=1,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=1,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=2,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=2,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=3,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=3,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=4,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=4,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=5,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=5,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=6,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=6,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=east,part=7,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 90
+    },
+    "facing=east,part=7,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 90
+    },
+    "facing=south,part=0,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=0,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=1,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=1,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=2,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=2,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=3,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=3,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=4,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=4,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=5,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=5,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=6,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=6,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=south,part=7,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 180
+    },
+    "facing=south,part=7,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 180
+    },
+    "facing=west,part=0,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=0,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=1,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=1,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=2,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=2,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=3,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=3,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=4,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=4,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=5,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=5,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=6,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=6,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    },
+    "facing=west,part=7,tilted=false": {
+      "model": "aerolarge:block/led_console",
+      "y": 270
+    },
+    "facing=west,part=7,tilted=true": {
+      "model": "aerolarge:block/led_console_tilted",
+      "y": 270
+    }
+  }
+}

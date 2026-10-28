@@ -46,6 +46,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_LIFT;
     public static final ModConfigSpec.BooleanValue ROCKET_ROOMS;
     public static final ModConfigSpec.IntValue ROCKET_CEILING;
+    public static final ModConfigSpec.BooleanValue LED_STRIPS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -438,6 +439,14 @@ public final class AerolargeConfig {
                 "of the world."
             )
             .defineInRange("ceiling", 1400, 100, 4000);
+        LED_STRIPS = builder
+            .comment(
+                "Whether a rocket is built with LED strips round each of her stories, along the floor and under the ceiling, in ten",
+                "colours, four brightnesses and four ways of lighting (steady, breathing, chasing round and pulsing to the club's beat),",
+                "set from a panel by each story's lift door or from a console in her cockpit for any story or all of them. Rockets",
+                "already built keep theirs."
+            )
+            .define("ledStrips", true);
         builder.pop();
 
         SPEC = builder.build();

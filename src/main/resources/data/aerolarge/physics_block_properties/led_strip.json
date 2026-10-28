@@ -1,0 +1,7 @@
+{
+  "priority": 1004,
+  "selector": "aerolarge:led_strip",
+  "properties": {
+    "sable:mass": 0.05
+  }
+}
