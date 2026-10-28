@@ -4194,6 +4194,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const v = Math.round(255 * (1 - y / 63) ** 2.2);
     return [v, v, v];
   }, 0, 4, 64);
+}
+
 // The space posters on the rocket's lift shaft (see SpacePosterBlock), one texture for each block of a poster, its
 // column from the left and its row from the top, in the flat, glowing colours of a science illustration and without a
 // word on them: a black hole, its accretion disk running edge-on across it and bent by its gravity into an arch over

@@ -3557,6 +3557,8 @@ function ledStripLang() {
     "block.aerolarge.led_panel": "LED Panel",
     "block.aerolarge.led_console": "LED Console",
   };
+}
+
 // The rocket's space posters (see SpacePosterBlock), each so many blocks wide and tall, as SpacePoster has them. Each
 // block of a poster is a sheet of board a pixel thick, a quarter pixel clear of the back of its block, its piece of the
 // picture on its front and plain board behind it and round its edges, drawn evenly lit whichever way it faces.
