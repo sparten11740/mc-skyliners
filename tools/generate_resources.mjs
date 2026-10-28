@@ -1347,6 +1347,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
   Object.assign(sounds, roverSounds());
+  Object.assign(sounds, labSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -3771,6 +3772,157 @@ function roverLang() {
   };
 }
 
+// The rocket's lab (see RocketLab). The glass of her tardigrade's tank (see HabitatGlassBlock): a pane a pixel thick on
+// each side of its block that looks out of the tank, drawn along the north side and turned for the others, so a block
+// at a corner has two; on its lowest row moss over the floor of its block and a steel kerb along the pane's foot, on
+// its highest a soft light along the pane's top, inside. Its feeding hatch: a pane with a steel-framed opening in its
+// middle and a steel flap over it, slid aside when open. The instruments, each modelled facing north: a microscope in
+// white enamel on a charcoal foot, its eyepieces tilted up toward whoever uses it and its stage lit from under; a rack
+// of five vials, their liquids glowing; a scan screen on a stand; and the vitals screen, a panel of the tank's wall,
+// beating or, curled up, still. The tank's floor patches lie on the floor as a carpet does: the pool, rippling water
+// over gravel; the pebbles, smooth stones in moss. All are placed only by the blueprint, so they have no items and
+// give nothing back; the glass and the hatch are built into her, the rest fitted (see labFittings).
+{
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const pane = { texture: "#glass" };
+  write(`assets/${ID}/models/block/habitat_glass_pane.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", ambientocclusion: false,
+    textures: { glass: `${ID}:block/habitat_glass`, particle: `${ID}:block/habitat_glass` },
+    elements: [{ from: [0, 0, 0], to: [16, 16, 1], faces: { north: pane, south: pane } }],
+  });
+  write(`assets/${ID}/models/block/habitat_glass_kerb.json`, boxes({ all: `${ID}:block/habitat_kerb`, particle: `${ID}:block/habitat_kerb` },
+    [[[0, 0, 0], [16, 2, 1.5], "#all"]]));
+  write(`assets/${ID}/models/block/habitat_glass_light.json`, boxes({ all: `${ID}:block/habitat_light`, particle: `${ID}:block/habitat_light` },
+    [[[0, 15, 1], [16, 16, 2.5], "#all", true]]));
+  write(`assets/${ID}/models/block/habitat_glass_moss.json`, boxes({ all: "minecraft:block/moss_block", particle: "minecraft:block/moss_block" },
+    [[[0, 0, 0], [16, 1, 16], "#all"]]));
+  const sides = Object.entries(yRot).map(([side, y]) => ({ side, y }));
+  write(`assets/${ID}/blockstates/habitat_glass.json`, {
+    multipart: [
+      ...sides.map(({ side, y }) => ({ when: { [side]: "true" }, apply: { model: `${ID}:block/habitat_glass_pane`, y } })),
+      ...sides.map(({ side, y }) => ({ when: { [side]: "true", row: "floor" }, apply: { model: `${ID}:block/habitat_glass_kerb`, y } })),
+      ...sides.map(({ side, y }) => ({ when: { [side]: "true", row: "top" }, apply: { model: `${ID}:block/habitat_glass_light`, y } })),
+      { when: { row: "floor" }, apply: { model: `${ID}:block/habitat_glass_moss` } },
+    ],
+  });
+  cubes.habitat_glass = null;
+
+  const frame = "#frame";
+  for (const open of [false, true]) {
+    const flap = open ? [[11.5, 5, -1], [17.5, 11, -0.5]] : [[5, 5, -0.25], [11, 11, 0.75]];
+    write(`assets/${ID}/models/block/habitat_hatch${open ? "_open" : ""}.json`, {
+      parent: "minecraft:block/block", render_type: "minecraft:translucent",
+      textures: { glass: `${ID}:block/habitat_glass`, frame: `${ID}:block/habitat_hatch_frame`, flap: `${ID}:block/habitat_hatch_flap`,
+        particle: `${ID}:block/habitat_hatch_frame` },
+      elements: [
+        ...[[[0, 0], [16, 5]], [[0, 11], [16, 16]], [[0, 5], [5, 11]], [[11, 5], [16, 11]]].map(([[x0, y0], [x1, y1]]) =>
+          ({ from: [x0, y0, 0], to: [x1, y1, 1], faces: { north: pane, south: pane } })),
+        ...[[[4, 4], [12, 5]], [[4, 11], [12, 12]], [[4, 5], [5, 11]], [[11, 5], [12, 11]]].map(([[x0, y0], [x1, y1]]) =>
+          solid([x0, y0, -0.5], [x1, y1, 1.5], frame)),
+        solid(flap[0], flap[1], "#flap"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/habitat_hatch.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((open) =>
+      [`facing=${facing},open=${open}`, { model: `${ID}:block/habitat_hatch${open ? "_open" : ""}`, y }]))),
+  });
+  cubes.habitat_hatch = null;
+
+  const instrument = { white: `${ID}:block/lab_white`, dark: `${ID}:block/lab_dark`, chrome: `${ID}:block/lab_chrome`, particle: `${ID}:block/lab_white` };
+  // Its foot, its arm and head, its stage, the objective under the head, the focus knobs, the lamp under the stage, and
+  // the eyepieces tilted up toward its front.
+  const microscope = boxes(instrument, [
+    [[4.5, 0, 5], [11.5, 1, 13], "#dark"],
+    [[7, 1, 10.5], [9, 10, 12.5], "#white"],
+    [[6.5, 9, 5.5], [9.5, 11.5, 12.5], "#white"],
+    [[5, 4, 5.5], [11, 5, 10.5], "#dark"],
+    [[7.25, 5.5, 7.25], [8.75, 9, 8.75], "#chrome"],
+    [[5.5, 6, 9.5], [6.5, 7.5, 11], "#dark"],
+    [[9.5, 6, 9.5], [10.5, 7.5, 11], "#dark"],
+    [[7.25, 1, 7], [8.75, 1.5, 8.5], "#white", true],
+    [[7, 11, 4], [9, 13.5, 7], "#chrome"],
+  ]);
+  microscope.elements.at(-1).rotation = { angle: 22.5, axis: "x", origin: [8, 11.5, 6] };
+  write(`assets/${ID}/models/block/lab_microscope.json`, microscope);
+  write(`assets/${ID}/models/block/lab_samples.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent",
+    textures: { rack: `${ID}:block/lab_chrome`, vials: `${ID}:block/lab_vials`, particle: `${ID}:block/lab_chrome` },
+    elements: [
+      solid([2, 0, 5], [14, 2, 11], "#rack"),
+      solid([2, 6, 6.5], [14, 6.75, 9.5], "#rack"),
+      ...[0, 1, 2, 3, 4].map((vial) => {
+        const x = 2.75 + vial * 2.2;
+        const uv = [1 + vial * 3, 0, 3 + vial * 3, 16];
+        const face = { texture: "#vials", uv };
+        return { from: [x, 2, 7.25], to: [x + 1.5, 8.5, 8.75], shade: false,
+          faces: { north: { ...face, ...lit }, south: { ...face, ...lit }, east: face, west: face, up: { texture: "#vials", uv: [uv[0], 0, uv[2], 2] } } };
+      }),
+    ],
+  });
+  const screen = (name, texture) => ({
+    parent: "minecraft:block/block",
+    textures: { screen: `${ID}:block/${texture}`, casing: `${ID}:block/lab_dark`, stand: `${ID}:block/lab_chrome`, particle: `${ID}:block/lab_dark` },
+    elements: name === "scan"
+      ? [solid([5, 0, 7.5], [11, 0.5, 11], "#stand"), solid([7.5, 0.5, 9], [8.5, 4, 10], "#stand"), solid([1, 3, 8], [15, 13, 9.5], "#casing"),
+        { from: [2, 4, 7.9], to: [14, 12, 8], shade: false, faces: { north: { texture: "#screen", uv: [1, 1, 15, 15], ...lit } } }]
+      : [solid([0, 0, 0.1], [16, 16, 2], "#casing"), { from: [0, 0, 0], to: [16, 16, 0.1], shade: false, faces: { north: { texture: "#screen", ...lit } } }],
+  });
+  write(`assets/${ID}/models/block/lab_scan.json`, screen("scan", "lab_screen_scan"));
+  write(`assets/${ID}/models/block/lab_vitals.json`, screen("vitals", "lab_screen_vitals"));
+  write(`assets/${ID}/models/block/lab_vitals_dormant.json`, screen("vitals", "lab_screen_dormant"));
+  const instrumentModel = (kind, dormant) => (kind === "vitals" && dormant ? "lab_vitals_dormant" : `lab_${kind}`);
+  const variants = {};
+  for (const kind of ["microscope", "samples", "scan", "vitals"]) {
+    for (const dormant of [false, true]) {
+      for (const [facing, y] of Object.entries(yRot)) {
+        variants[`dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant)}`, y };
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/lab_instrument.json`, { variants });
+  cubes.lab_instrument = null;
+
+  write(`assets/${ID}/models/block/habitat_pool.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent",
+    textures: { bed: "minecraft:block/gravel", water: `${ID}:block/habitat_pool`, particle: `${ID}:block/habitat_pool` },
+    elements: [
+      { from: [0, 0, 0], to: [16, 0.5, 16], faces: { up: { texture: "#bed" }, down: { texture: "#bed", cullface: "down" } } },
+      { from: [0, 0, 0], to: [16, 1, 16], faces: Object.fromEntries(["up", "north", "south", "east", "west"].map((face) => [face, { texture: "#water" }])) },
+    ],
+  });
+  const stones = [[[2, 1, 3], [5, 2.5, 6], "#stone"], [[8, 1, 2], [10.5, 2, 4.5], "#tuff"], [[10, 1, 9], [14, 3, 13], "#stone"],
+    [[4, 1, 10], [6.5, 2, 12.5], "#tuff"], [[12, 1, 4], [14, 1.75, 6], "#andesite"]];
+  write(`assets/${ID}/models/block/habitat_pebbles.json`, boxes(
+    { moss: "minecraft:block/moss_block", stone: "minecraft:block/smooth_stone", tuff: "minecraft:block/tuff", andesite: "minecraft:block/andesite",
+      particle: "minecraft:block/moss_block" },
+    [[[0, 0, 0], [16, 1, 16], "#moss"], ...stones]));
+  write(`assets/${ID}/blockstates/habitat_floor.json`, {
+    variants: { "kind=pool": { model: `${ID}:block/habitat_pool` }, "kind=pebbles": { model: `${ID}:block/habitat_pebbles` } },
+  });
+  cubes.habitat_floor = null;
+}
+// The lab's instruments and its tank's floor patches are fitted into the rocket rather than built into her: light like
+// the rest, but no part of her frame, and breakable.
+function labFittings() {
+  return ["lab_instrument", "habitat_floor"];
+}
+// Her tardigrade's purr, soft and low now and then, and the bloop as it curls up into its tun.
+function labSounds() {
+  return Object.fromEntries(["tardigrade_mrrp", "tardigrade_bloop"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function labLang() {
+  return {
+    "block.aerolarge.habitat_glass": "Tank Glass",
+    "block.aerolarge.habitat_hatch": "Feeding Hatch",
+    "block.aerolarge.lab_instrument": "Lab Instrument",
+    "block.aerolarge.habitat_floor": "Tank Floor",
+    "entity.aerolarge.tardigrade": "Tardigrade",
+    "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
+    "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
+  };
+}
+
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
@@ -6141,6 +6293,7 @@ FITTINGS.push(...barFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
+FITTINGS.push(...labFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -6164,12 +6317,12 @@ write(`data/${ID}/tags/block/unbreakable_in_frame.json`, tag([
 ].map((id) => ({ id, required: false }))));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
-// to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight); and the
-// rocket's rover, stowed in its cradle (see Rover).
+// to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight); the
+// rocket's rover, stowed in its cradle (see Rover); and her lab's tardigrade (see Tardigrade).
 write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`,
-  `${ID}:rover`]));
+  `${ID}:rover`, `${ID}:tardigrade`]));
 // A lift's car lives among its ship's blocks and goes with them: taken away, it goes too.
-write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`]));
+write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`, `${ID}:tardigrade`]));
 // What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
 // net, chests, barrels and care packages with all they hold. A camel it catches but cannot lift: too heavy.
 write(`data/${ID}/tags/entity_type/crane_loads.json`, tag(["horse", "donkey", "mule", "llama", "trader_llama", "camel", "skeleton_horse",
@@ -6867,6 +7020,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...flankScreenLang(),
   ...spacePosterLang(),
   ...roverLang(),
+  ...labLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

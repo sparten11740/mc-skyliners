@@ -1858,6 +1858,24 @@ its picture, and go up on any wall: used on the side of a block, a poster goes u
 the block used, if every block of it has open air to go in and a solid face behind it. The server config's
 `rocket.posters` leaves them out of the rocket.
 
+The lab, her eighth story (the server config's `rocket.lab` leaves it bare, as `rocket.rooms` leaves every room), is
+where her tardigrade lives: a water bear the size of an elephant, about six blocks long and three and a half tall, soft
+peach with darker folds between the four plump segments of its body, eight stubby legs with pale claws, two dark eye
+spots and a small round mouth at the tip of its snout. Its glass tank stands behind the lift shaft, past the walkway
+round it, lit softly along its top, moss on its floor with a shallow pool and beds of pebbles. It lumbers to and fro,
+rests, turns round where its tank is deep enough to (at the default scale it is not, and it always faces its hatch),
+and turns its head to look at whoever is near. In the tank's glass on her right is a feeding hatch at chest height,
+and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
+the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
+with an empty hand to reach in and touch it, and it wriggles and gives a soft, low purr, as it does now and then on its
+own; while the hatch stands open, moss can go to it straight from your hand. Nothing hurts it, pushes it or leads it
+away, and it flies with her as a part of her. Over the top of the world, in space, it curls up into a tun, the dry,
+wrinkled barrel real tardigrades live through space in, with a bloop, and its screen goes slow and blue under a
+barrel's picture; back under y 300 it uncurls with a purr. Round the front of the room lab counters curve either side
+of the way out, microscopes on them, sample racks with their vials glowing and scan screens sweeping a line down a
+picture of it, a stool before each microscope and two by the tank's far end to sit and watch it from. A rocket too
+small for a tank has only the counters.
+
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
 the whole of her from well out, sky blue; then up her side, from low by the door to her nose against the sky, orange;
@@ -2122,6 +2140,10 @@ Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBa
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the
 `DriveRover` payload, and `RoverRenderer`, `RoverModel` and `RoverBayRenderer` draw it (`RoverClient` sets them up).
+`RocketLab` furnishes her lab as `LabPlan` lays it out: the tank's `HabitatGlassBlock`s, its `HabitatFloorBlock`s and
+`LabInstrumentBlock`s, and the `HabitatHatchBlock`, whose `HabitatHatchBlockEntity` makes her `Tardigrade` and keeps it
+pacing the line the plan found for it (in `#sable:retain_in_sub_level`, so it lives among her blocks), curling it up in
+space; on the client `TardigradeModel` and `TardigradeRenderer` draw it.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

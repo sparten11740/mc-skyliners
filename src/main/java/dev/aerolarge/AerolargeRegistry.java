@@ -123,6 +123,11 @@ import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.HoopBlock;
 import dev.aerolarge.block.HullPanelBlock;
 import dev.aerolarge.block.HullRelayBlock;
+import dev.aerolarge.block.HabitatFloorBlock;
+import dev.aerolarge.block.HabitatGlassBlock;
+import dev.aerolarge.block.HabitatHatchBlock;
+import dev.aerolarge.block.HabitatHatchBlockEntity;
+import dev.aerolarge.block.LabInstrumentBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JetBridgeBlock;
 import dev.aerolarge.block.JetBridgeBlockEntity;
@@ -261,6 +266,7 @@ import dev.aerolarge.entity.LiftCar;
 import dev.aerolarge.entity.PaperPlane;
 import dev.aerolarge.entity.Rover;
 import dev.aerolarge.entity.SlideRide;
+import dev.aerolarge.entity.Tardigrade;
 import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirframeBlueprintItem;
 import dev.aerolarge.item.BasketballItem;
@@ -1715,6 +1721,33 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedConsoleBlockEntity>> LED_CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("led_console", () -> BlockEntityType.Builder.of(LedConsoleBlockEntity::new, LED_CONSOLE.get()).build(null));
+    /**
+     * The rocket's lab (see {@link dev.aerolarge.airframe.RocketLab}): the glass of her tardigrade's tank, its lowest
+     * row mossy and its highest lit; its feeding hatch, whose block entity keeps the creature; the lab's instruments,
+     * the vitals screen among them; the pool and pebble beds of the tank's floor; the creature itself, and its purr and
+     * the bloop as it curls up. Placed only by the blueprint, so no items, and they give nothing back.
+     */
+    public static final DeferredBlock<HabitatGlassBlock> HABITAT_GLASS = BLOCKS.registerBlock(
+        "habitat_glass", HabitatGlassBlock::new,
+        glass().noLootTable().lightLevel(state -> state.getValue(HabitatGlassBlock.ROW) == HabitatGlassBlock.Row.TOP ? HabitatGlassBlock.GLOW : 0)
+    );
+    public static final DeferredBlock<HabitatHatchBlock> HABITAT_HATCH = BLOCKS.registerBlock("habitat_hatch", HabitatHatchBlock::new, glass().noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HabitatHatchBlockEntity>> HABITAT_HATCH_ENTITY =
+        BLOCK_ENTITIES.register("habitat_hatch", () -> BlockEntityType.Builder.of(HabitatHatchBlockEntity::new, HABITAT_HATCH.get()).build(null));
+    public static final DeferredBlock<LabInstrumentBlock> LAB_INSTRUMENT = BLOCKS.registerBlock(
+        "lab_instrument", LabInstrumentBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().lightLevel(LabInstrumentBlock::light)
+    );
+    public static final DeferredBlock<HabitatFloorBlock> HABITAT_FLOOR = BLOCKS.registerBlock(
+        "habitat_floor", HabitatFloorBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.1F).sound(SoundType.MOSS_CARPET).noOcclusion().noLootTable()
+            .isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<Tardigrade>> TARDIGRADE = ENTITY_TYPES.register(
+        "tardigrade", () -> EntityType.Builder.<Tardigrade>of(Tardigrade::new, MobCategory.MISC).sized(2.6F, 3.5F).eyeHeight(2.2F)
+            .clientTrackingRange(10).fireImmune().build("tardigrade")
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_MRRP = sound("tardigrade_mrrp");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_BLOOP = sound("tardigrade_bloop");
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );

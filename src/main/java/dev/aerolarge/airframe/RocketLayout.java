@@ -96,6 +96,7 @@ public final class RocketLayout implements Layout {
         RocketClub::new,
         RocketObservationDeck::new,
         RocketRoverBay::new,
+        RocketLab::new,
         RocketPosters::new,
         RocketLedStrips::new);
     /**

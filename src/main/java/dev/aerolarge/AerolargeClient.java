@@ -96,6 +96,8 @@ import dev.aerolarge.client.SpaceSky;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
+import dev.aerolarge.client.TardigradeModel;
+import dev.aerolarge.client.TardigradeRenderer;
 import dev.aerolarge.client.TechnoRoom;
 import dev.aerolarge.client.TechnoRoomRenderer;
 import dev.aerolarge.client.TerrainMap;
@@ -255,6 +257,11 @@ public final class AerolargeClient {
         EngineCoreBlockEntity.clientTicker = EngineSounds::tick;
         PropellerBlockEntity.clientTicker = ZeppelinEngineSounds::tick;
         LiftCar.clientTicker = LiftSounds::tick;
+        // The rocket's lab: her tardigrade's model and its renderer.
+        modEventBus.addListener((EntityRenderersEvent.RegisterLayerDefinitions event) -> event.registerLayerDefinition(TardigradeModel.LAYER,
+            TardigradeModel::createBodyLayer));
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> event.registerEntityRenderer(AerolargeRegistry.TARDIGRADE.get(),
+            TardigradeRenderer::new));
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);

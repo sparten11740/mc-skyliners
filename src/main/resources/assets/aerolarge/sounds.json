@@ -996,6 +996,22 @@
       }
     ]
   },
+  "tardigrade_mrrp": {
+    "subtitle": "subtitles.aerolarge.tardigrade_mrrp",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_mrrp"
+      }
+    ]
+  },
+  "tardigrade_bloop": {
+    "subtitle": "subtitles.aerolarge.tardigrade_bloop",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_bloop"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

@@ -72,6 +72,8 @@
     "aerolarge:lift_board",
     "aerolarge:rover_hatch",
     "aerolarge:rover_panel",
+    "aerolarge:habitat_glass",
+    "aerolarge:habitat_hatch",
     "aerolarge:autopilot_screen",
     "aerolarge:cockpit_display",
     "aerolarge:flight_display",

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "kind=pool": {
+      "model": "aerolarge:block/habitat_pool"
+    },
+    "kind=pebbles": {
+      "model": "aerolarge:block/habitat_pebbles"
+    }
+  }
+}

@@ -43,6 +43,7 @@ import dev.aerolarge.compat.Blockpilot;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.LiftCar;
 import dev.aerolarge.entity.SlideRide;
+import dev.aerolarge.entity.Tardigrade;
 import dev.aerolarge.horn.ShipHorn;
 import dev.aerolarge.lookout.LookoutSpot;
 import dev.aerolarge.parachute.OpenParachute;
@@ -91,6 +92,7 @@ public final class Aerolarge {
         container.registerConfig(ModConfig.Type.SERVER, AerolargeConfig.SPEC);
 
         modEventBus.addListener(Aerolarge::onRegisterPayloads);
+        modEventBus.addListener(Tardigrade::onAttributes);
         // A lift panel carried in an elevator's cabin is touched through Create, which only knows blocks it is told of.
         modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(
             () -> MovingInteractionBehaviour.REGISTRY.register(AerolargeRegistry.LIFT_PANEL.get(), new LiftPanelInteraction())));

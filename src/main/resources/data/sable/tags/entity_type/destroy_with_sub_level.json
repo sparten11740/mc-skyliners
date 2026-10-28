@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aerolarge:lift_car"
+    "aerolarge:lift_car",
+    "aerolarge:tardigrade"
   ]
 }

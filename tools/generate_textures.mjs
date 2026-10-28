@@ -4819,4 +4819,142 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(itemOutput, "rover_remote_paired", remote(LIT_GREEN), 0);
 }
 
+// The rocket's lab. Her tardigrade (see TardigradeModel, which takes its boxes' faces from these patches): soft
+// peach skin all over, mottled in soft blotches with fine darker bumps, as a water bear's cuticle is under a
+// microscope; its folds between the segments a darker tan with creases across them; its claws pale ivory; its mouth a
+// small dark ring in a lip at the tip of its lighter snout; its eye spots near black. The tank's glass, all but
+// clear with a faint streak; the steel kerb its lowest row stands on and the soft light along its top; the feeding
+// hatch's steel frame and its flap. The instruments: white enamel, charcoal and chrome; the vials in their five
+// colours; the screens, each a loop: the scan sweeping down a wireframe of the specimen, and its vitals, a pulse
+// tracing under its picture, slow and blue under a barrel's while it is curled up in its tun. The pool's water,
+// rippling.
+{
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  mkdirSync(entityOutput, { recursive: true });
+  const SKIN = [0xe8, 0xc9, 0xa8];
+  const BUMP = [0xd9, 0xb7, 0x94];
+  const SHEEN = [0xf3, 0xde, 0xc6];
+  const FOLD = [0xc9, 0xa5, 0x84];
+  const CREASE = [0xb0, 0x8b, 0x67];
+  const CLAW = [0xf3, 0xec, 0xdf];
+  const LIP = [0xb9, 0x8f, 0x6e];
+  const MOUTH = [0x3a, 0x24, 0x18];
+  const EYE = [0x1e, 0x16, 0x12];
+  const SNOUT = [0xee, 0xd4, 0xb8];
+  // The patches' places, as TardigradeModel has them: the folds' rows, and the claws', lip's, eyes' and snout's corner.
+  const FOLD_V = 80;
+  const CLAW_V = 112;
+  const LIP_U = 32;
+  const EYE_U = 48;
+  const SNOUT_U = 64;
+  // A smooth value noise from 0 to 1, of its own so the textures above are unchanged, over cells so many pixels wide.
+  const hash = (x, y) => {
+    let h = Math.imul(x * 374761393 + y * 668265263, 0x27d4eb2d) ^ 0x5a17;
+    h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+    return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
+  };
+  const smooth = (x, y, cell) => {
+    const [cx, cy] = [Math.floor(x / cell), Math.floor(y / cell)];
+    const [fx, fy] = [x / cell - cx, y / cell - cy];
+    const [sx, sy] = [fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)];
+    const top = hash(cx, cy) * (1 - sx) + hash(cx + 1, cy) * sx;
+    const bottom = hash(cx, cy + 1) * (1 - sx) + hash(cx + 1, cy + 1) * sx;
+    return top * (1 - sy) + bottom * sy;
+  };
+  const shade = ([r, g, b], by) => [r * by, g * by, b * by].map((c) => Math.round(Math.max(0, Math.min(255, c))));
+  const skin = (x, y, base) => {
+    const blotch = 0.94 + 0.09 * smooth(x, y, 7) + 0.04 * smooth(x + 31, y + 17, 3);
+    const speck = hash(x + 101, y + 37);
+    if (speck < 0.025) return shade(BUMP, blotch);
+    if (speck > 0.985) return shade(SHEEN, blotch);
+    return shade(base, blotch);
+  };
+  texture(entityOutput, "tardigrade", (x, y) => {
+    if (y >= FOLD_V && y < CLAW_V) return x % 3 === 1 ? shade(CREASE, 0.97 + 0.06 * smooth(x, y, 4)) : shade(FOLD, 0.95 + 0.08 * smooth(x, y, 5));
+    if (y >= CLAW_V && x < LIP_U) return CLAW;
+    if (y >= CLAW_V && x < EYE_U) {
+      // The middle of the lip's front face, a pixel in from its patch's corner, five pixels across and four down.
+      const round = Math.hypot(x + 0.5 - (LIP_U + 3.5), y + 0.5 - (CLAW_V + 3));
+      if (round < 1.3) return MOUTH;
+      return round < 2.2 ? shade(LIP, 0.82) : LIP;
+    }
+    if (y >= CLAW_V && x < EYE_U + 8) return EYE;
+    if (y >= CLAW_V && x >= SNOUT_U && x < SNOUT_U + 32) return skin(x, y, SNOUT);
+    return skin(x, y, SKIN);
+  }, 2, 128, 128);
+
+  const GLASS_TINT = [0xd8, 0xf0, 0xf4, 0x2c];
+  texture(blockOutput, "habitat_glass", (x, y) => (Math.abs(x - y - 4) < 1.2 || Math.abs(x - y + 7) < 0.6 ? [0xff, 0xff, 0xff, 0x48] : GLASS_TINT), 0);
+  const KERB = [0x4a, 0x50, 0x57];
+  texture(blockOutput, "habitat_kerb", (x, y) => (y === 0 ? [0x6e, 0x76, 0x7f] : KERB), 2);
+  texture(blockOutput, "habitat_light", (x, y) => shade([0xff, 0xf6, 0xe6], 1 - 0.04 * Math.abs(y - 7.5) / 7.5), 0);
+  texture(blockOutput, "habitat_hatch_frame", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? [0x3c, 0x42, 0x48] : [0x8e, 0x97, 0xa0]), 2);
+  texture(blockOutput, "habitat_hatch_flap", (x, y) => {
+    if (y >= 6 && y <= 9 && x >= 5 && x <= 10) return y === 6 ? [0xc8, 0xcf, 0xd6] : [0x2c, 0x30, 0x35];
+    return y % 3 === 0 ? [0x7c, 0x84, 0x8c] : [0x9a, 0xa3, 0xad];
+  }, 2);
+
+  texture(blockOutput, "lab_white", (x, y) => (y === 15 ? [0xc8, 0xce, 0xd4] : [0xec, 0xef, 0xf2]), 2);
+  texture(blockOutput, "lab_dark", () => [0x2a, 0x2e, 0x33], 2);
+  texture(blockOutput, "lab_chrome", (x, y) => shade([0xc9, 0xd0, 0xd7], 0.85 + 0.2 * Math.abs(Math.sin((x + y) / 3))), 1);
+  // The vials, five across as SAMPLES stands them, each its liquid under a glass top and a cap, its glass's edge
+  // bright.
+  const VIALS = [[0x4f, 0xd6, 0xe0], [0xf0, 0xa8, 0x30], [0xd0, 0x4a, 0xb8], [0x8a, 0xdb, 0x4a], [0xe8, 0xc9, 0xa8]];
+  texture(blockOutput, "lab_vials", (x, y) => {
+    const vial = VIALS[Math.max(0, Math.min(4, Math.floor((x - 1) / 3)))];
+    if (y < 3) return [0xe0, 0xe6, 0xec];
+    if (y < 6) return [0xcc, 0xe8, 0xf0, 0x90];
+    return (x - 1) % 3 === 0 ? shade(vial, 1.15) : vial;
+  }, 0);
+
+  const SCREEN = [0x06, 0x0e, 0x10];
+  const GRID = [0x0c, 0x24, 0x22];
+  const BEZEL = [0x1c, 0x1f, 0x23];
+  const FRAMES = 16;
+  const animated = (name, frametime, paint) => {
+    texture(blockOutput, name, (x, y) => paint(x, y % SIZE, Math.floor(y / SIZE)), 0, SIZE, SIZE * FRAMES);
+    writeFileSync(resolve(blockOutput, `${name}.png.mcmeta`), JSON.stringify({ animation: { frametime } }, null, 2) + "\n");
+  };
+  const onScreen = (x, y) => x >= 1 && x <= 14 && y >= 1 && y <= 14;
+  // The specimen side on, a humped body over four stubby legs, as rows of its outline; and the barrel of its tun.
+  const SPECIMEN = ["..........", "...#####..", ".##.....#.", "#........#", "#........#", ".##########", ".#.#..#.#."];
+  const TUN = [".####.", "#....#", "#.##.#", "#....#", ".####."];
+  const outline = (rows, x, y, left, top) => rows[y - top]?.[x - left] === "#";
+  animated("lab_screen_scan", 3, (x, y, frame) => {
+    if (!onScreen(x, y)) return BEZEL;
+    const sweep = 2 + Math.floor(frame * 12 / FRAMES);
+    const lit = outline(SPECIMEN, x, y, 3, 5);
+    if (y === sweep) return [0x6f, 0xf0, 0xff];
+    if (lit) return Math.abs(y - sweep) <= 2 ? [0x9f, 0xf8, 0xff] : [0x2a, 0xa8, 0xb8];
+    return x % 4 === 0 || y % 4 === 0 ? GRID : SCREEN;
+  });
+  // A pulse every sixteen pixels, scrolling a pixel each frame: a quick rise and fall from the line along its foot.
+  const PULSE = [0, 0, 0, -1, -4, 2, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0];
+  const trace = (x, frame, beat) => 11 + beat[(x + frame) % beat.length];
+  animated("lab_screen_vitals", 3, (x, y, frame) => {
+    if (!onScreen(x, y)) return BEZEL;
+    if (outline([".####.", "######", "#.##.#"], x, y, 2, 2)) return SKIN;
+    if (y === trace(x, frame, PULSE)) return [0x5c, 0xf0, 0x8a];
+    if (y > 4 && Math.abs(y - trace(x, frame, PULSE)) === 1 && PULSE[(x + frame) % 16] !== 0) return [0x1f, 0x6a, 0x3c];
+    return x % 4 === 0 || y % 4 === 0 ? GRID : SCREEN;
+  });
+  const STILL = [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0];
+  animated("lab_screen_dormant", 8, (x, y, frame) => {
+    if (!onScreen(x, y)) return BEZEL;
+    if (outline(TUN, x, y, 2, 1)) return [0xd6, 0xbe, 0x98];
+    if (y === trace(x, frame, STILL)) return [0x58, 0xa8, 0xff];
+    return x % 4 === 0 || y % 4 === 0 ? [0x0c, 0x18, 0x2a] : SCREEN;
+  });
+  // Shallow clear water over the pool's bed: blue-green, ripples drifting across it, glints where they crest.
+  // Each ripple drifts a whole number of its own lengths over the loop and a block, so neither the loop nor the pool's
+  // blocks side by side show a seam.
+  animated("habitat_pool", 4, (x, y, frame) => {
+    const turn = (2 * Math.PI * frame) / FRAMES;
+    const across = (2 * Math.PI) / SIZE;
+    const ripple = Math.sin(across * (2 * x + y) + turn) + Math.sin(across * (3 * y - x) - 2 * turn);
+    if (ripple > 1.6) return [0xe8, 0xff, 0xff, 0xa0];
+    return [0x3c, 0x9a + Math.round(ripple * 6), 0xa8 + Math.round(ripple * 8), 0x88];
+  });
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

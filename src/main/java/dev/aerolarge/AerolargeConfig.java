@@ -50,6 +50,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
+    public static final ModConfigSpec.BooleanValue ROCKET_LAB;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -470,6 +471,13 @@ public final class AerolargeConfig {
                 "they leave her, and as she comes back down they keep it to the end of a jump."
             )
             .define("lowGravity", false);
+        ROCKET_LAB = builder
+            .comment(
+                "Whether a rocket is built with her lab: lab counters with microscopes and screens, and her tardigrade in its glass tank",
+                "behind the lift shaft, fed moss through a hatch, curling up in space. Off, as with `rooms` off, the lab's story is left",
+                "empty. Rockets already built keep theirs."
+            )
+            .define("lab", true);
         builder.pop();
 
         SPEC = builder.build();

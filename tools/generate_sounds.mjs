@@ -2273,6 +2273,45 @@ function softened(samples) {
   writeSound("rocket_touchdown", touchdown, 0.9);
 }
 
+// The rocket's tardigrade, with a random sequence of its own so the sounds above are unchanged. Its purr: a soft, low
+// "mrrp", a closed-mouth hum opening into a voice that rises from 380 to 620 hertz, rolled in its middle as a cat's
+// trill is, with a breath under it. Its bloop as it curls up into its tun: a round drop of a note falling from 500 to
+// 180 hertz, a little bubble at its start.
+{
+  const tardigradeRandom = ownRandom(0x54617264);
+  const PURR_SECONDS = 0.45;
+  const purr = new Float64Array(Math.round(PURR_SECONDS * RATE));
+  let phase = 0;
+  let breath = 0;
+  for (let i = 0; i < purr.length; i++) {
+    const t = i / RATE;
+    const along = t / PURR_SECONDS;
+    const pitch = 380 + 240 * along ** 1.6;
+    phase += (2 * Math.PI * pitch) / RATE;
+    const open = Math.min(1, Math.max(0, (t - 0.05) / 0.08));
+    const voice = Math.sin(phase) + open * (0.45 * Math.sin(2 * phase) + 0.2 * Math.sin(3 * phase) + 0.08 * Math.sin(4 * phase));
+    const roll = t > 0.1 && t < 0.3 ? 0.6 + 0.4 * Math.sin(2 * Math.PI * 28 * t) : 1;
+    const envelope = Math.min(1, t / 0.03) * Math.min(1, (PURR_SECONDS - t) / 0.12);
+    breath += 0.08 * (tardigradeRandom() * 2 - 1 - breath);
+    purr[i] = envelope * (roll * voice + 0.15 * breath);
+  }
+  const warm = resonance(purr, 900, 1.2);
+  writeSound("tardigrade_mrrp", purr.map((s, i) => s + 0.5 * warm[i]), 0.6);
+  const BLOOP_SECONDS = 0.35;
+  const bloop = new Float64Array(Math.round(BLOOP_SECONDS * RATE));
+  let dropPhase = 0;
+  let bubblePhase = 0;
+  for (let i = 0; i < bloop.length; i++) {
+    const t = i / RATE;
+    dropPhase += (2 * Math.PI * (180 + 320 * Math.exp(-t / 0.08))) / RATE;
+    bubblePhase += (2 * Math.PI * (900 - 500 * Math.min(1, t / 0.05))) / RATE;
+    const drop = Math.min(1, t / 0.01) * Math.exp(-t / 0.12) * Math.sin(dropPhase);
+    const bubble = t < 0.05 ? 0.25 * Math.sin(Math.PI * t / 0.05) * Math.sin(bubblePhase) : 0;
+    bloop[i] = drop + bubble + 0.02 * (tardigradeRandom() * 2 - 1) * Math.exp(-t / 0.03);
+  }
+  writeSound("tardigrade_bloop", bloop, 0.55);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
 // recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
 // through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along

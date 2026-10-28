@@ -1,0 +1,123 @@
+package dev.aerolarge.block;
+
+import com.mojang.serialization.MapCodec;
+import java.util.EnumMap;
+import java.util.Locale;
+import java.util.Map;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+/**
+ * The instruments of the rocket's lab, in four kinds: a microscope, white with a lit stage and its eyepieces toward
+ * whoever uses it; a rack of sample vials, their liquids glowing faintly in five colours; a scan screen on its stand
+ * showing a body scan of the specimen, a line sweeping down it; and the vitals screen set into the tardigrade's tank
+ * over its feeding hatch, a pulse tracing across it under the creature's own picture, which goes slow and blue
+ * (DORMANT) while the creature is curled up in its tun (see {@link HabitatHatchBlockEntity}). FACING is the way its
+ * front looks. Only the blueprints place them; broken, they give back nothing.
+ */
+public class LabInstrumentBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<LabInstrumentBlock> CODEC = simpleCodec(LabInstrumentBlock::new);
+    public static final EnumProperty<Kind> KIND = EnumProperty.create("kind", Kind.class);
+    public static final BooleanProperty DORMANT = BooleanProperty.create("dormant");
+    /** How brightly a kind glows, in light levels: its screen, its stage lamp or its vials. */
+    private static final int SCREEN_GLOW = 5;
+    private static final int VIALS_GLOW = 3;
+    private static final int DORMANT_GLOW = 2;
+    private static final Map<Kind, Map<Direction, VoxelShape>> SHAPES = new EnumMap<>(Kind.class);
+
+    /** An instrument's kind, and its outline as drawn facing north, in pixels. */
+    public enum Kind implements StringRepresentable {
+        MICROSCOPE(4, 0, 4, 12, 13, 13),
+        SAMPLES(2, 0, 5, 14, 9, 11),
+        SCAN(1, 0, 6, 15, 13, 11),
+        VITALS(0, 0, 0, 16, 16, 2);
+
+        private final double[] outline;
+
+        Kind(double... outline) {
+            this.outline = outline;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    static {
+        for (Kind kind : Kind.values()) {
+            Map<Direction, VoxelShape> turned = new EnumMap<>(Direction.class);
+            for (Direction facing : Direction.Plane.HORIZONTAL) {
+                turned.put(facing, box(facing, kind.outline));
+            }
+            SHAPES.put(kind, turned);
+        }
+    }
+
+    public LabInstrumentBlock(Properties properties) {
+        super(properties);
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(KIND, Kind.MICROSCOPE).setValue(DORMANT, false));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING, KIND, DORMANT);
+    }
+
+    /** An instrument of a kind, its front looking the way given. */
+    public BlockState of(Kind kind, Direction facing) {
+        return defaultBlockState().setValue(KIND, kind).setValue(FACING, facing);
+    }
+
+    /** How brightly an instrument glows, in light levels. */
+    public static int light(BlockState state) {
+        return switch (state.getValue(KIND)) {
+            case MICROSCOPE -> 0;
+            case SAMPLES -> VIALS_GLOW;
+            case SCAN -> SCREEN_GLOW;
+            case VITALS -> state.getValue(DORMANT) ? DORMANT_GLOW : SCREEN_GLOW;
+        };
+    }
+
+    /** A box given in pixels as drawn facing north, turned to face the given way about the block's middle. */
+    private static VoxelShape box(Direction facing, double[] box) {
+        double x0 = box[0];
+        double y0 = box[1];
+        double z0 = box[2];
+        double x1 = box[3];
+        double y1 = box[4];
+        double z1 = box[5];
+        return switch (facing) {
+            case SOUTH -> Block.box(16 - x1, y0, 16 - z1, 16 - x0, y1, 16 - z0);
+            case EAST -> Block.box(16 - z1, y0, x0, 16 - z0, y1, x1);
+            case WEST -> Block.box(z0, y0, 16 - x1, z1, y1, 16 - x0);
+            default -> Block.box(x0, y0, z0, x1, y1, z1);
+        };
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.get(state.getValue(KIND)).getOrDefault(state.getValue(FACING), Shapes.block());
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
+    }
+}

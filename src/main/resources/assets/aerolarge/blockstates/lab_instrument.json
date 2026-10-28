@@ -1,0 +1,132 @@
+{
+  "variants": {
+    "dormant=false,facing=north,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 0
+    },
+    "dormant=false,facing=east,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 90
+    },
+    "dormant=false,facing=south,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 180
+    },
+    "dormant=false,facing=west,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 270
+    },
+    "dormant=true,facing=north,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 0
+    },
+    "dormant=true,facing=east,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 90
+    },
+    "dormant=true,facing=south,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 180
+    },
+    "dormant=true,facing=west,kind=microscope": {
+      "model": "aerolarge:block/lab_microscope",
+      "y": 270
+    },
+    "dormant=false,facing=north,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 0
+    },
+    "dormant=false,facing=east,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 90
+    },
+    "dormant=false,facing=south,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 180
+    },
+    "dormant=false,facing=west,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 270
+    },
+    "dormant=true,facing=north,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 0
+    },
+    "dormant=true,facing=east,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 90
+    },
+    "dormant=true,facing=south,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 180
+    },
+    "dormant=true,facing=west,kind=samples": {
+      "model": "aerolarge:block/lab_samples",
+      "y": 270
+    },
+    "dormant=false,facing=north,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 0
+    },
+    "dormant=false,facing=east,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 90
+    },
+    "dormant=false,facing=south,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 180
+    },
+    "dormant=false,facing=west,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 270
+    },
+    "dormant=true,facing=north,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 0
+    },
+    "dormant=true,facing=east,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 90
+    },
+    "dormant=true,facing=south,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 180
+    },
+    "dormant=true,facing=west,kind=scan": {
+      "model": "aerolarge:block/lab_scan",
+      "y": 270
+    },
+    "dormant=false,facing=north,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals",
+      "y": 0
+    },
+    "dormant=false,facing=east,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals",
+      "y": 90
+    },
+    "dormant=false,facing=south,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals",
+      "y": 180
+    },
+    "dormant=false,facing=west,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals",
+      "y": 270
+    },
+    "dormant=true,facing=north,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals_dormant",
+      "y": 0
+    },
+    "dormant=true,facing=east,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals_dormant",
+      "y": 90
+    },
+    "dormant=true,facing=south,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals_dormant",
+      "y": 180
+    },
+    "dormant=true,facing=west,kind=vitals": {
+      "model": "aerolarge:block/lab_vitals_dormant",
+      "y": 270
+    }
+  }
+}
