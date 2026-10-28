@@ -1917,7 +1917,10 @@ and 800, and the rain and snow with them. The land she rose from fades into a ha
 rim curving away under the horizon under a thin glow of air, dipping further the higher she goes. Her camera display
 shows it as its cameras see it. As she reaches the edge of space on the way up, the cabin chime sounds and her flight
 deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves the sky as
-the game draws it.
+the game draws it. With the server config's experimental `rocket.lowGravity` on, everyone aboard feels light while she
+is at the edge of space or over it, with a soft rising glide and a puff of sparkles at their feet: a jump rises three
+blocks and hangs nearly two seconds, and a fall of seven blocks does not hurt. Their weight comes back, with the glide
+falling, the moment they leave her, and as she comes back down, once they next stand on something.
 
 Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six
 wheels on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on
@@ -2094,7 +2097,7 @@ by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running 
 `LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
 round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
 planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; `EdgeOfSpace` holds the height space
-begins at, and welcomes everyone aboard to space as she climbs past it.
+begins at, and welcomes everyone aboard to space as she climbs past it; `SpaceGravity` makes them light up there.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

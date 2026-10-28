@@ -28,7 +28,7 @@ public final class EdgeOfSpace {
      * How far under the edge she is at it, in blocks: set to hold y 1,000 itself, she closes on it from under it
      * without quite getting there.
      */
-    private static final double AT_EDGE = 2;
+    static final double AT_EDGE = 2;
     /** How far under the edge she must come back down before she is welcomed to space again, in blocks. */
     private static final double BACK_DOWN = 100;
     /**

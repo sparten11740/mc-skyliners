@@ -1887,6 +1887,28 @@ const blastNoise = (() => {
   writeSound("lift_chime_down", down, 0.6);
 }
 
+// Low gravity aboard a rocket in space (see SpaceGravity): coming on, a soft glide rising an octave over most of a
+// second, a sine with a quiet fifth over it shimmering; going, the same glide falling. No random sequence is drawn on,
+// so the sounds around it are unchanged.
+{
+  const glide = (from, to) => {
+    const samples = new Float64Array(Math.round(0.9 * RATE));
+    let phase = 0;
+    for (let i = 0; i < samples.length; i++) {
+      const t = i / RATE;
+      const along = Math.min(1, t / 0.8);
+      const eased = along * along * (3 - 2 * along);
+      phase += 2 * Math.PI * from * Math.pow(to / from, eased) / RATE;
+      const swell = Math.sin(Math.PI * Math.min(1, t / 0.9)) ** 1.2;
+      const shimmer = 1 + 0.2 * Math.sin(2 * Math.PI * 6 * t);
+      samples[i] = swell * (Math.sin(phase) + 0.25 * shimmer * Math.sin(1.5 * phase));
+    }
+    return samples;
+  };
+  writeSound("space_light", glide(440, 880), 0.5);
+  writeSound("space_heavy", glide(880, 440), 0.5);
+}
+
 // The rocket's engines (see the client's RocketRoar and the autopilot's RocketSounds), each sound with a random
 // sequence of its own, so the sounds above are unchanged. Her roar, a seamless loop played while her bells fire: a deep
 // rumble of exhaust, brown noise low-passed near 700 hertz and slowly surging; the hiss of the gas, a band round 2.5

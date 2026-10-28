@@ -1304,6 +1304,22 @@
       }
     ]
   },
+  "space_light": {
+    "subtitle": "subtitles.aerolarge.space_light",
+    "sounds": [
+      {
+        "name": "aerolarge:space_light"
+      }
+    ]
+  },
+  "space_heavy": {
+    "subtitle": "subtitles.aerolarge.space_heavy",
+    "sounds": [
+      {
+        "name": "aerolarge:space_heavy"
+      }
+    ]
+  },
   "techno_track": {
     "subtitle": "subtitles.aerolarge.techno_track",
     "sounds": [

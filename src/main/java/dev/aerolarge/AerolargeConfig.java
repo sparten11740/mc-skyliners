@@ -49,6 +49,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LED_STRIPS;
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
+    public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -462,6 +463,13 @@ public final class AerolargeConfig {
                 "aboard. Rockets already built keep theirs."
             )
             .define("rover", true);
+        ROCKET_LOW_GRAVITY = builder
+            .comment(
+                "Experimental: whether everyone aboard a rocket at the edge of space or over it (y 1,000) feels light, jumping three",
+                "times as high and landing softly, with a rising glide and a puff of sparkles as it comes on. It lifts the moment",
+                "they leave her, and as she comes back down they keep it to the end of a jump."
+            )
+            .define("lowGravity", false);
         builder.pop();
 
         SPEC = builder.build();

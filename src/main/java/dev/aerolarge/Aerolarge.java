@@ -14,6 +14,7 @@ import dev.aerolarge.block.OpenTowerRadar;
 import dev.aerolarge.block.OpenTransponder;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.RocketPilot;
+import dev.aerolarge.autopilot.SpaceGravity;
 import dev.aerolarge.block.RoverBayBlockEntity;
 import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.autopilot.UnstickAirliner;
@@ -104,6 +105,8 @@ public final class Aerolarge {
         NeoForge.EVENT_BUS.addListener(SlideRide::onMount);
         NeoForge.EVENT_BUS.addListener(LiftCar::onMount);
         NeoForge.EVENT_BUS.addListener(LiftCar::onLoggedOut);
+        NeoForge.EVENT_BUS.addListener(SpaceGravity::onTick);
+        NeoForge.EVENT_BUS.addListener(SpaceGravity::onLoggedOut);
         NeoForge.EVENT_BUS.addListener(Passengers::onInteract);
         NeoForge.EVENT_BUS.addListener(Passengers::onTick);
         NeoForge.EVENT_BUS.addListener(FrameProtection::onBreakSpeed);

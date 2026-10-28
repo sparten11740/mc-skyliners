@@ -1381,6 +1381,10 @@ function rocketSoundsLang() {
   for (const name of ["lift_door", "lift_start", "lift_hum", "lift_chime_up", "lift_chime_down"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
+  // Low gravity aboard a rocket in space coming on and going (see SpaceGravity).
+  for (const name of ["space_light", "space_heavy"]) {
+    sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
+  }
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
   write(`assets/${ID}/sounds.json`, sounds);
@@ -6553,6 +6557,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "subtitles.aerolarge.lift_hum": "Lift hums",
   "subtitles.aerolarge.lift_chime_up": "Lift chimes, going up",
   "subtitles.aerolarge.lift_chime_down": "Lift chimes, going down",
+  "subtitles.aerolarge.space_light": "You feel light",
+  "subtitles.aerolarge.space_heavy": "Your weight comes back",
   "block.aerolarge.cabin_lights": "Cabin Lights Dimmer",
   "message.aerolarge.cabin_lights.bright": "Cabin lights bright",
   "message.aerolarge.cabin_lights.dim": "Cabin lights dimmed for take-off and landing",
