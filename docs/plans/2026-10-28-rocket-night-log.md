@@ -43,6 +43,9 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N26 | 00:20 | Countdown and announcement | The countdown waits for the take-off announcement to end (at most 9 s), as the zeppelin's officer waits before "Up ship!"; lift-off comes about 6.5 s later than before | Otherwise the two voices overlapped for six seconds (sound agent) | Sound agent |
 | N27 | 00:20 | Launch control's voice | One radio transmission for the whole count (a Quindar tone before "ten" and after "lift-off!"), Kokoro's `am_michael`; heard within 128 blocks of her, aboard or not; "Touchdown." aboard only | Sound agent | Sound agent |
 | N28 | 00:20 | Engine sound | A roar following her thrust, heard 160 blocks off from the foot of her axis; aboard, a muffled rumble (a real 220 Hz low-pass) round the listener; ignition, cut-off and touchdown one-shots; side-jet puffs only from rest at signal 3 or more, at most every 2 s a jet | Sound agent, debounced after the lead's note on jet chatter | Sound agent |
+| N30 | 00:35 | Next ideas (second panel) | Keep, in this order: low gravity aboard in space (off by default until proven in flight), a height gauge on the lift boards while she flies, shooting stars then an aurora, an "Edge of Space" advancement, lift muzak. Drop: LED strips switching themselves to a space scene (it would override what a child chose on a panel) | Panel (children's designer, tech lead, visual and audio designer) | Panel |
+| N31 | 00:40 | Lift doors | Slide the pane aside over the doors' half second (a `sliding` state hides the block while a door block entity's renderer draws the pane), rather than snapping | Jan asked for a real lift; doors that snap read as a teleport's | Lead |
+| N32 | 00:45 | Rover (agent's decisions) | Door and platform drawn only, a 1.5-high rail behind a red light curtain; the rover hooked on the platform, run out and lowered at 4 b/s on a telescoping boom; remotes from the panel's button and the creative tab, paired by using one on the rover or panel; the countdown waits (not refuses) and calls the rover home; range 96 blocks from the hinge, warnings from 84; no bay at scale 1 | Rover agent | Rover agent |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -75,6 +78,13 @@ Commits on main, newest last, with the versions handed out.
   poster put up by hand on a wall and broken in survival (the whole poster comes down, one comes back); the rooms at
   scale 3 (all there, their middles emptier) and built facing east; a scale-1 rocket (four stories, the panels by the
   shaft, no room furniture, as it does not fit).
+- alpha.168: the lift's doors slide (N31); the rover (N14, N15, N32; payload protocol 27). Play-tested: the doors
+  sliding open and shut, frame by frame; the rover's bay and panel; a remote from the panel; deploy (the door folding
+  into a platform, the boom out, the rover lowered on its cable to the ground); driving it from its chase camera
+  (forward, turning, the horn when the key is held); calling it home from the remote (hoisted, stowed); a flight with
+  it out (the countdown held until it was stowed, then lift-off with it in its cradle, carried in her plot, and still
+  there after landing); deploying from her assembled. Not tried: quitting mid-lowering, scales 3 and 4, monsters by
+  the driver, the range warning.
 
 ## Background agents
 
@@ -83,7 +93,9 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 
 - Posters (N17), LED strips (N13), going to space (N12), the rover (N14, N15): from 23:15.
 - The lab with its tardigrade (N16), the rocket's sound and voice (N18): from 23:35.
-- Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58; sound and voice (3), by 00:20.
+- Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58; sound and voice (3), by 00:20;
+  the rover (3), by 00:45.
+- From 00:38: shooting stars and an aurora, and lift muzak (N30), each in a worktree of its own.
 
 ## For Jan to look at
 
