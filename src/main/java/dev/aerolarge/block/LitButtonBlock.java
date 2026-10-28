@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,6 +46,20 @@ public abstract class LitButtonBlock extends ButtonBlock {
         shapes.put(Direction.WEST, Block.box(16 - depth, from, from, 16, to, to));
         shapes.put(Direction.EAST, Block.box(0, from, from, depth, to, to));
         return shapes;
+    }
+
+    /**
+     * Taken away as a button is, and its block entity with it, if it has one, even when it is moved, as Sable moves an
+     * airframe's blocks into its plot when it is assembled. A button lets its block entity be when moved, as a piston
+     * would carry it along, for a vanilla button has none: the stairs' and boost buttons' were left behind in the world
+     * where the airframe stood, over air, holding on to what they kept.
+     */
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, level, pos, newState, isMoving);
+        if (isMoving && state.hasBlockEntity() && !state.is(newState.getBlock())) {
+            level.removeBlockEntity(pos);
+        }
     }
 
     @Override
