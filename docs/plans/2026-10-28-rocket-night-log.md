@@ -40,6 +40,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N23 | 23:49 | Observation deck windows | A band of smoked glass all round (rows 1–5) in place of its oval windows | An observation deck should see the whole horizon; seen in game from y 1,400 it shows the planet's rim all round | Lead |
 | N24 | 23:58 | Ceiling setting's name | `rocket.ceiling` (the space agent's `rocketCeiling`), beside `rocket.lift`, `rocket.rooms`, `rocket.posters`, `rocket.ledStrips` | One section, short names | Lead |
 | N25 | 00:00 | Order of pieces | Rooms, then posters, then LED strips last | The strips fill in round whatever else stands; the posters need the shaft's back clear | Lead |
+| N26 | 00:20 | Countdown and announcement | The countdown waits for the take-off announcement to end (at most 9 s), as the zeppelin's officer waits before "Up ship!"; lift-off comes about 6.5 s later than before | Otherwise the two voices overlapped for six seconds (sound agent) | Sound agent |
+| N27 | 00:20 | Launch control's voice | One radio transmission for the whole count (a Quindar tone before "ten" and after "lift-off!"), Kokoro's `am_michael`; heard within 128 blocks of her, aboard or not; "Touchdown." aboard only | Sound agent | Sound agent |
+| N28 | 00:20 | Engine sound | A roar following her thrust, heard 160 blocks off from the foot of her axis; aboard, a muffled rumble (a real 220 Hz low-pass) round the listener; ignition, cut-off and touchdown one-shots; side-jet puffs only from rest at signal 3 or more, at most every 2 s a jet | Sound agent, debounced after the lead's note on jet chatter | Sound agent |
+| N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
 
@@ -62,6 +66,11 @@ Commits on main, newest last, with the versions handed out.
   at 800, near-black at 1,050, space at 1,400; the welcome heard once on the way up); assembly leaves no block
   behind. Not tried yet: the cockpit's LED console, the other modes, posters placed and broken by hand, rooms at
   scales other than 2, the rotated rocket's rooms.
+- alpha.167: the generators mended; her engines' signal held (N29); her roar, ignition, cut-off and touchdown, and
+  launch control counting her down over the radio (N26–N28). Play-tested: the take-off announcement, then "ten" to
+  "one" a second apart and "lift-off!", the ignition and the aboard rumble; a cruise at y 1,400 (no jet puffs, the jets
+  staying under signal 3); the landing announcement, "Touchdown.", the thunk and cut-off, the arrival announcement and
+  the lift's doors opening. Not heard from the ground outside her yet (the roar's place as she flies).
 
 ## Background agents
 
@@ -70,11 +79,17 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 
 - Posters (N17), LED strips (N13), going to space (N12), the rover (N14, N15): from 23:15.
 - The lab with its tardigrade (N16), the rocket's sound and voice (N18): from 23:35.
-- Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58.
+- Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58; sound and voice (3), by 00:20.
 
 ## For Jan to look at
 
+- A slip of mine, found by the sound agent: resolving the posters' merge I dropped two closing braces, so from
+  b82674e until be83c6a neither `generate_textures.mjs` nor `generate_resources.mjs` ran. My check had thrown their
+  output away and read a clean `git status` as a pass. The files they write were right all along (they were committed
+  from the agents' worktrees, and the fixed generators rewrite every one of them unchanged), so alpha.166's jar is not
+  affected. I now run them showing their exit codes.
+
 - N14: the rover lowered on a winch rope from a platform at the cargo bay door, not down a ramp.
 - N23: the observation deck's band of smoked glass in place of its oval windows.
-- The side jets switch on and off several times a second in a hover (heard as thruster start and stop sounds at
-  volume 0 in the sound log); it has not been looked into.
+- The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
+  it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
