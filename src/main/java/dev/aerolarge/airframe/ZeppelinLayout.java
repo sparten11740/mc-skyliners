@@ -390,39 +390,25 @@ public final class ZeppelinLayout implements Layout {
     }
 
     /**
-     * The shape the cover cuts a block to, or {@link ShellGeometry#NONE} for a block wholly inside or outside it. Its
-     * corners (corner {@code x + 2y + 4z} of the block, as {@link ShellGeometry} counts them) lie inside, on or
-     * outside the surface; a block with all of them inside is the hull's open space.
+     * The shape the cover cuts a block to (see {@link SurfaceCut}), or {@link ShellGeometry#NONE} for a block wholly
+     * inside or outside it: the hull's axis runs through the middles of the blocks across it.
      */
     private int coverShape(int x, int y, int z) {
-        int[] corners = new int[8];
-        boolean within = false;
-        boolean inside = true;
-        for (int corner = 0; corner < 8; corner++) {
-            corners[corner] = corner(x - 0.5 + (corner & 1), y + (corner >> 1 & 1), z + (corner >> 2 & 1));
-            within |= corners[corner] != ShellGeometry.OUTSIDE;
-            inside &= corners[corner] == ShellGeometry.INSIDE;
-        }
-        if (!within || inside) {
-            return ShellGeometry.NONE;
-        }
-        int shape = ShellGeometry.snapped(corners);
-        if (shape != ShellGeometry.UNMATCHED) {
-            return shape;
-        }
-        double[] out = outward(x / scale, (y + 0.5) / scale, (z + 0.5) / scale, axisHeight);
-        double depth = depthAt(x, y, z);
-        return ShellGeometry.cut(out[0], out[1], out[2], 0.5 - out[0] * depth, 0.5 - out[1] * depth, 0.5 - out[2] * depth);
+        return SurfaceCut.shape(hull, x - 0.5, y, z);
     }
 
-    /** Where a block's corner, in blocks, lies against the hull's surface. */
-    private int corner(double x, double y, double z) {
-        double depth = ZeppelinShape.depth(x / scale, y / scale, z / scale, axisHeight) * scale;
-        if (depth < -ShellGeometry.ON_SURFACE) {
-            return ShellGeometry.INSIDE;
+    /** The hull's surface in blocks, as the cover is cut by it. */
+    private final SurfaceCut.Surface hull = new SurfaceCut.Surface() {
+        @Override
+        public double depth(double x, double y, double z) {
+            return ZeppelinShape.depth(x / scale, y / scale, z / scale, axisHeight) * scale;
         }
-        return depth > ShellGeometry.ON_SURFACE ? ShellGeometry.OUTSIDE : ShellGeometry.ON;
-    }
+
+        @Override
+        public double[] outward(double x, double y, double z) {
+            return ZeppelinShape.outward(x / scale, y / scale, z / scale, axisHeight);
+        }
+    };
 
     /** Whether the cover is a promenade window here: along the upper deck, where the cover faces out to the side. */
     private boolean promenade(int x, int y, int z) {
