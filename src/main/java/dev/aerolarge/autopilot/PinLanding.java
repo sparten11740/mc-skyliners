@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -22,8 +23,9 @@ import net.minecraft.world.phys.Vec3;
  *     takes less turning to come to, as soon as it has measured itself.</li>
  *     <li>Entry: with a runway found, it slows to its approach speed and flies to a point far back along the runway's
  *     centre line, coming down to {@link #APPROACH_HEIGHT} over the runway on the way, and never lower than
- *     {@link #TERRAIN_CLEARANCE} over the land under it. Coming from the runway's side of that point, it first flies
- *     out to one side and further back, so it comes to the point from behind, not with the runway behind it.</li>
+ *     {@link #TERRAIN_CLEARANCE} over the land under it or along its way ahead. Coming from the runway's side of that
+ *     point, it first flies out to one side and further back, so it comes to the point from behind, not with the runway
+ *     behind it.</li>
  *     <li>Final: it follows the centre line, steering for a point {@link #LOOKAHEAD_AIR} along it, and comes down a
  *     glide path, sinking at the rate the plain landing sinks at, aimed so the flare that follows ends at the
  *     touchdown point. The tower clears it to land and the cabin hears the landing announcement as it turns onto it.</li>
@@ -61,8 +63,16 @@ final class PinLanding {
     private static final double SURVEY_REACH = 600;
     /** The height over the runway it comes down to before the glide path, in blocks, at most. */
     static final double APPROACH_HEIGHT = 60;
-    /** The least it comes down to over the land under it on its way to the runway, in blocks. */
+    /** The least it comes down to over the land under it and ahead of it on its way to the runway, in blocks. */
     private static final double TERRAIN_CLEARANCE = 40;
+    /**
+     * How far ahead along its way it looks for land to keep clear of on its way to the runway, in blocks, some six
+     * seconds at its approach speed, time to climb over a hillside, and how far apart it looks; and how often, in
+     * ticks. Kept clear of only the land under it, it came within a block of a build forty blocks tall it flew into.
+     */
+    private static final double LOOK_AHEAD = 200;
+    private static final double LOOK_STEP = 10;
+    private static final int LOOK_TICKS = 10;
     /**
      * How far it flies along the centre line before the glide path starts, in blocks: room to settle onto the line
      * after turning onto it, the turn wide at the approach speed.
@@ -113,6 +123,8 @@ final class PinLanding {
     /** Entry: how far along the runway final starts (negative: before the touchdown point), once planned. */
     private double entryStart;
     private boolean planned;
+    /** Entry: the highest land ahead along its way, as last looked for; NaN for none loaded or not looked for yet. */
+    private double landAhead = Double.NaN;
 
     Stage stage() {
         return stage;
@@ -186,6 +198,9 @@ final class PinLanding {
         ground.tick(level, state.position());
         if (stage == Stage.ENTRY && !planned) {
             startEntry(state, speed);
+        }
+        if (stage == Stage.ENTRY && level.getGameTime() % LOOK_TICKS == 0) {
+            landAhead = highestAhead(level, state);
         }
         return switch (stage) {
             case SEARCHING -> landOnLaid(level, state, speed) ? Event.FOUND : search(state, speed);
@@ -340,13 +355,36 @@ final class PinLanding {
 
     /**
      * Entry: the height to come down to, where the autopilot is: {@link #APPROACH_HEIGHT} over the runway, or the height
-     * set if that is lower, but never lower than {@link #TERRAIN_CLEARANCE} over the land under it.
+     * set if that is lower, but never lower than {@link #TERRAIN_CLEARANCE} over the land under it or ahead of it.
      */
     private double entryAltitude(double y, double radio, double wheels, double cruise) {
         double wheelsUnder = y - wheels;
         double approach = runway.elevation() + APPROACH_HEIGHT + wheelsUnder;
-        double terrain = wheels - radio + TERRAIN_CLEARANCE + wheelsUnder;
+        double land = Double.isNaN(landAhead) ? wheels - radio : Math.max(wheels - radio, landAhead);
+        double terrain = land + TERRAIN_CLEARANCE + wheelsUnder;
         return Math.max(Math.min(cruise, approach), terrain);
+    }
+
+    /**
+     * The top of the highest land, or of what stands on it, along the way it flies over the next {@link #LOOK_AHEAD}
+     * blocks, looking only where the land is loaded; NaN where none is, or it hardly moves.
+     */
+    private static double highestAhead(ServerLevel level, SableFlight.State state) {
+        Vec3 way = new Vec3(state.velocity().x, 0, state.velocity().z);
+        if (way.lengthSqr() < 1) {
+            return Double.NaN;
+        }
+        way = way.normalize();
+        double highest = Double.NaN;
+        for (double ahead = LOOK_STEP; ahead <= LOOK_AHEAD; ahead += LOOK_STEP) {
+            Vec3 at = state.position().add(way.scale(ahead));
+            BlockPos column = BlockPos.containing(at.x, 0, at.z);
+            if (level.hasChunkAt(column)) {
+                double top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ());
+                highest = Double.isNaN(highest) ? top : Math.max(highest, top);
+            }
+        }
+        return highest;
     }
 
     /**
