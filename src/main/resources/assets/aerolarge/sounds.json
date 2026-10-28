@@ -1007,6 +1007,22 @@
       }
     ]
   },
+  "glass_squeak": {
+    "subtitle": "subtitles.aerolarge.glass_squeak",
+    "sounds": [
+      {
+        "name": "aerolarge:glass_squeak"
+      }
+    ]
+  },
+  "autopilot_off": {
+    "subtitle": "subtitles.aerolarge.autopilot_off",
+    "sounds": [
+      {
+        "name": "aerolarge:autopilot_off"
+      }
+    ]
+  },
   "tow_rope": {
     "subtitle": "subtitles.aerolarge.tow_rope",
     "sounds": [

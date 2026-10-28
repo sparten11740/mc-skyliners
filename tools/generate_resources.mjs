@@ -1093,6 +1093,8 @@ function zeppelinControlsLang() {
     "subtitles.aerolarge.searchlight_on": "Searchlight strikes up",
     "subtitles.aerolarge.booster_cutout": "Boosters cut out",
     "subtitles.aerolarge.tow_rope": "Tow rope runs",
+    "subtitles.aerolarge.glass_squeak": "Finger squeaks on glass",
+    "subtitles.aerolarge.autopilot_off": "Autopilot disconnects",
     "subtitles.aerolarge.handler_whistle_short": "Whistle: hold fast",
     "subtitles.aerolarge.handler_whistle_long": "Whistle: let go",
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
@@ -1319,7 +1321,7 @@ function atcLang() {
   const ENGINE_CAR_HEARD = 96;
   sounds.zeppelin_engine = { subtitle: `subtitles.${ID}.zeppelin_engine`, sounds: [{ name: `${ID}:zeppelin_engine`, attenuation_distance: ENGINE_CAR_HEARD }] };
   for (const name of ["telegraph_ring", "telegraph_answer", "helm_notch", "control_stop", "crane_ratchet", "crane_latch", "clamp_lock", "clamp_release",
-    "canopy_open", "touchdown", "trim_car_roll", "bin_open", "bin_close", "searchlight_on", "booster_cutout"]) {
+    "canopy_open", "touchdown", "trim_car_roll", "bin_open", "bin_close", "searchlight_on", "booster_cutout", "glass_squeak", "autopilot_off"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
   }
   sounds.tow_rope = { subtitle: `subtitles.${ID}.tow_rope`, sounds: [{ name: `${ID}:flag_halyard` }] };

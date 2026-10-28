@@ -4,6 +4,7 @@ import dev.aerolarge.AerolargeRegistry;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -21,6 +22,8 @@ public class FloodlightBlockEntity extends BlockEntity {
     private static final Loaded<FloodlightBlockEntity> LOADED = new Loaded<>(FloodlightBlockEntity.class, true);
     /** How often the light looks at the sky, in ticks. */
     private static final int LOOK_TICKS = 40;
+    /** How loud it comes on, heard aboard over the hull's boom. */
+    private static final float COMING_ON = 0.8F;
     /** How far ahead of straight down it shines, toward FACING, in radians. */
     private static final float TILT = (float) Math.toRadians(25);
 
@@ -43,7 +46,10 @@ public class FloodlightBlockEntity extends BlockEntity {
         return ahead.scale(Mth.sin(TILT)).add(0, -Mth.cos(TILT), 0);
     }
 
-    /** Once a tick, on the server: now and then, lit while the sky is dark (at night, or under a storm by day). */
+    /**
+     * Once a tick, on the server: now and then, lit while the sky is dark (at night, or under a storm by day), coming on
+     * with the clunk of its contactor and the crackle of its lamp striking up.
+     */
     void serverTick(ServerLevel level) {
         if (level.getGameTime() % LOOK_TICKS != 0) {
             return;
@@ -51,6 +57,9 @@ public class FloodlightBlockEntity extends BlockEntity {
         boolean dark = level.isNight();
         if (dark != lit()) {
             level.setBlock(worldPosition, getBlockState().setValue(FloodlightBlock.LIT, dark), Block.UPDATE_ALL);
+            if (dark) {
+                level.playSound(null, worldPosition, AerolargeRegistry.SEARCHLIGHT_ON.get(), SoundSource.BLOCKS, COMING_ON, 1.0F);
+            }
         }
     }
 

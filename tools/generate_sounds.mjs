@@ -1361,6 +1361,44 @@ function seamless(samples, seconds, fadeSeconds) {
   writeSound("booster_cutout", samples, 0.75);
 }
 
+// A finger drawn across a misted window (see MistyWindows): the squeak of skin on wet glass, a stick-slip chirp
+// wavering round two kilohertz, with the softest hiss of the film it wipes.
+{
+  const noise = ownRandom(0x47617373);
+  const samples = new Float64Array(Math.round(0.22 * RATE));
+  let phase = 0;
+  let previous = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const pitch = 1900 + 350 * Math.sin(2 * Math.PI * 7 * t) + 200 * noise();
+    phase += (2 * Math.PI * pitch) / RATE;
+    const stick = 0.5 + 0.5 * Math.sign(Math.sin(2 * Math.PI * 38 * t));
+    const white = noise() * 2 - 1;
+    const hiss = (white - previous) * 0.05;
+    previous = white;
+    samples[i] = (0.4 * Math.sin(phase) * stick + hiss) * Math.sin(Math.PI * t / 0.22);
+  }
+  writeSound("glass_squeak", samples, 0.5);
+}
+// The autopilot letting go (see AutopilotBlockEntity): its disconnect warning, three quick rising tones played twice, a
+// little reedy, as an airliner's flight deck sounds when its autopilot is switched off.
+{
+  const samples = new Float64Array(Math.round(1.15 * RATE));
+  const tones = [784, 988, 1175];
+  for (let round = 0; round < 2; round++) {
+    tones.forEach((frequency, k) => {
+      const start = round * 0.5 + k * 0.13;
+      for (let i = Math.round(start * RATE); i < Math.round((start + 0.12) * RATE); i++) {
+        const t = i / RATE - start;
+        const envelope = Math.min(1, t * 300) * Math.min(1, (0.12 - t) * 200);
+        const reed = Math.sin(2 * Math.PI * frequency * t) + 0.3 * Math.sin(2 * Math.PI * 3 * frequency * t) + 0.15 * Math.sin(2 * Math.PI * 5 * frequency * t);
+        samples[i] += envelope * reed;
+      }
+    });
+  }
+  writeSound("autopilot_off", samples, 0.6);
+}
+
 // Sleigh bells, rung from a festive zeppelin's engines as they turn: a strap of little round bells shaken twice, each
 // shake a quick scatter of bright high strikes, a few bells a little out of tune with each other.
 {

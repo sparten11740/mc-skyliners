@@ -2348,7 +2348,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             zeppelin.stop(serverLevel, worldPosition);
         }
         resyncControls(serverLevel);
-        serverLevel.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+        serverLevel.playSound(null, worldPosition, AerolargeRegistry.AUTOPILOT_OFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /** The engines, the nose wheel and the brakes follow their controls again. */

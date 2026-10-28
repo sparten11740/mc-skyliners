@@ -466,7 +466,8 @@ of 10). Pointed at, the speedometer, the dial and the sky show a ghost of what a
 number, before you touch; and small windows give the speed, heading and height set. A touch on the speedometer or the
 sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A pin lamp in the dial's corner lights
 while it flies to a pin (see below). While the autopilot is off the controls only thud, and the on/off key opens the
-settings, where it is engaged; while it flies, the on/off key switches it off. A touch it cannot take thuds too: while
+settings, where it is engaged; while it flies, the on/off key switches it off, and whenever it lets go, switched off or
+landed, its disconnect warning sounds, three quick rising tones played twice. A touch it cannot take thuds too: while
 it comes in to land, so nothing touched by accident calls the landing off, and while it rolls out after landing.
 
 The control head's own small display shows what the autopilot is set to, in the same pictures and colours, turned to
@@ -1415,11 +1416,12 @@ airliner's lights glow the same way. The server config's `navigationLights` leav
 on.
 
 From dusk to dawn, and under a storm by day, floodlights under the control car and along the keel come on of their own
-accord, flat black lamps whose lenses glow warm white, and throw their light down and a little ahead onto the land under
-her, so those aboard see where she is going at night and those below see her coming. It is real light, through Veil
-(which comes with Sable), as the cabin's night lights are; the client config's `floodlightLight` turns it off and draws
-a pool of light on the ground under each lamp instead, as there always is with Iris installed. The server config's
-`floodlights` leaves them off zeppelins built from then on.
+accord with the clunk of their contactors and the crackle of their lamps striking up, flat black lamps whose lenses glow
+warm white, and throw their light down and a little ahead onto the land under her, so those aboard see where she is
+going at night and those below see her coming. It is real light, through Veil (which comes with Sable), as the cabin's
+night lights are; the client config's `floodlightLight` turns it off and draws a pool of light on the ground under each
+lamp instead, as there always is with Iris installed. The server config's `floodlights` leaves them off zeppelins built
+from then on.
 
 By day, flying, she casts her great shadow on the land under her, hull and fins, from where the sun is: right under her
 and sharp-edged at noon, thrown off and drawn out long, its edges soft, as the sun sinks, fading away near sunrise and
@@ -1456,8 +1458,9 @@ config's `hullAmbience` turns it off.
 
 Flying through cloud or rain, her promenade windows mist over on the inside, a pale film creeping over the glass in a
 few seconds and clearing again once she is out of it. Hold use with an empty hand on a misted pane and your finger draws
-on it, wiping lines of clear glass through the mist, which mist over again within half a minute. Your breath and your
-drawing are your own: nobody else aboard sees them. The client config's `mistyWindows` turns it off.
+on it, squeaking on the wet glass, wiping lines of clear glass through the mist, which mist over again within half a
+minute. Your breath and your drawing are your own: nobody else aboard sees them. The client config's `mistyWindows`
+turns it off.
 
 The Furnished Zeppelin Blueprint fits the decks out from the airliner's furniture, as the Hindenburg's were laid out. On
 the lower deck the boarding hall at the front has bamboo in planters along its walls; the galley beside the stairs has
