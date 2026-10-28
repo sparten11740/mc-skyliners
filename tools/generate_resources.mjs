@@ -3532,10 +3532,14 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
         }],
       });
       for (const [facing, y] of Object.entries(yRot)) {
-        variants[`facing=${facing},half=${half},open=${open}`] = { model: `${ID}:block/${name}`, y };
+        variants[`facing=${facing},half=${half},open=${open},sliding=false`] = { model: `${ID}:block/${name}`, y };
+        variants[`facing=${facing},half=${half},open=${open},sliding=true`] = { model: `${ID}:block/lift_door_sliding` };
       }
     }
   }
+  // While a door slides, its block entity's renderer draws the pane on its way (see LiftDoorRenderer), and its block
+  // is drawn empty.
+  write(`assets/${ID}/models/block/lift_door_sliding.json`, { textures: { particle: `${ID}:block/lift_door_lower` } });
   write(`assets/${ID}/blockstates/lift_door.json`, { variants });
   cubes.lift_door = null;
   slimScreenModels("lift_board", `${ID}:block/lift_board_casing`, `${ID}:block/lift_board_casing`);

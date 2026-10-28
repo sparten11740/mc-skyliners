@@ -142,6 +142,7 @@ import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LiftBoardBlock;
 import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftDoorBlock;
+import dev.aerolarge.block.LiftDoorBlockEntity;
 import dev.aerolarge.block.LiftMachineBlock;
 import dev.aerolarge.block.LiftMachineBlockEntity;
 import dev.aerolarge.block.LedConsoleBlock;
@@ -635,6 +636,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftMachineBlockEntity>> LIFT_MACHINE_ENTITY =
         BLOCK_ENTITIES.register("lift_machine", () -> BlockEntityType.Builder.of(LiftMachineBlockEntity::new, LIFT_MACHINE.get()).build(null));
     public static final DeferredBlock<LiftDoorBlock> LIFT_DOOR = BLOCKS.registerBlock("lift_door", LiftDoorBlock::new, glass());
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftDoorBlockEntity>> LIFT_DOOR_ENTITY =
+        BLOCK_ENTITIES.register("lift_door", () -> BlockEntityType.Builder.of(LiftDoorBlockEntity::new, LIFT_DOOR.get()).build(null));
     public static final DeferredBlock<LiftBoardBlock> LIFT_BOARD = BLOCKS.registerBlock("lift_board", LiftBoardBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftBoardBlockEntity>> LIFT_BOARD_ENTITY =
         BLOCK_ENTITIES.register("lift_board", () -> BlockEntityType.Builder.of(LiftBoardBlockEntity::new, LIFT_BOARD.get()).build(null));

@@ -2063,7 +2063,8 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
-on its shaft by a clock both sides share, its `LiftDoorBlock`s and `LiftBoardBlock`s by each landing. `Livery` paints her as it does a zeppelin,
+on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
+`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
 `LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
 round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the

@@ -61,6 +61,7 @@ import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.LiveryBoardRenderer;
 import dev.aerolarge.client.LiftBoardRenderer;
 import dev.aerolarge.client.LiftCarRenderer;
+import dev.aerolarge.client.LiftDoorRenderer;
 import dev.aerolarge.client.LiftSounds;
 import dev.aerolarge.client.LiverySelectorRenderer;
 import dev.aerolarge.client.LookoutGlassRenderer;
@@ -311,6 +312,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_BOARD_ENTITY.get(), context -> new LiveryBoardRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIVERY_SELECTOR_ENTITY.get(), context -> new LiverySelectorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_BOARD_ENTITY.get(), context -> new LiftBoardRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.LIFT_DOOR_ENTITY.get(), context -> new LiftDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.FLAG_HALYARD_ENTITY.get(), context -> new ShipsColoursRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SHIPS_PLAQUE_ENTITY.get(), context -> new ShipsPlaqueRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.PICTURE_BOARD_ENTITY.get(), context -> new FlankScreenRenderer());

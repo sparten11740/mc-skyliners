@@ -45,7 +45,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class LiftMachineBlockEntity extends BlockEntity {
     /** How long the doors take to slide open or shut, and how long they stand open, in ticks. */
-    private static final int DOOR_TICKS = 10;
+    public static final int DOOR_TICKS = 10;
     private static final int OPEN_TICKS = 80;
     /** How long the doors stay open once a rider has picked a floor from inside the car, in ticks. */
     private static final int PICKED_TICKS = 20;
@@ -131,6 +131,13 @@ public class LiftMachineBlockEntity extends BlockEntity {
     private int lasts = OPEN_TICKS;
     /** Whether the car's ride now, or its last, goes up: the chime it comes in with. */
     private boolean goingUp;
+    /**
+     * The landing whose doors slide now, or -1, and the ticks they have slid; and whether its doors have been looked
+     * over since it was loaded, for any left sliding when it was saved.
+     */
+    private int sliding = -1;
+    private int slid;
+    private boolean doorsLookedOver;
 
     public LiftMachineBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.LIFT_MACHINE_ENTITY.get(), pos, state);
@@ -217,6 +224,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
             return;
         }
         lift.ticks++;
+        lift.doorsSlid(level);
         lift.step(level, running);
         Vec3 letOff = lift.doorsOpen() ? lift.exitAt(level, lift.at) : null;
         running.hold(level, pos, letOff);
@@ -385,7 +393,37 @@ public class LiftMachineBlockEntity extends BlockEntity {
         for (BlockPos door : List.of(lower, lower.above())) {
             BlockState state = level.getBlockState(door);
             if (state.getBlock() instanceof LiftDoorBlock && state.getValue(LiftDoorBlock.OPEN) != open) {
-                level.setBlock(door, state.setValue(LiftDoorBlock.OPEN, open), Block.UPDATE_ALL);
+                level.setBlock(door, state.setValue(LiftDoorBlock.OPEN, open).setValue(LiftDoorBlock.SLIDING, true), Block.UPDATE_ALL);
+                sliding = landing;
+                slid = 0;
+            }
+        }
+    }
+
+    /**
+     * Once a landing's doors have slid all the way, they stand still again, drawn as the blocks they are; and the first
+     * tick after it is loaded, any doors left sliding when it was saved stand still.
+     */
+    private void doorsSlid(ServerLevel level) {
+        if (!doorsLookedOver) {
+            doorsLookedOver = true;
+            for (int landing = 0; landing < landings.size(); landing++) {
+                standStill(level, landing);
+            }
+        }
+        if (sliding >= 0 && ++slid >= DOOR_TICKS) {
+            standStill(level, sliding);
+            sliding = -1;
+        }
+    }
+
+    /** A landing's doors standing still where they are. */
+    private void standStill(ServerLevel level, int landing) {
+        BlockPos lower = worldPosition.offset(landings.get(landing).door());
+        for (BlockPos door : List.of(lower, lower.above())) {
+            BlockState state = level.getBlockState(door);
+            if (state.getBlock() instanceof LiftDoorBlock && state.getValue(LiftDoorBlock.SLIDING)) {
+                level.setBlock(door, state.setValue(LiftDoorBlock.SLIDING, false), Block.UPDATE_CLIENTS);
             }
         }
     }
