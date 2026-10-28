@@ -59,6 +59,8 @@ public final class EngineSounds {
             EngineSound sound = PLAYING.get(engine);
             if (sound == null || sound.isStopped()) {
                 sound = new EngineSound(engine);
+                // Those stopped are let go of as a new one starts: each holds its engine, which would keep its level.
+                PLAYING.values().removeIf(EngineSound::isStopped);
                 PLAYING.put(engine, sound);
                 minecraft.getSoundManager().play(sound);
             }

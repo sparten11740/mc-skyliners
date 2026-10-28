@@ -44,6 +44,8 @@ public final class ZeppelinEngineSounds {
         EngineSound sound = PLAYING.get(propeller);
         if (sound == null || sound.isStopped()) {
             sound = new EngineSound(propeller);
+            // Those stopped are let go of as a new one starts: each holds its propeller, which would keep its level.
+            PLAYING.values().removeIf(EngineSound::isStopped);
             PLAYING.put(propeller, sound);
             Minecraft.getInstance().getSoundManager().play(sound);
         }
