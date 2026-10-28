@@ -1918,6 +1918,30 @@ shows it as its cameras see it. As she reaches the edge of space on the way up, 
 deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves the sky as
 the game draws it.
 
+Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six
+wheels on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on
+a mast and an amber beacon (the server config's `rocket.rover` leaves it out of a rocket built from then on; a rocket
+too small for it, as at scale 1, has none and keeps her back window). The panel on the back of the lift shaft's glass,
+facing the door, has three picture buttons: the rover over an arrow pointing down sends it to the ground, an arrow
+pointing up over the rover calls it home, and a remote hands you a Rover Remote paired with it. Its lamp is green with
+the rover in its cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red
+for a moment, with a low note, when the door will not open: it only opens while she stands still on her fins with her
+autopilot off. Then it folds down outward into a platform, a light curtain glowing red across the doorway so nobody
+walks out, and a yellow boom slides out over it; the rover rolls out onto the platform, is hooked to the boom's
+trolley, lifted, run out past the platform's end and lowered on the winch's cable to the ground, the winch ratcheting.
+Use the remote to drive it (with the rover in its cradle, it sends it down first and takes you to it as it sets off):
+your view goes to a camera behind and over it, your movement keys drive and steer it, jump sounds its horn, the mouse
+swings the camera round it, and sneaking gives you your own view back, as does being hurt. Meanwhile your own body
+stays where you stood and takes no fall damage, and a red warning triangle shows while a monster is near it. The rover
+whirs over the gravel as it drives, its beacon blinking, climbs a block as a horse does and goes no further than 96
+blocks from her: as it nears the edge the signal bars in the corner drop, an amber arrow points back to her and a soft
+tone sounds. Sneak and use the remote, or press the panel's arrow up, and it drives back under the boom's tip by
+itself, reversing up the platform once hoisted, and the door shuts behind it; stuck on the way, it is hoisted from
+where it stands. It comes home by itself, too, once nobody is near enough to drive it, and when her autopilot is
+switched on, her countdown waiting for it to be back in its bay with the door shut, its beep heard in her cockpit while
+it waits. A remote works its rover from up to 160 blocks off, and is paired with a rover by using it on the rover or on
+its bay's panel, its antenna's tip turning from red to green.
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
@@ -2079,6 +2103,10 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
 from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown.
+Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
+(`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
+`RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the
+`DriveRover` payload, and `RoverRenderer`, `RoverModel` and `RoverBayRenderer` draw it (`RoverClient` sets them up).
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

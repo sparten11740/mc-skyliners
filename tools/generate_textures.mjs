@@ -4654,4 +4654,169 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }
 }
 
+// The rocket's rover (see RoverModel), its bay's panel (see RoverPanelBlock) and its remote (see RoverRemoteItem).
+// The rover: one texture its model's boxes take their faces from, each box's faces laid out where its texture offset
+// in RoverModel says, as vanilla lays a box's out (its top and bottom in the first rows, then its west side, front,
+// east side and back). Its body white, its seams faint, a band of crinkled gold foil round its lower half; its deck
+// dark blue solar cells in a fine silver grid; its legs and mast pale aluminium; its wheels aluminium with dark tread
+// across them and spoked hubs; its camera head white with a dark face and lenses; its dish white; its beacon amber.
+// The panel's face: a lamp strip along its top in the colour of how the bay stands, and three picture buttons under
+// it, the rover over an arrow pointing down, an arrow pointing up over the rover, and a remote. The remote: a dark
+// handset with a screen, a thumbstick and a button, its antenna's tip red, or green once paired.
+{
+  const entityOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/entity");
+  mkdirSync(entityOutput, { recursive: true });
+  const ROVER_WHITE = [0xee, 0xf0, 0xf2];
+  const ROVER_SEAM = [0xc6, 0xcb, 0xd2];
+  const UNDERSIDE = [0x5a, 0x5e, 0x64];
+  const FOIL = [[0xe8, 0xb8, 0x40], [0xd4, 0x9c, 0x28], [0xf6, 0xd2, 0x6a], [0xc0, 0x88, 0x20]];
+  const CELL = [0x1a, 0x26, 0x5c];
+  const CELL_SHEEN = [0x24, 0x34, 0x78];
+  const CELL_LINE = [0x9c, 0xa8, 0xb8];
+  const DECK_EDGE = [0xb8, 0xbe, 0xc4];
+  const ALUMINIUM = [0xb4, 0xba, 0xc0];
+  const ALUMINIUM_SHADE = [0x8c, 0x92, 0x99];
+  const TREAD = [0x4a, 0x4e, 0x55];
+  const HUB_DARK = [0x30, 0x33, 0x38];
+  const FACE_DARK = [0x2a, 0x2d, 0x33];
+  const LENS = [0x20, 0x40, 0x60];
+  const HAZCAM = [0x30, 0x80, 0xe0];
+  const POST = [0x40, 0x44, 0x4a];
+  const AMBER = [0xff, 0xa8, 0x20];
+  const AMBER_BRIGHT = [0xff, 0xe0, 0x80];
+  const foil = (x, y) => FOIL[(x * 31 + y * 17 + ((x * y) >> 1)) % FOIL.length];
+  const body = ({ face, x, y }) => {
+    if (face === "top") return ROVER_WHITE;
+    if (face === "bottom") return UNDERSIDE;
+    if (y >= 2) return foil(x, y);
+    return face === "side" && x % 6 === 5 ? ROVER_SEAM : ROVER_WHITE;
+  };
+  const deck = ({ face, x, y, w, h }) => {
+    if (face === "bottom") return UNDERSIDE;
+    if (face !== "top") return DECK_EDGE;
+    if (x === 0 || y === 0 || x === w - 1 || y === h - 1) return DECK_EDGE;
+    if (x % 4 === 0 || y % 3 === 0) return CELL_LINE;
+    return (Math.floor(x / 4) + Math.floor(y / 3)) % 3 === 0 ? CELL_SHEEN : CELL;
+  };
+  const sensorBar = ({ face, x }) => (face === "front" && (x === 1 || x === 5) ? HAZCAM : FACE_DARK);
+  const aluminium = ({ face }) => (face === "bottom" || face === "side" ? ALUMINIUM_SHADE : ALUMINIUM);
+  const head = ({ face, x }) => {
+    if (face === "front") return FACE_DARK;
+    return face === "top" && x === 2 ? ROVER_SEAM : ROVER_WHITE;
+  };
+  const lens = ({ face }) => (face === "front" ? LENS : FACE_DARK);
+  const post = () => POST;
+  const beacon = ({ x, y }) => (x === 0 && y === 0 ? AMBER_BRIGHT : AMBER);
+  const dish = ({ face, x, y }) => {
+    if (face !== "front") return ALUMINIUM_SHADE;
+    return x === 1 && y === 1 ? FACE_DARK : ROVER_WHITE;
+  };
+  const wheel = ({ face, x, y }) => {
+    if (face !== "side") return y % 2 === 0 ? TREAD : ALUMINIUM;
+    if (x === 2 && y === 2) return HUB_DARK;
+    if (x === 0 || y === 0 || x === 4 || y === 4) return TREAD;
+    return x === 2 || y === 2 ? ALUMINIUM : ALUMINIUM_SHADE;
+  };
+  // Each box of the model: its texture offset and size (width, height, depth), as RoverModel gives them.
+  const boxes = [
+    { u: 0, v: 0, w: 11, h: 5, d: 16, paint: body },
+    { u: 0, v: 21, w: 16, h: 1, d: 22, paint: deck },
+    { u: 56, v: 10, w: 7, h: 1, d: 1, paint: sensorBar },
+    { u: 78, v: 21, w: 1, h: 1, d: 20, paint: aluminium },
+    { u: 72, v: 0, w: 1, h: 5, d: 1, paint: aluminium },
+    { u: 76, v: 0, w: 1, h: 3, d: 1, paint: aluminium },
+    { u: 80, v: 0, w: 5, h: 2, d: 2, paint: head },
+    { u: 94, v: 0, w: 1, h: 1, d: 1, paint: lens },
+    { u: 98, v: 0, w: 1, h: 1, d: 1, paint: post },
+    { u: 102, v: 0, w: 2, h: 2, d: 2, paint: beacon },
+    { u: 110, v: 0, w: 3, h: 3, d: 1, paint: dish },
+    { u: 118, v: 0, w: 1, h: 2, d: 1, paint: post },
+    { u: 56, v: 0, w: 3, h: 5, d: 5, paint: wheel },
+  ];
+  // Which face of a box a pixel of its laid-out faces is, and where on that face; null for a pixel it leaves bare.
+  const faceAt = ({ u, v, w, h, d }, px, py) => {
+    const fx = px - u;
+    const fy = py - v;
+    if (fx < 0 || fy < 0 || fx >= 2 * (w + d) || fy >= d + h) return null;
+    if (fy < d) {
+      if (fx >= d && fx < d + w) return { face: "top", x: fx - d, y: fy, w, h: d };
+      if (fx >= d + w && fx < d + 2 * w) return { face: "bottom", x: fx - d - w, y: fy, w, h: d };
+      return null;
+    }
+    const sy = fy - d;
+    if (fx < d) return { face: "side", x: fx, y: sy, w: d, h };
+    if (fx < d + w) return { face: "front", x: fx - d, y: sy, w, h };
+    if (fx < 2 * d + w) return { face: "side", x: fx - d - w, y: sy, w: d, h };
+    return { face: "back", x: fx - 2 * d - w, y: sy, w, h };
+  };
+  texture(entityOutput, "rover", (x, y) => {
+    for (const box of boxes) {
+      const at = faceAt(box, x, y);
+      if (at) return box.paint(at);
+    }
+    return CLEAR;
+  }, 3, 128, 64);
+
+  const BEZEL = [0x1e, 0x20, 0x24];
+  const PANEL_FACE = [0x3a, 0x3e, 0x45];
+  const LAMP_RIM = [0x14, 0x15, 0x18];
+  const BUTTON = [0x58, 0x5e, 0x68];
+  const BUTTON_TOP = [0x70, 0x77, 0x82];
+  const BUTTON_BOTTOM = [0x2c, 0x2f, 0x35];
+  const LIT_GREEN = [0x40, 0xe0, 0x60];
+  const LAMPS = { ready: LIT_GREEN, busy: [0xff, 0xb0, 0x20], out: [0x40, 0x90, 0xff], refused: [0xe8, 0x30, 0x30] };
+  const lighter = (colour) => colour.map((c) => Math.min(255, c + 0x50));
+  // The buttons' pictures, a row of the picture to a row of pixels, "#" drawn in white and "g" in the lit green.
+  const ROVER_ICON = ["##......", ".#......", "########", ".######.", "##.##.##"];
+  const ICONS = [
+    [...ROVER_ICON, "........", "...##...", "...##...", ".######.", "..####..", "...##..."],
+    ["...##...", "..####..", ".######.", "...##...", "...##...", "........", ...ROVER_ICON],
+    ["......#.", ".....#..", "....#...", "..####..", "..#gg#..", "..####..", "..#..#..", "..####..", "..#.##..", "..####..", "..####.."],
+  ];
+  const BUTTONS_FROM = [2, 12, 22];
+  const BUTTON_WIDTH = 8;
+  const BUTTONS_TOP = 10;
+  const BUTTONS_BOTTOM = 29;
+  const ICON_TOP = 14;
+  const button = (x, y) => {
+    const index = BUTTONS_FROM.findIndex((from) => x >= from && x < from + BUTTON_WIDTH);
+    if (index < 0 || y < BUTTONS_TOP || y > BUTTONS_BOTTOM) return null;
+    const row = ICONS[index][y - ICON_TOP];
+    const mark = row === undefined ? "." : row[x - BUTTONS_FROM[index]];
+    if (mark === "#") return INK;
+    if (mark === "g") return LIT_GREEN;
+    if (y === BUTTONS_TOP) return BUTTON_TOP;
+    return y === BUTTONS_BOTTOM ? BUTTON_BOTTOM : BUTTON;
+  };
+  for (const [status, lamp] of Object.entries(LAMPS)) {
+    texture(blockOutput, `rover_panel_front_${status}`, (x, y) => {
+      if (x === 0 || y === 0 || x === 31 || y === 31) return BEZEL;
+      if (y >= 1 && y <= 7 && x >= 2 && x <= 29) {
+        if (y === 1 || y === 7 || x === 2 || x === 29) return LAMP_RIM;
+        return y === 2 ? lighter(lamp) : lamp;
+      }
+      return button(x, y) ?? PANEL_FACE;
+    }, 2, 32, 32);
+  }
+  texture(blockOutput, "rover_panel_side", (x, y) => (x === 0 || y === 0 ? BEZEL : PANEL_FACE), 2);
+
+  const HANDSET = [0x2c, 0x30, 0x36];
+  const HANDSET_EDGE = [0x14, 0x16, 0x1a];
+  const SCREEN = [0x18, 0x3a, 0x6a];
+  const SCREEN_SHINE = [0x50, 0x80, 0xc0];
+  const STICK = [0xb0, 0xb6, 0xbe];
+  const remote = (tip) => (x, y) => {
+    if (x >= 12 && x <= 13 && y <= 1) return tip;
+    if ((x === 11 && (y === 2 || y === 3)) || (x === 10 && y === 4)) return STEEL_DARK;
+    if (x < 4 || x > 11 || y < 5) return CLEAR;
+    if (x === 4 || x === 11 || y === 5 || y === 15) return HANDSET_EDGE;
+    if (y >= 7 && y <= 9 && x >= 6 && x <= 9) return x === 6 && y === 7 ? SCREEN_SHINE : SCREEN;
+    if ((x === 7 && y >= 11 && y <= 13) || (y === 12 && x >= 6 && x <= 8)) return STICK;
+    if (x === 9 && y === 12) return [0xe0, 0x70, 0x20];
+    return HANDSET;
+  };
+  texture(itemOutput, "rover_remote", remote([0xd0, 0x30, 0x30]), 0);
+  texture(itemOutput, "rover_remote_paired", remote(LIT_GREEN), 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

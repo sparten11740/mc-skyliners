@@ -956,6 +956,46 @@
       }
     ]
   },
+  "rover_motor": {
+    "subtitle": "subtitles.aerolarge.rover_motor",
+    "sounds": [
+      {
+        "name": "aerolarge:rover_motor"
+      }
+    ]
+  },
+  "rover_start": {
+    "subtitle": "subtitles.aerolarge.rover_start",
+    "sounds": [
+      {
+        "name": "aerolarge:rover_start"
+      }
+    ]
+  },
+  "rover_stop": {
+    "subtitle": "subtitles.aerolarge.rover_stop",
+    "sounds": [
+      {
+        "name": "aerolarge:rover_stop"
+      }
+    ]
+  },
+  "rover_horn": {
+    "subtitle": "subtitles.aerolarge.rover_horn",
+    "sounds": [
+      {
+        "name": "aerolarge:rover_horn"
+      }
+    ]
+  },
+  "rover_range": {
+    "subtitle": "subtitles.aerolarge.rover_range",
+    "sounds": [
+      {
+        "name": "aerolarge:rover_range"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

@@ -1709,6 +1709,74 @@ const laserNoise = (() => {
   writeSound("laser_charge", samples);
 }
 
+// The rocket's rover (see Rover and the client's RoverSounds), with its own noise, so it never shifts the sounds above.
+// Its motor: a seamless two-second loop of its drive motors' electric whine, a low hum with its second and third
+// harmonics wavering a little and a faint high servo note over it, on the crunch of gravel under its six wheels, grains
+// of band-passed noise at random, over a low rumble; every tone repeats a whole number of times in the loop. Its beeps
+// as its driver takes it over and lets it go: two short tones a fifth apart, rising, then falling. Its horn: two blips
+// of a buzzy two-tone note a minor third wide. The warning as it nears the edge of its range: a soft ping dying away.
+{
+  const noise = ownRandom(0x526f7672);
+  const seconds = 2;
+  const motor = new Float64Array(Math.round((seconds + 0.3) * RATE));
+  let rumble = 0;
+  let grain = 0;
+  let grainLow = 0;
+  let crunch = 0;
+  for (let i = 0; i < motor.length; i++) {
+    const t = i / RATE;
+    const waver = 0.004 * Math.sin(2 * Math.PI * 3 * t);
+    const hum = Math.sin(2 * Math.PI * 220 * t + waver * 40) + 0.45 * Math.sin(2 * Math.PI * 440 * t + waver * 80)
+      + 0.25 * Math.sin(2 * Math.PI * 660 * t + waver * 120);
+    const servo = 0.06 * Math.sin(2 * Math.PI * 1900 * t);
+    const white = noise() * 2 - 1;
+    rumble += 0.01 * (white - rumble);
+    // A grain of gravel now and then, each dying away within a few milliseconds.
+    if (noise() < 30 / RATE) {
+      crunch = 0.4 + 0.6 * noise();
+    }
+    crunch *= 0.996;
+    grain += 0.45 * (white - grain);
+    grainLow += 0.12 * (white - grainLow);
+    motor[i] = 0.32 * hum + servo + 3 * rumble + 1.4 * crunch * (grain - grainLow);
+  }
+  writeSound("rover_motor", seamless(motor, seconds, 0.3), 0.7);
+  const beeps = (name, tones) => {
+    const samples = new Float64Array(Math.round(0.32 * RATE));
+    let at = 0.01;
+    for (const [frequency, length] of tones) {
+      for (let i = Math.round(at * RATE); i < Math.round((at + length) * RATE); i++) {
+        const t = i / RATE - at;
+        const envelope = Math.min(1, t / 0.005) * Math.min(1, (length - t) / 0.02);
+        samples[i] += envelope * (Math.sin(2 * Math.PI * frequency * t) + 0.18 * Math.sin(2 * Math.PI * 3 * frequency * t));
+      }
+      at += length + 0.035;
+    }
+    // Written well under the others' peak: a pure tone sounds far louder than a noise as high.
+    writeSound(name, samples, 0.35);
+  };
+  beeps("rover_start", [[880, 0.08], [1318.5, 0.12]]);
+  beeps("rover_stop", [[1318.5, 0.08], [880, 0.12]]);
+  const horn = new Float64Array(Math.round(0.6 * RATE));
+  for (const [at, length] of [[0.01, 0.16], [0.24, 0.24]]) {
+    let low = 0;
+    for (let i = Math.round(at * RATE); i < Math.round((at + length) * RATE); i++) {
+      const t = i / RATE - at;
+      const envelope = Math.min(1, t / 0.008) * Math.min(1, (length - t) / 0.03);
+      const buzz = ((440 * t) % 1) + ((523.25 * t) % 1) - 1;
+      low += 0.3 * (buzz - low);
+      horn[i] += envelope * low;
+    }
+  }
+  writeSound("rover_horn", horn, 0.6);
+  const ping = new Float64Array(Math.round(0.5 * RATE));
+  for (let i = 0; i < ping.length; i++) {
+    const t = i / RATE;
+    ping[i] = Math.min(1, t / 0.004) * Math.exp(-t / 0.12) * (Math.sin(2 * Math.PI * 1046.5 * t) + 0.2 * Math.sin(2 * Math.PI * 2093 * t));
+  }
+  writeSound("rover_range", ping, 0.45);
+}
+
 // The self-destruct, the sounds of Ultrasplosive's nuke (the same author's mod), made the same way and with its own
 // noise, so it never shifts the sounds above. The siren and the bang are recordings, kept as they were in tools/audio:
 // - civil-defense-siren-waver.ogg: a civil defence siren in St. Paul, Minnesota, recorded in 2008 by Wikimedia Commons

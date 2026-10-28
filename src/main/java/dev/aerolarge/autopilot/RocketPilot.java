@@ -7,6 +7,8 @@ import dev.aerolarge.compat.SableFlight;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -100,6 +102,11 @@ public final class RocketPilot {
     private static final double SIGNAL_HOLD = 0.75;
     /** How much one creative thruster pushes at the configured setting 99 and full signal, in Sable's units. */
     private static final double THRUSTER_PUSH = 10_000;
+    /**
+     * What holds her countdown before it begins, each asked every tick it waits with her level and her autopilot's
+     * place: her rover out of its bay, for one. Held, she waits on the ground, her engines quiet, launch control silent.
+     */
+    private static final List<BiPredicate<ServerLevel, BlockPos>> HOLDS = new CopyOnWriteArrayList<>();
 
     /** A ring of side jets' relays, by the way each pushes the rocket, seen from its control head facing its front. */
     public record Jets(@Nullable BlockPos ahead, @Nullable BlockPos right, @Nullable BlockPos back, @Nullable BlockPos left) {
@@ -182,6 +189,27 @@ public final class RocketPilot {
     /** The signal its engines were last set to together. */
     private int lastTotal;
     private double lastClimb;
+
+    /** Holds her countdown before it begins for as long as something says so (see {@link #HOLDS}). */
+    public static void holdCountdownWhile(BiPredicate<ServerLevel, BlockPos> hold) {
+        HOLDS.add(hold);
+    }
+
+    /**
+     * Whether something holds her countdown this tick before it begins (see {@link #HOLDS}): set to take off and not
+     * yet counting, her autopilot at a place.
+     */
+    static boolean countdownHeld(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase phase, int counted) {
+        if (phase != AutopilotBlockEntity.Phase.TAKEOFF || counted > 0) {
+            return false;
+        }
+        for (BiPredicate<ServerLevel, BlockPos> hold : HOLDS) {
+            if (hold.test(level, origin)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     void configure(List<List<BlockPos>> bells, Jets top, Jets bottom) {
         this.bells = bells.stream().map(List::copyOf).toList();

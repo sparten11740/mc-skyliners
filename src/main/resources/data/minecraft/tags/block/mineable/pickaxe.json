@@ -139,6 +139,8 @@
     "aerolarge:led_panel",
     "aerolarge:led_console",
     "aerolarge:space_poster",
+    "aerolarge:rover_hatch",
+    "aerolarge:rover_panel",
     "aerolarge:cabin_partition",
     "aerolarge:cabin_arch",
     "aerolarge:exit_sign",

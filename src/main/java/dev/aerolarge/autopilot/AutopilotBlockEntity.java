@@ -951,8 +951,14 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** The zeppelin whose frame a block lies in, on either side, by her autopilot; null for none. */
     @Nullable
     public static AutopilotBlockEntity zeppelinFraming(Level level, BlockPos pos) {
+        return framedBy(level, pos, Craft.ZEPPELIN);
+    }
+
+    /** The airframe of a kind whose frame a block lies in, on either side, by its autopilot; null for none. */
+    @Nullable
+    public static AutopilotBlockEntity framedBy(Level level, BlockPos pos, Craft craft) {
         for (AutopilotBlockEntity autopilot : LOADED.in(level)) {
-            BoundingBox frame = autopilot.craft() == Craft.ZEPPELIN ? autopilot.frame() : null;
+            BoundingBox frame = autopilot.craft() == craft ? autopilot.frame() : null;
             if (frame != null && frame.isInside(pos)) {
                 return autopilot;
             }
@@ -1721,8 +1727,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         lightning.tick(level, this, flight.position(), radio);
         VillageSpotter.tick(level, this, flight.position());
         space.watch(level, this, flight);
-        // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds).
-        boolean held = rocketSounds.holdsCountdown(phase, rocket.counted(), quiet());
+        // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds),
+        // and nothing else holds her countdown, as her rover out of its bay does.
+        boolean held = rocketSounds.holdsCountdown(phase, rocket.counted(), quiet())
+            || RocketPilot.countdownHeld(level, worldPosition, phase, rocket.counted());
         if (phase != Phase.OFF && !held) {
             RocketPilot.Orders orders = new RocketPilot.Orders(phase, targetAltitude, lateral == Lateral.DESTINATION, orbitX, orbitZ);
             Phase next = rocket.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this));

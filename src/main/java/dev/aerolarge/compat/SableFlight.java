@@ -303,6 +303,14 @@ public final class SableFlight {
     }
 
     /**
+     * Whether a position lies in the grid of plots Sable keeps assembled airframes' blocks in, far from where they are
+     * seen, whether an airframe is loaded there or not; false without Sable.
+     */
+    public static boolean inPlotGrid(Level level, BlockPos pos) {
+        return SABLE && Access.inPlotGrid(level, pos);
+    }
+
+    /**
      * Whether a box round a player standing aboard an assembled airliner, inside its hull, is clear of its blocks as
      * the airliner lies now; false when they stand aboard none. Sable's own test, for whether a player has room to
      * stand up, looks at where the airliner's blocks were a tick ago: flying fast nose up, as it climbs, its floor
@@ -755,6 +763,10 @@ public final class SableFlight {
 
         static boolean inPlot(Entity entity) {
             return Sable.HELPER.getContaining(entity) != null;
+        }
+
+        static boolean inPlotGrid(Level level, BlockPos pos) {
+            return Sable.HELPER.isInPlotGrid(level, pos.getX() >> 4, pos.getZ() >> 4);
         }
 
         static boolean fitsAboard(Player player, AABB box) {

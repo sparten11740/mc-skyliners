@@ -79,6 +79,7 @@ import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RocketRoar;
+import dev.aerolarge.client.RoverClient;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
 import dev.aerolarge.client.SearchlightBeams;
@@ -256,6 +257,7 @@ public final class AerolargeClient {
         LiftCar.clientTicker = LiftSounds::tick;
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
+        RoverClient.register(modEventBus);
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
     }

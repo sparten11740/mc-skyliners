@@ -182,6 +182,9 @@ import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
+import dev.aerolarge.block.RoverBayBlockEntity;
+import dev.aerolarge.block.RoverHatchBlock;
+import dev.aerolarge.block.RoverPanelBlock;
 import dev.aerolarge.block.RungLadderBlock;
 import dev.aerolarge.block.ScoreboardBlock;
 import dev.aerolarge.block.ScoreboardBlockEntity;
@@ -256,6 +259,7 @@ import dev.aerolarge.entity.CraneHook;
 import dev.aerolarge.entity.FallingCrate;
 import dev.aerolarge.entity.LiftCar;
 import dev.aerolarge.entity.PaperPlane;
+import dev.aerolarge.entity.Rover;
 import dev.aerolarge.entity.SlideRide;
 import dev.aerolarge.entity.Trolley;
 import dev.aerolarge.item.AirframeBlueprintItem;
@@ -270,13 +274,16 @@ import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
 import dev.aerolarge.item.PilotHelmetItem;
+import dev.aerolarge.item.RoverRemoteItem;
 import dev.aerolarge.item.SpacePosterItem;
 import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleType;
@@ -2008,6 +2015,32 @@ public final class AerolargeRegistry {
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
     }
 
+    // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
+    // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired
+    // with, and its sounds: its motor's whine, its beeps on and off, its horn and the warning near the edge of its range.
+    public static final DeferredBlock<RoverHatchBlock> ROVER_HATCH = BLOCKS.registerBlock(
+        "rover_hatch", RoverHatchBlock::new, metal(MapColor.SNOW).noOcclusion().isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos) -> false)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoverBayBlockEntity>> ROVER_BAY_ENTITY =
+        BLOCK_ENTITIES.register("rover_bay", () -> BlockEntityType.Builder.of(RoverBayBlockEntity::new, ROVER_HATCH.get()).build(null));
+    public static final DeferredBlock<RoverPanelBlock> ROVER_PANEL = BLOCKS.registerBlock(
+        "rover_panel", RoverPanelBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(RoverPanelBlock::glow)
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<Rover>> ROVER = ENTITY_TYPES.register(
+        "rover", () -> EntityType.Builder.<Rover>of(Rover::new, MobCategory.MISC).sized(2.5F, 1.5F).fireImmune()
+            .clientTrackingRange(10).updateInterval(1).build("rover")
+    );
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> ROVER_PAIRING = DATA_COMPONENTS.registerComponentType(
+        "rover_pairing", builder -> builder.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC)
+    );
+    public static final DeferredItem<RoverRemoteItem> ROVER_REMOTE = ITEMS.register("rover_remote", () -> new RoverRemoteItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_MOTOR = sound("rover_motor");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_START = sound("rover_start");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_STOP = sound("rover_stop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_HORN = sound("rover_horn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER_RANGE = sound("rover_range");
+
     /** A section of the creative tab, under a banner of its own: its name ("itemGroup.aerolarge.<name>") and items. */
     public record TabSection(String name, List<? extends Supplier<? extends Item>> items) {
     }
@@ -2052,7 +2085,7 @@ public final class AerolargeRegistry {
             TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
-            JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM
+            JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, ROVER_REMOTE
         )),
         new TabSection("airport", List.of(
             JET_BRIDGE_ITEM, CHECK_IN_DESK_ITEM, BOARDING_PASS, TOWER_RADIO_ITEM, TOWER_RADAR_ITEM, TRANSPONDER_ITEM, MOTION_SENSOR_ITEM, LIFT_PANEL_ITEM,

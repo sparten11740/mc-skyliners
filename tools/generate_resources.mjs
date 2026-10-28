@@ -1346,6 +1346,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, airPocketSounds());
   Object.assign(sounds, laserSounds());
   Object.assign(sounds, selfDestructSounds());
+  Object.assign(sounds, roverSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -3684,6 +3685,76 @@ function spacePosterLang() {
     "item.aerolarge.solar_system_poster": "Solar System Poster",
     "item.aerolarge.quasar_poster": "Quasar Poster",
     "item.aerolarge.earthrise_poster": "Earthrise Poster",
+  };
+}
+// The rocket's rover bay (see RoverHatchBlock and RoverPanelBlock). Its door's parts are drawn only by the bay's
+// renderer (see RoverBayRenderer), door, platform, boom and all, so their model is only a particle texture. Its panel
+// is a board two sixteenths thick at the back of its block, as the skywriting board is, its face in the colour of how
+// the bay stands. Only the blueprint places them, so neither has an item or drops anything, and both are part of her
+// frame, which only a wrench takes apart, as her other controls are. The rover's remote: its antenna's tip lit green
+// once it is paired (see RoverClient).
+{
+  write(`assets/${ID}/blockstates/rover_hatch.json`, { variants: { "": { model: `${ID}:block/rover_hatch` } } });
+  write(`assets/${ID}/models/block/rover_hatch.json`, { textures: { particle: `${ID}:block/airframe_panel` } });
+  cubes.rover_hatch = null;
+  const variants = {};
+  for (const status of ["ready", "busy", "out", "refused"]) {
+    write(`assets/${ID}/models/block/rover_panel_${status}.json`, {
+      parent: "minecraft:block/block",
+      textures: { front: `${ID}:block/rover_panel_front_${status}`, side: `${ID}:block/rover_panel_side`, particle: `${ID}:block/rover_panel_side` },
+      elements: [{
+        from: [0, 0, 14], to: [16, 16, 16],
+        faces: {
+          north: { texture: "#front" }, south: { texture: "#side" }, up: { texture: "#side", uv: [0, 14, 16, 16] },
+          down: { texture: "#side", uv: [0, 14, 16, 16] }, east: { texture: "#side", uv: [14, 0, 16, 16] }, west: { texture: "#side", uv: [0, 0, 2, 16] },
+        },
+      }],
+    });
+    for (const [facing, y] of Object.entries(yRot)) {
+      variants[`facing=${facing},status=${status}`] = { model: `${ID}:block/rover_panel_${status}`, y };
+    }
+  }
+  write(`assets/${ID}/blockstates/rover_panel.json`, { variants });
+  cubes.rover_panel = null;
+  write(`assets/${ID}/models/item/rover_remote.json`, {
+    parent: "minecraft:item/generated",
+    textures: { layer0: `${ID}:item/rover_remote` },
+    overrides: [{ predicate: { [`${ID}:paired`]: 1 }, model: `${ID}:item/rover_remote_paired` }],
+  });
+  write(`assets/${ID}/models/item/rover_remote_paired.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/rover_remote_paired` } });
+}
+/** The rover's motor, its beeps on and off, its horn and the warning near the edge of its range. */
+function roverSounds() {
+  return Object.fromEntries(["rover_motor", "rover_start", "rover_stop", "rover_horn", "rover_range"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function roverLang() {
+  return {
+    "block.aerolarge.rover_hatch": "Rover Bay Door",
+    "block.aerolarge.rover_panel": "Rover Bay Panel",
+    "entity.aerolarge.rover": "Rover",
+    "item.aerolarge.rover_remote": "Rover Remote",
+    "item.aerolarge.rover_remote.paired": "Paired with its rover: use it to drive, sneak and use it to call the rover home",
+    "item.aerolarge.rover_remote.unpaired": "Not paired: use it on a rover, or on its bay's panel",
+    "message.aerolarge.rover.deploying": "Opening the bay: the rover is on its way down",
+    "message.aerolarge.rover.not_still": "The bay only opens while she stands still on her fins, her autopilot off",
+    "message.aerolarge.rover.already_out": "The rover is out already",
+    "message.aerolarge.rover.busy": "The winch is busy: wait for it",
+    "message.aerolarge.rover.coming_home": "The rover is coming home",
+    "message.aerolarge.rover.already_home": "The rover is in its bay",
+    "message.aerolarge.rover.has_remote": "You carry a remote for this rover already",
+    "message.aerolarge.rover.remote_given": "A remote paired with the rover: use it to drive",
+    "message.aerolarge.rover.paired": "Remote paired with this rover",
+    "message.aerolarge.rover.no_answer": "No answer from the rover: it is out of reach",
+    "message.aerolarge.rover.unpaired": "This remote is not paired: use it on a rover, or on its bay's panel",
+    "message.aerolarge.rover.countdown_holding": "Countdown holding: the rover is coming home first",
+    "screen.aerolarge.rover.camera": "ROVER CAM",
+    "screen.aerolarge.rover.hint": "%s %s %s %s: drive    %s: horn    %s: back to yourself",
+    "subtitles.aerolarge.rover_motor": "Rover whirs",
+    "subtitles.aerolarge.rover_start": "Rover beeps on",
+    "subtitles.aerolarge.rover_stop": "Rover beeps off",
+    "subtitles.aerolarge.rover_horn": "Rover honks",
+    "subtitles.aerolarge.rover_range": "Rover's signal fades",
   };
 }
 
@@ -6080,8 +6151,10 @@ write(`data/${ID}/tags/block/unbreakable_in_frame.json`, tag([
 ].map((id) => ({ id, required: false }))));
 write("data/sable/tags/block/slippery.json", tag([`${ID}:landing_gear_tire`]));
 // The cabin's loose things: inside an assembled airliner's hull they live among its blocks, and Sable leaves them there
-// to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight).
-write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`]));
+// to carry them along, as it does Create's seats, instead of putting them out into the world (see SableFlight); and the
+// rocket's rover, stowed in its cradle (see Rover).
+write("data/sable/tags/entity_type/retain_in_sub_level.json", tag([`${ID}:trolley`, `${ID}:basketball`, `${ID}:paper_plane`, `${ID}:lift_car`,
+  `${ID}:rover`]));
 // A lift's car lives among its ship's blocks and goes with them: taken away, it goes too.
 write("data/sable/tags/entity_type/destroy_with_sub_level.json", tag([`${ID}:lift_car`]));
 // What the sky crane's hook lifts (see CraneHook): animals and vehicles, never players, villagers or monsters; and in its
@@ -6774,6 +6847,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...christeningLang(),
   ...flankScreenLang(),
   ...spacePosterLang(),
+  ...roverLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

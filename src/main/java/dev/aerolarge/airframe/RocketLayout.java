@@ -95,6 +95,7 @@ public final class RocketLayout implements Layout {
         RocketGreenhouse::new,
         RocketClub::new,
         RocketObservationDeck::new,
+        RocketRoverBay::new,
         RocketPosters::new,
         RocketLedStrips::new);
     /**
@@ -418,9 +419,12 @@ public final class RocketLayout implements Layout {
         }
     }
 
-    /** A story's window looking out one way, set into the skin there; none where the skin is not all cover. */
+    /**
+     * A story's window looking out one way, set into the skin there; none where the skin is not all cover, nor where
+     * the rover bay's door takes its place (see {@link RocketRoverBay}).
+     */
     private void window(int floor, Direction way) {
-        if (way == Direction.NORTH && floor == floors.getFirst()) {
+        if (way == Direction.NORTH && floor == floors.getFirst() || RocketRoverBay.takesWindow(this, floor, way)) {
             return;
         }
         int pieces = OvalWindowBlock.COLUMNS * OvalWindowBlock.ROWS;
@@ -441,7 +445,7 @@ public final class RocketLayout implements Layout {
      * Where a piece of a story's window looking out one way goes: in the outermost block of the skin there, its column
      * from the left as seen from outside and its row from the top; null where that block is not the cover.
      */
-    private BlockPos windowPiece(int floor, Direction way, int column, int row) {
+    BlockPos windowPiece(int floor, Direction way, int column, int row) {
         Direction left = way.getClockWise();
         int across = OvalWindowBlock.COLUMNS / 2 - column;
         int y = floor + WINDOW_FROM + OvalWindowBlock.ROWS - 1 - row;

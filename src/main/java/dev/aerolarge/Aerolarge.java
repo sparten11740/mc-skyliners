@@ -13,6 +13,8 @@ import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.OpenTowerRadar;
 import dev.aerolarge.block.OpenTransponder;
 import dev.aerolarge.autopilot.SetAutopilot;
+import dev.aerolarge.autopilot.RocketPilot;
+import dev.aerolarge.block.RoverBayBlockEntity;
 import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.autopilot.UnstickAirliner;
 import dev.aerolarge.block.VillagesBelow;
@@ -51,6 +53,8 @@ import dev.aerolarge.radar.RadarLand;
 import dev.aerolarge.radar.RadarSurvey;
 import dev.aerolarge.radar.Transponders;
 import dev.aerolarge.radio.Broadcasts;
+import dev.aerolarge.rover.DriveRover;
+import dev.aerolarge.rover.RoverDrivers;
 import dev.aerolarge.selfdestruct.BlastPayload;
 import dev.aerolarge.selfdestruct.SelfDestruct;
 import dev.aerolarge.selfdestruct.SelfDestructAlarmPayload;
@@ -115,6 +119,8 @@ public final class Aerolarge {
         SableFlight.watch(HandPlaced::assembled, HandPlaced::gone);
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event -> AerolargeCommand.register(event.getDispatcher()));
         Blockpilot.register();
+        RoverDrivers.register();
+        RocketPilot.holdCountdownWhile(RoverBayBlockEntity::holdsCountdown);
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);
@@ -152,13 +158,14 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("26")
+        event.registrar("27")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
             .playToServer(BrewCoffee.TYPE, BrewCoffee.STREAM_CODEC, BrewCoffee::handle)
             .playToServer(SetTransponder.TYPE, SetTransponder.STREAM_CODEC, SetTransponder::handle)
             .playToServer(LookoutSpot.TYPE, LookoutSpot.STREAM_CODEC, LookoutSpot::handle)
+            .playToServer(DriveRover.TYPE, DriveRover.STREAM_CODEC, DriveRover::handle)
             .playToClient(HandPlacedBlocks.TYPE, HandPlacedBlocks.STREAM_CODEC,
                 (payload, context) -> HandPlaced.told(context.player().level(), payload))
             .playToClient(DecompressionPush.TYPE, DecompressionPush.STREAM_CODEC,
