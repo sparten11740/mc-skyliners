@@ -1602,7 +1602,7 @@ function selfDestructLang() {
     "subtitles.aerolarge.self_destruct_rumble": "Explosion rumbles",
     "message.aerolarge.self_destruct.open": "Cover up: press the red button to arm the self-destruct",
     "message.aerolarge.self_destruct.shut": "Cover shut",
-    "message.aerolarge.self_destruct.armed": "Self-destruct armed! Press again within %s seconds to blow up the airliner, or sneak to cancel",
+    "message.aerolarge.self_destruct.armed": "Self-destruct armed! The airliner blows up in %s seconds: press again to blow it up now, or sneak to cancel",
     "message.aerolarge.self_destruct.alarm": "Self-destruct armed! Everyone will get a parachute",
     "message.aerolarge.self_destruct.cancelled": "Self-destruct cancelled",
     "message.aerolarge.self_destruct.assembling": "Getting the airliner ready: the self-destruct arms in a moment",

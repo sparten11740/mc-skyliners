@@ -35,15 +35,15 @@ import net.minecraft.world.level.block.state.BlockState;
  * <li>with its cover shut, the cover flips up with a clack;</li>
  * <li>with the cover up, the button arms: it lights up and flashes red, faster and faster, and everyone aboard hears
  * the alarm's siren and a beep every second, rising in pitch, and sees the seconds left counted down on their screen
- * (see {@link SelfDestruct#alarm}), for {@link #WINDOW} ticks;</li>
- * <li>pressed again while armed, the airliner blows up (see {@link SelfDestruct#detonate}).</li>
+ * (see {@link SelfDestruct#alarm}), for {@link #WINDOW} ticks, and when the time is up the airliner blows up (see
+ * {@link SelfDestruct#detonate});</li>
+ * <li>pressed again while armed, the airliner blows up at once.</li>
  * </ol>
- * Left armed until the time is up, it disarms by itself with a falling hum, its cover still up; sneaking and using it
- * snaps the cover shut and disarms it at once. Not on an assembled airliner, or with the self-destruct switched off in
- * the server config, arming it only thuds.
+ * Sneaking and using it snaps the cover shut and disarms it, so the airliner does not blow up. Not on an assembled
+ * airliner, or with the self-destruct switched off in the server config, arming it only thuds.
  */
 public class SelfDestructButtonBlockEntity extends BlockEntity {
-    /** How long the button stays armed for the last press, in ticks: ten seconds, as long as the siren wails. */
+    /** How long the countdown runs before the airliner blows up, in ticks: ten seconds, as long as the siren wails. */
     public static final int WINDOW = 10 * SharedConstants.TICKS_PER_SECOND;
     /** How often the countdown beeps, in ticks: every second, and twice a second over the last {@link #HURRY}. */
     private static final int BEEP = SharedConstants.TICKS_PER_SECOND;
@@ -276,7 +276,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
 
     /**
      * Each tick, on the server: asked to arm on a parked airliner, whether it has assembled yet; while armed, the
-     * countdown's beeps, until the time is up and it disarms itself.
+     * countdown's beeps, until the time is up and the airliner blows up.
      */
     void tick() {
         if (!(level instanceof ServerLevel server)) {
@@ -290,11 +290,23 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         }
         long left = armedUntil - server.getGameTime();
         if (left <= 0) {
-            disarm(server, false);
+            timeUp(server);
             return;
         }
         if (left < WINDOW && left % (left <= HURRY ? BEEP / 2 : BEEP) == 0) {
             SelfDestruct.countdown(this, (int) left, 1 - (float) left / WINDOW);
+        }
+    }
+
+    /**
+     * The countdown run out: the airliner blows up once this tick is over, as when the button is pressed again; or,
+     * no longer one it may blow up, the button disarms.
+     */
+    private void timeUp(ServerLevel level) {
+        if (mayBlowUp()) {
+            SelfDestruct.detonate(level, this);
+        } else {
+            disarm(level, false);
         }
     }
 

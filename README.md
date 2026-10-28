@@ -284,14 +284,14 @@ fires. A Laser Switch and a Laser Turret can be crafted, but only an airliner bu
 On the flight deck's side wall at a standing pilot's eyes, just left of the announcement panel as you face it from the
 seats (on the other side wall where that has no room, and failing both on the back wall beside the door), is the
 self-destruct button: a big red button on a plate in a yellow-and-black hazard border, under a clear lid in a striped
-frame. It takes three presses on purpose to set off. Use it once and the lid flips up with a clack. Use it again and
+frame. It takes two presses on purpose to set off. Use it once and the lid flips up with a clack. Use it again and
 it arms: the button lights up and flashes red, faster and faster, the alarm's siren wails for everyone aboard wherever
 they are, a beep sounds every second, rising in pitch and twice a second over the last three, and on everyone's screen
 the edges pulse red and a picture of the button stands over a row of ten red lamps, one going out each second, the
-last one lit blinking. Press it a third time within those ten seconds and the airliner blows up. Left alone, it
-disarms by itself when the time is up, with a falling hum, its lid still up; sneak and use it (with an empty hand) to
-snap the lid shut and disarm it at once. Holding the use key down, or pressing twice in quick succession, never gets
-it past a step: each press has to be its own, and it waits a second after arming before a press sets it off.
+last one lit blinking. When the last lamp goes out, the airliner blows up; press it a third time before then and it
+blows up at once. To stop it, sneak and use it (with an empty hand): the lid snaps shut and it disarms with a falling
+hum. Holding the use key down, or pressing twice in quick succession, never gets it past a step: each press has to be
+its own, and it waits a second after arming before a press sets it off.
 
 As it blows up, everyone aboard puts on a parachute (whatever they wore on their chest goes into their inventory) and
 is got out of their seat, and the airliner is gone, every block of it at once, with everything loose or stored aboard

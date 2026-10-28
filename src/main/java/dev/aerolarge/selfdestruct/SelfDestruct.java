@@ -38,9 +38,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The self-destruct, on the server: the alarm through an airliner whose button is armed, and the airliner blowing up
- * once it is pressed again. The alarm is for everyone aboard, wherever they are: the siren and the countdown's beeps
- * follow each of them about (as the door alarm does), and each of them sees the seconds left counted down on their
- * screen (see {@link SelfDestructAlarmPayload}).
+ * once its countdown runs out, or at once when the button is pressed again. The alarm is for everyone aboard, wherever
+ * they are: the siren and the countdown's beeps follow each of them about (as the door alarm does), and each of them
+ * sees the seconds left counted down on their screen (see {@link SelfDestructAlarmPayload}).
  *
  * <p>The airliner blows up once its level's tick is over, never while its block entities tick, since its blocks go with
  * it. Everyone aboard first puts on a parachute, whatever they wore on their chest going into their inventory, and is
@@ -129,7 +129,7 @@ public final class SelfDestruct {
         }
     }
 
-    /** Pressed while armed: the button's airliner blows up once the level's tick is over. */
+    /** Pressed while armed, or the countdown run out: the button's airliner blows up once the level's tick is over. */
     public static void detonate(ServerLevel level, SelfDestructButtonBlockEntity button) {
         List<SelfDestructButtonBlockEntity> pressed = PRESSED.computeIfAbsent(level, ignored -> new ArrayList<>());
         if (!pressed.contains(button)) {
