@@ -46,6 +46,9 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * weather): nothing else in the frame sees it off, and it is never saved. Only for the player's own view: the tail
  * camera display's picture, drawn through Veil from a camera of its own outside, keeps its clouds. Never with the
  * {@code cloudlessCabin} setting off.
+ *
+ * <p>The same hold leaves the clouds out of any view, a camera display's too and whatever that setting, from a camera
+ * so high over them that space has faded them away (see {@link SpaceSky}).
  */
 public final class CloudlessCabin {
     /** How often whether the camera is inside a hull in the clouds is looked at again, in milliseconds. */
@@ -99,14 +102,22 @@ public final class CloudlessCabin {
         shutIn = false;
     }
 
-    /** Whether the clouds about to be drawn are to be left out of this view. */
+    /**
+     * Whether the clouds about to be drawn are to be left out of this view: from inside a hull in the cloud layer, or
+     * from a camera so high over them they have faded away (see {@link SpaceSky}).
+     */
     private static boolean hidden(RenderLevelStageEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
         Camera camera = event.getCamera();
+        if (level == null || minecraft.options.getCloudsType() == CloudStatus.OFF) {
+            return false;
+        }
+        if (SpaceSky.cloudsGone(camera)) {
+            return true;
+        }
         // Only the player's own view, not a picture drawn from a camera of its own (the tail camera display's).
-        if (level == null || camera != minecraft.gameRenderer.getMainCamera() || !AerolargeClientConfig.CLOUDLESS_CABIN.get()
-            || minecraft.options.getCloudsType() == CloudStatus.OFF) {
+        if (camera != minecraft.gameRenderer.getMainCamera() || !AerolargeClientConfig.CLOUDLESS_CABIN.get()) {
             return false;
         }
         float clouds = level.effects().getCloudHeight();

@@ -88,6 +88,7 @@ import dev.aerolarge.client.SkyTrails;
 import dev.aerolarge.client.SkywritingBoardRenderer;
 import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
+import dev.aerolarge.client.SpaceSky;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
@@ -111,6 +112,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -178,6 +180,11 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(BlueprintPreview::stage);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
+        NeoForge.EVENT_BUS.addListener(SpaceSky::sky);
+        NeoForge.EVENT_BUS.addListener(SpaceSky::fog);
+        // The clouds' colour faded last of all before they are drawn, and put back first of all after the weather.
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, SpaceSky::fadeClouds);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, SpaceSky::cloudsFaded);
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::heard);

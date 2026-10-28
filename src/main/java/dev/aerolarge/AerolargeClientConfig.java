@@ -17,6 +17,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue DISCO_LIGHTS;
     public static final ModConfigSpec.BooleanValue FLOODLIGHT_LIGHT;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
+    public static final ModConfigSpec.BooleanValue SPACE_SKY;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -80,6 +81,11 @@ public final class AerolargeClientConfig {
                 "With Fast or Fancy graphics the windows never show the clouds behind them anyway; with Fabulous graphics the",
                 "clouds outside the windows go too while the cloud layer passes. Outside the hull the clouds are always drawn.")
             .define("cloudlessCabin", true);
+        SPACE_SKY = builder
+            .comment("Turn the sky to space far over the top of the world, as a rocket climbs: from y 400 it darkens to black by",
+                "y 1,200, the stars come out by day too, the sun burns white, the clouds below fade away and the land fades into a",
+                "blue planet curving away under a glow of air. Off, the sky up there is the game's own.")
+            .define("spaceSky", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")

@@ -1873,13 +1873,20 @@ are as they are lower down, only longer. Her settings screen's sky reaches as hi
 numbers keep apart, and from y 1,000, the edge of space, black space stands over it with its stars, along a thin blue
 glow of air, so you can see where space begins.
 
+As she climbs, the sky turns to space round her. From y 400 it deepens through darker and darker blues to all but black
+by y 1,200; the stars come out from y 500, by day too, and by the edge of space they are all out, more of them than a
+night shows from the ground; the sun burns white, with no sunrise in it; the clouds far below fade away between y 500
+and 800, and the rain and snow with them. The land she rose from fades into a hazy blue planet as it falls behind, its
+rim curving away under the horizon under a thin glow of air, dipping further the higher she goes. Her camera display
+shows it as its cameras see it. The client config's `spaceSky` leaves the sky as the game draws it.
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
-`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, and
-the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open only while a world is
-loaded, from the pause menu's Mods button while playing in single player; they are kept in
+`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
+rocket's `spaceSky`, and the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open
+only while a world is loaded, from the pause menu's Mods button while playing in single player; they are kept in
 `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
@@ -2020,7 +2027,10 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
 on its shaft by a clock both sides share, its `LiftDoorBlock`s and `LiftBoardBlock`s by each landing. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and
-`LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes.
+`LiveryPreview` pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space
+round any camera far over the top of the world, over the game's own sky, the fog the land fades into taking the
+planet's colour, and fades the clouds, which `CloudlessCabin` then leaves out; `EdgeOfSpace` holds the height space
+begins at.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that
