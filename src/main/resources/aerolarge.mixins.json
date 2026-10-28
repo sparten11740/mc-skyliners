@@ -7,7 +7,8 @@
     "GirderBlockMixin"
   ],
   "client": [
-    "AdvancedFboImplMixin"
+    "AdvancedFboImplMixin",
+    "HotAirBurnerMixin"
   ],
   "injectors": {
     "defaultRequire": 0

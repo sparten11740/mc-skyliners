@@ -1,5 +1,6 @@
 package dev.aerolarge;
 
+import dev.aerolarge.client.BurnerSmoke;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Client settings: what each player feels and sees aboard the airliner, and how much their computer draws for it. */
@@ -20,6 +21,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
     public static final ModConfigSpec.BooleanValue MISTY_WINDOWS;
+    public static final ModConfigSpec.EnumValue<BurnerSmoke> BURNER_SMOKE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -95,6 +97,12 @@ public final class AerolargeClientConfig {
             .comment("Aboard a zeppelin flying through cloud or rain, mist her promenade windows over on the inside, to be drawn on by",
                 "holding use with an empty hand on a pane. Each player's mist and drawing are their own.")
             .define("mistyWindows", true);
+        BURNER_SMOKE = builder
+            .comment("How much smoke Create Aeronautics' hot air burners puff, a zeppelin's among them. PARTICLES: as much as the game's",
+                "Particles setting allows, as other particles (all at All, two puffs in three at Decreased, none at Minimal). ALL:",
+                "every puff, whatever the Particles setting, as Aeronautics puffs them; a full-size zeppelin's burners keep some",
+                "1,600 aloft at once, a share of each frame. NONE: no smoke. The burners' flames and embers are drawn either way.")
+            .defineEnum("burnerSmoke", BurnerSmoke.PARTICLES);
         SPEC = builder.build();
     }
 

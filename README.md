@@ -1685,7 +1685,11 @@ in hand. The burners are built with their pilot flames lit, and the relay beside
 engines' creative thrusters (Create Propulsion's, as the airliner's) sit in the engine cars round the propellers' hubs,
 eight pushing ahead and two astern in each, without flames: an airship's engines turn propellers. Without Create
 Aeronautics the cells are made of the zeppelin's own fabric and it is a building; `burnerBlock` and `envelopeBlock` in
-the server config's `zeppelin` section name the blocks it is built with.
+the server config's `zeppelin` section name the blocks it is built with. Create Aeronautics' burners puff smoke as they
+burn, which the game would draw whatever its Particles setting says, a good share of each frame with so many burners
+near: any hot air burner's smoke, hers among them, here follows the Particles setting as other particles do, every puff
+at All, two in three at Decreased and none at Minimal. The client config's `burnerSmoke` sets it otherwise: `ALL` for
+every puff whatever the setting, as Aeronautics puffs them, or `NONE` for none. Their flames are drawn either way.
 
 Its control car is its flight deck, laid out as the Hindenburg's was: the rudder wheel at the front windows, the
 autopilot's control head behind it between the two engine telegraphs, a flight display and the transponder on the low
@@ -1838,9 +1842,10 @@ camera displays through Veil's perspective renderer (Veil comes inside Sable's j
 light at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod
 gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only places Veil is touched, besides the mixin
-`mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil; the other mixin,
-`mixin/GirderBlockMixin`, turns Create's metal girders a quarter turn without losing their beams, which Create's own
-turn does (the gym hall's trusses of an airliner built facing east or west); `CloudlessCabin` leaves the clouds out of
+`mixin/AdvancedFboImplMixin`, which lets a Veil framebuffer borrowing another's depth see its stencil; of the other
+mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn without losing their beams, which Create's
+own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
+`BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer. The zeppelin's geometry lives in `ZeppelinShape`
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its

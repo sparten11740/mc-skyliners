@@ -59,7 +59,8 @@ feature as a player meets it, and its Building section says which classes do wha
   play-testing client mod, is touched only in `compat/blockpilot`, compiled only when Blockpilot's API is in the local
   Maven repository and reached by name from `compat/Blockpilot` behind a `ModList` check. Create Propulsion and Create
   Aeronautics' Simulated and Offroad are named only by registry id in `AerolargeConfig` and resolved in
-  `AirframePalette`. Create and Sable are compiled against, never bundled.
+  `AirframePalette`; Aeronautics' hot air burner is also named by class, as the `@Pseudo` target of
+  `mixin/HotAirBurnerMixin`, which is skipped without it. Create and Sable are compiled against, never bundled.
 - **Geometry.** New airframe geometry is drawn in `AirframeShape`'s metres in the layout's nose-north frame and turns
   with `AirframeBuild.Placement`, never in world coordinates. Block entities that need data once placed get it through
   a `Fitting`, whose offsets turn with the placement. `CabinFitOut` only furnishes open cabin space or replaces cabin
