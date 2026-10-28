@@ -4194,6 +4194,442 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const v = Math.round(255 * (1 - y / 63) ** 2.2);
     return [v, v, v];
   }, 0, 4, 64);
+// The space posters on the rocket's lift shaft (see SpacePosterBlock), one texture for each block of a poster, its
+// column from the left and its row from the top, in the flat, glowing colours of a science illustration and without a
+// word on them: a black hole, its accretion disk running edge-on across it and bent by its gravity into an arch over
+// its top and a loop under it; the solar system, half the sun at its left and the planets in a row, sized to be told
+// apart rather than to scale; a quasar, its blazing core in a tilted disk, its jets running up and down the poster into
+// violet clouds; and Earthrise, a half-lit Earth over the Moon's grey horizon behind a rocket standing on it. Their
+// glows are flat colours in steps, ordered-dithered where one runs into the next, each poster in a thin steel frame.
+// Its back is plain grey board.
+{
+  const hex = (value) => [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+  const ramp = (...values) => values.map(hex);
+  const unit = (value) => Math.max(0, Math.min(1, value));
+  // A 4 by 4 ordered dither: how far a shade must reach past a step at a pixel to take the next one up.
+  const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+  const threshold = (x, y) => (BAYER[y & 3][x & 3] + 0.5) / 16;
+  // The step of a ramp of flat colours for a shade from 0 to 1 at a pixel, dithered between the two steps round it.
+  const shade = (colours, t, x, y) => {
+    const level = unit(t) * (colours.length - 1);
+    const below = Math.floor(level);
+    return colours[Math.min(colours.length - 1, below + (level - below > threshold(x, y) ? 1 : 0))];
+  };
+  const FRAME_LIGHT = hex(0xb6bcc4);
+  const FRAME_SHADE = hex(0x6c727a);
+  // Stars scattered over a poster, the same each run: most a single pixel, the brightest with a little cross, the
+  // faint ones and the crosses' arms dimmed toward a night blue, so they never look like grey specks.
+  const STAR_COLOURS = ramp(0xffffff, 0xd2deff, 0xfff0d8, 0xaab8f0);
+  const FAINT = [0.42, 0.48, 0.66];
+  const ARMS = [0.5, 0.56, 0.74];
+  const dimmed = (colour, by) => colour.map((c, i) => Math.round(c * by[i]));
+  const starfield = (name, width, height, count, crosses) => {
+    reseed(`space_poster_${name}_stars`);
+    const stars = new Map();
+    for (let k = 0; k < count; k++) {
+      const x = Math.floor(random() * width);
+      const y = Math.floor(random() * height);
+      const colour = STAR_COLOURS[Math.floor(random() * STAR_COLOURS.length)];
+      const faint = random() < 0.55;
+      stars.set(y * width + x, faint ? dimmed(colour, FAINT) : colour);
+      if (k < crosses && x > 0 && y > 0 && x < width - 1 && y < height - 1) {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) stars.set((y + dy) * width + x + dx, dimmed(colour, ARMS));
+      }
+    }
+    return (x, y) => stars.get(y * width + x);
+  };
+  // A soft value noise from 0 to 1, the same each run, for land, cloud and the Moon's dust.
+  const lattice = (i, j, salt) => {
+    let h = Math.imul(i * 374761393 + j * 668265263 + salt * 2147483647, 1274126177);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const noise = (u, v, salt) => {
+    const i = Math.floor(u);
+    const j = Math.floor(v);
+    const fu = u - i;
+    const fv = v - j;
+    const su = fu * fu * (3 - 2 * fu);
+    const sv = fv * fv * (3 - 2 * fv);
+    const top = lattice(i, j, salt) + (lattice(i + 1, j, salt) - lattice(i, j, salt)) * su;
+    const bottom = lattice(i, j + 1, salt) + (lattice(i + 1, j + 1, salt) - lattice(i, j + 1, salt)) * su;
+    return top + (bottom - top) * sv;
+  };
+  // A poster so many blocks wide and tall: painted whole at 16 pixels a block, framed, and cut into its blocks.
+  const poster = (name, columns, rows, paint) => {
+    const width = columns * SIZE;
+    const height = rows * SIZE;
+    const framed = (x, y) => {
+      if (x === 0 || y === 0) return x === width - 1 || y === height - 1 ? FRAME_SHADE : FRAME_LIGHT;
+      if (x === width - 1 || y === height - 1) return FRAME_SHADE;
+      return paint(x, y);
+    };
+    for (let column = 0; column < columns; column++) {
+      for (let row = 0; row < rows; row++) {
+        texture(blockOutput, `space_poster_${name}_${column}_${row}`, (x, y) => framed(column * SIZE + x, row * SIZE + y), 0);
+      }
+    }
+  };
+  texture(blockOutput, "space_poster_back", () => [0x9a, 0x9e, 0xa4], 3);
+
+  // The black hole, four blocks by three. Its shadow is a black disc in a thin white photon ring. Its disk lies
+  // edge-on, a band of fire crossing in front of the shadow a little below its middle; the far side of the disk, behind
+  // the shadow, is bent by its gravity up over the top into a broad arch and under the bottom into a thinner loop. The
+  // band burns white-hot in the middle, through orange to a deep red at its ends, and is brighter on the left, the side
+  // coming toward us. Round it a warm violet haze fades into a deep blue-violet sky of stars and soft glows.
+  {
+    const W = 64;
+    const H = 48;
+    const CX = 32;
+    const CY = 23;
+    // The shadow's radius and the photon ring's outer edge, in pixels.
+    const SHADOW = 8.4;
+    const RING = 9.5;
+    // The band: how far it runs out to either side, how thick it is at its middle and how far below the shadow's
+    // middle that is, in pixels.
+    const BAND_LONG = 30;
+    const BAND_HALF = 2.1;
+    const BAND_DROP = 1;
+    // How broad the arch over the top and the loop under the bottom are at their middles, in pixels, and how bright
+    // their inner edges are, as shades of the disk, so the photon ring shows white against them.
+    const ARCH = 7.5;
+    const LOOP = 2.6;
+    const ARCH_BRIGHT = 0.78;
+    const LOOP_BRIGHT = 0.6;
+    // How much brighter the disk's left end is than its middle, and its right end the dimmer.
+    const BEAMING = 0.35;
+    // How far the haze reaches out from the photon ring and from the band before it is half gone, in pixels.
+    const HAZE_RING = 6;
+    const HAZE_BAND = 3;
+    const SKY = ramp(0x090722, 0x0f0b30, 0x171044, 0x22145a, 0x34186c, 0x4c1a70, 0x6a1c68, 0x8a2460);
+    const DISK = ramp(0x4a0c34, 0x7c1430, 0xae2222, 0xd84616, 0xf4781a, 0xffa830, 0xffd468, 0xfff0c0, 0xffffff);
+    const SHADOW_BLACK = hex(0x030208);
+    const PHOTON = hex(0xfff8e8);
+    const GLOWS = [[9, 9, 9], [56, 39, 11], [52, 6, 6], [11, 41, 7]];
+    const star = starfield("black_hole", W, H, 90, 6);
+    const beamed = (dx) => 1 - BEAMING * dx / BAND_LONG;
+    // How bright the band is at a point from the shadow's middle, as a shade of the disk; 0 off it.
+    const band = (dx, dy) => {
+      const along = Math.abs(dx) / BAND_LONG;
+      const half = BAND_HALF * Math.sqrt(Math.max(0, 1 - along * along));
+      const off = Math.abs(dy - BAND_DROP) / Math.max(half, 0.01);
+      if (along > 1 || off > 1) return 0;
+      return unit((1 - along) ** 0.75 * (1 - off * off * 0.4) * beamed(dx) + 0.06);
+    };
+    // How bright the far side bent round the shadow is at a point, across the arch or the loop; 0 off them.
+    const lensed = (r, dx, dy) => {
+      const up = dy < 0;
+      const broad = (up ? ARCH : LOOP) * Math.abs(dy / r) ** 0.75;
+      const across = (r - RING) / Math.max(broad, 0.01);
+      if (across < 0 || across > 1) return 0;
+      return unit((1 - across) ** 0.9 * (up ? ARCH_BRIGHT : LOOP_BRIGHT) * beamed(dx) + 0.06);
+    };
+    poster("black_hole", 4, 3, (x, y) => {
+      const dx = x + 0.5 - CX;
+      const dy = y + 0.5 - CY;
+      const r = Math.hypot(dx, dy);
+      const fire = band(dx, dy);
+      if (fire > 0) return shade(DISK, fire, x, y);
+      if (r <= SHADOW) return SHADOW_BLACK;
+      if (r <= RING) return PHOTON;
+      const bent = lensed(r, dx, dy);
+      if (bent > 0) return shade(DISK, bent, x, y);
+      const haze = 0.85 * 0.5 ** ((r - RING) / HAZE_RING) + 0.5 * 0.5 ** (Math.abs(dy - BAND_DROP) / HAZE_BAND) * unit(1 - Math.abs(dx) / 40);
+      const glow = GLOWS.reduce((most, [gx, gy, size]) => Math.max(most, 1 - Math.hypot(x - gx, y - gy) / size), 0);
+      const sky = 0.08 + y / H * 0.14 + unit(glow) * 0.28 + haze;
+      return (haze < 0.3 ? star(x, y) : null) ?? shade(SKY, sky, x, y);
+    });
+  }
+
+  // The solar system, five blocks by two: half the sun at the left, cut by the frame, in a ring of corona, then
+  // Mercury, Venus, Earth and Mars, the asteroid belt, banded Jupiter with its red spot, Saturn in its rings, Uranus
+  // and Neptune, each lit from the sun's side, their orbits dotted arcs round it on a deep blue sky of stars.
+  {
+    const W = 80;
+    const H = 32;
+    const MIDDLE = 16;
+    // The sun's middle, just past the frame, and its radius, in pixels, and how far its corona reaches past it.
+    const SUN_X = -1.5;
+    const SUN = 14;
+    const CORONA = 5;
+    const SKY = ramp(0x070b1e, 0x0b1028, 0x101634);
+    const ORBIT = hex(0x18204a);
+    const SUN_FACE = ramp(0xd8381a, 0xf0661c, 0xff962a, 0xffc04a, 0xffe48a, 0xfff6d2);
+    const CORONA_GLOW = ramp(0x101634, 0x3a1a34, 0x6a2a2a, 0xa8441c);
+    // Each planet: the column its left edge is in and how many pixels across it is, its lit and its shaded colour.
+    const PLANETS = [
+      [14, 3, 0xa8a098, 0x5c5652],
+      [19, 5, 0xecc88a, 0x96744a],
+      [25, 5, 0x3c7ee8, 0x1a3a7a],
+      [31, 4, 0xd8622c, 0x7a3016],
+      [38, 11, 0xe6cca0, 0x8a6a48],
+      [53, 9, 0xe2bc72, 0x8a6c3c],
+      [67, 5, 0x9ce2ea, 0x4a8a9a],
+      [73, 5, 0x4a6ee8, 0x22327a],
+    ];
+    const EARTH = 2;
+    const JUPITER = 4;
+    const SATURN = 5;
+    const JUPITER_BANDS = ramp(0xe6cca0, 0xc4905c, 0xf0e0c0, 0xb07848, 0xe6cca0);
+    const RED_SPOT = hex(0xc4482a);
+    const LAND = hex(0x4aa04a);
+    const CLOUD = hex(0xf0f4f8);
+    // Saturn's rings: how far out they reach and where they begin, where their darker outer band begins, how open they
+    // are seen and how far they are tipped, in pixels and radians.
+    const RING_OUT = 7.6;
+    const RING_IN = 5.1;
+    const RING_OUTER = 6.5;
+    const RING_OPEN = 0.5;
+    const RING_TIP = -0.2;
+    const RINGS = hex(0xf2e4bc);
+    const RING_SHADE = hex(0xb4a074);
+    const BELT = [[35, 9], [37, 13], [34, 18], [36, 23], [35, 26], [37, 6], [36, 15], [34, 28], [36, 11], [37, 20], [35, 3], [34, 7], [37, 25], [36, 2]];
+    const star = starfield("solar_system", W, H, 46, 3);
+    // A planet's middle: across a pixel's middle if it is an odd number of pixels across, between two if even, and so
+    // down; and the radius its disc is cut to, a little inside its half-width, so a small one is round, not square.
+    const middle = ([left, across]) => [left + across / 2, MIDDLE + (across % 2) / 2];
+    const cut = ([, across]) => across / 2 - (across % 2 === 1 ? 0.2 : 0.1);
+    // How a planet's disc looks at a point from its middle: its own markings, lit on the sun's side.
+    const planetAt = (index, u, v, x, y) => {
+      const [, across, lit, dark] = PLANETS[index];
+      const radius = across / 2;
+      let colour = hex(lit);
+      if (index === JUPITER) colour = JUPITER_BANDS[Math.min(4, Math.floor((v / radius + 1) * 2.5))];
+      if (index === JUPITER && Math.hypot((u - 1.5) / 1.6, v - 1.6) < 1) colour = RED_SPOT;
+      if (index === EARTH && noise(u * 1.4 + 3, v * 1.4 + 1, 7) > 0.58) colour = LAND;
+      if (index === EARTH && Math.abs(v + 1.5) < 0.5 && u < 1) colour = CLOUD;
+      const shaded = hex(dark).map((c, i) => Math.round((c + colour[i] * 0.35) / 1.35));
+      return u / radius > 0.15 + threshold(x, y) * 0.4 ? shaded : colour;
+    };
+    // Saturn's rings at a point from its middle: which band of them is there and whether it is the half behind the
+    // planet, or nothing.
+    const ringAt = (u, v) => {
+      const along = u * Math.cos(RING_TIP) + v * Math.sin(RING_TIP);
+      const up = -u * Math.sin(RING_TIP) + v * Math.cos(RING_TIP);
+      const out = Math.hypot(along, up / RING_OPEN);
+      if (out < RING_IN || out > RING_OUT) return null;
+      return { colour: out > RING_OUTER ? RING_SHADE : RINGS, behind: up < 0 };
+    };
+    const planetHere = (px, py) => PLANETS.findIndex((planet) => {
+      const [cx, cy] = middle(planet);
+      return Math.hypot(px - cx, py - cy) <= cut(planet);
+    });
+    const orbit = (sun, x, y) => (x + y) % 2 === 0 && PLANETS.some((planet) => Math.abs(sun - (middle(planet)[0] - SUN_X)) < 0.5);
+    poster("solar_system", 5, 2, (x, y) => {
+      const px = x + 0.5;
+      const py = y + 0.5;
+      const sun = Math.hypot(px - SUN_X, py - MIDDLE);
+      if (sun <= SUN) return shade(SUN_FACE, 1 - (sun / SUN) ** 2 * 0.95 + (noise(px * 0.9, py * 0.9, 3) - 0.5) * 0.25, x, y);
+      const [sx, sy] = middle(PLANETS[SATURN]);
+      const ring = ringAt(px - sx, py - sy);
+      if (ring && !ring.behind) return ring.colour;
+      const planet = planetHere(px, py);
+      if (planet >= 0) {
+        const [cx, cy] = middle(PLANETS[planet]);
+        return planetAt(planet, px - cx, py - cy, x, y);
+      }
+      if (ring) return ring.colour;
+      if (BELT.some(([bx, by]) => bx === x && by === y)) return hex(0x8a847c);
+      if (sun <= SUN + CORONA) return shade(CORONA_GLOW, 1 - (sun - SUN) / CORONA, x, y);
+      return star(x, y) ?? (orbit(sun, x, y) ? ORBIT : shade(SKY, y / H * 0.6 + unit(1 - (sun - SUN) / 30) * 0.4, x, y));
+    });
+  }
+
+  // The quasar, three blocks by four, upright: a blazing white core with a four-pointed glint, in a disk tilted across
+  // it, white-hot within and red at its rim; its two jets run out of the core up and down the poster, blue-white
+  // fading to violet, each ending in a billowing violet cloud, brightest where the jet strikes it. Far off behind it, a
+  // few small galaxies among the stars.
+  {
+    const W = 48;
+    const H = 64;
+    // The core's middle, on a pixel's middle so its glint runs down a single row and column.
+    const CX = 23.5;
+    const CY = 31.5;
+    // How far the disk is tilted from level, in radians, and its size and flatness, in pixels.
+    const TILT = -0.26;
+    const DISK_IN = 2.5;
+    const DISK_OUT = 14;
+    const FLAT = 0.24;
+    // The jets: how far out they run from the core, and how wide they are at it and at their ends, in pixels.
+    const JET = 20;
+    const JET_ROOT = 0.9;
+    const JET_END = 2.4;
+    // The core's blaze, its glow and its glint, in pixels.
+    const CORE = 2.3;
+    const GLOW = 9;
+    const GLINT = 11;
+    const SKY = ramp(0x05061a, 0x090a24, 0x0e0e30);
+    const DISK = ramp(0x5a1030, 0x9a1c28, 0xd2401a, 0xf6801e, 0xffbc40, 0xffe490, 0xfffbe8);
+    const JETS = ramp(0x241a5e, 0x3c2c9a, 0x4c5ad8, 0x62a0f2, 0xa8e0ff, 0xf0fcff);
+    const LOBE = ramp(0x24145a, 0x3c1a78, 0x5c2496, 0x8434b0, 0xb05cc8, 0xe4a4ec);
+    const CORE_GLOW = ramp(0x0e0e30, 0x1e2a6a, 0x3a5ab8, 0x7ab4f0, 0xd0f0ff, 0xffffff);
+    const GALAXY = hex(0x3a2e66);
+    const GALAXY_CORE = hex(0xc8b8f0);
+    // The clouds: each puff's middle along its jet, out from the core, and across it, and its size, in pixels; they
+    // run together where they meet, as soft clouds do.
+    const PUFFS = [[23, 0, 3.2], [25.5, -2.8, 2.8], [25.8, 2.8, 3], [21.4, -3.6, 2.4], [21.6, 3.8, 2.4], [27.6, 0.2, 2.6], [23.4, -5.4, 2], [24, 5.6, 2.1]];
+    // Each galaxy: its middle and how far it is turned, in radians.
+    const GALAXIES = [[8, 9, 0.5], [40, 51, -0.8], [39, 16, 1.2], [8, 55, -0.3]];
+    const star = starfield("quasar", W, H, 60, 4);
+    const along = [-Math.sin(TILT), Math.cos(TILT)];
+    const level = [Math.cos(TILT), Math.sin(TILT)];
+    // How thick the clouds are at a point, out from the core along a jet and across it: past a half, it is cloud.
+    const cloud = (s, t) => {
+      const reach = Math.abs(s);
+      const across = t * Math.sign(s);
+      return PUFFS.reduce((sum, [ps, pt, size]) => sum + Math.exp(-((reach - ps) ** 2 + (across - pt) ** 2) / (size * size)), 0);
+    };
+    // Whether a point is a far galaxy's: its bright middle, or the haze round it, or neither.
+    const galaxy = (x, y) => {
+      for (const [gx, gy, turn] of GALAXIES) {
+        if (x === gx && y === gy) return GALAXY_CORE;
+        const u = (x - gx) * Math.cos(turn) + (y - gy) * Math.sin(turn);
+        const v = -(x - gx) * Math.sin(turn) + (y - gy) * Math.cos(turn);
+        if (Math.hypot(u / 2.6, v / 1.1) <= 1) return GALAXY;
+      }
+      return null;
+    };
+    const diskShade = (inPlane) => 1 - (inPlane - DISK_IN) / (DISK_OUT - DISK_IN) * 0.95;
+    poster("quasar", 3, 4, (x, y) => {
+      const dx = x + 0.5 - CX;
+      const dy = y + 0.5 - CY;
+      const r = Math.hypot(dx, dy);
+      const s = dx * along[0] + dy * along[1];
+      const t = dx * level[0] + dy * level[1];
+      const inPlane = Math.hypot(t, s / FLAT);
+      const disk = inPlane >= DISK_IN && inPlane <= DISK_OUT;
+      if (r <= CORE) return CORE_GLOW[5];
+      if (disk && s > 0) return shade(DISK, diskShade(inPlane), x, y);
+      const glint = Math.max(unit(1 - Math.abs(dx) / GLINT) * (Math.abs(dy) < 0.6), unit(1 - Math.abs(dy) / GLINT) * (Math.abs(dx) < 0.6));
+      const glow = Math.max(unit(1 - r / GLOW) ** 1.4, glint * 0.85);
+      if (glow > 0.25) return shade(CORE_GLOW, glow, x, y);
+      if (disk) return shade(DISK, diskShade(inPlane), x, y);
+      const reach = Math.abs(s);
+      const wide = JET_ROOT + (JET_END - JET_ROOT) * reach / JET;
+      if (reach <= JET && Math.abs(t) <= wide) return shade(JETS, (1 - reach / JET) ** 0.7 * (1 - (t / wide) ** 2 * 0.5) + 0.12, x, y);
+      const thick = cloud(s, t);
+      const struck = Math.exp(-((reach - JET - 1) ** 2 + t * t) / 9);
+      if (thick > 0.5) return shade(LOBE, unit((thick - 0.5) / 1.6) * 0.62 + struck * 0.55 + 0.08, x, y);
+      return galaxy(x, y) ?? star(x, y) ?? shade(SKY, glow * 2 + y / H * 0.3, x, y);
+    });
+  }
+
+  // Earthrise, four blocks by three: the Moon's grey, cratered horizon across the bottom and the Earth rising behind
+  // it, lit from the right, blue sea, green and sandy land and swirls of white cloud on its day side, a few city lights
+  // on its night side and a thin blue rim of air round its lit edge; and in front of it the rocket, standing on her
+  // fins on the Moon, a dark silhouette lit down her sunward edge, red at her nose, a warm light in her porthole and her
+  // shadow stretching away over the dust.
+  {
+    const W = 64;
+    const H = 48;
+    // The Earth's middle and radius, in pixels, and where its day side begins, from its middle out to its left limb.
+    const EX = 34;
+    const EY = 20;
+    const EARTH = 13;
+    const TERMINATOR = -0.12;
+    // The horizon: its highest row, the column it is highest at, how far it falls away over the width, in pixels.
+    const HORIZON = 32;
+    const HORIZON_TOP = 26;
+    const HORIZON_FALL = 5;
+    // The rocket, drawn from her nose down to her feet: # her, o her porthole. She stands with the column of her middle
+    // over this one, her feet on the horizon.
+    const ROCKET = [
+      "....#....",
+      "....#....",
+      "...###...",
+      "...###...",
+      "...###...",
+      "...#o#...",
+      "...###...",
+      "...###...",
+      "...###...",
+      "...###...",
+      "..#####..",
+      ".#######.",
+      "##.###.##",
+      "#...#...#",
+    ];
+    const ROCKET_X = 40;
+    // How many of her rows from the top are her red nose, and how far her shadow reaches over the dust to her left, in
+    // pixels.
+    const NOSE = 4;
+    const SHADOW = 11;
+    const SKY = ramp(0x03040a, 0x060812, 0x0a0d1c);
+    const SEA = ramp(0x143680, 0x1e4ea8, 0x2a66c8, 0x3c80e0);
+    const LAND = ramp(0x2e7a36, 0x4a9644, 0x7aa04e, 0xb8a46a);
+    const CLOUD = hex(0xf4f8fc);
+    const CLOUD_EDGE = hex(0xbcd0e6);
+    const NIGHT = ramp(0x080c1c, 0x0c1630, 0x122048);
+    const CITY = hex(0xd8b058);
+    const AIR = hex(0x8ccaff);
+    const DUST = ramp(0x2a2a30, 0x3e3e46, 0x54545c, 0x6c6c74, 0x86868e, 0xa2a2aa, 0xbcbcc4);
+    const HULL = hex(0x0a0b10);
+    const HULL_EDGE = hex(0xb8bcc4);
+    const NOSE_EDGE = hex(0xd84a3a);
+    const PORTHOLE = hex(0xffd878);
+    // The craters: each one's middle and radius across, in pixels; they look flatter the nearer the horizon.
+    const CRATERS = [[9, 41, 5.5], [29, 44.5, 4], [53, 41.5, 5], [36, 36.5, 2.6], [17, 35.5, 2.2], [59, 36, 1.8], [4, 36.5, 1.8]];
+    const star = starfield("earthrise", W, H, 26, 2);
+    const horizon = (x) => HORIZON + ((x + 0.5 - HORIZON_TOP) / (W / 2 + 6)) ** 2 * HORIZON_FALL;
+    const foot = Math.floor(horizon(ROCKET_X));
+    const top = foot - ROCKET.length + 1;
+    const half = Math.floor(ROCKET[0].length / 2);
+    // What of the rocket is at a pixel: her dark side, her lit right edge, her porthole, or nothing.
+    const rocket = (x, y) => {
+      const row = ROCKET[y - top];
+      const at = row?.[x - ROCKET_X + half];
+      if (at === undefined || at === ".") return null;
+      if (at === "o") return PORTHOLE;
+      if (row[x - ROCKET_X + half + 1] === "#") return HULL;
+      return y - top < NOSE ? NOSE_EDGE : HULL_EDGE;
+    };
+    const earthAt = (u, v, x, y) => {
+      const z = Math.sqrt(Math.max(0, 1 - u * u - v * v));
+      const day = u + 0.1 * v - TERMINATOR;
+      const land = noise(u * 1.9 + 2.2, v * 1.9 + 6.1, 13);
+      if (day < (threshold(x, y) - 0.5) * 0.16) {
+        return land > 0.58 && lattice(x, y, 31) > 0.88 ? CITY : shade(NIGHT, 0.3 + unit(1 + day * 2.5) * 0.7, x, y);
+      }
+      const swirl = noise(u * 2.4 + 14, v * 4.2 + 5 + Math.sin(u * 3) * 0.6, 21);
+      if (swirl > 0.64) return CLOUD;
+      if (swirl > 0.6) return CLOUD_EDGE;
+      if (land > 0.56) return shade(LAND, (land - 0.56) * 4, x, y);
+      return shade(SEA, z * 0.85 + unit(day) * 0.25, x, y);
+    };
+    // How bright the dust is in a crater at a point: the sun being to the right, its far right inner wall in shadow,
+    // its left inner wall and its right outer rim lit; null outside every crater.
+    const craterAt = (px, py) => {
+      for (const [cx, cy, radius] of CRATERS) {
+        const flat = 0.3 + (cy - HORIZON) / (H - HORIZON) * 0.3;
+        const u = (px - cx) / radius;
+        const v = (py - cy) / (radius * flat);
+        const out = Math.hypot(u, v);
+        if (out <= 1) return Math.hypot(u + 0.4, v) <= 1 ? 0.5 : 0.1;
+        if (out <= 1.35 && u > 0.2) return 0.92;
+      }
+      return null;
+    };
+    const ground = (x, y, px, py) => {
+      const crater = craterAt(px, py);
+      if (crater !== null) return shade(DUST, crater, x, y);
+      if (y === foot && x < ROCKET_X - half && x >= ROCKET_X - half - SHADOW) return DUST[1];
+      const depth = (py - horizon(x)) / (H - HORIZON);
+      return shade(DUST, 0.8 - depth * 0.42 + (noise(px * 0.22, py * 0.6, 5) - 0.5) * 0.18, x, y);
+    };
+    poster("earthrise", 4, 3, (x, y) => {
+      const px = x + 0.5;
+      const py = y + 0.5;
+      const ship = rocket(x, y);
+      if (ship) return ship;
+      if (py >= horizon(x)) return ground(x, y, px, py);
+      const u = (px - EX) / EARTH;
+      const v = (py - EY) / EARTH;
+      const r = Math.hypot(u, v);
+      if (r <= 1) return earthAt(u, v, x, y);
+      if (r <= 1 + 1.1 / EARTH && u + 0.1 * v > TERMINATOR + 0.1) return AIR;
+      return star(x, y) ?? shade(SKY, py / H, x, y);
+    });
+  }
 }
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

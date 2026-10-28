@@ -3557,6 +3557,60 @@ function ledStripLang() {
     "block.aerolarge.led_panel": "LED Panel",
     "block.aerolarge.led_console": "LED Console",
   };
+// The rocket's space posters (see SpacePosterBlock), each so many blocks wide and tall, as SpacePoster has them. Each
+// block of a poster is a sheet of board a pixel thick, a quarter pixel clear of the back of its block, its piece of the
+// picture on its front and plain board behind it and round its edges, drawn evenly lit whichever way it faces.
+// Modelled facing north, turned for the other ways; a state past the edge of its poster, which nothing places, shows
+// the poster's nearest piece. They give back nothing.
+const SPACE_POSTERS = { black_hole: [4, 3], solar_system: [5, 2], quasar: [3, 4], earthrise: [4, 3] };
+{
+  const back = `${ID}:block/space_poster_back`;
+  const mostColumns = Math.max(...Object.values(SPACE_POSTERS).map(([columns]) => columns));
+  const mostRows = Math.max(...Object.values(SPACE_POSTERS).map(([, rows]) => rows));
+  const pieceName = (poster, column, row) => `space_poster_${poster}_${column}_${row}`;
+  const variants = {};
+  for (const [poster, [columns, rows]] of Object.entries(SPACE_POSTERS)) {
+    for (let piece = 0; piece < columns * rows; piece++) {
+      const name = pieceName(poster, piece % columns, Math.floor(piece / columns));
+      const front = `${ID}:block/${name}`;
+      write(`assets/${ID}/models/block/${name}.json`, {
+        parent: "minecraft:block/block",
+        ambientocclusion: false,
+        textures: { front, back, particle: front },
+        elements: [{
+          from: [0, 0, 14.75],
+          to: [16, 16, 15.75],
+          shade: false,
+          faces: {
+            north: { uv: [0, 0, 16, 16], texture: "#front" },
+            south: { uv: [0, 0, 16, 16], texture: "#back" },
+            east: { uv: [0, 0, 1, 16], texture: "#back" },
+            west: { uv: [15, 0, 16, 16], texture: "#back" },
+            up: { uv: [0, 0, 16, 1], texture: "#back" },
+            down: { uv: [0, 15, 16, 16], texture: "#back" },
+          },
+        }],
+      });
+    }
+    for (let state = 0; state < mostColumns * mostRows; state++) {
+      const column = state % mostColumns;
+      const row = Math.floor(state / mostColumns);
+      const model = `${ID}:block/${pieceName(poster, Math.min(column, columns - 1), Math.min(row, rows - 1))}`;
+      for (const [facing, y] of Object.entries(yRot)) {
+        variants[`column=${column},facing=${facing},poster=${poster},row=${row}`] = { model, y };
+      }
+    }
+  }
+  write(`assets/${ID}/blockstates/space_poster.json`, { variants });
+  cubes.space_poster = null;
+}
+// The posters are hung on the rocket rather than built into her: light like the rest, but no part of her frame, and
+// breakable.
+function spacePosterFittings() {
+  return ["space_poster"];
+}
+function spacePosterLang() {
+  return { "block.aerolarge.space_poster": "Space Poster" };
 }
 
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
@@ -5928,6 +5982,7 @@ FITTINGS.push(...planterFittings());
 FITTINGS.push(...barFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
+FITTINGS.push(...spacePosterFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -6643,6 +6698,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...shipsColoursLang(),
   ...christeningLang(),
   ...flankScreenLang(),
+  ...spacePosterLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

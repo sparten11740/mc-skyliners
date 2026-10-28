@@ -1843,6 +1843,14 @@ window. The techno club has the dance floor's black glass tiles all over its flo
 four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round her left side with
 stools. The observation deck, her highest story, sees all round through its band of smoked glass: a lookout glass
 looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out.
+Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
+on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
+in front of it; in the bunk room, the fourth story, the solar system, half the sun and its planets in a row, Saturn in
+its rings; in the lab, the eighth, a black hole, its burning disk bent over it and under it; and on the observation
+deck at the top, a quasar, its jets running up and down the poster into violet clouds. Each hangs on the back of the
+shaft, or on its side where something stands in the way there, and flies with her as a part of her; a smaller rocket,
+with fewer stories, has only the posters for the stories it has. Nothing bumps into one; break any part of a poster
+and the whole of it comes down, giving back nothing. The server config's `rocket.posters` leaves them out.
 
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
@@ -2055,6 +2063,8 @@ begins at, and welcomes everyone aboard to space as she climbs past it.
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their
 modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
 `LedControlsArt`.
+`RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
+a picture, the pictures drawn by `tools/generate_textures.mjs`.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

@@ -202,6 +202,7 @@ import dev.aerolarge.block.SignalFlareBlockEntity;
 import dev.aerolarge.block.SlideControlBlock;
 import dev.aerolarge.block.SlideControlBlockEntity;
 import dev.aerolarge.block.SlideStepBlock;
+import dev.aerolarge.block.SpacePosterBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
@@ -1487,6 +1488,16 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
     public static final DeferredItem<BlockItem> MODEL_ROCKET_ITEM = ITEMS.registerSimpleBlockItem(MODEL_ROCKET);
+
+    /**
+     * The space posters on the rocket's lift shaft (see {@link SpacePosterBlock}), each a few blocks of thin board that
+     * nothing collides with, quick to tear down; placed only by her blueprint, so no item.
+     */
+    public static final DeferredBlock<SpacePosterBlock> SPACE_POSTER = BLOCKS.registerBlock(
+        "space_poster", SpacePosterBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SpacePosterBlock.PAPER).noCollission().noOcclusion()
+            .noLootTable().pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+    );
     /**
      * The duty-free counter, where the emeralds passengers pay as fares buy toys, snacks and souvenirs, its showcase
      * softly lit; the ding of its shop bell as it opens, and its till ringing up a sale.

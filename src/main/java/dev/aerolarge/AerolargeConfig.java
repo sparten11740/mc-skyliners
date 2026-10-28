@@ -47,6 +47,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_ROOMS;
     public static final ModConfigSpec.IntValue ROCKET_CEILING;
     public static final ModConfigSpec.BooleanValue LED_STRIPS;
+    public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -447,6 +448,12 @@ public final class AerolargeConfig {
                 "already built keep theirs."
             )
             .define("ledStrips", true);
+        ROCKET_POSTERS = builder
+            .comment(
+                "Whether a rocket is built with space posters on her glass lift shaft: Earthrise on her entry story, the solar system in",
+                "her bunk room, a black hole in her lab and a quasar on her observation deck. Rockets already built keep theirs."
+            )
+            .define("posters", true);
         builder.pop();
 
         SPEC = builder.build();
