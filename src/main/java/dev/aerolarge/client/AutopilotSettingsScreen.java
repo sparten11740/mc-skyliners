@@ -10,6 +10,7 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Settings;
 import dev.aerolarge.autopilot.Craft;
+import dev.aerolarge.autopilot.EdgeOfSpace;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.UnstickAirliner;
@@ -170,6 +171,27 @@ public class AutopilotSettingsScreen extends Screen {
     private static final int HEIGHT_LONG = 5;
     private static final int HEIGHT_SHORT = 3;
     private static final int HEIGHT_NUMBER_GAP = 7;
+    /**
+     * How far apart the sky's numbers are at the least, in pixels, and the multiples of the flight deck's step between
+     * them it may take instead, the least that keeps them that far apart: a rocket's sky, reaching up into space, is
+     * numbered more sparsely than an airliner's, its ticks as many to a number.
+     */
+    private static final int NUMBERS_APART = PanelArt.GLYPH_HEIGHT + 3;
+    private static final int[] NUMBERS_SPREAD = {1, 2, 5, 10, 20};
+    /**
+     * Space over a rocket's sky: as near black as the sky goes up there, its stars, bright and faint, and the thin blue
+     * glow of the air along its foot, as the planet's rim shows it seen from space, and how far that glow spreads down
+     * into the sky, in pixels.
+     */
+    private static final int SPACE = 0xFF020306;
+    private static final int STAR = 0xFFF2F2F2;
+    private static final int FAINT_STAR = 0xFF7A86A3;
+    private static final int SPACE_GLOW = 0xFF6FB4FF;
+    private static final int SPACE_GLOW_FADING = 0x806FB4FF;
+    private static final int SPACE_GLOW_DEPTH = 3;
+    /** Where space's stars are, as shares of its width and its height; every other one is faint. */
+    private static final float[][] STARS = {{0.08F, 0.55F}, {0.21F, 0.18F}, {0.33F, 0.78F}, {0.42F, 0.36F}, {0.51F, 0.9F},
+        {0.6F, 0.12F}, {0.69F, 0.62F}, {0.8F, 0.3F}, {0.88F, 0.82F}, {0.36F, 0.04F}};
     /** How bright the airliner where a click in the sky would put it is, as a share of the one set. */
     private static final float SKY_GHOST = 0.55F;
     /** How loud the notes and the whoosh of setting the autopilot here are, as a share of full. */
@@ -984,9 +1006,10 @@ public class AutopilotSettingsScreen extends Screen {
     }
 
     /**
-     * The height: the sky from the side, darkening upward over the earth and its grass, heights ticked and numbered up
-     * its side; the airliner in green at the height set, faintly at the height now, a dotted climb or descent between,
-     * and a ghost of it where the sky is pointed at.
+     * The height: the sky from the side, darkening upward over the earth and its grass, and for a rocket, which climbs
+     * so high, black space over it from the edge of space up; heights ticked and numbered up its side; the airliner in
+     * green at the height set, faintly at the height now, a dotted climb or descent between, and a ghost of it where the
+     * sky is pointed at.
      */
     private final class SkyColumn extends Gauge {
         SkyColumn(int x, int y) {
@@ -1016,25 +1039,71 @@ public class AutopilotSettingsScreen extends Screen {
             return Mth.lerp(share, altitude.min(), altitude.max());
         }
 
+        /**
+         * How many blocks of height come between the sky's numbers: the flight deck's step, or as many times more as
+         * keeps them {@link #NUMBERS_APART}, on a sky reaching so high they would crowd each other.
+         */
+        private int numberedEvery() {
+            double pixels = (lowest() - highest()) / (double) Math.max(1, altitude.max() - altitude.min());
+            for (int times : NUMBERS_SPREAD) {
+                if (AutopilotDeskArt.HEIGHT_NUMBER * times * pixels >= NUMBERS_APART) {
+                    return AutopilotDeskArt.HEIGHT_NUMBER * times;
+                }
+            }
+            return AutopilotDeskArt.HEIGHT_NUMBER * NUMBERS_SPREAD[NUMBERS_SPREAD.length - 1];
+        }
+
+        /** The sky, the earth under it and its grass, and space over it, if it reaches the edge of space. */
+        private void drawSky(GuiGraphics graphics, int x0, int x1) {
+            int top = getY() + SKY_FRAME;
+            int space = altitude.max() > EdgeOfSpace.HEIGHT ? yOf(EdgeOfSpace.HEIGHT) : top;
+            graphics.fillGradient(x0, space, x1, ground(), AutopilotDeskArt.SKY_HIGH, AutopilotDeskArt.SKY_LOW);
+            if (space > top) {
+                drawSpace(graphics, x0, top, x1, space);
+            }
+            graphics.fill(x0, ground(), x1, getBottom() - SKY_FRAME, AutopilotDeskArt.EARTH);
+            graphics.fill(x0, ground(), x1, ground() + 1, AutopilotDeskArt.GRASS);
+        }
+
+        /**
+         * Space, from its top down to the edge of space: a picture needing no words of where space begins, black and
+         * starry over the glow of the air along its foot.
+         */
+        private void drawSpace(GuiGraphics graphics, int x0, int top, int x1, int edge) {
+            graphics.fill(x0, top, x1, edge, SPACE);
+            for (int star = 0; star < STARS.length; star++) {
+                int x = x0 + Math.round(STARS[star][0] * (x1 - x0 - 1));
+                int y = top + Math.round(STARS[star][1] * Math.max(0, edge - top - 2));
+                graphics.fill(x, y, x + 1, y + 1, star % 2 == 0 ? STAR : FAINT_STAR);
+            }
+            graphics.fill(x0, edge - 1, x1, edge, SPACE_GLOW);
+            graphics.fillGradient(x0, edge, x1, edge + SPACE_GLOW_DEPTH, SPACE_GLOW_FADING, SPACE_GLOW_FADING & 0xFFFFFF);
+        }
+
+        /** The heights up the sky's side: a tick every so many blocks, the numbered ones longer, and their numbers. */
+        private void drawScale(GuiGraphics graphics, int x1) {
+            int numbered = numberedEvery();
+            int tick = numbered * AutopilotDeskArt.HEIGHT_TICK / AutopilotDeskArt.HEIGHT_NUMBER;
+            int first = (int) Math.ceil(altitude.min() / (double) tick) * tick;
+            for (int each = first; each <= altitude.max(); each += tick) {
+                int length = each % numbered == 0 ? HEIGHT_LONG : HEIGHT_SHORT;
+                graphics.fill(x1 - length, yOf(each), x1, yOf(each) + 1, AutopilotDeskArt.HEIGHT_TICKS);
+            }
+            int firstNumber = (int) Math.ceil(altitude.min() / (double) numbered) * numbered;
+            for (int each = firstNumber; each <= altitude.max(); each += numbered) {
+                String number = String.valueOf(each);
+                int y = yOf(each) - PanelArt.GLYPH_HEIGHT / 2;
+                graphics.drawString(font, number, x1 - HEIGHT_NUMBER_GAP - font.width(number), y, AutopilotDeskArt.HEIGHT_NUMBERS, false);
+            }
+        }
+
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             PanelArt.drawTile(graphics, getX(), getY(), getRight(), getBottom(), PanelArt.GREEN, isHovered() ? Look.HOT : Look.IDLE, false);
             int x0 = getX() + SKY_FRAME;
             int x1 = getRight() - SKY_FRAME;
-            graphics.fillGradient(x0, getY() + SKY_FRAME, x1, ground(), AutopilotDeskArt.SKY_HIGH, AutopilotDeskArt.SKY_LOW);
-            graphics.fill(x0, ground(), x1, getBottom() - SKY_FRAME, AutopilotDeskArt.EARTH);
-            graphics.fill(x0, ground(), x1, ground() + 1, AutopilotDeskArt.GRASS);
-            int first = (int) Math.ceil(altitude.min() / (double) AutopilotDeskArt.HEIGHT_TICK) * AutopilotDeskArt.HEIGHT_TICK;
-            for (int each = first; each <= altitude.max(); each += AutopilotDeskArt.HEIGHT_TICK) {
-                int length = each % AutopilotDeskArt.HEIGHT_NUMBER == 0 ? HEIGHT_LONG : HEIGHT_SHORT;
-                graphics.fill(x1 - length, yOf(each), x1, yOf(each) + 1, AutopilotDeskArt.HEIGHT_TICKS);
-            }
-            int firstNumber = (int) Math.ceil(altitude.min() / (double) AutopilotDeskArt.HEIGHT_NUMBER) * AutopilotDeskArt.HEIGHT_NUMBER;
-            for (int each = firstNumber; each <= altitude.max(); each += AutopilotDeskArt.HEIGHT_NUMBER) {
-                String number = String.valueOf(each);
-                int y = yOf(each) - PanelArt.GLYPH_HEIGHT / 2;
-                graphics.drawString(font, number, x1 - HEIGHT_NUMBER_GAP - font.width(number), y, AutopilotDeskArt.HEIGHT_NUMBERS, false);
-            }
+            drawSky(graphics, x0, x1);
+            drawScale(graphics, x1);
             int planeX = x0 + SKY_AIRLINER_X;
             int set = yOf(altitude.value());
             for (int dash = x0; dash < x1 - 6; dash += 3) {

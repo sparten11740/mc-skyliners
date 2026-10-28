@@ -45,6 +45,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue CAMERA_DISPLAY;
     public static final ModConfigSpec.BooleanValue ROCKET_LIFT;
     public static final ModConfigSpec.BooleanValue ROCKET_ROOMS;
+    public static final ModConfigSpec.IntValue ROCKET_CEILING;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -430,6 +431,13 @@ public final class AerolargeConfig {
                 "her stories are bare. Rockets already built keep theirs."
             )
             .define("rooms", true);
+        ROCKET_CEILING = builder
+            .comment(
+                "How high a rocket's autopilot can be set to climb, in world blocks: far over the top of the world, where there is",
+                "only sky and it turns to space as she climbs (black by y 1,200). The airliner and the zeppelin stay under the top",
+                "of the world."
+            )
+            .defineInRange("ceiling", 1400, 100, 4000);
         builder.pop();
 
         SPEC = builder.build();

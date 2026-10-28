@@ -2032,11 +2032,15 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * The highest height it can be set to hold: an airliner's {@link #highestAltitude}, and an assembled zeppelin's no
-     * higher than its burners can lift it (see {@link ZeppelinPilot#ceiling}), so it is never sent climbing for good
-     * at full burn toward a height it never reaches.
+     * The highest height it can be set to hold: an airliner's {@link #highestAltitude}; a rocket's her own, far over the
+     * top of the world, where there is only sky to climb through ({@link AerolargeConfig#ROCKET_CEILING}); and an
+     * assembled zeppelin's no higher than its burners can lift it (see {@link ZeppelinPilot#ceiling}), so it is never
+     * sent climbing for good at full burn toward a height it never reaches.
      */
     private double ceiling(Level level) {
+        if (craft == Craft.ROCKET) {
+            return AerolargeConfig.ROCKET_CEILING.get();
+        }
         double highest = highestAltitude(level);
         SableFlight.State state = craft == Craft.ZEPPELIN ? SableFlight.read(this, nose()) : null;
         double floats = state == null ? Double.NaN : zeppelin.ceiling(state, SableFlight.mass(this));

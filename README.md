@@ -1867,6 +1867,12 @@ once and switches itself off with a bell. Without a pin it comes back down where
 in the air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
 autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
 
+She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may
+not go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
+are as they are lower down, only longer. Her settings screen's sky reaches as high, numbered more sparsely so the
+numbers keep apart, and from y 1,000, the edge of space, black space stands over it with its stars, along a thin blue
+glow of air, so you can see where space begins.
+
 ### Settings
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
