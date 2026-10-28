@@ -53,8 +53,8 @@ public final class MistyWindows {
     /** How wide a finger's line is, in pixels either side of where it touches. */
     private static final double FINGER = 0.8;
     /**
-     * How far the finger must move, in blocks, for its squeak on the wet glass to be heard, how often at most, in ticks,
-     * and how loud.
+     * How far the finger must move, in blocks, for its squeak on the wet glass to be heard, how often at most, in
+     * ticks, and how loud.
      */
     private static final double SQUEAKS_AFTER = 0.08;
     private static final int SQUEAK_TICKS = 4;
@@ -164,7 +164,8 @@ public final class MistyWindows {
             wipe(touch.getBlockPos(), pane, from.lerp(touch.getLocation(), step / (double) PIXELS), level.getGameTime());
         }
         if (from.distanceTo(touch.getLocation()) >= SQUEAKS_AFTER && level.getGameTime() % SQUEAK_TICKS == 0) {
-            // At the player, who draws within arm's reach: aboard, the pane's place is among her blocks in Sable's plot.
+            // At the player, who draws within arm's reach: aboard, the pane's place is among her blocks in Sable's
+            // plot.
             LocalPlayer player = minecraft.player;
             level.playLocalSound(player.getX(), player.getEyeY(), player.getZ(), AerolargeRegistry.GLASS_SQUEAK.get(), SoundSource.PLAYERS,
                 SQUEAK_VOLUME, 0.9F + level.random.nextFloat() * 0.2F, false);

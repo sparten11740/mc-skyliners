@@ -47,8 +47,8 @@ public class FloodlightBlockEntity extends BlockEntity {
     }
 
     /**
-     * Once a tick, on the server: now and then, lit while the sky is dark (at night, or under a storm by day), coming on
-     * with the clunk of its contactor and the crackle of its lamp striking up.
+     * Once a tick, on the server: now and then, lit while the sky is dark (at night, or under a storm by day), coming
+     * on with the clunk of its contactor and the crackle of its lamp striking up.
      */
     void serverTick(ServerLevel level) {
         if (level.getGameTime() % LOOK_TICKS != 0) {
