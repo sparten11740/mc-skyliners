@@ -7082,9 +7082,11 @@ function planterLang() {
 // plinth set back under the front, which curves out over it in steps up to the dark stone top, overhanging, its LED
 // strip glowing along the foot of the curve; white at its sides and back too. The stool: a round foot, a chrome
 // column with a footrest ring round it, and the round leather seat on a chrome plate. The back bar's cabinet: walnut
-// round its glass doors under a stone top, an LED strip under the top's edge; its shelves: walnut sides and cornice
-// round a lit smoked mirror at the back, a glass shelf across the middle, and bottles of every colour standing on the
-// cabinet's top and on the shelf, tall and short in turn, their necks capped in chrome.
+// sides round its dark front of smoked glass doors, a chrome rail across them on two brackets, under a stone top, a
+// warm LED strip under the top's edge. Its shelves: walnut sides and cornice round a smoked mirror at the back, two
+// glass shelves across it, and three rows of bottles, of every colour and five shapes, tall and slim, square, round
+// and squat decanters, on the cabinet's top and on each shelf. A warm LED strip runs along the front of each row's
+// foot, the mirror behind each row glowing up from it.
 {
   const block = (name) => `${ID}:block/${name}`;
   const counter = {
@@ -7120,21 +7122,77 @@ function planterLang() {
       furniture([4.5, 9, 3.5], [11.5, 10.5, 12.5], "#leather"),
     ],
   });
-  const bottles = ["green", "amber", "clear", "blue"];
+  const bottles = ["green", "amber", "clear", "blue", "red", "violet"];
   const bottleTextures = Object.fromEntries(bottles.map((colour) => [colour, block(`bar_bottle_${colour}`)]));
-  // A row of bottles standing on the row given, tall and short in turn, the colours in turn from the one given.
-  const bottleRow = (y, first) => [2, 4.5, 7, 9.5, 12].flatMap((x, i) => {
-    const colour = `#${bottles[(first + i) % bottles.length]}`;
-    const top = y + (i % 2 === 0 ? 4.5 : 3.5);
+  // The bottles' shapes, in pixels: each body's width across the shelf, its depth and its height; its neck's width and
+  // height; and its cap's, or its stopper's, width and height and what it is made of.
+  const BOTTLE_SHAPES = {
+    tall: { width: 1.5, depth: 1.5, height: 3, neck: [0.5, 1.25], cap: [0.75, 0.5, "#chrome"] },
+    square: { width: 2.5, depth: 2, height: 2.5, neck: [1, 0.5], cap: [1.5, 0.75, "#cork"] },
+    round: { width: 2, depth: 2, height: 2.75, neck: [1, 0.75], cap: [1.25, 0.5, "#chrome"] },
+    slim: { width: 1, depth: 1, height: 3.25, neck: [0.5, 0.75], cap: [0.75, 0.5, "#gold"] },
+    decanter: { width: 2.5, depth: 2.5, height: 2, neck: [1, 0.5], cap: [1.5, 1, "#clear"] },
+  };
+  // How far back the bottles stand, in pixels from the front of the block, one half a pixel forward of it and the next
+  // half a pixel back in turn; and from where and how far across the rows run, between the shelves' sides.
+  const BOTTLES_BACK = 11.5;
+  const ROW_FROM = 1;
+  const ROW_WIDTH = 14;
+  // How brightly the bottles' glass shows whatever the light around, in light levels: lit by the strips under them, so
+  // they still glow in a dark club, if less than the strips themselves.
+  const BOTTLE_GLOW = 10;
+  // A bottle of a shape and colour with its west side at x, its foot at y and its middle z back: its body, its glass
+  // drawn from the texture's foot up so that the warm light is at its foot and its label just over that, glowing a
+  // little; its neck; and its cap. Its back and its foot, against the mirror and the shelf, are never seen.
+  const bottle = (shape, colour, x, y, z) => {
+    const { width, depth, height, neck: [neckWidth, neckHeight], cap: [capWidth, capHeight, cap] } = BOTTLE_SHAPES[shape];
+    const glass = `#${colour}`;
+    const fromFoot = (across) => ({ texture: glass, uv: [0, 16 - height, across, 16], neoforge_data: { block_light: BOTTLE_GLOW } });
+    const middle = x + width / 2;
+    const shoulder = y + height;
     return [
-      furniture([x, y, 10], [x + 1.5, top, 11.5], colour),
-      furniture([x + 0.5, top, 10.5], [x + 1, top + 1.5, 11], colour),
-      furniture([x + 0.4, top + 1.5, 10.4], [x + 1.1, top + 2, 11.1], "#chrome"),
+      furniture([x, y, z - depth / 2], [x + width, shoulder, z + depth / 2], glass,
+        { north: fromFoot(width), east: fromFoot(depth), west: fromFoot(depth), south: null, down: null }),
+      furniture([middle - neckWidth / 2, shoulder, z - neckWidth / 2], [middle + neckWidth / 2, shoulder + neckHeight, z + neckWidth / 2], glass,
+        { south: null, down: null }),
+      furniture([middle - capWidth / 2, shoulder + neckHeight, z - capWidth / 2],
+        [middle + capWidth / 2, shoulder + neckHeight + capHeight, z + capWidth / 2], cap, { south: null }),
     ];
-  });
+  };
+  // A row of bottles standing at y, spaced evenly across the shelf in the order given.
+  const bottleRow = (y, row) => {
+    const gap = (ROW_WIDTH - row.reduce((sum, [shape]) => sum + BOTTLE_SHAPES[shape].width, 0)) / (row.length + 1);
+    const parts = [];
+    let x = ROW_FROM + gap;
+    for (const [i, [shape, colour]] of row.entries()) {
+      parts.push(...bottle(shape, colour, x, y, BOTTLES_BACK + (i % 2 === 0 ? -0.5 : 0.5)));
+      x += BOTTLE_SHAPES[shape].width + gap;
+    }
+    return parts;
+  };
+  // Each tier of the shelves: from and to how high its bottles stand, in pixels, on the cabinet's top or on a glass
+  // shelf half a pixel thick under them, and its bottles, each short enough to stand under the next shelf.
+  const TIERS = [
+    [0, 5, [["tall", "green"], ["square", "amber"], ["slim", "red"], ["round", "clear"], ["tall", "blue"], ["decanter", "amber"], ["slim", "violet"]]],
+    [5.5, 10.25, [["round", "blue"], ["slim", "amber"], ["tall", "clear"], ["square", "green"], ["slim", "red"], ["decanter", "violet"], ["tall", "amber"]]],
+    [10.75, 15, [["square", "violet"], ["round", "red"], ["decanter", "clear"], ["round", "green"], ["square", "blue"]]],
+  ];
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  // A tier: its glass shelf, but on the cabinet's top; the LED strip along the front of its foot; the mirror behind it,
+  // its glow drawn from the texture's foot up so that it glows up from the strip; and its row of bottles.
+  const tier = ([from, to, row]) => [
+    ...(from > 0 ? [furniture([ROW_FROM, from - 0.5, 8], [ROW_FROM + ROW_WIDTH, from, 15], "#glass")] : []),
+    furniture([ROW_FROM, Math.max(0, from - 0.5), 7.75], [ROW_FROM + ROW_WIDTH, Math.max(0.5, from), 8], "#led", { south: null }, true),
+    furniture([ROW_FROM, from, 14.9], [ROW_FROM + ROW_WIDTH, to, 14.9], "#mirror", {
+      north: { texture: "#mirror", uv: [ROW_FROM, 16 - (to - from), ROW_FROM + ROW_WIDTH, 16], ...lit },
+      south: null, east: null, west: null, up: null, down: null,
+    }),
+    ...bottleRow(from, row),
+  ];
   const backBar = {
-    ...bottleTextures, chrome, veneer: block("business_seat_veneer"), doors: block("back_bar_doors"), top: block("bar_top"),
-    mirror: block("back_bar_mirror"), glass: block("back_bar_glass"), led: block("bar_led"), particle: block("business_seat_veneer"),
+    ...bottleTextures, cork: block("bar_bottle_cork"), gold: block("perfume_cap"), chrome, veneer: block("business_seat_veneer"),
+    doors: block("back_bar_doors"), top: block("bar_top"), mirror: block("back_bar_mirror"), glass: block("back_bar_glass"),
+    led: block("back_bar_led"), particle: block("business_seat_veneer"),
   };
   write(`assets/${ID}/models/block/back_bar_cabinet.json`, {
     parent: "minecraft:block/block",
@@ -7143,6 +7201,9 @@ function planterLang() {
       furniture([0, 0, 1], [16, 14, 16], "#veneer", { north: "#doors" }),
       furniture([0, 14, 0], [16, 16, 16], "#top"),
       furniture([0, 13.5, 0.75], [16, 14, 1], "#led", { south: null, east: null, west: null, up: null }, true),
+      furniture([1.5, 9, 0], [14.5, 10, 0.5], "#chrome"),
+      furniture([2.5, 9.25, 0.5], [3.5, 9.75, 1], "#chrome"),
+      furniture([12.5, 9.25, 0.5], [13.5, 9.75, 1], "#chrome"),
     ],
   });
   write(`assets/${ID}/models/block/back_bar_shelves.json`, {
@@ -7150,13 +7211,10 @@ function planterLang() {
     textures: backBar,
     elements: [
       furniture([0, 0, 15], [16, 16, 16], "#veneer", { north: null }),
-      furniture([1, 0, 14.9], [15, 15, 14.9], "#mirror", { south: null, east: null, west: null, up: null, down: null }, true),
       furniture([0, 0, 7], [1, 16, 15], "#veneer"),
       furniture([15, 0, 7], [16, 16, 15], "#veneer"),
       furniture([1, 15, 7], [15, 16, 15], "#veneer"),
-      furniture([1, 7.5, 8], [15, 8, 15], "#glass"),
-      ...bottleRow(0, 0),
-      ...bottleRow(8, 2),
+      ...TIERS.flatMap(tier),
     ],
   });
   write(`assets/${ID}/blockstates/back_bar.json`, {

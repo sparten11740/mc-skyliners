@@ -681,13 +681,15 @@ drawers under a brushed steel top for a coffee machine to stand on. The stowage 
 chest's worth each, their latches clacking as they open. All three can be crafted.
 
 A Bar Counter is a piece of a lounge bar: a white front curving out from a dark plinth up under a dark stone top, a
-strip of blue LED light glowing along its foot; side by side the pieces run on into one bar, and things stand on it.
-A Bar Stool is a chrome stool with a round oxblood leather seat and a footrest ring, to sit on: it is one of Create's
-seats underneath, as the cabin seats are. A Back Bar is a walnut cabinet with smoked glass doors under a stone top;
-put another on top of it and that one is lit shelves of bottles in front of a smoked mirror (shelves left with nothing
-under them come down). All three can be crafted. The furnished airliner's lounge has its bar along the starboard wall:
-the counter with stools in front of every other piece, and behind it the back bar, its shelves of bottles rising
-between the windows with planters between them.
+strip of blue LED light glowing along its foot; side by side the pieces run on into one bar, and things stand on it. A
+Bar Stool is a chrome stool with a round oxblood leather seat and a footrest ring, to sit on: it is one of Create's
+seats underneath, as the cabin seats are. A Back Bar is a cabinet, walnut at its sides, its dark front of smoked glass
+doors behind a chrome rail, under a stone top with a warm LED strip along its edge; put another on top of it and that
+one is shelves of bottles in front of a smoked mirror, three rows of them in every colour and shape, tall and slim,
+square, round and squat decanters, on the cabinet's top and on two glass shelves, a warm LED strip lighting each row
+from below (shelves left with nothing under them come down). All three can be crafted. The furnished airliner's lounge
+has its bar along the starboard wall: the counter with stools in front of every other piece, and behind it the back bar,
+its shelves of bottles rising between the windows with planters between them.
 
 A Coffee Machine is a bean-to-cup machine, as in an airliner's galley: a brushed steel and black body, a bean hopper on
 top, a drip tray under its spout and a small lit display on its front. Use it and its panel opens, four big buttons

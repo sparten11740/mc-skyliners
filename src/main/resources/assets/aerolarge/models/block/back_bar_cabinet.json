@@ -5,13 +5,17 @@
     "amber": "aerolarge:block/bar_bottle_amber",
     "clear": "aerolarge:block/bar_bottle_clear",
     "blue": "aerolarge:block/bar_bottle_blue",
+    "red": "aerolarge:block/bar_bottle_red",
+    "violet": "aerolarge:block/bar_bottle_violet",
+    "cork": "aerolarge:block/bar_bottle_cork",
+    "gold": "aerolarge:block/perfume_cap",
     "chrome": "aerolarge:block/lavatory_basin_chrome",
     "veneer": "aerolarge:block/business_seat_veneer",
     "doors": "aerolarge:block/back_bar_doors",
     "top": "aerolarge:block/bar_top",
     "mirror": "aerolarge:block/back_bar_mirror",
     "glass": "aerolarge:block/back_bar_glass",
-    "led": "aerolarge:block/bar_led",
+    "led": "aerolarge:block/back_bar_led",
     "particle": "aerolarge:block/business_seat_veneer"
   },
   "elements": [
@@ -105,6 +109,102 @@
             "block_light": 15,
             "sky_light": 15
           }
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        9,
+        0
+      ],
+      "to": [
+        14.5,
+        10,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        9.25,
+        0.5
+      ],
+      "to": [
+        3.5,
+        9.75,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        9.25,
+        0.5
+      ],
+      "to": [
+        13.5,
+        9.75,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
         }
       }
     }
