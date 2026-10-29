@@ -14,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A rocket's flight as it looks round her from outside, beyond her engines' own plumes: as she lifts off or comes in
  * to land, her engines lit near the ground, smoke billows out over it from under her and rolls away, and closer still
- * flames burst from under her and flash on the ground; and falling back from space fast, her base glows and a trail
+ * flames and embers burst from the ground under her; and falling back from space fast, her base glows and a trail
  * of flame streams up behind it, as a heat shield's does coming back in. It is not as hot as that, but it looks the
  * part. The particles are sent from the server to everyone near enough to see her, long-distance, so that those
  * aboard, high over her base, see it too. The server config's {@code rocket.plumes} leaves them out.
@@ -37,15 +37,14 @@ final class RocketPlumes {
     /**
      * Close over the ground, her engines blazing on it: how high her foot may be, in blocks; how many flames a tick
      * burst from the ground under her, how far round under her they spread on a rocket built at scale 1, in blocks,
-     * and how fast they fly, in blocks a tick; how many embers of lava a tick leap from among them; and how often a
-     * flash lights the ground under her, in ticks.
+     * and how fast they fly, in blocks a tick; and how many embers of lava a tick leap from among them. No flash
+     * lights it: one every few ticks, her landing burn's last ten seconds long, would be a strobe.
      */
     private static final double BLAZE_UNDER = 15;
     private static final int BLAZE_FLAMES = 40;
     private static final double BLAZE_SPREAD = 1.25;
     private static final double BLAZE_SPEED = 0.15;
     private static final int EMBERS = 3;
-    private static final int FLASH_EVERY = 4;
     /** How high she must be and how fast falling for her base to glow, in world blocks and blocks a second. */
     private static final double GLOW_FROM = 500;
     private static final double GLOW_FALL = 20;
@@ -67,9 +66,9 @@ final class RocketPlumes {
     }
 
     /**
-     * Each tick of an assembled rocket's: smoke at the ground under her lit engines near it, and flame streaming from
-     * her base as she falls back from space, given her radio altitude, how far under her middle her foot is, in blocks,
-     * and her engines' share of full thrust.
+     * Each tick of an assembled rocket's: smoke at the ground under her lit engines near it, fire on it closer still,
+     * and flame streaming from her base as she falls back from space, given her radio altitude, how far under her
+     * middle her foot is, in blocks, and her engines' share of full thrust.
      */
     static void tick(ServerLevel level, SableFlight.State flight, double radio, int footBelow, double thrust) {
         if (!AerolargeConfig.ROCKET_PLUMES.get()) {
@@ -99,18 +98,12 @@ final class RocketPlumes {
         }
     }
 
-    /**
-     * Flames bursting from the ground under her in one packet, spread as wide as she is built, embers leaping from
-     * them, and every so often a flash lighting it.
-     */
+    /** Flames bursting from the ground under her in one packet, spread as wide as she is built, and embers leaping. */
     private static void blaze(ServerLevel level, Vec3 foot, int footBelow) {
         Vec3 under = ground(level, foot);
         double spread = BLAZE_SPREAD * RocketSilhouette.scaleOf(footBelow);
         send(level, ParticleTypes.FLAME, under, BLAZE_FLAMES, spread, BLAZE_SPEED);
         send(level, ParticleTypes.LAVA, under, EMBERS, spread, 0);
-        if (level.getGameTime() % FLASH_EVERY == 0) {
-            send(level, ParticleTypes.FLASH, under, 1, 0, 0);
-        }
     }
 
     /** The spot just over the ground straight under her foot, where her smoke and her fire start. */

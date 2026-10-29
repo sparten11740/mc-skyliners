@@ -1937,7 +1937,7 @@ her, a change climbs her a story at a time from the entry story up.
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set, white
 cloud and smoke billowing out over the ground from under her as she rises and again as she comes in to land, and fire
-bursting and flashing on the ground under her while she is close over it (the server config's `rocket.plumes` leaves
+and embers bursting from the ground under her while she is close over it (the server config's `rocket.plumes` leaves
 them out). Aboard, her engines lighting shakes the view for three seconds (the client setting `cameraShake` leaves it
 out). There it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still
 slow down by it; once over the pin and no longer drifting it falls back (or, circling it slowly for ten seconds, as a
