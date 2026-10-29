@@ -1178,6 +1178,30 @@
       }
     ]
   },
+  "scanner_sweep": {
+    "subtitle": "subtitles.aerolarge.scanner_sweep",
+    "sounds": [
+      {
+        "name": "aerolarge:scanner_sweep"
+      }
+    ]
+  },
+  "scanner_pass": {
+    "subtitle": "subtitles.aerolarge.scanner_pass",
+    "sounds": [
+      {
+        "name": "aerolarge:scanner_pass"
+      }
+    ]
+  },
+  "scanner_fail": {
+    "subtitle": "subtitles.aerolarge.scanner_fail",
+    "sounds": [
+      {
+        "name": "aerolarge:scanner_fail"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

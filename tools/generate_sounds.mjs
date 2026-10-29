@@ -2585,6 +2585,48 @@ function airlockPanelSounds() {
 }
 airlockPanelSounds();
 
+// The cargo bay's parcel scanner (see ParcelScannerBlock), with a random sequence of its own so the sounds round it are
+// unchanged. Its scan: a whine rising through an octave and a half, trembling as its laser sweeps, over the soft whirr
+// of its belt's servo. Its verdict on a packed crate: two bright beeps, the second higher, as a till's scanner gives;
+// on anything else, two low buzzes, a harsh square tone.
+function parcelScannerSounds() {
+  const own = ownRandom(0x5363616e);
+  const SWEEP_SECONDS = 1.4;
+  const sweep = new Float64Array(Math.round(SWEEP_SECONDS * RATE));
+  const servo = resonance(Float64Array.from({ length: sweep.length }, () => own() * 2 - 1), 260, 1.5);
+  let phase = 0;
+  for (let i = 0; i < sweep.length; i++) {
+    const t = i / RATE;
+    const along = t / SWEEP_SECONDS;
+    phase += (2 * Math.PI * (520 * Math.pow(3, along))) / RATE;
+    const envelope = Math.min(1, t / 0.08) * Math.min(1, (SWEEP_SECONDS - t) / 0.15);
+    const tremble = 0.75 + 0.25 * Math.sin(2 * Math.PI * 14 * t);
+    sweep[i] = envelope * (tremble * (Math.sin(phase) + 0.2 * Math.sin(2 * phase)) + 0.6 * servo[i]);
+  }
+  writeSound("scanner_sweep", sweep, 0.5);
+
+  // A beep or a buzz at a time in seconds, so long, its tone a sine with odd harmonics over it, so much of each.
+  const tone = (samples, start, seconds, frequency, harmonics) => {
+    const begin = Math.round(start * RATE);
+    for (let i = 0; i < Math.round(seconds * RATE) && begin + i < samples.length; i++) {
+      const t = i / RATE;
+      const envelope = Math.min(1, t / 0.005) * Math.min(1, (seconds - t) / 0.01);
+      let wave = 0;
+      harmonics.forEach((gain, k) => (wave += (gain * Math.sin(2 * Math.PI * frequency * (2 * k + 1) * t)) / (2 * k + 1)));
+      samples[begin + i] += envelope * wave;
+    }
+  };
+  const pass = new Float64Array(Math.round(0.4 * RATE));
+  tone(pass, 0, 0.09, 1320, [1, 0.3]);
+  tone(pass, 0.13, 0.14, 1760, [1, 0.3]);
+  writeSound("scanner_pass", pass, 0.55);
+  const fail = new Float64Array(Math.round(0.6 * RATE));
+  tone(fail, 0, 0.2, 150, [1, 1, 1, 1, 1, 1]);
+  tone(fail, 0.28, 0.24, 140, [1, 1, 1, 1, 1, 1]);
+  writeSound("scanner_fail", lowPassed(fail, 2400), 0.6);
+}
+parcelScannerSounds();
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

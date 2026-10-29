@@ -181,6 +181,7 @@ import dev.aerolarge.block.OverheadWcSignBlock;
 import dev.aerolarge.block.OverheadWcSignBlockEntity;
 import dev.aerolarge.block.PalletRackBlock;
 import dev.aerolarge.block.PaperPlaneBoxBlock;
+import dev.aerolarge.block.ParcelScannerBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
 import dev.aerolarge.block.PassengerScreenBlock;
@@ -2208,6 +2209,13 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CYCLE = sound("airlock_cycle");
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CLEAR = sound("airlock_clear");
+    /** The cargo bay's parcel scanner, its lamp and screen glowing, and its whirr as it scans, its beep and its buzz. */
+    public static final DeferredBlock<ParcelScannerBlock> PARCEL_SCANNER = BLOCKS.registerBlock(
+        "parcel_scanner", ParcelScannerBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().noLootTable().lightLevel(ParcelScannerBlock::glow)
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_SWEEP = sound("scanner_sweep");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_PASS = sound("scanner_pass");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_FAIL = sound("scanner_fail");
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired

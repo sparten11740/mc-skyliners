@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CargoCrateBlock;
 import dev.aerolarge.block.PalletRackBlock;
+import dev.aerolarge.block.ParcelScannerBlock;
 import dev.aerolarge.block.ShelfUnitBlock;
 import dev.aerolarge.block.UldContainerBlock;
 import java.util.List;
@@ -20,8 +21,9 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
  * in. At her front, a pair of the airliner's baggage containers either side of the way in from the lift, their doors
  * facing in, and care-package crates stacked unevenly beside them, ready to be packed and dropped. Out to either side a
  * wall of pallet racks three bays high, loaded with boxes, drums and crates, parts the front of the bay from its back,
- * a gap left in it where it is long. At her back right, a workbench corner: a crafting table and a grindstone by a stool
- * under shelves of tool cases; at her back left, crates piled where they were set down. Halo lights hang round the shaft.
+ * a gap left in it where it is long. By the way in on her left, the parcel scanner, an empty crate on its belt. At her
+ * back right, a workbench corner: a crafting table and a grindstone by a stool under shelves of tool cases; at her back
+ * left, crates piled where they were set down. Halo lights hang round the shaft.
  * Laid after the rover's bay, so nothing of it stands where the bay has put anything.
  */
 final class RocketCargoHold extends RocketRoom {
@@ -71,6 +73,7 @@ final class RocketCargoHold extends RocketRoom {
             double round = CONTAINERS[k];
             container(new BlockPos(across(out, round), y, along(out, round)), inward(round), k);
         }
+        scanner(RocketQuarter.FRONT_LEFT, y, random);
         lightsRoundShaft();
         double crates = wall() - CRATES_IN;
         for (double round : CRATES) {
@@ -81,6 +84,18 @@ final class RocketCargoHold extends RocketRoom {
         }
         workbench(RocketQuarter.BACK_RIGHT, y, corner);
         pile(RocketQuarter.BACK_LEFT, y, corner, random);
+    }
+
+    /**
+     * The parcel scanner beside the way in from the lift, its screen facing the way in, an empty crate waiting on its
+     * belt to be packed (see {@link ParcelScannerBlock}).
+     */
+    private void scanner(RocketQuarter quarter, int y, RandomSource random) {
+        int across = RocketQuarter.INNER - 2;
+        if (put(quarter.x(across), y, quarter.z(RocketQuarter.INNER), AerolargeRegistry.PARCEL_SCANNER.get().defaultBlockState()
+            .setValue(ParcelScannerBlock.FACING, quarter.side().getOpposite()))) {
+            standing(quarter.x(across), y + 1, quarter.z(RocketQuarter.INNER), crate(random));
+        }
     }
 
     /** A care-package crate turned a random way, as it was set down. */

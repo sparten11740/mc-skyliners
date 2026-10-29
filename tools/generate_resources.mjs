@@ -1418,6 +1418,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, snackMachineSounds());
   Object.assign(sounds, greenhouseSounds());
   Object.assign(sounds, airlockPanelSounds());
+  Object.assign(sounds, parcelScannerSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4749,6 +4750,61 @@ function airlockPanelLang() {
   };
 }
 
+// The cargo bay's parcel scanner (see ParcelScannerBlock), drawn facing north: a graphite cabinet as high as a table,
+// its screen on its front, a conveyor belt for its top and a hazard-striped gantry over the belt, its posts just outside
+// the block either side so a crate on the belt stands between them; the lamp under the gantry's bar and the screen glow
+// whatever the light around. One model for each step of a scan, its screen's picture and its lamp's colour showing it;
+// while it scans, a curtain of red laser light hangs from the bar to the belt.
+function parcelScanner() {
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const block = (name) => `${ID}:block/${name}`;
+  const glowing = (faces) => Object.fromEntries(faces.map((face) => [face, { texture: "#lamp", ...lit }]));
+  const belt = solid([0, 13, 0], [16, 16, 16], "#roller");
+  belt.faces.up = { texture: "#belt" };
+  for (const scan of ["ready", "scanning", "packed", "empty"]) {
+    const elements = [
+      solid([0, 0, 1], [16, 13, 15], "#casing"),
+      { from: [4, 3, 0.9], to: [12, 11, 1], shade: false, faces: { north: { texture: "#screen", ...lit } } },
+      belt,
+      solid([-1.5, 13, 7], [0, 30, 9], "#gantry"),
+      solid([16, 13, 7], [17.5, 30, 9], "#gantry"),
+      solid([-1.5, 28, 6.5], [17.5, 30, 9.5], "#gantry"),
+      { from: [0, 27.75, 7], to: [16, 28, 9], shade: false, faces: glowing(["down", "north", "south"]) },
+    ];
+    if (scan === "scanning") {
+      elements.push({ from: [0, 16, 7.9], to: [16, 27.75, 8.1], shade: false, faces: { north: { texture: "#laser", ...lit }, south: { texture: "#laser", ...lit } } });
+    }
+    write(`assets/${ID}/models/block/parcel_scanner_${scan}.json`, {
+      parent: "minecraft:block/block", ...(scan === "scanning" ? { render_type: "minecraft:translucent" } : {}),
+      textures: { casing: block("scanner_casing"), screen: block(`scanner_screen_${scan}`), belt: block("scanner_belt"), roller: block("scanner_roller"),
+        gantry: block("scanner_gantry"), lamp: block(`scanner_lamp_${scan}`), laser: block("scanner_laser"), particle: block("scanner_casing") },
+      elements,
+    });
+  }
+  write(`assets/${ID}/blockstates/parcel_scanner.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ready", "scanning", "packed", "empty"].map((scan) =>
+      [`facing=${facing},scan=${scan}`, { model: `${ID}:block/parcel_scanner_${scan}`, y }]))),
+  });
+  cubes.parcel_scanner = null;
+}
+parcelScanner();
+// The scanner is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function parcelScannerFittings() {
+  return ["parcel_scanner"];
+}
+// Its whirr as it scans, its bright double beep for a packed crate and its low buzz for anything else.
+function parcelScannerSounds() {
+  return Object.fromEntries(["scanner_sweep", "scanner_pass", "scanner_fail"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function parcelScannerLang() {
+  return {
+    "block.aerolarge.parcel_scanner": "Parcel Scanner",
+    "subtitles.aerolarge.scanner_sweep": "Scanner whirrs",
+    "subtitles.aerolarge.scanner_pass": "Scanner beeps: packed",
+    "subtitles.aerolarge.scanner_fail": "Scanner buzzes: empty",
+  };
+}
+
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
@@ -7127,6 +7183,7 @@ FITTINGS.push(...foodLabFittings());
 FITTINGS.push(...greenhouseFittings());
 FITTINGS.push(...rocketRoomFittings());
 FITTINGS.push(...airlockPanelFittings());
+FITTINGS.push(...parcelScannerFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7875,6 +7932,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...greenhouseLang(),
   ...rocketRoomLang(),
   ...airlockPanelLang(),
+  ...parcelScannerLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

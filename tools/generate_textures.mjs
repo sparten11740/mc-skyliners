@@ -5774,4 +5774,46 @@ function airlockPanelTextures() {
 }
 airlockPanelTextures();
 
+// The cargo bay's parcel scanner (see parcelScanner in generate_resources.mjs): its graphite cabinet with a vent grille,
+// its steel rollers and its black belt ridged across its run, its gantry striped yellow and black, and its lamp in each
+// step's colour: dim blue ready, red scanning, green for a packed crate, red blinking for anything else. Its laser
+// curtain, translucent red, bright lines running down it. Its screen's pictures, a crate drawn in outline: ready, grey;
+// scanning, a red line sweeping down it; packed, a green tick over it; empty, a red cross.
+function parcelScannerTextures() {
+  const FRAMES = 8;
+  const animated = (name, frametime, paint, noise = 0) => {
+    texture(blockOutput, name, (x, y) => paint(x, y % SIZE, Math.floor(y / SIZE)), noise, SIZE, SIZE * FRAMES);
+    writeFileSync(resolve(blockOutput, `${name}.png.mcmeta`), JSON.stringify({ animation: { frametime } }, null, 2) + "\n");
+  };
+  const RED = [0xff, 0x3c, 0x30];
+  const GREEN = [0x40, 0xf0, 0x70];
+  texture(blockOutput, "scanner_casing", (x, y) => {
+    if (y === 0) return [0x50, 0x56, 0x5e];
+    return y >= 10 && y <= 13 && x >= 2 && x <= 13 && y % 2 === 0 ? [0x1a, 0x1c, 0x20] : [0x34, 0x38, 0x3e];
+  }, 2);
+  texture(blockOutput, "scanner_roller", (x, y) => (x % 4 === 0 ? [0x5a, 0x60, 0x68] : [0x9a, 0xa2, 0xaa]), 2);
+  texture(blockOutput, "scanner_belt", (x, y) => (x % 3 === 0 ? [0x30, 0x33, 0x37] : [0x1c, 0x1e, 0x21]), 1);
+  texture(blockOutput, "scanner_gantry", (x, y) => ((x + y) % 8 < 4 ? [0xf0, 0xc0, 0x20] : [0x1c, 0x1d, 0x20]), 2);
+  texture(blockOutput, "scanner_lamp_ready", () => [0x2a, 0x5a, 0xa0], 0);
+  texture(blockOutput, "scanner_lamp_scanning", () => RED, 0);
+  texture(blockOutput, "scanner_lamp_packed", () => GREEN, 0);
+  animated("scanner_lamp_empty", 4, (x, y, frame) => (frame % 2 === 0 ? [0xf0, 0x30, 0x30] : [0x50, 0x10, 0x10]));
+  animated("scanner_laser", 1, (x, y, frame) => ((y + frame * 2) % 4 === 0 ? [0xff, 0x90, 0x80, 0xc0] : [0xff, 0x30, 0x30, 0x50]));
+  const SCREEN = [0x0a, 0x0e, 0x12];
+  // A crate in outline, a brace across it from corner to corner.
+  const crate = (x, y) => (x >= 3 && x <= 12 && y >= 4 && y <= 12) && (x === 3 || x === 12 || y === 4 || y === 12 || x - 3 === y - 4);
+  const OUTLINE = [0x8a, 0x92, 0x9c];
+  const DIM = [0x40, 0x46, 0x4e];
+  texture(blockOutput, "scanner_screen_ready", (x, y) => (crate(x, y) ? OUTLINE : SCREEN), 0);
+  animated("scanner_screen_scanning", 2, (x, y, frame) => {
+    if (y === 3 + frame + Math.floor(frame / 2) && x >= 1 && x <= 14) return RED;
+    return crate(x, y) ? OUTLINE : SCREEN;
+  });
+  const tick = (x, y) => (x >= 3 && x <= 6 && (y - x === 5 || y - x === 4)) || (x >= 6 && x <= 12 && (x + y === 17 || x + y === 16));
+  texture(blockOutput, "scanner_screen_packed", (x, y) => (tick(x, y) ? GREEN : crate(x, y) ? DIM : SCREEN), 0);
+  const cross = (x, y) => x >= 3 && x <= 12 && y >= 3 && y <= 12 && (x - y === 0 || x + y === 15 || x - y === 1 || x + y === 16);
+  texture(blockOutput, "scanner_screen_empty", (x, y) => (cross(x, y) ? RED : crate(x, y) ? DIM : SCREEN), 0);
+}
+parcelScannerTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);
