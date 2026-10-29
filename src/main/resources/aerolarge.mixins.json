@@ -8,7 +8,8 @@
   ],
   "client": [
     "AdvancedFboImplMixin",
-    "HotAirBurnerMixin"
+    "HotAirBurnerMixin",
+    "LevelRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 0

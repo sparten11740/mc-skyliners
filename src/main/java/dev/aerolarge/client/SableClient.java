@@ -36,6 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.CommonHooks;
@@ -48,7 +49,8 @@ import org.joml.Vector3dc;
  * The client's view of assembled airliners, from Sable: where a block of one is in the world and the light it is drawn
  * with, which one a player is riding or a block is part of and how that one moves, the autopilot of the one a player
  * rides, how one is moving and lying for its instruments, where its outside cameras are as it flies, which ones come
- * near a point or hold it and how they lie as they are drawn; holding Sable's water occlusion off while a camera's
+ * near a point or hold it and how they lie as they are drawn, and those round the camera the weather falls on;
+ * holding Sable's water occlusion off while a camera's
  * picture is drawn; and keeping the player in step with the airliner whose cabin they fly, fall or climb in. Every call works without Sable too (nothing is assembled then); Sable's classes are only touched
  * once it is known to be installed.
  */
@@ -234,6 +236,24 @@ public final class SableClient {
     /** Each assembled airliner whose bounds hold a point in the world, as drawn at this partial tick; none without Sable. */
     static List<Around> around(Level level, Vec3 point, float partialTick) {
         return SABLE ? Access.around(level, point, partialTick) : List.of();
+    }
+
+    /**
+     * An assembled ship as drawn this frame, for the rain and snow to be kept out of her (see {@link ShipWeather}): her
+     * bounds in the world, and where a point of the world is among her blocks.
+     */
+    interface Shelter {
+        AABB bounds();
+
+        Vec3 among(double x, double y, double z);
+    }
+
+    /**
+     * Each assembled ship whose bounds reach into a box of the world, as drawn at this partial tick; none without
+     * Sable.
+     */
+    static List<Shelter> shelters(Level level, AABB box, float partialTick) {
+        return SABLE ? Access.shelters(level, box, partialTick) : List.of();
     }
 
     /**
@@ -459,6 +479,27 @@ public final class SableClient {
                 }
             }
             return found;
+        }
+
+        static List<Shelter> shelters(Level level, AABB box, float partialTick) {
+            List<Shelter> found = new ArrayList<>();
+            BoundingBox3d near = new BoundingBox3d(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+            for (SubLevel ship : Sable.HELPER.getAllIntersecting(level, near)) {
+                if (ship instanceof ClientSubLevel drawn) {
+                    BoundingBox3dc bounds = drawn.boundingBox();
+                    AABB world = new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ());
+                    found.add(new Sheltering(world, drawn.renderPose(partialTick)));
+                }
+            }
+            return found;
+        }
+
+        /** A ship's bounds in the world and how she lies as she is drawn. */
+        private record Sheltering(AABB bounds, Pose3dc pose) implements Shelter {
+            @Override
+            public Vec3 among(double x, double y, double z) {
+                return pose.transformPositionInverse(new Vec3(x, y, z));
+            }
         }
 
         @Nullable

@@ -83,6 +83,9 @@ airliner still flies in and out of them. With Fast or Fancy graphics the windows
 anyway; with Fabulous graphics the clouds outside the windows go too while the airliner is in the cloud layer. Turn it
 off with `cloudlessCabin` in the client config.
 
+Rain and snow stay out of her too, and out of a zeppelin or a rocket in flight: falling on one, they land on her roof,
+never in her cabins or her rooms.
+
 ### Flight deck
 
 Steps at the front of the main deck lead up to a raised floor in the nose. From the top of the steps a short aisle
@@ -2334,7 +2337,9 @@ gives the window a stencil: `TailCameraFeed` and `VeilLights` are the only place
 mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn without losing their beams, which Create's
 own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
-the player's view while the camera is inside a hull in the cloud layer; `LandAhead` asks for the land ahead of a player
+the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
+`mixin/LevelRendererMixin`, lets rain and snow fall only onto a ship's roof; `LandAhead` asks for the land ahead of a
+player
 flying aboard, past what they see, a few chunks at a time. The zeppelin's geometry lives in `ZeppelinShape`
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
