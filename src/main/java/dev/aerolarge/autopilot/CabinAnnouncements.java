@@ -1,6 +1,7 @@
 package dev.aerolarge.autopilot;
 
 import dev.aerolarge.Aboard;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.Announcement;
 import dev.aerolarge.block.CabinLightsBlock;
 import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
@@ -8,9 +9,11 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -138,8 +141,9 @@ public final class CabinAnnouncements {
         if (aboard.isEmpty() && now - asked.getOrDefault(announcement, now) < AUDIENCE_WAIT) {
             return false;
         }
-        int length = VoiceLength.ticks(announcement.sound, LONGEST);
-        heard = new Airtime.Said(aboard, announcement.sound.value().getLocation());
+        Holder<SoundEvent> sound = sound(announcement, autopilot);
+        int length = VoiceLength.ticks(sound, LONGEST);
+        heard = new Airtime.Said(aboard, sound.value().getLocation());
         airtime.take(now, length, this::cutShort);
         onAir = announcement;
         onAirUntil = now + length;
@@ -151,9 +155,15 @@ public final class CabinAnnouncements {
         }
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : aboard) {
-            player.connection.send(new ClientboundSoundEntityPacket(announcement.sound, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+            player.connection.send(new ClientboundSoundEntityPacket(sound, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
         }
         return true;
+    }
+
+    /** What an announcement says aboard this craft: a rocket arrives as a spacecraft, not as an aircraft. */
+    private static Holder<SoundEvent> sound(Announcement announcement, BlockEntity autopilot) {
+        boolean rocket = autopilot instanceof AutopilotBlockEntity pilot && pilot.craft() == Craft.ROCKET;
+        return rocket && announcement == Announcement.ARRIVAL ? AerolargeRegistry.ANNOUNCEMENT_ARRIVAL_ROCKET : announcement.sound;
     }
 
     /** The announcement being made is cut short for a callout: stopped for everyone who heard it, and over. */

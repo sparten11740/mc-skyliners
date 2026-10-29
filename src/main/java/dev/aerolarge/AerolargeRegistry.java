@@ -406,6 +406,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SLEEP = sound("announcement_sleep");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_LANDING = sound("announcement_landing");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL = sound("announcement_arrival");
+    /** The rocket's own arrival announcement, which says "spacecraft" where the airliner's says "aircraft". */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL_ROCKET = sound("announcement_arrival_rocket");
     /** The rocket's welcome to space, after the chime, as she climbs past its edge (see {@code EdgeOfSpace}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SPACE = sound("announcement_space");
     /** The rocket's artificial gravity announced, after the chime, once all aboard have been light a while in space. */

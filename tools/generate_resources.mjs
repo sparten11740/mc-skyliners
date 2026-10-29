@@ -1285,6 +1285,7 @@ const VOICE_SUBTITLES = {
   announcement_arrival: "Announcement: Welcome to your destination",
   announcement_space: "Announcement: Welcome to space",
   announcement_gravity: "Announcement: Artificial gravity enabled",
+  announcement_arrival_rocket: "Announcement: Welcome to your destination",
 };
 const VOICE_LANG = Object.fromEntries(Object.entries(VOICE_SUBTITLES).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
 // Air traffic control on the flight deck's radio (see tools/generate_sounds.mjs and AtcRadio): each transmission

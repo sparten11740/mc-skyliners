@@ -2766,6 +2766,16 @@ if (speaker) {
     ANNOUNCEMENT_LONGEST);
 }
 
+// The rocket's own arrival announcement, the cabin's with "spacecraft" for "aircraft" (see CabinAnnouncements).
+const ROCKET_ARRIVAL = {
+  announcement_arrival_rocket: "Welcome to your destination. Please remain seated until the spacecraft has come to a complete stop. | It has. | You may now leave.",
+};
+if (speaker) {
+  await say(speaker, ROCKET_ARRIVAL, VOICE.announcement);
+  writeVoiced("announcement_arrival_rocket", announcement(trim(readWav(join(scratch, "announcement_arrival_rocket.voiced.wav")))),
+    VOICE.announcement, ANNOUNCEMENT_LONGEST);
+}
+
 // The rocket's flight deck announcing her artificial gravity once everyone aboard has been light a while in space
 // (see SpaceGravity), made as the welcome is; its second phrase, as the welcome's does, brings it level with the rest.
 const ARTIFICIAL_GRAVITY = { announcement_gravity: "Artificial gravity enabled. | Please mind your step." };
