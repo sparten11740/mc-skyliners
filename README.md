@@ -1865,7 +1865,8 @@ Light).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
-skin. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
+skin. Under every room's ceiling but the observation deck's, steel girders run out from the shaft along the four ways to
+her skin. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
 boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
@@ -2313,7 +2314,8 @@ Last of all `RocketLayout.finishInside` finishes her rooms (`RocketFinish`): her
 outside and the room's lining, untinted, on the faces it sees, as the airliner's cabin is lined (`Lining`), and each
 story's floor a `RocketFloorBlock`, its room on top and the room under it underneath. `RocketWallLights` fixes the
 wall washers (`WallLightBlock`) to her skin round each story, once the rooms have their furniture, where `SkinMount`
-finds room on her wall, as it does for the club's neon signs.
+finds room on her wall, as it does for the club's neon signs; before them `RocketGirders` lays the steel girders under
+her rooms' ceilings, and her shaft's lift glass and corner girders are laid with the shaft (`RocketLayout.shaftWall`).
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

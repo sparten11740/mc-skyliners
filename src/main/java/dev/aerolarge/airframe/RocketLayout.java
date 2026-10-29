@@ -101,6 +101,7 @@ public final class RocketLayout implements Layout {
         RocketRoverBay::new,
         RocketCargoHold::new,
         RocketLab::new,
+        RocketGirders::new,
         RocketWallLights::new,
         RocketPosters::new,
         RocketLedStrips::new);
