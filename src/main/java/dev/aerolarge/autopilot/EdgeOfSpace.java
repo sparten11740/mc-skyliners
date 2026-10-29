@@ -51,8 +51,8 @@ public final class EdgeOfSpace {
     private int waited;
 
     /**
-     * Whether a rocket whose middle is this high, in world blocks, is at the edge of space or over it: as close to it
-     * as she comes holding it, or higher.
+     * Whether a rocket whose control head is this high, in world blocks, as her flight is read, is at the edge of space
+     * or over it: as close to it as she comes holding it, or higher.
      */
     public static boolean reached(double height) {
         return height >= HEIGHT - AT_EDGE;

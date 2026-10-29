@@ -12,15 +12,16 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
  * The space helmet's air as its wearer hears it (see {@code tools/generate_sounds.mjs}): while the player wears one
  * aboard a rocket at the edge of space or over it, a calm, slow breath loops softly in the helmet, the hiss of air
  * drawn in through its valve and let out again, played round the listener. It fades in as she gets there and out as
- * the helmet comes off, the player leaves her or she comes back down under the edge, which is reckoned by her middle,
- * as the server reckons it for her welcome to space ({@link EdgeOfSpace#reached}), so everyone aboard hears it from
- * the same moment wherever they stand in her. Without the {@code helmetBreathing} client setting, none of it.
+ * the helmet comes off, the player leaves her or she comes back down under the edge, which is reckoned by her control
+ * head, in her cockpit, as the server reckons it for her welcome to space ({@link EdgeOfSpace#reached}), so everyone
+ * aboard hears it from the same moment wherever they stand in her. Without the {@code helmetBreathing} client setting, none of it.
  */
 public final class HelmetBreathing {
     /** How loud the breathing is, a share of full: quiet, under everything else to be heard aboard. */
@@ -85,8 +86,7 @@ public final class HelmetBreathing {
     private static boolean inSpace(LocalPlayer player) {
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(player.level())) {
             if (autopilot.craft() == Craft.ROCKET && SableClient.isAboard(player, autopilot)) {
-                SableClient.Ride ride = SableClient.ride(autopilot);
-                return ride != null && EdgeOfSpace.reached(ride.position().y);
+                return EdgeOfSpace.reached(SableClient.toWorld(player.level(), Vec3.atCenterOf(autopilot.getBlockPos())).y);
             }
         }
         return false;
