@@ -1887,6 +1887,113 @@ const blastNoise = (() => {
   writeSound("lift_chime_down", down, 0.6);
 }
 
+// The rocket's rooms as one stands in them (see RoomAmbience), each from a random sequence of its own so the sounds
+// above are unchanged, and kept over 150 hertz, clear of her lift's hum and her hull's rumble. Her greenhouse: air
+// moving through the leaves, a soft hush swelling and easing, over a thin trickle of irrigation and now and then a drip
+// into a bed, a twelve-second loop; and a bee buzzing past, a sawtooth about 220 hertz throbbing as it flies, swelling,
+// and bending down in pitch as it goes by. Her pool: water lapping at its edge in small slaps and its filter gurgling
+// into the skimmer, in the short ringing echo of a tiled hall, a twelve-second loop; and now and then a bigger slap of
+// water against its side.
+{
+  const ROOM_LOOP = 12;
+  const ROOM_FADE = 1;
+  const noiseOf = (own, n) => Float64Array.from({ length: n }, () => own() * 2 - 1);
+  // A smoothed random wobble between 0 and 1, changing about so many times a second.
+  const wobbleOf = (own, n, rate) => {
+    const out = new Float64Array(n);
+    let level = own();
+    let target = own();
+    const step = rate / RATE;
+    for (let i = 0; i < n; i++) {
+      if (own() < step) target = own();
+      level += 8 * step * (target - level);
+      out[i] = level;
+    }
+    return out;
+  };
+  // A small tiled hall: four short combs, damped, and the dry sound over them.
+  const tiledEcho = (dry) => {
+    const wet = new Float64Array(dry.length);
+    for (const [delay, feedback] of [[0.029, 0.62], [0.037, 0.6], [0.043, 0.58], [0.053, 0.56]]) {
+      const gap = Math.round(delay * RATE);
+      const line = new Float64Array(dry.length);
+      let low = 0;
+      for (let i = 0; i < dry.length; i++) {
+        low += 0.5 * ((i >= gap ? line[i - gap] : 0) - low);
+        line[i] = dry[i] + feedback * low;
+        wet[i] += line[i] / 4;
+      }
+    }
+    return dry.map((d, i) => 0.75 * d + 0.4 * wet[i]);
+  };
+
+  const garden = ownRandom(0x47617264);
+  const n = Math.round((ROOM_LOOP + ROOM_FADE) * RATE);
+  const leaves = resonance(noiseOf(garden, n), 1600, 0.6);
+  const trickle = resonance(noiseOf(garden, n), 3200, 3);
+  const babble = wobbleOf(garden, n, 18);
+  const air = new Float64Array(n);
+  let nextDrip = 0.8;
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const swell = 0.55 + 0.25 * Math.sin((2 * Math.PI * t) / 6) + 0.2 * Math.sin((2 * Math.PI * t) / 4 + 1);
+    air[i] = 0.8 * swell * leaves[i] + 0.22 * (0.3 + 0.7 * babble[i]) * trickle[i];
+    if (t >= nextDrip) {
+      const pitch = 1500 + 900 * garden();
+      for (let k = 0; k < Math.round(0.06 * RATE) && i + k < n; k++) {
+        const at = k / RATE;
+        air[i + k] += 0.35 * Math.exp(-at / 0.012) * Math.sin(2 * Math.PI * pitch * (1 - 2 * at) * at);
+      }
+      nextDrip = t + 1.5 + 2.5 * garden();
+    }
+  }
+  writeSound("greenhouse_air", seamlessNoise(air, ROOM_LOOP, ROOM_FADE), 0.5);
+
+  const beeLength = 2.4;
+  const bee = new Float64Array(Math.round(beeLength * RATE));
+  let beePhase = 0;
+  for (let i = 0; i < bee.length; i++) {
+    const t = i / RATE;
+    const along = t / beeLength;
+    beePhase += (232 + 24 * (0.5 - along) + 6 * Math.sin(2 * Math.PI * 7 * t)) / RATE;
+    const saw = 2 * (beePhase % 1) - 1;
+    const throb = 1 + 0.35 * Math.sin(2 * Math.PI * 5.5 * t);
+    bee[i] = Math.sin(Math.PI * along) ** 2 * throb * saw;
+  }
+  const beeBody = resonance(bee, 700, 0.5);
+  const beeEdge = resonance(bee, 1900, 1.5);
+  writeSound("greenhouse_bee", beeBody.map((b, i) => b + 0.4 * beeEdge[i]), 0.6);
+
+  const pool = ownRandom(0x506f6f6c);
+  const laps = new Float64Array(n);
+  let nextLap = 0;
+  while (nextLap < ROOM_LOOP + ROOM_FADE) {
+    const start = Math.round(nextLap * RATE);
+    const decay = 0.15 + 0.15 * pool();
+    const gain = 0.4 + 0.6 * pool();
+    for (let k = 0; k < Math.round(0.8 * RATE) && start + k < n; k++) {
+      const at = k / RATE;
+      laps[start + k] += gain * Math.min(1, at / 0.03) * Math.exp(-at / decay) * (pool() * 2 - 1);
+    }
+    nextLap += 0.35 + 0.6 * pool();
+  }
+  const lapping = resonance(laps, 600, 1.1);
+  const bed = resonance(noiseOf(pool, n), 420, 0.9);
+  const gurgle = resonance(noiseOf(pool, n), 950, 4);
+  const bubbles = wobbleOf(pool, n, 25);
+  const water = lapping.map((l, i) => l + 0.12 * bed[i] + 0.8 * bubbles[i] * bubbles[i] * gurgle[i]);
+  writeSound("pool_water", seamlessNoise(tiledEcho(water), ROOM_LOOP, ROOM_FADE), 0.5);
+
+  const slap = new Float64Array(Math.round(1.2 * RATE));
+  for (let i = 0; i < Math.round(0.5 * RATE); i++) {
+    const t = i / RATE;
+    slap[i] = Math.min(1, t / 0.006) * (Math.exp(-t / 0.15) * (pool() * 2 - 1));
+  }
+  const slapBody = resonance(slap, 420, 0.8);
+  const slapSpray = resonance(slap, 3000, 1.2);
+  writeSound("pool_slap", tiledEcho(slapBody.map((b, i) => b + 0.25 * slapSpray[i] * Math.exp(-i / (0.05 * RATE)))), 0.7);
+}
+
 // Low gravity aboard a rocket in space (see SpaceGravity): coming on, a soft glide rising an octave over most of a
 // second, a sine with a quiet fifth over it shimmering; going, the same glide falling. No random sequence is drawn on,
 // so the sounds around it are unchanged.

@@ -23,6 +23,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue LIFT_MUSIC;
     public static final ModConfigSpec.BooleanValue HEIGHT_GAUGE;
     public static final ModConfigSpec.BooleanValue HELMET_BREATHING;
+    public static final ModConfigSpec.BooleanValue ROOM_AMBIENCE;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -112,6 +113,10 @@ public final class AerolargeClientConfig {
             .comment("In a space helmet aboard a rocket at the edge of space or over it, hear its air softly in your helmet, a calm",
                 "hiss in and out through its valve as you breathe. Off, the helmet is silent.")
             .define("helmetBreathing", true);
+        ROOM_AMBIENCE = builder
+            .comment("Aboard a rocket, hear her greenhouse and her pool as you stand in them: the air through the leaves with the odd",
+                "bee buzzing past, the water lapping in the pool's tiled hall. Off, they are quiet.")
+            .define("roomAmbience", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")

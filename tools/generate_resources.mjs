@@ -1355,6 +1355,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, selfDestructSounds());
   Object.assign(sounds, roverSounds());
   Object.assign(sounds, labSounds());
+  Object.assign(sounds, roomSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -3962,6 +3963,10 @@ function labFittings() {
 function labSounds() {
   return Object.fromEntries(["tardigrade_mrrp", "tardigrade_bloop"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
 }
+// Her greenhouse's air and the bee buzzing past, her pool's water and its bigger slaps (see RoomAmbience).
+function roomSounds() {
+  return Object.fromEntries(["greenhouse_air", "greenhouse_bee", "pool_water", "pool_slap"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
 function labLang() {
   return {
     "block.aerolarge.habitat_glass": "Tank Glass",
@@ -3971,6 +3976,10 @@ function labLang() {
     "entity.aerolarge.tardigrade": "Tardigrade",
     "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
     "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
+    "subtitles.aerolarge.greenhouse_air": "Leaves rustle",
+    "subtitles.aerolarge.greenhouse_bee": "Bee buzzes by",
+    "subtitles.aerolarge.pool_water": "Pool water laps",
+    "subtitles.aerolarge.pool_slap": "Water slaps",
   };
 }
 
@@ -6931,6 +6940,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.shootingStars": "Shooting Stars",
   "aerolarge.configuration.heightGauge": "Height Gauge",
   "aerolarge.configuration.helmetBreathing": "Helmet Breathing",
+  "aerolarge.configuration.roomAmbience": "Room Ambience",
   "aerolarge.configuration.aurora": "Aurora",
   "aerolarge.configuration.burnerSmoke": "Burner Smoke",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",

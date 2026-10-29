@@ -80,6 +80,7 @@ import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RocketRoar;
+import dev.aerolarge.client.RoomAmbience;
 import dev.aerolarge.client.RoverClient;
 import dev.aerolarge.client.RubberDuckRenderer;
 import dev.aerolarge.client.ScoreboardRenderer;
@@ -244,6 +245,8 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(RocketRoar::tick);
         // The space helmet's air, breathed in it aboard a rocket in space.
         NeoForge.EVENT_BUS.addListener(HelmetBreathing::tick);
+        // Her greenhouse and her pool heard as one stands in them.
+        NeoForge.EVENT_BUS.addListener(RoomAmbience::tick);
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(CurtainBlock::itemTint, AerolargeRegistry.CABIN_CURTAIN_ITEM.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CabinSeatBlock::tint,
             AerolargeRegistry.ECONOMY_SEAT.get(), AerolargeRegistry.BUSINESS_SEAT.get()));

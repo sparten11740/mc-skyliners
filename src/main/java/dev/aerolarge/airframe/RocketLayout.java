@@ -622,12 +622,13 @@ public final class RocketLayout implements Layout {
     /**
      * Wires the control head once it stands: each engine bell's relays and the side jets' relays, as offsets from it
      * turned as the rocket was placed, the jets by the way each pushes it as seen from the head facing the front; how
-     * far its block stands above the fins' feet; her stories' floors; the livery she is built in; and the box round
-     * the rocket's blocks.
+     * far its block stands above the fins' feet; her stories' floors and whether they are furnished; the livery she is
+     * built in; and the box round the rocket's blocks.
      */
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = bells.stream().map(relays -> offsets(at, relays, rotation)).toList();
-        autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY(), storyRows(scale));
+        autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY(), storyRows(scale),
+            AerolargeConfig.ROCKET_ROOMS.get());
         autopilot.paint(BUILT_IN);
         int reach = reach();
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-reach, 0, -reach), new BlockPos(reach, height, reach)), rotation);

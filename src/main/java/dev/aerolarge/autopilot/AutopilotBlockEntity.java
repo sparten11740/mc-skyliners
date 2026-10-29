@@ -649,6 +649,12 @@ public class AutopilotBlockEntity extends BlockEntity {
      */
     private int[] rocketStories = new int[0];
     /**
+     * Whether its rocket's stories were furnished as her rooms when she was built, on the clients as on the server, so
+     * they hear her greenhouse and her pool only where they are (see the client's {@code RoomAmbience}); a rocket built
+     * before it was kept was furnished, as one is by default.
+     */
+    private boolean rocketRooms = true;
+    /**
      * How its zeppelin is painted; while a repaint sweeps along it, how it was painted before, and the game time the
      * repaint began, -1 for none (see {@link Livery}).
      */
@@ -700,12 +706,15 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * Wired when a rocket is built: it flies a rocket, its engine bells' relays and its two rings of side jets as
-     * offsets from it, how far its block stands above the fins' feet, and her stories' floors, as rows over them.
+     * offsets from it, how far its block stands above the fins' feet, her stories' floors, as rows over them, and
+     * whether they were furnished as her rooms.
      */
-    public void configureRocket(List<List<BlockPos>> bells, RocketPilot.Jets top, RocketPilot.Jets bottom, int wheelsBelow, int[] stories) {
+    public void configureRocket(List<List<BlockPos>> bells, RocketPilot.Jets top, RocketPilot.Jets bottom, int wheelsBelow, int[] stories,
+                                boolean rooms) {
         craft = Craft.ROCKET;
         this.wheelsBelow = wheelsBelow;
         rocketStories = stories.clone();
+        rocketRooms = rooms;
         rocket.configure(bells, top, bottom);
         linksChecked = true;
         changed();
@@ -733,6 +742,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** Its rocket's stories' floors as she was built, rows up from her fins' feet; none if they are not known. */
     public int[] rocketStories() {
         return rocketStories.clone();
+    }
+
+    /** Whether its rocket's stories were furnished as her rooms when she was built. */
+    public boolean rocketRooms() {
+        return rocketRooms;
     }
 
     /** What its rocket's pilot is doing, for play-testing; null for any other airframe. */
@@ -2809,12 +2823,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
         if (rocketStories.length > 0) {
             tag.putIntArray("RocketStories", rocketStories);
+            tag.putBoolean("RocketRooms", rocketRooms);
         }
     }
 
     /** Turned as its block has turned since it was saved, as its other links are (see {@link Turning}). */
     private void loadFrame(CompoundTag tag) {
         rocketStories = tag.getIntArray("RocketStories");
+        rocketRooms = !tag.contains("RocketRooms") || tag.getBoolean("RocketRooms");
         if (!tag.contains("FrameFrom")) {
             return;
         }

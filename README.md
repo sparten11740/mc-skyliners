@@ -1862,14 +1862,16 @@ ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in 
 an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its ceiling, its
 bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep curving round
 the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber
-ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. The techno
-club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls, the
-DJ deck behind the shaft playing the whole room, and a bar curving round her left side with stools; its windows are
-built at their darkest, so daylight does not wash out the floor's colours. The observation deck, her highest story, sees
-all round through its band of smoked glass: an orange armchair looking out to each side and the back, yellow bean bags
-beside each and light blue pairs at the diagonals, all facing out, under the airliner's starlight panels, dimmed so the
-stars outside outshine them, all over the ceiling and up the wall from the band to it, so the room over the band is a
-starry dome, a planetarium.
+ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. Both are
+heard as you stand in them: the air through the greenhouse's leaves over a trickle of irrigation, a bee now and then
+buzzing past, and the pool's water lapping in its tiled hall, now and then slapping against its side (the client setting
+`roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
+stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round
+her left side with stools; its windows are built at their darkest, so daylight does not wash out the floor's colours.
+The observation deck, her highest story, sees all round through its band of smoked glass: an orange armchair looking out
+to each side and the back, yellow bean bags beside each and light blue pairs at the diagonals, all facing out, under the
+airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up the wall from the
+band to it, so the room over the band is a starry dome, a planetarium.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
@@ -2019,9 +2021,9 @@ The settings can be changed in game under Mods → Aerolarge → Config. The cli
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
 rocket's `spaceSky`, `shootingStars` and `aurora`, her lift's `liftMusic` and `heightGauge`, the space helmet's
-`helmetBreathing`, and the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open
-only while a world is loaded, from the pause menu's Mods button while playing in single player; they are kept in
-`config/aerolarge-server.toml`, on a dedicated server in its own.
+`helmetBreathing`, her rooms' `roomAmbience`, and the hot air burners' `burnerSmoke`) are there from the title screen.
+The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
+they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
 into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a
@@ -2174,8 +2176,10 @@ climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends t
 flames from her base.
 Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
 the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the
-view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her middle is
-at the edge of space or over it (`EdgeOfSpace.reached`).
+view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her control
+head is at the edge of space or over it (`EdgeOfSpace.reached`). `RoomAmbience` plays her greenhouse and her pool to
+whoever stands in them, telling their story from her control head by the floors and furnishing her autopilot keeps
+(`rocketStories`, `rocketRooms`).
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

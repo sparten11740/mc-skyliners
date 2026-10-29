@@ -4,9 +4,13 @@ package dev.aerolarge.airframe;
  * A rocket's outline in metres, as seen from her right side, for drawing her without her blocks (the client's livery
  * selector pictures her so): how far her body reaches out from her axis at each height up her, and how far out toward
  * her front and her back her fins stand there, between the four ways, as {@link RocketShape} draws her; and her
- * stories' rows as {@link RocketLayout} builds her, which her liveries follow.
+ * stories' rows as {@link RocketLayout} builds her, which her liveries follow, and which of them are which rooms.
  */
 public final class RocketSilhouette {
+    /** Her greenhouse's story and her pool's, from the entry story up, for clients to hear them by. */
+    public static final int GREENHOUSE_STORY = RocketGreenhouse.STORY;
+    public static final int POOL_STORY = RocketPool.STORY;
+
     private RocketSilhouette() {
     }
 

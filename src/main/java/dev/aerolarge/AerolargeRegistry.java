@@ -1760,6 +1760,11 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_MRRP = sound("tardigrade_mrrp");
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_BLOOP = sound("tardigrade_bloop");
+    /** The rocket's greenhouse and pool as one stands in them: their loops and what is heard now and then over them. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> GREENHOUSE_AIR = sound("greenhouse_air");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GREENHOUSE_BEE = sound("greenhouse_bee");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POOL_WATER = sound("pool_water");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POOL_SLAP = sound("pool_slap");
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );
