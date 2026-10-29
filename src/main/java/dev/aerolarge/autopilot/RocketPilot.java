@@ -79,6 +79,14 @@ public final class RocketPilot {
     private static final double ARRIVED = 6;
     private static final double STILL = 0.5;
     private static final double SETTLING_ACROSS = 4;
+    /**
+     * Over where it is going for a while without settling, as a heavy load leaves it circling the spot, slower than it
+     * leans to correct: how near it counts as there, in blocks, how long it may circle there, in ticks, and how fast it
+     * may drift at most then, in blocks a second, before it starts down all the same, correcting on the way down.
+     */
+    private static final double CIRCLING_REACH = 12;
+    private static final int CIRCLING_MOST = 10 * 20;
+    private static final double CIRCLING_ACROSS = 3;
     /** Cruising, how fast it closes on its height, in blocks a second a block off it, and its climb at most then. */
     private static final double HOLD_GAIN = 0.5;
     private static final double HOLD_CLIMB = 8;
@@ -183,6 +191,8 @@ public final class RocketPilot {
     private double lastFront;
     private double lastRight;
     private int settled;
+    /** How long it has cruised near enough over where it is going without settling there, in ticks. */
+    private int circled;
     /** What it last set, for its report: the share of full thrust, each jet's signal and the climb it wanted. */
     private double lastShare;
     private final int[] jetSignals = new int[8];
@@ -247,6 +257,7 @@ public final class RocketPilot {
     void begin(SableFlight.State state) {
         counted = 0;
         settled = 0;
+        circled = 0;
         rose = state.position();
         lastFront = 0;
         lastRight = 0;
@@ -295,10 +306,21 @@ public final class RocketPilot {
         return switch (phase) {
             case TAKEOFF -> radio > CLEAR ? AutopilotBlockEntity.Phase.CLIMB : phase;
             case CLIMB -> coastsTo(state) >= highest ? AutopilotBlockEntity.Phase.CRUISE : phase;
-            case CRUISE -> toGo.length() < ARRIVED && across(state) < STILL ? AutopilotBlockEntity.Phase.DESCENT : phase;
+            case CRUISE -> arrived(state, toGo) ? AutopilotBlockEntity.Phase.DESCENT : phase;
             case DESCENT -> radio <= brakingHeight(state, mass) ? AutopilotBlockEntity.Phase.LAND : phase;
             default -> phase;
         };
+    }
+
+    /**
+     * Whether, cruising, it is over where it is going and may start down: hardly drifting there, or there a while and
+     * drifting slowly, circling it (see {@link #CIRCLING_REACH}).
+     */
+    private boolean arrived(SableFlight.State state, Vec3 toGo) {
+        double distance = toGo.length();
+        circled = distance < CIRCLING_REACH ? circled + 1 : 0;
+        boolean still = distance < ARRIVED && across(state) < STILL;
+        return still || circled >= CIRCLING_MOST && across(state) < CIRCLING_ACROSS;
     }
 
     /**
@@ -518,6 +540,7 @@ public final class RocketPilot {
         rose = null;
         counted = 0;
         settled = 0;
+        circled = 0;
         lastShare = 0;
         lastClimb = 0;
         lastTotal = 0;
