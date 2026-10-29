@@ -169,5 +169,9 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - N33: low gravity in space is off by default (`rocket.lowGravity`); worth a try with it on.
 - N34: the lab's tank stands partly in front of the back window at scale 2.
 - The shooting stars are subtle (short, small); easy to make bigger if you would like them showier.
+- At scales 3 and 4 the nine stories keep their player-sized heights, so her observation deck becomes an atrium 68 or
+  110 blocks tall up into her nose, its band of glass at its foot and its starlight ceiling far overhead (seen at
+  scale 4, which built 327,000 blocks in 3 s and every room, the pool a wide lagoon). More stories at the bigger
+  scales, or a taller band, would fill it; not changed tonight.
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
