@@ -112,7 +112,7 @@ final class RocketBunks extends RocketRoom {
      * of them beside the way between the quarters, and in one quarter in so many a bean bag at the next.
      */
     private void belongings(RocketQuarter quarter, int y, int corner, RandomSource random) {
-        int middle = (RocketQuarter.INNER + corner + 1) / 2;
+        int middle = RocketQuarter.middle(corner);
         int inner = RocketQuarter.INNER;
         int[][] spots = {{middle, middle}, {inner, middle}, {middle, inner}, {inner, inner}, {inner - 2, inner}, {inner - 2, inner + 1}};
         BlockState suitcase = AerolargeRegistry.SUITCASE.get().defaultBlockState()
@@ -142,7 +142,7 @@ final class RocketBunks extends RocketRoom {
 
     /**
      * The reading nook behind the shaft, looking at the poster on its back: an armchair facing it between two low
-     * bookshelves, a rug before it and a soul lantern hanging over the rug.
+     * bookshelves, a rug before it and a blue halo light hanging over the rug.
      */
     private void nook(int y) {
         int seat = RocketQuarter.INNER + 1;

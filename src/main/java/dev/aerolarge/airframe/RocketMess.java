@@ -39,8 +39,6 @@ final class RocketMess extends RocketRoom {
     private static final int PASS_ALONG = 1;
     /** How far out toward her side the long table begins, in blocks: beside the way in from the lift. */
     private static final int TABLE_FROM = 2;
-    /** How long the room's corner is out from the walkway, in blocks, from which the kitchen has an island. */
-    private static final int ROOMY = 4;
     /**
      * How long the room's corner is out from the walkway, in blocks, from which the long table runs along the corner's
      * middle; in a smaller room it runs a block nearer the walkway, where its far side's chairs still have room.
@@ -69,7 +67,7 @@ final class RocketMess extends RocketRoom {
         galley(y, RUNS[1][0], RUNS[1][1], false);
         pass(RocketQuarter.BACK_RIGHT, y, pass, Blocks.CAKE.defaultBlockState(), random);
         pass(RocketQuarter.BACK_LEFT, y, pass, Blocks.POTTED_RED_TULIP.defaultBlockState(), random);
-        if (corner - RocketQuarter.INNER >= ROOMY) {
+        if (RocketQuarter.roomy(corner)) {
             island(RocketQuarter.BACK_RIGHT, y, corner);
         }
         longTable(RocketQuarter.FRONT_RIGHT, y, corner, random);
@@ -157,7 +155,7 @@ final class RocketMess extends RocketRoom {
 
     /** A kitchen island of worktops in the middle of a roomy kitchen's corner, facing the pass. */
     private void island(RocketQuarter quarter, int y, int corner) {
-        int middle = (RocketQuarter.INNER + corner + 1) / 2;
+        int middle = RocketQuarter.middle(corner);
         BlockState worktop = AerolargeRegistry.GALLEY_WORKTOP.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, Direction.NORTH);
         for (int across = middle - ISLAND / 2; across <= middle + ISLAND / 2; across++) {
             put(quarter.x(across), y, quarter.z(middle), worktop);
@@ -170,7 +168,7 @@ final class RocketMess extends RocketRoom {
      * it.
      */
     private void longTable(RocketQuarter quarter, int y, int corner, RandomSource random) {
-        int along = (RocketQuarter.INNER + corner + 1) / 2 - (corner - RocketQuarter.INNER >= TABLE_ROOMY ? 0 : 1);
+        int along = RocketQuarter.middle(corner) - (corner - RocketQuarter.INNER >= TABLE_ROOMY ? 0 : 1);
         int last = TABLE_FROM;
         while (free(quarter.x(last + 1), y, quarter.z(along)) && free(quarter.x(last + 2), y, quarter.z(along))) {
             last++;
@@ -204,7 +202,7 @@ final class RocketMess extends RocketRoom {
      * over it.
      */
     private void table(RocketQuarter quarter, int y, int corner, RandomSource random) {
-        int middle = (RocketQuarter.INNER + corner + 1) / 2;
+        int middle = RocketQuarter.middle(corner);
         if (!put(quarter.x(middle), y, quarter.z(middle), AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState())) {
             return;
         }

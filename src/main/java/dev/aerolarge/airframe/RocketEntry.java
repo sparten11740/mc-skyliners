@@ -39,11 +39,6 @@ final class RocketEntry extends RocketRoom {
     private static final double LOCKERS_TO = 80;
     /** How far along toward her front the mudroom bench stands, in blocks, facing the boot shelves along her side. */
     private static final int BENCH_ALONG = 2;
-    /**
-     * How long the room's reach out to her side is, in blocks, from which the bench is three long instead of two and
-     * the boot shelves have a gap to walk through.
-     */
-    private static final int ROOMY = 4;
     /** The suitcases' colours. */
     private static final DyeColor[] CASES = {DyeColor.RED, DyeColor.BLUE, DyeColor.GREEN, DyeColor.PURPLE};
 
@@ -106,7 +101,7 @@ final class RocketEntry extends RocketRoom {
      * it, facing the kit-up room; a gap left in it where it is long, and a model rocket on top.
      */
     private void bootShelves(RocketQuarter quarter, int y, int arm, RandomSource random) {
-        int gap = arm - RocketQuarter.INNER >= ROOMY ? RocketQuarter.INNER + 1 + random.nextInt(arm - RocketQuarter.INNER - 1) : -1;
+        int gap = RocketQuarter.gap(arm, random);
         BlockState shelf = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.BOOTS, quarter.end());
         for (int across = RocketQuarter.INNER; across <= arm; across++) {
             if (across != gap) {
@@ -123,7 +118,7 @@ final class RocketEntry extends RocketRoom {
      * suitcase dropped by it or by the lockers, wherever the first of a few spots is free.
      */
     private void bench(RocketQuarter quarter, int y, int arm, RandomSource random) {
-        int length = arm - RocketQuarter.INNER >= ROOMY ? 3 : 2;
+        int length = RocketQuarter.roomy(arm) ? 3 : 2;
         int first = RocketQuarter.INNER + (arm - RocketQuarter.INNER + 1 - length) / 2;
         BlockState piece = AerolargeRegistry.GYM_BENCH.get().defaultBlockState().setValue(GymBenchBlock.FACING, quarter.end().getOpposite());
         List<BlockPos> bench = new ArrayList<>();
@@ -156,7 +151,7 @@ final class RocketEntry extends RocketRoom {
      * free beside them; and a rug under it all.
      */
     private void lounge(RocketQuarter quarter, int y, int corner, DyeColor colour, BlockState carpet, RandomSource random) {
-        int middle = (RocketQuarter.INNER + corner + 1) / 2;
+        int middle = RocketQuarter.middle(corner);
         put(quarter.x(middle), y, quarter.z(middle), AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState());
         Direction side = quarter.side();
         Direction end = quarter.end();

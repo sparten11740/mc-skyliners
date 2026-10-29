@@ -41,8 +41,6 @@ final class RocketCargoHold extends RocketRoom {
     private static final int STACKED = 3;
     private static final int RACK_BAYS = 3;
     private static final int TOOL_SHELVES = 2;
-    /** How long the room's reach out to her side is, in blocks, from which the racks have a gap to walk through. */
-    private static final int ROOMY = 4;
     /** How far round from her front the tool shelves over the workbench run from and to, in degrees. */
     private static final double TOOLS_FROM = 100;
     private static final double TOOLS_TO = 132;
@@ -118,7 +116,7 @@ final class RocketCargoHold extends RocketRoom {
      * long.
      */
     private void racks(RocketQuarter quarter, int y, int arm, RandomSource random) {
-        int gap = arm - RocketQuarter.INNER >= ROOMY ? RocketQuarter.INNER + 1 + random.nextInt(arm - RocketQuarter.INNER - 1) : -1;
+        int gap = RocketQuarter.gap(arm, random);
         for (int across = RocketQuarter.INNER; across <= arm; across++) {
             if (across != gap) {
                 rack(quarter.x(across), y, quarter.end(), random);
@@ -149,7 +147,7 @@ final class RocketCargoHold extends RocketRoom {
             BlockState tools = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.TOOLS, facingOff(run, at));
             stack(at.getX(), y, at.getZ(), tools, TOOL_SHELVES);
         }
-        int middle = (RocketQuarter.INNER + corner + 1) / 2;
+        int middle = RocketQuarter.middle(corner);
         put(quarter.x(middle), y, quarter.z(middle), Blocks.CRAFTING_TABLE.defaultBlockState());
         put(quarter.x(middle - 1), y, quarter.z(middle), AerolargeRegistry.BAR_STOOL.get().defaultBlockState());
         put(quarter.x(middle), y, quarter.z(middle + 1), Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE, AttachFace.FLOOR)
