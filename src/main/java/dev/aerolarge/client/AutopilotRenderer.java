@@ -116,7 +116,7 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
         // A rocket circles nothing, whatever her mode says.
         boolean circling = autopilot.craft() != Craft.ROCKET && (autopilot.lateral() == Lateral.ORBIT_LEFT || autopilot.lateral() == Lateral.ORBIT_RIGHT);
         Pictures pictures = Pictures.of(autopilot.craft());
-        Icon steering = pictures.lateral(autopilot.lateral(), autopilot.circle());
+        Icon steering = pictures.lateral(shownLateral(autopilot), autopilot.circle());
         // Pictures before text: text takes its own buffer, which ends the one the shapes went into.
         picture(buffers, matrix, pictures.phase(autopilot.phase()), PHASE_X, TOP_ROW, BIG_PICTURE, tint);
         picture(buffers, matrix, steering, LATERAL_X, TOP_ROW, BIG_PICTURE, tint);
@@ -165,5 +165,11 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
     @Override
     public AABB getRenderBoundingBox(AutopilotBlockEntity autopilot) {
         return surfaces.getRenderBoundingBox(autopilot);
+    }
+
+    /** The way it flies as its pictures show it: a rocket set to anything but the pin goes straight up and back down. */
+    static Lateral shownLateral(AutopilotBlockEntity autopilot) {
+        boolean rocketReturning = autopilot.craft() == Craft.ROCKET && autopilot.lateral() != Lateral.DESTINATION;
+        return rocketReturning ? Lateral.HEADING : autopilot.lateral();
     }
 }

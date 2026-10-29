@@ -1936,21 +1936,21 @@ silhouette along its top laid on her side, each story a band glowing as its stri
 or the little rocket beside it to pick them all, then use the same swatches, suns and strips under them. Set for all of
 her, a change climbs her a story at a time from the entry story up.
 
-To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle or landing switch
-beside the map, as she always comes down on the pin. It counts down ten seconds, a note each second rising toward
-lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set, white cloud and smoke
-billowing out over the ground from under her as she rises and again as she comes in to land, and fire and embers
-bursting from the ground under her while she is close over it (the server config's `rocket.plumes` leaves them out).
-Aboard, her engines lighting shakes the view for three seconds (the client setting `cameraShake` leaves it out). There
-it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
-it; once over the pin and no longer drifting it falls back (or, circling it slowly for ten seconds, as a heavily loaded
-rocket can, all the same), never faster than six tenths of gravity, so whoever stands aboard keeps their feet, and a
-landing burn catches it, leaning only a little to stop drifting for the last 20 blocks and not at all for the last 3,
-touching down at a block and a half a second. Falling back from space, her base glows and flames stream up behind it.
-Down on its fins it lets its engines go at once and switches itself off with a bell. Without a pin it comes back down
-where it rose. Told to land, or switched off in the air, it falls back where it is and lands there. Like the zeppelin, a
-rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket, standing on its fins, is in the
-creative tab.
+To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
+map no circle or landing switch and on it no circle round the pin, as she circles nothing and always comes down on the
+pin. It counts down ten seconds, a note each second rising toward lift-off and a bell as the engines light, then lifts
+off straight up and climbs to the height set, white cloud and smoke billowing out over the ground from under her as she
+rises and again as she comes in to land, and fire and embers bursting from the ground under her while she is close over
+it (the server config's `rocket.plumes` leaves them out). Aboard, her engines lighting shakes the view for three seconds
+(the client setting `cameraShake` leaves it out). There it holds its height and leans toward the pin, never more than 10
+degrees, as fast across as it can still slow down by it; once over the pin and no longer drifting it falls back (or,
+circling it slowly for ten seconds, as a heavily loaded rocket can, all the same), never faster than six tenths of
+gravity, so whoever stands aboard keeps their feet, and a landing burn catches it, leaning only a little to stop
+drifting for the last 20 blocks and not at all for the last 3, touching down at a block and a half a second. Falling
+back from space, her base glows and flames stream up behind it. Down on its fins it lets its engines go at once and
+switches itself off with a bell. Without a pin it comes back down where it rose. Told to land, or switched off in the
+air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
+autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then

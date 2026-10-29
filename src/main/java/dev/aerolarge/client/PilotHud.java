@@ -633,7 +633,8 @@ public final class PilotHud {
         if (autopilot.phase() != Phase.OFF) {
             float middle = -LONG_TICK;
             canvas.flush();
-            canvas.icon(pictures.lateral(autopilot.lateral(), autopilot.circle()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE, middle - Icon.SIZE / 2F);
+            canvas.icon(pictures.lateral(AutopilotRenderer.shownLateral(autopilot), autopilot.circle()), -HEADING_HALF_WIDTH - ICON_GAP - Icon.SIZE,
+                middle - Icon.SIZE / 2F);
             // A rocket circles nothing and steers for no heading: no figure beside her picture.
             String set = autopilot.craft() == Craft.ROCKET ? ""
                 : autopilot.lateral() != Lateral.HEADING ? String.valueOf(Math.round(autopilot.orbitRadius()))

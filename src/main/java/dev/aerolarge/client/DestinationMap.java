@@ -178,7 +178,8 @@ final class DestinationMap extends MapWidget {
             Font font = Minecraft.getInstance().font;
             Component pinned = Component.translatable("screen.aerolarge.autopilot_settings.map.pin", pin.getX(), pin.getZ());
             int x = getRight() - READOUT_INSET - font.width(pinned);
-            boolean crowded = x < getX() + READOUT_INSET + font.width(middleReadout()) + READOUT_GAP;
+            // Each one's dark band reaches a little past its text, as far again as the gap kept between them.
+            boolean crowded = x < getX() + READOUT_INSET + font.width(middleReadout()) + 2 * READOUT_GAP;
             label(graphics, pinned, x, PanelArt.RED, crowded ? 1 : 0);
         }
     }

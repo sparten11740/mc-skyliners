@@ -421,13 +421,14 @@ public class AutopilotSettingsScreen extends Screen {
         unstuck.visible = hopping || assembled && autopilot.stuck();
         land.visible = !unstuck.visible;
         // Flying to a pin, the map takes the steering's place, with how to circle it and whether to land there beside;
-        // the height and speed stay. A rocket circles nothing and always comes down on the pin, so she has neither.
+        // the height and speed stay. A rocket circles nothing and always comes down on the pin, so she has neither, nor
+        // any circle tile beside straight on.
         boolean rocket = autopilot != null && autopilot.craft() == Craft.ROCKET;
         map.visible = toPin;
         pinCircle.visible = toPin && !rocket;
         landToggle.visible = toPin && !rocket;
         fan.visible = !toPin;
-        turns.forEach(turn -> turn.visible = !toPin);
+        turns.forEach(turn -> turn.visible = !toPin && (!rocket || turn.turn == Turn.STRAIGHT));
         heading.setVisible(!toPin);
     }
 
@@ -444,7 +445,7 @@ public class AutopilotSettingsScreen extends Screen {
         }
         return switch (lateral) {
             case HEADING -> heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
-            case ORBIT_LEFT, ORBIT_RIGHT -> circle != autopilot.circle();
+            case ORBIT_LEFT, ORBIT_RIGHT -> autopilot.craft() != Craft.ROCKET && circle != autopilot.circle();
             case DESTINATION -> pinMoved(autopilot) || autopilot.craft() != Craft.ROCKET && (circle != autopilot.circle() || landAtPin != autopilot.landAtPin());
         };
     }

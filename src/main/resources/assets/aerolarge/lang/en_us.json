@@ -135,7 +135,6 @@
   "message.aerolarge.autopilot.mode.destination_land": "flying to the pin to land near it, on clear, level ground",
   "message.aerolarge.autopilot.mode.rocket_pin": "over to the pin and down on it",
   "message.aerolarge.autopilot.mode.rocket_back": "and back down where she rose",
-  "message.aerolarge.autopilot.mode.rocket_here": "and down where she is",
   "message.aerolarge.autopilot.pin.found": "Landing site found %s blocks from the pin: flying the approach, to land heading %s.",
   "message.aerolarge.autopilot.pin.nowhere": "Nowhere clear to land near the pin yet: flying over it again and again, looking as more of the land comes into view.",
   "message.aerolarge.autopilot.pin.go_around": "Not lined up with the landing site: going around to try again.",
