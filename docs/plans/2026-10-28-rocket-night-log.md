@@ -23,14 +23,14 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   cut-off and touchdown; smoke billowing over the ground at lift-off and landing, a bed of fire under her close over
   it and the view shaking aboard as she lights, flames streaming up her sides as she falls back from space.
 - **A mood for each room**: strips in the colour of its lift button, lanterns hung on chains, a planetarium of
-  starlight over the observation deck, warm-coloured seats.
+  starlight over the observation deck, warm-coloured seats; the greenhouse and the pool heard as you stand in them.
 - **The rover**: lowered from her cargo bay on a boom and winch, driven by remote from a chase camera, called home,
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
   pin, and three code reviews' findings.
 
-The last version tonight is alpha.176.
+The last version tonight is alpha.177.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -99,6 +99,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N53 | 04:00 | Third code review (of alpha.174) | Fixed: the lift-off fire's flash, five a second through her landing burn's last ten seconds, faster than the three a second the LED modes keep to (now no flash at all, rather than a slower strobe); the planetarium's notches at the ceiling's edge and slots at the four ways (it now fills from her skin in, but for the top row's skin blocks, where 36 of the deck's 48 ceiling strips had been lost); the shaft lanterns' copied loop and stale comments | Independent review agent; seen in fresh rockets at scales 2 and 3 | Review, lead |
 | N54 | 03:55 | A rocket's autopilot naming its mode | "over to the pin and down on it" or "and back down where she rose" in chat, TO PIN or RETURN on her screens, in place of the airliner's "circling it, radius 225" and "heading 000" | Found on the final play-test: a rocket circles nothing | Lead |
 | N55 | 04:08 | The deck's lower ceiling at scales 3 and 4 | It now reaches her skin all round (it stopped a block short at the four ways, holes up into the sealed space) and the deck's ceiling ring of strips hangs under it, not under the cockpit's floor over it | Found checking N53 at scale 3 | Lead |
+| N56 | 04:25 | Rooms heard (fourth panel) | Yes, two rooms: the greenhouse (air through the leaves, a trickle, a drip, and now and then a bee buzzing past) and the pool (water lapping in a tiled hall, and now and then a slap), each swelling in as you step into its room, over 150 Hz to stay clear of the lift's hum, client `roomAmbience` on by default; the galley left for another night (a fridge hum would sit on the lift's), the bunks and the deck quiet on purpose, the club and the lab already heard | The sound tells a child which floor they stepped out on, matching the lift board's icons; panel (children's designer, tech lead, audio designer) | Panel, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -192,6 +193,11 @@ Commits on main, newest last, with the versions handed out.
 - alpha.176: the deck's lower ceiling at scales 3 and 4 (N55); a rocket's pin without the airliner's circle and land
   switch. Play-tested: a fresh rocket at scale 3 (the ceiling meeting her skin, its strips under it); a rocket's
   screen set to a pin; a photo tour of every story of a fresh scale-2 rocket at noon, nothing floating or misplaced.
+- alpha.177: her greenhouse and pool heard (N56). Play-tested aboard a landed rocket: the greenhouse's loop and two
+  bees in half a minute, about six blocks off; the pool's loop and its slaps from the deck. Also, on alpha.176's code:
+  her lift-off fire by night (a glowing bed of flames and embers, no strobe); the deck by night at y 1,200 (stars
+  through the band, the planetarium over it); the world quit and reloaded while she climbed through y 350 with me
+  aboard (she carried on climbing, held at her height and came back down beside where she rose).
 
 ## Background agents
 
@@ -234,6 +240,9 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
   in the default), which the design panel called a red tint over the cockpit. A ceiling over the cockpit, as the deck
   has at the bigger scales, would hide it, but would also hide her livery from inside and needs care round what the
   nose holds; I left the choice to you (screenshots `run/blockpilot/screenshots/2026-10-29_04.11.32.*`).
+- The greenhouse's and the pool's new sounds (N56) are synthesised and were measured (about 10 dB under the lift's
+  hum, 30 dB down under 150 Hz) and heard playing in game, but nobody has listened to them by ear: worth a listen,
+  and `node tools/generate_sounds.mjs greenhouse_air greenhouse_bee pool_water pool_slap` remakes just those.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
