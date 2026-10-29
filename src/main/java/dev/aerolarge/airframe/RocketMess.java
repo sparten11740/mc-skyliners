@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The galley and mess, its kitchen at her back and its dining room at her front. The galley's units curve round her
  * back wall either side of its window, worktops and stowage, an oven in the middle of each run and a coffee machine at
- * its end, facing in, and at the window's end of her right's run the fridge, stocked; out to either side a pass of
+ * its end, facing in, and toward the window's end of her right's run the fridge, stocked; out to either side a pass of
  * worktops parts the kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of
  * tulips beside them; and where the kitchen is roomy an island stands in it. At her front right a long communal table
  * runs out from the way in, its chairs every which kind and colour, armchairs, stools and a bean bag, a few left out; at
@@ -41,6 +41,11 @@ final class RocketMess extends RocketRoom {
     private static final int TABLE_FROM = 2;
     /** How long the room's corner is out from the walkway, in blocks, from which the kitchen has an island. */
     private static final int ROOMY = 4;
+    /**
+     * How long the room's corner is out from the walkway, in blocks, from which the long table runs along the corner's
+     * middle; in a smaller room it runs a block nearer the walkway, where its far side's chairs still have room.
+     */
+    private static final int TABLE_ROOMY = 3;
     /** How many worktops long the island is. */
     private static final int ISLAND = 3;
     /** One in how many places at the long table has no chair. */
@@ -73,16 +78,18 @@ final class RocketMess extends RocketRoom {
 
     /**
      * A run of galley units round the back wall between two angles, an oven in its middle, a coffee machine on it, and
-     * at its end by the window, where asked, the fridge, stocked (see {@link GalleyFridgeBlock}).
+     * where asked, the fridge, stocked, in the last unit toward the window that has room for it (see
+     * {@link GalleyFridgeBlock}).
      */
     private void galley(int y, double from, double to, boolean fridge) {
         List<BlockPos> run = run(y, wall() - GALLEY_IN, from, to);
+        int fridgeUnit = fridge ? fridgeUnit(run, y) : -1;
         for (int unit = 0; unit < run.size(); unit++) {
             BlockPos at = run.get(unit);
             Direction facing = inward(roundOf(at.getX(), at.getZ()));
             if (unit == run.size() / 2) {
                 put(at.getX(), y, at.getZ(), AerolargeRegistry.GALLEY_OVEN.get().defaultBlockState().setValue(GalleyOvenBlock.FACING, facing));
-            } else if (fridge && unit == run.size() - 1) {
+            } else if (unit == fridgeUnit) {
                 fridge(at, facing);
             } else if (unit % 2 == 1) {
                 put(at.getX(), y, at.getZ(), AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, facing));
@@ -91,6 +98,20 @@ final class RocketMess extends RocketRoom {
                 put(at.getX(), y + 1, at.getZ(), AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, facing));
             }
         }
+    }
+
+    /**
+     * Which unit of a run the fridge takes: the last free one counting back from the window's end, the oven's apart;
+     * -1 for none.
+     */
+    private int fridgeUnit(List<BlockPos> run, int y) {
+        for (int unit = run.size() - 1; unit >= 0; unit--) {
+            BlockPos at = run.get(unit);
+            if (unit != run.size() / 2 && free(at.getX(), y, at.getZ())) {
+                return unit;
+            }
+        }
+        return -1;
     }
 
     /** The fridge at a block of the galley, facing the way given, stocked once it stands. */
@@ -148,7 +169,7 @@ final class RocketMess extends RocketRoom {
      * leaves a place at its far end; a chair at most places either side of it, and one at its end; a lantern over it.
      */
     private void longTable(RocketQuarter quarter, int y, int corner, RandomSource random) {
-        int along = (RocketQuarter.INNER + corner + 1) / 2 - (corner - RocketQuarter.INNER >= ROOMY - 1 ? 0 : 1);
+        int along = (RocketQuarter.INNER + corner + 1) / 2 - (corner - RocketQuarter.INNER >= TABLE_ROOMY ? 0 : 1);
         int last = TABLE_FROM;
         while (free(quarter.x(last + 1), y, quarter.z(along)) && free(quarter.x(last + 2), y, quarter.z(along))) {
             last++;
