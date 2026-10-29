@@ -1420,6 +1420,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, airlockPanelSounds());
   Object.assign(sounds, parcelScannerSounds());
   Object.assign(sounds, galleyFridgeSounds());
+  Object.assign(sounds, waveMachineSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4861,6 +4862,49 @@ function galleyFridgeLang() {
     "subtitles.aerolarge.fridge_close": "Fridge shuts",
   };
 }
+// The pool's wave machine (see WaveMachineBlock): a chrome foot, a white post and head, a ring round the head's top and a
+// big blue button in it, a wave drawn on the button. Idle, the button stands proud and the ring is a soft blue; running,
+// the button is pressed down, both glowing whatever the light around, the wave on it rolling.
+function waveMachine() {
+  const block = (name) => `${ID}:block/${name}`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  // A box every face of which shows the texture given, glowing where it runs.
+  const part = (from, to, texture, glowing) => ({ from, to, ...(glowing ? { shade: false } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture, ...(glowing ? lit : {}) }])) });
+  for (const running of [false, true]) {
+    write(`assets/${ID}/models/block/wave_machine${running ? "_running" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { chrome: block("wave_machine_chrome"), body: block("wave_machine_body"), ring: block(running ? "wave_ring_running" : "wave_ring"),
+        button: block(running ? "wave_button_running" : "wave_button"), particle: block("wave_machine_body") },
+      elements: [
+        part([4, 0, 4], [12, 1, 12], "#chrome"),
+        part([6.5, 1, 6.5], [9.5, 10, 9.5], "#body"),
+        part([3.5, 10, 3.5], [12.5, 13, 12.5], "#body"),
+        part([4, 13, 4], [12, 13.5, 12], "#ring", running),
+        part([5, 13, 5], [11, running ? 13.75 : 14.5, 11], "#button", running),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/wave_machine.json`, {
+    variants: { "running=false": { model: `${ID}:block/wave_machine` }, "running=true": { model: `${ID}:block/wave_machine_running` } },
+  });
+  cubes.wave_machine = null;
+}
+waveMachine();
+// The wave machine is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function waveMachineFittings() {
+  return ["wave_machine"];
+}
+// Its pumps starting with a rising whine and the waves washing through the channel (see tools/generate_sounds.mjs).
+function waveMachineSounds() {
+  return { wave_surge: { subtitle: `subtitles.${ID}.wave_surge`, sounds: [{ name: `${ID}:wave_surge` }] } };
+}
+function waveMachineLang() {
+  return {
+    "block.aerolarge.wave_machine": "Wave Machine",
+    "subtitles.aerolarge.wave_surge": "Waves surge",
+  };
+}
 function parcelScannerLang() {
   return {
     "block.aerolarge.parcel_scanner": "Parcel Scanner",
@@ -7250,6 +7294,7 @@ FITTINGS.push(...rocketRoomFittings());
 FITTINGS.push(...airlockPanelFittings());
 FITTINGS.push(...parcelScannerFittings());
 FITTINGS.push(...galleyFridgeFittings());
+FITTINGS.push(...waveMachineFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -8000,6 +8045,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...airlockPanelLang(),
   ...parcelScannerLang(),
   ...galleyFridgeLang(),
+  ...waveMachineLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

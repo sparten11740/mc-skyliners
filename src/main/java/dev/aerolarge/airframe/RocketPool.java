@@ -22,7 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * into the greenhouse's ceiling under it, and from among the leaves there swimmers are seen overhead. Rubber ducks
  * float round it. The deck at her front, between the channel's two ends, is the sunbathers': on her right, loungers
  * looking out of the front window with a side table between them; on her left, a towel shelf by the way in from the
- * lift; and bamboo in planters, the pool's palms, at the channel's ends.
+ * lift and the wave machine beside it, to set the channel churning (see {@link dev.aerolarge.block.WaveMachineBlock});
+ * and bamboo in planters, the pool's palms, at the channel's ends.
  */
 final class RocketPool extends RocketRoom {
     /** Her swimming pool's story, from the entry story up. */
@@ -67,6 +68,8 @@ final class RocketPool extends RocketRoom {
         int corner = corner();
         loungers(RocketQuarter.FRONT_RIGHT, floor + 1, corner, random);
         towels(RocketQuarter.FRONT_LEFT, floor + 1);
+        standing(RocketQuarter.FRONT_LEFT.x(RocketQuarter.INNER - 1), floor + 1, RocketQuarter.FRONT_LEFT.z(RocketQuarter.INNER),
+            AerolargeRegistry.WAVE_MACHINE.get().defaultBlockState());
         for (RocketQuarter quarter : new RocketQuarter[]{RocketQuarter.FRONT_RIGHT, RocketQuarter.FRONT_LEFT}) {
             palm(quarter, floor + 1, corner);
         }

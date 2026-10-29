@@ -2652,6 +2652,33 @@ function galleyFridgeSounds() {
 }
 galleyFridgeSounds();
 
+// The pool's wave machine (see WaveMachineBlock), with a random sequence of its own so the sounds round it are
+// unchanged: ten seconds, as long as its waves run. Its pumps start with a low whine rising and settling into a drone;
+// over it the water surges, a slow swell of low rushing noise every couple of seconds, each breaking in a wash of
+// spray, until the pumps wind down and the last wave dies away.
+function waveMachineSounds() {
+  const own = ownRandom(0x57617665);
+  const SECONDS = 10;
+  const samples = new Float64Array(SECONDS * RATE);
+  const water = Float64Array.from({ length: samples.length }, () => own() * 2 - 1);
+  const rush = lowPassed(water, 520);
+  const spray = resonance(water, 2600, 0.8);
+  const SWELL = 2.2;
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const pumping = Math.min(1, t / 0.8) * Math.min(1, (SECONDS - t) / 1.5);
+    phase += (2 * Math.PI * (55 + 25 * Math.min(1, t / 1.2) - 20 * Math.max(0, (t - (SECONDS - 1.5)) / 1.5))) / RATE;
+    const along = ((t - 0.6) % SWELL) / SWELL;
+    const surge = t < 0.6 ? 0 : Math.sin(Math.PI * Math.min(1, along / 0.7)) ** 2;
+    const breaking = t < 0.6 ? 0 : Math.max(0, Math.sin((Math.PI * (along - 0.55)) / 0.45)) * (along > 0.55 ? 1 : 0);
+    const fade = Math.min(1, (SECONDS - t) / 1.2);
+    samples[i] = 0.18 * pumping * (Math.sin(phase) + 0.4 * Math.sin(2 * phase)) + fade * (1.4 * surge * rush[i] + 0.35 * breaking * spray[i]);
+  }
+  writeSound("wave_surge", samples, 0.75);
+}
+waveMachineSounds();
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

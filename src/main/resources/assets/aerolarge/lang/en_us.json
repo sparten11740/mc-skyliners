@@ -926,6 +926,8 @@
   "container.aerolarge.galley_fridge": "Fridge",
   "subtitles.aerolarge.fridge_open": "Fridge opens and hums",
   "subtitles.aerolarge.fridge_close": "Fridge shuts",
+  "block.aerolarge.wave_machine": "Wave Machine",
+  "subtitles.aerolarge.wave_surge": "Waves surge",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

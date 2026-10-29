@@ -5850,4 +5850,22 @@ function galleyFridgeTextures() {
 }
 galleyFridgeTextures();
 
+// The pool's wave machine (see waveMachine in generate_resources.mjs): its white enamel, a blue band round its head,
+// and its chrome foot; the ring round its button, soft blue idle and bright running; and the button, blue with a white
+// wave across it, the wave rolling a frame at a time while it runs.
+function waveMachineTextures() {
+  const FRAMES = 8;
+  texture(blockOutput, "wave_machine_body", (x, y) => (y >= 6 && y <= 8 ? [0x2a, 0x7a, 0xd0] : [0xf2, 0xf5, 0xf8]), 2);
+  texture(blockOutput, "wave_machine_chrome", (x, y) => ((x + y) % 5 === 0 ? [0xe8, 0xec, 0xf0] : [0xb8, 0xc0, 0xc8]), 1);
+  texture(blockOutput, "wave_ring", () => [0x3a, 0x7a, 0xc0], 0);
+  texture(blockOutput, "wave_ring_running", () => [0x70, 0xe0, 0xff], 0);
+  // The wave: a crest running across the button, its height a sine of how far across, rolled on a pixel a frame.
+  const wave = (x, y, at) => Math.abs(y - (8 + 2.5 * Math.sin((2 * Math.PI * (x + at)) / 8))) < 1;
+  texture(blockOutput, "wave_button", (x, y) => (wave(x, y, 0) ? [0xf8, 0xfc, 0xff] : [0x1e, 0x5e, 0xc8]), 0);
+  texture(blockOutput, "wave_button_running", (x, y) => (wave(x, y % SIZE, Math.floor(y / SIZE)) ? [0xff, 0xff, 0xff] : [0x30, 0xa8, 0xf0]),
+    0, SIZE, SIZE * FRAMES);
+  writeFileSync(resolve(blockOutput, "wave_button_running.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
+}
+waveMachineTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -253,6 +253,8 @@ import dev.aerolarge.block.TransponderBlockEntity;
 import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
 import dev.aerolarge.block.WallLightBlock;
+import dev.aerolarge.block.WaveMachineBlock;
+import dev.aerolarge.block.WaveMachineBlockEntity;
 import dev.aerolarge.block.WcSignBlock;
 import dev.aerolarge.block.WcSignBlockEntity;
 import dev.aerolarge.block.WindSockBlock;
@@ -2226,6 +2228,13 @@ public final class AerolargeRegistry {
         BLOCK_ENTITIES.register("galley_fridge", () -> BlockEntityType.Builder.of(GalleyFridgeBlockEntity::new, GALLEY_FRIDGE.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> FRIDGE_OPEN = sound("fridge_open");
     public static final DeferredHolder<SoundEvent, SoundEvent> FRIDGE_CLOSE = sound("fridge_close");
+    /** The pool's wave machine, its button glowing, the block entity that draws its waves, and their sound. */
+    public static final DeferredBlock<WaveMachineBlock> WAVE_MACHINE = BLOCKS.registerBlock(
+        "wave_machine", WaveMachineBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().lightLevel(WaveMachineBlock::glow)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WaveMachineBlockEntity>> WAVE_MACHINE_ENTITY =
+        BLOCK_ENTITIES.register("wave_machine", () -> BlockEntityType.Builder.of(WaveMachineBlockEntity::new, WAVE_MACHINE.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> WAVE_SURGE = sound("wave_surge");
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired

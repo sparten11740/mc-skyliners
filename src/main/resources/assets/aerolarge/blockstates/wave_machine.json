@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "running=false": {
+      "model": "aerolarge:block/wave_machine"
+    },
+    "running=true": {
+      "model": "aerolarge:block/wave_machine_running"
+    }
+  }
+}

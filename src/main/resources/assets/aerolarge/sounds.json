@@ -1218,6 +1218,14 @@
       }
     ]
   },
+  "wave_surge": {
+    "subtitle": "subtitles.aerolarge.wave_surge",
+    "sounds": [
+      {
+        "name": "aerolarge:wave_surge"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [
