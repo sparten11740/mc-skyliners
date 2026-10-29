@@ -7299,13 +7299,10 @@ function dutyFreeKioskLang() {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
-// The care package is a wooden crate, the gym floor maple, the wall bars and the gym bench ash, and the garden beds and
-// the sprinklers' boxes spruce.
+// The care package is a wooden crate, the gym floor maple, the wall bars and the gym bench ash, the garden beds and the
+// sprinklers' boxes spruce, and the shelf units' end panels birch.
 write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:paper_plane_box`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`,
-  `${ID}:garden_bed`, `${ID}:sprinkler`]));
-// The care package is a wooden crate, the gym floor maple, and the wall bars and the gym bench ash.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:paper_plane_box`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`,
-  `${ID}:shelf_unit`]));
+  `${ID}:garden_bed`, `${ID}:sprinkler`, `${ID}:shelf_unit`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
