@@ -2637,9 +2637,10 @@ function girderDecor() {
   ];
   // On the floor it hangs by its shackle from an eye under the beam of a little A-frame gantry, each frame two steel
   // legs splayed from its apex to pads on the floor and a tie across them, the hook a pixel clear of the floor. How
-  // high the frames' apexes are, in pixels; and how long their legs are, and how far out to the side their feet stand.
+  // high the frames' apexes are, in pixels; and how long their legs are, each short of the floor by as much as its
+  // splay drops its outer edge, so none reaches through it, and how far out to the side their feet stand.
   const APEX = 15;
-  const GANTRY_LEG = APEX / Math.cos(Math.PI / 8);
+  const GANTRY_LEG = APEX / Math.cos(Math.PI / 8) - 0.75 * Math.tan(Math.PI / 8);
   const GANTRY_SPLAY = APEX * Math.tan(Math.PI / 8);
   const aFrame = (z) => [
     ...[22.5, -22.5].map((angle) => part([7.25, APEX - GANTRY_LEG, z - 0.75], [8.75, APEX, z + 0.75], "#girder", { rotation: { angle, axis: "z", origin: [8, APEX, z] } })),
@@ -2781,9 +2782,10 @@ function girderDecor() {
   ];
   // On the floor it stands on a short tripod, two legs splayed to its sides and one behind, from a collar up its
   // column, angled up away from whoever stood it there, its cone of light reaching up past the block. How high the legs
-  // meet the column, in pixels; and how long they are, and how far out their feet stand.
+  // meet the column, in pixels; and how long they are, each short of the floor by as much as its splay drops its outer
+  // edge, so none reaches through it, and how far out their feet stand.
   const HUB = 4.5;
-  const TRIPOD_LEG = HUB / Math.cos(Math.PI / 4);
+  const TRIPOD_LEG = HUB / Math.cos(Math.PI / 4) - 0.5 * Math.tan(Math.PI / 4);
   const TRIPOD_SPLAY = HUB;
   const tripodLeg = (axis, angle) => part([7.5, HUB - TRIPOD_LEG, 7.5], [8.5, HUB, 8.5], "#iron", { rotation: { angle, axis, origin: [8, HUB, 8] } });
   const upward = { angle: 22.5, axis: "x", origin: [8, 11.5, 8] };
@@ -2826,10 +2828,10 @@ function girderDecor() {
     strut([15.25, 3], [10.75, 7.5], 1, "#iron"),
   ];
   // On the floor the cables cross under a cable cover: a yellow lid over two channels in a black rubber hump, a cable
-  // in each, showing at its ends, and a ramp down to the floor along each side; it runs across the block, so covers
-  // laid end to end make one.
+  // in each, showing at its ends, and a ramp down to the floor along each side, a plate thin enough that tipped down
+  // from the hump it meets the floor and goes no further; it runs across the block, so covers laid end to end make one.
   const coverCable = (z, colour) => part([0, 0.1, z], [16, 1.6, z + 1.5], "#cables", { uv: [2 * colour, 0, 2 * colour + 2, 16] });
-  const ramp = (z0, z1, angle, edge) => part([0, 0, z0], [16, 2.5, z1], "#iron", { rotation: { angle, axis: "x", origin: [8, 2.5, edge] } });
+  const ramp = (z0, z1, angle, edge) => part([0, 1.5, z0], [16, 2.5, z1], "#iron", { rotation: { angle, axis: "x", origin: [8, 2.5, edge] } });
   const cableCover = [
     part([0, 1.75, 5], [16, 2.5, 11], "#lid", { uv: [1, 1, 15, 7] }),
     ...[5, 7.625, 10.25].map((z) => part([0, 0, z], [16, 1.75, z + 0.75], "#iron")),
