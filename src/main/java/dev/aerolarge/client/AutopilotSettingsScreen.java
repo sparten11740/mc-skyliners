@@ -155,6 +155,17 @@ public class AutopilotSettingsScreen extends Screen {
     private static final double PATH_BEND = 0.7;
     private static final int PATH_PIECES = 16;
     /**
+     * A rocket's way up and back down where she rose, drawn on the fan in pixels: how far either side of her its two
+     * legs run, how far over the fan's foot it turns at the top, its arrowheads' size, and the turn's pieces.
+     */
+    private static final int TRIP_HALF_WIDTH = 13;
+    private static final int TRIP_TOP = 40;
+    private static final int TRIP_ARROW = 4;
+    private static final int TRIP_PIECES = 12;
+    /** Her launch pad under her at the fan's foot, in pixels: how far it reaches either side of her, and how thick. */
+    private static final int PAD_HALF_WIDTH = 18;
+    private static final int PAD_HEIGHT = 2;
+    /**
      * The sky in its control, in pixels: its frame, the ground along its bottom, the room above and below its scale,
      * where across it its airliners fly, and how far from the height set the airliner must be for the climb or
      * descent to it to be drawn.
@@ -308,8 +319,13 @@ public class AutopilotSettingsScreen extends Screen {
 
     /** The circle round the pin as chosen, at the speed set, in blocks, for the map to draw; none for a rocket. */
     private int circleRadius() {
+        return rocket() ? 0 : (int) Math.round(circle.radius(speed.value(), gravity));
+    }
+
+    /** Whether the autopilot flies a rocket, which circles nothing, and holds no heading without a pin. */
+    private boolean rocket() {
         AutopilotBlockEntity autopilot = autopilot();
-        return autopilot != null && autopilot.craft() == Craft.ROCKET ? 0 : (int) Math.round(circle.radius(speed.value(), gravity));
+        return autopilot != null && autopilot.craft() == Craft.ROCKET;
     }
 
     @Override
@@ -422,14 +438,16 @@ public class AutopilotSettingsScreen extends Screen {
         land.visible = !unstuck.visible;
         // Flying to a pin, the map takes the steering's place, with how to circle it and whether to land there beside;
         // the height and speed stay. A rocket circles nothing and always comes down on the pin, so she has neither, nor
-        // any circle tile beside straight on.
-        boolean rocket = autopilot != null && autopilot.craft() == Craft.ROCKET;
+        // any circle tile beside straight on; and with no pin she comes back down where she rose whatever the heading,
+        // so her fan shows her way up and back and takes no heading.
+        boolean rocket = rocket();
         map.visible = toPin;
         pinCircle.visible = toPin && !rocket;
         landToggle.visible = toPin && !rocket;
         fan.visible = !toPin;
+        fan.active = !rocket;
         turns.forEach(turn -> turn.visible = !toPin && (!rocket || turn.turn == Turn.STRAIGHT));
-        heading.setVisible(!toPin);
+        heading.setVisible(!toPin && !rocket);
     }
 
     /**
@@ -444,7 +462,7 @@ public class AutopilotSettingsScreen extends Screen {
             return true;
         }
         return switch (lateral) {
-            case HEADING -> heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
+            case HEADING -> autopilot.craft() != Craft.ROCKET && heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
             case ORBIT_LEFT, ORBIT_RIGHT -> autopilot.craft() != Craft.ROCKET && circle != autopilot.circle();
             case DESTINATION -> pinMoved(autopilot) || autopilot.craft() != Craft.ROCKET && (circle != autopilot.circle() || landAtPin != autopilot.landAtPin());
         };
@@ -902,7 +920,9 @@ public class AutopilotSettingsScreen extends Screen {
      * The steering fan, seen from above: the airliner at its foot nose up, as on the moving map; its rim cyan while it
      * holds a heading, ticked every so many degrees, north faintly on it; holding a heading, the magenta bug where it
      * is set to fly and a path from the nose to it; and a ghost of the bug where it is pointed at. Clicked, it holds
-     * the heading clicked, straight on.
+     * the heading clicked, straight on. A rocket, which holds no heading, is drawn on it from the side instead, with
+     * her way up from beside her, over her and back down where she rose (see {@link #roundTrip}); it takes no clicks
+     * then.
      */
     private final class SteeringFan extends Gauge {
         SteeringFan(int x, int y, int width) {
@@ -958,6 +978,10 @@ public class AutopilotSettingsScreen extends Screen {
             for (double turn = -90; turn <= 90; turn += 1) {
                 mark(graphics, turn, FAN_RADIUS - 1, FAN_RADIUS, 2, rim);
             }
+            if (rocket()) {
+                roundTrip(graphics, steering);
+                return;
+            }
             for (int turn = -90; turn <= 90; turn += AutopilotDeskArt.FAN_TICK) {
                 mark(graphics, turn, FAN_RADIUS - (turn % AutopilotDeskArt.FAN_LONG_TICK == 0 ? FAN_LONG : FAN_SHORT), FAN_RADIUS, 1, rim);
             }
@@ -978,6 +1002,40 @@ public class AutopilotSettingsScreen extends Screen {
             String set = String.format(Locale.ROOT, "%03d°", ghost != null ? ghost : heading.value());
             int colour = ghost != null ? PanelArt.WHITE : steering ? PanelArt.CYAN : PanelArt.GREY;
             graphics.drawString(font, set, getRight() - font.width(set) - 4, getY() + 4, colour, false);
+        }
+
+        /**
+         * A rocket seen from the side on her launch pad at the fan's foot, and her way up from beside her, over her
+         * and back down the other side, magenta while she is set to come back where she rose and grey otherwise; and
+         * RETURN in the corner where an airliner's heading is, cyan while set and grey otherwise.
+         */
+        private void roundTrip(GuiGraphics graphics, boolean chosen) {
+            int colour = chosen ? PanelArt.MAGENTA : AutopilotDeskArt.RIM_IDLE;
+            int pad = footY() + 1 - PAD_HEIGHT;
+            graphics.fill(footX() - PAD_HALF_WIDTH, pad, footX() + PAD_HALF_WIDTH + 1, footY() + 1, PICTURE_FAINT);
+            int ground = pad - 1;
+            int top = footY() - TRIP_TOP;
+            int left = footX() - TRIP_HALF_WIDTH;
+            int right = footX() + TRIP_HALF_WIDTH;
+            line(graphics, left, ground, left, top, 2, colour);
+            line(graphics, right, top, right, ground, 2, colour);
+            for (int k = 0; k < TRIP_PIECES; k++) {
+                double a0 = Math.PI * k / TRIP_PIECES;
+                double a1 = Math.PI * (k + 1) / TRIP_PIECES;
+                line(graphics, footX() - Math.cos(a0) * TRIP_HALF_WIDTH, top - Math.sin(a0) * TRIP_HALF_WIDTH,
+                    footX() - Math.cos(a1) * TRIP_HALF_WIDTH, top - Math.sin(a1) * TRIP_HALF_WIDTH, 2, colour);
+            }
+            arrowhead(graphics, left, (ground + top) / 2 - TRIP_ARROW, -1, colour);
+            arrowhead(graphics, right, (ground + top) / 2 + TRIP_ARROW, 1, colour);
+            pictures().fromTheSide().draw(graphics, footX() - Icon.SIZE / 2, pad - Icon.SIZE, 1, true);
+            String back = Component.translatable("screen.aerolarge.autopilot.mode.rocket_back").getString();
+            graphics.drawString(font, back, getRight() - font.width(back) - 4, getY() + 4, chosen ? PanelArt.CYAN : PanelArt.GREY, false);
+        }
+
+        /** An arrowhead on a line running up or down, its tip where given, pointing up (-1) or down (1). */
+        private void arrowhead(GuiGraphics graphics, int x, int y, int way, int colour) {
+            line(graphics, x, y, x - TRIP_ARROW, y - way * TRIP_ARROW, 2, colour);
+            line(graphics, x, y, x + TRIP_ARROW, y - way * TRIP_ARROW, 2, colour);
         }
 
         /** The path from the airliner's nose round to the bug, so many degrees right of the nose: a magenta curve. */

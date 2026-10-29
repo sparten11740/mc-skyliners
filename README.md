@@ -2100,7 +2100,8 @@ circling it slowly for ten seconds, as a heavily loaded rocket can, all the same
 gravity, so whoever stands aboard keeps their feet, and a landing burn catches it, leaning only a little to stop
 drifting for the last 20 blocks and not at all for the last 3, touching down at a block and a half a second. Falling
 back from space, her base glows and flames stream up behind it. Down on its fins it lets its engines go at once and
-switches itself off with a bell. Without a pin it comes back down where it rose. Told to land, or switched off in the
+switches itself off with a bell. Without a pin it comes back down where it rose, as its screen shows in place of a
+heading: the rocket on its pad, its way up and back down beside it. Told to land, or switched off in the
 air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
 autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
 
