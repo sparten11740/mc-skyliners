@@ -4,6 +4,7 @@ import dev.aerolarge.AerolargeRegistry;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A rocket's stairs button: a lit push-button (see {@link LitButtonBlock}), its amber cap showing the airliner's
@@ -31,6 +33,18 @@ public class RocketStairsButtonBlock extends LitButtonBlock implements EntityBlo
         if (level instanceof ServerLevel server) {
             RocketStairsBlockEntity.press(server, pos);
         }
+    }
+
+    /**
+     * Used while it is in, it does nothing more but let go again in a moment, in case the tick it waits on was lost,
+     * as Sable's assembly can lose one (see {@link LostTicks}).
+     */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (state.getValue(POWERED) && level instanceof ServerLevel server) {
+            LostTicks.rearm(server, pos, this, 1);
+        }
+        return super.useWithoutItem(state, level, pos, player, hit);
     }
 
     @Nullable
