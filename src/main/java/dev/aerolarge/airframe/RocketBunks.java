@@ -129,7 +129,10 @@ final class RocketBunks extends RocketRoom {
         }
     }
 
-    /** The wall of bookshelves out toward her side from the walkway, between the front pairs and the back ones, uneven on top. */
+    /**
+     * The wall of bookshelves out toward her side from the walkway, between the front pairs and the back ones, uneven
+     * on top.
+     */
     private void bookshelves(RocketQuarter quarter, int y, int arm, RandomSource random) {
         BlockState shelf = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.BOOKS, quarter.end());
         for (int across = RocketQuarter.INNER; across <= arm; across++) {

@@ -220,7 +220,8 @@ abstract class RocketRoom implements RocketPiece {
 
     /**
      * How far out the room's corners reach, the same across and along: the furthest a spot so far out both ways at a
-     * diagonal is in the room (see {@link RocketQuarter}).
+     * diagonal is in the room (see {@link RocketQuarter}), and never less than the first spot clear of the walkway,
+     * which may not be in a room too small for any corner; what is put there is only put where it is free.
      */
     protected int corner() {
         int y = floor() + 1;
@@ -247,7 +248,7 @@ abstract class RocketRoom implements RocketPiece {
 
     /**
      * The way a piece of a curved run of furniture faces, its front toward her axis: the nearest of the four ways in,
-     * unless another piece of the run stands there, as at a corner where the run steps round, and then the other way in.
+     * unless another piece of the run stands there, as where the run steps round, and then the other way in.
      */
     protected static Direction facingOff(List<BlockPos> run, BlockPos at) {
         double round = roundOf(at.getX(), at.getZ());

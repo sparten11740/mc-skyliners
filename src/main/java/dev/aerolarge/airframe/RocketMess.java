@@ -25,8 +25,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * its end, facing in, and toward the window's end of her right's run the fridge, stocked; out to either side a pass of
  * worktops parts the kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of
  * tulips beside them; and where the kitchen is roomy an island stands in it. At her front right a long communal table
- * runs out from the way in, its chairs every which kind and colour, armchairs, stools and a bean bag, a few left out; at
- * her front left a smaller table with its own odd set of chairs. A halo light hangs over each table.
+ * runs out from the way in, its chairs every which kind and colour, armchairs, stools and a bean bag, a few left out;
+ * at her front left a smaller table with its own odd set of chairs. A halo light hangs over each table.
  */
 final class RocketMess extends RocketRoom {
     /** Her galley and mess's story, from the entry story up. */
@@ -129,8 +129,8 @@ final class RocketMess extends RocketRoom {
     }
 
     /**
-     * The pass out toward her side from the walkway, worktops facing the dining room with a bar stool before every other
-     * one; on it a shelf of jars at its outer end and the treat given on another.
+     * The pass out toward her side from the walkway, worktops facing the dining room with a bar stool before every
+     * other one; on it a shelf of jars at its outer end and the treat given on another.
      */
     private void pass(RocketQuarter quarter, int y, int reach, BlockState treat, RandomSource random) {
         BlockState worktop = AerolargeRegistry.GALLEY_WORKTOP.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, Direction.NORTH);
@@ -198,7 +198,10 @@ final class RocketMess extends RocketRoom {
         }
     }
 
-    /** A smaller table in the middle of a quarter's corner, an odd chair on each side of it that has room, a lantern over it. */
+    /**
+     * A smaller table in the middle of a quarter's corner, an odd chair on each side of it that has room, a lantern
+     * over it.
+     */
     private void table(RocketQuarter quarter, int y, int corner, RandomSource random) {
         int middle = (RocketQuarter.INNER + corner + 1) / 2;
         if (!put(quarter.x(middle), y, quarter.z(middle), AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState())) {
@@ -213,7 +216,9 @@ final class RocketMess extends RocketRoom {
         pendant(quarter.x(middle), quarter.z(middle), WARM_LIGHT);
     }
 
-    /** A chair of a kind picked at random, facing the way given: now and then a stool or a bean bag, else an armchair. */
+    /**
+     * A chair of a kind picked at random, facing the way given: now and then a stool or a bean bag, else an armchair.
+     */
     private void chair(int x, int y, int z, Direction facing, RandomSource random) {
         int kind = random.nextInt(CHAIR_KINDS);
         if (kind == 0) {

@@ -17,14 +17,14 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The techno club: its floor laid all over with the dance floor's black glass tiles round the shaft, speaker stacks
- * two high at the four diagonals facing in, a disco ball over each quarter of the floor, and behind the shaft at her
- * back the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor, the fog machine beside it (see
+ * The techno club: its floor laid all over with the dance floor's black glass tiles round the shaft, speaker stacks two
+ * high at the four diagonals facing in, a disco ball over each quarter of the floor, and behind the shaft at her back
+ * the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor, the fog machine beside it (see
  * {@link FogMachineBlock}). Along her left side a bar curves round the window there, its counter parting the bar from
  * the floor, stools before it and the back bar's lit shelves of bottles behind it either side of the window. At her
- * front right a booth: armchairs round a low table, walled off from the way in by shelves of records; at her front left,
- * by the bar's end, a coat corner of lockers. Its windows are built at their darkest, so daylight does not wash out the
- * dance floor.
+ * front right a booth: armchairs round a low table, walled off from the way in by shelves of records; at her front
+ * left, by the bar's end, a coat corner of lockers. Its windows are built at their darkest, so daylight does not wash
+ * out the dance floor.
  */
 final class RocketClub extends RocketRoom {
     /** Her techno club's story, from the entry story up. */
@@ -48,7 +48,7 @@ final class RocketClub extends RocketRoom {
      * shaft.
      */
     private static final int FOG_ACROSS = 2;
-    /** How far out toward her side from the booth's table its wall of records stands, in blocks, and how high. */
+    /** How far from the booth's table toward the way in its wall of records stands, in blocks, and how high. */
     private static final int BOOTH_WALL = 2;
     private static final int RECORDS_HIGH = 2;
     /** The booth's armchairs' colours, a chair's picked at random. */
@@ -102,8 +102,8 @@ final class RocketClub extends RocketRoom {
     }
 
     /**
-     * The bar: its counter in a curve round her left side, facing in, a stool before every other block of it; and behind
-     * it, against the skin where the window leaves room, the back bar, its cabinet under its lit shelves.
+     * The bar: its counter in a curve round her left side, facing in, a stool before every other block of it; and
+     * behind it, against the skin where the window leaves room, the back bar, its cabinet under its lit shelves.
      */
     private void bar(int y) {
         double out = wall() - BAR_IN;

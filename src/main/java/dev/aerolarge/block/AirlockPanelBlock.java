@@ -39,7 +39,10 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
     /** How long the airlock takes to cycle and how long it stays clear before it seals again, in ticks. */
     private static final int CYCLE_TICKS = 60;
     private static final int CLEAR_TICKS = 200;
-    /** How many puffs of air leave its vents as it cycles, how far they spread and how fast, in blocks and blocks a tick. */
+    /**
+     * How many puffs of air leave its vents as it cycles, how far they spread and how fast, in blocks and blocks a
+     * tick.
+     */
     private static final int PUFFS = 14;
     private static final double PUFF_SPREAD = 0.3;
     private static final double PUFF_SPEED = 0.03;

@@ -19,7 +19,9 @@ public class WaveMachineBlockEntity extends BlockEntity {
     private static final int REACH = 24;
     /** How many spots round it are tried each tick while it runs. */
     private static final int TRIES = 16;
-    /** How many splashes a spot of open water throws up, how high they jump, in blocks a tick, and how far they spread. */
+    /**
+     * How many splashes a spot of open water throws up, how high they jump, in blocks a tick, and how far they spread.
+     */
     private static final int SPLASHES = 3;
     private static final double JUMP = 0.12;
     private static final double SPREAD = 0.08;

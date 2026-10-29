@@ -37,9 +37,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The club's fog machine: a black flight case on the floor by the DJ deck, a chrome nozzle at its front and a light on
  * its top that says how it stands (FOG). Ready, the light is green. Pressed, it hisses and pumps a stream of thick fog
  * out of its nozzle for five seconds, its nozzle glowing and its light white, the fog rolling out over the dance floor
- * and hanging in the disco balls' light (drawn on the client, see {@link FogMachineBlockEntity}); then it heats up again,
- * its light amber, and a beep says when it is ready. Pressed before then, it only clicks. FACING is the way its nozzle
- * points.
+ * and hanging in the disco balls' light (drawn on the client, see {@link FogMachineBlockEntity}); then it heats up
+ * again, its light amber, and a beep says when it is ready. Pressed before then, it only clicks. FACING is the way its
+ * nozzle points.
  */
 public class FogMachineBlock extends BaseEntityBlock {
     private static final MapCodec<FogMachineBlock> CODEC = simpleCodec(FogMachineBlock::new);
@@ -112,8 +112,8 @@ public class FogMachineBlock extends BaseEntityBlock {
     }
 
     /**
-     * Pumps fog when ready, with its hiss; while it pumps or heats up, only a click, or its next step at once where that
-     * was lost, as when the rocket was assembled in the middle of one.
+     * Pumps fog when ready, with its hiss; while it pumps or heats up, only a click, or its next step at once where
+     * that was lost, as when the rocket was assembled in the middle of one.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

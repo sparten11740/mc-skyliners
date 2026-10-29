@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 final class RocketCargoHold extends RocketRoom {
     /** Her cargo bay's story, from the entry story up. */
     static final int STORY = 1;
-    /** How far in from the skin's inside the containers and the crates stand, in blocks. */
+    /** How far in from the skin's inside the containers, and the crates and the tool shelves, stand, in blocks. */
     private static final double CONTAINERS_IN = 3.5;
     private static final double CRATES_IN = 2.5;
     /** How far round from her front the containers and the crates' stacks stand, in degrees. */
@@ -113,7 +113,10 @@ final class RocketCargoHold extends RocketRoom {
         }
     }
 
-    /** A wall of pallet racks out toward her side from the walkway, each bay loaded at random, a gap left where it is long. */
+    /**
+     * A wall of pallet racks out toward her side from the walkway, each bay loaded at random, a gap left where it is
+     * long.
+     */
     private void racks(RocketQuarter quarter, int y, int arm, RandomSource random) {
         int gap = arm - RocketQuarter.INNER >= ROOMY ? RocketQuarter.INNER + 1 + random.nextInt(arm - RocketQuarter.INNER - 1) : -1;
         for (int across = RocketQuarter.INNER; across <= arm; across++) {
@@ -123,7 +126,10 @@ final class RocketCargoHold extends RocketRoom {
         }
     }
 
-    /** A rack of bays one on another at a block along her side-to-side line, facing the way given, each loaded at random. */
+    /**
+     * A rack of bays one on another at a block along her side-to-side line, facing the way given, each loaded at
+     * random.
+     */
     private void rack(int x, int y, Direction facing, RandomSource random) {
         for (int bay = 0; bay < RACK_BAYS; bay++) {
             PalletRackBlock.Load load = LOADS[random.nextInt(LOADS.length)];
@@ -134,8 +140,8 @@ final class RocketCargoHold extends RocketRoom {
     }
 
     /**
-     * The workbench corner: shelves of tool cases two high round its corner, facing in, and in the middle of the corner a
-     * crafting table, a stool to sit at it and a grindstone beside it.
+     * The workbench corner: shelves of tool cases two high round its corner, facing in, and in the middle of the corner
+     * a crafting table, a stool to sit at it and a grindstone beside it.
      */
     private void workbench(RocketQuarter quarter, int y, int corner) {
         List<BlockPos> run = run(y, wall() - CRATES_IN, TOOLS_FROM, TOOLS_TO);
@@ -150,7 +156,10 @@ final class RocketCargoHold extends RocketRoom {
             .setValue(GrindstoneBlock.FACING, quarter.side()));
     }
 
-    /** Crates piled over a quarter's corner in stacks of one to three, as they were set down, a spot left bare now and then. */
+    /**
+     * Crates piled over a quarter's corner in stacks of one to three, as they were set down, a spot left bare now and
+     * then.
+     */
     private void pile(RocketQuarter quarter, int y, int corner, RandomSource random) {
         for (BlockPos at : BlockPos.betweenClosed(RocketQuarter.INNER, y, RocketQuarter.INNER, corner, y, corner)) {
             if (random.nextInt(PILE_GAPS) > 0) {

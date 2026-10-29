@@ -14,7 +14,10 @@ enum RocketQuarter {
     BACK_LEFT(-1, 1),
     FRONT_LEFT(-1, -1);
 
-    /** How far out from her axis a quarter's spots begin, either way, in blocks: just clear of the walkway round her shaft. */
+    /**
+     * How far out from her axis a quarter's spots begin, either way, in blocks: just clear of the walkway round her
+     * shaft.
+     */
     static final int INNER = RocketLayout.SHAFT + 2;
 
     private final int right;
@@ -43,10 +46,5 @@ enum RocketQuarter {
     /** The way out toward the quarter's end of her: her front or her back. */
     Direction end() {
         return back > 0 ? Direction.SOUTH : Direction.NORTH;
-    }
-
-    /** Whether the quarter is at her front, where the way out from the lift's door runs between the two. */
-    boolean atFront() {
-        return back < 0;
     }
 }

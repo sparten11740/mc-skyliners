@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class GalleyFridgeBlockEntity extends RandomizableContainerBlockEntity {
     /** Three rows of a chest's nine slots. */
     private static final int SLOTS = 27;
+    /** How loud its door's pop and hum and its thud are. */
     private static final float VOLUME = 0.7F;
     /** What the blueprint stocks a fridge with, from its first slot on: something for everyone aboard. */
     private static final List<ItemStack> STOCK = List.of(

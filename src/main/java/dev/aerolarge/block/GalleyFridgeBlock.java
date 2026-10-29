@@ -10,7 +10,6 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -23,8 +22,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * The galley's fridge, a stainless unit as high as the worktops beside it, a blue light glowing by its handle. Used, its
- * door swings open with the pop of its seal and the hum of its cooling, and its inside lights up, shelves of milk,
+ * The galley's fridge, a stainless unit as high as the worktops beside it, a blue light glowing by its handle. Used,
+ * its door swings open with the pop of its seal and the hum of its cooling, and its inside lights up, shelves of milk,
  * cheese, greens, jars and bottles; it holds three rows of a chest's slots, and the blueprint stocks it with something
  * to eat (see {@link GalleyFridgeBlockEntity}). Its door shuts behind the last to look in. FACING is the way its door
  * faces, its back to the wall.
@@ -48,11 +47,6 @@ public class GalleyFridgeBlock extends HorizontalDirectionalBlock implements Ent
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, OPEN);
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     /** How bright it glows: lit inside while open, dark shut. */

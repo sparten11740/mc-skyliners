@@ -42,6 +42,8 @@ final class RocketPool extends RocketRoom {
     private static final double DUCKS_IN = 3;
     /** The loungers' colours, taken in turn. */
     private static final DyeColor[] LOUNGERS = {DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.WHITE};
+    /** How far out from the walkway the room's corner reaches, in blocks, from which a lounger stands out at it too. */
+    private static final int CORNER_LOUNGER = 2;
 
     private final Set<BlockPos> water = new HashSet<>();
 
@@ -136,7 +138,8 @@ final class RocketPool extends RocketRoom {
 
     /**
      * The sunbathers' corner: loungers in a row looking out of the front window, a low table between the first two, one
-     * of the others turned toward the water; as many as the deck has room for, out from beside the way in.
+     * of the others turned toward the water; as many as the deck has room for, out from beside the way in; and where
+     * the deck reaches far enough, an orange one out at its corner by the window.
      */
     private void loungers(RocketQuarter quarter, int y, int corner, RandomSource random) {
         int along = RocketQuarter.INNER + 1;
@@ -148,7 +151,7 @@ final class RocketPool extends RocketRoom {
                 .setValue(BeanBagBlock.FACING, facing).setValue(BeanBagBlock.COLOR, LOUNGERS[lounger]));
         }
         standing(quarter.x(RocketQuarter.INNER - 1), y, quarter.z(along), AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState());
-        if (corner - RocketQuarter.INNER >= 2) {
+        if (corner - RocketQuarter.INNER >= CORNER_LOUNGER) {
             standing(quarter.x(RocketQuarter.INNER - 1), y, quarter.z(corner), AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
                 .setValue(BeanBagBlock.FACING, quarter.end()).setValue(BeanBagBlock.COLOR, DyeColor.ORANGE));
         }
@@ -162,7 +165,10 @@ final class RocketPool extends RocketRoom {
         }
     }
 
-    /** Bamboo in a planter, a palm by the pool, at the first of a few spots on the deck by the channel's end that is free. */
+    /**
+     * Bamboo in a planter, a palm by the pool, at the first of a few spots on the deck by the channel's end that is
+     * free.
+     */
     private void palm(RocketQuarter quarter, int y, int corner) {
         BlockState planter = PlanterBlock.planted(AerolargeRegistry.PLANTER.get(), PlanterBlock.Plant.BAMBOO, quarter.end().getOpposite());
         int[][] spots = {{RocketQuarter.INNER, RocketQuarter.INNER}, {RocketQuarter.INNER - 1, corner + 1}, {RocketQuarter.INNER - 2, corner + 1},

@@ -40,8 +40,8 @@ final class RocketEntry extends RocketRoom {
     /** How far along toward her front the mudroom bench stands, in blocks, facing the boot shelves along her side. */
     private static final int BENCH_ALONG = 2;
     /**
-     * How long the room's reach out to her side is, in blocks, from which the bench is three long instead of two and the
-     * boot shelves have a gap to walk through.
+     * How long the room's reach out to her side is, in blocks, from which the bench is three long instead of two and
+     * the boot shelves have a gap to walk through.
      */
     private static final int ROOMY = 4;
     /** The suitcases' colours. */
