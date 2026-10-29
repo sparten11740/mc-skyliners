@@ -3940,6 +3940,322 @@ function spacePosterLang() {
   };
 }
 
+// What each of the rocket's rooms hangs on the outside of her lift shaft (see ShaftDecorBlock and RocketShaftDecor),
+// each piece drawn facing north, the shaft's glass behind it to the south, and turned for the other ways; nothing of it
+// comes nearer the glass than a quarter pixel, so the two are never drawn in one plane. A piece of a pair, as the
+// right-hand curtain is, is the left-hand one turned over. The observation deck's curtains: falls of velvet, a shallow
+// hollow across their width and the crests of their folds standing out from it, gathered toward the corner girder
+// they hang before, narrowing to a gold rope a third of the way up with a tassel hanging from it and flaring again to
+// a hem on the floor; over each a box-pleated pelmet with its gold braid and fringe, a gold rosette at its outer end;
+// and between them, over the glass, the valance's swags, each dipping across its block, fringed in gold along their
+// hems. The boards (the entry's departures, lit; the cargo bay's load chart; the
+// mess's chalkboard; the lab's whiteboard): their picture on a panel against the glass and their frame's rim round
+// the board's edge, the chalkboard with a ledge of oak and its chalk and eraser, the whiteboard with a tray of
+// aluminium and its markers and eraser. The cargo bay's rubber guards, an angle of them round each corner girder, the
+// right-hand one reaching round the corner to meet the left-hand one of the next face, a dark cap on top. The fairy
+// lights: their wire dipping across each block from hooks on the girders, warm bulbs under it and strands of them
+// hanging down into the row under it, each its own length. The ivy: two layers of leaves, a pixel apart. The life
+// ring: red and white quarters round its hole, its grab line along the red, on a chrome hook through it. The neon:
+// a tube a pixel and a half off the glass, black clips holding it and black caps at its ends where its cable goes into
+// the glass. All of it is fitted into the rocket rather than built into her (see shaftDecorFittings); broken, a piece
+// gives itself back as it was, but the plain curtain piece its item places, so those stack.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const ALONGS = ["outer_left", "left", "middle", "right", "outer_right"];
+  const ROWS = ["bottom", "lower", "middle", "upper", "top"];
+  // How far back toward the glass a piece reaches, in pixels.
+  const BACK = 15.75;
+  const glow = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const decorModel = (name, textures, elements, cutout = false) => write(`assets/${ID}/models/block/shaft_decor_${name}.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    ...(cutout ? { render_type: "minecraft:cutout" } : {}),
+    textures: { particle: Object.values(textures)[0], ...textures },
+    elements,
+  });
+  // A part turned over left to right: the model's east side its west, and a patch given of its texture turned over too.
+  const mirrored = (element) => ({
+    ...element,
+    from: [16 - element.to[0], element.from[1], element.from[2]],
+    to: [16 - element.from[0], element.to[1], element.to[2]],
+    faces: Object.fromEntries(Object.entries(element.faces).map(([side, face]) => {
+      const turned = { east: "west", west: "east" }[side] ?? side;
+      const flipped = face.uv && side !== "east" && side !== "west" ? { ...face, uv: [face.uv[2], face.uv[1], face.uv[0], face.uv[3]] } : face;
+      return [turned, flipped];
+    })),
+  });
+  // A small part every face of which shows the same patch of its texture, so a bulb or a wire looks the same from all
+  // round, and glowing if asked.
+  const tiny = (from, to, texture, uv, lit = false) => ({
+    from, to, ...(lit ? { shade: false } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((side) => [side, { texture, uv, ...(lit ? glow : {}) }])),
+  });
+
+  // The observation deck's curtains and valance.
+  {
+    const textures = {
+      velvet: block("shaft_decor_velvet"), crest: block("shaft_decor_velvet_crest"), valance: block("shaft_decor_valance"),
+      swag: block("shaft_decor_swag"), gold: block("shaft_decor_gold"), fringe: block("shaft_decor_fringe"),
+    };
+    // How far out from the glass a fall's hollow and its folds' crests stand, in pixels from the block's front.
+    const HOLLOW = 14;
+    const CREST = 12.5;
+    // A fall of curtain between two rows, so many pixels wide from the girder's side (the model's east, the viewer's
+    // left), so much further out than its folds stand: its hollow across it, and a crest two pixels wide every four.
+    const fall = (y0, y1, width, out = 0) => {
+      const parts = [furniture([16 - width, y0, HOLLOW - out], [16, y1, BACK], "#velvet")];
+      for (let x = 14; x + 2 > 16 - width; x -= 4) {
+        const from = Math.max(x, 16 - width);
+        parts.push(furniture([from, y0, CREST - out], [x + 2, y1, HOLLOW - out], "#velvet",
+          { north: { texture: "#crest", uv: [0, 16 - y1, x + 2 - from, 16 - y0] }, south: null }));
+      }
+      return parts;
+    };
+    // A curtain's bands from the bottom up, each its rows and how wide it hangs, and how much further out it stands.
+    const bands = (list) => list.flatMap(([y0, y1, width, out]) => fall(y0, y1, width, out));
+    const TIE = 6;
+    const curtain = {
+      bottom: bands([[0, 2, 14, 1], [2, 5, 12], [5, 8, 11], [8, 12, 10], [12, 16, 9]]),
+      lower: fall(0, 16, 9),
+      middle: [
+        ...bands([[0, 2, 9], [2, 4.5, 8], [4.5, 6.5, 7], [6.5, 8.5, TIE], [8.5, 10, 8], [10, 12, 10], [12, 14, 13], [14, 16, 16]]),
+        furniture([16 - TIE - 0.75, 6.75, CREST - 0.75], [16, 8.25, BACK], "#gold"),
+        furniture([11.5, 5.25, 11.25], [12.25, 6.75, 12], "#gold"),
+        furniture([11, 4.25, 11], [12.75, 5.25, 12.25], "#gold"),
+        furniture([10.75, 1.5, 11.1], [13, 4.25, 12.4], "#fringe"),
+      ],
+      upper: fall(0, 16, 16),
+      top: [
+        ...fall(0, 11, 16),
+        furniture([0, 11, 10.5], [16, 16, BACK], "#valance"),
+        furniture([0, 9.5, 10.5], [16, 11, 11], "#fringe"),
+        furniture([12.5, 12, 10], [14.5, 14, 10.5], "#gold"),
+      ],
+    };
+    for (const [row, parts] of Object.entries(curtain)) {
+      decorModel(`observation_left_${row}`, textures, parts, true);
+      decorModel(`observation_right_${row}`, textures, parts.map(mirrored), true);
+    }
+    // The swag's hem, step by step across its block: from and to, and how low it hangs, at the block's edges level with
+    // the bottom of the fringe under the pelmets beside it.
+    const SWAG = [[0, 1.5, 11], [1.5, 3.5, 9.5], [3.5, 5.5, 7.5], [5.5, 10.5, 6], [10.5, 12.5, 7.5], [12.5, 14.5, 9.5], [14.5, 16, 11]];
+    decorModel("observation_swag", textures, [
+      furniture([0, 11, 10.5], [16, 16, BACK], "#valance"),
+      ...SWAG.filter(([, , low]) => low < 11).map(([x0, x1, low]) => furniture([x0, low, 11], [x1, 11, 15.5], "#swag")),
+      ...SWAG.map(([x0, x1, low]) => furniture([x0, low - 1.5, 11], [x1, low, 11.5], "#fringe")),
+    ], true);
+  }
+
+  // The boards, each piece of one its picture's block on a panel and its frame's rim along the board's edge.
+  const BOARDS = {
+    entry: { frame: "shaft_decor_casing", lit: true, ledge: [] },
+    cargo: { frame: "shaft_decor_hazard", lit: false, ledge: [] },
+    mess: { frame: "shaft_decor_oak", lit: false, ledge: [
+      furniture([0, 0, 12], [16, 1.25, 14.25], "#frame"),
+      tiny([5, 1.25, 12.5], [9, 2, 13.25], "#ledge", [12, 0, 14, 2]),
+      tiny([10, 1.25, 12.25], [13.5, 2.75, 14], "#ledge", [0, 8, 4, 12]),
+    ] },
+    lab: { frame: "shaft_decor_aluminium", lit: false, ledge: [
+      furniture([0, 0, 12], [16, 1, 14.25], "#frame"),
+      tiny([2.5, 1, 12.5], [7.5, 1.75, 13.25], "#ledge", [0, 0, 2, 2]),
+      tiny([8.5, 1, 12.75], [13.5, 1.75, 13.5], "#ledge", [4, 0, 6, 2]),
+      tiny([4, 1, 12.25], [9, 2.5, 14], "#ledge", [8, 8, 12, 12]),
+    ] },
+  };
+  // Which ledge parts go on which piece of the bottom row: the chalk and the eraser, or the markers and the eraser.
+  const LEDGES = { mess: { left: [], middle: [1], right: [2] }, lab: { left: [3], middle: [], right: [1, 2] } };
+  for (const [kind, { frame, lit, ledge }] of Object.entries(BOARDS)) {
+    for (const along of ["left", "middle", "right"]) {
+      for (const row of ["bottom", "top"]) {
+        const picture = { texture: "#picture", ...(lit ? glow : {}) };
+        const rims = [
+          ...(row === "top" ? [furniture([0, 15, 13.25], [16, 16, 14.25], "#frame")] : []),
+          ...(row === "bottom" ? [furniture([0, 0, 13.25], [16, 1, 14.25], "#frame")] : []),
+          ...(along === "left" ? [furniture([15, 0, 13.25], [16, 16, 14.25], "#frame")] : []),
+          ...(along === "right" ? [furniture([0, 0, 13.25], [1, 16, 14.25], "#frame")] : []),
+        ];
+        const ledgeParts = row === "bottom" && ledge.length ? [ledge[0], ...(LEDGES[kind]?.[along] ?? []).map((part) => ledge[part])] : [];
+        decorModel(`${kind}_${along}_${row}`, {
+          picture: block(`shaft_decor_${kind}_${along}_${row}`), frame: block(frame), ledge: block("shaft_decor_markers"),
+        }, [
+          { ...furniture([0, 0, 14.25], [16, 16, BACK], "#frame", { north: picture }), ...(lit ? { shade: false } : {}) },
+          ...rims,
+          ...ledgeParts,
+        ]);
+      }
+    }
+  }
+
+  // The cargo bay's corner guards: an angle of striped rubber before the girder's outer half, from the floor up to
+  // their top under a dark cap, the right-hand one reaching round the corner; the stripes run on from one row to the
+  // next and down the corner.
+  for (const [side, x0, x1] of [["left", 9, 16], ["right", -2, 7]]) {
+    for (const [row, top] of [["bottom", 16], ["top", 10]]) {
+      const v0 = 16 - top;
+      const width = x1 - x0;
+      const faces = {
+        north: { texture: "#rubber", uv: [0, v0, width, 16] }, south: { texture: "#rubber", uv: [0, v0, width, 16] },
+        east: { texture: "#rubber", uv: [0, v0, 1.75, 16] }, west: { texture: "#rubber", uv: [0, v0, 1.75, 16] },
+        up: { texture: "#rubber", uv: [0, 0, width, 1.75] }, down: { texture: "#rubber", uv: [0, 0, width, 1.75] },
+      };
+      const cap = row === "top" ? [tiny([x0 + 0.25, top, 14.25], [x1 - 0.25, top + 0.5, BACK], "#cap", [1, 1, 3, 3])] : [];
+      decorModel(`cargo_guard_${side}_${row}`, { rubber: block("shaft_decor_hazard"), cap: block("shaft_decor_casing") },
+        [{ from: [x0, 0, 14], to: [x1, top, BACK], faces }, ...cap]);
+    }
+  }
+
+  // The bunk room's fairy lights: the wire's height at each pixel across its block, dipping between the hooks at its
+  // edges; where its bulbs hang from it; and the strands hanging from it in each block, where across and how far down
+  // they reach in pixels, their bulbs every few pixels and one at the end.
+  {
+    const wire = (x) => 10.5 + 3.5 * ((x - 8) / 8) ** 2;
+    const BULBS = [2, 6, 10, 14];
+    const BULB_APART = 5;
+    const DROPS = {
+      outer_left: [[4, 9], [12, 16]], left: [[4, 14], [12, 7]], middle: [[4, 18], [12, 11]], right: [[4, 8], [12, 15]],
+      outer_right: [[4, 13], [12, 6]],
+    };
+    const WIRE = [0, 0, 1, 1];
+    const LIGHT = [6, 6, 8, 8];
+    const bulb = (x, y) => [
+      tiny([x - 0.6, y - 0.1, 14.45], [x + 0.6, y + 0.5, 15.35], "#wire", WIRE),
+      tiny([x - 0.8, y - 1.7, 14.3], [x + 0.8, y - 0.1, 15.5], "#bulb", LIGHT, true),
+    ];
+    const textures = { bulb: block("shaft_decor_bulb"), wire: block("shaft_decor_wire") };
+    for (const along of ALONGS) {
+      const top = [];
+      for (let x = 0; x < 16; x += 2) {
+        const y = wire(x + 1);
+        top.push(tiny([x, y - 0.3, 14.75], [x + 2, y + 0.3, 15.35], "#wire", WIRE));
+      }
+      for (const x of BULBS) top.push(...bulb(x, wire(x) - 0.3));
+      if (along === "outer_left") top.push(tiny([15, 13.4, 14.25], [16, 14.6, BACK], "#wire", WIRE));
+      if (along === "outer_right") top.push(tiny([0, 13.4, 14.25], [1, 14.6, BACK], "#wire", WIRE));
+      const upper = [];
+      for (const [x, length] of DROPS[along]) {
+        const from = wire(x);
+        const end = from - length;
+        top.push(tiny([x - 0.3, Math.max(0, end), 14.75], [x + 0.3, from, 15.35], "#wire", WIRE));
+        if (end < 0) upper.push(tiny([x - 0.3, 16 + end, 14.75], [x + 0.3, 16, 15.35], "#wire", WIRE));
+        const hung = [];
+        for (let down = BULB_APART; down < length - 1; down += BULB_APART) hung.push(from - down);
+        hung.push(end);
+        for (const y of hung) (y >= 0 ? top : upper).push(...bulb(x, y >= 0 ? y : y + 16));
+      }
+      decorModel(`bunks_${along}_top`, textures, top);
+      decorModel(`bunks_${along}_upper`, textures, upper);
+    }
+  }
+
+  // The greenhouse's ivy: its leaves and stems on a plane a quarter pixel off the glass and more leaves on another a
+  // pixel in front of it, both seen from behind as well; the right-hand column the left one turned over.
+  {
+    const plane = (z, texture, flipped) => {
+      const uv = flipped ? [16, 0, 0, 16] : [0, 0, 16, 16];
+      return { from: [0, 0, z], to: [16, 16, z], faces: { north: { texture, uv }, south: { texture, uv } } };
+    };
+    const ivy = (name, picture, flipped = false) => decorModel(`greenhouse_${name}`, {
+      back: block(`shaft_decor_ivy_${picture}`), front: block(`shaft_decor_ivy_${picture}_front`),
+    }, [plane(15.5, "#back", flipped), plane(14.5, "#front", flipped)], true);
+    for (const row of ["bottom", "middle", "top"]) {
+      ivy(`column_left_${row}`, `column_${row}`);
+      ivy(`column_right_${row}`, `column_${row}`, true);
+    }
+    for (const along of ["left", "middle", "right"]) {
+      ivy(`garland_${along}`, `garland_${along}`);
+      ivy(`trail_${along}`, `trail_${along}`);
+    }
+  }
+
+  // The pool's life ring.
+  decorModel("pool_ring", {
+    red: block("shaft_decor_ring_red"), white: block("shaft_decor_ring_white"), hook: block("lavatory_basin_chrome"),
+  }, [
+    furniture([5.5, 11.5, 13.5], [10.5, 14.5, 15.25], "#red"),
+    furniture([5.5, 1.5, 13.5], [10.5, 4.5, 15.25], "#red"),
+    furniture([1.5, 5.5, 13.5], [4.5, 10.5, 15.25], "#red"),
+    furniture([11.5, 5.5, 13.5], [14.5, 10.5, 15.25], "#red"),
+    ...[[3, 3], [10.5, 3], [3, 10.5], [10.5, 10.5]].map(([x, y]) => furniture([x, y, 13.5], [x + 2.5, y + 2.5, 15.25], "#white")),
+    furniture([5, 14.5, 13.75], [11, 15, 14.75], "#white"),
+    furniture([5, 1, 13.75], [11, 1.5, 14.75], "#white"),
+    furniture([1, 5, 13.75], [1.5, 11, 14.75], "#white"),
+    furniture([14.5, 5, 13.75], [15, 11, 14.75], "#white"),
+    furniture([6.75, 9.5, 15.25], [9.25, 12, BACK], "#hook"),
+    furniture([7.25, 10, 12.5], [8.75, 11, 15.25], "#hook"),
+    furniture([7.25, 11, 12.5], [8.75, 12.5, 13.25], "#hook"),
+  ]);
+
+  // The club's neon tubes, a pink one and a cyan one: a middle row's tube with a clip round it halfway up, and its
+  // ends, where the tube stops at a cap whose cable runs back into the glass.
+  for (const colour of ["pink", "cyan"]) {
+    const textures = { tube: block(`neon_${colour}`), holder: block("neon_backer") };
+    const tube = (y0, y1) => furniture([7, y0, 12], [9, y1, 14], "#tube", {}, true);
+    const cap = (y0, y1) => [
+      furniture([6.25, y0, 11.25], [9.75, y1, 14.75], "#holder"),
+      furniture([7.5, y0 + 0.25, 14.75], [8.5, y1 - 0.25, BACK], "#holder"),
+    ];
+    decorModel(`club_${colour}_bottom`, textures, [tube(2.5, 16), ...cap(1, 2.5)]);
+    decorModel(`club_${colour}_middle`, textures, [tube(0, 16), furniture([6.5, 7.5, 11.5], [9.5, 8.5, BACK], "#holder")]);
+    decorModel(`club_${colour}_top`, textures, [tube(0, 13.5), ...cap(13.5, 15)]);
+  }
+
+  // Which model each piece is, by its room, where across the face it is and its row; a state nothing places shows the
+  // nearest piece of its room's that is.
+  const side = (along) => (along.endsWith("left") ? "left" : "right");
+  const inner = (along) => along.replace("outer_", "");
+  const outer = (along) => along.startsWith("outer_");
+  const high = (row) => (row === "bottom" || row === "lower" ? "bottom" : "top");
+  const third = (row) => (row === "bottom" || row === "top" ? row : "middle");
+  const MODELS = {
+    entry: (along, row) => `entry_${inner(along)}_${high(row)}`,
+    cargo: (along, row) => (outer(along) ? `cargo_guard_${side(along)}_${high(row)}` : `cargo_${along}_${high(row)}`),
+    mess: (along, row) => `mess_${inner(along)}_${high(row)}`,
+    bunks: (along, row) => `bunks_${along}_${row === "top" ? "top" : "upper"}`,
+    greenhouse: (along, row) => (outer(along) ? `greenhouse_column_${side(along)}_${third(row)}`
+      : `greenhouse_${row === "top" ? "garland" : "trail"}_${along}`),
+    pool: () => "pool_ring",
+    club: (along, row) => `club_${outer(along) ? "cyan" : "pink"}_${third(row)}`,
+    lab: (along, row) => `lab_${inner(along)}_${high(row)}`,
+    observation: (along, row) => (outer(along) ? `observation_${side(along)}_${row}` : "observation_swag"),
+  };
+  write(`assets/${ID}/blockstates/shaft_decor.json`, {
+    variants: Object.fromEntries(Object.entries(MODELS).flatMap(([kind, model]) => ALONGS.flatMap((along) => ROWS.flatMap((row) =>
+      Object.entries(yRot).map(([facing, y]) => [`along=${along},facing=${facing},kind=${kind},row=${row}`,
+        { model: `${ID}:block/shaft_decor_${model(along, row)}`, ...(y ? { y } : {}) }]))))),
+  });
+  write(`assets/${ID}/models/item/shaft_decor.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/shaft_decor` } });
+  const decorId = `${ID}:shaft_decor`;
+  write(`data/${ID}/loot_table/blocks/shaft_decor.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: decorId,
+        functions: [{
+          function: "minecraft:copy_state", block: decorId, properties: ["kind", "along", "row"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: decorId,
+            properties: { kind: "observation", along: "outer_left", row: "middle" } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/shaft_decor`,
+  });
+  cubes.shaft_decor = null;
+}
+// The shaft's decorations are hung on the rocket rather than built into her: light like the rest, but no part of her
+// frame, and breakable.
+function shaftDecorFittings() {
+  return ["shaft_decor"];
+}
+function shaftDecorLang() {
+  return {
+    "block.aerolarge.shaft_decor": "Shaft Decoration",
+  };
+}
+
 // The rocket's snack machine in her cafeteria (see SnackMachineBlock), two blocks tall, drawn facing north: a
 // midnight-blue cabinet a pixel in from its sides and back, the front of its upper block crowned with its orange badge,
 // a chrome kick plate along its foot. Its showcase of snacks, lit, runs down from the upper block into the lower,
@@ -7905,6 +8221,7 @@ FITTINGS.push(...robotBartenderFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
+FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
 FITTINGS.push(...foodLabFittings());
@@ -8664,6 +8981,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...christeningLang(),
   ...flankScreenLang(),
   ...spacePosterLang(),
+  ...shaftDecorLang(),
   ...snackMachineLang(),
   ...roverLang(),
   ...labLang(),

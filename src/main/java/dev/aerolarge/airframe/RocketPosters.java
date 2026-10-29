@@ -89,14 +89,19 @@ final class RocketPosters implements RocketPiece {
         return pieces;
     }
 
-    /**
-     * Whether a poster on a face of the shaft over a story's floor can be seen: open air for {@link #IN_VIEW} blocks
-     * straight out in front of its middle, where the lab's tank, say, would stand up against it.
-     */
+    /** Whether a poster on a face of the shaft over a story's floor can be seen at its middle row. */
     private boolean inView(SpacePoster poster, int floor, Direction face) {
-        int middle = floor + UP + poster.rows() / 2;
+        return inView(layout, face, floor + UP + poster.rows() / 2);
+    }
+
+    /**
+     * Whether a picture hung on a face of the shaft can be seen at a row: open air for {@link #IN_VIEW} blocks straight
+     * out in front of the face's middle, where the lab's tank, say, would stand up against it. The shaft's other
+     * pictures, its rooms' boards (see {@link RocketShaftDecor}), are hung by it too.
+     */
+    static boolean inView(RocketLayout layout, Direction face, int y) {
         for (int out = RocketLayout.SHAFT + 2; out <= RocketLayout.SHAFT + 1 + IN_VIEW; out++) {
-            if (!layout.isOpen(face.getStepX() * out, middle, face.getStepZ() * out)) {
+            if (!layout.isOpen(face.getStepX() * out, y, face.getStepZ() * out)) {
                 return false;
             }
         }

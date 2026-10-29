@@ -6133,4 +6133,444 @@ function clubBarTextures() {
 }
 clubBarTextures();
 
+// The decorations on the outside of the rocket's lift shaft (see ShaftDecorBlock), each of her rooms' its own, with no
+// words in any of them. The observation deck's curtains: deep blue velvet, its folds' crests catching a soft sheen
+// and its hollows deep, gold braid for its tiebacks and a gold fringe; the pelmet of its valance box-pleated over a
+// gold braid, and its swags draped in curved folds. The entry's departures board, lit on a dark panel: under a rocket
+// lifting off and a clock, a row for each destination, a clock face telling when, the Moon, Mars, a ringed planet or
+// a space station, split flaps in the destination's colour, the gate's coloured door and a lamp, green for boarding,
+// amber for soon and red for held. The cargo bay's load chart, black pictograms on white, each with a green tick or a
+// red cross: one crate, two and three on a pallet, a crate strapped down, a crate sliding loose, a forklift; and its
+// corner guards' rubber striped yellow and black. The mess's chalkboard, one dish in chalk on each block and coins
+// under it for what it costs: a burger, a bowl of noodles, a slice of pizza, a carrot, a cupcake and a mug of cocoa.
+// The lab's whiteboard: a molecule of balls and sticks, an arrow and a graph climbing past a dashed line, the ghosts of
+// old sums wiped off it, and a sticky note with a water bear. The greenhouse's ivy, two layers of leaves over its
+// stems, climbing, trailing along the top and hanging from it. The bunk room's warm bulbs on their dark wire, the
+// pool's life ring red and white, and the boards' frames: graphite, oak, aluminium. And its item, a curtain tied back.
+function shaftDecorTextures() {
+  const hex = (value) => [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+  const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * t));
+  const part = (name) => `shaft_decor_${name}`;
+  // A blank picture so many pixels wide and tall, each pixel a colour or nothing; a pixel put on it, where it is on it;
+  // and a sprite stamped on it, rows of letters each a colour of its palette, its top left at a spot, turned over
+  // left to right if asked.
+  const blank = (width, height, fill = null) => Array.from({ length: height }, () => Array(width).fill(fill));
+  const put = (picture, x, y, colour) => {
+    if (colour && y >= 0 && y < picture.length && x >= 0 && x < picture[0].length) picture[y][x] = colour;
+  };
+  const stamp = (picture, rows, palette, left, top, flipped = false) => {
+    rows.forEach((row, y) => [...row].forEach((letter, x) => put(picture, left + (flipped ? row.length - 1 - x : x), top + y, palette[letter])));
+  };
+  const save = (name, picture, noise = 0) => texture(blockOutput, name, (x, y) => picture[y][x] ?? CLEAR, noise, picture[0].length, picture.length);
+  // A board three blocks wide and two tall painted whole and cut into its blocks, by their place across from the left
+  // and their row, the top or the bottom.
+  const board = (kind, picture, noise = 0) => {
+    for (const [column, along] of ["left", "middle", "right"].entries()) {
+      for (const [row, place] of ["top", "bottom"].entries()) {
+        const piece = picture.slice(row * SIZE, (row + 1) * SIZE).map((line) => line.slice(column * SIZE, (column + 1) * SIZE));
+        save(part(`${kind}_${along}_${place}`), piece, noise);
+      }
+    }
+  };
+  // A deterministic sequence of its own, from 0 to 1, for where the ivy's leaves fall and the chalk's dust.
+  const sequence = (salt) => {
+    let state = salt >>> 0;
+    return () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let value = Math.imul(state ^ (state >>> 15), 1 | state);
+      value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+
+  // The velvet and its gold.
+  const VELVET = hex(0x1c2a70);
+  const VELVET_DEEP = hex(0x0f174a);
+  const VELVET_MID = hex(0x2c3f98);
+  const VELVET_SHEEN = hex(0x4560c0);
+  const GOLD_BRAID = hex(0xd6a63e);
+  const GOLD_LIGHT = hex(0xf8dc80);
+  const GOLD_DARK = hex(0x96681c);
+  texture(blockOutput, part("velvet"), (x) => mix(VELVET_DEEP, VELVET, 0.55 + 0.45 * ((x * 7) % 5) / 4), 3);
+  texture(blockOutput, part("velvet_crest"), (x, y) => (x % 2 === 0 ? mix(VELVET_SHEEN, VELVET_MID, (y % 5) / 10) : VELVET_MID), 3);
+  texture(blockOutput, part("valance"), (x, y) => {
+    if (y === 0) return VELVET_DEEP;
+    if (y === 4) return (x + y) % 2 === 0 ? GOLD_LIGHT : GOLD_BRAID;
+    if (x % 4 === 0) return VELVET_DEEP;
+    return x % 4 === 1 ? VELVET_MID : VELVET;
+  }, 3);
+  // The swag's folds follow its hem, which dips to its lowest in the middle of its block.
+  texture(blockOutput, part("swag"), (u, v) => {
+    const x = 15.5 - u;
+    const hem = 6 + 5 * ((x - 8) / 8) ** 2;
+    const over = 16 - v - hem;
+    if (over > 3) return VELVET_DEEP;
+    return Math.floor(over / 1.25) % 2 === 0 ? VELVET_MID : VELVET;
+  }, 3);
+  texture(blockOutput, part("gold"), (x, y) => {
+    if ((x + y) % 3 === 0) return GOLD_LIGHT;
+    return (x - y + 18) % 3 === 0 ? GOLD_DARK : GOLD_BRAID;
+  }, 3);
+  texture(blockOutput, part("fringe"), (x) => {
+    if (x % 2 === 1) return CLEAR;
+    return x % 4 === 0 ? GOLD_BRAID : GOLD_LIGHT;
+  }, 0);
+
+  // The rubber of the cargo bay's corner guards, and the frames of the boards.
+  texture(blockOutput, part("hazard"), (x, y) => ((x + y) % 8 < 4 ? [0xf0, 0xbe, 0x22] : [0x22, 0x22, 0x26]), 4);
+  texture(blockOutput, part("casing"), (x, y) => (y === 0 || x === 0 ? [0x46, 0x4c, 0x56] : [0x2a, 0x2e, 0x34]), 2);
+  texture(blockOutput, part("aluminium"), (x, y) => mix([0xb8, 0xbe, 0xc6], [0xdc, 0xe0, 0xe6], (y * 5 + (x % 3)) % 4 / 3), 2);
+  texture(blockOutput, part("oak"), (x, y) => ((y * 3 + Math.floor(x / 5)) % 7 === 0 ? [0x76, 0x4e, 0x2a] : [0x9c, 0x6c, 0x3e]), 4);
+  // What the boards' ledges hold, a patch of each: across the top, red, blue and black markers and white chalk; across
+  // the bottom, an eraser's grey felt and its blue back.
+  const MARKERS = [[0xd2, 0x3a, 0x3a], [0x2a, 0x5a, 0xd2], [0x24, 0x26, 0x2a], [0xf4, 0xf2, 0xea]];
+  texture(blockOutput, part("markers"), (x, y) => (y < 8 ? MARKERS[Math.floor(x / 4)] : x < 8 ? [0x6a, 0x6e, 0x76] : [0x30, 0x60, 0xc8]), 2);
+
+  // The bunk room's bulbs, warm and brightest in the middle, and their wire; the pool's life ring.
+  texture(blockOutput, part("bulb"), (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 4 ? [0xff, 0xf2, 0xc8] : [0xff, 0xc8, 0x6a]), 0);
+  texture(blockOutput, part("wire"), () => [0x1e, 0x2c, 0x22], 2);
+  texture(blockOutput, part("ring_red"), (x, y) => ((x + y) % 6 === 0 ? [0xf0, 0x5c, 0x3a] : [0xdc, 0x42, 0x28]), 3);
+  texture(blockOutput, part("ring_white"), (x, y) => ((x + y) % 6 === 0 ? [0xd8, 0xdc, 0xe0] : [0xf2, 0xf2, 0xee]), 3);
+
+  // The departures board: a dark panel lit row by row, as an LED board is.
+  {
+    const PANEL = hex(0x0c1118);
+    const PANEL_LINE = hex(0x121822);
+    const HEADER = hex(0x1a2433);
+    const RULE = hex(0x2e3a4c);
+    const W = hex(0xe8eef6);
+    const AMBER = hex(0xffb030);
+    const picture = blank(48, 32);
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 48; x++) put(picture, x, y, y % 2 === 0 ? PANEL : PANEL_LINE);
+    }
+    for (let y = 1; y <= 5; y++) {
+      for (let x = 1; x <= 46; x++) put(picture, x, y, HEADER);
+    }
+    for (let x = 1; x <= 46; x++) put(picture, x, 6, RULE);
+    // A rocket lifting off, its flame under it; the clock on the header's right; amber dots running between them.
+    stamp(picture, ["..w..", ".www.", ".wbw.", "wwwww", ".o.o.", ".yoy."], { w: W, b: hex(0x58a8ff), o: hex(0xff7a2a), y: hex(0xffd84a) }, 3, 0);
+    stamp(picture, [".www.", "w.a.w", "w.aaw", "w...w", ".www."], { w: W, a: AMBER }, 41, 1);
+    for (let x = 11; x <= 37; x += 2) put(picture, x, 3, mix(AMBER, HEADER, 0.45));
+    const destinations = [
+      { // The Moon, grey and cratered.
+        sprite: [".www.", "wwgww", "wwwgw", "wgwww", ".www."], palette: { w: hex(0xd8dce4), g: hex(0x9aa0ac) },
+        flap: hex(0xb8bec8), gate: hex(0x3ce0ff), lamp: hex(0x40e060), hands: [[2, 1], [3, 2]],
+      },
+      { // Mars, rusty, a white cap at its pole.
+        sprite: [".www.", "rrrRr", "rRrrr", "rrrRr", ".rrr."], palette: { w: hex(0xf4f0ec), r: hex(0xd8643a), R: hex(0x9a3c22) },
+        flap: hex(0xcc5a2e), gate: hex(0xff5ad0), lamp: hex(0x40e060), hands: [[2, 1], [1, 2]],
+      },
+      { // A ringed planet, its ring across it.
+        sprite: ["..ttt..", ".ttttt.", "yyyyyyy", ".ttttt.", "..ttt.."], palette: { t: hex(0xe0b878), y: hex(0xfff0b0) },
+        flap: hex(0xdcb46e), gate: hex(0xffe04a), lamp: hex(0xffb030), hands: [[2, 3], [3, 2]],
+      },
+      { // A space station, its solar wings either side of its modules.
+        sprite: ["bb...bb", "bb.w.bb", "bwwwwwb", "bb.w.bb", "bb...bb"], palette: { b: hex(0x4a7ae8), w: W },
+        flap: hex(0x4878d8), gate: hex(0x9aff4a), lamp: hex(0xff4048), hands: [[2, 1], [2, 3]],
+      },
+    ];
+    destinations.forEach((destination, row) => {
+      const top = 8 + row * 6;
+      for (let x = 1; x <= 46; x++) put(picture, x, top + 5, RULE);
+      // A clock face telling when it goes, its two hands set differently for each.
+      stamp(picture, [".www.", "w...w", "w.a.w", "w...w", ".www."], { w: mix(W, PANEL, 0.25), a: AMBER }, 2, top);
+      for (const [x, y] of destination.hands) put(picture, 2 + x, top + y, AMBER);
+      const width = destination.sprite[0].length;
+      stamp(picture, destination.sprite, destination.palette, 9 + Math.floor((7 - width) / 2), top);
+      // Split flaps in its colour, each split across its middle.
+      for (let flap = 0; flap < 4; flap++) {
+        for (let y = 0; y < 5; y++) {
+          for (let x = 0; x < 3; x++) put(picture, 19 + flap * 4 + x, top + y, y === 2 ? mix(destination.flap, PANEL, 0.6) : destination.flap);
+        }
+      }
+      // The gate, a door in its colour, and the lamp.
+      stamp(picture, ["gggg", "g..g", "g.wg", "g..g", "gggg"], { g: destination.gate, w: W }, 36, top);
+      stamp(picture, [".ll.", "lLll", "llll", ".ll."], { l: destination.lamp, L: mix(destination.lamp, W, 0.6) }, 42, top);
+    });
+    board("entry", picture);
+  }
+
+  // The load chart: a pictogram on white in each block, and a tick in a green ring or a cross in a red one.
+  {
+    const WHITE_PANEL = hex(0xf0f2f4);
+    const INK = hex(0x22262c);
+    const CRATE = { c: hex(0xc8843a), d: hex(0x8a5420), k: INK, p: hex(0x8c6a48) };
+    const OK = ["..ggg..", ".gwwwg.", "gwwwgwg", "gwgwgwg", "gwwgwwg", ".gwwwg.", "..ggg.."];
+    const NO = ["..rrr..", ".rwwwr.", "rwrwrwr", "rwwrwwr", "rwrwrwr", ".rwwwr.", "..rrr.."];
+    const BADGE = { g: hex(0x2aa04a), r: hex(0xd8302c), w: hex(0xffffff) };
+    const box = ["kkkkk", "kcccd", "kcdcd", "kccdd", "kkkkk"];
+    const pallet = ["pppppppppp", "p.pp.pp.pp"];
+    const picture = blank(48, 32, WHITE_PANEL);
+    // A pallet in a block, so many crates stacked on it, and the badge given in the block's top right corner.
+    const loaded = (column, row, crates, badge) => {
+      const left = column * SIZE;
+      const top = row * SIZE;
+      stamp(picture, pallet, CRATE, left + 1, top + 13);
+      for (let crate = 0; crate < crates; crate++) stamp(picture, box, CRATE, left + 2, top + 9 - crate * 4);
+      stamp(picture, badge, BADGE, left + 9, top + 1);
+      return [left, top];
+    };
+    loaded(0, 0, 1, OK);
+    loaded(1, 0, 2, OK);
+    loaded(2, 0, 3, NO);
+    // A crate strapped down to its pallet; a crate sliding loose off one, its speed lines behind it; a forklift with a
+    // crate on its forks.
+    {
+      const [left, top] = loaded(0, 1, 1, OK);
+      const STRAP = hex(0x2a60c8);
+      for (let y = 8; y <= 13; y++) {
+        put(picture, left + 3, top + y, STRAP);
+        put(picture, left + 5, top + y, STRAP);
+      }
+      for (let x = 2; x <= 7; x++) put(picture, left + x, top + 8, STRAP);
+    }
+    {
+      const [left, top] = loaded(1, 1, 0, NO);
+      stamp(picture, box, CRATE, left + 6, top + 8);
+      stamp(picture, ["kkk", "...", "kkkk", "...", "kk."], { k: INK }, left + 1, top + 7);
+    }
+    {
+      const [left, top] = [2 * SIZE, SIZE];
+      stamp(picture, [
+        "k.........",
+        "k...yyyy..",
+        "k...yhhy..",
+        "k...yhhy..",
+        "kccyyyyyy.",
+        "kccyyyyyyy",
+        "kkkkkkkkkk",
+        "...kk..kk.",
+      ], { k: INK, y: hex(0xf0b020), h: hex(0x9ad0ff), c: hex(0xc8843a) }, left + 1, top + 7);
+      stamp(picture, OK, BADGE, left + 9, top + 1);
+    }
+    board("cargo", picture);
+  }
+
+  // The chalkboard: dusty slate, a dish in chalk in each block, the coins it costs in yellow chalk under it, and a
+  // wavy line of chalk round the board's edge.
+  {
+    const SLATE = hex(0x24302b);
+    const DUST = hex(0x34423c);
+    const dust = sequence(0x6d657373);
+    const picture = blank(48, 32);
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 48; x++) put(picture, x, y, dust() < 0.08 ? DUST : SLATE);
+    }
+    const CHALK = {
+      w: hex(0xeef0e8), y: hex(0xf4e27a), o: hex(0xf0a050), r: hex(0xf07070), g: hex(0x9ee07a), b: hex(0xc89a6a), p: hex(0xf4a0c8),
+      c: hex(0xa8d8f0),
+    };
+    const BORDER = mix(CHALK.w, SLATE, 0.35);
+    for (let x = 2; x <= 45; x++) {
+      put(picture, x, 2 + Math.round(Math.sin(x / 1.5)), BORDER);
+      put(picture, x, 29 + Math.round(Math.sin(x / 1.5)), BORDER);
+    }
+    const dishes = [
+      { coins: 3, sprite: [ // A burger: bun, lettuce, its patty and the bun under it.
+        "..oooo..", ".owooow.", "oooooooo", "gggggggg", "bbbbbbbb", "rrrrrrrr", ".oooooo.",
+      ] },
+      { coins: 2, sprite: [ // A bowl of noodles, steaming, chopsticks in it.
+        ".w..w..b", "..w..wb.", "....wb..", "yyyyyyyy", "wyyyyyyw", ".wwwwww.", "..wwww..",
+      ] },
+      { coins: 2, sprite: [ // A slice of pizza, pepperoni on it.
+        "bbbbbbbb", "yryyyryy", ".yyyryy.", ".yryyy..", "..yyry..", "..yyy...", "...y....",
+      ] },
+      { coins: 1, sprite: [ // A carrot, its leaves up.
+        ".....g.g", "......gg", ".....oo.", "....ooo.", "...oo...", "..oo....", ".o......",
+      ] },
+      { coins: 2, sprite: [ // A cupcake, a cherry on its frosting, its paper case.
+        "...r....", "..pppp..", ".pppppp.", "pppppppp", ".wcwcwc.", ".wcwcwc.", "..wcwc..",
+      ] },
+      { coins: 1, sprite: [ // A mug of cocoa, steaming.
+        "..w..w..", "...w..w.", "........", "wwwwww..", "wbbbbwww", "wbbbbw.w", ".wwww...",
+      ] },
+    ];
+    dishes.forEach((dish, at) => {
+      const left = (at % 3) * SIZE;
+      const top = Math.floor(at / 3) * SIZE;
+      stamp(picture, dish.sprite, CHALK, left + 4, top + (at < 3 ? 4 : 1));
+      for (let coin = 0; coin < dish.coins; coin++) {
+        stamp(picture, ["yy", "yy"], CHALK, left + 8 - Math.floor((dish.coins * 3 - 1) / 2) + coin * 3, top + (at < 3 ? 12 : 9));
+      }
+    });
+    board("mess", picture);
+  }
+
+  // The whiteboard: a molecule, an arrow and a graph in marker, the ghosts of old sums half wiped off round them, and a
+  // yellow sticky note in its corner with a water bear on it.
+  {
+    const BOARD = hex(0xeef1f4);
+    const GHOST = hex(0xdde2e8);
+    const BLACK = hex(0x20242a);
+    const RED = hex(0xd23a3a);
+    const BLUE = hex(0x2a5ad2);
+    const GREEN = hex(0x2a9a4a);
+    const picture = blank(48, 32, BOARD);
+    for (const [x0, y0, length] of [[3, 27, 9], [30, 3, 7], [20, 28, 6], [36, 28, 8], [5, 4, 5]]) {
+      for (let x = x0; x < x0 + length; x++) put(picture, x, y0 + (x % 3 === 0 ? 1 : 0), GHOST);
+    }
+    // A line of marker from one pixel to another.
+    const line = (x0, y0, x1, y1, colour) => {
+      const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      for (let step = 0; step <= steps; step++) {
+        put(picture, Math.round(x0 + ((x1 - x0) * step) / steps), Math.round(y0 + ((y1 - y0) * step) / steps), colour);
+      }
+    };
+    // The molecule: a ring of six atoms joined by bonds, one of them doubled, a red atom and a blue one off it.
+    const ring = [[12, 9], [17, 12], [17, 18], [12, 21], [7, 18], [7, 12]];
+    ring.forEach(([x, y], at) => line(x, y, ...ring[(at + 1) % ring.length], BLACK));
+    line(9, 13, 9, 17, BLACK);
+    line(17, 12, 21, 9, BLACK);
+    line(7, 18, 4, 22, BLACK);
+    const atom = [".k.", "kck", ".k."];
+    ring.forEach(([x, y]) => stamp(picture, atom, { k: BLACK, c: hex(0x60666e) }, x - 1, y - 1));
+    stamp(picture, [".rr.", "rRrr", "rrrr", ".rr."], { r: RED, R: hex(0xff9a9a) }, 20, 6);
+    stamp(picture, [".bb.", "bBbb", "bbbb", ".bb."], { b: BLUE, B: hex(0x9abaff) }, 2, 21);
+    // The arrow over to the graph.
+    line(22, 15, 27, 15, GREEN);
+    stamp(picture, ["g.", "gg", "g."], { g: GREEN }, 27, 14);
+    // The graph: its axes, a dashed line to reach, the points measured and the curve climbing through them past it.
+    line(31, 4, 31, 26, BLACK);
+    line(31, 26, 45, 26, BLACK);
+    stamp(picture, [".k.", "k.k"], { k: BLACK }, 30, 3);
+    stamp(picture, ["k.", ".k", "k."], { k: BLACK }, 45, 25);
+    for (let x = 33; x <= 44; x += 3) line(x, 11, x + 1, 11, GREEN);
+    const curve = (x) => Math.round(25 - 18 * ((x - 32) / 12) ** 2);
+    for (let x = 32; x < 44; x++) line(x, curve(x), x + 1, curve(x + 1), RED);
+    for (const [x, y] of [[34, 22], [37, 24], [40, 15], [42, 13]]) stamp(picture, ["bb", "bb"], { b: BLUE }, x, y);
+    // The sticky note and its water bear, plump and peach, its four legs under it.
+    stamp(picture, [
+      "nnnnnnn",
+      "nnnnnnn",
+      "n.ppp.n",
+      "npppppn",
+      "pppppen",
+      "nlnlnln",
+      "nnnnnnn",
+    ].map((row) => row.replace(/\./g, "n")), { n: hex(0xffe86a), p: hex(0xf0b896), e: BLACK, l: hex(0xc88a6a) }, 1, 1);
+    board("lab", picture);
+  }
+
+  // The ivy, in two layers: its stems and the leaves along them behind, and more leaves a pixel out in front of them.
+  // Its columns climb up the corner girders, the left one drawn here and the right one its mirror; along the top it
+  // trails across the glass between them, strands hanging from it into the row under it, in the same places as the
+  // strands of the row under it go on from.
+  {
+    const DARK = hex(0x1e4e26);
+    const MID = hex(0x2e7234);
+    const LIGHT = hex(0x4c9a44);
+    const VEIN = hex(0x9cc87a);
+    const WOOD = hex(0x5c4a2c);
+    const STEM = hex(0x3a5a28);
+    const LEAF = { d: DARK, m: MID, l: LIGHT, v: VEIN, s: STEM };
+    const LEAVES = [
+      ["..l..", ".mlm.", "mmlmm", ".dvd.", "..s.."],
+      [".l.l.", "mmlmm", "mmvmm", ".dvd.", "..s.."],
+      [".m.m.", "mlmlm", ".mvm.", "..d.."],
+    ];
+    // Where a column's two stems are across its block at each row, wavering, the same at its top as at its bottom, so
+    // its rows run on into one another; and where the trailing stem along the top is down its block at each column.
+    const climbing = (stem, v) => [4, 10][stem] + Math.round(Math.sin((2 * Math.PI * v) / SIZE + stem * Math.PI));
+    const trailing = (u) => 4 + Math.round(1.2 * Math.sin((2 * Math.PI * u) / SIZE));
+    // A layer of ivy: what the stems take, and the leaves, at each place a leaf grows, one of them, upright, hanging or
+    // turned over, chosen by the sequence.
+    const layer = (stems, places, salt, hanging) => {
+      const random = sequence(salt);
+      const picture = blank(SIZE, SIZE);
+      stems(picture);
+      for (const [x, y] of places) {
+        const leaf = LEAVES[Math.floor(random() * LEAVES.length)];
+        const rows = hanging || random() < 0.25 ? [...leaf].reverse() : leaf;
+        stamp(picture, rows, LEAF, x - 2, y - 2, random() < 0.5);
+      }
+      return picture;
+    };
+    const climb = (picture, from, to) => {
+      for (let v = from; v <= to; v++) {
+        for (let stem = 0; stem < 2; stem++) put(picture, climbing(stem, v), v, STEM);
+      }
+    };
+    // Where a column's leaves grow, so many of them up its block, by turns off either stem, a little to one side of it.
+    const columnLeaves = (salt, count) => {
+      const random = sequence(salt);
+      return Array.from({ length: count }, (_, k) => {
+        const v = Math.round(1 + (k * SIZE) / count + random() * 2);
+        return [climbing(k % 2, v) + (random() < 0.5 ? -2 : 2), v];
+      });
+    };
+    const saveLayers = (name, back, front) => {
+      save(part(`ivy_${name}`), back);
+      save(part(`ivy_${name}_front`), front);
+    };
+    // The middle of a column, its stems all the way up; its foot, woody where they rise from the floor; its top, where
+    // they end, one curling and the other turning in along the top to run on into the trailing stem.
+    saveLayers("column_middle", layer((p) => climb(p, 0, 15), columnLeaves(1, 6), 11), layer(() => {}, columnLeaves(2, 4), 12));
+    saveLayers("column_bottom", layer((p) => {
+      climb(p, 0, 9);
+      for (let v = 10; v <= 15; v++) {
+        put(p, 6 + Math.round((v - 10) / 3), v, WOOD);
+        put(p, 7 + Math.round((v - 10) / 3), v, WOOD);
+        put(p, climbing(0, v), v, v < 13 ? STEM : WOOD);
+        put(p, climbing(1, v), v, v < 13 ? STEM : WOOD);
+      }
+    }, columnLeaves(3, 6).slice(0, 4), 13), layer(() => {}, columnLeaves(4, 4).slice(0, 2), 14));
+    saveLayers("column_top", layer((p) => {
+      climb(p, 6, 15);
+      for (let u = climbing(1, 6); u < SIZE; u++) put(p, u, trailing(SIZE), STEM);
+      for (let v = trailing(SIZE); v < 6; v++) put(p, climbing(1, 6), v, STEM);
+      stamp(p, ["ss.", "s.s", "..s"], { s: STEM }, climbing(0, 6) - 1, 3);
+    }, [[climbing(0, 9) - 2, 9], [climbing(1, 12) + 2, 12], [12, 1], [3, 7]], 15), layer(() => {}, [[climbing(0, 13) + 2, 13], [9, 6]], 16));
+    // The trailing stem along the top and the strands hanging from it, by where across each block they hang and how
+    // far down from it they reach, many running on into the row under it; and that row, the strands going on down.
+    const STRANDS = { left: [[3, 20], [11, 14]], middle: [[7, 26], [13, 9]], right: [[5, 16], [12, 22]] };
+    for (const [along, strands] of Object.entries(STRANDS)) {
+      const salt = along.length * 31;
+      const hangingLeaves = (top, bottom, offset) => strands.flatMap(([x, length]) => {
+        const end = trailing(x) + length;
+        const leaves = [];
+        for (let y = trailing(x) + 3 + offset; y <= Math.min(end, bottom); y += 4) {
+          if (y >= top) leaves.push([x + (y % 8 < 4 ? -2 : 2), y - top]);
+        }
+        return leaves;
+      });
+      const strandStems = (top, bottom) => (p) => {
+        for (const [x, length] of strands) {
+          for (let y = Math.max(top, trailing(x)); y <= Math.min(bottom, trailing(x) + length); y++) put(p, x, y - top, STEM);
+        }
+      };
+      const garland = layer((p) => {
+        strandStems(0, 15)(p);
+        for (let u = 0; u < SIZE; u++) put(p, u, trailing(u), STEM);
+      }, [[2, trailing(2) - 2], [7, trailing(7) + 2], [12, trailing(12) - 2], ...hangingLeaves(0, 15, 0)], salt + 1);
+      const garlandFront = layer(() => {}, [[5, trailing(5)], [10, trailing(10) - 1], [14, trailing(14) + 1]], salt + 2);
+      saveLayers(`garland_${along}`, garland, garlandFront);
+      saveLayers(`trail_${along}`, layer(strandStems(16, 31), hangingLeaves(16, 31, 0), salt + 3, true),
+        layer(() => {}, hangingLeaves(16, 31, 2), salt + 4, true));
+    }
+  }
+
+  // The item: a window between velvet curtains drawn back to either side with gold, the valance over them.
+  outlinedIcon("shaft_decor", (x, y) => {
+    const rows = [
+      "gggggggggggggg",
+      "VVVVVVVVVVVVVV",
+      "VvVvVvVvVvVvVv",
+      "VvVvVxxxxvVvVv",
+      "VvVvxxxxxxvVvV",
+      "VvVxxxxxxxxvVv",
+      "VvVxxxxxxxxvVv",
+      "VvxxxxxxxxxxvV",
+      "GGxxxxxxxxxxGG",
+      "Vvxxxxxxxxxxvv",
+      "VvVxxxxxxxxvVv",
+      "VvVvxxxxxxvVvV",
+      "VvVvVxxxxvVvVv",
+    ];
+    const palette = { g: GOLD_BRAID, G: GOLD_LIGHT, V: VELVET_MID, v: VELVET, x: [0x1c, 0x24, 0x30] };
+    return y >= 2 && y < 2 + rows.length && x >= 1 && x < 15 ? palette[rows[y - 2][x - 1]] : undefined;
+  }, VELVET_DEEP, () => undefined);
+}
+shaftDecorTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

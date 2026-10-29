@@ -1982,6 +1982,27 @@ its picture, and go up on any wall: used on the side of a block, a poster goes u
 the block used, if every block of it has open air to go in and a solid face behind it. The server config's
 `rocket.posters` leaves them out of the rocket.
 
+Each room dresses the outside of the lift shaft's glass as well, with no words anywhere (`rocket.rooms` leaves it bare
+with the rooms). On the observation deck, her chillout lounge, deep blue velvet curtains hang from the ceiling to the
+floor before each of the shaft's corner girders, drawn back with a gold rope and tassel a third of the way up, under a
+box-pleated pelmet fringed in gold, and the valance's swags dip across the glass between them, so the cold glass feels
+like a window in a cosy room; on the front, a curtain either side frames the lift's door. The entry story has a lit
+departures board: under a rocket lifting off and a clock, a row for each destination, a clock face for when it goes,
+the Moon, Mars, a ringed planet or a space station, split flaps in its colour, its gate's coloured door and a lamp,
+green for boarding, amber for soon and red for held. The cargo bay has yellow-and-black rubber guards round the shaft's
+corners and a load chart of pictograms, each with a green tick or a red cross: one crate on a pallet and two, but not
+three; a crate strapped down, not one sliding loose; a forklift. The mess has a chalkboard menu, a burger, a bowl of
+noodles, a slice of pizza, a carrot, a cupcake and a mug of cocoa in coloured chalk, each over the coins it costs. In
+the bunk room warm fairy lights are strung across the glass over head height, strands of them hanging down; in the
+greenhouse ivy climbs the corners and trails across the top; at the pool a red and white life ring hangs on a chrome
+hook; in the club pink and cyan neon tubes glow from the floor to the ceiling; and in the lab a whiteboard shows a
+molecule of balls and sticks, an arrow and a graph climbing past a dashed line, a sticky note with a water bear on it in
+its corner. They go only where nothing else stands, a poster, the lift's board or its LED panel, and never in front of
+the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
+to have has none. Shaft Decoration is in the creative tab after the Lift Glass: used on the side of a block, it puts up
+a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
+gives itself back as it was.
+
 The lab, her eighth story (the server config's `rocket.lab` leaves it bare, as `rocket.rooms` leaves every room), is
 where her tardigrade lives: a water bear the size of an elephant, about six blocks long and three and a half tall, soft
 peach with darker folds between the four plump segments of its body, eight stubby legs with pale claws, two dark eye
@@ -2324,6 +2345,9 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 `LedControlsArt`.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
+`RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
+curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
+(`Along`) and its row (`Row`).
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
 from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown and shakes the view aboard as they
 light; `LaunchCallouts` has launch control call her milestones on the same radio, waiting its turn on the flight deck's

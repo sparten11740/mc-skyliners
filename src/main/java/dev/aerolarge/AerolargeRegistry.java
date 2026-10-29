@@ -227,6 +227,7 @@ import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.SecretBookshelfBlock;
 import dev.aerolarge.block.SelfDestructButtonBlock;
 import dev.aerolarge.block.SelfDestructButtonBlockEntity;
+import dev.aerolarge.block.ShaftDecorBlock;
 import dev.aerolarge.block.ShelfUnitBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
@@ -1074,8 +1075,18 @@ public final class AerolargeRegistry {
         "steel_girder", SteelGirderBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
     );
     public static final DeferredBlock<TransparentBlock> LIFT_GLASS = BLOCKS.registerBlock("lift_glass", TransparentBlock::new, glass());
+    /**
+     * What each of her rooms hangs on the outside of her lift shaft's glass (see {@link ShaftDecorBlock}): thin, so
+     * nothing collides with it, and quick to take down, the fairy lights and the neon glowing.
+     */
+    public static final DeferredBlock<ShaftDecorBlock> SHAFT_DECOR = BLOCKS.registerBlock(
+        "shaft_decor", ShaftDecorBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.3F).sound(SoundType.WOOL).noCollission().noOcclusion()
+            .lightLevel(ShaftDecorBlock::glow).pushReaction(PushReaction.DESTROY).isValidSpawn(AerolargeRegistry::never)
+    );
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
+    public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
     public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
@@ -2380,7 +2391,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, SHAFT_DECOR_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             ROBOT_BARTENDER_ITEM, NEBULA_FIZZ, ROCKET_FUEL, ZERO_G_FLOAT, SUPERNOVA_SUNRISE, MOON_MILK,

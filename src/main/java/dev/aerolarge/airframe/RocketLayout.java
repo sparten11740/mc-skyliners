@@ -104,6 +104,7 @@ public final class RocketLayout implements Layout {
         RocketGirders::new,
         RocketWallLights::new,
         RocketPosters::new,
+        RocketShaftDecor::new,
         RocketLedStrips::new);
     /**
      * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector

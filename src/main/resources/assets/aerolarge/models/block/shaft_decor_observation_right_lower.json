@@ -1,0 +1,153 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "aerolarge:block/shaft_decor_velvet",
+    "velvet": "aerolarge:block/shaft_decor_velvet",
+    "crest": "aerolarge:block/shaft_decor_velvet_crest",
+    "valance": "aerolarge:block/shaft_decor_valance",
+    "swag": "aerolarge:block/shaft_decor_swag",
+    "gold": "aerolarge:block/shaft_decor_gold",
+    "fringe": "aerolarge:block/shaft_decor_fringe"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        9,
+        16,
+        15.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#velvet"
+        },
+        "south": {
+          "texture": "#velvet"
+        },
+        "west": {
+          "texture": "#velvet"
+        },
+        "east": {
+          "texture": "#velvet"
+        },
+        "up": {
+          "texture": "#velvet"
+        },
+        "down": {
+          "texture": "#velvet"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        12.5
+      ],
+      "to": [
+        2,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crest",
+          "uv": [
+            2,
+            0,
+            0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#velvet"
+        },
+        "east": {
+          "texture": "#velvet"
+        },
+        "up": {
+          "texture": "#velvet"
+        },
+        "down": {
+          "texture": "#velvet"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        0,
+        12.5
+      ],
+      "to": [
+        6,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crest",
+          "uv": [
+            2,
+            0,
+            0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#velvet"
+        },
+        "east": {
+          "texture": "#velvet"
+        },
+        "up": {
+          "texture": "#velvet"
+        },
+        "down": {
+          "texture": "#velvet"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        0,
+        12.5
+      ],
+      "to": [
+        9,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crest",
+          "uv": [
+            1,
+            0,
+            0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#velvet"
+        },
+        "east": {
+          "texture": "#velvet"
+        },
+        "up": {
+          "texture": "#velvet"
+        },
+        "down": {
+          "texture": "#velvet"
+        }
+      }
+    }
+  ]
+}

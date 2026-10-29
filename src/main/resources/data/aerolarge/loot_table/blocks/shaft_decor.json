@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "aerolarge:shaft_decor",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "aerolarge:shaft_decor",
+              "properties": [
+                "kind",
+                "along",
+                "row"
+              ],
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "condition": "minecraft:block_state_property",
+                    "block": "aerolarge:shaft_decor",
+                    "properties": {
+                      "kind": "observation",
+                      "along": "outer_left",
+                      "row": "middle"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "aerolarge:blocks/shaft_decor"
+}
