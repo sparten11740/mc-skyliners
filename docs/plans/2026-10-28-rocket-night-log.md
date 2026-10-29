@@ -30,7 +30,7 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
   pin, and six code reviews' findings.
 
-The last version tonight is alpha.181; the morning's, alpha.187.
+The last version tonight is alpha.181; the morning's, alpha.188.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -127,6 +127,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N81 | 10:50 | The decorations merged | Shaft and girder decorations per room, from the two agents; seen in every room of a fresh rocket | 426 and 104 blocks at scale 2 | Lead |
 | N82 | 10:55 | One light (**Jan**: merge the halo light and the wall light, with a ground version) | The Halo Light hangs as a ring under a ceiling, is a wall washer on a wall and a new floor light on the ground; warm, night blue or pink, switched by use with a click; the Wall Washer item gone | Seen in game: all three placed by the one item, the tone cycling | Lead |
 | N83 | 11:15 | Review of the decorations and the one light | Fixed: old Wall Washer stacks load as Halo Lights (the item's old id an alias); lights and wall pieces fixed only to a block that holds them, the nearest way the player looks first, so none stands out from a tuft of grass, and the Halo Light hangs under a light cable; each girder decoration sounds and breaks as what it is made of | Seen in game: the old id given as three Halo Lights; the light aimed at grass from the side standing on the ground as a floor light; one hung under a cable | Review, lead |
+| N84 | 11:35 | The open issues (**Jan**: "fix all open issues") | The drink the bartender set down stays on the bar while he serves the next sale; dropped things lie on a cocktail table's glass; every item that keeps a look (neon sign, planter, girder decoration with its pair's half, bulkhead sign, WC sign) shows it in hand; a rocket's screen without a pin shows her way up and back on her pad in place of the airliner's heading dial and box | Seen in game: both drinks from two sales 65 ticks apart, an emerald at y −59.0 on the glass, a hotbar of nine kept looks, the rocket's RETURN picture | Lead, review |
+| N85 | 12:00 | Shapes for every place (**Jan**: every item only for a wall or a ceiling gets the other places where they make sense, "like a little bar" for the hoop; not curtains) | One rule for all (`Mount`, `Mounting`); four agents: pendant light (floor lamp, sconce), disco ball (motor stand, wall arm), gym rings (frame, wall bracket); the eight girder decorations on walls and floors; hoop (pole, hung), exit sign (post, hung), WC sign (standing), self-destruct button (pedestal); the shaft decorations' small floor and ceiling versions. Left as they were: the cargo bay's corner guards and the curtains (need a corner or a window), the self-destruct button under a ceiling, the climbing rope (it is climbed to a ceiling), the motion sensor (it watches a door), the posters | 24 fittings placed by real clicks on a floor, a wall and a ceiling, each read back and photographed; three reviews' fixes: a light cable first for the pendant light and disco ball, floor stands kept above the floor, the hung hoop's ring lower (it could not score) | Agents, lead, reviews |
+| N86 | 12:15 | Lift-off sets the ground alight (**Jan**) | Fire catching on the ground round under her while her engines blaze within 10 blocks of it, at lift-off and landing, only with doFireTick; `rocket.groundFire`, on | Measured on a superflat pad: 67 fires at lift-off, 119 at touchdown, burnt out in about 20 s | Lead |
+| N87 | 12:45 | A lift-off loud and impressive up close (**Jan**: "really loud and impressive standing next to it, maybe a shockwave pushing outwards"; "a bigger plume and more particles") | A shockwave racing out from under her as her engines light on the ground: a ring of dust, everything not aboard thrown back off its feet (never hurt), a boom and a jolt as it passes each player, a later, quieter boom farther off (`rocket.launchBlast`, on); her roar's thunder close by, heavier and crackling; the ground shaking near her; a plume of fire from her base, white-hot to orange to smoke; great white clouds rolling out and piling up round the pad | Measured: the boom (synthesised, as loud above 150 Hz as her roar) heard 3 ticks after ignition at 0.9 from 26 blocks; a player thrown 6 blocks, a cow farther; photographed from the side | Lead, review |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -243,8 +247,11 @@ Commits on main, newest last, with the versions handed out.
 - alpha.186 (10:05): the lift tinted and its corner girders (N76), the ceiling girders to the wall (N77), the reviews'
   fixes (N78). Never copied: the desktop stayed off the network.
 - alpha.187 (11:17): the decorations on the shaft and the girders (N79, N81), every item placeable on its own (N80),
-  the one Halo Light with its floor light (N82), the review's fixes (N83). Waiting to be copied to the desktop, still
-  off the network, in place of alpha.185.
+  the one Halo Light with its floor light (N82), the review's fixes (N83). Never copied: the desktop stayed off the
+  network.
+- alpha.188 (13:15): the open issues (N84), shapes for every place (N85), the ground fire (N86), the lift-off's
+  shockwave, thunder and plume (N87). Waiting to be copied to the desktop, still off the network, in place of
+  alpha.185.
 
 ## Background agents
 
@@ -279,10 +286,8 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - A slip of mine at 03:36: testing the lift-off fire I ran `./gradlew build` on uncommitted code, which rewrote
   alpha.173's jar in `build/libs` with it. Nothing was handed out (the desktop drive was not mounted); I rebuilt
   alpha.173 from its own commit in a scratch worktree and put that jar back, checked by its plume class.
-- The autopilot's settings screen still shows a rocket without a pin the airliner's heading dial and box; she
-  ignores the heading and comes back down where she rose (her screens say RETURN, N54). Her circle tiles, her circle
-  and land switch at the pin and the ring round it are gone (N58, N59); hiding the dial too wants the screen laid out
-  again, so I left it for you.
+- Since alpha.188 a rocket's settings screen without a pin shows her on her pad and her way up and back down, RETURN
+  over it, in place of the airliner's heading dial and box (N84); the screen was otherwise not laid out again.
 - Over her cockpit's glass, the inside of her nose shows as a stepped dome of bare cover in her livery's colour (red
   in the default), which the design panel called a red tint over the cockpit. A ceiling over the cockpit, as the deck
   has at the bigger scales, would hide it, but would also hide her livery from inside and needs care round what the
@@ -295,8 +300,17 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
   Aerolarge code in it: a bitmap font freed by the reload. The world had saved; I note it in case it ever shows
   without F3+T.
 - Jan's desktop config had no `lowGravity` line yet (its jar was alpha.157), so alpha.185 writes the new default, on.
-- Open from the reviews, left small: a drink the bartender set down vanishes if a second sale comes within five
-  seconds; a dropped item hovers over a cocktail table's top; every neon sign item shows the martini glass.
+- The three small things open from the reviews are fixed in alpha.188 (N84).
+- The lift-off's shockwave throws players and animals near her once (N87), never so high that landing hurts, but
+  off a ledge it still can; and her ground fire burns what is near her pad, a wooden one too (N86). Both have their
+  switches, on: `rocket.launchBlast` and `rocket.groundFire`.
+- A hoop hung from a ceiling scores only in a room three blocks high or more, the ring 8 pixels down its block;
+  the throw's helping arc now keeps 0.3 of a block under any ceiling, not 0.6 (seen: nine in nine there, and a wall
+  hoop as before).
+- One commit message is wrong: 7b401e0 says the self-destruct button "still goes nowhere" under a ceiling; clicking a
+  ceiling puts it on a wall or the floor beside that spot if one holds it.
+- Not seen: the new shapes at every facing (only facing south was photographed), the girder decorations' pairs side by
+  side, the lift-off's frame rate on a slow machine and its packets on a dedicated server, scales other than 2.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
