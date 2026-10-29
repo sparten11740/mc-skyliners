@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -48,6 +49,8 @@ abstract class RocketRoom implements RocketPiece {
     protected static final BlockState LANTERN = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
     protected static final BlockState SOUL_LANTERN = Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
     private static final BlockState CHAIN = Blocks.CHAIN.defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
+    /** What a room's random sequence starts from, its story added, so each room comes out the same every build. */
+    private static final long SCATTER_SEED = 0x526f6f6d73L;
 
     protected final RocketLayout layout;
     private final int story;
@@ -60,6 +63,15 @@ abstract class RocketRoom implements RocketPiece {
     @Override
     public boolean wanted() {
         return layout.rooms() && layout.floors().size() > story;
+    }
+
+    /**
+     * A random sequence of the room's own, to set things about a little unevenly, as a lived-in room is: the same each
+     * time she is built, so a rocket comes out as the last one did. Each call starts the sequence over: take it once
+     * a build.
+     */
+    protected RandomSource scatter() {
+        return RandomSource.create(SCATTER_SEED + story);
     }
 
     /** The room's floor row. */
