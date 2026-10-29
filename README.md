@@ -1843,8 +1843,8 @@ windows' glass bulges out of the skin in a dome, the sun glinting off it, and si
 it dims electrically: use one to darken its glass a step, from clear through light and medium to dark, and once more to
 clear it again, a chime falling as it darkens.
 
-Her front door, four blocks wide and three tall over her entry floor, half a block to her left of her middle, has the
-airliner's integral airstairs (see Airstairs), four blocks wide to match it: open treads with yellow nosings between
+Her front door, three blocks wide and three tall over her entry floor, across the flat of her front, has the
+airliner's integral airstairs (see Airstairs), three blocks wide to match it: open treads with yellow nosings between
 aluminium stringers, a handrail along either side, the top tread level with the sill. Stowed, they lie folded in a bay
 under her entry floor, behind a hatch in her skin below the door, and nothing of them shows. Coming out, the hatch
 drops, the folded flight slides out of its bay, rises to the sill and tips down to its slope, and its sections run out

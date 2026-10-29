@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * A rocket's boarding stairs (see {@link RocketStairsButtonBlock}): the stairs button inside by her front door keeps
- * her integral airstairs, four blocks wide, out of the door down to the ground (see {@link BoardingAirstairs}),
+ * her integral airstairs, as wide as the door, out of it down to the ground (see {@link BoardingAirstairs}),
  * folded away in a bay under her entry floor behind a hatch in her skin below the door, and the sliding airlock doors
  * across the doorway, which open as the stairs come out and shut as they fold away (see {@link AirlockDoors}). The
  * stairs come down of their own accord once she first stands built, and again once she is down on her fins after
@@ -38,8 +38,6 @@ import net.minecraft.world.phys.Vec3;
  */
 public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, BoardingAirstairs.Keeper {
     private static final Loaded<RocketStairsBlockEntity> LOADED = new Loaded<>(RocketStairsBlockEntity.class);
-    /** How wide her flight is, in blocks: her door's width. */
-    public static final int WIDTH = 4;
     /** How often the stairs look whether she has set off or come to rest, in ticks. */
     private static final int WATCH_TICKS = 10;
     /** Faster than this, in blocks a second, she is moving: the stairs fold away, and will not come down. */
@@ -63,13 +61,13 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
 
     /**
      * Hands the button the airstairs it keeps, as the rocket is built with them away: where their head is from it, the
-     * ways out and to the right, how far they come down and in how many sections, their hatch, each block of it from
-     * the button, and the bay they stow in. They come down of their own accord once she is found standing on the
-     * ground.
+     * ways out and to the right, how wide they are, how far they come down and in how many sections, their hatch, each
+     * block of it from the button, and the bay they stow in. They come down of their own accord once she is found
+     * standing on the ground.
      */
-    public void rigAirstairs(BlockPos head, Direction out, Direction right, int rise, int sections, List<AirstairControllerBlockEntity.Step> hatch,
-                             float hatchInset, int mouth) {
-        stairs = new BoardingAirstairs(this, head, out, right, rise, sections, WIDTH, hatch, new BoardingAirstairs.Bay(hatchInset, mouth));
+    public void rigAirstairs(BlockPos head, Direction out, Direction right, int width, int rise, int sections,
+                             List<AirstairControllerBlockEntity.Step> hatch, float hatchInset, int mouth) {
+        stairs = new BoardingAirstairs(this, head, out, right, rise, sections, width, hatch, new BoardingAirstairs.Bay(hatchInset, mouth));
         flown = true;
         setChanged();
     }
@@ -77,10 +75,10 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     /**
      * Hands the button the airlock doors across the doorway its stairs come out of, as she is built with them shut:
      * where the doorway's bottom left block seen from outside is from it, the ways out and to the right, and how many
-     * rows tall it is.
+     * blocks wide and rows tall it is.
      */
-    public void rigDoors(BlockPos corner, Direction out, Direction right, int rows) {
-        doors = new AirlockDoors(this, corner, out, right, WIDTH, rows);
+    public void rigDoors(BlockPos corner, Direction out, Direction right, int width, int rows) {
+        doors = new AirlockDoors(this, corner, out, right, width, rows);
         setChanged();
     }
 

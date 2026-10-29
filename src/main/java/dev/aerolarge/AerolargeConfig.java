@@ -479,7 +479,7 @@ public final class AerolargeConfig {
             .define("rover", true);
         ROCKET_AIRSTAIRS = builder
             .comment(
-                "Whether a rocket is built with airstairs at her front door: the airliner's integral airstairs, four blocks wide, coming",
+                "Whether a rocket is built with airstairs at her front door: the airliner's integral airstairs, three blocks wide, coming",
                 "down from her door to the ground and folding away into a bay under her entry floor, by her stairs buttons (one by",
                 "the door inside, one low on her front right fin) or of their own accord before she lifts off. Off, she is built",
                 "with her crew ladder and a three-wide doorway instead. Rockets already built keep theirs."

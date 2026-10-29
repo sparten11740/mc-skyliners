@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Boarding stairs as integral airstairs (see {@link AirstairFlight}), kept by a stairs button: a zeppelin's, the
- * airliner's flight two blocks wide hung in her belly, or a rocket's, four wide out of her front door. The sill is the
+ * airliner's flight two blocks wide hung in her belly, or a rocket's, three wide out of her front door. The sill is the
  * floor at the head of the stairs, a zeppelin's lower deck's or the rocket's entry story's at her door, and the flight
  * comes down along {@link #out} to the ground. A zeppelin's stowed flight lies folded level in the row under the deck's
  * floor, right over its hatch: the patch of her cover under it, the floor over it and whatever stands between, as the

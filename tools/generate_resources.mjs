@@ -247,7 +247,7 @@ function litButtonState(name) {
 litButton("airstair_button");
 // A zeppelin's boarding stairs' button (see BoardingStairsButtonBlock), in the airstair button's cap: the same stairs.
 litButton("boarding_stairs_button", "airstair_button");
-// A rocket's stairs button (see RocketStairsButtonBlock), in the airstair button's cap too: the same stairs, four wide.
+// A rocket's stairs button (see RocketStairsButtonBlock), in the airstair button's cap too: the same stairs, 3 wide.
 litButton("rocket_stairs_button", "airstair_button");
 // A boarding stairs button's glowstone and blackstone button over an iron ingot, the rocket's steel.
 function rocketStairsRecipes() {

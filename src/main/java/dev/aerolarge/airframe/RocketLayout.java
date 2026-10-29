@@ -61,7 +61,7 @@ public final class RocketLayout implements Layout {
     /** How far out from the axis the lift shaft's glass walls stand, in blocks: three blocks of shaft inside them. */
     static final int SHAFT = 2;
     /** How wide and tall the front door is, in blocks, over the entry story's floor. */
-    private static final int DOOR_HALF = 1;
+    static final int DOOR_HALF = 1;
     static final int DOOR_ROWS = 3;
     /** How many rows over each story's floor its windows' lowest row is: a standing player's eyes are in the middle. */
     private static final int WINDOW_FROM = 1;
@@ -639,23 +639,20 @@ public final class RocketLayout implements Layout {
         }
     }
 
-    /**
-     * The front door: an opening in the skin over the entry story's floor, at the front, three blocks wide round her
-     * axis; her airstairs widen it (see {@link RocketAirstairs}).
-     */
+    /** The front door: an opening in the skin over the entry story's floor, at the front. */
     private void door() {
-        for (int x = -DOOR_HALF; x <= DOOR_HALF; x++) {
-            doorColumn(x);
-        }
-    }
-
-    /** A column of the front door at a block across her: the skin over the entry story's floor cut away, door high. */
-    void doorColumn(int x) {
         if (floors.isEmpty()) {
             return;
         }
         int floor = floors.getFirst();
-        for (int z = -(int) Math.ceil(radius) - 1; z < 0; z++) {
+        int front = -(int) Math.ceil(radius) - 1;
+        for (int z = front; z < 0; z++) {
+            doorColumn(floor, z);
+        }
+    }
+
+    private void doorColumn(int floor, int z) {
+        for (int x = -DOOR_HALF; x <= DOOR_HALF; x++) {
             for (int y = floor + 1; y <= floor + DOOR_ROWS; y++) {
                 doorBlock(x, y, z);
             }
