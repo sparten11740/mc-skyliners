@@ -5,6 +5,7 @@ import dev.aerolarge.block.BeanBagBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CaveVinesBlock;
@@ -100,11 +101,14 @@ final class RocketGreenhouse extends RocketRoom {
         }
     }
 
-    /** A stem of bamboo from a block up, as tall as the spot's own number has it and the room above lets it grow. */
+    /**
+     * A stem of bamboo from a block up, as tall as the spot's own number has it and the room above lets it be, done
+     * growing so that it stays so.
+     */
     private void bamboo(int x, int y, int z) {
         int tall = BAMBOO_FROM + Math.floorMod(x + 2 * z, BAMBOO_TO - BAMBOO_FROM + 1);
         for (int up = 0; up < tall && free(x, y + up, z); up++) {
-            layout.set(x, y + up, z, Blocks.BAMBOO.defaultBlockState());
+            layout.set(x, y + up, z, Blocks.BAMBOO.defaultBlockState().setValue(BambooStalkBlock.STAGE, BambooStalkBlock.STAGE_DONE_GROWING));
         }
     }
 
