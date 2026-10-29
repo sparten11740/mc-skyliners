@@ -6976,7 +6976,8 @@ const WC_SIGN_ARROWS = ["ahead", "left", "right", "down", "none"];
     bulkheadLightbox(`wc_sign${state}`, `wc_sign${state}`);
     for (const arrow of WC_SIGN_ARROWS) {
       for (const [mount, { suffix, front, lift, holder }] of Object.entries(mounts)) {
-        // The lightbox's depth behind its front face; raised, its sides show the rows of its housing they show unraised.
+        // The lightbox's depth behind its front face; raised, its sides show the rows of its housing they show
+        // unraised.
         const back = front + 3;
         const sides = { north: [0, 2, 16, 14], south: [0, 2, 16, 14], east: [16 - back, 2, 16 - front, 14], west: [front, 2, back, 14] };
         const housing = {

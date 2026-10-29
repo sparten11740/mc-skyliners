@@ -3,7 +3,6 @@ package dev.aerolarge.block;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -60,21 +59,6 @@ public final class Mounting {
     /** Whether a light cable hangs over where a player puts something: a light hung there hangs from it. */
     public static boolean underCable(BlockPlaceContext context) {
         return context.getLevel().getBlockState(context.getClickedPos().above()).is(AerolargeRegistry.LIGHT_CABLE.get());
-    }
-
-    /** Whether what a player puts down here would hang from something: a light cable, or a block over it to hold it. */
-    static boolean hangs(BlockPlaceContext context) {
-        return support(context, EnumSet.of(Mount.CEILING)) != null;
-    }
-
-    /**
-     * The way something fixed to a wall faces, out from the wall, where a player puts it; null where no wall holds it,
-     * as against a tuft of grass in the open.
-     */
-    @Nullable
-    static Direction onWall(BlockPlaceContext context) {
-        Direction toward = support(context, EnumSet.of(Mount.WALL));
-        return toward == null ? null : toward.getOpposite();
     }
 
     /**

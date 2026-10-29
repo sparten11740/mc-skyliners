@@ -58,9 +58,9 @@ public class ShaftDecorBlock extends HorizontalDirectionalBlock {
      * The rooms whose decoration stands on a floor as a small one of its own, and its shape facing each way, drawn to
      * its model: the departures board's screen on its pole and foot, the sandwich board's A-frame in steps, the ivy's
      * pot and the leaves over it, the life ring before its post on its foot plate, the two neon tubes on their stands,
-     * and the mobile whiteboard on its feet. The cargo bay's corner guards stand only round a corner, fairy lights on
-     * a floor would lie in a heap and the observation deck's curtains need a window to frame, so those go only on a
-     * wall.
+     * and the mobile whiteboard on its feet. The cargo bay's corner guards stand only round a corner and the
+     * observation deck's curtains need a window to frame, so those go only on a wall; fairy lights on a floor would lie
+     * in a heap, so the bunk room's go on a wall or under a ceiling.
      */
     private static final Map<Kind, Map<Direction, VoxelShape>> STANDING = Map.of(
         Kind.ENTRY, TurnedShapes.of(Shapes.or(
