@@ -52,6 +52,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
     public static final ModConfigSpec.BooleanValue ROCKET_PLUMES;
+    public static final ModConfigSpec.BooleanValue ROCKET_GROUND_FIRE;
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
     public static final ModConfigSpec.BooleanValue ROCKET_CALLOUTS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
@@ -481,6 +482,13 @@ public final class AerolargeConfig {
                 "falling back from space, her base glowing and a trail of flame streaming up behind it."
             )
             .define("plumes", true);
+        ROCKET_GROUND_FIRE = builder
+            .comment(
+                "Whether a rocket's engines set the ground under her alight while they blaze close over it, as she lifts off and",
+                "lands: fire catching on the ground round under her and burning on after her as any fire does, the grass and",
+                "whatever burns near it with it. Only while the doFireTick game rule lets fire spread."
+            )
+            .define("groundFire", true);
         ROCKET_LOW_GRAVITY = builder
             .comment(
                 "Whether everyone aboard a rocket feels light for ten seconds as she reaches the edge of space (y 1,000), jumping",

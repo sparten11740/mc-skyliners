@@ -1755,6 +1755,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         space.watch(level, this, flight);
         gravity.tick(level, this, flight);
         RocketPlumes.tick(level, flight, radio, wheelsBelow, rocket.report().thrust());
+        RocketGroundFire.tick(level, flight, radio, wheelsBelow, rocket.report().thrust());
         // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds),
         // and nothing else holds her countdown, as her rover out of its bay does.
         boolean held = rocketSounds.holdsCountdown(phase, rocket.counted(), quiet())

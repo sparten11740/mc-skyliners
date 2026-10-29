@@ -2093,7 +2093,9 @@ map no circle or landing switch and on it no circle round the pin, as she circle
 pin. It counts down ten seconds, a note each second rising toward lift-off and a bell as the engines light, then lifts
 off straight up and climbs to the height set, white cloud and smoke billowing out over the ground from under her as she
 rises and again as she comes in to land, and fire and embers bursting from the ground under her while she is close over
-it (the server config's `rocket.plumes` leaves them out). Aboard, her engines lighting shakes the view for three seconds
+it (the server config's `rocket.plumes` leaves them out). Close over the ground her engines set it alight, fire catching
+on it round under her and burning on after her, unless fire may not spread in the world (the doFireTick game rule;
+`rocket.groundFire` leaves it out). Aboard, her engines lighting shakes the view for three seconds
 (the client setting `cameraShake` leaves it out). There it holds its height and leans toward the pin, never more than 10
 degrees, as fast across as it can still slow down by it; once over the pin and no longer drifting it falls back (or,
 circling it slowly for ten seconds, as a heavily loaded rocket can, all the same), never faster than six tenths of
