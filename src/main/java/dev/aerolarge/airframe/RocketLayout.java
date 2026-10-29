@@ -272,9 +272,9 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * A block of plain floor finished: on a story's floor row, as that story's floor over the ceiling of the story under
-     * it; within a story, as a mezzanine or a lower ceiling of its own is, its room's on both sides; null under her
-     * entry story.
+     * A block of plain floor finished: on a story's floor row, as that story's floor over the ceiling of the story
+     * under it; within a story, as a mezzanine or a lower ceiling of its own is, its room's on both sides; null under
+     * her entry story.
      */
     @Nullable
     private BlockState finishedFloor(int y) {

@@ -385,7 +385,9 @@ final class RocketObservationDeck extends RocketRoom {
         }
     }
 
-    /** Whether the cover of her skin stands beside a block, further out from her axis, as an LED strip runs along it. */
+    /**
+     * Whether the cover of her skin stands beside a block, further out from her axis, as an LED strip runs along it.
+     */
     private boolean againstSkin(int x, int y, int z) {
         for (Direction side : Direction.Plane.HORIZONTAL) {
             boolean outward = side.getStepX() * x + side.getStepZ() * z > 0;

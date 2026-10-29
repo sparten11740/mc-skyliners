@@ -14,11 +14,11 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 
 /**
  * The bunk room: bunk beds two high against her skin between the windows, a pair at each of the four diagonals, their
- * reading lights on, their blankets each in a colour of their own and a blue halo light hanging over each pair, as dim as
- * a night light; in front of each bunk a rug of its sleeper's own colour, and about each pair the sleepers' things, a
- * suitcase and now and then a bean bag; crew lockers either side of the way out and of the back window, a space helmet
- * in each. Out to either side a wall of bookshelves, one high here and two there, parts the front pairs from the back
- * ones; and behind the shaft a reading nook looks at the solar system poster on it: an armchair between two low
+ * reading lights on, their blankets each in a colour of their own and a blue halo light hanging over each pair, as dim
+ * as a night light; in front of each bunk a rug of its sleeper's own colour, and about each pair the sleepers' things,
+ * a suitcase and now and then a bean bag; crew lockers either side of the way out and of the back window, a space
+ * helmet in each. Out to either side a wall of bookshelves, one high here and two there, parts the front pairs from the
+ * back ones; and behind the shaft a reading nook looks at the solar system poster on it: an armchair between two low
  * bookshelves on a rug, a blue halo light over it.
  */
 final class RocketBunks extends RocketRoom {

@@ -166,7 +166,8 @@ final class RocketMess extends RocketRoom {
 
     /**
      * The long communal table, low tables end to end out from beside the way in along the quarter's middle, as far as
-     * leaves a place at its far end; a chair at most places either side of it, and one at its end; a lantern over it.
+     * leaves a place at its far end; a chair at most places either side of it, and one at its end; a halo light over
+     * it.
      */
     private void longTable(RocketQuarter quarter, int y, int corner, RandomSource random) {
         int along = (RocketQuarter.INNER + corner + 1) / 2 - (corner - RocketQuarter.INNER >= TABLE_ROOMY ? 0 : 1);
@@ -199,7 +200,7 @@ final class RocketMess extends RocketRoom {
     }
 
     /**
-     * A smaller table in the middle of a quarter's corner, an odd chair on each side of it that has room, a lantern
+     * A smaller table in the middle of a quarter's corner, an odd chair on each side of it that has room, a halo light
      * over it.
      */
     private void table(RocketQuarter quarter, int y, int corner, RandomSource random) {
