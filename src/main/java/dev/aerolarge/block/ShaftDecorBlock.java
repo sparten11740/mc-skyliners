@@ -161,8 +161,8 @@ public class ShaftDecorBlock extends HorizontalDirectionalBlock {
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction clicked = context.getClickedFace();
-        return clicked.getAxis().isHorizontal() ? defaultBlockState().setValue(FACING, clicked) : null;
+        Direction facing = Hanging.onWall(context);
+        return facing == null ? null : defaultBlockState().setValue(FACING, facing);
     }
 
     @Override

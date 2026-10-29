@@ -1,9 +1,11 @@
 package dev.aerolarge.item;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.Hanging;
 import dev.aerolarge.block.WallLightBlock;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -22,16 +24,38 @@ public class LightFittingItem extends BlockItem {
         super(AerolargeRegistry.HALO_LIGHT.get(), properties);
     }
 
-    /** The shape the light takes for the face it is put against: the ceiling's, a wall's or the ground's. */
+    /**
+     * The shape the light takes for what it is put against, the nearest way the player looks that holds it, the block
+     * clicked first: hanging from a ceiling, fixed to a wall or standing on the ground; and hanging wherever it goes
+     * under a light cable, which is too thin to click under. None where nothing holds it, as against grass in the open.
+     */
     @Nullable
     @Override
     protected BlockState getPlacementState(BlockPlaceContext context) {
-        Direction face = context.getClickedFace();
-        BlockState state = switch (face) {
-            case DOWN -> AerolargeRegistry.HALO_LIGHT.get().defaultBlockState();
-            case UP -> AerolargeRegistry.FLOOR_LIGHT.get().defaultBlockState();
-            default -> AerolargeRegistry.WALL_LIGHT.get().defaultBlockState().setValue(WallLightBlock.FACING, face);
+        BlockPos above = context.getClickedPos().above();
+        if (context.getLevel().getBlockState(above).is(AerolargeRegistry.LIGHT_CABLE.get())) {
+            return placeable(context, AerolargeRegistry.HALO_LIGHT.get().defaultBlockState());
+        }
+        for (Direction toward : context.getNearestLookingDirections()) {
+            BlockState state = Hanging.holds(context, toward) ? shapeAgainst(toward) : null;
+            if (state != null && canPlace(context, state)) {
+                return state;
+            }
+        }
+        return null;
+    }
+
+    /** The light's shape against a block the way given from it: over it, under it or beside it. */
+    private static BlockState shapeAgainst(Direction toward) {
+        return switch (toward) {
+            case UP -> AerolargeRegistry.HALO_LIGHT.get().defaultBlockState();
+            case DOWN -> AerolargeRegistry.FLOOR_LIGHT.get().defaultBlockState();
+            default -> AerolargeRegistry.WALL_LIGHT.get().defaultBlockState().setValue(WallLightBlock.FACING, toward.getOpposite());
         };
+    }
+
+    @Nullable
+    private BlockState placeable(BlockPlaceContext context, BlockState state) {
         return canPlace(context, state) ? state : null;
     }
 

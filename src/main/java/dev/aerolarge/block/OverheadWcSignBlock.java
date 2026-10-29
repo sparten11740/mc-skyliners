@@ -96,19 +96,22 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
     }
 
     /**
-     * Against the side of a block it stands out from it, facing away; against the underside of one it hangs from it,
-     * facing whoever puts it up; not on top of one, where it would stand out from nothing. Its arrow is the one it was
+     * Against the side of a block it stands out from it, facing away; under one it hangs from it, facing whoever puts
+     * it up; whichever of the two the nearest way they look finds holding it, the block clicked first, and nowhere
+     * else, as on a floor, where it would stand out from nothing (see {@link Hanging}). Its arrow is the one it was
      * taken down or picked with.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction clicked = context.getClickedFace();
-        if (clicked == Direction.UP) {
-            return null;
+        for (Direction toward : context.getNearestLookingDirections()) {
+            if (toward == Direction.UP && Hanging.hangs(context)) {
+                return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(HANGING, true);
+            }
+            if (toward.getAxis().isHorizontal() && Hanging.holds(context, toward)) {
+                return defaultBlockState().setValue(FACING, toward.getOpposite()).setValue(HANGING, false);
+            }
         }
-        return defaultBlockState()
-            .setValue(FACING, clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite())
-            .setValue(HANGING, clicked == Direction.DOWN);
+        return null;
     }
 
     /** Put up by hand, it shows the WCs whose signs are round it. */
