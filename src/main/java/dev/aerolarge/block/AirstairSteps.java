@@ -158,6 +158,30 @@ final class AirstairSteps {
         }
     }
 
+    /**
+     * Takes up the steps a flight aboard an assembled airframe left standing in the world as she was assembled, those
+     * out past the box her blocks were gathered from, as a rocket's long flight reaches: the steps' own blocks
+     * wherever a step this many blocks down lies in the world now. Taken up before she moves off, as her stairs fold
+     * away, that is where she left them; a flight not aboard leaves none.
+     */
+    static void takeUpLeftBehind(ServerLevel level, StepAt steps, int width, int laidDown) {
+        for (int down = 1; down <= laidDown; down++) {
+            for (int column = 0; column < width; column++) {
+                takeUp(level, inWorld(level, steps.at(down, column)));
+            }
+        }
+    }
+
+    /** Where a block aboard an assembled airframe lies in the world now, if loaded; null for one not aboard. */
+    @Nullable
+    private static BlockPos inWorld(ServerLevel level, @Nullable BlockPos pos) {
+        if (pos == null) {
+            return null;
+        }
+        BlockPos world = BlockPos.containing(SableFlight.toWorld(level, Vec3.atCenterOf(pos)));
+        return world.equals(pos) || !level.isLoaded(world) ? null : world;
+    }
+
     /** Takes up a step and the guard over it, if they are still the steps' own blocks. */
     private static void takeUp(ServerLevel level, @Nullable BlockPos step) {
         if (step == null) {

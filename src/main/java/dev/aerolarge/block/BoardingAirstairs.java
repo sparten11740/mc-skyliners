@@ -281,8 +281,10 @@ final class BoardingAirstairs {
         }
     }
 
+    /** Takes the steps up, and any of them she left standing in the world as she was assembled with them down. */
     private void takeUp(ServerLevel level) {
         AirstairSteps.takeUp(level, this::step, width, laidDown());
+        AirstairSteps.takeUpLeftBehind(level, this::step, width, laidDown());
         laid = false;
         foot = false;
     }
