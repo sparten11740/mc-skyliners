@@ -1,0 +1,286 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "iron": "aerolarge:block/girder_decor_iron",
+    "particle": "aerolarge:block/girder_decor_iron",
+    "cord": "aerolarge:block/girder_decor_cord",
+    "pennants": "aerolarge:block/girder_decor_pennants"
+  },
+  "elements": [
+    {
+      "from": [
+        7.75,
+        15.25,
+        0
+      ],
+      "to": [
+        8.25,
+        15.75,
+        3.7855339059327373
+      ],
+      "rotation": {
+        "angle": 45,
+        "axis": "x",
+        "origin": [
+          8,
+          15.5,
+          0
+        ]
+      },
+      "faces": {
+        "north": {
+          "texture": "#cord"
+        },
+        "south": {
+          "texture": "#cord"
+        },
+        "east": {
+          "texture": "#cord"
+        },
+        "west": {
+          "texture": "#cord"
+        },
+        "up": {
+          "texture": "#cord"
+        },
+        "down": {
+          "texture": "#cord"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        12.75,
+        2.5
+      ],
+      "to": [
+        8.25,
+        13.25,
+        9.244353201754365
+      ],
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          13,
+          2.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "texture": "#cord"
+        },
+        "south": {
+          "texture": "#cord"
+        },
+        "east": {
+          "texture": "#cord"
+        },
+        "west": {
+          "texture": "#cord"
+        },
+        "up": {
+          "texture": "#cord"
+        },
+        "down": {
+          "texture": "#cord"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        10.264718625761429,
+        8.5
+      ],
+      "to": [
+        8.25,
+        10.764718625761429,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cord"
+        },
+        "south": {
+          "texture": "#cord"
+        },
+        "east": {
+          "texture": "#cord"
+        },
+        "west": {
+          "texture": "#cord"
+        },
+        "up": {
+          "texture": "#cord"
+        },
+        "down": {
+          "texture": "#cord"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        15,
+        0
+      ],
+      "to": [
+        8.5,
+        17,
+        0.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron"
+        },
+        "south": {
+          "texture": "#iron"
+        },
+        "east": {
+          "texture": "#iron"
+        },
+        "west": {
+          "texture": "#iron"
+        },
+        "up": {
+          "texture": "#iron"
+        },
+        "down": {
+          "texture": "#iron"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        8.25,
+        0.25
+      ],
+      "to": [
+        8,
+        13.5,
+        3.75
+      ],
+      "faces": {
+        "east": {
+          "texture": "#pennants",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#pennants",
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        6.300252531694166,
+        4.25
+      ],
+      "to": [
+        8,
+        11.550252531694166,
+        7.75
+      ],
+      "faces": {
+        "east": {
+          "texture": "#pennants",
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#pennants",
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        5.264718625761429,
+        8.25
+      ],
+      "to": [
+        8,
+        10.514718625761429,
+        11.75
+      ],
+      "faces": {
+        "east": {
+          "texture": "#pennants",
+          "uv": [
+            0,
+            8,
+            8,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pennants",
+          "uv": [
+            0,
+            8,
+            8,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        5.264718625761429,
+        12.25
+      ],
+      "to": [
+        8,
+        10.514718625761429,
+        15.75
+      ],
+      "faces": {
+        "east": {
+          "texture": "#pennants",
+          "uv": [
+            8,
+            8,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pennants",
+          "uv": [
+            8,
+            8,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

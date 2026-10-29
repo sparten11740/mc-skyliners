@@ -119,6 +119,7 @@ import dev.aerolarge.block.LaserTurretBlock;
 import dev.aerolarge.block.LaserTurretBlockEntity;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
+import dev.aerolarge.block.GirderDecorBlock;
 import dev.aerolarge.block.GlassBackboardBlock;
 import dev.aerolarge.block.GrowLightBlock;
 import dev.aerolarge.block.GymBenchBlock;
@@ -1087,6 +1088,16 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
     public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
+    /**
+     * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy
+     * lights, hanging baskets, bunting, spotlights or a cable tray. Over head height, nothing collides with it.
+     */
+    public static final DeferredBlock<GirderDecorBlock> GIRDER_DECOR = BLOCKS.registerBlock(
+        "girder_decor", GirderDecorBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.3F).sound(SoundType.CHAIN).noCollission().noOcclusion()
+            .lightLevel(GirderDecorBlock::light).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> GIRDER_DECOR_ITEM = ITEMS.registerSimpleBlockItem(GIRDER_DECOR);
     public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
@@ -2391,7 +2402,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, SHAFT_DECOR_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             ROBOT_BARTENDER_ITEM, NEBULA_FIZZ, ROCKET_FUEL, ZERO_G_FLOAT, SUPERNOVA_SUNRISE, MOON_MILK,

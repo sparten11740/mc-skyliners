@@ -14,7 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * observation deck, under whose starry dome nothing hangs, one out from the shaft along each of the four ways right up
  * to her skin, in the story's highest row, the LED strip along the ceiling running on either side of its end. A girder
  * is laid only where that row is open all the way, so it never ends in the middle of a room at a lamp's cable. Laid
- * once the rooms have their furniture, and before the wall washers, the posters and the LED strips.
+ * once the rooms have their furniture, and before what hangs from them (see {@link RocketGirderDecor}), the wall
+ * washers, the posters and the LED strips.
  */
 final class RocketGirders implements RocketPiece {
     /** The stories with nothing hanging from their ceilings: the observation deck. */

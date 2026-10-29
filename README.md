@@ -1867,7 +1867,14 @@ light and the gym rings, so nothing stands on the floor with its cable up in the
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
 skin. Under every room's ceiling but the observation deck's, steel girders run out from the shaft along the four ways to
-her wall. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
+her wall, and under them, over everyone's heads and in nobody's way, hangs something of the room's own: mission-patch
+banners in the entry, each a round embroidered patch on navy cloth, a rocket climbing past the moon or a ringed planet;
+chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on each; racks of copper pots and pans in
+the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
+bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
+light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
+creative tab after the Lift Glass, hangs a chain hoist; broken, each keeps what it is). The entry story is in two
+halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
 boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
@@ -2337,7 +2344,9 @@ outside and the room's lining, untinted, on the faces it sees, as the airliner's
 story's floor a `RocketFloorBlock`, its room on top and the room under it underneath. `RocketWallLights` fixes the
 wall washers (`WallLightBlock`) to her skin round each story, once the rooms have their furniture, where `SkinMount`
 finds room on her wall, as it does for the club's neon signs; before them `RocketGirders` lays the steel girders under
-her rooms' ceilings, and her shaft's lift glass and corner girders are laid with the shaft (`RocketLayout.shaftWall`).
+her rooms' ceilings and `RocketGirderDecor` hangs each room's own under them (`GirderDecorBlock`, its `Part` drawing a
+loop of string or a pot rack across two blocks as one), and her shaft's lift glass and corner girders are laid with the
+shaft (`RocketLayout.shaftWall`).
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

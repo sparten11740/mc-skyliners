@@ -5896,6 +5896,152 @@ function rocketRoomTextures() {
   }, 5);
 }
 rocketRoomTextures();
+// The rocket's girder decorations (see girderDecor in generate_resources.mjs, which says which patch of each texture
+// each part shows). The entry's two mission patches, each a round embroidered patch on a navy banner trimmed in gold,
+// its foot cut in a swallowtail: a white rocket climbing on its flame past the moon and the stars inside a red ring,
+// and a ringed planet in deep space inside a gold one. The chain hoist's red casing ribbed across, its trolley's steel
+// wheels and its yellow hook. The pot rack's polished copper, a highlight down it and its rim along its foot, and a
+// pan's round face turned in rings to its darker rim. The fairy lights' dark wire and their bulbs, warm white and
+// amber. The hanging basket's wicker, woven over and under, its tuft of leaves and the stems trailing over its sides.
+// The bunting's twisted cord and its pennants, turquoise, white, navy and coral, folded over the cord along their tops.
+// The spotlights' black cans, finned, their lenses glowing pink or cyan, hottest in the middle, and their beams,
+// widening and fading as they fall. The cable tray's galvanised steel punched with holes, and its cables, two pixels
+// across each: red, blue, yellow, green, black, orange, grey and the white of the ties. And the iron they hang by.
+function girderDecorTextures() {
+  const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * t));
+  const scaled = ([r, g, b], by) => [r, g, b].map((c) => Math.round(Math.max(0, Math.min(255, c * by))));
+  // A pixel's own shade of a texture, the same every time it is drawn.
+  const speck = (x, y) => (((x * 73856093) ^ (y * 19349663)) >>> 0) % 7;
+
+  // The banner: navy cloth, its sides and its swallowtail's edges trimmed in gold, the patch's round field inside its
+  // ring, the cloth's fold over the rod along its top.
+  const NAVY = [0x1a, 0x24, 0x4c];
+  const TRIM = [0xd8, 0xb0, 0x48];
+  const notched = (x, y) => x < 2 || x > 13 || y < 1 || y > 14 || Math.abs(x + 0.5 - 8) < (y - 11) * 1.6;
+  const banner = (ring, field) => (x, y) => {
+    if (notched(x, y)) return CLEAR;
+    const nearNotch = notched(x - 1, y) || notched(x + 1, y) || notched(x, y + 1);
+    if (y === 1) return scaled(NAVY, 0.7);
+    if (nearNotch) return TRIM;
+    const across = Math.hypot(x - 7.5, y - 6.5);
+    if (across > 4.6) return (x + y) % 4 === 0 ? scaled(NAVY, 1.15) : NAVY;
+    return across > 3.8 ? ring : field(x, y);
+  };
+  // A rocket on its flame past the moon, in the patch's field, the stars about it.
+  const ROCKET = {
+    "7,3": [0xd0, 0xd8, 0xe0], "8,3": [0xb8, 0xc0, 0xc8],
+    "7,4": [0xf4, 0xf6, 0xf8], "8,4": [0xd8, 0xdc, 0xe2], "7,5": [0x3c, 0x9c, 0xe8], "8,5": [0xd8, 0xdc, 0xe2],
+    "7,6": [0xf4, 0xf6, 0xf8], "8,6": [0xd8, 0xdc, 0xe2], "7,7": [0xf4, 0xf6, 0xf8], "8,7": [0xd8, 0xdc, 0xe2],
+    "6,7": [0xd8, 0x30, 0x30], "9,7": [0xb0, 0x24, 0x24], "6,8": [0xd8, 0x30, 0x30], "9,8": [0xb0, 0x24, 0x24],
+    "7,8": [0x8a, 0x90, 0x98], "8,8": [0x70, 0x76, 0x7e], "7,9": [0xff, 0xe0, 0x50], "8,9": [0xff, 0xd0, 0x40],
+    "7,10": [0xff, 0x8a, 0x2c], "8,10": [0xf0, 0x6a, 0x20],
+    "4,4": [0xd8, 0xdc, 0xe4], "5,4": [0xc0, 0xc4, 0xcc], "4,5": [0xc0, 0xc4, 0xcc], "5,5": [0x98, 0x9c, 0xa6],
+    "10,4": [0xff, 0xff, 0xff], "11,7": [0xff, 0xf4, 0xc0], "4,8": [0xff, 0xff, 0xff], "10,10": [0xff, 0xf4, 0xc0],
+  };
+  texture(blockOutput, "girder_decor_patch_a", banner([0xc8, 0x2a, 0x2a], (x, y) => ROCKET[`${x},${y}`] ?? mix([0x24, 0x5c, 0xc0], [0x10, 0x2c, 0x78], (y - 2) / 9)), 0);
+  // A ringed planet in deep space, banded and lit from the upper left, its tilted ring round it, behind it over its
+  // middle and in front of it under, the stars about it.
+  const STARS = new Set(["5,3", "10,3", "4,9", "11,9"]);
+  texture(blockOutput, "girder_decor_patch_b", banner(TRIM, (x, y) => {
+    const ring = Math.hypot((x - 7.5) / 3.5, (y - 6.5 - 0.35 * (x - 7.5)) / 1.2);
+    const planet = Math.hypot(x - 7.5, y - 6.5) <= 2;
+    const front = y - 6.5 - 0.35 * (x - 7.5) > 0;
+    if (Math.abs(ring - 1) < 0.3 && (front || !planet)) return x < 8 ? [0xf4, 0xec, 0xd4] : [0xd8, 0xcc, 0xa8];
+    if (planet) return Math.hypot(x - 6.5, y - 5.5) < 1 ? [0xf8, 0xc4, 0x78] : y === 7 ? [0xa8, 0x52, 0x1c] : [0xe0, 0x84, 0x34];
+    return STARS.has(`${x},${y}`) ? [0xff, 0xff, 0xff] : [0x14, 0x10, 0x2c];
+  }), 0);
+
+  // The chain hoist's casing, its trolley's wheels and its hook; the iron everything hangs by.
+  texture(blockOutput, "girder_decor_hoist", (x, y) => (y % 4 === 0 ? [0x8e, 0x2c, 0x12] : x === 0 || x === 15 ? [0xa8, 0x3a, 0x18] : [0xcc, 0x4c, 0x1e]), 3);
+  texture(blockOutput, "girder_decor_steel", (x, y) => (Math.hypot(x - 7.5, y - 7.5) < 2.5 ? [0x50, 0x56, 0x5e] : [0x9a, 0xa0, 0xa8]), 3);
+  texture(blockOutput, "girder_decor_yellow", (x, y) => (x === 0 || y === 15 ? [0xc8, 0x98, 0x1a] : [0xf6, 0xc6, 0x26]), 3);
+  texture(blockOutput, "girder_decor_iron", (x, y) => scaled([0x30, 0x33, 0x38], 1 + 0.03 * speck(x, y)), 2);
+
+  // Polished copper, a highlight down it and its rim's band along its foot; a pan's face, turned in rings.
+  const COPPER = [0xc8, 0x6e, 0x3a];
+  texture(blockOutput, "girder_decor_copper", (x, y) => {
+    if (y >= 14) return y === 14 ? [0xe8, 0x96, 0x5a] : [0x96, 0x4c, 0x24];
+    if (x === 4 || x === 5) return [0xf4, 0xb0, 0x7a];
+    return x <= 1 || x >= 14 ? scaled(COPPER, 0.78) : COPPER;
+  }, 3);
+  texture(blockOutput, "girder_decor_pan", (x, y) => {
+    const round = Math.hypot(x - 7.5, y - 7.5);
+    if (round > 7.6) return CLEAR;
+    if (round > 6.4) return [0x8a, 0x44, 0x20];
+    if (Math.abs(x - y + 3) <= 1 && round < 5.5) return [0xf4, 0xb4, 0x80];
+    return Math.round(round) % 3 === 0 ? scaled(COPPER, 0.88) : COPPER;
+  }, 2);
+
+  // The fairy lights' wire, and their bulbs, warm white on the left and amber on the right, brightest in the middle.
+  texture(blockOutput, "girder_decor_wire", () => [0x1e, 0x22, 0x1e], 2);
+  texture(blockOutput, "girder_decor_bulbs", (x, y) => {
+    const core = Math.abs((x % 8) - 3.5) < 2 && y >= 4 && y < 12;
+    if (x < 8) return core ? [0xff, 0xfa, 0xe8] : [0xff, 0xe6, 0xb8];
+    return core ? [0xff, 0xd8, 0x90] : [0xff, 0xae, 0x48];
+  }, 0);
+
+  // The basket's wicker, woven over and under; its tuft of leaves; and its stems trailing down, each its own length,
+  // leaves along them by turns.
+  texture(blockOutput, "girder_decor_wicker", (x, y) => {
+    const over = ((x >> 1) + (y >> 1)) % 2 === 0;
+    if (over ? y % 2 === 1 : x % 2 === 1) return [0x7e, 0x58, 0x2c];
+    return over ? [0xd2, 0xa4, 0x62] : [0xb8, 0x88, 0x4a];
+  }, 3);
+  const LEAVES = [[0x3c, 0x8c, 0x34], [0x2c, 0x6e, 0x28], [0x58, 0xa8, 0x3c], [0x24, 0x58, 0x22]];
+  texture(blockOutput, "girder_decor_foliage", (x, y) => {
+    const edge = Math.hypot((x - 7.5) / 8, (y - 9) / 9);
+    if (edge > 1 || (edge > 0.7 && speck(x, y) < 3)) return CLEAR;
+    return LEAVES[speck(x, y) % LEAVES.length];
+  }, 2);
+  // The stems hang from a fringe of leaves spilling over the rim, each stem in its column as long as it is given, a
+  // leaf off it every third pixel down, to one side and then the other.
+  const STEMS = new Map([[1, 12], [5, 16], [9, 10], [13, 14]]);
+  const stemBeside = (x, y) => [x - 1, x + 1].find((stem) => STEMS.has(stem) && y < STEMS.get(stem) && (y + stem) % 3 === 0 && (x > stem) === (y % 2 === 0));
+  texture(blockOutput, "girder_decor_trailing", (x, y) => {
+    if (y < 2) return speck(x, y) < 5 ? LEAVES[(x + y) % LEAVES.length] : CLEAR;
+    if (STEMS.has(x) && y < STEMS.get(x)) return [0x2c, 0x5a, 0x26];
+    return stemBeside(x, y) !== undefined ? LEAVES[(x + y) % 3 === 0 ? 2 : 0] : CLEAR;
+  }, 2);
+
+  // The bunting's cord, twisted; and its four pennants, two to each half of the texture's height, each folded over the
+  // cord along its top and coming to a point.
+  texture(blockOutput, "girder_decor_cord", (x, y) => ((x + y) % 4 === 0 ? [0xb8, 0xb2, 0xa2] : [0xec, 0xe8, 0xdc]), 2);
+  const PENNANTS = [[0x2c, 0xc4, 0xc8], [0xf2, 0xf4, 0xf6], [0x1c, 0x3c, 0x8c], [0xf0, 0x6a, 0x50]];
+  texture(blockOutput, "girder_decor_pennants", (x, y) => {
+    const colour = PENNANTS[(x >> 3) + 2 * (y >> 3)];
+    const down = y % 8;
+    const half = 4 * (1 - (down + 0.5) / 8) + 0.3;
+    if (Math.abs((x % 8) + 0.5 - 4) >= half) return CLEAR;
+    if (down === 0) return scaled(colour, 0.72);
+    return colour === PENNANTS[1] && Math.abs((x % 8) + 0.5 - 4) >= half - 1 ? [0xc8, 0xcc, 0xd2] : colour;
+  }, 2);
+
+  // A spotlight's finned can; its lens, hottest in the middle; and its beam, a cone of its light widening and fading as
+  // it falls from the lens.
+  texture(blockOutput, "girder_decor_can", (x, y) => (y % 2 === 0 ? [0x2c, 0x2e, 0x34] : [0x18, 0x19, 0x1c]), 1);
+  const SPOTS = { pink: [0xff, 0x4a, 0xc4], cyan: [0x3c, 0xec, 0xff] };
+  for (const [name, colour] of Object.entries(SPOTS)) {
+    texture(blockOutput, `girder_decor_lens_${name}`, (x, y) => mix([0xff, 0xff, 0xff], colour, Math.min(1, Math.hypot(x - 7.5, y - 7.5) / 6)), 0);
+    texture(blockOutput, `girder_decor_beam_${name}`, (x, y) => {
+      const half = 2.6 + y * 0.34;
+      const off = Math.abs(x + 0.5 - 8) / half;
+      if (off >= 1) return CLEAR;
+      const alpha = Math.round(0xa8 * (1 - y / 16) ** 1.4 * (1 - off * off));
+      return [...mix(colour, [0xff, 0xff, 0xff], 0.25 * (1 - off)), alpha];
+    }, 0);
+  }
+
+  // The cable tray's galvanised steel, punched with holes; and the cables, a colour to each two pixels across, a darker
+  // pixel down the far side of each.
+  texture(blockOutput, "girder_decor_tray", (x, y) => {
+    if (x % 4 === 1 && y % 4 === 1) return [0x3c, 0x40, 0x46];
+    return x === 0 || x === 15 ? [0x8a, 0x90, 0x96] : [0xb0, 0xb6, 0xbc];
+  }, 3);
+  const CABLES = [[0xc8, 0x2c, 0x2c], [0x2a, 0x5c, 0xc8], [0xf0, 0xc8, 0x28], [0x2e, 0x9a, 0x3e], [0x1c, 0x1d, 0x20], [0xf0, 0x80, 0x24],
+    [0x8a, 0x90, 0x96], [0xe8, 0xec, 0xf0]];
+  texture(blockOutput, "girder_decor_cables", (x) => (x % 2 === 1 ? scaled(CABLES[x >> 1], 0.8) : CABLES[x >> 1]), 2);
+}
+girderDecorTextures();
 
 // The rocket's airlock panel (see airlockPanel in generate_resources.mjs): its brushed steel casing and darker post, and
 // its screen's three pictures, in the middle band of each texture, which is all the screen shows. Under a lamp bar

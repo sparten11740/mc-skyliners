@@ -1,0 +1,116 @@
+{
+  "variants": {
+    "axis=x,kind=mission_patches,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_first",
+      "y": 270
+    },
+    "axis=x,kind=mission_patches,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_second",
+      "y": 270
+    },
+    "axis=x,kind=chain_hoist,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist",
+      "y": 270
+    },
+    "axis=x,kind=chain_hoist,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist",
+      "y": 270
+    },
+    "axis=x,kind=pot_rack,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_first",
+      "y": 270
+    },
+    "axis=x,kind=pot_rack,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_second",
+      "y": 270
+    },
+    "axis=x,kind=fairy_lights,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_first",
+      "y": 270
+    },
+    "axis=x,kind=fairy_lights,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_second",
+      "y": 270
+    },
+    "axis=x,kind=hanging_basket,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket",
+      "y": 270
+    },
+    "axis=x,kind=hanging_basket,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket",
+      "y": 270
+    },
+    "axis=x,kind=bunting,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_first",
+      "y": 270
+    },
+    "axis=x,kind=bunting,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_second",
+      "y": 270
+    },
+    "axis=x,kind=spotlight,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_first",
+      "y": 270
+    },
+    "axis=x,kind=spotlight,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_second",
+      "y": 270
+    },
+    "axis=x,kind=cable_tray,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray",
+      "y": 270
+    },
+    "axis=x,kind=cable_tray,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray",
+      "y": 270
+    },
+    "axis=z,kind=mission_patches,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_first"
+    },
+    "axis=z,kind=mission_patches,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_second"
+    },
+    "axis=z,kind=chain_hoist,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist"
+    },
+    "axis=z,kind=chain_hoist,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist"
+    },
+    "axis=z,kind=pot_rack,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_first"
+    },
+    "axis=z,kind=pot_rack,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_second"
+    },
+    "axis=z,kind=fairy_lights,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_first"
+    },
+    "axis=z,kind=fairy_lights,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_second"
+    },
+    "axis=z,kind=hanging_basket,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket"
+    },
+    "axis=z,kind=hanging_basket,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket"
+    },
+    "axis=z,kind=bunting,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_first"
+    },
+    "axis=z,kind=bunting,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_second"
+    },
+    "axis=z,kind=spotlight,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_first"
+    },
+    "axis=z,kind=spotlight,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_second"
+    },
+    "axis=z,kind=cable_tray,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray"
+    },
+    "axis=z,kind=cable_tray,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray"
+    }
+  }
+}
