@@ -156,14 +156,13 @@ public class ShaftDecorBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * Fixed to the side of the block clicked, facing out from it; put on a floor or a ceiling, it faces whoever puts it
-     * up. Which piece it is comes from the item, as it was when it was broken.
+     * Fixed to the side of the block clicked, facing out from it; not on a floor or a ceiling, where it would stand
+     * against nothing. Which piece it is comes from the item, as it was when it was broken.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction clicked = context.getClickedFace();
-        Direction facing = clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite();
-        return defaultBlockState().setValue(FACING, facing);
+        return clicked.getAxis().isHorizontal() ? defaultBlockState().setValue(FACING, clicked) : null;
     }
 
     @Override

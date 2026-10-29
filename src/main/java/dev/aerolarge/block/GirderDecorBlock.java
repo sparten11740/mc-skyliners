@@ -139,9 +139,15 @@ public class GirderDecorBlock extends Block {
         };
     }
 
-    /** Hung along the girder over it, or else the way whoever hangs it looks. */
+    /**
+     * Hung along the girder over it, or else the way whoever hangs it looks; only where it hangs from something (see
+     * {@link Hanging}), never standing on the floor.
+     */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        if (!Hanging.hangs(context)) {
+            return null;
+        }
         BlockState above = context.getLevel().getBlockState(context.getClickedPos().above());
         boolean underGirder = above.getBlock() instanceof SteelGirderBlock && above.getValue(RotatedPillarBlock.AXIS).isHorizontal();
         Direction.Axis axis = underGirder ? above.getValue(RotatedPillarBlock.AXIS) : context.getHorizontalDirection().getAxis();
