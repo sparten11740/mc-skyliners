@@ -97,7 +97,9 @@ public final class DiscoLights {
     private DiscoLights() {
     }
 
-    /** A spot's way out of the ball as it hangs unturned, in radians: round from south toward east, and up from level. */
+    /**
+     * A spot's way out of the ball as it lies unturned, in radians: round from south toward east, and up from level.
+     */
     private record Spot(float round, float up) {
     }
 

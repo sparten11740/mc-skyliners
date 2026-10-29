@@ -71,7 +71,7 @@ public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEnti
     private static final List<Tile> TILES = tiles();
 
     /**
-     * A mirror tile, round the ball's middle as it hangs unturned: its corners (counter-clockwise seen from outside),
+     * A mirror tile, round the ball's middle as it lies unturned: its corners (counter-clockwise seen from outside),
      * its middle, the way it faces, how brightly it shines, and which of the spots' colours it shows.
      */
     private record Tile(Vector3f[] corners, Vector3f middle, Vector3f normal, float shine, int colour) {

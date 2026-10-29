@@ -97,7 +97,7 @@ public class DiscoBallBlock extends Block implements EntityBlock {
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction toward = Mounting.support(context, MOUNT.getPossibleValues());
+        Direction toward = Mounting.lightSupport(context, MOUNT.getPossibleValues());
         if (toward == null) {
             return null;
         }

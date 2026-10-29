@@ -34,6 +34,15 @@ public final class Mounting {
     }
 
     /**
+     * As {@link #support}, for a light: under a light cable, run down for a light to hang from, it hangs from the cable
+     * whichever way the player looks, as the Halo Light does.
+     */
+    @Nullable
+    public static Direction lightSupport(BlockPlaceContext context, Collection<Mount> mounts) {
+        return mounts.contains(Mount.CEILING) && underCable(context) ? Direction.UP : support(context, mounts);
+    }
+
+    /**
      * Every way from where a player puts a fitting up to something that would hold it there, for a fitting that takes
      * the mounts given, the nearest way they look first: for a fitting that has more than one shape to try, as the
      * Halo Light does when its first would not fit.
