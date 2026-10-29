@@ -36,10 +36,13 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * off where they are and goes. No one gets off it between floors: only its machine sets riders down, at an open door.
  */
 public class LiftCar extends Entity {
-    /** The lift's top speed, in blocks a tick: six a second. */
-    public static final double SPEED = 0.3;
+    /**
+     * The lift's top speed, in blocks a tick: twelve a second, an express lift's, so it comes the whole height of a tall
+     * ship in about ten seconds.
+     */
+    public static final double SPEED = 0.6;
     /** How long it takes to come up to its top speed from standing, and down again, in ticks. */
-    public static final int EASE = 20;
+    public static final int EASE = 25;
     /** How many riders it carries at most. */
     public static final int RIDERS = 4;
     /** How far out from the shaft's middle its riders stand, in blocks, each in a quarter of the car. */
