@@ -4002,13 +4002,14 @@ function coffeeMachineLang() {
   };
 }
 
-// Basketball, drawn facing north. The hoop: an orange ring with its net hanging below, as high in its block however
-// it is put up, so it scores the same (see HoopBlock); the side it counts for does not show. On a wall, a dark bracket
+// Basketball, drawn facing north. The hoop: an orange ring with its net hanging below, as high in its block on a wall
+// as on the floor (see HoopBlock); the side it counts for does not show. On a wall, a dark bracket
 // to the wall or backboard behind it. On the floor, a little backboard along the north side of the block behind the
 // ring, a pane of the glass backboard's glass in its aluminium frame with the red shooter's square over the ring and a
-// short dark bracket under the ring to it, on top of a steel pole standing in a dark weighted base. Under a ceiling, a
-// shorter board of the same, hung from the ceiling on two steel rods, each with a plate where it meets it. Those two
-// are drawn translucent, for the glass. The scoreboard: a dark face, the score drawn over it by its renderer. The ball
+// short dark bracket under the ring to it, on top of a steel pole standing in a dark weighted base. Under a ceiling,
+// the same board and ring hung HUNG_DROP pixels lower in the block (HoopBlock's HUNG_DROP, so a ball has room over the
+// ring), from the ceiling on two steel rods, each with a plate where it meets it. Those two are drawn translucent, for
+// the glass. The scoreboard: a dark face, the score drawn over it by its renderer. The ball
 // rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
 {
   const ring = [
@@ -4044,6 +4045,10 @@ function coffeeMachineLang() {
   ];
   const pane = (top) => ({ from: [1, BOARD_BOTTOM, 0.5], to: [15, top, 1.5], faces: { north: { texture: "#glass" }, south: { texture: "#glass" } } });
   const boardTextures = { ...hoopTextures, glass: `${ID}:block/glass_backboard`, frame: `${ID}:block/cabin_rail_steel`, red: `${ID}:block/backboard_red` };
+  const HUNG_DROP = 6;
+  const lowered = ([from, to, texture]) => [[from[0], from[1] - HUNG_DROP, from[2]], [to[0], to[1] - HUNG_DROP, to[2]], texture];
+  const loweredElement = (element) => ({ ...element, from: [element.from[0], element.from[1] - HUNG_DROP, element.from[2]],
+    to: [element.to[0], element.to[1] - HUNG_DROP, element.to[2]] });
   const mounted = {
     floor: [16, [
       [[7, 4, 0.25], [9, BOARD_BOTTOM, 1.75], "#frame"],
@@ -4051,18 +4056,22 @@ function coffeeMachineLang() {
       [[3.5, 1.5, 0], [12.5, 3, 5], "#bracket"],
       [[2, 0, 0], [14, 1.5, 7], "#bracket"],
     ]],
-    ceiling: [14.5, [
-      [[2.75, 14.5, 0.25], [4.25, 16, 1.75], "#frame"],
-      [[11.75, 14.5, 0.25], [13.25, 16, 1.75], "#frame"],
-      [[2.5, 15.5, 0], [4.5, 16, 2], "#frame"],
-      [[11.5, 15.5, 0], [13.5, 16, 2], "#frame"],
-    ]],
   };
   for (const [mount, [top, holder]] of Object.entries(mounted)) {
     const model = { ...boxes(boardTextures, [...ring, ...littleBoard(top), ...holder]), render_type: "minecraft:translucent" };
     model.elements.push(pane(top), ...net);
     write(`assets/${ID}/models/block/hoop_${mount}.json`, model);
   }
+  const rodsFrom = 16 - HUNG_DROP;
+  const rods = [
+    [[2.75, rodsFrom, 0.25], [4.25, 16, 1.75], "#frame"],
+    [[11.75, rodsFrom, 0.25], [13.25, 16, 1.75], "#frame"],
+    [[2.5, 15.5, 0], [4.5, 16, 2], "#frame"],
+    [[11.5, 15.5, 0], [13.5, 16, 2], "#frame"],
+  ];
+  const hung = { ...boxes(boardTextures, [...[...ring, ...littleBoard(16)].map(lowered), ...rods]), render_type: "minecraft:translucent" };
+  hung.elements.push(loweredElement(pane(16)), ...net.map(loweredElement));
+  write(`assets/${ID}/models/block/hoop_ceiling.json`, hung);
   const hoopModel = (mount) => `${ID}:block/hoop${mount === "wall" ? "" : `_${mount}`}`;
   write(`assets/${ID}/blockstates/hoop.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>

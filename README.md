@@ -1014,8 +1014,7 @@ the gym hall's court is lined.
 A Basketball Hoop takes its shape from where it is put up. On a wall, or the front of a glass backboard, it is fixed
 on its bracket; on the floor it stands on a steel pole in a weighted base, with a little glass backboard of its own on
 top behind the ring; under a ceiling it hangs from it on two steel rods by such a board. On the floor or under a
-ceiling its ring faces you. Its ring is as high however it is put up, so it scores the same, but hung right under a
-ceiling it leaves less room over the ring than a ball needs to drop straight in.
+ceiling its ring faces you. Hung from a ceiling its ring hangs lower, so a ball has room over it to drop through.
 
 Over the court the gym hall's pendant lights hang from metal roof trusses (Create's girders). From the trusses either
 side of the middle hang gymnastic rings on chains, over the side of the court by the wall bars: use them to swing up

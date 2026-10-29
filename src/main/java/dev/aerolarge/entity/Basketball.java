@@ -109,7 +109,7 @@ public class Basketball extends Entity implements ItemSupplier {
         if (hoop == null) {
             return;
         }
-        Vec3 ring = HoopBlock.ringMiddle(hoop);
+        Vec3 ring = HoopBlock.ringMiddle(level(), hoop);
         double peak = Math.min(Math.max(middle.y, ring.y) + ARC_RISE, ceilingOver(middle.lerp(ring, 0.5)) - CEILING_ROOM);
         if (peak <= ring.y || peak <= middle.y) {
             return;
@@ -145,7 +145,7 @@ public class Basketball extends Entity implements ItemSupplier {
             if (!(level().getBlockState(pos).getBlock() instanceof HoopBlock)) {
                 continue;
             }
-            Vec3 to = HoopBlock.ringMiddle(pos).subtract(middle).multiply(1, 0, 1);
+            Vec3 to = HoopBlock.ringMiddle(level(), pos).subtract(middle).multiply(1, 0, 1);
             double distance = to.length();
             if (distance <= ASSIST_RANGE && distance < bestDistance && to.normalize().dot(way.normalize()) >= leastCos) {
                 best = pos.immutable();
@@ -215,7 +215,7 @@ public class Basketball extends Entity implements ItemSupplier {
     private void dropThrough(ServerLevel level, Vec3 from, Vec3 to) {
         for (Vec3 point : new Vec3[]{to, from}) {
             BlockPos hoop = SableFlight.find(level, point, state -> state.getBlock() instanceof HoopBlock);
-            if (hoop != null && HoopBlock.dropsThrough(hoop, SableFlight.toPlot(level, hoop, from, true), SableFlight.toPlot(level, hoop, to, false))) {
+            if (hoop != null && HoopBlock.dropsThrough(level, hoop, SableFlight.toPlot(level, hoop, from, true), SableFlight.toPlot(level, hoop, to, false))) {
                 scoredCooldown = SCORED_COOLDOWN;
                 HoopBlock.score(level, hoop, thrower());
                 return;

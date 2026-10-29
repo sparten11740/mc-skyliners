@@ -39,7 +39,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A basketball hoop: an orange ring with its net, held up in the shape that fits where it is put (MOUNT). On a wall,
  * or the front of a glass backboard, it is fixed by a bracket; on the floor it stands on a steel pole in a weighted
  * base, a little glass backboard of its own on top of the pole behind the ring; under a ceiling it hangs from it on two
- * rods by such a backboard. The ring is as high in its block whatever holds it, so it scores the same everywhere. Only
+ * rods by such a backboard, its ring lower in its block, so a ball has room over it to come down through it. Only
  * what holds it is solid, so a ball drops through the ring, and a ball whose middle drops through near enough its
  * centre scores for the hoop's side: two points, or three thrown from beyond the three-point line, on every scoreboard
  * nearby. FACING is the way to the backboard, its own or the wall's; sneak and use it with an empty hand to change the
@@ -56,6 +56,11 @@ public class HoopBlock extends HorizontalDirectionalBlock {
      */
     private static final double RING_Y = 10.5 / 16;
     private static final double INNER_RADIUS = 0.45;
+    /**
+     * How far lower in its block the ring, its net and its board hang under a ceiling, in pixels: low enough that a
+     * ball, and the arc a throw is helped along (see the entity's Basketball), clear the ceiling over it.
+     */
+    private static final double HUNG_DROP = 6;
     /** Thrown from farther than this, across the floor, a basket is worth three: the real line, in metres, scaled like the airliner. */
     private static final double THREE_POINT_METRES = 6.75;
     /** Scoreboards this close to the hoop count its baskets, and players this close hear of them. */
@@ -72,6 +77,8 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         Direction.WEST, Block.box(0, 9, 7, 2, 11, 9),
         Direction.EAST, Block.box(14, 9, 7, 16, 11, 9)
     ));
+    /** The ring hung under a ceiling, lower in its block. */
+    private static final VoxelShape HUNG_RING = RING.move(0, -HUNG_DROP / 16, 0);
     /** The short bracket under the ring to the little backboard, on the floor or under a ceiling, facing north. */
     private static final VoxelShape LITTLE_BOARD_BRACKET = Block.box(7, 9, 2, 9, 10, 3);
     /**
@@ -82,10 +89,13 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         Block.box(2, 0, 0, 14, 1.5, 7), Block.box(3.5, 1.5, 0, 12.5, 3, 5), Block.box(6.5, 3, 0, 9.5, 4, 2.25),
         Block.box(7, 4, 0.25, 9, 9, 1.75), Block.box(1, 9, 0, 15, 16, 2), LITTLE_BOARD_BRACKET
     ));
-    /** Hung under a ceiling, drawn facing north: the little backboard behind the ring and the two rods up from it. */
+    /**
+     * Hung under a ceiling, drawn facing north: the little backboard behind the lowered ring, and the two rods up from
+     * it to the ceiling.
+     */
     private static final Map<Direction, VoxelShape> HANGER = TurnedShapes.of(Shapes.or(
-        Block.box(1, 9, 0, 15, 14.5, 2), Block.box(2.5, 14.5, 0, 4.5, 16, 2), Block.box(11.5, 14.5, 0, 13.5, 16, 2),
-        LITTLE_BOARD_BRACKET
+        Block.box(1, 3, 0, 15, 10, 2), Block.box(2.5, 10, 0, 4.5, 16, 2), Block.box(11.5, 10, 0, 13.5, 16, 2),
+        LITTLE_BOARD_BRACKET.move(0, -HUNG_DROP / 16, 0)
     ));
 
     /** The two sides of a game, as the scoreboard shows them. */
@@ -140,7 +150,7 @@ public class HoopBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.or(RING, holder(state));
+        return Shapes.or(state.getValue(MOUNT) == Mount.CEILING ? HUNG_RING : RING, holder(state));
     }
 
     @Override
@@ -171,14 +181,16 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** The middle of a hoop's ring, in its own frame. */
-    public static Vec3 ringMiddle(BlockPos hoop) {
-        return new Vec3(hoop.getX() + 0.5, hoop.getY() + RING_Y, hoop.getZ() + 0.5);
+    /** The middle of a hoop's ring, in its own frame: lower in its block hung under a ceiling. */
+    public static Vec3 ringMiddle(BlockGetter level, BlockPos hoop) {
+        BlockState state = level.getBlockState(hoop);
+        boolean hung = state.getBlock() instanceof HoopBlock && state.getValue(MOUNT) == Mount.CEILING;
+        return new Vec3(hoop.getX() + 0.5, hoop.getY() + RING_Y - (hung ? HUNG_DROP / 16 : 0), hoop.getZ() + 0.5);
     }
 
     /** Whether a ball's middle moving from one point to the next, in the hoop's own frame, dropped down through its ring. */
-    public static boolean dropsThrough(BlockPos hoop, Vec3 from, Vec3 to) {
-        Vec3 ring = ringMiddle(hoop);
+    public static boolean dropsThrough(BlockGetter level, BlockPos hoop, Vec3 from, Vec3 to) {
+        Vec3 ring = ringMiddle(level, hoop);
         if (!(from.y > ring.y && to.y <= ring.y)) {
             return false;
         }
