@@ -36,9 +36,14 @@ public class PilotHelmetItem extends Item implements Equipable {
     private static final ResourceLocation ARMOR_ID = ResourceLocation.withDefaultNamespace("armor.helmet");
 
     public PilotHelmetItem(Properties properties) {
-        super(properties.attributes(ItemAttributeModifiers.builder()
+        super(properties.attributes(protection()));
+    }
+
+    /** The armour the helmet adds while on the head, as much as a leather cap's; the space helmet adds the same. */
+    static ItemAttributeModifiers protection() {
+        return ItemAttributeModifiers.builder()
             .add(Attributes.ARMOR, new AttributeModifier(ARMOR_ID, ARMOR, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.HEAD)
-            .build()));
+            .build();
     }
 
     /** Whether the entity has a pilot helmet on. */

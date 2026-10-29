@@ -2312,6 +2312,87 @@ function softened(samples) {
   writeSound("tardigrade_bloop", bloop, 0.55);
 }
 
+// The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
+// of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
+// through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a
+// moment's rest; the breath out, lower and softer still, the valve's flap fluttering faintly as it lets the air go;
+// another rest. Under it all lies the faint, steady hiss of the suit's air supply, crossfaded into a seamless loop;
+// the breaths are silent at the loop's seam, so they need none. Each part is levelled by its root mean square, its
+// share given beside it. Tune it here.
+const BREATH = {
+  // The loop's length, and the crossfade the air supply's hiss is made seamless over, in seconds.
+  seconds: 4,
+  crossfade: 0.4,
+  // The breath in and the breath out: when each begins and how long it lasts, in seconds; and how far into it each
+  // is at its fullest, as a share of it, the breath in drawn quicker than the breath out is let go.
+  inFrom: 0.15,
+  inFor: 1.5,
+  inPeak: 0.4,
+  outFrom: 1.95,
+  outFor: 1.8,
+  outPeak: 0.3,
+  // The breath in: the valve's hiss, its centre in hertz, its q and its share; and the rush under it.
+  valve: 2600,
+  valveQ: 4,
+  valveShare: 0.5,
+  rush: 1100,
+  rushQ: 0.8,
+  rushShare: 1,
+  // The breath out, as loud as a share of the breath in: its rush and the valve's flap, a lower band, fluttering this
+  // many times a second, this deep.
+  out: 620,
+  outQ: 0.9,
+  flap: 1500,
+  flapQ: 2.5,
+  flapShare: 0.35,
+  outShare: 0.7,
+  flutter: 19,
+  flutterDepth: 0.25,
+  // The air supply's hiss: high-passed noise, from this many hertz up, its share; and every breath softened through a
+  // low-pass at this many hertz.
+  supplyFrom: 3000,
+  supplyShare: 0.06,
+  soften: 6500,
+  // The peak the loop is written at: quiet, as a breath is.
+  level: 0.5,
+};
+/** How full a breath is a share of the way through it: swelling to its fullest at the peak given, then easing off. */
+function breathSwell(along, peak) {
+  if (along <= 0 || along >= 1) {
+    return 0;
+  }
+  const phase = along < peak ? along / peak : 1 + (along - peak) / (1 - peak);
+  return Math.sin((Math.PI * phase) / 2) ** 2;
+}
+{
+  const breathRandom = ownRandom(0x42726561);
+  const length = Math.round(BREATH.seconds * RATE);
+  const white = Float64Array.from({ length }, () => breathRandom() * 2 - 1);
+  const unit = (samples) => {
+    const level = rms(samples);
+    return samples.map((s) => s / level);
+  };
+  const valve = unit(resonance(white, BREATH.valve, BREATH.valveQ));
+  const rush = unit(resonance(white, BREATH.rush, BREATH.rushQ));
+  const out = unit(resonance(white, BREATH.out, BREATH.outQ));
+  const flap = unit(resonance(white, BREATH.flap, BREATH.flapQ));
+  const breaths = new Float64Array(length);
+  for (let i = 0; i < length; i++) {
+    const t = i / RATE;
+    const drawn = breathSwell((t - BREATH.inFrom) / BREATH.inFor, BREATH.inPeak);
+    const letGo = breathSwell((t - BREATH.outFrom) / BREATH.outFor, BREATH.outPeak);
+    const flutter = 1 + BREATH.flutterDepth * Math.sin(2 * Math.PI * BREATH.flutter * t);
+    breaths[i] = drawn * (BREATH.valveShare * valve[i] + BREATH.rushShare * rush[i])
+      + BREATH.outShare * letGo * (out[i] + BREATH.flapShare * flutter * flap[i]);
+  }
+  const soft = lowPassed(breaths, BREATH.soften);
+  const rendered = Math.round((BREATH.seconds + BREATH.crossfade) * RATE);
+  const hiss = Float64Array.from({ length: rendered }, () => breathRandom() * 2 - 1);
+  const lowered = lowPassed(hiss, BREATH.supplyFrom);
+  const supply = unit(seamlessNoise(hiss.map((s, i) => s - lowered[i]), BREATH.seconds, BREATH.crossfade));
+  writeSound("space_helmet_breath", soft.map((s, i) => s + BREATH.supplyShare * supply[i]), BREATH.level);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
 // recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
 // through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along

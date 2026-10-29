@@ -1082,6 +1082,17 @@ head-up display (see Autopilot). Craft it from five iron ingots round a black st
 under them for the ear cups, or buy it at a duty-free counter for 10 emeralds. Every airliner with pilots' seats is
 built with a helmet and a cap in each pilot's locker on its flight deck (see Flight deck).
 
+A Space Helmet is an astronaut's, for the rocket's crew: a round white bubble of a helmet, well bigger than the head,
+with a big gold visor over the face, mirrored, the sun's glint across it and the blue rim of the planet curving across
+its foot, a dark ring at its neck and a mission patch on its left side, a little white rocket climbing out of its
+flame on navy inside a gold ring. It is worn as the pilot helmet is, and protects as much. From inside, its visor tints
+the view a touch of gold, lighter than the pilot helmet's, its rim only faint round the edges, and shows no head-up
+display. Aboard a rocket at the edge of space or over it, its air is heard softly in the helmet, a calm, slow hiss in
+and out through its valve as you breathe, until it comes off, you leave her or she comes back down (the client
+config's `helmetBreathing` keeps it silent). Craft it from five white concrete round a gold ingot for the visor, with
+three iron ingots under them for the neck ring. Every furnished rocket is built with one in each crew locker on her
+entry story and in her bunk room (see The rocket).
+
 ### Skydiving
 
 By the aft passenger doors and the cargo door are a red and green jump light in the wall and a rack of parachutes,
@@ -1839,12 +1850,14 @@ them).
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
 the skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather
-leave her in flight, crew lockers along both sides and armchairs at the back to wait for the lift in. The cargo bay
+leave her in flight, crew lockers along both sides, a Space Helmet waiting in each (see Souvenirs), and armchairs at
+the back to wait for the lift in. The cargo bay
 over it holds a pair of baggage containers by the way in from the lift and care-package crates stacked two high by
 its side windows, ready to be packed and dropped, its back left to the rover (below). The galley and
 mess has galley units curving round the back either side of its window, an oven in each run and a coffee machine,
 and four tables with an armchair either side, two of them by the side windows. The bunk room has bunk beds two high at
-each of the four diagonals, their reading lights on, and a crew locker for each. The greenhouse has raised moss beds in
+each of the four diagonals, their reading lights on, and a crew locker for each, a Space Helmet in it too. The
+greenhouse has raised moss beds in
 a ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in them, a cherry tree at two diagonals
 and an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its
 ceiling, its bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep
@@ -1997,7 +2010,8 @@ pling when there is nothing to do and a deep note for wait.
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
-rocket's `spaceSky`, `shootingStars` and `aurora`, and the hot air burners' `burnerSmoke`) are there from the title
+rocket's `spaceSky`, `shootingStars` and `aurora`, the space helmet's `helmetBreathing`, and the hot air burners'
+`burnerSmoke`) are there from the title
 screen. The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single
 player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
 
@@ -2150,6 +2164,10 @@ the rim, and last of space `ShootingStars` the shooting star of the moment, both
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
 climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends the smoke under her and the flames from
 her base.
+Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
+the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the
+view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her middle is
+at the edge of space or over it (`EdgeOfSpace.reached`).
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

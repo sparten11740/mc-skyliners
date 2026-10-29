@@ -14,6 +14,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.aerolarge.client.HudLayout.Box;
 import dev.aerolarge.client.HudLayout.Point;
 import dev.aerolarge.item.PilotHelmetItem;
+import dev.aerolarge.item.SpaceHelmetItem;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -29,10 +30,11 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 /**
- * The pilot helmet's visor, seen from inside. While a pilot helmet is worn and the player looks out through their own
- * eyes, the visor tints the view a touch toward its gold, darkens it faintly toward the edges and catches a little
- * light along its top: kept light, so the world stays clear. And the pilots' head-up display ({@link PilotHud}) is
- * shown on it, in parts round the screen: drawn first into a picture of their own, the size of the window, then each
+ * A helmet's visor, seen from inside. While a pilot helmet or a space helmet is worn and the player looks out through
+ * their own eyes, the visor tints the view a touch toward its gold, darkens it faintly toward its rim round the edges
+ * and catches a little light along its top: kept light, so the world stays clear, and lighter still in the space
+ * helmet's big bubble, its rim only faint. And on the pilot helmet's the pilots' head-up display ({@link PilotHud}) is
+ * shown, in parts round the screen: drawn first into a picture of their own, the size of the window, then each
  * part laid over the view from it, bent onto the visor's curve ({@link VisorCurve}) as it lies at its place on the
  * screen, edged dark, so it reads against bright sky, and with a soft glow. That picture is drawn anew each frame, a
  * few hundred shapes and some text, and laid on in a handful of draws, so it costs next to nothing; the mesh it is
@@ -58,22 +60,13 @@ public final class HelmetVisor {
     private static final float OUTLINE_OFFSET = 1;
     private static final float[][] OUTLINE_DIRECTIONS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    /** The visor's tint: its colour, and how much of it is laid over the whole view. */
-    private static final int TINT = 0x3A2A10;
-    private static final float TINT_ALPHA = 0.06F;
-    /**
-     * The darkening toward the edges: how far out from the middle it starts and where it is full, as shares of the way
-     * to the screen's edge (the corners lie further out still), and how dark it is there.
-     */
-    private static final float VIGNETTE_FROM = 0.55F;
-    private static final float VIGNETTE_TO = 1.35F;
-    private static final float VIGNETTE_ALPHA = 0.32F;
+    /** The pilot helmet's visor: smoked a touch toward its gold, darkening toward the edges. */
+    private static final Visor PILOT = new Visor(0x3A2A10, 0.06F, 0.55F, 1.35F, 0.32F, 0.16F, 0x12FFF4DC);
+    /** The space helmet's: a lighter, brighter touch of gold, the rim of its big bubble only faint at the edges. */
+    private static final Visor SPACE = new Visor(0x6A4A14, 0.05F, 0.8F, 1.5F, 0.2F, 0.12F, 0x10FFF4DC);
     /** The mesh the darkening is shaded across. */
     private static final int VIGNETTE_COLUMNS = 16;
     private static final int VIGNETTE_ROWS = 10;
-    /** The light caught along the visor's top: how far down it fades out, as a share of the screen, and how bright. */
-    private static final float GLINT_DEPTH = 0.16F;
-    private static final int GLINT = 0x12FFF4DC;
 
     /** The picture the HUD is drawn into before it is laid onto the visor; made when first needed. */
     @Nullable
@@ -88,6 +81,15 @@ public final class HelmetVisor {
     private static final Coat FACE_COAT = new Coat();
 
     private HelmetVisor() {
+    }
+
+    /**
+     * How a helmet's visor looks from inside: its tint's colour, and how much of it is laid over the whole view; the
+     * darkening toward its rim, how far out from the middle it starts and where it is full, as shares of the way to the
+     * screen's edge (the corners lie further out still), and how dark it is there; and the light caught along its top,
+     * how far down it fades out, as a share of the screen, and its colour with its opacity.
+     */
+    private record Visor(int tint, float tintAlpha, float rimFrom, float rimTo, float rimAlpha, float glintDepth, int glint) {
     }
 
     /** Draws a part of a HUD flat, through the GUI's pose as set up for it: in its own units round its origin. */
@@ -306,12 +308,13 @@ public final class HelmetVisor {
         }
     }
 
-    /** Draws the visor over the view while a pilot helmet is worn and the player looks out through their own eyes. */
+    /** Draws the visor over the view while a helmet is worn and the player looks out through their own eyes. */
     public static void overlay(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        if (player == null || !PilotHelmetItem.worn(player) || !minecraft.options.getCameraType().isFirstPerson()
-            || minecraft.getCameraEntity() != player || PassengerCameras.looking()) {
+        Visor visor = player == null ? null : worn(player);
+        if (visor == null || !minecraft.options.getCameraType().isFirstPerson() || minecraft.getCameraEntity() != player
+            || PassengerCameras.looking()) {
             return;
         }
         int width = graphics.guiWidth();
@@ -320,24 +323,33 @@ public final class HelmetVisor {
         Matrix4f matrix = graphics.pose().last().pose();
         for (int row = 0; row < VIGNETTE_ROWS; row++) {
             for (int column = 0; column < VIGNETTE_COLUMNS; column++) {
-                shade(shade, matrix, column, row, width, height);
-                shade(shade, matrix, column, row + 1, width, height);
-                shade(shade, matrix, column + 1, row + 1, width, height);
-                shade(shade, matrix, column + 1, row, width, height);
+                shade(shade, matrix, visor, column, row, width, height);
+                shade(shade, matrix, visor, column, row + 1, width, height);
+                shade(shade, matrix, visor, column + 1, row + 1, width, height);
+                shade(shade, matrix, visor, column + 1, row, width, height);
             }
         }
-        graphics.fillGradient(0, 0, width, Math.round(height * GLINT_DEPTH), GLINT, GLINT & 0xFFFFFF);
+        graphics.fillGradient(0, 0, width, Math.round(height * visor.glintDepth()), visor.glint(), visor.glint() & 0xFFFFFF);
         graphics.flush();
     }
 
-    /** A corner of the darkening's mesh: the tint everywhere, darkening further from the middle. */
-    private static void shade(VertexConsumer shade, Matrix4f matrix, int column, int row, int width, int height) {
+    /** The visor of the helmet the player has on, or null with none on. */
+    @Nullable
+    private static Visor worn(LocalPlayer player) {
+        if (PilotHelmetItem.worn(player)) {
+            return PILOT;
+        }
+        return SpaceHelmetItem.worn(player) ? SPACE : null;
+    }
+
+    /** A corner of the darkening's mesh: the visor's tint everywhere, darkening further from the middle. */
+    private static void shade(VertexConsumer shade, Matrix4f matrix, Visor visor, int column, int row, int width, int height) {
         float x = (float) column / VIGNETTE_COLUMNS;
         float y = (float) row / VIGNETTE_ROWS;
         float out = (float) Math.hypot(2 * x - 1, 2 * y - 1);
-        float darkening = Mth.clamp((out - VIGNETTE_FROM) / (VIGNETTE_TO - VIGNETTE_FROM), 0, 1);
-        float alpha = TINT_ALPHA + VIGNETTE_ALPHA * darkening * darkening * (3 - 2 * darkening);
-        shade.addVertex(matrix, x * width, y * height, 0).setColor(Math.round(alpha * 255) << 24 | TINT);
+        float darkening = Mth.clamp((out - visor.rimFrom()) / (visor.rimTo() - visor.rimFrom()), 0, 1);
+        float alpha = visor.tintAlpha() + visor.rimAlpha() * darkening * darkening * (3 - 2 * darkening);
+        shade.addVertex(matrix, x * width, y * height, 0).setColor(Math.round(alpha * 255) << 24 | visor.tint());
     }
 
     /** Lets go of the HUD's picture and its mesh on leaving a world. */

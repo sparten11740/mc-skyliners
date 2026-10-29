@@ -281,6 +281,7 @@ import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
 import dev.aerolarge.item.PilotHelmetItem;
 import dev.aerolarge.item.RoverRemoteItem;
+import dev.aerolarge.item.SpaceHelmetItem;
 import dev.aerolarge.item.SpacePosterItem;
 import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
@@ -1567,6 +1568,12 @@ public final class AerolargeRegistry {
     /** The pilot's flight helmet, its visor down over the eyes, and the beep of the head-up display it shows coming on. */
     public static final DeferredItem<PilotHelmetItem> PILOT_HELMET = ITEMS.register("pilot_helmet", () -> new PilotHelmetItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<SoundEvent, SoundEvent> HUD_ON = sound("hud_on");
+    /**
+     * The rocket crew's space helmet, its gold visor down over the face, and its air breathed in and out, heard in it
+     * aboard a rocket in space.
+     */
+    public static final DeferredItem<SpaceHelmetItem> SPACE_HELMET = ITEMS.register("space_helmet", () -> new SpaceHelmetItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_HELMET_BREATH = sound("space_helmet_breath");
 
     /**
      * Business class's side consoles beside its seats, each with its cocktail tray and reading lamp, and the lounge's
@@ -2098,7 +2105,7 @@ public final class AerolargeRegistry {
             AIRSTAIR_CALL_BUTTON_ITEM, AIRSTAIR_BUTTON_ITEM, DOOR_BUTTON_ITEM, SLIDE_CONTROL_ITEM, FLOOR_HATCH_ITEM
         )),
         new TabSection("flight_deck", List.of(
-            PILOT_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
+            PILOT_HELMET, SPACE_HELMET, PILOT_SEAT_ITEM, CREW_LOCKER_ITEM,
             THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, AUTOPILOT_ITEM, TILLER_ITEM, PARKING_BRAKE_ITEM, GEAR_LEVER_ITEM, LASER_SWITCH_ITEM, LASER_TURRET_ITEM, FLIGHT_DISPLAY_ITEM,
             TAIL_CAMERA_DISPLAY_ITEM, ANNOUNCEMENT_PANEL_ITEM, FLIGHT_MAP_ITEM, HANDSET_ITEM, SEATBELT_SWITCH_ITEM, CABIN_LIGHTS_ITEM, WINDOW_SHADES_ITEM, JUMP_SWITCH_ITEM,
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM

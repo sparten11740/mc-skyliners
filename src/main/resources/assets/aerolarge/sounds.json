@@ -728,6 +728,14 @@
       }
     ]
   },
+  "space_helmet_breath": {
+    "subtitle": "subtitles.aerolarge.space_helmet_breath",
+    "sounds": [
+      {
+        "name": "aerolarge:space_helmet_breath"
+      }
+    ]
+  },
   "toilet_flush": {
     "subtitle": "subtitles.aerolarge.toilet_flush",
     "sounds": [

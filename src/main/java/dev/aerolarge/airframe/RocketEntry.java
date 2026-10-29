@@ -1,14 +1,13 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
-import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import net.minecraft.world.item.DyeColor;
 
 /**
  * The entry story, where the front door lets the crew in: a parachute rack either side of the way in from the door,
- * for anyone who would rather leave her in flight; a run of crew lockers along her sides, to change into a flight suit;
- * and a pair of armchairs either side at her back, to wait in for the lift.
+ * for anyone who would rather leave her in flight; a run of crew lockers along her sides, to change into a flight suit,
+ * a space helmet in each; and a pair of armchairs either side at her back, to wait in for the lift.
  */
 final class RocketEntry extends RocketRoom {
     /** Her entry story, from the bottom up. */
@@ -35,8 +34,7 @@ final class RocketEntry extends RocketRoom {
                 AerolargeRegistry.PARACHUTE_RACK.get().defaultBlockState().setValue(ParachuteRackBlock.FACING, inward(round)));
         }
         for (double[] lockers : LOCKERS) {
-            run(y, out, lockers[0], lockers[1]).forEach(at -> put(at.getX(), y, at.getZ(), AerolargeRegistry.CREW_LOCKER.get().defaultBlockState()
-                .setValue(CrewLockerBlock.FACING, inward(roundOf(at.getX(), at.getZ())))));
+            run(y, out, lockers[0], lockers[1]).forEach(at -> crewLocker(at.getX(), y, at.getZ(), inward(roundOf(at.getX(), at.getZ()))));
         }
         for (double round : SEATS) {
             seat(across(out, round), y, along(out, round), inward(round), DyeColor.GRAY);

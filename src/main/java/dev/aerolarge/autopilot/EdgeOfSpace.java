@@ -28,7 +28,7 @@ public final class EdgeOfSpace {
      * How far under the edge she is at it, in blocks: set to hold y 1,000 itself, she closes on it from under it
      * without quite getting there.
      */
-    static final double AT_EDGE = 2;
+    private static final double AT_EDGE = 2;
     /** How far under the edge she must come back down before she is welcomed to space again, in blocks. */
     private static final double BACK_DOWN = 100;
     /**
@@ -50,18 +50,26 @@ public final class EdgeOfSpace {
     /** How long the welcome has waited for her cockpit to fall quiet, in ticks. */
     private int waited;
 
+    /**
+     * Whether a rocket whose middle is this high, in world blocks, is at the edge of space or over it: as close to it
+     * as she comes holding it, or higher.
+     */
+    public static boolean reached(double height) {
+        return height >= HEIGHT - AT_EDGE;
+    }
+
     /** Each tick of an assembled rocket's: welcomes everyone aboard to space as she climbs to its edge. */
     void watch(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double height = flight.position().y;
         if (welcomed == null) {
-            welcomed = height >= HEIGHT - AT_EDGE;
+            welcomed = reached(height);
         }
         if (height < HEIGHT - BACK_DOWN) {
             welcomed = false;
             waited = 0;
             return;
         }
-        if (welcomed || height < HEIGHT - AT_EDGE) {
+        if (welcomed || !reached(height)) {
             return;
         }
         if (waited == 0) {

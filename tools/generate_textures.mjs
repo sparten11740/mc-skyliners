@@ -2665,6 +2665,89 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     }, 0);
   }
 
+  // The rocket crew's space helmet. Its icon: the round white helmet a little from its left, outlined dark, the big
+  // gold visor over the face in its pale gasket, mirrored, with the sun's glint across its top and the blue planet's
+  // rim curving across its foot, the mission patch on its left side and the dark ring at its neck. Worn, its model
+  // shows a white shell darkening a little toward its foot, the gasket, the neck ring with a highlight along its top
+  // and the studs of its latch, the visor gold from its top to deep amber at its foot, darker toward its sides as it
+  // curves away, the blue planet's rim reflected across its foot, and the patch: a little white rocket with a red nose
+  // and fins climbing out of its flame on navy, a pale blue orbit round it and stars, ringed in gold.
+  {
+    const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * Math.min(1, Math.max(0, t))));
+    const SHELL = [0xf8, 0xf8, 0xfa];
+    const SHELL_SHADE = [0xb4, 0xbc, 0xc8];
+    const GASKET = [0xb0, 0xb6, 0xc0];
+    const RING = [0x2a, 0x30, 0x3c];
+    const RING_LIGHT = [0x5c, 0x64, 0x72];
+    const STUD = [0x9a, 0xa2, 0xae];
+    const VISOR_TOP = [0xfc, 0xdc, 0x78];
+    const VISOR_MIDDLE = [0xe8, 0xac, 0x30];
+    const VISOR_BOTTOM = [0xa8, 0x6c, 0x18];
+    const VISOR_GLINT = [0xff, 0xf6, 0xd0];
+    const PLANET = [0x34, 0x7c, 0xd4];
+    const AIR_GLOW = [0x9c, 0xd8, 0xff];
+    const PATCH_RED = [0xd8, 0x30, 0x30];
+    const FLAME = [0xff, 0x9c, 0x20];
+    const WHITE_PAINT = [0xf8, 0xf8, 0xf8];
+    // The visor's gold from its top (0) to its foot (1), through its brightest gold a third of the way down.
+    const gold = (t) => (t < 0.35 ? mix(VISOR_TOP, VISOR_MIDDLE, t / 0.35) : mix(VISOR_MIDDLE, VISOR_BOTTOM, (t - 0.35) / 0.65));
+    texture(itemOutput, "space_helmet", outlined((x, y) => {
+      if (x < 0 || y < 0 || x > 15 || y > 15) return null;
+      const cx = x + 0.5;
+      const cy = y + 0.5;
+      if (y >= 13 && y <= 14 && Math.abs(cx - 7.5) <= (y === 13 ? 5 : 4)) {
+        if (y === 13) return x === 7 || x === 8 ? STUD : RING_LIGHT;
+        return RING;
+      }
+      if (Math.hypot(cx - 7.5, cy - 6.9) > 6.3) return null;
+      const visor = Math.hypot((cx - 6.6) / 4.4, (cy - 7.2) / 3.6);
+      if (visor <= 1) {
+        const down = (cy - 3.6) / 7.2;
+        if ((x === 4 && y === 5) || (x === 5 && y === 4) || (x === 3 && y === 6)) return VISOR_GLINT;
+        const horizon = 8.6 + 0.07 * (cx - 6.6) ** 2;
+        if (Math.abs(cy - horizon) < 0.5) return mix(gold(down), AIR_GLOW, 0.55);
+        return cy > horizon ? mix(gold(down), PLANET, 0.65) : gold(down);
+      }
+      if (Math.hypot((cx - 6.6) / 5.3, (cy - 7.2) / 4.5) <= 1) return GASKET;
+      const patch = Math.hypot(cx - 12.1, cy - 8.3);
+      if (patch < 0.8) return PATCH_RED;
+      if (patch < 1.6) return BLUE;
+      return mix(SHELL, SHELL_SHADE, ((cx - 3) * 0.5 + cy - 3) / 13);
+    }), 0);
+    texture(itemOutput, "space_helmet_shell", (x, y) => mix(SHELL, SHELL_SHADE, y / 40), 2);
+    texture(itemOutput, "space_helmet_gasket", () => GASKET, 2);
+    // The ring's sides show its top two rows: the highlight along its top, then its latch's studs along the dark.
+    texture(itemOutput, "space_helmet_ring", (x, y) => {
+      if (y === 0) return RING_LIGHT;
+      return y === 1 && x % 4 === 1 ? STUD : RING;
+    }, 2);
+    // The visor, stretched over its wide face: its corners rounded off, clear to show the gasket under them.
+    texture(itemOutput, "space_helmet_visor", (x, y) => {
+      const across = (x - 7.5) / 8;
+      if (Math.abs(across) ** 3 + Math.abs((y - 7.5) / 8) ** 3 > 1) return CLEAR;
+      const curving = 1 - 0.3 * across ** 4;
+      const tint = gold(y / 15).map((c) => Math.round(c * curving));
+      const horizon = 12.6 - 2 * (1 - across ** 2);
+      if (Math.abs(y - horizon) < 0.6) return mix(tint, AIR_GLOW, 0.5);
+      if (y > horizon) return mix(tint, PLANET, 0.65);
+      const glint = Math.abs(x - 1.2 * y - 1.5);
+      if (glint < 1.3 && y < 7) return mix(VISOR_GLINT, tint, glint / 2 + y / 12);
+      return Math.abs(x - 1.2 * y - 5) < 0.5 && y < 6 ? mix(VISOR_GLINT, tint, 0.45) : tint;
+    }, 1);
+    texture(itemOutput, "space_helmet_patch", (x, y) => {
+      const r = Math.hypot(x - 7.5, y - 7.5);
+      if (r > 7.6) return CLEAR;
+      if (r > 6.4) return GOLD;
+      if (y === 2 && (x === 7 || x === 8)) return PATCH_RED;
+      if (y >= 3 && y <= 10 && (x === 7 || x === 8)) return y === 5 ? BLUE : WHITE_PAINT;
+      if (y >= 8 && y <= 10 && (x === 6 || x === 9)) return PATCH_RED;
+      if (y >= 11 && y <= 12 && (x === 7 || x === 8)) return FLAME;
+      if (Math.abs(Math.hypot((x - 7.5) / 5.6, (y - 8) / 2.4) - 1) < 0.12) return AIR_GLOW;
+      const star = (x === 3 && y === 5) || (x === 12 && y === 4) || (x === 4 && y === 11) || (x === 11 && y === 11);
+      return star ? WHITE_PAINT : BLUE;
+    }, 0);
+  }
+
   // The duty-free counter. Its cabinet shows the bottom ten rows of its textures: navy under a gold trim, its front
   // a white shopping bag with a green emerald on it, a picture of what the counter is for. On its top, seen through
   // the glass case, the goods laid out on a white cloth: a gift box, a pilot's cap, a perfume bottle and a paper plane.

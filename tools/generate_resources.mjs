@@ -1337,6 +1337,8 @@ function rocketSoundsLang() {
   Object.assign(sounds, holdAndTailSounds());
   // The pilot's head-up display coming on as the pilot helmet goes on.
   sounds.hud_on = { subtitle: `subtitles.${ID}.hud_on`, sounds: [{ name: `${ID}:hud_on` }] };
+  // The space helmet's air, breathed in and out, looped in the helmet aboard a rocket in space (see HelmetBreathing).
+  sounds.space_helmet_breath = { subtitle: `subtitles.${ID}.space_helmet_breath`, sounds: [{ name: `${ID}:space_helmet_breath` }] };
   // The vacuum toilets' flush, and the blue ice they drop cracking as it lands, or bonking whoever it lands on.
   for (const name of ["toilet_flush", "blue_ice_crack", "blue_ice_bonk"]) {
     sounds[name] = { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] };
@@ -3296,6 +3298,47 @@ function laserPointerLang() {
     perspectives: { head: { parent: `${ID}:item/pilot_helmet_worn` } },
   });
 }
+// The rocket crew's space helmet: a flat icon everywhere but on the head, where it is drawn as its own model, as the
+// pilot helmet is, a round bubble well bigger than the head. The model: a white shell rounded off in steps toward its
+// crown and its foot, the dark ring at its neck under it, the big gold visor over the face in a pale gasket, its
+// corners rounded off to show the gasket, and the mission patch on its left side. Most of it reaches out past the
+// model's box, so every face takes a patch of its texture from the texture's corner.
+{
+  const helmet = {
+    parent: "minecraft:block/block",
+    textures: {
+      shell: `${ID}:item/space_helmet_shell`, visor: `${ID}:item/space_helmet_visor`, gasket: `${ID}:item/space_helmet_gasket`,
+      ring: `${ID}:item/space_helmet_ring`, patch: `${ID}:item/space_helmet_patch`, particle: `${ID}:item/space_helmet_shell`,
+    },
+    elements: [
+      patched([2, -0.6, 2], [14, 1.4, 14], "#ring"),
+      patched([1.4, 1.4, 1.4], [14.6, 2.2, 14.6], "#shell"),
+      patched([0.4, 2.2, 0.4], [15.6, 3.2, 15.6], "#shell"),
+      patched([0.8, 3.2, -0.8], [15.2, 13.8, 16.8], "#shell"),
+      patched([-0.2, 3.2, 0.4], [16.2, 13.8, 15.6], "#shell"),
+      patched([-0.8, 4.6, 1.2], [16.8, 12.4, 14.8], "#shell"),
+      patched([0, 3.8, -0.2], [16, 13.2, 16.2], "#shell"),
+      patched([0.2, 13.8, 0.2], [15.8, 15, 15.8], "#shell"),
+      patched([1.4, 15, 1.4], [14.6, 16, 14.6], "#shell"),
+      patched([3.4, 16, 3.4], [12.6, 16.8, 12.6], "#shell"),
+      patched([1.2, 3.8, -1.1], [14.8, 13.2, -0.8], "#gasket"),
+      patched([1.7, 4.3, -1.4], [14.3, 12.7, -1.1], "#gasket"),
+    ],
+  };
+  const visor = helmet.elements[helmet.elements.length - 1];
+  visor.faces.north = { texture: "#visor", uv: [0, 0, 16, 16] };
+  helmet.elements.push({ from: [-1, 6.2, 5.6], to: [-0.8, 10.6, 10], faces: { west: { texture: "#patch", uv: [0, 0, 16, 16] } } });
+  write(`assets/${ID}/models/item/space_helmet_worn.json`, helmet);
+  write(`assets/${ID}/models/item/space_helmet.json`, {
+    loader: "neoforge:separate_transforms",
+    gui_light: "front",
+    base: {
+      parent: "minecraft:item/generated", loader: "neoforge:item_layers",
+      textures: { layer0: `${ID}:item/space_helmet`, particle: `${ID}:item/space_helmet` },
+    },
+    perspectives: { head: { parent: `${ID}:item/space_helmet_worn` } },
+  });
+}
 // The model airliner on its stand, drawn nose north: a white fuselage with a blue cheat line, swept wings with an
 // engine under each, a tailplane and a blue fin, on a black pole and base.
 {
@@ -3420,6 +3463,9 @@ const DUTY_FREE_LANG = {
   "item.aerolarge.pilot_helmet": "Pilot Helmet",
   "item.aerolarge.pilot_helmet.tooltip": "On the flight deck, its visor shows the head-up display",
   "subtitles.aerolarge.hud_on": "Pilot HUD beeps on",
+  "item.aerolarge.space_helmet": "Space Helmet",
+  "item.aerolarge.space_helmet.tooltip": "Aboard a rocket in space, you hear its air as you breathe",
+  "subtitles.aerolarge.space_helmet_breath": "Helmet air hisses",
 };
 
 // The cabin controls: modules of the centre console, drawn facing north, their top showing the setting. The cabin
@@ -6457,6 +6503,8 @@ shaped("pilot_cap", ["WGW", "W W"], { W: "minecraft:black_wool", G: "minecraft:g
 shaped("model_airliner", [" P ", "PPP", " S "], { P: `${ID}:airframe_panel`, S: "minecraft:stick" }, 1);
 // The pilot's helmet: an iron shell, a dark glass visor across its middle and black wool ear cups under it.
 shaped("pilot_helmet", ["III", "IGI", "W W"], { I: "minecraft:iron_ingot", G: "minecraft:black_stained_glass_pane", W: "minecraft:black_wool" }, 1);
+// The space helmet: a white shell, a gold visor across its middle and an iron ring at its neck under it.
+shaped("space_helmet", ["CCC", "CGC", "III"], { C: "minecraft:white_concrete", G: "minecraft:gold_ingot", I: "minecraft:iron_ingot" }, 1);
 shaped("springboard", ["WWW", "PSP"], { W: "minecraft:white_wool", P: "minecraft:birch_planks", S: "minecraft:slime_ball" }, 1);
 shaped("starlight_panel", ["WWW", "WGW", "WWW"], { W: "minecraft:blue_wool", G: "minecraft:glowstone_dust" }, 8);
 shaped("gym_rings", ["C C", "L L", "P P"], { C: "minecraft:chain", L: "minecraft:leather", P: "minecraft:birch_planks" }, 1);
@@ -6878,6 +6926,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.spaceSky": "Space Sky",
   "aerolarge.configuration.shootingStars": "Shooting Stars",
   "aerolarge.configuration.heightGauge": "Height Gauge",
+  "aerolarge.configuration.helmetBreathing": "Helmet Breathing",
   "aerolarge.configuration.aurora": "Aurora",
   "aerolarge.configuration.burnerSmoke": "Burner Smoke",
   "commands.aerolarge.build": "Building an airliner of %s blocks, %s of them over blocks that were in the way",

@@ -59,7 +59,7 @@ public final class SpaceGravity {
 
     /** Each tick of an assembled rocket's: every few ticks, at the edge of space or over it, everyone aboard is light. */
     static void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
-        boolean inSpace = flight.position().y >= EdgeOfSpace.HEIGHT - EdgeOfSpace.AT_EDGE;
+        boolean inSpace = EdgeOfSpace.reached(flight.position().y);
         if (!AerolargeConfig.ROCKET_LOW_GRAVITY.get() || !inSpace || level.getGameTime() % EVERY != 0) {
             return;
         }

@@ -22,6 +22,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue AURORA;
     public static final ModConfigSpec.BooleanValue LIFT_MUSIC;
     public static final ModConfigSpec.BooleanValue HEIGHT_GAUGE;
+    public static final ModConfigSpec.BooleanValue HELMET_BREATHING;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -107,6 +108,10 @@ public final class AerolargeClientConfig {
             .comment("While a rocket flies and her lift stands parked, show on its picture boards how high she is: the sky in the colours",
                 "of each height, the edge of space marked with a star, and a little rocket at her height. Off, the boards show her floors.")
             .define("heightGauge", true);
+        HELMET_BREATHING = builder
+            .comment("In a space helmet aboard a rocket at the edge of space or over it, hear its air softly in your helmet, a calm",
+                "hiss in and out through its valve as you breathe. Off, the helmet is silent.")
+            .define("helmetBreathing", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")

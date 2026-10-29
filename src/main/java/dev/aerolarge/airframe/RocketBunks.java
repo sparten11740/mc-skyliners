@@ -2,7 +2,6 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BunkBlock;
-import dev.aerolarge.block.CrewLockerBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,7 +10,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 /**
  * The bunk room: bunk beds two high against her skin between the windows, a pair at each of the four diagonals, their
  * reading lights on and their blankets each in a colour of their own; and crew lockers either side of the way out
- * and of the back window, one for each bunk's sleeper.
+ * and of the back window, one for each bunk's sleeper, a space helmet in each.
  */
 final class RocketBunks extends RocketRoom {
     /** Her bunk room's story, from the entry story up. */
@@ -42,8 +41,7 @@ final class RocketBunks extends RocketRoom {
             }
         }
         for (double round : LOCKERS) {
-            put(across(out, round), y, along(out, round), AerolargeRegistry.CREW_LOCKER.get().defaultBlockState()
-                .setValue(CrewLockerBlock.FACING, inward(round)));
+            crewLocker(across(out, round), y, along(out, round), inward(round));
         }
     }
 

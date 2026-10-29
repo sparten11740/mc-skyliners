@@ -3,11 +3,16 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinSeatBlock;
+import dev.aerolarge.block.CrewLockerBlock;
+import dev.aerolarge.block.CrewLockerBlockEntity;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -118,6 +123,23 @@ abstract class RocketRoom implements RocketPiece {
         BlockState seat = CabinSeatBlock.seat(AerolargeRegistry.BUSINESS_SEAT.get(), colour, facing);
         layout.set(x, y, z, seat);
         layout.set(x, y + 1, z, seat.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER));
+    }
+
+    /**
+     * A crew locker facing the way given, where it is free, stocked once it stands with a space helmet for whoever it
+     * belongs to.
+     */
+    protected void crewLocker(int x, int y, int z, Direction facing) {
+        if (put(x, y, z, AerolargeRegistry.CREW_LOCKER.get().defaultBlockState().setValue(CrewLockerBlock.FACING, facing))) {
+            layout.fit(new BlockPos(x, y, z), RocketRoom::stockLocker);
+        }
+    }
+
+    /** A crew locker's space helmet, put in its first slot. */
+    private static void stockLocker(BlockEntity blockEntity, Rotation rotation) {
+        if (blockEntity instanceof CrewLockerBlockEntity locker) {
+            locker.setItem(0, new ItemStack(AerolargeRegistry.SPACE_HELMET.get()));
+        }
     }
 
     /**
