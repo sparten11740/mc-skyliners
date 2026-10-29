@@ -240,6 +240,7 @@ import dev.aerolarge.block.SpacePosterBlock;
 import dev.aerolarge.block.SpringboardBlock;
 import dev.aerolarge.block.SprinklerBlock;
 import dev.aerolarge.block.SprinklerBlockEntity;
+import dev.aerolarge.block.SteelGirderBlock;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
 import dev.aerolarge.block.SurfacePanelBlock;
@@ -355,7 +356,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -1070,8 +1070,8 @@ public final class AerolargeRegistry {
      * (up each corner of her lift shaft and under her rooms' ceilings); and the dark, smoky lift glass of her shaft's
      * walls, tinted so the lift reads as a solid column through her rooms while its car still shows inside.
      */
-    public static final DeferredBlock<RotatedPillarBlock> STEEL_GIRDER = BLOCKS.registerBlock(
-        "steel_girder", RotatedPillarBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    public static final DeferredBlock<SteelGirderBlock> STEEL_GIRDER = BLOCKS.registerBlock(
+        "steel_girder", SteelGirderBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
     );
     public static final DeferredBlock<TransparentBlock> LIFT_GLASS = BLOCKS.registerBlock("lift_glass", TransparentBlock::new, glass());
     public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
