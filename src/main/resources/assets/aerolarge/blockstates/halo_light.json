@@ -5,6 +5,9 @@
     },
     "tone=cool": {
       "model": "aerolarge:block/halo_light_cool"
+    },
+    "tone=pink": {
+      "model": "aerolarge:block/halo_light_pink"
     }
   }
 }

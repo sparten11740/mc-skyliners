@@ -1888,6 +1888,17 @@ function facing(name, model = name) {
     variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/${model}`, y }])),
   });
 }
+// The tones the rocket's lights glow in (see LightTone).
+const LIGHT_TONES = ["warm", "cool", "pink"];
+// The wall washer and the floor light, the halo light put on a wall or the ground: broken, each gives back the Halo
+// Light it was put up as (see LightFittingItem).
+function dropsHaloLight(name) {
+  write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: `${ID}:halo_light` }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+}
 function dropsItself(name) {
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
@@ -2220,12 +2231,14 @@ function towerInstrumentsLang() {
 
 // The rocket's halo light (see HaloLightBlock), drawn as the pendant's cable comes down onto it: a slim black cable to
 // a small dark hub, four fine spokes out from it, and round them a ring of light a little under the hub, glowing at
-// full brightness, warm white or a cool night-light blue. The ring is sixteen short segments round a circle, each
+// full brightness, warm white, a cool night-light blue or pink. The ring is sixteen short segments round a circle, each
 // turned to run along it: a model's elements turn only in steps of 22.5 degrees, so each lies along one of them, a
 // segment running across (x) turned by up to 45 degrees either way, or one running along (z) where it would need more.
 {
   const HALO = { radius: 5.25, thick: 1.25, low: 6, high: 7.25, length: 2.4, segments: 16 };
-  const ring = (glow) => Array.from({ length: HALO.segments }, (_, k) => {
+  // The floor light's ring, lower and smaller, round the top of its drum.
+  const FLOOR = { radius: 4.25, thick: 1, low: 1.5, high: 2.25, length: 1.9, segments: 16 };
+  const ring = (glow, HALO) => Array.from({ length: HALO.segments }, (_, k) => {
     const round = (360 / HALO.segments) * k;
     const x = 8 + HALO.radius * Math.cos((round * Math.PI) / 180);
     const z = 8 + HALO.radius * Math.sin((round * Math.PI) / 180);
@@ -2244,20 +2257,35 @@ function towerInstrumentsLang() {
   });
   const spokes = [[[7.75, 7, 3.25], [8.25, 7.5, 7], "#hub"], [[7.75, 7, 9], [8.25, 7.5, 12.75], "#hub"],
     [[3.25, 7, 7.75], [7, 7.5, 8.25], "#hub"], [[9, 7, 7.75], [12.75, 7.5, 8.25], "#hub"]];
-  for (const tone of ["warm", "cool"]) {
+  for (const tone of LIGHT_TONES) {
     const model = boxes(
       { cable: `${ID}:block/light_cable`, hub: `${ID}:block/halo_light_hub`, glow: `${ID}:block/halo_light_${tone}`, particle: `${ID}:block/halo_light_hub` },
       [[[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"], [[7, 7, 7], [9, 8, 9], "#hub"], ...spokes],
     );
-    model.elements.push(...ring("#glow"));
+    model.elements.push(...ring("#glow", HALO));
     write(`assets/${ID}/models/block/halo_light_${tone}.json`, model);
   }
   write(`assets/${ID}/blockstates/halo_light.json`, {
-    variants: { "tone=warm": { model: `${ID}:block/halo_light_warm` }, "tone=cool": { model: `${ID}:block/halo_light_cool` } },
+    variants: Object.fromEntries(LIGHT_TONES.map((tone) => [`tone=${tone}`, { model: `${ID}:block/halo_light_${tone}` }])),
   });
   write(`assets/${ID}/models/item/halo_light.json`, { parent: `${ID}:block/halo_light_warm` });
   dropsItself("halo_light");
   cubes.halo_light = null;
+  // The halo light put down on the ground (see FloorLightBlock): a low dark drum, a ring of light round its top and a
+  // glowing lens in its middle, shining up. Broken, it gives back the Halo Light it was put down as.
+  for (const tone of LIGHT_TONES) {
+    const model = boxes(
+      { hub: `${ID}:block/halo_light_hub`, glow: `${ID}:block/halo_light_${tone}`, particle: `${ID}:block/halo_light_hub` },
+      [[[3, 0, 3], [13, 1.5, 13], "#hub"], [[6.5, 1.5, 6.5], [9.5, 1.75, 9.5], "#glow", true]],
+    );
+    model.elements.push(...ring("#glow", FLOOR));
+    write(`assets/${ID}/models/block/floor_light_${tone}.json`, model);
+  }
+  write(`assets/${ID}/blockstates/floor_light.json`, {
+    variants: Object.fromEntries(LIGHT_TONES.map((tone) => [`tone=${tone}`, { model: `${ID}:block/floor_light_${tone}` }])),
+  });
+  dropsHaloLight("floor_light");
+  cubes.floor_light = null;
 }
 
 // The rocket's wall washer (see WallLightBlock), drawn facing north with its back on the south side of its block: a
@@ -2265,12 +2293,12 @@ function towerInstrumentsLang() {
 // its fan of light up the wall, drawn flat just off the wall in the tone's colour, fading as it rises and out to
 // its sides; it glows at full brightness, so it shows as light whatever lights the wall.
 {
-  for (const tone of ["warm", "cool", "pink"]) {
+  for (const tone of LIGHT_TONES) {
     const glow = { block_light: 15, sky_light: 15 };
     write(`assets/${ID}/models/block/wall_light_${tone}.json`, {
       parent: "minecraft:block/block",
       render_type: "minecraft:translucent",
-      textures: { lamp: `${ID}:block/halo_light_hub`, slit: `${ID}:block/halo_light_${tone === "pink" ? "warm" : tone}`, wash: `${ID}:block/wall_light_wash_${tone}`, particle: `${ID}:block/halo_light_hub` },
+      textures: { lamp: `${ID}:block/halo_light_hub`, slit: `${ID}:block/halo_light_${tone}`, wash: `${ID}:block/wall_light_wash_${tone}`, particle: `${ID}:block/halo_light_hub` },
       elements: [
         { from: [5, 3, 13], to: [11, 6, 16], faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp" }])) },
         { from: [5.5, 6, 13.5], to: [10.5, 6.25, 15.5], shade: false, faces: { up: { texture: "#slit", neoforge_data: glow }, north: { texture: "#slit", neoforge_data: glow } } },
@@ -2278,9 +2306,8 @@ function towerInstrumentsLang() {
       ],
     });
   }
-  facingWithTones("wall_light", ["warm", "cool", "pink"]);
-  write(`assets/${ID}/models/item/wall_light.json`, { parent: `${ID}:block/wall_light_warm` });
-  dropsItself("wall_light");
+  facingWithTones("wall_light", LIGHT_TONES);
+  dropsHaloLight("wall_light");
   cubes.wall_light = null;
 }
 // The rocket's steel girder (see AerolargeRegistry.STEEL_GIRDER): an I-beam, drawn standing up, two broad flanges, riveted
@@ -8442,7 +8469,7 @@ write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gy
 const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "floor_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
@@ -8587,7 +8614,6 @@ shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
 shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
 shaped("lift_glass", [" G ", "GTG", " G "], { G: "minecraft:glass", T: "minecraft:tinted_glass" }, 4);
-shaped("wall_light", ["I", "G"], { I: "minecraft:iron_nugget", G: "minecraft:glowstone_dust" }, 2);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
@@ -8936,6 +8962,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.steel_girder": "Steel Girder",
   "block.aerolarge.lift_glass": "Lift Glass",
   "block.aerolarge.wall_light": "Wall Washer",
+  "block.aerolarge.floor_light": "Floor Light",
   "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.overhead_bin": "Overhead Locker",
   "container.aerolarge.overhead_bin": "Overhead Locker",

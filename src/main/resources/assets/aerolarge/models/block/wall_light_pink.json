@@ -3,7 +3,7 @@
   "render_type": "minecraft:translucent",
   "textures": {
     "lamp": "aerolarge:block/halo_light_hub",
-    "slit": "aerolarge:block/halo_light_warm",
+    "slit": "aerolarge:block/halo_light_pink",
     "wash": "aerolarge:block/wall_light_wash_pink",
     "particle": "aerolarge:block/halo_light_hub"
   },

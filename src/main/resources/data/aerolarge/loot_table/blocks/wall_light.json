@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "aerolarge:wall_light"
+          "name": "aerolarge:halo_light"
         }
       ],
       "conditions": [

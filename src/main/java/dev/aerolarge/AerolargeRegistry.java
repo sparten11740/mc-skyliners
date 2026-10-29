@@ -90,6 +90,7 @@ import dev.aerolarge.block.FlagHalyardBlock;
 import dev.aerolarge.block.FlagHalyardBlockEntity;
 import dev.aerolarge.block.FlagstaffBlock;
 import dev.aerolarge.block.FloodlightBlock;
+import dev.aerolarge.block.FloorLightBlock;
 import dev.aerolarge.block.FrankingMachineBlock;
 import dev.aerolarge.block.FloodlightBlockEntity;
 import dev.aerolarge.block.FlightDisplayBlock;
@@ -308,6 +309,7 @@ import dev.aerolarge.item.BasketballItem;
 import dev.aerolarge.item.BoardingPassItem;
 import dev.aerolarge.item.CoffeeItem;
 import dev.aerolarge.item.ControlTowerBlueprintItem;
+import dev.aerolarge.item.LightFittingItem;
 import dev.aerolarge.item.RunwayBlueprintItem;
 import dev.aerolarge.item.LaserPointerItem;
 import dev.aerolarge.item.MailSackItem;
@@ -1051,6 +1053,11 @@ public final class AerolargeRegistry {
         "halo_light", HaloLightBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion().lightLevel(HaloLightBlock::light)
     );
+    /** The halo light put down on the ground: a low drum, a ring of light round its top, shining up. */
+    public static final DeferredBlock<FloorLightBlock> FLOOR_LIGHT = BLOCKS.registerBlock(
+        "floor_light", FloorLightBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.3F).sound(SoundType.GLASS).noOcclusion().lightLevel(FloorLightBlock::light)
+    );
     /** The overhead lockers along the cabin walls. */
     public static final DeferredBlock<OverheadBinBlock> OVERHEAD_BIN = BLOCKS.registerBlock(
         "overhead_bin", OverheadBinBlock::new,
@@ -1102,8 +1109,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
-    public static final DeferredItem<BlockItem> HALO_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(HALO_LIGHT);
-    public static final DeferredItem<BlockItem> WALL_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(WALL_LIGHT);
+    /** The Halo Light a player has: a halo light under a ceiling, a wall washer on a wall, a floor light on the ground. */
+    public static final DeferredItem<LightFittingItem> HALO_LIGHT_ITEM = ITEMS.register("halo_light", () -> new LightFittingItem(new Item.Properties()));
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
     /** The passengers' screens in the seat backs and bulkheads, showing how the airliner flies. */
     public static final DeferredBlock<PassengerScreenBlock> PASSENGER_SCREEN = BLOCKS.registerBlock(
@@ -2402,7 +2409,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, SHAFT_DECOR_ITEM, GIRDER_DECOR_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             ROBOT_BARTENDER_ITEM, NEBULA_FIZZ, ROCKET_FUEL, ZERO_G_FLOAT, SUPERNOVA_SUNRISE, MOON_MILK,

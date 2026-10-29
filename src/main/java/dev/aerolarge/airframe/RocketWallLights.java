@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.LightTone;
 import dev.aerolarge.block.WallLightBlock;
 import java.util.List;
 
@@ -44,8 +45,7 @@ final class RocketWallLights implements RocketPiece {
 
     /** A story's wall washers, each where it can be fixed to her skin (see {@link SkinMount}). */
     private void story(int story, int floor) {
-        WallLightBlock.Tone tone = story == RocketBunks.STORY ? WallLightBlock.Tone.COOL
-            : story == RocketClub.STORY ? WallLightBlock.Tone.PINK : WallLightBlock.Tone.WARM;
+        LightTone tone = story == RocketBunks.STORY ? LightTone.COOL : story == RocketClub.STORY ? LightTone.PINK : LightTone.WARM;
         int y = floor + UP;
         for (double round : ROUNDS) {
             SkinMount mount = SkinMount.find(layout, round, y, ROOM_ROWS);

@@ -1833,7 +1833,7 @@ it dims electrically: use one to darken its glass a step, from clear through lig
 clear it again, a chime falling as it darkens.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
-and Lift Glass are in the creative tab after the Wall Washer, and can be crafted), where the shaft runs on up into a
+and Lift Glass are in the creative tab after the Halo Light, and can be crafted), where the shaft runs on up into a
 glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
 `rocket.lift` leaves it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture
 board, its back brushed steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at
@@ -1860,9 +1860,12 @@ the greenhouse whitewashed brick over terracotta; the pool blue mosaic; the club
 ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the observation deck walnut panelling,
 a brass line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her
 only outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the
-wall, warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in the creative tab beside the Halo
-Light: a wall washer goes only on a wall and a halo light only under a ceiling or a light cable, and so do the pendant
-light and the gym rings, so nothing stands on the floor with its cable up in the air).
+wall, warm white, a cool blue in the bunk room and pink in the club. They and her halo lights are one light, the Halo
+Light in the creative tab, which takes its shape from where it is put: under a ceiling or a light cable it hangs as a
+halo ring, against a wall it is a wall washer, and on the ground a floor light, a low dark drum with a ring of light
+round its top shining up. Use one to switch it from warm white to night blue to pink, with a soft click; broken, any of
+them gives back the Halo Light. The pendant light and the gym rings go up only under a ceiling too, so nothing stands on
+the floor with its cable up in the air.
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the

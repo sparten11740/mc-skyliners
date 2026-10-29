@@ -5216,6 +5216,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const glow = (core, edge) => (x, y) => (y >= 5 && y <= 10 ? core : edge);
   texture(blockOutput, "halo_light_warm", glow([0xff, 0xf2, 0xd8], [0xff, 0xe0, 0xb0]), 2);
   texture(blockOutput, "halo_light_cool", glow([0xc8, 0xdc, 0xff], [0x96, 0xb4, 0xf0]), 2);
+  texture(blockOutput, "halo_light_pink", glow([0xff, 0xc8, 0xee], [0xff, 0x6a, 0xd8]), 2);
   texture(blockOutput, "halo_light_hub", (x, y) => [0x2c + (y % 3) * 3, 0x2e + (y % 3) * 3, 0x34 + (y % 3) * 3], 2);
   // The rocket's steel girder: gunmetal, brushed along its length; its flanges' faces riveted down both edges, a darker
   // seam inside each row of rivets; and its cut ends darker still.

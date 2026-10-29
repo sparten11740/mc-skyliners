@@ -5,6 +5,7 @@ import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
 import dev.aerolarge.block.HaloLightBlock;
+import dev.aerolarge.block.LightTone;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -47,7 +48,7 @@ abstract class RocketRoom implements RocketPiece {
     private static final double LAMPS_OUT = 5.5;
     /** Her halo lights (see {@link HaloLightBlock}), warm white and a cool blue night light, and a length of cable. */
     protected static final BlockState WARM_LIGHT = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState();
-    protected static final BlockState NIGHT_LIGHT = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState().setValue(HaloLightBlock.TONE, HaloLightBlock.Tone.COOL);
+    protected static final BlockState NIGHT_LIGHT = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState().setValue(HaloLightBlock.TONE, LightTone.COOL);
     private static final BlockState CABLE = AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState();
     /** What a room's random sequence starts from, its story added, so each room comes out the same every build. */
     private static final long SCATTER_SEED = 0x526f6f6d73L;
