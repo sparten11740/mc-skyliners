@@ -46,6 +46,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N30 | 00:35 | Next ideas (second panel) | Keep, in this order: low gravity aboard in space (off by default until proven in flight), a height gauge on the lift boards while she flies, shooting stars then an aurora, an "Edge of Space" advancement, lift muzak. Drop: LED strips switching themselves to a space scene (it would override what a child chose on a panel) | Panel (children's designer, tech lead, visual and audio designer) | Panel |
 | N31 | 00:40 | Lift doors | Slide the pane aside over the doors' half second (a `sliding` state hides the block while a door block entity's renderer draws the pane), rather than snapping | Jan asked for a real lift; doors that snap read as a teleport's | Lead |
 | N32 | 00:45 | Rover (agent's decisions) | Door and platform drawn only, a 1.5-high rail behind a red light curtain; the rover hooked on the platform, run out and lowered at 4 b/s on a telescoping boom; remotes from the panel's button and the creative tab, paired by using one on the rover or panel; the countdown waits (not refuses) and calls the rover home; range 96 blocks from the hinge, warnings from 84; no bay at scale 1 | Rover agent | Rover agent |
+| N33 | 00:50 | Low gravity in space | Off by default (`rocket.lowGravity`, experimental): three tenths of gravity aboard from y 998 up, safe fall 7 blocks; lifted at once off her, and below the edge only once standing | Three tenths still pulls players down faster than she falls (6.6 b/s² at most), so no one floats off her floor; measured in game: a 3.15-block jump, about 1.6 s | Panel, lead |
+| N34 | 01:00 | Lab's tank | Accepted: at scale 2 its back glass stands inside the back window's 4-block clearance (the window and the cells just inside it stay clear); the creature paces a straight line facing the hatch, turning round only from scale 3 | No 3-wide creature fits the free ring otherwise (lab agent) | Lab agent, lead |
+| N35 | 01:00 | Shooting stars | 7-second slots, one streak each, 4 to 10 s apart, worked out from the game's time so all clients agree; drawn last so those under the rim show over the planet; as bright as the stars there | Sky agent | Sky agent |
+| N36 | 01:00 | Lift music | Original bossa nova, 16 s loop, on the jukebox's volume (records), heard in the car and right by it | Lift agent's design, from the panel | Lift agent |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -85,6 +89,15 @@ Commits on main, newest last, with the versions handed out.
   it out (the countdown held until it was stowed, then lift-off with it in its cradle, carried in her plot, and still
   there after landing); deploying from her assembled. Not tried: quitting mid-lowering, scales 3 and 4, monsters by
   the driver, the range warning.
+- alpha.169: the Edge of Space advancement; low gravity in space behind its switch (N33); shooting stars and the
+  aurora (N35); lift music (N36), and a fix of mine for it restarting every tick aboard an assembled rocket (Sable plays
+  a ship's sounds through instances of its own, so asking the sound engine about ours always said no); the lab and its
+  tardigrade (N16, N34). Play-tested: low gravity (gravity 0.024 at y 1,400, a 3.15-block jump, weight back under the
+  edge with its glide, landed unhurt); one music start for a 13 s ride; a shooting star caught at y 800 by night
+  (subtle: short and small) and the aurora along the rim at y 800 and 1,200; the lab (counters, instruments, stools, the
+  tank behind the shaft), its tardigrade fed moss at the hatch (the hatch clicks open, it purrs and munches), carried in
+  her plot to y 420 and curling up there with its bloop. Not tried: the tardigrade's tun seen (it had uncurled by the
+  time I looked), reloading the lab, the Edge of Space toast.
 
 ## Background agents
 
@@ -95,7 +108,8 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - The lab with its tardigrade (N16), the rocket's sound and voice (N18): from 23:35.
 - Back and on main: going to space (3 commits), LED strips (1), posters (2), by 23:58; sound and voice (3), by 00:20;
   the rover (3), by 00:45.
-- From 00:38: shooting stars and an aurora, and lift muzak (N30), each in a worktree of its own.
+- From 00:38: shooting stars and an aurora, and lift muzak (N30), each in a worktree of its own; both back, with the
+  lab, by 01:00.
 
 ## For Jan to look at
 
@@ -107,5 +121,8 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 
 - N14: the rover lowered on a winch rope from a platform at the cargo bay door, not down a ramp.
 - N23: the observation deck's band of smoked glass in place of its oval windows.
+- N33: low gravity in space is off by default (`rocket.lowGravity`); worth a try with it on.
+- N34: the lab's tank stands partly in front of the back window at scale 2.
+- The shooting stars are subtle (short, small); easy to make bigger if you would like them showier.
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
