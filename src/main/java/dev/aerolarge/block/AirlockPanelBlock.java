@@ -31,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * cycles: the latches clunk, air hisses out of the vents at its foot in a cloud and chevrons sweep amber along the bar,
  * and after a few seconds a chime rings and the door on the screen stands open under a green bar, clear to go. By a
  * rocket's sliding airlock doors (see {@link AirlockDoors}) it works them and shows them as they stand: used while she
- * stands with her stairs out, it cycles and they open, or they shut and seal; in flight they are shut, its screen
+ * stands, her stairs out or not, it cycles and they open, or they shut and seal; in flight they are shut, its screen
  * sealed, and using it only gives a low note. In a rocket built before her doors, with an open doorway, it is only to
  * play with: once clear, it seals itself again with a clunk a while later. Used while it is on its way, it only clicks.
  * FACING is the way its screen faces.

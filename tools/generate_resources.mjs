@@ -256,6 +256,7 @@ function rocketStairsRecipes() {
 function rocketStairsLang() {
   return {
     "block.aerolarge.rocket_stairs_button": "Rocket Stairs Button",
+    "message.aerolarge.rocket.countdown_stairs": "Countdown holding: step clear of the stairs and the door",
   };
 }
 // A zeppelin's speed boost button (see BoostButtonBlock): its red cap shows a fast-forward arrow.

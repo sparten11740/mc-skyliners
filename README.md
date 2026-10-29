@@ -1855,7 +1855,8 @@ right fin's tip, to call them down from the ground: pressing either brings the s
 stands with her autopilot off; while she flies, it only sounds a low note. They come down by themselves as soon as she
 is built, and again once she is down on her fins after flying and her autopilot has switched itself off. Set her
 autopilot to fly and they fold away before she lifts off: her countdown waits until they are all away and her doors
-shut, as they wait, with a chime, until nobody is on them; and they fold away by themselves as soon as she moves. With
+shut, as they wait, with a chime, until nobody is on them, everyone aboard told so and the chime heard in her cockpit
+too; and they fold away by themselves as soon as she moves. With
 the server config's `rocket.airstairs` off she is built with a crew ladder instead, the pool's chrome ladder up a column
 beside an open doorway three blocks wide, climbing to a step in front of it; a rocket built before keeps her ladder.
 
@@ -1865,8 +1866,9 @@ at eye height. Shut, they seal the doorway and nobody walks through. They slide 
 stairs come out, with the clunk and hiss of the airlock and its chime once they stand open, and slide shut again,
 sealing with a clunk, once the stairs are back off the sill going away. They never close on anyone in the doorway:
 they wait open, with a chime, until it is clear, and slide back open if someone steps in as they close. In flight they
-are always shut. The Airlock Panel by the door works them while she stands with her stairs out (see her entry story,
-below). A rocket built before them, or with `rocket.airstairs` off, keeps her open doorway.
+are always shut. The Airlock Panel by the door works them while she stands, her stairs out or not, so nobody is shut in
+where the stairs cannot come down (see her entry story, below). A rocket built before them, or with `rocket.airstairs`
+off, keeps her open doorway.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
 and Lift Glass are in the creative tab after the Halo Light, and can be crafted), where the shaft runs on up into a
@@ -1932,10 +1934,10 @@ Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom benc
 boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
 walk through in a big rocket), a model rocket left on top; and somebody's suitcase dropped by the bench or the lockers.
 By the door on her left stands the Airlock Panel, a screen on a post showing her doors as they stand: shut under a red
-bar, on their way under amber chevrons sweeping along it, open under a green bar. While she stands with her stairs out,
-use it with the doors shut and the latches clunk, air hisses out of its vents in a cloud and the chevrons sweep, then
-the doors slide open and a chime rings, clear to go; use it with them open and they slide shut and seal with a clunk.
-In flight, or with her stairs away, the doors stay shut, its bar red, and it only sounds a low note. By an open
+bar, on their way under amber chevrons sweeping along it, open under a green bar. While she stands with her autopilot
+off, her stairs out or not, use it with the doors shut and the latches clunk, air hisses out of its vents in a cloud
+and the chevrons sweep, then the doors slide open and a chime rings, clear to go; use it with them open and they slide shut and seal with a
+clunk. In flight the doors stay shut, its bar red, and it only sounds a low note. By an open
 doorway, in a rocket built before her doors or with `rocket.airstairs` off, it is only to play with: it cycles the same
 way, the door on its screen sliding open, until a while later it seals itself again with a clunk. At its back, either
 side, is a waiting lounge for the lift:

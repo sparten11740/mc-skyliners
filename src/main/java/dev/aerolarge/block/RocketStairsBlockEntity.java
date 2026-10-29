@@ -1,5 +1,6 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.Aboard;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
@@ -10,10 +11,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -32,9 +35,11 @@ import net.minecraft.world.phys.Vec3;
  * stairs come down of their own accord once she first stands built, and again once she is down on her fins after
  * flying with her autopilot off; they fold away as soon as her autopilot is set to fly or she moves, and her countdown
  * waits until they are all away and the doors shut (see {@link #holdsCountdown}), as they wait, with a chime, until
- * nobody is on them or in the doorway. Any of her stairs buttons works the stairs by hand while she stands with her
- * autopilot off, and her airlock panel the doors while the stairs are out; flying, either only sounds a low note. The
- * call button low on her front right fin, calling the stairs from the ground, keeps no flight of its own.
+ * nobody is on them or in the doorway; while someone holds them so, everyone aboard is told once and her cockpit hears
+ * the chime too. Any of her stairs buttons works the stairs by hand while she stands with her autopilot off, and her
+ * airlock panel the doors, stairs out or not, so nobody is ever shut in or out where the stairs cannot come down;
+ * flying, either only sounds a low note. The call button low on her front right fin, calling the stairs from the
+ * ground, keeps no flight of its own.
  */
 public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, BoardingAirstairs.Keeper {
     private static final Loaded<RocketStairsBlockEntity> LOADED = new Loaded<>(RocketStairsBlockEntity.class);
@@ -44,6 +49,8 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     private static final double MOVING = 1.0;
     /** How many looks in a row she has to be still on the ground, after flying, before the stairs come down. */
     private static final int STILL_LOOKS = 4;
+    /** How often her cockpit hears the waiting chime while her countdown waits for someone to step clear, in ticks. */
+    private static final int WAITING_CHIME = 40;
 
     /** Her airstairs, kept by the button by her door; none in the call button. */
     @Nullable
@@ -54,6 +61,8 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     /** Whether she has flown since the stairs were last worked, so they come down by themselves once she is down. */
     private boolean flown;
     private int stillLooks;
+    /** Whether her countdown waits for someone on the stairs or in the doorway, and everyone aboard has been told. */
+    private boolean holding;
 
     public RocketStairsBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.ROCKET_STAIRS_ENTITY.get(), pos, state);
@@ -100,18 +109,23 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     }
 
     /**
-     * Her airlock panel used, on the server: while she stands with her stairs out, its cycle opens the doors, or they
-     * shut; flying, or with her stairs away and nothing to step out onto, only a low note.
+     * Her airlock panel used, on the server: while she stands, her stairs out or not, its cycle opens the doors, or
+     * they shut; flying, only a low note.
      */
     void workDoors(ServerLevel level, BlockPos panel) {
         if (doors == null) {
             return;
         }
-        if (flying(level, worldPosition) || stairs == null || !stairs.down()) {
-            level.playSound(null, panel, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+        if (flying(level, worldPosition)) {
+            refuse(level, panel);
             return;
         }
         doors.cycle(level, panel);
+    }
+
+    /** The low note of a button or panel that does nothing now. */
+    private static void refuse(ServerLevel level, BlockPos at) {
+        level.playSound(null, at, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, BoardingAirstairs.REFUSED_VOLUME, BoardingAirstairs.REFUSED_PITCH);
     }
 
     /** Opens the doors as the stairs set out, or shuts them once the flight is back off the sill. */
@@ -124,15 +138,12 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
 
     /**
      * A stairs button pressed, on the server: her stairs fold away if they are down, or come down if they are away;
-     * nothing but a low note while she flies.
+     * nothing but a low note while she flies, or where it keeps no stairs and no rocket frames it.
      */
     static void press(ServerLevel level, BlockPos button) {
         List<RocketStairsBlockEntity> flights = flights(level, button);
-        if (flights.isEmpty()) {
-            return;
-        }
-        if (flying(level, button)) {
-            level.playSound(null, button, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+        if (flights.isEmpty() || flying(level, button)) {
+            refuse(level, button);
             return;
         }
         boolean anyDown = flights.stream().anyMatch(flight -> flight.stairs.down());
@@ -206,6 +217,26 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         if (doors != null) {
             doors.tick(level);
         }
+        tellHolding(level);
+    }
+
+    /**
+     * Everyone aboard told once that her countdown waits for someone on the stairs or in the doorway to step clear, as
+     * it begins to; and while it waits, her cockpit hears the chime the stairs or doors sound.
+     */
+    private void tellHolding(ServerLevel level) {
+        AutopilotBlockEntity rocket = AutopilotBlockEntity.framedBy(level, worldPosition, Craft.ROCKET);
+        boolean now = rocket != null && rocket.phase() == AutopilotBlockEntity.Phase.TAKEOFF && (stairs.held() || doors != null && doors.held());
+        if (now && !holding) {
+            for (ServerPlayer player : Aboard.players(this)) {
+                player.displayClientMessage(Component.translatable("message.aerolarge.rocket.countdown_stairs"), true);
+            }
+        }
+        if (now && level.getGameTime() % WAITING_CHIME == 0) {
+            level.playSound(null, rocket.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
+                BoardingAirstairs.WAITING_PITCH);
+        }
+        holding = now;
     }
 
     /** Once a tick, on a client: the stairs' clock, so they are drawn on their way between the server's word. */

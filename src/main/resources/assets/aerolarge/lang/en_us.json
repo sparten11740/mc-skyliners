@@ -676,6 +676,7 @@
   "block.aerolarge.airstair_button": "Airstair Button",
   "block.aerolarge.door_button": "Door Button",
   "block.aerolarge.rocket_stairs_button": "Rocket Stairs Button",
+  "message.aerolarge.rocket.countdown_stairs": "Countdown holding: step clear of the stairs and the door",
   "block.aerolarge.cargo_net": "Cargo Net",
   "block.aerolarge.cargo_floor": "Cargo Floor",
   "block.aerolarge.ball_mat": "Ball Mat",

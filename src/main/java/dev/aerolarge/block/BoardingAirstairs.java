@@ -49,6 +49,12 @@ final class BoardingAirstairs {
     private static final float LATCH_VOLUME = 1.0F;
     /** The latch clunks higher coming free than going home. */
     private static final float UNLATCH_PITCH = 1.25F;
+    /** The low note of stairs that cannot come down, or a button that does nothing now: how loud, and its pitch. */
+    static final float REFUSED_VOLUME = 1.0F;
+    static final float REFUSED_PITCH = 0.6F;
+    /** The chime of stairs or doors waiting for someone to step clear: how loud, and its pitch. */
+    static final float WAITING_VOLUME = 1.0F;
+    static final float WAITING_PITCH = 0.7F;
 
     /** The block entity that keeps a flight, where it is: its button. */
     interface Keeper {
@@ -130,6 +136,11 @@ final class BoardingAirstairs {
         return deploying;
     }
 
+    /** Whether folding is held up by someone on the stairs. */
+    boolean held() {
+        return held;
+    }
+
     /** Whether the stairs are all away and staying that way: folded in, the hatch shut. */
     boolean stowed() {
         return !deploying && ticks == 0 && !hatchOpen;
@@ -180,7 +191,7 @@ final class BoardingAirstairs {
         if (ticks == 0) {
             int reach = AirstairSteps.reach(level, this::step, width, rise, this::inHatch);
             if (reach < AirstairFlight.shortest(rise, sections)) {
-                level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+                level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, REFUSED_VOLUME, REFUSED_PITCH);
                 return;
             }
             length = reach;
@@ -203,7 +214,7 @@ final class BoardingAirstairs {
         if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
             held = true;
             cooldown = CLEAR_CHECK_TICKS;
-            level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1.0F, 0.7F);
+            level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, WAITING_VOLUME, WAITING_PITCH);
             return;
         }
         takeUp(level);

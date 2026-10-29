@@ -22,8 +22,8 @@ import net.minecraft.world.phys.Vec3;
  * A rocket's front door as sliding airlock doors (see {@link AirlockDoorBlock}): two leaves meeting in the middle of
  * her doorway, each half its width and all its height, sliding apart into her skin either side. Her stairs button
  * keeps them with her airstairs (see {@link RocketStairsBlockEntity}): they open as the stairs come out and shut as the
- * stairs fold away, once the flight is off the sill, and her airlock panel works them while she stands with her stairs
- * out (see {@link AirlockPanelBlock}), cycling first, its latches clunking and air hissing out of its vents, and
+ * stairs fold away, once the flight is off the sill, and her airlock panel works them while she stands, stairs out or
+ * not (see {@link AirlockPanelBlock}), cycling first, its latches clunking and air hissing out of its vents, and
  * opening after it with its chime; shut, they seal with a clunk. They never shut on anyone in the doorway: they wait
  * open, with a chime, until it is clear, and slide back open if someone steps in as they close. The panels round the
  * doorway show how they stand. The server runs them and tells every client where they are going, each client running
@@ -112,6 +112,11 @@ public final class AirlockDoors {
         return !open && ticks == 0 && cycling == 0;
     }
 
+    /** Whether shutting is held up by someone in the doorway. */
+    boolean held() {
+        return held;
+    }
+
     /** Whether the leaves are going shut, or shut. */
     boolean shutting() {
         return !open && cycling == 0;
@@ -186,7 +191,8 @@ public final class AirlockDoors {
     private void hold(ServerLevel level) {
         held = true;
         cooldown = CLEAR_CHECK_TICKS;
-        level.playSound(null, middle(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, CHIME_VOLUME, 0.7F);
+        level.playSound(null, middle(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, BoardingAirstairs.WAITING_VOLUME,
+            BoardingAirstairs.WAITING_PITCH);
         show(level, AirlockPanelBlock.Cycle.CLEAR);
         keeper.sync();
     }
@@ -262,12 +268,16 @@ public final class AirlockDoors {
     private void leaves(ServerLevel level, boolean toOpen) {
         for (int column = 0; column < width; column++) {
             for (int row = 0; row < rows; row++) {
-                BlockPos at = block(column, row);
-                BlockState state = level.getBlockState(at);
-                if (state.getBlock() instanceof AirlockDoorBlock && state.getValue(AirlockDoorBlock.OPEN) != toOpen) {
-                    level.setBlock(at, state.setValue(AirlockDoorBlock.OPEN, toOpen), Block.UPDATE_ALL);
-                }
+                leaf(level, block(column, row), toOpen);
             }
+        }
+    }
+
+    /** Sets a block of the doorway open or shut, if it is still one of the doors' and not so already. */
+    private static void leaf(ServerLevel level, BlockPos at, boolean toOpen) {
+        BlockState state = level.getBlockState(at);
+        if (state.getBlock() instanceof AirlockDoorBlock && state.getValue(AirlockDoorBlock.OPEN) != toOpen) {
+            level.setBlock(at, state.setValue(AirlockDoorBlock.OPEN, toOpen), Block.UPDATE_ALL);
         }
     }
 
