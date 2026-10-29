@@ -1852,7 +1852,8 @@ edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the 
 window. The techno club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals,
 four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round her left side with
 stools. The observation deck, her highest story, sees all round through its band of smoked glass: a lookout glass
-looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out.
+looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out, under the
+airliner's starlight ceiling, dimmed so the stars outside outshine it.
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
 in front of it; in the bunk room, the fourth story, the solar system, half the sun and its planets in a row, Saturn in

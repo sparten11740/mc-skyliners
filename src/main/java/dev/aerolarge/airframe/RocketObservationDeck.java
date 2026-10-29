@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
+import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.LookoutGlassBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * The observation deck, her highest story under the cockpit: in place of its oval windows, a band of the cockpit's
  * smoked glass all the way round her at eye height, so the whole horizon is seen from it; out to her sides and her back
  * a lookout glass on its stand looking out, a bean bag either side of it to lie back in and watch the land fall away
- * or the stars come out, and between them a pair of bean bags at each diagonal, facing out too.
+ * or the stars come out, and between them a pair of bean bags at each diagonal, facing out too; and overhead, as the
+ * airliner's lounge has, a starlight ceiling of the airliner's starlight panels, dimmed so the stars outside outshine
+ * it.
  */
 final class RocketObservationDeck extends RocketRoom {
     /** Her observation deck's story, from the entry story up. */
@@ -41,6 +44,7 @@ final class RocketObservationDeck extends RocketRoom {
     @Override
     public void build() {
         band();
+        starlight();
         int y = floor() + 1;
         double out = wall() - AT_WINDOW;
         for (double round : new double[]{90, 180, 270}) {
@@ -69,6 +73,15 @@ final class RocketObservationDeck extends RocketRoom {
             if (skin.is(AerolargeRegistry.ZEPPELIN_COVER.get()) || skin.is(AerolargeRegistry.OVAL_WINDOW.get())) {
                 layout.set(at.getX(), at.getY(), at.getZ(), glass);
             }
+        }
+    }
+
+    /** The starlight ceiling: the airliner's starlight panels, dimmed, in every free block of the top row. */
+    private void starlight() {
+        int reach = (int) Math.ceil(wall());
+        BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState().setValue(Brightness.PROPERTY, Brightness.DIM);
+        for (BlockPos at : BlockPos.betweenClosed(-reach, top(), -reach, reach, top(), reach)) {
+            put(at.getX(), at.getY(), at.getZ(), panel);
         }
     }
 
