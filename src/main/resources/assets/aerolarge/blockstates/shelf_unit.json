@@ -20,10 +20,6 @@
       "model": "aerolarge:block/shelf_unit_tools",
       "y": 0
     },
-    "facing=north,kind=records": {
-      "model": "aerolarge:block/shelf_unit_records",
-      "y": 0
-    },
     "facing=east,kind=boots": {
       "model": "aerolarge:block/shelf_unit_boots",
       "y": 90
@@ -42,10 +38,6 @@
     },
     "facing=east,kind=tools": {
       "model": "aerolarge:block/shelf_unit_tools",
-      "y": 90
-    },
-    "facing=east,kind=records": {
-      "model": "aerolarge:block/shelf_unit_records",
       "y": 90
     },
     "facing=south,kind=boots": {
@@ -68,10 +60,6 @@
       "model": "aerolarge:block/shelf_unit_tools",
       "y": 180
     },
-    "facing=south,kind=records": {
-      "model": "aerolarge:block/shelf_unit_records",
-      "y": 180
-    },
     "facing=west,kind=boots": {
       "model": "aerolarge:block/shelf_unit_boots",
       "y": 270
@@ -90,10 +78,6 @@
     },
     "facing=west,kind=tools": {
       "model": "aerolarge:block/shelf_unit_tools",
-      "y": 270
-    },
-    "facing=west,kind=records": {
-      "model": "aerolarge:block/shelf_unit_records",
       "y": 270
     }
   }

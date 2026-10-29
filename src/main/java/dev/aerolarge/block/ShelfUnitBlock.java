@@ -19,8 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * An open shelf unit for the rocket's rooms: two shelves between birch end panels on a steel plinth, open at the back
  * as well as the front, so a row of them stands across a room as a low divider and is seen through from either side.
  * Stood on one another they make a taller one. What is kept on it is KIND, the things of the room it stands in: the
- * entry's boots and helmets, the bunk room's books, the mess's jars, the pool's rolled towels, the cargo bay's tool
- * cases and the club's records. FACING is the way the things on it face; it is only to look at.
+ * entry's boots and helmets, the bunk room's books, the mess's jars, the pool's rolled towels and the cargo bay's tool
+ * cases. FACING is the way the things on it face; it is only to look at.
  */
 public class ShelfUnitBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<ShelfUnitBlock> CODEC = simpleCodec(ShelfUnitBlock::new);
@@ -34,8 +34,7 @@ public class ShelfUnitBlock extends HorizontalDirectionalBlock {
         BOOKS,
         JARS,
         TOWELS,
-        TOOLS,
-        RECORDS;
+        TOOLS;
 
         @Override
         public String getSerializedName() {

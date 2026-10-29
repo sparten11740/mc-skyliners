@@ -5704,17 +5704,6 @@ function rocketRoomTextures() {
     return [0x30, 0x33, 0x38];
   }, 2);
 
-  // Record sleeves' spines a pixel thick, every colour, a dark gap now and then; and a little black speaker, its grey
-  // cone, and its plain black side.
-  const SLEEVES = [[0xe8, 0x3a, 0x6a], [0xf0, 0xc8, 0x30], [0x2a, 0x9a, 0xd8], [0x18, 0x18, 0x1c], [0x9a, 0x4a, 0xd0], [0xf0, 0x7a, 0x1e],
-    [0x3a, 0xc0, 0x8a], [0xe8, 0xe8, 0xe8], [0xc0, 0x26, 0x30]];
-  texture(blockOutput, "shelf_records", (x, y) => {
-    if (x >= 11 && y >= 8 && y < 13) return Math.hypot(x - 13, y - 10.5) < 1.6 ? [0x6a, 0x6e, 0x76] : [0x14, 0x15, 0x17];
-    if (y >= 14 && x >= 15) return [0x14, 0x15, 0x17];
-    if (y < 6 || y >= 8 && y < 14 && x < 8) return SLEEVES[(x * 5 + Math.floor(y / 8) * 3) % SLEEVES.length];
-    return [0x30, 0x33, 0x38];
-  }, 3);
-
   // The pallet rack: uprights punched with a slot every few pixels, beams with a darker lip, a pallet of pine boards,
   // cardboard taped across its middle, ribbed drums and a crate of boards and battens.
   texture(blockOutput, "rack_upright", (x, y) => (x >= 6 && x <= 9 && y % 4 === 1 ? [0x16, 0x2a, 0x50] : [0x2c, 0x5f, 0xb8]), 3);

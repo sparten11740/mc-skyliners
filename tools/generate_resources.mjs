@@ -4578,8 +4578,8 @@ function foodLabLang() {
 // plinth, birch end panels and two birch shelves under a birch top, open front and back, and what each room keeps on it:
 // the entry's boots in pairs under a pair of white helmets, gold visors to the front; the bunk room's books, tall and
 // short, one leaning, under a row more and a potted fern; the mess's jars of tomatoes, honey, pickles and plum jam with
-// white labels; the pool's rolled towels in a pyramid; the cargo bay's red toolbox and yellow case under a coil of cable
-// and spray cans; and the club's records, their sleeves' spines every colour, under a little speaker. The pallet rack
+// white labels; the pool's rolled towels in a pyramid; and the cargo bay's red toolbox and yellow case under a coil of
+// cable and spray cans. The pallet rack
 // (see PalletRackBlock): blue uprights at its corners, orange beams front and back at its foot under a pine pallet, and
 // its load on the pallet: taped cardboard boxes, a blue drum and a yellow one, two wooden crates one on the other, or
 // nothing. Both are placed only by the blueprint, so they have no items and give nothing back (see rocketRoomFittings).
@@ -4652,12 +4652,6 @@ function rocketRoomFurniture() {
       goods(1.5, 6.5, HIGH, 2.5, 5, 10, [0, 8, 5, 10.5]), goods(2.5, 5.5, HIGH + 2.5, 1.5, 6, 9, [0, 11, 3, 12.5]),
       goods(8, 9.5, HIGH, 4, 6, 7.5, [8, 8, 9.5, 12]), goods(10, 11.5, HIGH, 4.5, 6.5, 8, [10, 8, 11.5, 12.5]),
       goods(12.5, 14, HIGH, 3.5, 6, 7.5, [12, 8, 13.5, 11.5]),
-    ] },
-    records: { texture: "shelf_records", parts: [
-      goods(1.5, 7.5, LOW, 5.5, 4.5, 11.5, [0, 0, 6, 5.5]), goods(7.5, 12.5, LOW, 5.5, 4.5, 11.5, [6, 0, 11, 5.5]),
-      goods(13, 14.5, LOW, 5.25, 5, 11, [11.5, 0, 13, 5.25]),
-      goods(1.5, 9, HIGH, 5.5, 4.5, 11.5, [0, 8, 7.5, 13.5]),
-      goods(10, 14.5, HIGH, 5, 6, 10.5, [11, 8, 15.5, 13], [15, 14, 16, 15]),
     ] },
   };
   const textures = { wood: block("shelf_wood"), steel: block("shelf_steel"), particle: block("shelf_wood") };

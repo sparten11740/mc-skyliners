@@ -5,7 +5,6 @@ import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.DisplayShelfBlock;
 import dev.aerolarge.block.FogMachineBlock;
 import dev.aerolarge.block.OvalWindowBlock;
-import dev.aerolarge.block.ShelfUnitBlock;
 import dev.aerolarge.block.SpeakerBlock;
 import dev.aerolarge.block.TechnoDeckBlock;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
@@ -22,8 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor, the fog machine beside it (see
  * {@link FogMachineBlock}). Along her left side a bar curves round the window there, its counter parting the bar from
  * the floor, stools before it and the back bar's lit shelves of bottles behind it either side of the window. At her
- * front right a booth: armchairs round a low table, walled off from the way in by shelves of records; at her front
- * left, by the bar's end, a coat corner of lockers. Its windows are built at their darkest, so daylight does not wash
+ * front right a booth: armchairs round a low table; at her front left, by the bar's end, a coat corner of lockers. Its windows are built at their darkest, so daylight does not wash
  * out the dance floor.
  */
 final class RocketClub extends RocketRoom {
@@ -48,9 +46,6 @@ final class RocketClub extends RocketRoom {
      * shaft.
      */
     private static final int FOG_ACROSS = 2;
-    /** How far from the booth's table toward the way in its wall of records stands, in blocks, and how high. */
-    private static final int BOOTH_WALL = 2;
-    private static final int RECORDS_HIGH = 2;
     /** The booth's armchairs' colours, a chair's picked at random. */
     private static final DyeColor[] BOOTH = {DyeColor.PURPLE, DyeColor.MAGENTA};
 
@@ -126,7 +121,7 @@ final class RocketClub extends RocketRoom {
 
     /**
      * The booth in a quarter's corner by the walkway: a low table with an armchair on each side of it that has room,
-     * facing it, and between it and the way in a wall of record shelves, facing in.
+     * facing it.
      */
     private void booth(RocketQuarter quarter, int y, RandomSource random) {
         int table = RocketQuarter.INNER;
@@ -139,10 +134,6 @@ final class RocketClub extends RocketRoom {
         seat(quarter.x(table + 1), y, quarter.z(table), side.getOpposite(), BOOTH[random.nextInt(BOOTH.length)]);
         seat(quarter.x(table), y, quarter.z(table - 1), end, BOOTH[random.nextInt(BOOTH.length)]);
         seat(quarter.x(table), y, quarter.z(table + 1), end.getOpposite(), BOOTH[random.nextInt(BOOTH.length)]);
-        BlockState records = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.RECORDS, side);
-        for (int along = table; along <= table + 1; along++) {
-            stack(quarter.x(table - BOOTH_WALL), y, quarter.z(along), records, RECORDS_HIGH);
-        }
     }
 
     /** The coat corner's lockers round her front left past the bar's end, facing in, a space helmet in each. */

@@ -1925,22 +1925,21 @@ press it and it hisses and pumps a stream of thick fog out of its glowing nozzle
 over the floor behind the shaft and hanging in the disco balls' light; then its light turns amber while it heats up
 again, and a beep says when it is ready. Along her left side a bar curves round the window there, its counter parting
 the bar from the floor, stools before it and the back bar's lit shelves of bottles behind it; at the front right is a
-booth, purple and magenta armchairs round a low table, walled off from the way in by shelves of records; and at the
-front left, by the bar's end, a coat corner of lockers, a Space Helmet in each. Its windows are built at their darkest,
-so daylight does not wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees
-all round through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine
-them, all over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a
-planetarium. Its lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low
-tables on round rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall away or the
-stars come out, and a bookcase tucked under the top of the stairs. Over its back third, from behind the shaft out to her
-skin, a mezzanine holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up
-to it from near the lift's door: round the back wall a counter of galley units with the coffee machine, a cake and a pot
-of flowers on it, a lit drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall
-midnight-blue machine with a lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking
-amber; with a clunk a snack drops into its flap, which lights up green with the packet in it, and using it again takes
-the snack out into your hand: a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or
-dried kelp, which one a surprise. Cabin lights set into the mezzanine's floor glow both ways, over the groups under it
-and along its edge.
+booth, purple and magenta armchairs round a low table; and at the front left, by the bar's end, a coat corner of
+lockers, a Space Helmet in each. Its windows are built at their darkest, so daylight does not wash out the floor's
+colours. The observation deck, her highest story and her chillout lounge, sees all round through its band of smoked
+glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up the
+wall from the band to it, so the room over the band is a starry dome, a planetarium. Its lounge is set out unevenly in
+groups to talk in, armchairs and bean bags facing each other round low tables on round rugs, with plants here and there,
+pairs of bean bags by the glass to watch the land fall away or the stars come out, and a bookcase tucked under the top
+of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine holds her cafeteria, a glass rail
+along its edge and carpeted stairs climbing her right-hand wall up to it from near the lift's door: round the back wall
+a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a lit drinks cabinet, tables with
+bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine with a lit showcase of bright
+packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a snack drops into its flap,
+which lights up green with the packet in it, and using it again takes the snack out into your hand: a cookie, an apple,
+a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a surprise. Cabin lights set
+into the mezzanine's floor glow both ways, over the groups under it and along its edge.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
