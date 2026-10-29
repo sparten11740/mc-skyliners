@@ -5069,6 +5069,21 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "halo_light_cool", glow([0xc8, 0xdc, 0xff], [0x96, 0xb4, 0xf0]), 2);
   texture(blockOutput, "halo_light_hub", (x, y) => [0x2c + (y % 3) * 3, 0x2e + (y % 3) * 3, 0x34 + (y % 3) * 3], 2);
 }
+// The wall washer's fan of light up the wall (see WallLightBlock): narrow and bright at its foot, over the lamp,
+// widening as it rises and fading out toward the top and its sides.
+{
+  const wash = (colour) => (x, y) => {
+    const up = (15 - y) / 15;
+    const half = 1.5 + up * 6.5;
+    const off = Math.abs(x + 0.5 - 8);
+    if (off > half) return [0, 0, 0, 0];
+    const alpha = Math.round(0xd8 * (1 - up) ** 1.1 * (1 - off / half) ** 0.6);
+    return [...colour, alpha];
+  };
+  texture(blockOutput, "wall_light_wash_warm", wash([0xff, 0xe4, 0xb8]), 0);
+  texture(blockOutput, "wall_light_wash_cool", wash([0xa8, 0xc4, 0xff]), 0);
+  texture(blockOutput, "wall_light_wash_pink", wash([0xff, 0x6a, 0xd8]), 0);
+}
 
 // The rocket's rooms finished inside (see RocketFinish), each its own way: for every room its wall, the dado along the
 // wall's foot, a ledge where the wall turns level, its ceiling and its floor. Painted from a few materials (boards,

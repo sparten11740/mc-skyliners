@@ -2247,6 +2247,37 @@ function towerInstrumentsLang() {
   cubes.halo_light = null;
 }
 
+// The rocket's wall washer (see WallLightBlock), drawn facing north with its back on the south side of its block: a
+// small dark lamp over a narrow slit of light along its top, and over it on the wall, nearly two blocks wide and tall,
+// its fan of light up the wall, drawn flat just off the wall in the tone's colour, fading as it rises and out to
+// its sides; it glows at full brightness, so it shows as light whatever lights the wall.
+{
+  for (const tone of ["warm", "cool", "pink"]) {
+    const glow = { block_light: 15, sky_light: 15 };
+    write(`assets/${ID}/models/block/wall_light_${tone}.json`, {
+      parent: "minecraft:block/block",
+      render_type: "minecraft:translucent",
+      textures: { lamp: `${ID}:block/halo_light_hub`, slit: `${ID}:block/halo_light_${tone === "pink" ? "warm" : tone}`, wash: `${ID}:block/wall_light_wash_${tone}`, particle: `${ID}:block/halo_light_hub` },
+      elements: [
+        { from: [5, 3, 13], to: [11, 6, 16], faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#lamp" }])) },
+        { from: [5.5, 6, 13.5], to: [10.5, 6.25, 15.5], shade: false, faces: { up: { texture: "#slit", neoforge_data: glow }, north: { texture: "#slit", neoforge_data: glow } } },
+        { from: [-6, 6.25, 15.9], to: [22, 32, 15.9], shade: false, faces: { north: { uv: [0, 0, 16, 16], texture: "#wash", neoforge_data: glow } } },
+      ],
+    });
+  }
+  facingWithTones("wall_light", ["warm", "cool", "pink"]);
+  write(`assets/${ID}/models/item/wall_light.json`, { parent: `${ID}:block/wall_light_warm` });
+  dropsItself("wall_light");
+  cubes.wall_light = null;
+}
+// A block that faces the way it was placed and comes in tones: a model for each tone, turned for each facing.
+function facingWithTones(name, tones) {
+  write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => tones.map((tone) =>
+      [`facing=${facing},tone=${tone}`, { model: `${ID}:block/${name}_${tone}`, y }]))),
+  });
+}
+
 // The passenger screen: a slim seat-back display, drawn facing north with its back against the south side of its
 // block, dark glass in a thin grey bezel; its renderer draws the flight information over the glass.
 write(`assets/${ID}/models/block/passenger_screen.json`, boxes(
@@ -6442,7 +6473,7 @@ write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gy
 const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "wall_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
@@ -6571,6 +6602,7 @@ shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:i
 shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
+shaped("wall_light", ["I", "G"], { I: "minecraft:iron_nugget", G: "minecraft:glowstone_dust" }, 2);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
@@ -6913,6 +6945,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.halo_light": "Halo Light",
+  "block.aerolarge.wall_light": "Wall Washer",
   "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.overhead_bin": "Overhead Locker",
   "container.aerolarge.overhead_bin": "Overhead Locker",

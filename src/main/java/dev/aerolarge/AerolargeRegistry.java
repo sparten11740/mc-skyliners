@@ -235,6 +235,7 @@ import dev.aerolarge.block.TransponderBlock;
 import dev.aerolarge.block.TransponderBlockEntity;
 import dev.aerolarge.block.UldContainerBlock;
 import dev.aerolarge.block.VacuumToiletBlock;
+import dev.aerolarge.block.WallLightBlock;
 import dev.aerolarge.block.WcSignBlock;
 import dev.aerolarge.block.WcSignBlockEntity;
 import dev.aerolarge.block.WindSockBlock;
@@ -1008,6 +1009,12 @@ public final class AerolargeRegistry {
         "light_cable", LightCableBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noCollission().noOcclusion()
     );
+    /** The rocket's wall washer, throwing a fan of light up her wall, warm, blue or pink. */
+    public static final DeferredBlock<WallLightBlock> WALL_LIGHT = BLOCKS.registerBlock(
+        "wall_light", WallLightBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.3F).sound(SoundType.LANTERN).noCollission().noOcclusion()
+            .lightLevel(WallLightBlock::light)
+    );
     /** The rocket's halo light, hung on the cable above, warm white or a cool blue night light. */
     public static final DeferredBlock<HaloLightBlock> HALO_LIGHT = BLOCKS.registerBlock(
         "halo_light", HaloLightBlock::new,
@@ -1034,6 +1041,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
     public static final DeferredItem<BlockItem> HALO_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(HALO_LIGHT);
+    public static final DeferredItem<BlockItem> WALL_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(WALL_LIGHT);
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
     /** The passengers' screens in the seat backs and bulkheads, showing how the airliner flies. */
     public static final DeferredBlock<PassengerScreenBlock> PASSENGER_SCREEN = BLOCKS.registerBlock(
@@ -2144,7 +2152,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,

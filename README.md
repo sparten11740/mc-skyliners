@@ -1855,7 +1855,8 @@ herringbone parquet under cream plaster; the bunk room quilted blue on teal carp
 the greenhouse whitewashed brick over terracotta; the pool blue mosaic; the club black acoustic foam under a black
 ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the lounge walnut panelling, a brass
 line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her only
-outside.
+outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the wall,
+warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in the creative tab beside the Halo Light).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
@@ -2195,7 +2196,8 @@ whoever stands in them, telling their story from her control head by the floors 
 Last of all `RocketLayout.finishInside` finishes her rooms (`RocketFinish`): her cover a room sees becomes a
 `RocketLinedCoverBlock` (cut to her curve) or a `RocketLiningPanelBlock` (whole), drawn by `ShellModel` with her livery
 outside and the room's lining, untinted, on the faces it sees, as the airliner's cabin is lined (`Lining`), and each
-story's floor a `RocketFloorBlock`, its room on top and the room under it underneath.
+story's floor a `RocketFloorBlock`, its room on top and the room under it underneath. `RocketWallLights` fixes the wall washers
+(`WallLightBlock`) to her skin round each story, once the rooms have their furniture.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

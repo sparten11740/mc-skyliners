@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,tone=warm": {
+      "model": "aerolarge:block/wall_light_warm",
+      "y": 0
+    },
+    "facing=north,tone=cool": {
+      "model": "aerolarge:block/wall_light_cool",
+      "y": 0
+    },
+    "facing=north,tone=pink": {
+      "model": "aerolarge:block/wall_light_pink",
+      "y": 0
+    },
+    "facing=east,tone=warm": {
+      "model": "aerolarge:block/wall_light_warm",
+      "y": 90
+    },
+    "facing=east,tone=cool": {
+      "model": "aerolarge:block/wall_light_cool",
+      "y": 90
+    },
+    "facing=east,tone=pink": {
+      "model": "aerolarge:block/wall_light_pink",
+      "y": 90
+    },
+    "facing=south,tone=warm": {
+      "model": "aerolarge:block/wall_light_warm",
+      "y": 180
+    },
+    "facing=south,tone=cool": {
+      "model": "aerolarge:block/wall_light_cool",
+      "y": 180
+    },
+    "facing=south,tone=pink": {
+      "model": "aerolarge:block/wall_light_pink",
+      "y": 180
+    },
+    "facing=west,tone=warm": {
+      "model": "aerolarge:block/wall_light_warm",
+      "y": 270
+    },
+    "facing=west,tone=cool": {
+      "model": "aerolarge:block/wall_light_cool",
+      "y": 270
+    },
+    "facing=west,tone=pink": {
+      "model": "aerolarge:block/wall_light_pink",
+      "y": 270
+    }
+  }
+}
