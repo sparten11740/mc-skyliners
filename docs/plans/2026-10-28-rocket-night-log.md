@@ -83,6 +83,8 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N42 | 02:00 | More furnishing | The cargo bay's baggage containers and crates; two pilot seats in the cockpit; a dimmed starlight ceiling over the observation deck | Seen bare at eye level | Lead |
 | N43 | 02:10 | Black hole poster | A poster skips a shaft face with something standing within two blocks in front of it: the lab's tank put the black hole facing into it; it now hangs on the east face | Jan asked for it specially; it should be seen | Lead |
 | N44 | 02:25 | Observation deck's lookout glasses | Replaced by armchairs facing out of the band | The zeppelin's glass marks land below; aboard her every steep look rests on her floors, the land through the band is beyond its 256 blocks, and a level look zooms into the band's glass; seen in game | Lead |
+| N45 | 02:35 | Space helmet | A round white helmet with a big gold visor, worn as its own model like the pilot helmet, a lighter gold tint and no HUD from inside; a crew locker on the entry story and in the bunk room each holds one; breathing in it above the edge of space (client `helmetBreathing`); a recipe matching the pilot helmet's | Fun for children and adults; built by an agent | Lead, helmet agent |
+| N46 | 02:35 | Lift sneak | No sneak is let off by the game; the car notes who sneaked and its machine sets them down outside an open door | The game set them down in the car, shut in on the ground and stuck in flight; seen in game | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -143,6 +145,11 @@ Commits on main, newest last, with the versions handed out.
   night; the poster on the shaft's east face at the lab. Also checked on alpha.170's code: quitting in a cruise at
   y 1,400 and reloading kept her cruising, with every tardigrade, rover and lift car back; a fresh rocket's assembly
   cost one 98 ms tick; the airliner's autopilot screen unchanged and the rocket's with its space band.
+- alpha.172: the rover's range capped by the server's view distance (N40); armchairs in place of the observation deck's
+  lookout glasses (N44); sneaking out of the lift (N46); the space helmet (N45); the README tidied. Play-tested: the rover
+  stopped about 56 blocks out at view distance 6; sneaking out of the open car on the ground and in a climb, set down
+  outside its door; the lockers' helmets; the helmet worn (front view, the tint from inside); its breathing at y 1,100,
+  stopping as it came off; a scale-4 rocket (327,000 blocks, every room).
 
 ## Background agents
 
