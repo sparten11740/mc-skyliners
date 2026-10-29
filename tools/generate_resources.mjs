@@ -1416,6 +1416,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, foodLabSounds());
   Object.assign(sounds, roomSounds());
   Object.assign(sounds, snackMachineSounds());
+  Object.assign(sounds, greenhouseSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4185,6 +4186,149 @@ function roomLang() {
     "subtitles.aerolarge.pool_slap": "Water slaps",
   };
 }
+// Her greenhouse (see RocketGreenhouse): its raised beds, a block of soil in a frame of spruce boards that runs round
+// the outside of beds standing together (see GardenBedBlock), the soil dry or wet, a board on each side no bed joins
+// and a post at each corner where two such sides meet; the grow lights hung over them, a slim dark bar with a strip of
+// LEDs underneath glowing magenta (see GrowLightBlock); the sprinklers in them, a brass head on a copper riser in a box
+// of boards over gravel, the head popped up on a taller riser with its arm out while it sprays (see SprinklerBlock); and
+// the irrigation valve, a copper standpipe on its flange, a tap at its front over a sight glass, dark, or lit blue while
+// the water is on, and on top a red hand wheel, turned an eighth while it is (see IrrigationValveBlock). All are fitted,
+// so breakable, and each gives itself back.
+{
+  const planks = "minecraft:block/spruce_planks";
+  const brass = `${ID}:block/zeppelin_brass`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const soil = { from: [0, 0, 0], to: [16, 15, 16], faces: { up: { texture: "#top" }, down: { texture: "#dirt", cullface: "down" } } };
+  for (const moist of [false, true]) {
+    write(`assets/${ID}/models/block/garden_bed_soil${moist ? "_moist" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { top: `minecraft:block/farmland${moist ? "_moist" : ""}`, dirt: "minecraft:block/dirt", particle: "minecraft:block/dirt" },
+      elements: [soil],
+    });
+  }
+  const post = (from, to) => ({ from, to, faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"]
+    .map((face) => [face, { texture: face === "up" || face === "down" ? "#end" : "#post" }])) });
+  const bedTextures = { board: planks, post: "minecraft:block/stripped_spruce_log", end: "minecraft:block/stripped_spruce_log_top", particle: planks };
+  write(`assets/${ID}/models/block/garden_bed_board.json`, { parent: "minecraft:block/block", textures: bedTextures, elements: [solid([0, 0, 0], [16, 16, 2], "#board")] });
+  write(`assets/${ID}/models/block/garden_bed_post.json`, { parent: "minecraft:block/block", textures: bedTextures, elements: [post([0, 0, 0], [3, 17, 3])] });
+  const corners = [["north", "west", 0], ["north", "east", 90], ["south", "east", 180], ["south", "west", 270]];
+  write(`assets/${ID}/blockstates/garden_bed.json`, {
+    multipart: [
+      { when: { moisture: "0|1|2|3|4|5|6" }, apply: { model: `${ID}:block/garden_bed_soil` } },
+      { when: { moisture: "7" }, apply: { model: `${ID}:block/garden_bed_soil_moist` } },
+      ...Object.entries(yRot).map(([side, y]) => ({ when: { [side]: "false" }, apply: { model: `${ID}:block/garden_bed_board`, y } })),
+      ...corners.map(([one, other, y]) => ({ when: { [one]: "false", [other]: "false" }, apply: { model: `${ID}:block/garden_bed_post`, y } })),
+    ],
+  });
+  write(`assets/${ID}/models/block/garden_bed_item.json`, {
+    parent: "minecraft:block/block",
+    textures: { ...bedTextures, top: "minecraft:block/farmland_moist", dirt: "minecraft:block/dirt" },
+    elements: [
+      soil,
+      solid([0, 0, 0], [16, 16, 2], "#board"), solid([0, 0, 14], [16, 16, 16], "#board"),
+      solid([0, 0, 2], [2, 16, 14], "#board"), solid([14, 0, 2], [16, 16, 14], "#board"),
+      post([0, 0, 0], [3, 17, 3]), post([13, 0, 0], [16, 17, 3]), post([13, 0, 13], [16, 17, 16]), post([0, 0, 13], [3, 17, 16]),
+    ],
+  });
+  write(`assets/${ID}/models/item/garden_bed.json`, { parent: `${ID}:block/garden_bed_item` });
+
+  write(`assets/${ID}/models/block/grow_light.json`, {
+    parent: "minecraft:block/block",
+    textures: { housing: `${ID}:block/lab_dark`, leds: `${ID}:block/grow_light`, particle: `${ID}:block/lab_dark` },
+    elements: [
+      solid([0, 13.5, 5.5], [16, 16, 10.5], "#housing"),
+      { from: [0, 13, 6], to: [16, 13.5, 10], shade: false, faces: Object.fromEntries(["north", "south", "east", "west", "down"]
+        .map((face) => [face, { texture: "#leds", ...lit }])) },
+    ],
+  });
+  write(`assets/${ID}/blockstates/grow_light.json`, {
+    variants: { "axis=x": { model: `${ID}:block/grow_light` }, "axis=z": { model: `${ID}:block/grow_light`, y: 90 } },
+  });
+  write(`assets/${ID}/models/item/grow_light.json`, { parent: `${ID}:block/grow_light` });
+
+  const box = [
+    solid([0, 0, 0], [16, 16, 1], "#board"), solid([0, 0, 15], [16, 16, 16], "#board"),
+    solid([0, 0, 1], [1, 16, 15], "#board"), solid([15, 0, 1], [16, 16, 15], "#board"),
+    solid([1, 0, 1], [15, 1, 15], "#bed"),
+  ];
+  for (const spraying of [false, true]) {
+    const riser = spraying ? 19 : 12;
+    const arm = { origin: [8, riser + 1, 8], axis: "y", angle: 22.5 };
+    write(`assets/${ID}/models/block/sprinkler${spraying ? "_spraying" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: { board: planks, bed: "minecraft:block/gravel", riser: "minecraft:block/cut_copper", head: brass, particle: planks },
+      elements: [
+        ...box,
+        solid([7, 1, 7], [9, riser, 9], "#riser"),
+        solid([6, riser, 6], [10, riser + 2, 10], "#head"),
+        ...(spraying ? [solid([10, riser + 1, 7.5], [13, riser + 1.75, 8.5], "#head", arm), solid([12.5, riser + 0.5, 7], [13.5, riser + 2.25, 9], "#head", arm)] : []),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/sprinkler.json`, {
+    variants: Object.fromEntries([false, true].flatMap((spraying) => [false, true].map((waterlogged) =>
+      [`spraying=${spraying},waterlogged=${waterlogged}`, { model: `${ID}:block/sprinkler${spraying ? "_spraying" : ""}` }]))),
+  });
+  write(`assets/${ID}/models/item/sprinkler.json`, { parent: `${ID}:block/sprinkler` });
+
+  for (const open of [false, true]) {
+    const turned = open ? { origin: [8, 12, 8], axis: "y", angle: 45 } : undefined;
+    write(`assets/${ID}/models/block/irrigation_valve${open ? "_open" : ""}.json`, {
+      parent: "minecraft:block/block",
+      textures: {
+        pipe: "minecraft:block/cut_copper", flange: "minecraft:block/copper_block", wheel: "minecraft:block/red_concrete", brass,
+        glass: open ? "minecraft:block/light_blue_concrete" : "minecraft:block/black_concrete", particle: "minecraft:block/cut_copper",
+      },
+      elements: [
+        solid([5, 0, 5], [11, 1, 11], "#flange"),
+        solid([6.5, 1, 6.5], [9.5, 12, 9.5], "#pipe"),
+        solid([6, 2.5, 5.75], [10, 6.5, 6.5], "#brass"),
+        { from: [6.75, 3.25, 5.5], to: [9.25, 5.75, 5.75], ...(open ? { shade: false } : {}), faces: { north: { texture: "#glass", ...(open ? lit : {}) } } },
+        solid([7, 8, 2], [9, 10, 6.5], "#pipe"),
+        solid([7, 6.5, 2], [9, 8, 4], "#pipe"),
+        solid([3, 12, 3], [13, 13, 4], "#wheel", turned), solid([3, 12, 12], [13, 13, 13], "#wheel", turned),
+        solid([3, 12, 4], [4, 13, 12], "#wheel", turned), solid([12, 12, 4], [13, 13, 12], "#wheel", turned),
+        solid([4, 12, 7.5], [12, 13, 8.5], "#wheel", turned), solid([7.5, 12, 4], [8.5, 13, 12], "#wheel", turned),
+        solid([6.5, 12, 6.5], [9.5, 14, 9.5], "#brass"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/irrigation_valve.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((open) =>
+      [`facing=${facing},open=${open}`, { model: `${ID}:block/irrigation_valve${open ? "_open" : ""}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/irrigation_valve.json`, { parent: `${ID}:block/irrigation_valve` });
+
+  for (const name of greenhouseFittings()) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+function greenhouseFittings() {
+  return ["garden_bed", "grow_light", "sprinkler", "irrigation_valve"];
+}
+// The irrigation valve's wheel squeaking round and the water rushing up its pipe, and the sprinklers' hiss and tick.
+function greenhouseSounds() {
+  return Object.fromEntries(["irrigation_valve", "sprinkler_spray"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+// Spruce planks round dirt; a copper riser under a gold nugget in planks; a copper pipe under a red wheel; and glowstone
+// under an iron bar, magenta-tinted.
+function greenhouseRecipes() {
+  shaped("garden_bed", ["P P", "PDP"], { P: "minecraft:spruce_planks", D: "minecraft:dirt" }, 2);
+  shaped("sprinkler", [" N ", "PCP"], { N: "minecraft:gold_nugget", C: "minecraft:copper_ingot", P: "minecraft:spruce_planks" }, 2);
+  shaped("irrigation_valve", ["RCR", " C ", " C "], { R: "minecraft:red_dye", C: "minecraft:copper_ingot" }, 1);
+  shaped("grow_light", ["III", "GMG"], { I: "minecraft:iron_ingot", G: "minecraft:glowstone_dust", M: "minecraft:magenta_dye" }, 4);
+}
+function greenhouseLang() {
+  return {
+    "block.aerolarge.garden_bed": "Garden Bed",
+    "block.aerolarge.grow_light": "Grow Light",
+    "block.aerolarge.sprinkler": "Sprinkler",
+    "block.aerolarge.irrigation_valve": "Irrigation Valve",
+    "subtitles.aerolarge.irrigation_valve": "Irrigation valve squeaks",
+    "subtitles.aerolarge.sprinkler_spray": "Sprinklers spray",
+  };
+}
 function labLang() {
   return {
     "block.aerolarge.habitat_glass": "Tank Glass",
@@ -6752,8 +6896,10 @@ function dutyFreeKioskLang() {
 const blocks = [...Object.keys(cubes), "airliner_door"].map((name) => `${ID}:${name}`);
 const tag = (values) => ({ replace: false, values });
 write("data/minecraft/tags/block/mineable/pickaxe.json", tag(blocks.filter((b) => !b.endsWith("tire") && !b.endsWith("landing_target") && !b.endsWith("cabin_curtain"))));
-// The care package is a wooden crate, the gym floor maple, and the wall bars and the gym bench ash.
-write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:paper_plane_box`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`]));
+// The care package is a wooden crate, the gym floor maple, the wall bars and the gym bench ash, and the garden beds and
+// the sprinklers' boxes spruce.
+write("data/minecraft/tags/block/mineable/axe.json", tag([`${ID}:cargo_crate`, `${ID}:paper_plane_box`, `${ID}:gym_floor`, `${ID}:wall_bars`, `${ID}:gym_bench`,
+  `${ID}:garden_bed`, `${ID}:sprinkler`]));
 write("data/minecraft/tags/block/doors.json", tag([`${ID}:airliner_door`]));
 write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
@@ -6796,6 +6942,7 @@ FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
 FITTINGS.push(...foodLabFittings());
+FITTINGS.push(...greenhouseFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7000,6 +7147,7 @@ planterRecipes();
 barRecipes();
 dutyFreeKioskRecipes();
 towerInstrumentsRecipes();
+greenhouseRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world, quietly, as vanilla's tabs open: no toast
 // and no line in chat for something nobody did. Each of the rest has one criterion, "done", that only the mod grants,
@@ -7540,6 +7688,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...labLang(),
   ...foodLabLang(),
   ...roomLang(),
+  ...greenhouseLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

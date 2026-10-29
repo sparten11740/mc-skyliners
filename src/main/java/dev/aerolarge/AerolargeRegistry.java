@@ -103,6 +103,7 @@ import dev.aerolarge.block.GalleyOvenBlock;
 import dev.aerolarge.block.GalleyOvenBlockEntity;
 import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.GalleyUnitBlockEntity;
+import dev.aerolarge.block.GardenBedBlock;
 import dev.aerolarge.block.GearBayBlock;
 import dev.aerolarge.block.GearBayBlockEntity;
 import dev.aerolarge.block.GearLeverBlock;
@@ -114,6 +115,7 @@ import dev.aerolarge.block.LaserTurretBlockEntity;
 import dev.aerolarge.block.GiantRubberDuckBlock;
 import dev.aerolarge.block.GiantRubberDuckBlockEntity;
 import dev.aerolarge.block.GlassBackboardBlock;
+import dev.aerolarge.block.GrowLightBlock;
 import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymMatBlock;
@@ -135,6 +137,7 @@ import dev.aerolarge.block.LabPartitionBlock;
 import dev.aerolarge.block.LabPipeBlock;
 import dev.aerolarge.block.SampleCentrifugeBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
+import dev.aerolarge.block.IrrigationValveBlock;
 import dev.aerolarge.block.JetBridgeBlock;
 import dev.aerolarge.block.JetBridgeBlockEntity;
 import dev.aerolarge.block.JumpLightBlock;
@@ -225,6 +228,8 @@ import dev.aerolarge.block.SnackMachineBlock;
 import dev.aerolarge.block.SpacePoster;
 import dev.aerolarge.block.SpacePosterBlock;
 import dev.aerolarge.block.SpringboardBlock;
+import dev.aerolarge.block.SprinklerBlock;
+import dev.aerolarge.block.SprinklerBlockEntity;
 import dev.aerolarge.block.SuitcaseBlock;
 import dev.aerolarge.block.SuitcaseBlockEntity;
 import dev.aerolarge.block.SurfacePanelBlock;
@@ -1851,6 +1856,32 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> GREENHOUSE_BEE = sound("greenhouse_bee");
     public static final DeferredHolder<SoundEvent, SoundEvent> POOL_WATER = sound("pool_water");
     public static final DeferredHolder<SoundEvent, SoundEvent> POOL_SLAP = sound("pool_slap");
+    /**
+     * The rocket's greenhouse (see {@link dev.aerolarge.airframe.RocketGreenhouse}): its raised beds, the grow lights
+     * hung over them, the sprinklers in them and the irrigation valve that turns them on, with the valve's squeak and the
+     * sprinklers' hiss.
+     */
+    public static final DeferredBlock<GardenBedBlock> GARDEN_BED = BLOCKS.registerBlock(
+        "garden_bed", GardenBedBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).randomTicks().strength(0.6F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredItem<BlockItem> GARDEN_BED_ITEM = ITEMS.registerSimpleBlockItem(GARDEN_BED);
+    public static final DeferredBlock<GrowLightBlock> GROW_LIGHT = BLOCKS.registerBlock(
+        "grow_light", GrowLightBlock::new, metal(MapColor.COLOR_MAGENTA).noOcclusion().noCollission().lightLevel(state -> 15)
+    );
+    public static final DeferredItem<BlockItem> GROW_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(GROW_LIGHT);
+    public static final DeferredBlock<SprinklerBlock> SPRINKLER = BLOCKS.registerBlock(
+        "sprinkler", SprinklerBlock::new, metal(MapColor.WOOD).strength(1.0F, 6.0F).sound(SoundType.WOOD)
+    );
+    public static final DeferredItem<BlockItem> SPRINKLER_ITEM = ITEMS.registerSimpleBlockItem(SPRINKLER);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SprinklerBlockEntity>> SPRINKLER_ENTITY =
+        BLOCK_ENTITIES.register("sprinkler", () -> BlockEntityType.Builder.of(SprinklerBlockEntity::new, SPRINKLER.get()).build(null));
+    public static final DeferredBlock<IrrigationValveBlock> IRRIGATION_VALVE = BLOCKS.registerBlock(
+        "irrigation_valve", IrrigationValveBlock::new, metal(MapColor.COLOR_RED).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> IRRIGATION_VALVE_ITEM = ITEMS.registerSimpleBlockItem(IRRIGATION_VALVE);
+    public static final DeferredHolder<SoundEvent, SoundEvent> IRRIGATION_VALVE_SOUND = sound("irrigation_valve");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPRINKLER_SPRAY = sound("sprinkler_spray");
     public static final DeferredBlock<HornCordBlock> HORN_CORD = BLOCKS.registerBlock(
         "horn_cord", HornCordBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
     );
@@ -2206,7 +2237,7 @@ public final class AerolargeRegistry {
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, LAB_GROWN_STEAK, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
-            PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
+            PLANTER_ITEM, GARDEN_BED_ITEM, SPRINKLER_ITEM, IRRIGATION_VALVE_ITEM, GROW_LIGHT_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,
             EXIT_SIGN_ITEM, CABIN_STAIRS_ITEM, CABIN_LANDING_ITEM, CABIN_RAIL_ITEM, VACUUM_TOILET_ITEM, LAVATORY_BASIN_ITEM,

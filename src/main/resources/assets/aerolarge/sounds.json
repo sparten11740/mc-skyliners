@@ -1146,6 +1146,22 @@
       }
     ]
   },
+  "irrigation_valve": {
+    "subtitle": "subtitles.aerolarge.irrigation_valve",
+    "sounds": [
+      {
+        "name": "aerolarge:irrigation_valve"
+      }
+    ]
+  },
+  "sprinkler_spray": {
+    "subtitle": "subtitles.aerolarge.sprinkler_spray",
+    "sounds": [
+      {
+        "name": "aerolarge:sprinkler_spray"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

@@ -1,0 +1,96 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "moisture": "0|1|2|3|4|5|6"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_soil"
+      }
+    },
+    {
+      "when": {
+        "moisture": "7"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_soil_moist"
+      }
+    },
+    {
+      "when": {
+        "north": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_board",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_board",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_board",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_board",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "west": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_post",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_post",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_post",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "west": "false"
+      },
+      "apply": {
+        "model": "aerolarge:block/garden_bed_post",
+        "y": 270
+      }
+    }
+  ]
+}

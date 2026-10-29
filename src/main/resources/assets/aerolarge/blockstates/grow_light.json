@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "aerolarge:block/grow_light"
+    },
+    "axis=z": {
+      "model": "aerolarge:block/grow_light",
+      "y": 90
+    }
+  }
+}

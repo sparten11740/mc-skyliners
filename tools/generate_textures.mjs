@@ -5618,4 +5618,16 @@ function foodLabTextures() {
   texture(blockOutput, "snack_machine_reader", (x, y) => (x === 12 || (x === 13 && y === 4) ? [0xf0, 0xfa, 0xff] : CYAN), 0);
 }
 
+// The greenhouse's grow light's LEDs as seen from under it (see GrowLightBlock): red ones most, a blue and a white among
+// them, in staggered rows on a magenta glow, as horticultural lights look lit.
+{
+  const GLOW = [0x86, 0x22, 0x80];
+  const LEDS = [[0xff, 0x40, 0x62], [0xff, 0x40, 0x62], [0x62, 0x72, 0xff], [0xff, 0x40, 0x62], [0xff, 0xf0, 0xff]];
+  texture(blockOutput, "grow_light", (x, y) => {
+    const row = Math.floor(y / 2);
+    const led = y % 2 === 1 && (x + row) % 3 === 1;
+    return led ? LEDS[(Math.floor(x / 3) + row) % LEDS.length] : GLOW;
+  }, 3);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

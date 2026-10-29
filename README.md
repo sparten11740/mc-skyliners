@@ -1869,30 +1869,40 @@ shaft as in the entry, its back left to the rover (below). The galley and mess h
 either side of its window, an oven in each run and a coffee machine, and four tables with an armchair either side and a
 halo light hanging over each, two of them by the side windows. The bunk room has bunk beds two high at each of the four
 diagonals, their reading lights on, a blue halo light hanging over each pair, and a crew locker for each, a Space Helmet
-in it too. The greenhouse has raised moss beds in a ring broken by a path out to each window, ferns, flowers, azaleas
-and bamboo in them, a cherry tree at two diagonals and an azalea at the others, and glow berry vines hanging from the
-ceiling; the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from under the
-trees. The swimming pool is a channel two deep curving round the shaft by way of her back, lined with glass mosaic lit
-from under the water line, coped round its edge, with rubber ducks afloat on it, deck tiles all round and bean bags on
-the deck at the front looking out of the window. Both are heard as you stand in them: the air through the greenhouse's
-leaves over a trickle of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall,
-now and then slapping against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the
-dance floor's black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls, the DJ deck
-behind the shaft playing the whole room, and a bar curving round her left side with stools; its windows are built at
-their darkest, so daylight does not wash out the floor's colours. The observation deck, her highest story and her
-chillout lounge, sees all round through its band of smoked glass, under the airliner's starlight panels, dimmed so the
-stars outside outshine them, all over the ceiling and up the wall from the band to it, so the room over the band is a
-starry dome, a planetarium. Its lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each
-other round low tables on round rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall
-away or the stars come out, and a bookcase tucked under the top of the stairs. Over its back third, from behind the
-shaft out to her skin, a mezzanine holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her
-right-hand wall up to it from near the lift's door: round the back wall a counter of galley units with the coffee
-machine, a cake and a pot of flowers on it, a lit drinks cabinet, tables with bar stools or armchairs, plants, and the
-Snack Machine, a tall midnight-blue machine with a lit showcase of bright packets. Use it and its spiral turns with a
-whirr, its lamp blinking amber; with a clunk a snack drops into its flap, which lights up green with the packet in it,
-and using it again takes the snack out into your hand: a cookie, an apple, a slice of melon, a pumpkin pie, glow
-berries, a bottle of honey or dried kelp, which one a surprise. Cabin lights set into the mezzanine's floor glow both
-ways, over the groups under it and along its edge.
+in it too. The greenhouse is a kitchen garden someone tends: paths out from the walkway to its three windows cut it into
+four quarters, and in each, raised beds in spruce frames stand in rows a path apart, turned a quarter from the quarter
+before, no two rows ending alike. They grow carrots, potatoes, beetroots and wheat at every stage, sometimes two in one
+bed, berry bushes, pumpkins and melons on their vines, or flowers, with a gap here and there where something was picked;
+a magenta grow light hangs over each on its cable, and a sprinkler stands in water in its middle, keeping its soil dark
+and moist. Beside the way out from the lift stands the irrigation valve: turn its red wheel and it squeaks open, its
+sight glass glowing blue, and every sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds,
+green sparkles showing where a plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a
+bigger rocket), a composter, a water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots
+and a green bean bag on the spots left over, moss grows over the paths in patches, and glow berry vines hang from the
+ceiling; the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds.
+Garden beds, sprinklers, irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen
+garden anywhere: a bed's frame runs round however many beds stand together, it never dries back to dirt or gets
+trampled, and a valve sets off every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a
+channel two deep curving round the shaft by way of her back, lined with glass mosaic lit from under the water line,
+coped round its edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the deck at the front
+looking out of the window. Both are heard as you stand in them: the air through the greenhouse's leaves over a trickle
+of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then slapping
+against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass
+tiles all over its floor, speaker stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the
+whole room, and a bar curving round her left side with stools; its windows are built at their darkest, so daylight does
+not wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
+through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
+over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
+lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
+rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and
+a bookcase tucked under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine
+holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the
+lift's door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a
+lit drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine
+with a lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a
+snack drops into its flap, which lights up green with the packet in it, and using it again takes the snack out into your
+hand: a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a
+surprise. Cabin lights set into the mezzanine's floor glow both ways, over the groups under it and along its edge.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
@@ -2253,6 +2263,10 @@ out, and the `LabGrowerBlock`s, the hydroponic rack and the algae column, all `L
 `LabPartitionBlock`s and the `LabPipeBlock`s; and the galley's cupboards and the lavatory's basin. A
 `SampleCentrifugeBlock` times its spin with a scheduled tick, and a microscope sends `LookIntoMicroscope` to the
 player's client, where `MicroscopeScreen` shows the slide.
+`RocketGreenhouse` furnishes her greenhouse as `GreenhousePlan` lays it out, its unevenness from the room's own random
+sequence (`RocketRoom.scatter`): `GardenBedBlock`s, farmland in a frame that joins the beds beside it; `GrowLightBlock`s
+hung on light cables; `SprinklerBlock`s, whose `SprinklerBlockEntity` (found by the valve among those loaded) sprays and
+waters what grows round it; and the `IrrigationValveBlock` that sets them off.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

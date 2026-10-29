@@ -1994,6 +1994,73 @@ const blastNoise = (() => {
   writeSound("pool_slap", tiledEcho(slapBody.map((b, i) => b + 0.25 * slapSpray[i] * Math.exp(-i / (0.05 * RATE)))), 0.7);
 }
 
+// The greenhouse's irrigation (see IrrigationValveBlock and SprinklerBlockEntity), each from a random sequence of its
+// own so the sounds above are unchanged. The valve: its hand wheel squeaking round in three jerks, a rising, rasping
+// chirp each, then the pipe knocking as the water hits it and rushing, bubbling, up it. The sprinklers, as long as the
+// valve stays open: an impulse sprinkler's hiss, chopped as its arm ticks round through the jet some six times a
+// second, every few seconds the arm rattling quickly back, and drops pattering on the leaves, swelling in and easing off.
+{
+  const VALVE_LENGTH = 1.4;
+  const valve = ownRandom(0x56616c76);
+  const squeaks = new Float64Array(Math.round(VALVE_LENGTH * RATE));
+  for (const [at, seconds, from, to] of [[0, 0.16, 1250, 1600], [0.22, 0.14, 1350, 1750], [0.42, 0.18, 1200, 1550]]) {
+    const start = Math.round(at * RATE);
+    let phase = 0;
+    for (let k = 0; k < Math.round(seconds * RATE); k++) {
+      const along = k / (seconds * RATE);
+      phase += (from + (to - from) * along) / RATE;
+      const stickSlip = 0.6 + 0.4 * Math.sign(Math.sin((2 * Math.PI * 38 * k) / RATE));
+      squeaks[start + k] += Math.sin(Math.PI * along) * stickSlip * (2 * (phase % 1) - 1);
+    }
+  }
+  const squeakEdge = resonance(squeaks, 3100, 2);
+  const squeak = resonance(squeaks, 1500, 1.5).map((s, i) => s + 0.3 * squeakEdge[i]);
+  const rush = new Float64Array(squeaks.length);
+  const knockAt = Math.round(0.62 * RATE);
+  const rushNoise = resonance(Float64Array.from({ length: rush.length }, () => valve() * 2 - 1), 900, 1.2);
+  for (let i = knockAt; i < rush.length; i++) {
+    const t = (i - knockAt) / RATE;
+    const knock = Math.exp(-t / 0.09) * Math.sin(2 * Math.PI * 170 * t);
+    const swell = Math.min(1, t / 0.25) * Math.min(1, (VALVE_LENGTH - 0.62 - t) / 0.35);
+    const bubbles = 0.5 + 0.5 * Math.abs(Math.sin(2 * Math.PI * 11 * t + 3 * Math.sin(2 * Math.PI * 1.7 * t)));
+    rush[i] = 0.9 * knock + 0.7 * swell * bubbles * rushNoise[i];
+  }
+  writeSound("irrigation_valve", squeak.map((s, i) => 0.6 * s + rush[i]), 0.7);
+
+  const SPRAY_LENGTH = 8;
+  const spray = ownRandom(0x53707279);
+  const n = Math.round(SPRAY_LENGTH * RATE);
+  const hiss = resonance(Float64Array.from({ length: n }, () => spray() * 2 - 1), 5200, 0.7);
+  const patter = resonance(Float64Array.from({ length: n }, () => spray() * 2 - 1), 2600, 1.4);
+  const ticks = new Float64Array(n);
+  const chop = new Float64Array(n).fill(1);
+  let at = 0.15;
+  let returnAt = 2.6;
+  while (at < SPRAY_LENGTH - 0.3) {
+    const start = Math.round(at * RATE);
+    for (let k = 0; k < Math.round(0.03 * RATE) && start + k < n; k++) {
+      const t = k / RATE;
+      ticks[start + k] += Math.exp(-t / 0.004) * (spray() * 2 - 1);
+      chop[start + k] = 0.55 + 0.45 * Math.min(1, t / 0.03);
+    }
+    const returning = at >= returnAt && at < returnAt + 0.7;
+    at += returning ? 0.055 : 0.17 + 0.02 * spray();
+    if (at >= returnAt + 0.7) {
+      returnAt += 3.2 + spray();
+    }
+  }
+  const tick = resonance(ticks, 3400, 1.5);
+  const drops = Float64Array.from({ length: n }, () => (spray() < 0.0006 ? spray() * 2 - 1 : 0));
+  const dropping = resonance(drops, 2100, 6);
+  const sprinkling = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE;
+    const envelope = Math.min(1, t / 0.3) * Math.min(1, (SPRAY_LENGTH - t) / 0.8);
+    sprinkling[i] = envelope * (0.5 * hiss[i] * chop[i] + 0.25 * patter[i] + 1.4 * tick[i] + 2.5 * dropping[i]);
+  }
+  writeSound("sprinkler_spray", sprinkling, 0.6);
+}
+
 // Low gravity aboard a rocket in space (see SpaceGravity): coming on, a soft glide rising an octave over most of a
 // second, a sine with a quiet fifth over it shimmering; going, the same glide falling. No random sequence is drawn on,
 // so the sounds around it are unchanged.
