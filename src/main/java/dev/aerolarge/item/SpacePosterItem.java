@@ -38,12 +38,13 @@ public class SpacePosterItem extends Item {
         BlockPos middle = context.getClickedPos().relative(facing);
         Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
-        if (facing.getAxis().isVertical() || player != null && !player.mayUseItemAt(middle, facing, stack)) {
+        if (facing.getAxis().isVertical()) {
             return InteractionResult.FAIL;
         }
         Level level = context.getLevel();
         Map<BlockPos, BlockState> pieces = pieces(middle, facing);
-        if (!pieces.keySet().stream().allMatch(at -> fits(level, at, facing))) {
+        boolean allowed = player == null || pieces.keySet().stream().allMatch(at -> player.mayUseItemAt(at, facing, stack));
+        if (!allowed || !pieces.keySet().stream().allMatch(at -> fits(level, at, facing))) {
             return InteractionResult.FAIL;
         }
         if (!level.isClientSide) {
