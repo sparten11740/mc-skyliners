@@ -79,7 +79,8 @@ public final class SpaceGravity {
         if (lease == null) {
             return;
         }
-        boolean aboard = player.level().getBlockEntity(lease.autopilot()) instanceof AutopilotBlockEntity autopilot && Aboard.isAboard(player, autopilot);
+        boolean aboard = player.level().isLoaded(lease.autopilot())
+            && player.level().getBlockEntity(lease.autopilot()) instanceof AutopilotBlockEntity autopilot && Aboard.isAboard(player, autopilot);
         boolean due = player.level().getGameTime() > lease.until() && player.onGround();
         if (!aboard || due) {
             LEASES.remove(player.getUUID());
