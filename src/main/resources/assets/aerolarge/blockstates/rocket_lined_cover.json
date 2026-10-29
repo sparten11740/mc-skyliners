@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "finish=entry": {
+      "model": "aerolarge:block/rocket_lined_cover_entry"
+    },
+    "finish=cargo": {
+      "model": "aerolarge:block/rocket_lined_cover_cargo"
+    },
+    "finish=mess": {
+      "model": "aerolarge:block/rocket_lined_cover_mess"
+    },
+    "finish=bunks": {
+      "model": "aerolarge:block/rocket_lined_cover_bunks"
+    },
+    "finish=greenhouse": {
+      "model": "aerolarge:block/rocket_lined_cover_greenhouse"
+    },
+    "finish=pool": {
+      "model": "aerolarge:block/rocket_lined_cover_pool"
+    },
+    "finish=club": {
+      "model": "aerolarge:block/rocket_lined_cover_club"
+    },
+    "finish=lab": {
+      "model": "aerolarge:block/rocket_lined_cover_lab"
+    },
+    "finish=lounge": {
+      "model": "aerolarge:block/rocket_lined_cover_lounge"
+    },
+    "finish=cockpit": {
+      "model": "aerolarge:block/rocket_lined_cover_cockpit"
+    }
+  }
+}

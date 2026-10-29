@@ -1,0 +1,18 @@
+{
+  "loader": "aerolarge:shell",
+  "render_type": "minecraft:solid",
+  "tint_index": 0,
+  "textures": {
+    "skin": "aerolarge:block/zeppelin_skin",
+    "particle": "aerolarge:block/zeppelin_skin",
+    "lining": "aerolarge:block/rocket_wall_entry",
+    "lining_ceiling": "aerolarge:block/rocket_ceiling_entry",
+    "lining_floor": "aerolarge:block/rocket_ledge_entry",
+    "lining_dado": "aerolarge:block/rocket_dado_entry",
+    "lining_reveal": "aerolarge:block/rocket_wall_entry",
+    "lining_reveal_pair": "aerolarge:block/rocket_wall_entry",
+    "lining_reveal_head": "aerolarge:block/rocket_wall_entry",
+    "lining_reveal_sill": "aerolarge:block/rocket_wall_entry",
+    "lining_dado_sill": "aerolarge:block/rocket_dado_entry"
+  }
+}

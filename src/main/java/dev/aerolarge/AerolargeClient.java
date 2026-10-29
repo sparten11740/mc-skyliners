@@ -208,7 +208,8 @@ public final class AerolargeClient {
         modEventBus.addListener((RegisterMenuScreensEvent event) -> event.register(AerolargeRegistry.DROP_BAY_MENU.get(), DropBayScreen::new));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(CurtainBlock::tint, AerolargeRegistry.CABIN_CURTAIN.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(ZeppelinPaint::tint,
-            AerolargeRegistry.ZEPPELIN_COVER.get(), AerolargeRegistry.ZEPPELIN_FABRIC.get(), AerolargeRegistry.OVAL_WINDOW.get()));
+            AerolargeRegistry.ZEPPELIN_COVER.get(), AerolargeRegistry.ZEPPELIN_FABRIC.get(), AerolargeRegistry.OVAL_WINDOW.get(),
+            AerolargeRegistry.ROCKET_LINED_COVER.get(), AerolargeRegistry.ROCKET_LINING_PANEL.get()));
         modEventBus.addListener((RegisterColorHandlersEvent.Item event) -> event.register(ZeppelinPaint::itemTint, AerolargeRegistry.ZEPPELIN_FABRIC_ITEM.get()));
         NeoForge.EVENT_BUS.addListener(ZeppelinPaint::tick);
         // The rocket's LED strips: their tint, their remeshing as their colour changes, and their panels' renderers.

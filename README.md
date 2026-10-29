@@ -1847,6 +1847,16 @@ lies across its boards; in place of her floors they show how high she flies, a l
 the colours of each height, from the sea at its foot to her ceiling, past a dashed line with a star where space begins,
 stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on them).
 
+Each room is finished inside its own way, on the walls her cover shows inside, along their foot, on its floor and on its
+ceiling, the floor of the room over it (the server config's `rocket.finishes` leaves her plain cover and grey floors):
+the entry riveted steel over a hazard-striped dado on studded rubber under a perforated ceiling; the cargo bay plywood
+over a steel kick plate on diamond-plate tread under corrugated sheet; the mess oak boards over a walnut dado on
+herringbone parquet under cream plaster; the bunk room quilted blue on teal carpet under a night ceiling of faint stars;
+the greenhouse whitewashed brick over terracotta; the pool blue mosaic; the club black acoustic foam under a black
+ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the lounge walnut panelling, a brass
+line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her only
+outside.
+
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
 skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather leave
@@ -2180,6 +2190,10 @@ view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the s
 head is at the edge of space or over it (`EdgeOfSpace.reached`). `RoomAmbience` plays her greenhouse and her pool to
 whoever stands in them, telling their story from her control head by the floors and furnishing her autopilot keeps
 (`rocketStories`, `rocketRooms`).
+Last of all `RocketLayout.finishInside` finishes her rooms (`RocketFinish`): her cover a room sees becomes a
+`RocketLinedCoverBlock` (cut to her curve) or a `RocketLiningPanelBlock` (whole), drawn by `ShellModel` with her livery
+outside and the room's lining, untinted, on the faces it sees, as the airliner's cabin is lined (`Lining`), and each
+story's floor a `RocketFloorBlock`, its room on top and the room under it underneath.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

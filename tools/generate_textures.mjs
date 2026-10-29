@@ -5056,4 +5056,150 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   });
 }
 
+// The rocket's rooms finished inside (see RocketFinish), each its own way: for every room its wall, the dado along the
+// wall's foot, a ledge where the wall turns level, its ceiling and its floor. Painted from a few materials (boards,
+// tiles, bricks, quilting, foam, plating, parquet, padding, carpet), each block's own boards, tiles or bricks a shade
+// apart from their neighbours' by a hash of where they lie, so a wall reads as made of many, not stamped from one.
+{
+  const hex = (value) => [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+  const shade = ([r, g, b], by) => [r + by, g + by, b + by];
+  const hash = (a, b) => (((a * 73856093) ^ (b * 19349663)) >>> 0) % 1000 / 1000;
+  // Boards running up (or across), so many pixels wide, a dark seam between them and a faint grain along each.
+  const boards = (base, seam, width, across = false) => (x, y) => {
+    const [along, over] = across ? [x, y] : [y, x];
+    const board = Math.floor(over / width);
+    if (over % width === 0) return seam;
+    const grain = (along + board * 5) % 7 === 0 ? -10 : 0;
+    return shade(base, Math.round((hash(board, 3) - 0.5) * 18) + grain);
+  };
+  // Square tiles of a size, grout between them, each tile its own shade; a glint in a corner for glazed ones.
+  const tiles = (base, grout, size, glaze = false) => (x, y) => {
+    if (x % size === 0 || y % size === 0) return grout;
+    const tile = shade(base, Math.round((hash(Math.floor(x / size), Math.floor(y / size)) - 0.5) * 16));
+    return glaze && x % size === 1 && y % size === 1 ? shade(tile, 28) : tile;
+  };
+  // Bricks in running bond, four high and eight long, mortar between, each brick its own shade.
+  const bricks = (base, mortar) => (x, y) => {
+    const course = Math.floor(y / 4);
+    const shifted = x + (course % 2) * 4;
+    if (y % 4 === 3 || shifted % 8 === 0) return mortar;
+    return shade(base, Math.round((hash(Math.floor(shifted / 8), course) - 0.5) * 20));
+  };
+  // Quilted fabric: a diamond of stitching, puffed light in the middle of each diamond and shadowed at its seams.
+  const quilted = (base, stitch) => (x, y) => {
+    const u = (x + y) % 8;
+    const v = (x - y + 16) % 8;
+    if (u === 0 || v === 0) return stitch;
+    const puff = 4 - Math.max(Math.abs(u - 4), Math.abs(v - 4));
+    return shade(base, puff * 4 - 6);
+  };
+  // Acoustic foam: pyramids four pixels across, lit from the top left.
+  const foam = (base) => (x, y) => {
+    const u = x % 4;
+    const v = y % 4;
+    const lit = u + v < 3 ? 10 : u + v > 3 ? -12 : 0;
+    return shade(base, lit + Math.round((hash(Math.floor(x / 4), Math.floor(y / 4)) - 0.5) * 6));
+  };
+  // Steel plating: a seam round the panel, rivets just inside it, fine brushed lines across.
+  const plating = (base, seam, rivet) => (x, y) => {
+    if (x === 0 || y === 0) return seam;
+    if ((y === 2 || y === 13) && x % 4 === 2) return rivet;
+    return shade(base, y % 3 === 0 ? -4 : 2);
+  };
+  // Parquet in herringbone: boards two wide and six long, turning each way in turn.
+  const herringbone = (base, seam) => (x, y) => {
+    const strip = Math.floor(x / 2);
+    const along = (y + (strip % 2 === 0 ? strip * 2 : 16 - strip * 2)) % 6;
+    if (along === 0 || x % 2 === 0 && strip % 2 === 0) return seam;
+    return shade(base, Math.round((hash(strip, Math.floor((y + strip * 2) / 6)) - 0.5) * 22));
+  };
+  // Tufted padding: a button sunk in each square of eight, the padding rounding up between.
+  const padded = (base, button) => (x, y) => {
+    const u = (x + 4) % 8;
+    const v = (y + 4) % 8;
+    if (u === 4 && v === 4) return button;
+    const rise = 4 - Math.max(Math.abs(u - 4), Math.abs(v - 4));
+    return shade(base, -rise * 3 + 4);
+  };
+  // Carpet or vinyl: its colour with flecks of a second.
+  const flecked = (base, fleck, every) => (x, y) => (hash(x * 3 + 1, y * 5 + 2) < every ? fleck : base);
+  // A dado band: its colour with a lighter rail along its top and a darker shadow at its foot.
+  const band = (base, rail) => (x, y) => (y <= 1 ? rail : y >= 14 ? shade(base, -16) : base);
+  // Hazard stripes running down to the left, yellow and near-black.
+  const hazard = (x, y) => ((x + y) % 8 < 4 ? [0xe8, 0xb4, 0x20] : [0x22, 0x22, 0x26]);
+  // Studded rubber: round studs on a dark mat.
+  const studded = (base) => (x, y) => {
+    const u = x % 4 - 1.5;
+    const v = y % 4 - 1.5;
+    return u * u + v * v < 1.5 ? shade(base, 18) : base;
+  };
+  // Raised diamond tread on steel.
+  const diamondPlate = (base) => (x, y) => {
+    const u = (x + (Math.floor(y / 4) % 2) * 2) % 4;
+    return (u === 1 && y % 4 === 1) || (u === 2 && y % 4 === 2) ? shade(base, 26) : base;
+  };
+  // Corrugated sheet: ridges running up, lit on one flank.
+  const corrugated = (base) => (x) => shade(base, [10, 4, -6, -12][x % 4]);
+  // A ceiling of square panels in a light grid, with a lamp dot now and then.
+  const ceilingPanels = (base, grid) => (x, y) => (x % 8 === 0 || y % 8 === 0 ? grid : base);
+  // A night ceiling: deep colour, a few faint stars.
+  const night = (base, star) => (x, y) => (hash(x * 7 + 3, y * 11 + 5) < 0.03 ? star : base);
+  // Plain plaster: its colour, the noise doing the rest.
+  const plaster = (base) => () => base;
+  // Perforated metal: holes in a grid.
+  const perforated = (base) => (x, y) => (x % 3 === 1 && y % 3 === 1 ? shade(base, -40) : base);
+  // Walnut panelling: boards running up with a fine brass line across at the top.
+  const walnutPanel = (base, seam) => (x, y) => (y === 1 ? [0xc8, 0xa0, 0x4a] : boards(base, seam, 4)(x, y));
+
+  const OAK = hex(0xc08a50);
+  const WALNUT = hex(0x5a3a24);
+  const FINISHES = {
+    entry: {
+      wall: plating(hex(0xb4bcc4), hex(0x7c848c), hex(0x5c646c)), dado: hazard, ledge: plating(hex(0xa4acb4), hex(0x7c848c), hex(0x5c646c)),
+      ceiling: perforated(hex(0xc8ccd0)), floor: studded(hex(0x34383c)),
+    },
+    cargo: {
+      wall: boards(hex(0xc8a070), hex(0x8a6a44), 8), dado: plating(hex(0x5c646c), hex(0x3c4248), hex(0x9aa2aa)), ledge: boards(hex(0xc8a070), hex(0x8a6a44), 8),
+      ceiling: corrugated(hex(0x9ca4ac)), floor: diamondPlate(hex(0x6c747c)),
+    },
+    mess: {
+      wall: boards(OAK, shade(OAK, -40), 4), dado: band(WALNUT, shade(WALNUT, 30)), ledge: boards(OAK, shade(OAK, -40), 4, true),
+      ceiling: plaster(hex(0xf0e4cc)), floor: herringbone(hex(0xa87444), hex(0x6c4426)),
+    },
+    bunks: {
+      wall: quilted(hex(0x6a84a8), hex(0x46587a)), dado: band(hex(0x2a3654), hex(0x46587a)), ledge: plaster(hex(0x2a3654)),
+      ceiling: night(hex(0x1c2440), hex(0xc8d4ff)), floor: flecked(hex(0x2c6a70), hex(0x4a8a8a), 0.18),
+    },
+    greenhouse: {
+      wall: bricks(hex(0xece6dc), hex(0xb8b0a4)), dado: tiles(hex(0xc06a40), hex(0x8a4a2c), 8), ledge: tiles(hex(0xc06a40), hex(0x8a4a2c), 8),
+      ceiling: ceilingPanels(hex(0xf4f6f0), hex(0xb4c0b0)), floor: tiles(hex(0xb8643c), hex(0x7c4228), 8),
+    },
+    pool: {
+      wall: tiles(hex(0x3a8ac8), hex(0xd8eef8), 4, true), dado: tiles(hex(0x1c4a8a), hex(0xd8eef8), 4, true), ledge: tiles(hex(0xe8f2f6), hex(0xb8c8d0), 8),
+      ceiling: tiles(hex(0xf2f6f8), hex(0xc8d4dc), 8), floor: tiles(hex(0xd8d0c0), hex(0xa8a090), 8),
+    },
+    club: {
+      wall: foam(hex(0x2a2430)), dado: band(hex(0x141218), hex(0x7a2aa0)), ledge: plaster(hex(0x18161c)),
+      ceiling: night(hex(0x100e14), hex(0xff4ac8)), floor: studded(hex(0x18161c)),
+    },
+    lab: {
+      wall: tiles(hex(0x9cc0a4), hex(0xe8f0ea), 4, true), dado: band(hex(0xeef2ee), hex(0x4ab89a)), ledge: plaster(hex(0xeef2ee)),
+      ceiling: ceilingPanels(hex(0xf4f6f6), hex(0xc4ccca)), floor: flecked(hex(0x9aa8a0), hex(0x5c6c64), 0.22),
+    },
+    lounge: {
+      wall: walnutPanel(WALNUT, shade(WALNUT, -24)), dado: band(shade(WALNUT, -16), hex(0xc8a04a)), ledge: boards(WALNUT, shade(WALNUT, -24), 4, true),
+      ceiling: plaster(hex(0x22224a)), floor: herringbone(hex(0x6a442a), hex(0x3c2616)),
+    },
+    cockpit: {
+      wall: padded(hex(0x4a4e56), hex(0x24262a)), dado: band(hex(0x24262a), hex(0x5a5e66)), ledge: plaster(hex(0x3a3e46)),
+      ceiling: padded(hex(0x3e424a), hex(0x1c1e22)), floor: studded(hex(0x2a2c30)),
+    },
+  };
+  for (const [finish, parts] of Object.entries(FINISHES)) {
+    for (const [part, paint] of Object.entries(parts)) {
+      texture(blockOutput, `rocket_${part}_${finish}`, paint, 3);
+    }
+  }
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

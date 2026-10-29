@@ -45,6 +45,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue CAMERA_DISPLAY;
     public static final ModConfigSpec.BooleanValue ROCKET_LIFT;
     public static final ModConfigSpec.BooleanValue ROCKET_ROOMS;
+    public static final ModConfigSpec.BooleanValue ROCKET_FINISHES;
     public static final ModConfigSpec.IntValue ROCKET_CEILING;
     public static final ModConfigSpec.BooleanValue LED_STRIPS;
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
@@ -438,6 +439,13 @@ public final class AerolargeConfig {
                 "her stories are bare. Rockets already built keep theirs."
             )
             .define("rooms", true);
+        ROCKET_FINISHES = builder
+            .comment(
+                "Whether a rocket's rooms are finished inside, each its own way: her cover lined where a room sees it (riveted steel",
+                "in the entry, oak in the mess, quilting in the bunk room, mosaic at the pool, and so on), and each floor and ceiling",
+                "in its room's materials. Off, her inside is her plain cover and grey floors. Rockets already built keep theirs."
+            )
+            .define("finishes", true);
         ROCKET_CEILING = builder
             .comment(
                 "How high a rocket's autopilot can be set to climb, in world blocks: far over the top of the world, where there is",

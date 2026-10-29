@@ -426,6 +426,62 @@ function hullLiningLang() {
   return { "block.aerolarge.airframe_lined_shell": "Lined Airframe Shell" };
 }
 
+// The rocket's rooms finished inside (see RocketFinish), each its own way. Her cover where a room sees it, cut to her
+// curve (the lined cover) or whole (the lining panel), drawn by the "shell" loader with the cover's skin painted by her
+// livery and, on the faces the room sees, that room's lining untinted: its wall, the dado along the wall's foot, the
+// ledges and the ceiling's edge as the wall turns, the wall again round her windows. One model for each finish, the
+// blockstate picking it by the block's finish. Her floors, finished on top as their room and underneath as the
+// ceiling of the room under them: one model for each pair. The cover gives back fabric, the floor a cabin floor.
+const ROCKET_FINISHES = ["entry", "cargo", "mess", "bunks", "greenhouse", "pool", "club", "lab", "lounge", "cockpit"];
+{
+  const skin = { skin: `${ID}:block/zeppelin_skin`, particle: `${ID}:block/zeppelin_skin` };
+  const lining = (finish) => {
+    const wall = `${ID}:block/rocket_wall_${finish}`;
+    const dado = `${ID}:block/rocket_dado_${finish}`;
+    return {
+      lining: wall, lining_ceiling: `${ID}:block/rocket_ceiling_${finish}`, lining_floor: `${ID}:block/rocket_ledge_${finish}`, lining_dado: dado,
+      lining_reveal: wall, lining_reveal_pair: wall, lining_reveal_head: wall, lining_reveal_sill: wall, lining_dado_sill: dado,
+    };
+  };
+  const drops = (name, item) => write(`data/${ID}/loot_table/blocks/${name}.json`, {
+    type: "minecraft:block",
+    pools: [{ rolls: 1.0, bonus_rolls: 0.0, entries: [{ type: "minecraft:item", name: item }], conditions: [{ condition: "minecraft:survives_explosion" }] }],
+    random_sequence: `${ID}:blocks/${name}`,
+  });
+  for (const name of ["rocket_lined_cover", "rocket_lining_panel"]) {
+    write(`assets/${ID}/blockstates/${name}.json`, {
+      variants: Object.fromEntries(ROCKET_FINISHES.map((finish) => [`finish=${finish}`, { model: `${ID}:block/${name}_${finish}` }])),
+    });
+    for (const finish of ROCKET_FINISHES) {
+      write(`assets/${ID}/models/block/${name}_${finish}.json`, {
+        loader: `${ID}:shell`, render_type: "minecraft:solid", tint_index: 0, textures: { ...skin, ...lining(finish) },
+      });
+    }
+    drops(name, `${ID}:zeppelin_fabric`);
+    cubes[name] = null;
+  }
+  const floors = {};
+  for (const floor of ROCKET_FINISHES) {
+    for (const ceiling of ROCKET_FINISHES) {
+      floors[`ceiling=${ceiling},floor=${floor}`] = { model: `${ID}:block/rocket_floor_${floor}_${ceiling}` };
+      write(`assets/${ID}/models/block/rocket_floor_${floor}_${ceiling}.json`, {
+        parent: "minecraft:block/cube_bottom_top",
+        textures: { top: `${ID}:block/rocket_floor_${floor}`, bottom: `${ID}:block/rocket_ceiling_${ceiling}`, side: `${ID}:block/rocket_floor_${floor}` },
+      });
+    }
+  }
+  write(`assets/${ID}/blockstates/rocket_floor.json`, { variants: floors });
+  drops("rocket_floor", `${ID}:cabin_floor`);
+  cubes.rocket_floor = null;
+}
+function rocketFinishLang() {
+  return {
+    "block.aerolarge.rocket_lined_cover": "Lined Rocket Cover",
+    "block.aerolarge.rocket_lining_panel": "Rocket Lining Panel",
+    "block.aerolarge.rocket_floor": "Rocket Floor",
+  };
+}
+
 write(`assets/${ID}/blockstates/thrust_relay.json`, { variants: { "": { model: `${ID}:block/thrust_relay` } } });
 write(`assets/${ID}/models/block/thrust_relay.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/thrust_relay` } });
 cubes.thrust_relay = null;
@@ -7064,6 +7120,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...laserLang(),
   ...selfDestructLang(),
   ...hullLiningLang(),
+  ...rocketFinishLang(),
   ...cabinSeatLang(),
   ...cabinCarpetLang(),
   ...gymFloorLang(),

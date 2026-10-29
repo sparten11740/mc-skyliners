@@ -7,6 +7,8 @@ import dev.aerolarge.autopilot.RocketPilot;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.OvalWindowBlock;
+import dev.aerolarge.block.RocketFinish;
+import dev.aerolarge.block.RocketLiningPanelBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.ShellGeometry;
 import java.util.ArrayList;
@@ -213,8 +215,111 @@ public final class RocketLayout implements Layout {
                 piece.build();
             }
         }
+        if (AerolargeConfig.ROCKET_FINISHES.get()) {
+            layout.finishInside();
+        }
         layout.countAir();
         return layout;
+    }
+
+    /**
+     * Her rooms finished inside, once everything else stands (see {@link RocketFinish}): every block of her cover a
+     * room sees lined in that room's finish, and every block of plain floor left on a story's floor row finished as
+     * that story's floor over the ceiling of the story under it. Laid last, so it lines what the rooms leave of her
+     * cover and keeps what they put on her floors, the club's dance floor and the pool's channel among them.
+     */
+    private void finishInside() {
+        Map<BlockPos, BlockState> finished = new HashMap<>();
+        for (Map.Entry<BlockPos, BlockState> cell : cells.entrySet()) {
+            BlockState done = finished(cell.getKey(), cell.getValue());
+            if (done != null) {
+                finished.put(cell.getKey(), done);
+            }
+        }
+        cells.putAll(finished);
+    }
+
+    /** A block of her cover or floor as it is finished inside; null for any other, or one no room sees. */
+    @Nullable
+    private BlockState finished(BlockPos at, BlockState state) {
+        if (state.is(AerolargeRegistry.CABIN_FLOOR.get())) {
+            return finishedFloor(at.getY());
+        }
+        RocketFinish finish = finishAt(at.getY());
+        if (!state.is(AerolargeRegistry.ZEPPELIN_COVER.get()) || finish == null) {
+            return null;
+        }
+        int shape = ShellBlock.shape(state);
+        if (shape != ShellGeometry.WHOLE) {
+            return seenFromInside(at, null) ? AerolargeRegistry.ROCKET_LINED_COVER.get().lined(shape, finish) : null;
+        }
+        BlockState panel = AerolargeRegistry.ROCKET_LINING_PANEL.get().defaultBlockState().setValue(RocketFinish.PROPERTY, finish);
+        boolean seen = false;
+        for (Direction side : Direction.values()) {
+            if (seenFromInside(at, side)) {
+                panel = RocketLiningPanelBlock.linedOn(panel, side);
+                seen = true;
+            }
+        }
+        return seen ? panel : null;
+    }
+
+    /**
+     * A block of plain floor on a story's floor row as that story's floor over the ceiling of the story under it; null
+     * for one on any other row, as her deck's own lower ceiling is.
+     */
+    @Nullable
+    private BlockState finishedFloor(int y) {
+        int story = floors.indexOf(y);
+        if (story < 0 && y != noseFoot) {
+            return null;
+        }
+        int over = story < 0 ? floors.size() : story;
+        return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(over), RocketFinish.ofStory(Math.max(0, over - 1)));
+    }
+
+    /**
+     * The finish of the room a row of her cover is part of: its story's, her cockpit's from its floor up; none under
+     * her entry story.
+     */
+    @Nullable
+    private RocketFinish finishAt(int y) {
+        if (floors.isEmpty() || y < floors.getFirst()) {
+            return null;
+        }
+        if (y >= noseFoot) {
+            return RocketFinish.COCKPIT;
+        }
+        int story = 0;
+        while (story + 1 < floors.size() && floors.get(story + 1) <= y) {
+            story++;
+        }
+        return RocketFinish.ofStory(story);
+    }
+
+    /**
+     * Whether a room sees a block of her cover: on a side, the block there in her body and open or not filling its
+     * place (an LED strip, a lantern, a stool), and not her skin's own glass; on no side given, on any side.
+     */
+    private boolean seenFromInside(BlockPos at, @Nullable Direction side) {
+        if (side == null) {
+            for (Direction any : Direction.values()) {
+                if (seenFromInside(at, any)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        BlockPos next = at.relative(side);
+        if (surface.depth(next.getX(), next.getY() + 0.5, next.getZ()) >= 0) {
+            return false;
+        }
+        if (isOpen(next.getX(), next.getY(), next.getZ())) {
+            return true;
+        }
+        BlockState there = stateAt(next.getX(), next.getY(), next.getZ());
+        boolean skin = there.getBlock() instanceof ShellBlock || there.getBlock() instanceof OvalWindowBlock;
+        return !there.canOcclude() && !skin;
     }
 
     void set(int x, int y, int z, BlockState state) {

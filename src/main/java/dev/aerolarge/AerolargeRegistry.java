@@ -185,6 +185,10 @@ import dev.aerolarge.block.PoolStepsBlock;
 import dev.aerolarge.block.PropellerBlock;
 import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
+import dev.aerolarge.block.RocketFinish;
+import dev.aerolarge.block.RocketFloorBlock;
+import dev.aerolarge.block.RocketLinedCoverBlock;
+import dev.aerolarge.block.RocketLiningPanelBlock;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RoverBayBlockEntity;
@@ -1662,6 +1666,19 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<ShellBlock> ZEPPELIN_COVER = BLOCKS.registerBlock(
         "zeppelin_cover", properties -> new ShellBlock(properties, AerolargeRegistry.ZEPPELIN_FABRIC), fabric()
     );
+    /**
+     * The rocket's rooms finished inside (see {@link RocketFinish}): her cover where a room sees it, cut to her curve
+     * or whole, lined on the faces it sees in that room's finish and painted by her livery outside; and her floors,
+     * each finished on top as its room and underneath as the ceiling of the room under it. Placed only when a rocket
+     * is built, so no items; the cover gives back fabric, the floor a cabin floor.
+     */
+    public static final DeferredBlock<RocketLinedCoverBlock> ROCKET_LINED_COVER = BLOCKS.registerBlock(
+        "rocket_lined_cover", properties -> new RocketLinedCoverBlock(properties, AerolargeRegistry.ZEPPELIN_FABRIC), fabric()
+    );
+    public static final DeferredBlock<RocketLiningPanelBlock> ROCKET_LINING_PANEL = BLOCKS.registerBlock(
+        "rocket_lining_panel", RocketLiningPanelBlock::new, fabric()
+    );
+    public static final DeferredBlock<RocketFloorBlock> ROCKET_FLOOR = BLOCKS.registerBlock("rocket_floor", RocketFloorBlock::new, metal(MapColor.COLOR_GRAY));
     public static final DeferredBlock<Block> ZEPPELIN_GIRDER = BLOCKS.registerSimpleBlock("zeppelin_girder", metal(MapColor.COLOR_BLUE).noOcclusion());
     /**
      * A festive zeppelin's wreath on its nose (see {@link ZeppelinOptions#FESTIVE}): evergreen garland dotted with red
