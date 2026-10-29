@@ -192,6 +192,14 @@ texture(blockOutput, "smoked_glass", () => SMOKED_GLASS);
 // Clear hull glass, for the moon pool's view down: nearly clear with a faint sky-blue tint and a glint across it.
 texture(blockOutput, "hull_glass", (x, y) => (x + y >= 9 && x + y <= 10 ? [0xf2, 0xfa, 0xff, 0x70] : [0xc8, 0xe4, 0xf4, 0x30]), 0);
 
+// The rocket's lift glass: smoky, a dark blue-grey that still shows the car inside, a faint glint across it and a
+// darker line round its edge where one pane meets the next.
+texture(blockOutput, "lift_glass", (x, y) => {
+  if (x === 0 || y === 0) return [0x10, 0x14, 0x1a, 0xb0];
+  if (x + y >= 11 && x + y <= 12) return [0x9c, 0xb4, 0xc8, 0x70];
+  return [0x1c, 0x24, 0x30, 0x90];
+}, 0);
+
 // Cabin carpet: a small diamond pattern on grey-blue.
 texture(blockOutput, "cabin_floor", (x, y) => {
   const d = (Math.abs((x % 8) - 4) + Math.abs((y % 8) - 4));
@@ -5209,6 +5217,20 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "halo_light_warm", glow([0xff, 0xf2, 0xd8], [0xff, 0xe0, 0xb0]), 2);
   texture(blockOutput, "halo_light_cool", glow([0xc8, 0xdc, 0xff], [0x96, 0xb4, 0xf0]), 2);
   texture(blockOutput, "halo_light_hub", (x, y) => [0x2c + (y % 3) * 3, 0x2e + (y % 3) * 3, 0x34 + (y % 3) * 3], 2);
+  // The rocket's steel girder: gunmetal, brushed along its length; its flanges' faces riveted down both edges, a darker
+  // seam inside each row of rivets; and its cut ends darker still.
+  const GUNMETAL = [0x4a, 0x50, 0x58];
+  const dimmed = (colour, by) => colour.map((c) => Math.round(Math.max(0, Math.min(255, c * by))));
+  const brushed = (x) => dimmed(GUNMETAL, 1 + 0.05 * Math.sin(x * 2.3) + (x % 5 === 0 ? 0.04 : 0));
+  texture(blockOutput, "steel_girder", (x) => brushed(x), 3);
+  texture(blockOutput, "steel_girder_flange", (x, y) => {
+    const rivet = (x === 2 || x === 13) && y % 4 === 1;
+    if (rivet) return [0x8a, 0x92, 0x9c];
+    if ((x === 2 || x === 13) && y % 4 === 2) return [0x24, 0x28, 0x2e];
+    if (x === 0 || x === 15) return dimmed(GUNMETAL, 0.7);
+    return brushed(x);
+  }, 3);
+  texture(blockOutput, "steel_girder_end", (x, y) => dimmed(GUNMETAL, 0.62 + 0.06 * ((x + y) % 2)), 2);
 }
 // The wall washer's fan of light up the wall (see WallLightBlock): narrow and bright at its foot, over the lamp,
 // widening as it rises and fading out toward the top and its sides.

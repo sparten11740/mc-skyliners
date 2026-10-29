@@ -586,8 +586,9 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * The lift shaft up the middle, from the entry story's floor to the cockpit's: walls of glass round three blocks of
-     * open shaft, the floors cut away inside them, and a doorway in its front wall at every story and the cockpit.
+     * The lift shaft up the middle, from the entry story's floor to the cockpit's: walls of dark lift glass round three
+     * blocks of open shaft, a steel girder up each of its four corners, the floors cut away inside them, and a doorway
+     * in its front wall at every story and the cockpit.
      */
     private void shaft() {
         if (floors.isEmpty()) {
@@ -610,11 +611,17 @@ public final class RocketLayout implements Layout {
         for (int z = -SHAFT; z <= SHAFT; z++) {
             boolean wall = Math.abs(x) == SHAFT || Math.abs(z) == SHAFT;
             if (wall) {
-                set(x, y, z, AerolargeRegistry.HULL_GLASS.get().defaultBlockState());
+                set(x, y, z, shaftWall(x, z));
             } else if (y > floors.getFirst()) {
                 cells.remove(new BlockPos(x, y, z));
             }
         }
+    }
+
+    /** A block of the lift shaft's wall: a steel girder standing up at its corners, lift glass between them. */
+    static BlockState shaftWall(int x, int z) {
+        boolean corner = Math.abs(x) == SHAFT && Math.abs(z) == SHAFT;
+        return corner ? AerolargeRegistry.STEEL_GIRDER.get().defaultBlockState() : AerolargeRegistry.LIFT_GLASS.get().defaultBlockState();
     }
 
     /** The doorway out of the shaft onto a floor, in its front wall: a block wide, two tall. */

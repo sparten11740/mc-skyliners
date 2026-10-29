@@ -355,6 +355,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -1064,6 +1065,17 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.5F).sound(SoundType.WOOD).isValidSpawn(AerolargeRegistry::never)
             .lightLevel(state -> CabinLightBlock.light(state, STARLIGHT_GLOW))
     );
+    /**
+     * The rocket's steel: a gunmetal I-beam of a girder, riveted along its flanges, standing up or lying either way
+     * (up each corner of her lift shaft and under her rooms' ceilings); and the dark, smoky lift glass of her shaft's
+     * walls, tinted so the lift reads as a solid column through her rooms while its car still shows inside.
+     */
+    public static final DeferredBlock<RotatedPillarBlock> STEEL_GIRDER = BLOCKS.registerBlock(
+        "steel_girder", RotatedPillarBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion()
+    );
+    public static final DeferredBlock<TransparentBlock> LIFT_GLASS = BLOCKS.registerBlock("lift_glass", TransparentBlock::new, glass());
+    public static final DeferredItem<BlockItem> STEEL_GIRDER_ITEM = ITEMS.registerSimpleBlockItem(STEEL_GIRDER);
+    public static final DeferredItem<BlockItem> LIFT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LIFT_GLASS);
     public static final DeferredItem<BlockItem> LIGHT_STRIP_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_STRIP);
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
@@ -2368,7 +2380,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             ROBOT_BARTENDER_ITEM, NEBULA_FIZZ, ROCKET_FUEL, ZERO_G_FLOAT, SUPERNOVA_SUNRISE, MOON_MILK,

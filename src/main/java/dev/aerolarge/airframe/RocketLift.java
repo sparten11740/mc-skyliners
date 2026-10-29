@@ -102,29 +102,30 @@ final class RocketLift implements RocketPiece {
     }
 
     /**
-     * The shaft run on up into the cockpit as a booth: glass walls round the car's rows over the cockpit's floor but
-     * for the doorway at the front, and a glass roof over them, the machine in its middle.
+     * The shaft run on up into the cockpit as a booth: walls of the shaft's lift glass, its girders up their corners,
+     * round the car's rows over the cockpit's floor but for the doorway at the front, and a roof of lift glass over
+     * them, the machine in its middle.
      */
     private void booth(int cockpit, int machineRow) {
-        BlockState glass = AerolargeRegistry.HULL_GLASS.get().defaultBlockState();
+        BlockState roof = AerolargeRegistry.LIFT_GLASS.get().defaultBlockState();
         int side = 2 * RocketLayout.SHAFT + 1;
         for (int block = 0; block < side * side; block++) {
             int x = block % side - RocketLayout.SHAFT;
             int z = block / side - RocketLayout.SHAFT;
             boolean wall = Math.abs(x) == RocketLayout.SHAFT || Math.abs(z) == RocketLayout.SHAFT;
-            layout.set(x, machineRow, z, glass);
+            layout.set(x, machineRow, z, roof);
             if (wall) {
-                wallColumn(x, z, cockpit, glass);
+                wallColumn(x, z, cockpit, RocketLayout.shaftWall(x, z));
             }
         }
     }
 
     /** A column of the booth's wall, from the cockpit's floor up to its roof, leaving the doorway at the front open. */
-    private void wallColumn(int x, int z, int cockpit, BlockState glass) {
+    private void wallColumn(int x, int z, int cockpit, BlockState wall) {
         for (int y = cockpit + 1; y <= cockpit + CAR_ROWS; y++) {
             boolean doorway = x == 0 && z == -RocketLayout.SHAFT && y <= cockpit + 2;
             if (!doorway) {
-                layout.set(x, y, z, glass);
+                layout.set(x, y, z, wall);
             }
         }
     }

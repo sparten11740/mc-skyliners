@@ -35,6 +35,7 @@ const cubes = {
   cabin_light: null,
   zeppelin_fabric: null,
   zeppelin_girder: "minecraft:cutout",
+  lift_glass: "minecraft:translucent",
   festive_garland: "minecraft:cutout",
   festive_bow: null,
   zeppelin_catwalk: "minecraft:cutout",
@@ -2281,6 +2282,27 @@ function towerInstrumentsLang() {
   write(`assets/${ID}/models/item/wall_light.json`, { parent: `${ID}:block/wall_light_warm` });
   dropsItself("wall_light");
   cubes.wall_light = null;
+}
+// The rocket's steel girder (see AerolargeRegistry.STEEL_GIRDER): an I-beam, drawn standing up, two broad flanges, riveted
+// along their edges, either side of a narrow web between them; laid along the way it runs, its flanges top and bottom.
+{
+  write(`assets/${ID}/models/block/steel_girder.json`, boxes(
+    { steel: `${ID}:block/steel_girder`, flange: `${ID}:block/steel_girder_flange`, end: `${ID}:block/steel_girder_end`, particle: `${ID}:block/steel_girder` },
+    [
+      [[1, 0, 1], [15, 16, 3], { north: "#flange", up: "#end", down: "#end", all: "#steel" }],
+      [[1, 0, 13], [15, 16, 15], { south: "#flange", up: "#end", down: "#end", all: "#steel" }],
+      [[7, 0, 3], [9, 16, 13], { up: "#end", down: "#end", all: "#steel" }],
+    ],
+  ));
+  write(`assets/${ID}/blockstates/steel_girder.json`, {
+    variants: {
+      "axis=y": { model: `${ID}:block/steel_girder` },
+      "axis=z": { model: `${ID}:block/steel_girder`, x: 90 },
+      "axis=x": { model: `${ID}:block/steel_girder`, x: 90, y: 90 },
+    },
+  });
+  write(`assets/${ID}/models/item/steel_girder.json`, { parent: `${ID}:block/steel_girder` });
+  dropsItself("steel_girder");
 }
 // A block that faces the way it was placed and comes in tones: a model for each tone, turned for each facing.
 function facingWithTones(name, tones) {
@@ -7988,6 +8010,8 @@ shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:i
 shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
 shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
+shaped("steel_girder", ["III", " I ", "III"], { I: "minecraft:iron_ingot" }, 4);
+shaped("lift_glass", ["GGG", "GDG", "GGG"], { G: "minecraft:glass", D: "minecraft:gray_dye" }, 8);
 shaped("wall_light", ["I", "G"], { I: "minecraft:iron_nugget", G: "minecraft:glowstone_dust" }, 2);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
@@ -8334,6 +8358,8 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
   "block.aerolarge.halo_light": "Halo Light",
+  "block.aerolarge.steel_girder": "Steel Girder",
+  "block.aerolarge.lift_glass": "Lift Glass",
   "block.aerolarge.wall_light": "Wall Washer",
   "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.overhead_bin": "Overhead Locker",

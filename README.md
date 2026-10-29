@@ -1823,31 +1823,33 @@ facing you, and operators with `/aerolarge build <pos> <north|east|south|west> r
 Propulsion's creative thrusters, which need no fuel: five bells of them in its flat bottom, their plumes trailing as
 they fire, and two rings of four side jets in its skin, near the nose and near the bottom, that hold it upright. Its
 fins are its legs; between them a crew ladder, the pool's chrome ladder up a column beside the door, climbs to a step in
-front of the doorway. Inside, over an engine room, stories stand one above another round a glass lift shaft up the
-middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the front, but on the
-entry story, where the door is, and on the observation deck, which has a band of glass all round instead), and the
-cockpit sits in the glass of the nose, the autopilot's control head facing the front between two flight displays, two
-pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The windows' glass bulges out
-of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel; it dims electrically: use
-one to darken its glass a step, from clear through light and medium to dark, and once more to clear it again, a chime
-falling as it darkens.
+front of the doorway. Inside, over an engine room, stories stand one above another round a lift shaft of dark, smoky
+glass up the middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the
+front, but on the entry story, where the door is, and on the observation deck, which has a band of glass all round
+instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the front between two
+flight displays, two pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The
+windows' glass bulges out of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel;
+it dims electrically: use one to darken its glass a step, from clear through light and medium to dark, and once more to
+clear it again, a chime falling as it darkens.
 
-A lift rides the glass shaft from the entry story to the cockpit, where the shaft runs on up into a glass booth with the
-lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's `rocket.lift` leaves
-it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture board, its back brushed
-steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at the bottom: each an icon
-on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a sprout, waves, a note, a flask,
-a telescope, and her nose for the cockpit), the board's own floor framed in white and the car's lit. Touch a floor and
-the car comes, its doors slide open with a soft rush, you step in, and after a moment it closes and glides there, easing
-off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two going down, and
-the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an electric piano over a
-plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the Jukebox/Note Blocks
-volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone in the doorway or
-moves with a door open, and no one gets off between floors; while its doors stand open at a floor, sneak to step out of
-it. While she counts down, flies or lands, it stands at a floor with its doors open and takes no rides, and an amber bar
-lies across its boards; in place of her floors they show how high she flies, a little rocket climbing a column of sky in
-the colours of each height, from the sea at its foot to her ceiling, past a dashed line with a star where space begins,
-stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on them).
+A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
+and Lift Glass are in the creative tab beside the Halo Light, and can be crafted), where the shaft runs on up into a
+glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
+`rocket.lift` leaves it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture
+board, its back brushed steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at
+the bottom: each an icon on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a
+sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the board's own floor framed in white and
+the car's lit. Touch a floor and the car comes, its doors slide open with a soft rush, you step in, and after a moment
+it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes
+in going up, two going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa
+nova on an electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes
+in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on
+anyone in the doorway or moves with a door open, and no one gets off between floors; while its doors stand open at a
+floor, sneak to step out of it. While she counts down, flies or lands, it stands at a floor with its doors open and
+takes no rides, and an amber bar lies across its boards; in place of her floors they show how high she flies, a little
+rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
+line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
+keeps her floors on them).
 
 Each room is finished inside its own way, on the walls her cover shows inside, along their foot, on its floor and on its
 ceiling, the floor of the room over it (the server config's `rocket.finishes` leaves her plain cover and grey floors):
