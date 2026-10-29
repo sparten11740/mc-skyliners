@@ -201,7 +201,10 @@ Commits on main, newest last, with the versions handed out.
   aboard (she carried on climbing, held at her height and came back down beside where she rose).
 - alpha.178: the fourth review's fixes to the rooms' sounds (N57). Play-tested in a fresh scale-3 rocket never flown:
   the greenhouse and the pool heard there, the pool's loop starting again after a resource reload (F3+T), the pool and
-  not the greenhouse heard while swimming in it, nothing a few blocks outside her skin at greenhouse height.
+  not the greenhouse heard while swimming in it, nothing a few blocks outside her skin at greenhouse height. Then
+  the lift ridden from her entry story to her cockpit (doors opened from the landing board, walked in, the cockpit
+  picked): the greenhouse's loop beginning as the car rose through it, the pool's two seconds later, the club's track
+  after it, and the up chime and the doors at the cockpit.
 
 ## Background agents
 
