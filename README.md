@@ -2010,10 +2010,10 @@ pling when there is nothing to do and a deep note for wait.
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
 `tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
-rocket's `spaceSky`, `shootingStars` and `aurora`, the space helmet's `helmetBreathing`, and the hot air burners'
-`burnerSmoke`) are there from the title
-screen. The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single
-player; they are kept in `config/aerolarge-server.toml`, on a dedicated server in its own.
+rocket's `spaceSky`, `shootingStars` and `aurora`, her lift's `liftMusic` and `heightGauge`, the space helmet's
+`helmetBreathing`, and the hot air burners' `burnerSmoke`) are there from the title screen. The server settings open
+only while a world is loaded, from the pause menu's Mods button while playing in single player; they are kept in
+`config/aerolarge-server.toml`, on a dedicated server in its own.
 
 Flying over land nobody has been near, the server makes it as it comes into view, a row of chunks each time you cross
 into another one, and while it does, everything aboard can stop for a moment: at a zeppelin's speed, about once a
