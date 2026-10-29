@@ -89,8 +89,8 @@ public class IrrigationValveBlock extends HorizontalDirectionalBlock {
         if (!(level instanceof ServerLevel server)) {
             return InteractionResult.SUCCESS;
         }
-        if (state.getValue(OPEN)) {
-            knock(server, pos);
+        if (state.getValue(OPEN) && server.getBlockTicks().hasScheduledTick(pos, this)) {
+            server.playSound(null, pos, SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS, KNOCK_VOLUME, KNOCK_PITCH);
         } else {
             open(server, pos, state);
         }
@@ -98,14 +98,17 @@ public class IrrigationValveBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * Already open, only a knock on its wheel; and where the spray's end was lost, as when the rocket was assembled
-     * while it sprayed, it turns back at once.
+     * An open valve is looked at now and then, in case its spray's end was lost, as when the rocket was assembled while
+     * it sprayed; turned while it stands open that way, it opens again and its sprinklers spray once more.
      */
-    private void knock(ServerLevel level, BlockPos pos) {
-        level.playSound(null, pos, SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS, KNOCK_VOLUME, KNOCK_PITCH);
-        if (!level.getBlockTicks().hasScheduledTick(pos, this)) {
-            level.scheduleTick(pos, this, 1);
-        }
+    @Override
+    protected boolean isRandomlyTicking(BlockState state) {
+        return state.getValue(OPEN);
+    }
+
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        LostTicks.rearm(level, pos, this, 1);
     }
 
     /** The water on: the wheel turned, and every sprinkler in reach spraying until it turns back. */
