@@ -1084,8 +1084,9 @@ public final class AerolargeRegistry {
     );
     public static final DeferredBlock<TransparentBlock> LIFT_GLASS = BLOCKS.registerBlock("lift_glass", TransparentBlock::new, glass());
     /**
-     * What each of her rooms hangs on the outside of her lift shaft's glass (see {@link ShaftDecorBlock}): thin, so
-     * nothing collides with it, and quick to take down, the fairy lights and the neon glowing.
+     * What each of her rooms hangs on the outside of her lift shaft's glass, or a room's small one on a floor or
+     * under a ceiling (see {@link ShaftDecorBlock}): nothing collides with it, and it is quick to take down, the fairy
+     * lights and the neon glowing.
      */
     public static final DeferredBlock<ShaftDecorBlock> SHAFT_DECOR = BLOCKS.registerBlock(
         "shaft_decor", ShaftDecorBlock::new,

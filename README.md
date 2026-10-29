@@ -2034,7 +2034,13 @@ its corner. They go only where nothing else stands, a poster, the lift's board o
 the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
 to have has none. Shaft Decoration is in the creative tab after the Lift Glass: used on the side of a block, it puts up
 a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
-gives itself back as it was.
+gives itself back as it was. Used on a floor or under a ceiling, a piece becomes its room's own small decoration, whole
+in one block: the departures board as a lit screen on a stand, or hung on two rods with the other destinations on its
+back; the menu as an A-frame sandwich board with a burger chalked on it, or hung on two chains with a bowl of noodles;
+strands of fairy lights hanging from wires under the ceiling; ivy trailing from a terracotta pot or down from the
+ceiling; the life ring on a post; the pink and cyan neon tubes standing on their stands or hung level on wires; and a
+mobile whiteboard on castors. Broken, it still gives back the piece it was. The cargo bay's corner guards and the
+curtains go only on a wall, the fairy lights not on a floor, and the life ring and the whiteboard not under a ceiling.
 
 The lab, her eighth story (the server config's `rocket.lab` leaves it bare, as `rocket.rooms` leaves every room), is
 where her tardigrade lives: a water bear the size of an elephant, about six blocks long and three and a half tall, soft
@@ -2385,7 +2391,7 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
-(`Along`) and its row (`Row`).
+(`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
 from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown and shakes the view aboard as they
 light; `LaunchCallouts` has launch control call her milestones on the same radio, waiting its turn on the flight deck's

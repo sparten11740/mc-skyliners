@@ -6436,6 +6436,39 @@ function shaftDecorTextures() {
       stamp(picture, [".ll.", "lLll", "llll", ".ll."], { l: destination.lamp, L: mix(destination.lamp, W, 0.6) }, 42, top);
     });
     board("entry", picture);
+    // Its small version, a whole board twelve pixels wide and eight tall for a stand or to hang (see the models), its
+    // front in the texture's top half and its back in the bottom half: over each side, the header with a rocket and
+    // the clock, then two rows, each its destination in a few pixels of its own colours, two split flaps in its colour
+    // and its lamp; the Moon and Mars on the front, the ringed planet and the space station on the back.
+    const TINY = [["wg", "gw"], ["wr", "rR"], ["yty", ".t."], ["bwb", "bwb"]];
+    const small = blank(SIZE, SIZE);
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) put(small, x, y, y % 2 === 0 ? PANEL : PANEL_LINE);
+    }
+    for (const side of [0, 1]) {
+      const top = side * 8;
+      for (let x = 0; x < 12; x++) {
+        put(small, x, top, HEADER);
+        put(small, x, top + 1, HEADER);
+        put(small, x, top + 2, RULE);
+        put(small, x, top + 5, mix(RULE, PANEL, 0.5));
+      }
+      stamp(small, [".w.", "wow"], { w: W, o: hex(0xff7a2a) }, 1, top);
+      stamp(small, ["ww", "wa"], { w: W, a: AMBER }, 10, top);
+      for (const x of [5, 7]) put(small, x, top + 1, mix(AMBER, HEADER, 0.45));
+      for (const row of [0, 1]) {
+        const destination = destinations[side * 2 + row];
+        const y = top + 3 + row * 3;
+        stamp(small, TINY[side * 2 + row], destination.palette, 1, y);
+        for (const x of [5, 6, 8, 9]) {
+          put(small, x, y, destination.flap);
+          put(small, x, y + 1, mix(destination.flap, PANEL, 0.6));
+        }
+        put(small, 11, y, mix(destination.lamp, W, 0.5));
+        put(small, 11, y + 1, destination.lamp);
+      }
+    }
+    save(part("entry_small"), small);
   }
 
   // The load chart: a pictogram on white in each block, and a tick in a green ring or a cross in a red one.
@@ -6542,6 +6575,25 @@ function shaftDecorTextures() {
       }
     });
     board("mess", picture);
+    // Its small versions, a dish each and the coins it costs, on slate as dusty as the board's: the sandwich board's,
+    // ten pixels wide and twelve tall, the burger over its three coins; and the hung board's, twelve wide and nine
+    // tall, the noodles and their two coins stacked beside them.
+    const slate = (salt) => {
+      const speck = sequence(salt);
+      const small = blank(SIZE, SIZE);
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) put(small, x, y, speck() < 0.08 ? DUST : SLATE);
+      }
+      return small;
+    };
+    const stand = slate(0x7374616e);
+    stamp(stand, dishes[0].sprite, CHALK, 1, 1);
+    for (let coin = 0; coin < dishes[0].coins; coin++) stamp(stand, ["yy", "yy"], CHALK, 1 + coin * 3, 9);
+    save(part("mess_stand"), stand);
+    const hung = slate(0x68756e67);
+    stamp(hung, dishes[1].sprite, CHALK, 1, 1);
+    for (let coin = 0; coin < dishes[1].coins; coin++) stamp(hung, ["yy", "yy"], CHALK, 10, 2 + coin * 3);
+    save(part("mess_hung"), hung);
   }
 
   // The whiteboard: a molecule, an arrow and a graph in marker, the ghosts of old sums half wiped off round them, and a
@@ -6597,6 +6649,24 @@ function shaftDecorTextures() {
       "nnnnnnn",
     ].map((row) => row.replace(/\./g, "n")), { n: hex(0xffe86a), p: hex(0xf0b896), e: BLACK, l: hex(0xc88a6a) }, 1, 1);
     board("lab", picture);
+    // Its small version, a whole board twelve pixels wide and eight tall for the mobile whiteboard, its front in the
+    // texture's top half: the molecule's ring with its red atom and its blue one, and the graph's curve climbing past
+    // its dashed line; its back, in the bottom half, wiped clean but for the ghosts of old sums.
+    const small = blank(SIZE, SIZE, BOARD);
+    stamp(small, [
+      ".....Rrk...r",
+      "....krrk...r",
+      ".kkk...kggrg",
+      "k...k..k..r.",
+      "k...k..k.r..",
+      ".kkk...kr...",
+      "..k....kkkkk",
+      ".Bb.........",
+    ], { k: BLACK, r: RED, R: hex(0xff9a9a), g: GREEN, b: BLUE, B: hex(0x9abaff) }, 0, 0);
+    for (const [x0, y0, length] of [[1, 9, 5], [7, 11, 4], [2, 13, 6], [8, 14, 3]]) {
+      for (let x = x0; x < x0 + length; x++) put(small, x, y0 + (x % 3 === 0 ? 1 : 0), GHOST);
+    }
+    save(part("lab_small"), small);
   }
 
   // The ivy, in two layers: its stems and the leaves along them behind, and more leaves a pixel out in front of them.

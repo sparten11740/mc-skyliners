@@ -1,3378 +1,3648 @@
 {
   "variants": {
-    "along=outer_left,facing=north,kind=entry,row=bottom": {
+    "along=outer_left,facing=north,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom"
     },
-    "along=outer_left,facing=east,kind=entry,row=bottom": {
+    "along=outer_left,facing=east,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=entry,row=bottom": {
+    "along=outer_left,facing=south,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=entry,row=bottom": {
+    "along=outer_left,facing=west,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=entry,row=lower": {
+    "along=outer_left,facing=north,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom"
     },
-    "along=outer_left,facing=east,kind=entry,row=lower": {
+    "along=outer_left,facing=east,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=entry,row=lower": {
+    "along=outer_left,facing=south,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=entry,row=lower": {
+    "along=outer_left,facing=west,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=entry,row=middle": {
+    "along=outer_left,facing=north,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=outer_left,facing=east,kind=entry,row=middle": {
+    "along=outer_left,facing=east,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=entry,row=middle": {
+    "along=outer_left,facing=south,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=entry,row=middle": {
+    "along=outer_left,facing=west,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=entry,row=upper": {
+    "along=outer_left,facing=north,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=outer_left,facing=east,kind=entry,row=upper": {
+    "along=outer_left,facing=east,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=entry,row=upper": {
+    "along=outer_left,facing=south,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=entry,row=upper": {
+    "along=outer_left,facing=west,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=entry,row=top": {
+    "along=outer_left,facing=north,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=outer_left,facing=east,kind=entry,row=top": {
+    "along=outer_left,facing=east,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=entry,row=top": {
+    "along=outer_left,facing=south,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=entry,row=top": {
+    "along=outer_left,facing=west,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=entry,row=bottom": {
+    "along=left,facing=north,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom"
     },
-    "along=left,facing=east,kind=entry,row=bottom": {
+    "along=left,facing=east,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=entry,row=bottom": {
+    "along=left,facing=south,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=entry,row=bottom": {
+    "along=left,facing=west,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=entry,row=lower": {
+    "along=left,facing=north,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom"
     },
-    "along=left,facing=east,kind=entry,row=lower": {
+    "along=left,facing=east,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=entry,row=lower": {
+    "along=left,facing=south,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=entry,row=lower": {
+    "along=left,facing=west,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=entry,row=middle": {
+    "along=left,facing=north,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=left,facing=east,kind=entry,row=middle": {
+    "along=left,facing=east,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=entry,row=middle": {
+    "along=left,facing=south,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=entry,row=middle": {
+    "along=left,facing=west,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=entry,row=upper": {
+    "along=left,facing=north,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=left,facing=east,kind=entry,row=upper": {
+    "along=left,facing=east,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=entry,row=upper": {
+    "along=left,facing=south,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=entry,row=upper": {
+    "along=left,facing=west,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=entry,row=top": {
+    "along=left,facing=north,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top"
     },
-    "along=left,facing=east,kind=entry,row=top": {
+    "along=left,facing=east,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=entry,row=top": {
+    "along=left,facing=south,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=entry,row=top": {
+    "along=left,facing=west,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_left_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=entry,row=bottom": {
+    "along=middle,facing=north,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom"
     },
-    "along=middle,facing=east,kind=entry,row=bottom": {
+    "along=middle,facing=east,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=entry,row=bottom": {
+    "along=middle,facing=south,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=entry,row=bottom": {
+    "along=middle,facing=west,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=entry,row=lower": {
+    "along=middle,facing=north,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom"
     },
-    "along=middle,facing=east,kind=entry,row=lower": {
+    "along=middle,facing=east,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=entry,row=lower": {
+    "along=middle,facing=south,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=entry,row=lower": {
+    "along=middle,facing=west,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=entry,row=middle": {
+    "along=middle,facing=north,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top"
     },
-    "along=middle,facing=east,kind=entry,row=middle": {
+    "along=middle,facing=east,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=entry,row=middle": {
+    "along=middle,facing=south,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=entry,row=middle": {
+    "along=middle,facing=west,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=entry,row=upper": {
+    "along=middle,facing=north,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top"
     },
-    "along=middle,facing=east,kind=entry,row=upper": {
+    "along=middle,facing=east,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=entry,row=upper": {
+    "along=middle,facing=south,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=entry,row=upper": {
+    "along=middle,facing=west,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=entry,row=top": {
+    "along=middle,facing=north,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top"
     },
-    "along=middle,facing=east,kind=entry,row=top": {
+    "along=middle,facing=east,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=entry,row=top": {
+    "along=middle,facing=south,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=entry,row=top": {
+    "along=middle,facing=west,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_middle_top",
       "y": 270
     },
-    "along=right,facing=north,kind=entry,row=bottom": {
+    "along=right,facing=north,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom"
     },
-    "along=right,facing=east,kind=entry,row=bottom": {
+    "along=right,facing=east,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=entry,row=bottom": {
+    "along=right,facing=south,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=entry,row=bottom": {
+    "along=right,facing=west,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=entry,row=lower": {
+    "along=right,facing=north,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom"
     },
-    "along=right,facing=east,kind=entry,row=lower": {
+    "along=right,facing=east,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=entry,row=lower": {
+    "along=right,facing=south,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=entry,row=lower": {
+    "along=right,facing=west,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=entry,row=middle": {
+    "along=right,facing=north,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=right,facing=east,kind=entry,row=middle": {
+    "along=right,facing=east,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=entry,row=middle": {
+    "along=right,facing=south,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=entry,row=middle": {
+    "along=right,facing=west,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=entry,row=upper": {
+    "along=right,facing=north,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=right,facing=east,kind=entry,row=upper": {
+    "along=right,facing=east,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=entry,row=upper": {
+    "along=right,facing=south,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=entry,row=upper": {
+    "along=right,facing=west,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=entry,row=top": {
+    "along=right,facing=north,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=right,facing=east,kind=entry,row=top": {
+    "along=right,facing=east,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=entry,row=top": {
+    "along=right,facing=south,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=entry,row=top": {
+    "along=right,facing=west,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=entry,row=bottom": {
+    "along=outer_right,facing=north,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom"
     },
-    "along=outer_right,facing=east,kind=entry,row=bottom": {
+    "along=outer_right,facing=east,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=entry,row=bottom": {
+    "along=outer_right,facing=south,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=entry,row=bottom": {
+    "along=outer_right,facing=west,kind=entry,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=entry,row=lower": {
+    "along=outer_right,facing=north,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom"
     },
-    "along=outer_right,facing=east,kind=entry,row=lower": {
+    "along=outer_right,facing=east,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=entry,row=lower": {
+    "along=outer_right,facing=south,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=entry,row=lower": {
+    "along=outer_right,facing=west,kind=entry,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_entry_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=entry,row=middle": {
+    "along=outer_right,facing=north,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=outer_right,facing=east,kind=entry,row=middle": {
+    "along=outer_right,facing=east,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=entry,row=middle": {
+    "along=outer_right,facing=south,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=entry,row=middle": {
+    "along=outer_right,facing=west,kind=entry,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=entry,row=upper": {
+    "along=outer_right,facing=north,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=outer_right,facing=east,kind=entry,row=upper": {
+    "along=outer_right,facing=east,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=entry,row=upper": {
+    "along=outer_right,facing=south,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=entry,row=upper": {
+    "along=outer_right,facing=west,kind=entry,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=entry,row=top": {
+    "along=outer_right,facing=north,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top"
     },
-    "along=outer_right,facing=east,kind=entry,row=top": {
+    "along=outer_right,facing=east,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=entry,row=top": {
+    "along=outer_right,facing=south,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=entry,row=top": {
+    "along=outer_right,facing=west,kind=entry,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_entry_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=cargo,row=bottom": {
+    "along=outer_left,facing=north,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom"
     },
-    "along=outer_left,facing=east,kind=cargo,row=bottom": {
+    "along=outer_left,facing=east,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=cargo,row=bottom": {
+    "along=outer_left,facing=south,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=cargo,row=bottom": {
+    "along=outer_left,facing=west,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=cargo,row=lower": {
+    "along=outer_left,facing=north,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom"
     },
-    "along=outer_left,facing=east,kind=cargo,row=lower": {
+    "along=outer_left,facing=east,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=cargo,row=lower": {
+    "along=outer_left,facing=south,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=cargo,row=lower": {
+    "along=outer_left,facing=west,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=cargo,row=middle": {
+    "along=outer_left,facing=north,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top"
     },
-    "along=outer_left,facing=east,kind=cargo,row=middle": {
+    "along=outer_left,facing=east,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=cargo,row=middle": {
+    "along=outer_left,facing=south,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=cargo,row=middle": {
+    "along=outer_left,facing=west,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=cargo,row=upper": {
+    "along=outer_left,facing=north,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top"
     },
-    "along=outer_left,facing=east,kind=cargo,row=upper": {
+    "along=outer_left,facing=east,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=cargo,row=upper": {
+    "along=outer_left,facing=south,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=cargo,row=upper": {
+    "along=outer_left,facing=west,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=cargo,row=top": {
+    "along=outer_left,facing=north,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top"
     },
-    "along=outer_left,facing=east,kind=cargo,row=top": {
+    "along=outer_left,facing=east,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=cargo,row=top": {
+    "along=outer_left,facing=south,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=cargo,row=top": {
+    "along=outer_left,facing=west,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=cargo,row=bottom": {
+    "along=left,facing=north,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom"
     },
-    "along=left,facing=east,kind=cargo,row=bottom": {
+    "along=left,facing=east,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=cargo,row=bottom": {
+    "along=left,facing=south,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=cargo,row=bottom": {
+    "along=left,facing=west,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=cargo,row=lower": {
+    "along=left,facing=north,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom"
     },
-    "along=left,facing=east,kind=cargo,row=lower": {
+    "along=left,facing=east,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=cargo,row=lower": {
+    "along=left,facing=south,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=cargo,row=lower": {
+    "along=left,facing=west,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=cargo,row=middle": {
+    "along=left,facing=north,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top"
     },
-    "along=left,facing=east,kind=cargo,row=middle": {
+    "along=left,facing=east,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=cargo,row=middle": {
+    "along=left,facing=south,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=cargo,row=middle": {
+    "along=left,facing=west,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=cargo,row=upper": {
+    "along=left,facing=north,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top"
     },
-    "along=left,facing=east,kind=cargo,row=upper": {
+    "along=left,facing=east,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=cargo,row=upper": {
+    "along=left,facing=south,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=cargo,row=upper": {
+    "along=left,facing=west,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=cargo,row=top": {
+    "along=left,facing=north,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top"
     },
-    "along=left,facing=east,kind=cargo,row=top": {
+    "along=left,facing=east,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=cargo,row=top": {
+    "along=left,facing=south,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=cargo,row=top": {
+    "along=left,facing=west,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_left_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=cargo,row=bottom": {
+    "along=middle,facing=north,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom"
     },
-    "along=middle,facing=east,kind=cargo,row=bottom": {
+    "along=middle,facing=east,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=cargo,row=bottom": {
+    "along=middle,facing=south,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=cargo,row=bottom": {
+    "along=middle,facing=west,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=cargo,row=lower": {
+    "along=middle,facing=north,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom"
     },
-    "along=middle,facing=east,kind=cargo,row=lower": {
+    "along=middle,facing=east,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=cargo,row=lower": {
+    "along=middle,facing=south,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=cargo,row=lower": {
+    "along=middle,facing=west,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=cargo,row=middle": {
+    "along=middle,facing=north,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top"
     },
-    "along=middle,facing=east,kind=cargo,row=middle": {
+    "along=middle,facing=east,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=cargo,row=middle": {
+    "along=middle,facing=south,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=cargo,row=middle": {
+    "along=middle,facing=west,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=cargo,row=upper": {
+    "along=middle,facing=north,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top"
     },
-    "along=middle,facing=east,kind=cargo,row=upper": {
+    "along=middle,facing=east,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=cargo,row=upper": {
+    "along=middle,facing=south,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=cargo,row=upper": {
+    "along=middle,facing=west,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=cargo,row=top": {
+    "along=middle,facing=north,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top"
     },
-    "along=middle,facing=east,kind=cargo,row=top": {
+    "along=middle,facing=east,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=cargo,row=top": {
+    "along=middle,facing=south,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=cargo,row=top": {
+    "along=middle,facing=west,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_middle_top",
       "y": 270
     },
-    "along=right,facing=north,kind=cargo,row=bottom": {
+    "along=right,facing=north,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom"
     },
-    "along=right,facing=east,kind=cargo,row=bottom": {
+    "along=right,facing=east,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=cargo,row=bottom": {
+    "along=right,facing=south,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=cargo,row=bottom": {
+    "along=right,facing=west,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=cargo,row=lower": {
+    "along=right,facing=north,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom"
     },
-    "along=right,facing=east,kind=cargo,row=lower": {
+    "along=right,facing=east,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=cargo,row=lower": {
+    "along=right,facing=south,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=cargo,row=lower": {
+    "along=right,facing=west,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=cargo,row=middle": {
+    "along=right,facing=north,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top"
     },
-    "along=right,facing=east,kind=cargo,row=middle": {
+    "along=right,facing=east,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=cargo,row=middle": {
+    "along=right,facing=south,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=cargo,row=middle": {
+    "along=right,facing=west,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=cargo,row=upper": {
+    "along=right,facing=north,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top"
     },
-    "along=right,facing=east,kind=cargo,row=upper": {
+    "along=right,facing=east,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=cargo,row=upper": {
+    "along=right,facing=south,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=cargo,row=upper": {
+    "along=right,facing=west,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=cargo,row=top": {
+    "along=right,facing=north,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top"
     },
-    "along=right,facing=east,kind=cargo,row=top": {
+    "along=right,facing=east,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=cargo,row=top": {
+    "along=right,facing=south,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=cargo,row=top": {
+    "along=right,facing=west,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=cargo,row=bottom": {
+    "along=outer_right,facing=north,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom"
     },
-    "along=outer_right,facing=east,kind=cargo,row=bottom": {
+    "along=outer_right,facing=east,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=cargo,row=bottom": {
+    "along=outer_right,facing=south,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=cargo,row=bottom": {
+    "along=outer_right,facing=west,kind=cargo,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=cargo,row=lower": {
+    "along=outer_right,facing=north,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom"
     },
-    "along=outer_right,facing=east,kind=cargo,row=lower": {
+    "along=outer_right,facing=east,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=cargo,row=lower": {
+    "along=outer_right,facing=south,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=cargo,row=lower": {
+    "along=outer_right,facing=west,kind=cargo,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=cargo,row=middle": {
+    "along=outer_right,facing=north,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top"
     },
-    "along=outer_right,facing=east,kind=cargo,row=middle": {
+    "along=outer_right,facing=east,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=cargo,row=middle": {
+    "along=outer_right,facing=south,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=cargo,row=middle": {
+    "along=outer_right,facing=west,kind=cargo,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=cargo,row=upper": {
+    "along=outer_right,facing=north,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top"
     },
-    "along=outer_right,facing=east,kind=cargo,row=upper": {
+    "along=outer_right,facing=east,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=cargo,row=upper": {
+    "along=outer_right,facing=south,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=cargo,row=upper": {
+    "along=outer_right,facing=west,kind=cargo,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=cargo,row=top": {
+    "along=outer_right,facing=north,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top"
     },
-    "along=outer_right,facing=east,kind=cargo,row=top": {
+    "along=outer_right,facing=east,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=cargo,row=top": {
+    "along=outer_right,facing=south,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=cargo,row=top": {
+    "along=outer_right,facing=west,kind=cargo,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_cargo_guard_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=mess,row=bottom": {
+    "along=outer_left,facing=north,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom"
     },
-    "along=outer_left,facing=east,kind=mess,row=bottom": {
+    "along=outer_left,facing=east,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=mess,row=bottom": {
+    "along=outer_left,facing=south,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=mess,row=bottom": {
+    "along=outer_left,facing=west,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=mess,row=lower": {
+    "along=outer_left,facing=north,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom"
     },
-    "along=outer_left,facing=east,kind=mess,row=lower": {
+    "along=outer_left,facing=east,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=mess,row=lower": {
+    "along=outer_left,facing=south,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=mess,row=lower": {
+    "along=outer_left,facing=west,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=mess,row=middle": {
+    "along=outer_left,facing=north,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=outer_left,facing=east,kind=mess,row=middle": {
+    "along=outer_left,facing=east,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=mess,row=middle": {
+    "along=outer_left,facing=south,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=mess,row=middle": {
+    "along=outer_left,facing=west,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=mess,row=upper": {
+    "along=outer_left,facing=north,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=outer_left,facing=east,kind=mess,row=upper": {
+    "along=outer_left,facing=east,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=mess,row=upper": {
+    "along=outer_left,facing=south,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=mess,row=upper": {
+    "along=outer_left,facing=west,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=mess,row=top": {
+    "along=outer_left,facing=north,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=outer_left,facing=east,kind=mess,row=top": {
+    "along=outer_left,facing=east,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=mess,row=top": {
+    "along=outer_left,facing=south,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=mess,row=top": {
+    "along=outer_left,facing=west,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=mess,row=bottom": {
+    "along=left,facing=north,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom"
     },
-    "along=left,facing=east,kind=mess,row=bottom": {
+    "along=left,facing=east,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=mess,row=bottom": {
+    "along=left,facing=south,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=mess,row=bottom": {
+    "along=left,facing=west,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=mess,row=lower": {
+    "along=left,facing=north,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom"
     },
-    "along=left,facing=east,kind=mess,row=lower": {
+    "along=left,facing=east,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=mess,row=lower": {
+    "along=left,facing=south,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=mess,row=lower": {
+    "along=left,facing=west,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=mess,row=middle": {
+    "along=left,facing=north,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=left,facing=east,kind=mess,row=middle": {
+    "along=left,facing=east,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=mess,row=middle": {
+    "along=left,facing=south,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=mess,row=middle": {
+    "along=left,facing=west,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=mess,row=upper": {
+    "along=left,facing=north,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=left,facing=east,kind=mess,row=upper": {
+    "along=left,facing=east,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=mess,row=upper": {
+    "along=left,facing=south,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=mess,row=upper": {
+    "along=left,facing=west,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=mess,row=top": {
+    "along=left,facing=north,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top"
     },
-    "along=left,facing=east,kind=mess,row=top": {
+    "along=left,facing=east,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=mess,row=top": {
+    "along=left,facing=south,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=mess,row=top": {
+    "along=left,facing=west,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_left_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=mess,row=bottom": {
+    "along=middle,facing=north,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom"
     },
-    "along=middle,facing=east,kind=mess,row=bottom": {
+    "along=middle,facing=east,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=mess,row=bottom": {
+    "along=middle,facing=south,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=mess,row=bottom": {
+    "along=middle,facing=west,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=mess,row=lower": {
+    "along=middle,facing=north,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom"
     },
-    "along=middle,facing=east,kind=mess,row=lower": {
+    "along=middle,facing=east,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=mess,row=lower": {
+    "along=middle,facing=south,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=mess,row=lower": {
+    "along=middle,facing=west,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=mess,row=middle": {
+    "along=middle,facing=north,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top"
     },
-    "along=middle,facing=east,kind=mess,row=middle": {
+    "along=middle,facing=east,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=mess,row=middle": {
+    "along=middle,facing=south,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=mess,row=middle": {
+    "along=middle,facing=west,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=mess,row=upper": {
+    "along=middle,facing=north,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top"
     },
-    "along=middle,facing=east,kind=mess,row=upper": {
+    "along=middle,facing=east,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=mess,row=upper": {
+    "along=middle,facing=south,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=mess,row=upper": {
+    "along=middle,facing=west,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=mess,row=top": {
+    "along=middle,facing=north,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top"
     },
-    "along=middle,facing=east,kind=mess,row=top": {
+    "along=middle,facing=east,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=mess,row=top": {
+    "along=middle,facing=south,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=mess,row=top": {
+    "along=middle,facing=west,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_middle_top",
       "y": 270
     },
-    "along=right,facing=north,kind=mess,row=bottom": {
+    "along=right,facing=north,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom"
     },
-    "along=right,facing=east,kind=mess,row=bottom": {
+    "along=right,facing=east,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=mess,row=bottom": {
+    "along=right,facing=south,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=mess,row=bottom": {
+    "along=right,facing=west,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=mess,row=lower": {
+    "along=right,facing=north,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom"
     },
-    "along=right,facing=east,kind=mess,row=lower": {
+    "along=right,facing=east,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=mess,row=lower": {
+    "along=right,facing=south,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=mess,row=lower": {
+    "along=right,facing=west,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=mess,row=middle": {
+    "along=right,facing=north,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=right,facing=east,kind=mess,row=middle": {
+    "along=right,facing=east,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=mess,row=middle": {
+    "along=right,facing=south,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=mess,row=middle": {
+    "along=right,facing=west,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=mess,row=upper": {
+    "along=right,facing=north,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=right,facing=east,kind=mess,row=upper": {
+    "along=right,facing=east,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=mess,row=upper": {
+    "along=right,facing=south,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=mess,row=upper": {
+    "along=right,facing=west,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=mess,row=top": {
+    "along=right,facing=north,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=right,facing=east,kind=mess,row=top": {
+    "along=right,facing=east,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=mess,row=top": {
+    "along=right,facing=south,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=mess,row=top": {
+    "along=right,facing=west,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=mess,row=bottom": {
+    "along=outer_right,facing=north,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom"
     },
-    "along=outer_right,facing=east,kind=mess,row=bottom": {
+    "along=outer_right,facing=east,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=mess,row=bottom": {
+    "along=outer_right,facing=south,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=mess,row=bottom": {
+    "along=outer_right,facing=west,kind=mess,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=mess,row=lower": {
+    "along=outer_right,facing=north,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom"
     },
-    "along=outer_right,facing=east,kind=mess,row=lower": {
+    "along=outer_right,facing=east,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=mess,row=lower": {
+    "along=outer_right,facing=south,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=mess,row=lower": {
+    "along=outer_right,facing=west,kind=mess,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_mess_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=mess,row=middle": {
+    "along=outer_right,facing=north,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=outer_right,facing=east,kind=mess,row=middle": {
+    "along=outer_right,facing=east,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=mess,row=middle": {
+    "along=outer_right,facing=south,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=mess,row=middle": {
+    "along=outer_right,facing=west,kind=mess,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=mess,row=upper": {
+    "along=outer_right,facing=north,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=outer_right,facing=east,kind=mess,row=upper": {
+    "along=outer_right,facing=east,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=mess,row=upper": {
+    "along=outer_right,facing=south,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=mess,row=upper": {
+    "along=outer_right,facing=west,kind=mess,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=mess,row=top": {
+    "along=outer_right,facing=north,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top"
     },
-    "along=outer_right,facing=east,kind=mess,row=top": {
+    "along=outer_right,facing=east,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=mess,row=top": {
+    "along=outer_right,facing=south,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=mess,row=top": {
+    "along=outer_right,facing=west,kind=mess,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_mess_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=bunks,row=bottom": {
+    "along=outer_left,facing=north,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper"
     },
-    "along=outer_left,facing=east,kind=bunks,row=bottom": {
+    "along=outer_left,facing=east,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=bunks,row=bottom": {
+    "along=outer_left,facing=south,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=bunks,row=bottom": {
+    "along=outer_left,facing=west,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=bunks,row=lower": {
+    "along=outer_left,facing=north,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper"
     },
-    "along=outer_left,facing=east,kind=bunks,row=lower": {
+    "along=outer_left,facing=east,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=bunks,row=lower": {
+    "along=outer_left,facing=south,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=bunks,row=lower": {
+    "along=outer_left,facing=west,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=bunks,row=middle": {
+    "along=outer_left,facing=north,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper"
     },
-    "along=outer_left,facing=east,kind=bunks,row=middle": {
+    "along=outer_left,facing=east,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=bunks,row=middle": {
+    "along=outer_left,facing=south,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=bunks,row=middle": {
+    "along=outer_left,facing=west,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=bunks,row=upper": {
+    "along=outer_left,facing=north,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper"
     },
-    "along=outer_left,facing=east,kind=bunks,row=upper": {
+    "along=outer_left,facing=east,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=bunks,row=upper": {
+    "along=outer_left,facing=south,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=bunks,row=upper": {
+    "along=outer_left,facing=west,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_upper",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=bunks,row=top": {
+    "along=outer_left,facing=north,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_top"
     },
-    "along=outer_left,facing=east,kind=bunks,row=top": {
+    "along=outer_left,facing=east,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=bunks,row=top": {
+    "along=outer_left,facing=south,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=bunks,row=top": {
+    "along=outer_left,facing=west,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=bunks,row=bottom": {
+    "along=left,facing=north,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper"
     },
-    "along=left,facing=east,kind=bunks,row=bottom": {
+    "along=left,facing=east,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 90
     },
-    "along=left,facing=south,kind=bunks,row=bottom": {
+    "along=left,facing=south,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 180
     },
-    "along=left,facing=west,kind=bunks,row=bottom": {
+    "along=left,facing=west,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 270
     },
-    "along=left,facing=north,kind=bunks,row=lower": {
+    "along=left,facing=north,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper"
     },
-    "along=left,facing=east,kind=bunks,row=lower": {
+    "along=left,facing=east,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 90
     },
-    "along=left,facing=south,kind=bunks,row=lower": {
+    "along=left,facing=south,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 180
     },
-    "along=left,facing=west,kind=bunks,row=lower": {
+    "along=left,facing=west,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 270
     },
-    "along=left,facing=north,kind=bunks,row=middle": {
+    "along=left,facing=north,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper"
     },
-    "along=left,facing=east,kind=bunks,row=middle": {
+    "along=left,facing=east,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 90
     },
-    "along=left,facing=south,kind=bunks,row=middle": {
+    "along=left,facing=south,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 180
     },
-    "along=left,facing=west,kind=bunks,row=middle": {
+    "along=left,facing=west,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 270
     },
-    "along=left,facing=north,kind=bunks,row=upper": {
+    "along=left,facing=north,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper"
     },
-    "along=left,facing=east,kind=bunks,row=upper": {
+    "along=left,facing=east,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 90
     },
-    "along=left,facing=south,kind=bunks,row=upper": {
+    "along=left,facing=south,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 180
     },
-    "along=left,facing=west,kind=bunks,row=upper": {
+    "along=left,facing=west,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_left_upper",
       "y": 270
     },
-    "along=left,facing=north,kind=bunks,row=top": {
+    "along=left,facing=north,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_left_top"
     },
-    "along=left,facing=east,kind=bunks,row=top": {
+    "along=left,facing=east,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=bunks,row=top": {
+    "along=left,facing=south,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=bunks,row=top": {
+    "along=left,facing=west,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_left_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=bunks,row=bottom": {
+    "along=middle,facing=north,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper"
     },
-    "along=middle,facing=east,kind=bunks,row=bottom": {
+    "along=middle,facing=east,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 90
     },
-    "along=middle,facing=south,kind=bunks,row=bottom": {
+    "along=middle,facing=south,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 180
     },
-    "along=middle,facing=west,kind=bunks,row=bottom": {
+    "along=middle,facing=west,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 270
     },
-    "along=middle,facing=north,kind=bunks,row=lower": {
+    "along=middle,facing=north,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper"
     },
-    "along=middle,facing=east,kind=bunks,row=lower": {
+    "along=middle,facing=east,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 90
     },
-    "along=middle,facing=south,kind=bunks,row=lower": {
+    "along=middle,facing=south,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 180
     },
-    "along=middle,facing=west,kind=bunks,row=lower": {
+    "along=middle,facing=west,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 270
     },
-    "along=middle,facing=north,kind=bunks,row=middle": {
+    "along=middle,facing=north,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper"
     },
-    "along=middle,facing=east,kind=bunks,row=middle": {
+    "along=middle,facing=east,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 90
     },
-    "along=middle,facing=south,kind=bunks,row=middle": {
+    "along=middle,facing=south,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 180
     },
-    "along=middle,facing=west,kind=bunks,row=middle": {
+    "along=middle,facing=west,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 270
     },
-    "along=middle,facing=north,kind=bunks,row=upper": {
+    "along=middle,facing=north,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper"
     },
-    "along=middle,facing=east,kind=bunks,row=upper": {
+    "along=middle,facing=east,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 90
     },
-    "along=middle,facing=south,kind=bunks,row=upper": {
+    "along=middle,facing=south,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 180
     },
-    "along=middle,facing=west,kind=bunks,row=upper": {
+    "along=middle,facing=west,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
       "y": 270
     },
-    "along=middle,facing=north,kind=bunks,row=top": {
+    "along=middle,facing=north,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_top"
     },
-    "along=middle,facing=east,kind=bunks,row=top": {
+    "along=middle,facing=east,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=bunks,row=top": {
+    "along=middle,facing=south,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=bunks,row=top": {
+    "along=middle,facing=west,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_middle_top",
       "y": 270
     },
-    "along=right,facing=north,kind=bunks,row=bottom": {
+    "along=right,facing=north,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper"
     },
-    "along=right,facing=east,kind=bunks,row=bottom": {
+    "along=right,facing=east,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 90
     },
-    "along=right,facing=south,kind=bunks,row=bottom": {
+    "along=right,facing=south,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 180
     },
-    "along=right,facing=west,kind=bunks,row=bottom": {
+    "along=right,facing=west,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 270
     },
-    "along=right,facing=north,kind=bunks,row=lower": {
+    "along=right,facing=north,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper"
     },
-    "along=right,facing=east,kind=bunks,row=lower": {
+    "along=right,facing=east,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 90
     },
-    "along=right,facing=south,kind=bunks,row=lower": {
+    "along=right,facing=south,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 180
     },
-    "along=right,facing=west,kind=bunks,row=lower": {
+    "along=right,facing=west,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 270
     },
-    "along=right,facing=north,kind=bunks,row=middle": {
+    "along=right,facing=north,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper"
     },
-    "along=right,facing=east,kind=bunks,row=middle": {
+    "along=right,facing=east,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 90
     },
-    "along=right,facing=south,kind=bunks,row=middle": {
+    "along=right,facing=south,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 180
     },
-    "along=right,facing=west,kind=bunks,row=middle": {
+    "along=right,facing=west,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 270
     },
-    "along=right,facing=north,kind=bunks,row=upper": {
+    "along=right,facing=north,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper"
     },
-    "along=right,facing=east,kind=bunks,row=upper": {
+    "along=right,facing=east,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 90
     },
-    "along=right,facing=south,kind=bunks,row=upper": {
+    "along=right,facing=south,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 180
     },
-    "along=right,facing=west,kind=bunks,row=upper": {
+    "along=right,facing=west,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_right_upper",
       "y": 270
     },
-    "along=right,facing=north,kind=bunks,row=top": {
+    "along=right,facing=north,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_right_top"
     },
-    "along=right,facing=east,kind=bunks,row=top": {
+    "along=right,facing=east,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=bunks,row=top": {
+    "along=right,facing=south,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=bunks,row=top": {
+    "along=right,facing=west,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=bunks,row=bottom": {
+    "along=outer_right,facing=north,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper"
     },
-    "along=outer_right,facing=east,kind=bunks,row=bottom": {
+    "along=outer_right,facing=east,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=bunks,row=bottom": {
+    "along=outer_right,facing=south,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=bunks,row=bottom": {
+    "along=outer_right,facing=west,kind=bunks,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=bunks,row=lower": {
+    "along=outer_right,facing=north,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper"
     },
-    "along=outer_right,facing=east,kind=bunks,row=lower": {
+    "along=outer_right,facing=east,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=bunks,row=lower": {
+    "along=outer_right,facing=south,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=bunks,row=lower": {
+    "along=outer_right,facing=west,kind=bunks,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=bunks,row=middle": {
+    "along=outer_right,facing=north,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper"
     },
-    "along=outer_right,facing=east,kind=bunks,row=middle": {
+    "along=outer_right,facing=east,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=bunks,row=middle": {
+    "along=outer_right,facing=south,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=bunks,row=middle": {
+    "along=outer_right,facing=west,kind=bunks,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=bunks,row=upper": {
+    "along=outer_right,facing=north,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper"
     },
-    "along=outer_right,facing=east,kind=bunks,row=upper": {
+    "along=outer_right,facing=east,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=bunks,row=upper": {
+    "along=outer_right,facing=south,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=bunks,row=upper": {
+    "along=outer_right,facing=west,kind=bunks,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_upper",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=bunks,row=top": {
+    "along=outer_right,facing=north,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_top"
     },
-    "along=outer_right,facing=east,kind=bunks,row=top": {
+    "along=outer_right,facing=east,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=bunks,row=top": {
+    "along=outer_right,facing=south,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=bunks,row=top": {
+    "along=outer_right,facing=west,kind=bunks,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_bunks_outer_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=greenhouse,row=bottom": {
+    "along=outer_left,facing=north,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_bottom"
     },
-    "along=outer_left,facing=east,kind=greenhouse,row=bottom": {
+    "along=outer_left,facing=east,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=greenhouse,row=bottom": {
+    "along=outer_left,facing=south,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=greenhouse,row=bottom": {
+    "along=outer_left,facing=west,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=greenhouse,row=lower": {
+    "along=outer_left,facing=north,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle"
     },
-    "along=outer_left,facing=east,kind=greenhouse,row=lower": {
+    "along=outer_left,facing=east,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=greenhouse,row=lower": {
+    "along=outer_left,facing=south,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=greenhouse,row=lower": {
+    "along=outer_left,facing=west,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=greenhouse,row=middle": {
+    "along=outer_left,facing=north,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle"
     },
-    "along=outer_left,facing=east,kind=greenhouse,row=middle": {
+    "along=outer_left,facing=east,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=greenhouse,row=middle": {
+    "along=outer_left,facing=south,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=greenhouse,row=middle": {
+    "along=outer_left,facing=west,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=greenhouse,row=upper": {
+    "along=outer_left,facing=north,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle"
     },
-    "along=outer_left,facing=east,kind=greenhouse,row=upper": {
+    "along=outer_left,facing=east,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=greenhouse,row=upper": {
+    "along=outer_left,facing=south,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=greenhouse,row=upper": {
+    "along=outer_left,facing=west,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=greenhouse,row=top": {
+    "along=outer_left,facing=north,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_top"
     },
-    "along=outer_left,facing=east,kind=greenhouse,row=top": {
+    "along=outer_left,facing=east,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=greenhouse,row=top": {
+    "along=outer_left,facing=south,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=greenhouse,row=top": {
+    "along=outer_left,facing=west,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=greenhouse,row=bottom": {
+    "along=left,facing=north,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left"
     },
-    "along=left,facing=east,kind=greenhouse,row=bottom": {
+    "along=left,facing=east,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 90
     },
-    "along=left,facing=south,kind=greenhouse,row=bottom": {
+    "along=left,facing=south,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 180
     },
-    "along=left,facing=west,kind=greenhouse,row=bottom": {
+    "along=left,facing=west,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 270
     },
-    "along=left,facing=north,kind=greenhouse,row=lower": {
+    "along=left,facing=north,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left"
     },
-    "along=left,facing=east,kind=greenhouse,row=lower": {
+    "along=left,facing=east,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 90
     },
-    "along=left,facing=south,kind=greenhouse,row=lower": {
+    "along=left,facing=south,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 180
     },
-    "along=left,facing=west,kind=greenhouse,row=lower": {
+    "along=left,facing=west,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 270
     },
-    "along=left,facing=north,kind=greenhouse,row=middle": {
+    "along=left,facing=north,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left"
     },
-    "along=left,facing=east,kind=greenhouse,row=middle": {
+    "along=left,facing=east,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 90
     },
-    "along=left,facing=south,kind=greenhouse,row=middle": {
+    "along=left,facing=south,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 180
     },
-    "along=left,facing=west,kind=greenhouse,row=middle": {
+    "along=left,facing=west,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 270
     },
-    "along=left,facing=north,kind=greenhouse,row=upper": {
+    "along=left,facing=north,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left"
     },
-    "along=left,facing=east,kind=greenhouse,row=upper": {
+    "along=left,facing=east,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 90
     },
-    "along=left,facing=south,kind=greenhouse,row=upper": {
+    "along=left,facing=south,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 180
     },
-    "along=left,facing=west,kind=greenhouse,row=upper": {
+    "along=left,facing=west,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_left",
       "y": 270
     },
-    "along=left,facing=north,kind=greenhouse,row=top": {
+    "along=left,facing=north,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_left"
     },
-    "along=left,facing=east,kind=greenhouse,row=top": {
+    "along=left,facing=east,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_left",
       "y": 90
     },
-    "along=left,facing=south,kind=greenhouse,row=top": {
+    "along=left,facing=south,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_left",
       "y": 180
     },
-    "along=left,facing=west,kind=greenhouse,row=top": {
+    "along=left,facing=west,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_left",
       "y": 270
     },
-    "along=middle,facing=north,kind=greenhouse,row=bottom": {
+    "along=middle,facing=north,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle"
     },
-    "along=middle,facing=east,kind=greenhouse,row=bottom": {
+    "along=middle,facing=east,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=greenhouse,row=bottom": {
+    "along=middle,facing=south,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=greenhouse,row=bottom": {
+    "along=middle,facing=west,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=greenhouse,row=lower": {
+    "along=middle,facing=north,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle"
     },
-    "along=middle,facing=east,kind=greenhouse,row=lower": {
+    "along=middle,facing=east,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=greenhouse,row=lower": {
+    "along=middle,facing=south,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=greenhouse,row=lower": {
+    "along=middle,facing=west,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=greenhouse,row=middle": {
+    "along=middle,facing=north,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle"
     },
-    "along=middle,facing=east,kind=greenhouse,row=middle": {
+    "along=middle,facing=east,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=greenhouse,row=middle": {
+    "along=middle,facing=south,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=greenhouse,row=middle": {
+    "along=middle,facing=west,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=greenhouse,row=upper": {
+    "along=middle,facing=north,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle"
     },
-    "along=middle,facing=east,kind=greenhouse,row=upper": {
+    "along=middle,facing=east,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=greenhouse,row=upper": {
+    "along=middle,facing=south,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=greenhouse,row=upper": {
+    "along=middle,facing=west,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=greenhouse,row=top": {
+    "along=middle,facing=north,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_middle"
     },
-    "along=middle,facing=east,kind=greenhouse,row=top": {
+    "along=middle,facing=east,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=greenhouse,row=top": {
+    "along=middle,facing=south,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=greenhouse,row=top": {
+    "along=middle,facing=west,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_middle",
       "y": 270
     },
-    "along=right,facing=north,kind=greenhouse,row=bottom": {
+    "along=right,facing=north,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right"
     },
-    "along=right,facing=east,kind=greenhouse,row=bottom": {
+    "along=right,facing=east,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 90
     },
-    "along=right,facing=south,kind=greenhouse,row=bottom": {
+    "along=right,facing=south,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 180
     },
-    "along=right,facing=west,kind=greenhouse,row=bottom": {
+    "along=right,facing=west,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 270
     },
-    "along=right,facing=north,kind=greenhouse,row=lower": {
+    "along=right,facing=north,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right"
     },
-    "along=right,facing=east,kind=greenhouse,row=lower": {
+    "along=right,facing=east,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 90
     },
-    "along=right,facing=south,kind=greenhouse,row=lower": {
+    "along=right,facing=south,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 180
     },
-    "along=right,facing=west,kind=greenhouse,row=lower": {
+    "along=right,facing=west,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 270
     },
-    "along=right,facing=north,kind=greenhouse,row=middle": {
+    "along=right,facing=north,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right"
     },
-    "along=right,facing=east,kind=greenhouse,row=middle": {
+    "along=right,facing=east,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 90
     },
-    "along=right,facing=south,kind=greenhouse,row=middle": {
+    "along=right,facing=south,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 180
     },
-    "along=right,facing=west,kind=greenhouse,row=middle": {
+    "along=right,facing=west,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 270
     },
-    "along=right,facing=north,kind=greenhouse,row=upper": {
+    "along=right,facing=north,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right"
     },
-    "along=right,facing=east,kind=greenhouse,row=upper": {
+    "along=right,facing=east,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 90
     },
-    "along=right,facing=south,kind=greenhouse,row=upper": {
+    "along=right,facing=south,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 180
     },
-    "along=right,facing=west,kind=greenhouse,row=upper": {
+    "along=right,facing=west,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_trail_right",
       "y": 270
     },
-    "along=right,facing=north,kind=greenhouse,row=top": {
+    "along=right,facing=north,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_right"
     },
-    "along=right,facing=east,kind=greenhouse,row=top": {
+    "along=right,facing=east,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_right",
       "y": 90
     },
-    "along=right,facing=south,kind=greenhouse,row=top": {
+    "along=right,facing=south,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_right",
       "y": 180
     },
-    "along=right,facing=west,kind=greenhouse,row=top": {
+    "along=right,facing=west,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_garland_right",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=greenhouse,row=bottom": {
+    "along=outer_right,facing=north,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_bottom"
     },
-    "along=outer_right,facing=east,kind=greenhouse,row=bottom": {
+    "along=outer_right,facing=east,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=greenhouse,row=bottom": {
+    "along=outer_right,facing=south,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=greenhouse,row=bottom": {
+    "along=outer_right,facing=west,kind=greenhouse,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=greenhouse,row=lower": {
+    "along=outer_right,facing=north,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle"
     },
-    "along=outer_right,facing=east,kind=greenhouse,row=lower": {
+    "along=outer_right,facing=east,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=greenhouse,row=lower": {
+    "along=outer_right,facing=south,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=greenhouse,row=lower": {
+    "along=outer_right,facing=west,kind=greenhouse,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=greenhouse,row=middle": {
+    "along=outer_right,facing=north,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle"
     },
-    "along=outer_right,facing=east,kind=greenhouse,row=middle": {
+    "along=outer_right,facing=east,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=greenhouse,row=middle": {
+    "along=outer_right,facing=south,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=greenhouse,row=middle": {
+    "along=outer_right,facing=west,kind=greenhouse,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=greenhouse,row=upper": {
+    "along=outer_right,facing=north,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle"
     },
-    "along=outer_right,facing=east,kind=greenhouse,row=upper": {
+    "along=outer_right,facing=east,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=greenhouse,row=upper": {
+    "along=outer_right,facing=south,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=greenhouse,row=upper": {
+    "along=outer_right,facing=west,kind=greenhouse,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=greenhouse,row=top": {
+    "along=outer_right,facing=north,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_top"
     },
-    "along=outer_right,facing=east,kind=greenhouse,row=top": {
+    "along=outer_right,facing=east,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=greenhouse,row=top": {
+    "along=outer_right,facing=south,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=greenhouse,row=top": {
+    "along=outer_right,facing=west,kind=greenhouse,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_greenhouse_column_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=pool,row=bottom": {
+    "along=outer_left,facing=north,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_left,facing=east,kind=pool,row=bottom": {
+    "along=outer_left,facing=east,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=pool,row=bottom": {
+    "along=outer_left,facing=south,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=pool,row=bottom": {
+    "along=outer_left,facing=west,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=pool,row=lower": {
+    "along=outer_left,facing=north,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_left,facing=east,kind=pool,row=lower": {
+    "along=outer_left,facing=east,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=pool,row=lower": {
+    "along=outer_left,facing=south,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=pool,row=lower": {
+    "along=outer_left,facing=west,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=pool,row=middle": {
+    "along=outer_left,facing=north,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_left,facing=east,kind=pool,row=middle": {
+    "along=outer_left,facing=east,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=pool,row=middle": {
+    "along=outer_left,facing=south,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=pool,row=middle": {
+    "along=outer_left,facing=west,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=pool,row=upper": {
+    "along=outer_left,facing=north,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_left,facing=east,kind=pool,row=upper": {
+    "along=outer_left,facing=east,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=pool,row=upper": {
+    "along=outer_left,facing=south,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=pool,row=upper": {
+    "along=outer_left,facing=west,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=pool,row=top": {
+    "along=outer_left,facing=north,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_left,facing=east,kind=pool,row=top": {
+    "along=outer_left,facing=east,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=pool,row=top": {
+    "along=outer_left,facing=south,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=pool,row=top": {
+    "along=outer_left,facing=west,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=left,facing=north,kind=pool,row=bottom": {
+    "along=left,facing=north,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=left,facing=east,kind=pool,row=bottom": {
+    "along=left,facing=east,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=left,facing=south,kind=pool,row=bottom": {
+    "along=left,facing=south,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=left,facing=west,kind=pool,row=bottom": {
+    "along=left,facing=west,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=left,facing=north,kind=pool,row=lower": {
+    "along=left,facing=north,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=left,facing=east,kind=pool,row=lower": {
+    "along=left,facing=east,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=left,facing=south,kind=pool,row=lower": {
+    "along=left,facing=south,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=left,facing=west,kind=pool,row=lower": {
+    "along=left,facing=west,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=left,facing=north,kind=pool,row=middle": {
+    "along=left,facing=north,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=left,facing=east,kind=pool,row=middle": {
+    "along=left,facing=east,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=left,facing=south,kind=pool,row=middle": {
+    "along=left,facing=south,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=left,facing=west,kind=pool,row=middle": {
+    "along=left,facing=west,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=left,facing=north,kind=pool,row=upper": {
+    "along=left,facing=north,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=left,facing=east,kind=pool,row=upper": {
+    "along=left,facing=east,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=left,facing=south,kind=pool,row=upper": {
+    "along=left,facing=south,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=left,facing=west,kind=pool,row=upper": {
+    "along=left,facing=west,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=left,facing=north,kind=pool,row=top": {
+    "along=left,facing=north,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=left,facing=east,kind=pool,row=top": {
+    "along=left,facing=east,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=left,facing=south,kind=pool,row=top": {
+    "along=left,facing=south,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=left,facing=west,kind=pool,row=top": {
+    "along=left,facing=west,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=middle,facing=north,kind=pool,row=bottom": {
+    "along=middle,facing=north,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=middle,facing=east,kind=pool,row=bottom": {
+    "along=middle,facing=east,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=middle,facing=south,kind=pool,row=bottom": {
+    "along=middle,facing=south,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=middle,facing=west,kind=pool,row=bottom": {
+    "along=middle,facing=west,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=middle,facing=north,kind=pool,row=lower": {
+    "along=middle,facing=north,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=middle,facing=east,kind=pool,row=lower": {
+    "along=middle,facing=east,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=middle,facing=south,kind=pool,row=lower": {
+    "along=middle,facing=south,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=middle,facing=west,kind=pool,row=lower": {
+    "along=middle,facing=west,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=middle,facing=north,kind=pool,row=middle": {
+    "along=middle,facing=north,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=middle,facing=east,kind=pool,row=middle": {
+    "along=middle,facing=east,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=middle,facing=south,kind=pool,row=middle": {
+    "along=middle,facing=south,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=middle,facing=west,kind=pool,row=middle": {
+    "along=middle,facing=west,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=middle,facing=north,kind=pool,row=upper": {
+    "along=middle,facing=north,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=middle,facing=east,kind=pool,row=upper": {
+    "along=middle,facing=east,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=middle,facing=south,kind=pool,row=upper": {
+    "along=middle,facing=south,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=middle,facing=west,kind=pool,row=upper": {
+    "along=middle,facing=west,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=middle,facing=north,kind=pool,row=top": {
+    "along=middle,facing=north,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=middle,facing=east,kind=pool,row=top": {
+    "along=middle,facing=east,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=middle,facing=south,kind=pool,row=top": {
+    "along=middle,facing=south,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=middle,facing=west,kind=pool,row=top": {
+    "along=middle,facing=west,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=right,facing=north,kind=pool,row=bottom": {
+    "along=right,facing=north,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=right,facing=east,kind=pool,row=bottom": {
+    "along=right,facing=east,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=right,facing=south,kind=pool,row=bottom": {
+    "along=right,facing=south,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=right,facing=west,kind=pool,row=bottom": {
+    "along=right,facing=west,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=right,facing=north,kind=pool,row=lower": {
+    "along=right,facing=north,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=right,facing=east,kind=pool,row=lower": {
+    "along=right,facing=east,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=right,facing=south,kind=pool,row=lower": {
+    "along=right,facing=south,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=right,facing=west,kind=pool,row=lower": {
+    "along=right,facing=west,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=right,facing=north,kind=pool,row=middle": {
+    "along=right,facing=north,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=right,facing=east,kind=pool,row=middle": {
+    "along=right,facing=east,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=right,facing=south,kind=pool,row=middle": {
+    "along=right,facing=south,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=right,facing=west,kind=pool,row=middle": {
+    "along=right,facing=west,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=right,facing=north,kind=pool,row=upper": {
+    "along=right,facing=north,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=right,facing=east,kind=pool,row=upper": {
+    "along=right,facing=east,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=right,facing=south,kind=pool,row=upper": {
+    "along=right,facing=south,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=right,facing=west,kind=pool,row=upper": {
+    "along=right,facing=west,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=right,facing=north,kind=pool,row=top": {
+    "along=right,facing=north,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=right,facing=east,kind=pool,row=top": {
+    "along=right,facing=east,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=right,facing=south,kind=pool,row=top": {
+    "along=right,facing=south,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=right,facing=west,kind=pool,row=top": {
+    "along=right,facing=west,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=pool,row=bottom": {
+    "along=outer_right,facing=north,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_right,facing=east,kind=pool,row=bottom": {
+    "along=outer_right,facing=east,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=pool,row=bottom": {
+    "along=outer_right,facing=south,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=pool,row=bottom": {
+    "along=outer_right,facing=west,kind=pool,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=pool,row=lower": {
+    "along=outer_right,facing=north,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_right,facing=east,kind=pool,row=lower": {
+    "along=outer_right,facing=east,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=pool,row=lower": {
+    "along=outer_right,facing=south,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=pool,row=lower": {
+    "along=outer_right,facing=west,kind=pool,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=pool,row=middle": {
+    "along=outer_right,facing=north,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_right,facing=east,kind=pool,row=middle": {
+    "along=outer_right,facing=east,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=pool,row=middle": {
+    "along=outer_right,facing=south,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=pool,row=middle": {
+    "along=outer_right,facing=west,kind=pool,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=pool,row=upper": {
+    "along=outer_right,facing=north,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_right,facing=east,kind=pool,row=upper": {
+    "along=outer_right,facing=east,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=pool,row=upper": {
+    "along=outer_right,facing=south,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=pool,row=upper": {
+    "along=outer_right,facing=west,kind=pool,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=pool,row=top": {
+    "along=outer_right,facing=north,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring"
     },
-    "along=outer_right,facing=east,kind=pool,row=top": {
+    "along=outer_right,facing=east,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=pool,row=top": {
+    "along=outer_right,facing=south,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=pool,row=top": {
+    "along=outer_right,facing=west,kind=pool,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_pool_ring",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=club,row=bottom": {
+    "along=outer_left,facing=north,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom"
     },
-    "along=outer_left,facing=east,kind=club,row=bottom": {
+    "along=outer_left,facing=east,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=club,row=bottom": {
+    "along=outer_left,facing=south,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=club,row=bottom": {
+    "along=outer_left,facing=west,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=club,row=lower": {
+    "along=outer_left,facing=north,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_left,facing=east,kind=club,row=lower": {
+    "along=outer_left,facing=east,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=club,row=lower": {
+    "along=outer_left,facing=south,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=club,row=lower": {
+    "along=outer_left,facing=west,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=club,row=middle": {
+    "along=outer_left,facing=north,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_left,facing=east,kind=club,row=middle": {
+    "along=outer_left,facing=east,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=club,row=middle": {
+    "along=outer_left,facing=south,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=club,row=middle": {
+    "along=outer_left,facing=west,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=club,row=upper": {
+    "along=outer_left,facing=north,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_left,facing=east,kind=club,row=upper": {
+    "along=outer_left,facing=east,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=club,row=upper": {
+    "along=outer_left,facing=south,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=club,row=upper": {
+    "along=outer_left,facing=west,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=club,row=top": {
+    "along=outer_left,facing=north,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top"
     },
-    "along=outer_left,facing=east,kind=club,row=top": {
+    "along=outer_left,facing=east,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=club,row=top": {
+    "along=outer_left,facing=south,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=club,row=top": {
+    "along=outer_left,facing=west,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 270
     },
-    "along=left,facing=north,kind=club,row=bottom": {
+    "along=left,facing=north,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom"
     },
-    "along=left,facing=east,kind=club,row=bottom": {
+    "along=left,facing=east,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=club,row=bottom": {
+    "along=left,facing=south,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=club,row=bottom": {
+    "along=left,facing=west,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=club,row=lower": {
+    "along=left,facing=north,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=left,facing=east,kind=club,row=lower": {
+    "along=left,facing=east,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=left,facing=south,kind=club,row=lower": {
+    "along=left,facing=south,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=left,facing=west,kind=club,row=lower": {
+    "along=left,facing=west,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=left,facing=north,kind=club,row=middle": {
+    "along=left,facing=north,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=left,facing=east,kind=club,row=middle": {
+    "along=left,facing=east,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=left,facing=south,kind=club,row=middle": {
+    "along=left,facing=south,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=left,facing=west,kind=club,row=middle": {
+    "along=left,facing=west,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=left,facing=north,kind=club,row=upper": {
+    "along=left,facing=north,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=left,facing=east,kind=club,row=upper": {
+    "along=left,facing=east,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=left,facing=south,kind=club,row=upper": {
+    "along=left,facing=south,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=left,facing=west,kind=club,row=upper": {
+    "along=left,facing=west,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=left,facing=north,kind=club,row=top": {
+    "along=left,facing=north,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top"
     },
-    "along=left,facing=east,kind=club,row=top": {
+    "along=left,facing=east,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 90
     },
-    "along=left,facing=south,kind=club,row=top": {
+    "along=left,facing=south,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 180
     },
-    "along=left,facing=west,kind=club,row=top": {
+    "along=left,facing=west,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=club,row=bottom": {
+    "along=middle,facing=north,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom"
     },
-    "along=middle,facing=east,kind=club,row=bottom": {
+    "along=middle,facing=east,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=club,row=bottom": {
+    "along=middle,facing=south,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=club,row=bottom": {
+    "along=middle,facing=west,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=club,row=lower": {
+    "along=middle,facing=north,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=middle,facing=east,kind=club,row=lower": {
+    "along=middle,facing=east,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=club,row=lower": {
+    "along=middle,facing=south,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=club,row=lower": {
+    "along=middle,facing=west,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=club,row=middle": {
+    "along=middle,facing=north,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=middle,facing=east,kind=club,row=middle": {
+    "along=middle,facing=east,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=club,row=middle": {
+    "along=middle,facing=south,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=club,row=middle": {
+    "along=middle,facing=west,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=club,row=upper": {
+    "along=middle,facing=north,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=middle,facing=east,kind=club,row=upper": {
+    "along=middle,facing=east,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=middle,facing=south,kind=club,row=upper": {
+    "along=middle,facing=south,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=middle,facing=west,kind=club,row=upper": {
+    "along=middle,facing=west,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=middle,facing=north,kind=club,row=top": {
+    "along=middle,facing=north,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top"
     },
-    "along=middle,facing=east,kind=club,row=top": {
+    "along=middle,facing=east,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=club,row=top": {
+    "along=middle,facing=south,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=club,row=top": {
+    "along=middle,facing=west,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 270
     },
-    "along=right,facing=north,kind=club,row=bottom": {
+    "along=right,facing=north,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom"
     },
-    "along=right,facing=east,kind=club,row=bottom": {
+    "along=right,facing=east,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=club,row=bottom": {
+    "along=right,facing=south,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=club,row=bottom": {
+    "along=right,facing=west,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_pink_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=club,row=lower": {
+    "along=right,facing=north,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=right,facing=east,kind=club,row=lower": {
+    "along=right,facing=east,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=right,facing=south,kind=club,row=lower": {
+    "along=right,facing=south,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=right,facing=west,kind=club,row=lower": {
+    "along=right,facing=west,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=right,facing=north,kind=club,row=middle": {
+    "along=right,facing=north,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=right,facing=east,kind=club,row=middle": {
+    "along=right,facing=east,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=right,facing=south,kind=club,row=middle": {
+    "along=right,facing=south,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=right,facing=west,kind=club,row=middle": {
+    "along=right,facing=west,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=right,facing=north,kind=club,row=upper": {
+    "along=right,facing=north,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle"
     },
-    "along=right,facing=east,kind=club,row=upper": {
+    "along=right,facing=east,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 90
     },
-    "along=right,facing=south,kind=club,row=upper": {
+    "along=right,facing=south,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 180
     },
-    "along=right,facing=west,kind=club,row=upper": {
+    "along=right,facing=west,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_pink_middle",
       "y": 270
     },
-    "along=right,facing=north,kind=club,row=top": {
+    "along=right,facing=north,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top"
     },
-    "along=right,facing=east,kind=club,row=top": {
+    "along=right,facing=east,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 90
     },
-    "along=right,facing=south,kind=club,row=top": {
+    "along=right,facing=south,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 180
     },
-    "along=right,facing=west,kind=club,row=top": {
+    "along=right,facing=west,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_pink_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=club,row=bottom": {
+    "along=outer_right,facing=north,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom"
     },
-    "along=outer_right,facing=east,kind=club,row=bottom": {
+    "along=outer_right,facing=east,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=club,row=bottom": {
+    "along=outer_right,facing=south,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=club,row=bottom": {
+    "along=outer_right,facing=west,kind=club,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_club_cyan_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=club,row=lower": {
+    "along=outer_right,facing=north,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_right,facing=east,kind=club,row=lower": {
+    "along=outer_right,facing=east,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=club,row=lower": {
+    "along=outer_right,facing=south,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=club,row=lower": {
+    "along=outer_right,facing=west,kind=club,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=club,row=middle": {
+    "along=outer_right,facing=north,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_right,facing=east,kind=club,row=middle": {
+    "along=outer_right,facing=east,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=club,row=middle": {
+    "along=outer_right,facing=south,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=club,row=middle": {
+    "along=outer_right,facing=west,kind=club,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=club,row=upper": {
+    "along=outer_right,facing=north,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle"
     },
-    "along=outer_right,facing=east,kind=club,row=upper": {
+    "along=outer_right,facing=east,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=club,row=upper": {
+    "along=outer_right,facing=south,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=club,row=upper": {
+    "along=outer_right,facing=west,kind=club,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_club_cyan_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=club,row=top": {
+    "along=outer_right,facing=north,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top"
     },
-    "along=outer_right,facing=east,kind=club,row=top": {
+    "along=outer_right,facing=east,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=club,row=top": {
+    "along=outer_right,facing=south,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=club,row=top": {
+    "along=outer_right,facing=west,kind=club,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_club_cyan_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=lab,row=bottom": {
+    "along=outer_left,facing=north,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom"
     },
-    "along=outer_left,facing=east,kind=lab,row=bottom": {
+    "along=outer_left,facing=east,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=lab,row=bottom": {
+    "along=outer_left,facing=south,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=lab,row=bottom": {
+    "along=outer_left,facing=west,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=lab,row=lower": {
+    "along=outer_left,facing=north,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom"
     },
-    "along=outer_left,facing=east,kind=lab,row=lower": {
+    "along=outer_left,facing=east,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=lab,row=lower": {
+    "along=outer_left,facing=south,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=lab,row=lower": {
+    "along=outer_left,facing=west,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=lab,row=middle": {
+    "along=outer_left,facing=north,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=outer_left,facing=east,kind=lab,row=middle": {
+    "along=outer_left,facing=east,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=lab,row=middle": {
+    "along=outer_left,facing=south,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=lab,row=middle": {
+    "along=outer_left,facing=west,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=lab,row=upper": {
+    "along=outer_left,facing=north,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=outer_left,facing=east,kind=lab,row=upper": {
+    "along=outer_left,facing=east,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=lab,row=upper": {
+    "along=outer_left,facing=south,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=lab,row=upper": {
+    "along=outer_left,facing=west,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=lab,row=top": {
+    "along=outer_left,facing=north,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=outer_left,facing=east,kind=lab,row=top": {
+    "along=outer_left,facing=east,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=lab,row=top": {
+    "along=outer_left,facing=south,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=lab,row=top": {
+    "along=outer_left,facing=west,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=lab,row=bottom": {
+    "along=left,facing=north,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom"
     },
-    "along=left,facing=east,kind=lab,row=bottom": {
+    "along=left,facing=east,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=lab,row=bottom": {
+    "along=left,facing=south,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=lab,row=bottom": {
+    "along=left,facing=west,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=lab,row=lower": {
+    "along=left,facing=north,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom"
     },
-    "along=left,facing=east,kind=lab,row=lower": {
+    "along=left,facing=east,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 90
     },
-    "along=left,facing=south,kind=lab,row=lower": {
+    "along=left,facing=south,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 180
     },
-    "along=left,facing=west,kind=lab,row=lower": {
+    "along=left,facing=west,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_left_bottom",
       "y": 270
     },
-    "along=left,facing=north,kind=lab,row=middle": {
+    "along=left,facing=north,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=left,facing=east,kind=lab,row=middle": {
+    "along=left,facing=east,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=lab,row=middle": {
+    "along=left,facing=south,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=lab,row=middle": {
+    "along=left,facing=west,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=lab,row=upper": {
+    "along=left,facing=north,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=left,facing=east,kind=lab,row=upper": {
+    "along=left,facing=east,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=lab,row=upper": {
+    "along=left,facing=south,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=lab,row=upper": {
+    "along=left,facing=west,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=lab,row=top": {
+    "along=left,facing=north,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top"
     },
-    "along=left,facing=east,kind=lab,row=top": {
+    "along=left,facing=east,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 90
     },
-    "along=left,facing=south,kind=lab,row=top": {
+    "along=left,facing=south,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 180
     },
-    "along=left,facing=west,kind=lab,row=top": {
+    "along=left,facing=west,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_left_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=lab,row=bottom": {
+    "along=middle,facing=north,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom"
     },
-    "along=middle,facing=east,kind=lab,row=bottom": {
+    "along=middle,facing=east,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=lab,row=bottom": {
+    "along=middle,facing=south,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=lab,row=bottom": {
+    "along=middle,facing=west,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=lab,row=lower": {
+    "along=middle,facing=north,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom"
     },
-    "along=middle,facing=east,kind=lab,row=lower": {
+    "along=middle,facing=east,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 90
     },
-    "along=middle,facing=south,kind=lab,row=lower": {
+    "along=middle,facing=south,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 180
     },
-    "along=middle,facing=west,kind=lab,row=lower": {
+    "along=middle,facing=west,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_middle_bottom",
       "y": 270
     },
-    "along=middle,facing=north,kind=lab,row=middle": {
+    "along=middle,facing=north,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top"
     },
-    "along=middle,facing=east,kind=lab,row=middle": {
+    "along=middle,facing=east,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=lab,row=middle": {
+    "along=middle,facing=south,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=lab,row=middle": {
+    "along=middle,facing=west,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=lab,row=upper": {
+    "along=middle,facing=north,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top"
     },
-    "along=middle,facing=east,kind=lab,row=upper": {
+    "along=middle,facing=east,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=lab,row=upper": {
+    "along=middle,facing=south,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=lab,row=upper": {
+    "along=middle,facing=west,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 270
     },
-    "along=middle,facing=north,kind=lab,row=top": {
+    "along=middle,facing=north,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top"
     },
-    "along=middle,facing=east,kind=lab,row=top": {
+    "along=middle,facing=east,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 90
     },
-    "along=middle,facing=south,kind=lab,row=top": {
+    "along=middle,facing=south,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 180
     },
-    "along=middle,facing=west,kind=lab,row=top": {
+    "along=middle,facing=west,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_middle_top",
       "y": 270
     },
-    "along=right,facing=north,kind=lab,row=bottom": {
+    "along=right,facing=north,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom"
     },
-    "along=right,facing=east,kind=lab,row=bottom": {
+    "along=right,facing=east,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=lab,row=bottom": {
+    "along=right,facing=south,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=lab,row=bottom": {
+    "along=right,facing=west,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=lab,row=lower": {
+    "along=right,facing=north,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom"
     },
-    "along=right,facing=east,kind=lab,row=lower": {
+    "along=right,facing=east,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 90
     },
-    "along=right,facing=south,kind=lab,row=lower": {
+    "along=right,facing=south,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 180
     },
-    "along=right,facing=west,kind=lab,row=lower": {
+    "along=right,facing=west,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 270
     },
-    "along=right,facing=north,kind=lab,row=middle": {
+    "along=right,facing=north,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=right,facing=east,kind=lab,row=middle": {
+    "along=right,facing=east,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=lab,row=middle": {
+    "along=right,facing=south,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=lab,row=middle": {
+    "along=right,facing=west,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=lab,row=upper": {
+    "along=right,facing=north,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=right,facing=east,kind=lab,row=upper": {
+    "along=right,facing=east,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=lab,row=upper": {
+    "along=right,facing=south,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=lab,row=upper": {
+    "along=right,facing=west,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=right,facing=north,kind=lab,row=top": {
+    "along=right,facing=north,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=right,facing=east,kind=lab,row=top": {
+    "along=right,facing=east,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=right,facing=south,kind=lab,row=top": {
+    "along=right,facing=south,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=right,facing=west,kind=lab,row=top": {
+    "along=right,facing=west,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=lab,row=bottom": {
+    "along=outer_right,facing=north,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom"
     },
-    "along=outer_right,facing=east,kind=lab,row=bottom": {
+    "along=outer_right,facing=east,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=lab,row=bottom": {
+    "along=outer_right,facing=south,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=lab,row=bottom": {
+    "along=outer_right,facing=west,kind=lab,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=lab,row=lower": {
+    "along=outer_right,facing=north,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom"
     },
-    "along=outer_right,facing=east,kind=lab,row=lower": {
+    "along=outer_right,facing=east,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=lab,row=lower": {
+    "along=outer_right,facing=south,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=lab,row=lower": {
+    "along=outer_right,facing=west,kind=lab,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_lab_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=lab,row=middle": {
+    "along=outer_right,facing=north,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=outer_right,facing=east,kind=lab,row=middle": {
+    "along=outer_right,facing=east,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=lab,row=middle": {
+    "along=outer_right,facing=south,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=lab,row=middle": {
+    "along=outer_right,facing=west,kind=lab,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=lab,row=upper": {
+    "along=outer_right,facing=north,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=outer_right,facing=east,kind=lab,row=upper": {
+    "along=outer_right,facing=east,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=lab,row=upper": {
+    "along=outer_right,facing=south,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=lab,row=upper": {
+    "along=outer_right,facing=west,kind=lab,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=lab,row=top": {
+    "along=outer_right,facing=north,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top"
     },
-    "along=outer_right,facing=east,kind=lab,row=top": {
+    "along=outer_right,facing=east,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=lab,row=top": {
+    "along=outer_right,facing=south,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=lab,row=top": {
+    "along=outer_right,facing=west,kind=lab,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_lab_right_top",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=observation,row=bottom": {
+    "along=outer_left,facing=north,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_left_bottom"
     },
-    "along=outer_left,facing=east,kind=observation,row=bottom": {
+    "along=outer_left,facing=east,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_left_bottom",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=observation,row=bottom": {
+    "along=outer_left,facing=south,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_left_bottom",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=observation,row=bottom": {
+    "along=outer_left,facing=west,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_left_bottom",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=observation,row=lower": {
+    "along=outer_left,facing=north,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_left_lower"
     },
-    "along=outer_left,facing=east,kind=observation,row=lower": {
+    "along=outer_left,facing=east,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_left_lower",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=observation,row=lower": {
+    "along=outer_left,facing=south,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_left_lower",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=observation,row=lower": {
+    "along=outer_left,facing=west,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_left_lower",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=observation,row=middle": {
+    "along=outer_left,facing=north,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_left_middle"
     },
-    "along=outer_left,facing=east,kind=observation,row=middle": {
+    "along=outer_left,facing=east,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_left_middle",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=observation,row=middle": {
+    "along=outer_left,facing=south,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_left_middle",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=observation,row=middle": {
+    "along=outer_left,facing=west,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_left_middle",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=observation,row=upper": {
+    "along=outer_left,facing=north,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_left_upper"
     },
-    "along=outer_left,facing=east,kind=observation,row=upper": {
+    "along=outer_left,facing=east,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_left_upper",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=observation,row=upper": {
+    "along=outer_left,facing=south,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_left_upper",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=observation,row=upper": {
+    "along=outer_left,facing=west,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_left_upper",
       "y": 270
     },
-    "along=outer_left,facing=north,kind=observation,row=top": {
+    "along=outer_left,facing=north,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_left_top"
     },
-    "along=outer_left,facing=east,kind=observation,row=top": {
+    "along=outer_left,facing=east,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_left_top",
       "y": 90
     },
-    "along=outer_left,facing=south,kind=observation,row=top": {
+    "along=outer_left,facing=south,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_left_top",
       "y": 180
     },
-    "along=outer_left,facing=west,kind=observation,row=top": {
+    "along=outer_left,facing=west,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_left_top",
       "y": 270
     },
-    "along=left,facing=north,kind=observation,row=bottom": {
+    "along=left,facing=north,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=left,facing=east,kind=observation,row=bottom": {
+    "along=left,facing=east,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=left,facing=south,kind=observation,row=bottom": {
+    "along=left,facing=south,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=left,facing=west,kind=observation,row=bottom": {
+    "along=left,facing=west,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=left,facing=north,kind=observation,row=lower": {
+    "along=left,facing=north,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=left,facing=east,kind=observation,row=lower": {
+    "along=left,facing=east,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=left,facing=south,kind=observation,row=lower": {
+    "along=left,facing=south,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=left,facing=west,kind=observation,row=lower": {
+    "along=left,facing=west,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=left,facing=north,kind=observation,row=middle": {
+    "along=left,facing=north,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=left,facing=east,kind=observation,row=middle": {
+    "along=left,facing=east,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=left,facing=south,kind=observation,row=middle": {
+    "along=left,facing=south,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=left,facing=west,kind=observation,row=middle": {
+    "along=left,facing=west,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=left,facing=north,kind=observation,row=upper": {
+    "along=left,facing=north,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=left,facing=east,kind=observation,row=upper": {
+    "along=left,facing=east,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=left,facing=south,kind=observation,row=upper": {
+    "along=left,facing=south,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=left,facing=west,kind=observation,row=upper": {
+    "along=left,facing=west,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=left,facing=north,kind=observation,row=top": {
+    "along=left,facing=north,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=left,facing=east,kind=observation,row=top": {
+    "along=left,facing=east,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=left,facing=south,kind=observation,row=top": {
+    "along=left,facing=south,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=left,facing=west,kind=observation,row=top": {
+    "along=left,facing=west,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=middle,facing=north,kind=observation,row=bottom": {
+    "along=middle,facing=north,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=middle,facing=east,kind=observation,row=bottom": {
+    "along=middle,facing=east,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=middle,facing=south,kind=observation,row=bottom": {
+    "along=middle,facing=south,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=middle,facing=west,kind=observation,row=bottom": {
+    "along=middle,facing=west,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=middle,facing=north,kind=observation,row=lower": {
+    "along=middle,facing=north,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=middle,facing=east,kind=observation,row=lower": {
+    "along=middle,facing=east,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=middle,facing=south,kind=observation,row=lower": {
+    "along=middle,facing=south,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=middle,facing=west,kind=observation,row=lower": {
+    "along=middle,facing=west,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=middle,facing=north,kind=observation,row=middle": {
+    "along=middle,facing=north,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=middle,facing=east,kind=observation,row=middle": {
+    "along=middle,facing=east,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=middle,facing=south,kind=observation,row=middle": {
+    "along=middle,facing=south,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=middle,facing=west,kind=observation,row=middle": {
+    "along=middle,facing=west,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=middle,facing=north,kind=observation,row=upper": {
+    "along=middle,facing=north,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=middle,facing=east,kind=observation,row=upper": {
+    "along=middle,facing=east,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=middle,facing=south,kind=observation,row=upper": {
+    "along=middle,facing=south,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=middle,facing=west,kind=observation,row=upper": {
+    "along=middle,facing=west,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=middle,facing=north,kind=observation,row=top": {
+    "along=middle,facing=north,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=middle,facing=east,kind=observation,row=top": {
+    "along=middle,facing=east,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=middle,facing=south,kind=observation,row=top": {
+    "along=middle,facing=south,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=middle,facing=west,kind=observation,row=top": {
+    "along=middle,facing=west,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=right,facing=north,kind=observation,row=bottom": {
+    "along=right,facing=north,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=right,facing=east,kind=observation,row=bottom": {
+    "along=right,facing=east,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=right,facing=south,kind=observation,row=bottom": {
+    "along=right,facing=south,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=right,facing=west,kind=observation,row=bottom": {
+    "along=right,facing=west,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=right,facing=north,kind=observation,row=lower": {
+    "along=right,facing=north,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=right,facing=east,kind=observation,row=lower": {
+    "along=right,facing=east,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=right,facing=south,kind=observation,row=lower": {
+    "along=right,facing=south,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=right,facing=west,kind=observation,row=lower": {
+    "along=right,facing=west,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=right,facing=north,kind=observation,row=middle": {
+    "along=right,facing=north,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=right,facing=east,kind=observation,row=middle": {
+    "along=right,facing=east,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=right,facing=south,kind=observation,row=middle": {
+    "along=right,facing=south,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=right,facing=west,kind=observation,row=middle": {
+    "along=right,facing=west,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=right,facing=north,kind=observation,row=upper": {
+    "along=right,facing=north,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=right,facing=east,kind=observation,row=upper": {
+    "along=right,facing=east,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=right,facing=south,kind=observation,row=upper": {
+    "along=right,facing=south,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=right,facing=west,kind=observation,row=upper": {
+    "along=right,facing=west,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=right,facing=north,kind=observation,row=top": {
+    "along=right,facing=north,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag"
     },
-    "along=right,facing=east,kind=observation,row=top": {
+    "along=right,facing=east,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 90
     },
-    "along=right,facing=south,kind=observation,row=top": {
+    "along=right,facing=south,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 180
     },
-    "along=right,facing=west,kind=observation,row=top": {
+    "along=right,facing=west,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=observation,row=bottom": {
+    "along=outer_right,facing=north,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_right_bottom"
     },
-    "along=outer_right,facing=east,kind=observation,row=bottom": {
+    "along=outer_right,facing=east,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_right_bottom",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=observation,row=bottom": {
+    "along=outer_right,facing=south,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_right_bottom",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=observation,row=bottom": {
+    "along=outer_right,facing=west,kind=observation,mount=wall,row=bottom": {
       "model": "aerolarge:block/shaft_decor_observation_right_bottom",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=observation,row=lower": {
+    "along=outer_right,facing=north,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_right_lower"
     },
-    "along=outer_right,facing=east,kind=observation,row=lower": {
+    "along=outer_right,facing=east,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_right_lower",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=observation,row=lower": {
+    "along=outer_right,facing=south,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_right_lower",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=observation,row=lower": {
+    "along=outer_right,facing=west,kind=observation,mount=wall,row=lower": {
       "model": "aerolarge:block/shaft_decor_observation_right_lower",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=observation,row=middle": {
+    "along=outer_right,facing=north,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_right_middle"
     },
-    "along=outer_right,facing=east,kind=observation,row=middle": {
+    "along=outer_right,facing=east,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_right_middle",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=observation,row=middle": {
+    "along=outer_right,facing=south,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_right_middle",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=observation,row=middle": {
+    "along=outer_right,facing=west,kind=observation,mount=wall,row=middle": {
       "model": "aerolarge:block/shaft_decor_observation_right_middle",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=observation,row=upper": {
+    "along=outer_right,facing=north,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_right_upper"
     },
-    "along=outer_right,facing=east,kind=observation,row=upper": {
+    "along=outer_right,facing=east,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_right_upper",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=observation,row=upper": {
+    "along=outer_right,facing=south,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_right_upper",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=observation,row=upper": {
+    "along=outer_right,facing=west,kind=observation,mount=wall,row=upper": {
       "model": "aerolarge:block/shaft_decor_observation_right_upper",
       "y": 270
     },
-    "along=outer_right,facing=north,kind=observation,row=top": {
+    "along=outer_right,facing=north,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_right_top"
     },
-    "along=outer_right,facing=east,kind=observation,row=top": {
+    "along=outer_right,facing=east,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_right_top",
       "y": 90
     },
-    "along=outer_right,facing=south,kind=observation,row=top": {
+    "along=outer_right,facing=south,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_right_top",
       "y": 180
     },
-    "along=outer_right,facing=west,kind=observation,row=top": {
+    "along=outer_right,facing=west,kind=observation,mount=wall,row=top": {
       "model": "aerolarge:block/shaft_decor_observation_right_top",
+      "y": 270
+    },
+    "facing=north,kind=entry,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_entry_floor"
+    },
+    "facing=east,kind=entry,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_entry_floor",
+      "y": 90
+    },
+    "facing=south,kind=entry,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_entry_floor",
+      "y": 180
+    },
+    "facing=west,kind=entry,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_entry_floor",
+      "y": 270
+    },
+    "facing=north,kind=cargo,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top"
+    },
+    "facing=east,kind=cargo,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 90
+    },
+    "facing=south,kind=cargo,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 180
+    },
+    "facing=west,kind=cargo,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 270
+    },
+    "facing=north,kind=mess,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_mess_floor"
+    },
+    "facing=east,kind=mess,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_mess_floor",
+      "y": 90
+    },
+    "facing=south,kind=mess,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_mess_floor",
+      "y": 180
+    },
+    "facing=west,kind=mess,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_mess_floor",
+      "y": 270
+    },
+    "facing=north,kind=bunks,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_bunks_middle_upper"
+    },
+    "facing=east,kind=bunks,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
+      "y": 90
+    },
+    "facing=south,kind=bunks,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
+      "y": 180
+    },
+    "facing=west,kind=bunks,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_bunks_middle_upper",
+      "y": 270
+    },
+    "facing=north,kind=greenhouse,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_floor"
+    },
+    "facing=east,kind=greenhouse,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_floor",
+      "y": 90
+    },
+    "facing=south,kind=greenhouse,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_floor",
+      "y": 180
+    },
+    "facing=west,kind=greenhouse,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_floor",
+      "y": 270
+    },
+    "facing=north,kind=pool,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_pool_floor"
+    },
+    "facing=east,kind=pool,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_pool_floor",
+      "y": 90
+    },
+    "facing=south,kind=pool,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_pool_floor",
+      "y": 180
+    },
+    "facing=west,kind=pool,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_pool_floor",
+      "y": 270
+    },
+    "facing=north,kind=club,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_club_floor"
+    },
+    "facing=east,kind=club,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_club_floor",
+      "y": 90
+    },
+    "facing=south,kind=club,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_club_floor",
+      "y": 180
+    },
+    "facing=west,kind=club,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_club_floor",
+      "y": 270
+    },
+    "facing=north,kind=lab,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_lab_floor"
+    },
+    "facing=east,kind=lab,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_lab_floor",
+      "y": 90
+    },
+    "facing=south,kind=lab,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_lab_floor",
+      "y": 180
+    },
+    "facing=west,kind=lab,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_lab_floor",
+      "y": 270
+    },
+    "facing=north,kind=observation,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_observation_swag"
+    },
+    "facing=east,kind=observation,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
+      "y": 90
+    },
+    "facing=south,kind=observation,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
+      "y": 180
+    },
+    "facing=west,kind=observation,mount=floor": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
+      "y": 270
+    },
+    "facing=north,kind=entry,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_entry_ceiling"
+    },
+    "facing=east,kind=entry,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_entry_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=entry,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_entry_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=entry,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_entry_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=cargo,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top"
+    },
+    "facing=east,kind=cargo,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 90
+    },
+    "facing=south,kind=cargo,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 180
+    },
+    "facing=west,kind=cargo,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_cargo_middle_top",
+      "y": 270
+    },
+    "facing=north,kind=mess,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_mess_ceiling"
+    },
+    "facing=east,kind=mess,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_mess_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=mess,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_mess_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=mess,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_mess_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=bunks,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_bunks_ceiling"
+    },
+    "facing=east,kind=bunks,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_bunks_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=bunks,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_bunks_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=bunks,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_bunks_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=greenhouse,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_ceiling"
+    },
+    "facing=east,kind=greenhouse,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=greenhouse,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=greenhouse,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_greenhouse_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=pool,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_pool_ring"
+    },
+    "facing=east,kind=pool,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_pool_ring",
+      "y": 90
+    },
+    "facing=south,kind=pool,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_pool_ring",
+      "y": 180
+    },
+    "facing=west,kind=pool,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_pool_ring",
+      "y": 270
+    },
+    "facing=north,kind=club,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_club_ceiling"
+    },
+    "facing=east,kind=club,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_club_ceiling",
+      "y": 90
+    },
+    "facing=south,kind=club,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_club_ceiling",
+      "y": 180
+    },
+    "facing=west,kind=club,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_club_ceiling",
+      "y": 270
+    },
+    "facing=north,kind=lab,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_lab_middle_top"
+    },
+    "facing=east,kind=lab,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_lab_middle_top",
+      "y": 90
+    },
+    "facing=south,kind=lab,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_lab_middle_top",
+      "y": 180
+    },
+    "facing=west,kind=lab,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_lab_middle_top",
+      "y": 270
+    },
+    "facing=north,kind=observation,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_observation_swag"
+    },
+    "facing=east,kind=observation,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
+      "y": 90
+    },
+    "facing=south,kind=observation,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
+      "y": 180
+    },
+    "facing=west,kind=observation,mount=ceiling": {
+      "model": "aerolarge:block/shaft_decor_observation_swag",
       "y": 270
     }
   }
