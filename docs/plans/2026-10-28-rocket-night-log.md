@@ -4,6 +4,31 @@ Jan asked at about 22:55 for the work to go on until 6:00. It should explore ide
 separable work to background agents, take decisions with a panel, and track each decision here for review. The plan is
 `2026-10-28-rocket.md`; this log holds what was decided and done on the night, and why.
 
+## In short
+
+What the rocket has now that she did not have at 22:55, each with its server or client config switch:
+
+- **A real lift** up her glass shaft: a car you ride, sliding doors, picture boards with each floor's icon, chimes,
+  a motor hum and soft bossa nova while it rides; parked open in flight, its boards then showing how high she flies.
+- **Furnished stories**: entry (parachute racks, lockers), cargo bay (baggage containers, crates, and the rover),
+  galley and mess, bunk room, greenhouse (trees, beds, glow berries), a swimming pool with a glass bottom over the
+  greenhouse, a techno club, the lab with its elephant-sized tardigrade, and an observation deck with a band of smoked
+  glass all round and a starlight ceiling; two pilot seats in the cockpit.
+- **LED strips** on every story, set from a panel by each lift door or for all stories from the cockpit's console.
+- **Space posters** on the shaft (Earthrise, the solar system, a black hole, a quasar), also placeable by hand.
+- **Space**: she climbs to y 1,400; the sky turns to space from y 400 (stars, a planet with its glowing rim, shooting
+  stars, an aurora by night); "Welcome to space" at y 1,000 and an Edge of Space advancement; low gravity up there
+  (off by default, `rocket.lowGravity`).
+- **Sound and look of her flight**: launch control counting her down over the radio, her engines' roar, ignition,
+  cut-off and touchdown; smoke billowing over the ground at lift-off and landing, flames streaming up her sides as she
+  falls back from space.
+- **The rover**: lowered from her cargo bay on a boom and winch, driven by remote from a chase camera, called home,
+  and the countdown waits for it.
+- **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
+  over the spot, the lift music restarting every tick aboard, and the code review's findings.
+
+The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
+
 ## How decisions are taken
 
 A panel of three agents gives its view on the open design questions: a game designer for young children, a
