@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "textures": {
     "screen": "aerolarge:block/passenger_screen_casing",
-    "casing": "aerolarge:block/passenger_screen_casing",
-    "particle": "aerolarge:block/passenger_screen_casing"
+    "casing": "aerolarge:block/rocket_panel_back",
+    "particle": "aerolarge:block/rocket_panel_back"
   },
   "elements": [
     {

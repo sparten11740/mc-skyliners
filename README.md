@@ -1831,21 +1831,21 @@ one to darken its glass a step, from clear through light and medium to dark, and
 falling as it darkens.
 
 A lift rides the glass shaft from the entry story to the cockpit, where the shaft runs on up into a glass booth with the
-lift's machine on its roof (the server config's `rocket.lift` leaves it out). By each landing's sliding doors, and on
-the shaft's back wall inside the car, a picture board lists her floors as she stands, the lowest at the bottom: each an
-icon on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a sprout, waves, a note, a
-flask, a telescope, and her nose for the cockpit), the board's own floor framed in white and the car's lit. Touch a
-floor and the car comes, its doors slide open with a soft rush, you step in, and after a moment it closes and glides
-there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two
-going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an
-electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the
-Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone in
-the doorway or moves with a door open, and no one gets off between floors; while its doors stand open at a floor, sneak
-to step out of it. While she counts down, flies or lands, it stands at a floor with its doors open and takes no rides,
-and an amber bar lies across its boards; in place of her floors they show how high she flies, a little rocket climbing a
-column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed line with a star
-where space begins, stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on
-them).
+lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's `rocket.lift` leaves
+it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture board, its back brushed
+steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at the bottom: each an icon
+on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a sprout, waves, a note, a flask,
+a telescope, and her nose for the cockpit), the board's own floor framed in white and the car's lit. Touch a floor and
+the car comes, its doors slide open with a soft rush, you step in, and after a moment it closes and glides there, easing
+off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two going down, and
+the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an electric piano over a
+plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the Jukebox/Note Blocks
+volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone in the doorway or
+moves with a door open, and no one gets off between floors; while its doors stand open at a floor, sneak to step out of
+it. While she counts down, flies or lands, it stands at a floor with its doors open and takes no rides, and an amber bar
+lies across its boards; in place of her floors they show how high she flies, a little rocket climbing a column of sky in
+the colours of each height, from the sea at its foot to her ceiling, past a dashed line with a star where space begins,
+stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on them).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the

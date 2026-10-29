@@ -4205,12 +4205,20 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const STEEL_LIGHT = [0x9a, 0xa3, 0xad];
   const STEEL_DARK = [0x2a, 0x2e, 0x33];
   const PANE = [0x14, 0x16, 0x1a, 0x90];
+  // The lift's machine: a casing of brushed steel round a band of hazard stripes, its corners bolted.
+  const BRUSHED = (x, y) => {
+    const v = 0xa4 + ((y * 7 + (x >> 2) * 3) % 5) * 4;
+    return [v - 6, v, v + 6];
+  };
   texture(blockOutput, "lift_machine", (x, y) => {
-    if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL_DARK;
-    if ((x === 2 || x === 13) && (y === 2 || y === 13)) return STEEL_LIGHT;
-    if (y >= 5 && y <= 10 && x >= 3 && x <= 12) return y % 2 === 0 ? STEEL_DARK : STEEL;
-    return x % 4 === 0 ? [0x52, 0x58, 0x60] : STEEL;
+    if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL;
+    if ((x === 2 || x === 13) && (y === 2 || y === 13)) return STEEL_DARK;
+    if (y >= 6 && y <= 9) return (x + y) % 4 < 2 ? [0xe8, 0xb4, 0x20] : [0x1e, 0x1e, 0x22];
+    return BRUSHED(x, y);
   }, 3);
+  // The backs and edges of her lift's boards and of her LED panels and console, which show through her glass shaft:
+  // brushed steel in a darker steel frame, as her space posters are framed.
+  texture(blockOutput, "rocket_panel_back", (x, y) => (x === 0 || y === 0 || x === 15 || y === 15 ? STEEL : BRUSHED(x, y)), 3);
   texture(blockOutput, "lift_door_frame", () => STEEL_LIGHT, 2);
   for (const [half, footOrHead] of [["lower", 15], ["upper", 0]]) {
     texture(blockOutput, `lift_door_${half}`, (x, y) => (x <= 1 || x >= 14 || y === footOrHead || (half === "lower" ? y === 14 : y === 1) ? STEEL_LIGHT : PANE), 2);

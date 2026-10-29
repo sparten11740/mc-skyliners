@@ -3608,7 +3608,7 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   write(`assets/${ID}/models/block/lift_door_sliding.json`, { textures: { particle: `${ID}:block/lift_door_lower` } });
   write(`assets/${ID}/blockstates/lift_door.json`, { variants });
   cubes.lift_door = null;
-  slimScreenModels("lift_board", `${ID}:block/lift_board_casing`, `${ID}:block/lift_board_casing`);
+  slimScreenModels("lift_board", `${ID}:block/lift_board_casing`, `${ID}:block/rocket_panel_back`);
   write(`assets/${ID}/blockstates/lift_board.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
       [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/lift_board${tilted ? "_tilted" : ""}`, y }])))),
@@ -3653,7 +3653,7 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   });
   const casing = `${ID}:block/passenger_screen_casing`;
   for (const name of ["led_panel", "led_console"]) {
-    slimScreenModels(name, casing, casing);
+    slimScreenModels(name, casing, `${ID}:block/rocket_panel_back`);
     write(`assets/${ID}/blockstates/${name}.json`, {
       variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3, 4, 5, 6, 7].flatMap((part) =>
         [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/${name}${tilted ? "_tilted" : ""}`, y }])))),
