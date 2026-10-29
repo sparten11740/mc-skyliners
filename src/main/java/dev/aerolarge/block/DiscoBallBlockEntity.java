@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A disco ball's turning, kept only on the client, where it is drawn: how far it has turned and how fast it turns,
@@ -56,7 +57,12 @@ public class DiscoBallBlockEntity extends BlockEntity {
         clientTicker.accept(this);
     }
 
-    /** How far the ball has turned about its rod at this partial tick, in radians. */
+    /** The ball's middle among the blocks it is in, for the way it is put up (see {@link DiscoBallBlock#centre}). */
+    public Vec3 middle() {
+        return Vec3.atLowerCornerOf(getBlockPos()).add(DiscoBallBlock.centre(getBlockState()));
+    }
+
+    /** How far the ball has turned about the upright through its middle at this partial tick, in radians. */
     public float turned(float partialTick) {
         return Mth.lerp(partialTick, turnedBefore, turned);
     }

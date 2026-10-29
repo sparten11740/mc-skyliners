@@ -19,16 +19,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
 /**
  * Draws a disco ball: a ball faceted all over with little mirror tiles in rings from pole to pole, fewer of them round
- * the rings near the poles, each ring's tiles set off from the next's, as a real one's are; turning about its rod as far
- * as it has turned at this partial tick, so it turns smoothly. Each tile is flat, so each catches the light its own
- * way, and some brighter than others; while the ball is on they take on a little of its spots' colours. Wherever a
- * tile faces just right to throw one of the room's lights into the eye, it glints: a four-pointed star of light over
- * it, twinkling, in the colour of the spot that light goes with.
+ * the rings near the poles, each ring's tiles set off from the next's, as a real one's are; round its middle for the
+ * way it is put up (see {@link DiscoBallBlock#centre}), turning about the upright through it as far as it has turned
+ * at this partial tick, so it turns smoothly. Each tile is flat, so each catches the light its own way, and some
+ * brighter than others; while the ball is on they take on a little of its spots' colours. Wherever a tile faces just
+ * right to throw one of the room's lights into the eye, it glints: a four-pointed star of light over it, twinkling, in
+ * the colour of the spot that light goes with.
  */
 public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEntity> {
     private static final ResourceLocation MIRRORS = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/block/disco_ball.png");
@@ -83,7 +85,8 @@ public class DiscoBallRenderer implements BlockEntityRenderer<DiscoBallBlockEnti
         float power = ball.power(partialTick);
         float ticks = ball.getLevel().getGameTime() + partialTick;
         pose.pushPose();
-        pose.translate(0.5, DiscoBallBlock.MIDDLE, 0.5);
+        Vec3 centre = DiscoBallBlock.centre(ball.getBlockState());
+        pose.translate(centre.x, centre.y, centre.z);
         // The room's ways as drawn, before the ball turns: the lights it glints with stay put.
         Matrix3f room = new Matrix3f(pose.last().normal());
         pose.mulPose(Axis.YP.rotation(ball.turned(partialTick)));

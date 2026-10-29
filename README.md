@@ -799,8 +799,9 @@ and its back heaped up behind. Use it to sit down in it: like the cabin seats it
 so villager passengers take it for one too. A fall into it never hurts, only flumps. Put down, it faces you, its back
 away from you; use a dye on it to dye it, orange until dyed, and taken down it keeps its colour. It can be crafted.
 
-A Disco Ball is a ball faceted all over with little mirror tiles, hanging on a short rod: put it up under a ceiling or
-at the end of a light cable. It is on when put up: it turns slowly, its tiles glinting as they catch the light, and
+A Disco Ball is a ball faceted all over with little mirror tiles. Put up under a ceiling or at the end of a light cable,
+it hangs on a short rod; on the ground it turns on a small motor stand, and on a wall it hangs from the motor at the end
+of an arm out from the wall. It is on when put up: it turns slowly, its tiles glinting as they catch the light, and
 it casts twelve spots of coloured light, red, green, blue and every colour between, each changing colour as it goes,
 that sweep round the room's walls, floor and ceiling as the ball turns; it lights the room round it too. Use it to
 switch it off: it slows to a stop with a falling chime and goes dark; use it again and it spins up with a rising one.

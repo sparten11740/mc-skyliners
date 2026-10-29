@@ -1406,8 +1406,8 @@ public final class AerolargeRegistry {
     /** The light a disco ball gives while it is on, in light levels: the den stays lit wherever its spots are not drawn. */
     private static final int DISCO_GLOW = 10;
     /**
-     * The den's disco ball: mirror glass, hung overhead with nothing to bump into, quick to take down; it lights the
-     * room round it while on.
+     * The den's disco ball: mirror glass, hung overhead, on a wall or on a stand on the floor with nothing to bump into,
+     * quick to take down; it lights the room round it while on.
      */
     public static final DeferredBlock<DiscoBallBlock> DISCO_BALL = BLOCKS.registerBlock(
         "disco_ball", DiscoBallBlock::new,

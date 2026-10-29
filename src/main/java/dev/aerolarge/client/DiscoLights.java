@@ -179,7 +179,7 @@ public final class DiscoLights {
             .filter(ticked -> now - ticked.getValue() <= GONE_AFTER)
             .map(Map.Entry::getKey)
             .filter(ball -> ball.getLevel() == level && !ball.isRemoved() && ball.power(partialTick) > 0)
-            .map(ball -> new Near(ball, SableClient.toWorld(level, DiscoBallBlock.middle(ball.getBlockPos())).distanceTo(camera)))
+            .map(ball -> new Near(ball, SableClient.toWorld(level, ball.middle()).distanceTo(camera)))
             .filter(ball -> ball.distance() <= REACH)
             .sorted(Comparator.comparingDouble(Near::distance))
             .limit(MOST_BALLS)
@@ -208,7 +208,7 @@ public final class DiscoLights {
      * airliner's blocks, as Sable draws the airliner.
      */
     private static void shine(Level level, DiscoBallBlockEntity ball, Lit lit, float partialTick) {
-        Vec3 middle = DiscoBallBlock.middle(ball.getBlockPos());
+        Vec3 middle = ball.middle();
         look(level, ball, lit, middle);
         SableClient.Placing placing = SableClient.placing(middle, partialTick);
         float turned = ball.turned(partialTick);
@@ -256,7 +256,7 @@ public final class DiscoLights {
         lit.lookedAt = tick;
     }
 
-    /** The way a spot shines out of the ball, among its blocks, once the ball has turned so far about its rod. */
+    /** The way a spot shines out of the ball, among its blocks, once the ball has turned so far round. */
     private static Vec3 out(Spot spot, float turned) {
         float round = spot.round() + turned;
         float level = Mth.cos(spot.up());

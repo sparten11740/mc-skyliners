@@ -3009,19 +3009,46 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   cubes.bean_bag = null;
 }
 // The den's disco ball (see DiscoBallBlock): the ball itself, turning, is drawn by its renderer over its mirror tile's
-// texture (see DiscoBallRenderer), so the block's model is only what it hangs by, on or off: a slim cable from the top
-// of the block down to a chrome cap on top of the ball. Its particles are the ball's mirror tiles; in the hand, a
-// picture of the ball.
+// texture (see DiscoBallRenderer), so the block's model is only what holds it, on or off: hung, a slim cable from the
+// top of the block down to a chrome cap on top of the ball. On the floor (its middle 9.5 pixels up, see
+// DiscoBallBlock.centre) it turns on a small motor stand: a dark round foot, a squat steel motor on it and a chrome
+// spindle up to a cap under the ball. On a wall, drawn facing north with the wall on the south side of its block (its
+// middle 9 pixels out from the wall), it hangs from the motor at the end of a dark arm out from a wall plate, the
+// motor over a chrome cap on top of the ball. Its particles are the ball's mirror tiles; in the hand, a picture of the
+// ball.
 {
+  const cap = `${ID}:block/lavatory_basin_chrome`;
+  const particle = `${ID}:block/disco_ball`;
+  // What holds the ball on the floor or a wall: a dark foot or bracket, a steel motor and chrome.
+  const holds = { bracket: `${ID}:block/halo_light_hub`, motor: `${ID}:block/shelf_steel`, cap, particle };
   write(`assets/${ID}/models/block/disco_ball.json`, boxes(
-    { rod: `${ID}:block/light_cable`, cap: `${ID}:block/lavatory_basin_chrome`, particle: `${ID}:block/disco_ball` },
+    { rod: `${ID}:block/light_cable`, cap, particle },
     [
       [[7.5, 13, 7.5], [8.5, 16, 8.5], "#rod"],
       [[7, 12.5, 7], [9, 13.5, 9], "#cap"],
     ],
   ));
+  write(`assets/${ID}/models/block/disco_ball_floor.json`, boxes(holds, [
+    [[4, 0, 6], [12, 1, 10], "#bracket"],
+    [[5, 0, 5], [11, 1, 11], "#bracket"],
+    [[6, 0, 4], [10, 1, 12], "#bracket"],
+    [[6, 1, 6], [10, 2.5, 10], "#motor"],
+    [[7.5, 2.5, 7.5], [8.5, 3, 8.5], "#cap"],
+    [[7, 3, 7], [9, 4, 9], "#cap"],
+  ]));
+  write(`assets/${ID}/models/block/disco_ball_wall.json`, boxes(holds, [
+    [[5.5, 10.5, 15], [10.5, 15.5, 16], "#bracket"],
+    [[7, 13.5, 9], [9, 15, 15], "#bracket"],
+    [[6, 13.5, 5], [10, 15.5, 9], "#motor"],
+    [[7, 12.5, 6], [9, 13.5, 8], "#cap"],
+  ]));
+  // Hung or standing, the ball looks the same whichever way it faces; on a wall it faces out.
   write(`assets/${ID}/blockstates/disco_ball.json`, {
-    variants: Object.fromEntries([false, true].map((lit) => [`lit=${lit}`, { model: `${ID}:block/disco_ball` }])),
+    variants: {
+      "mount=ceiling": { model: `${ID}:block/disco_ball` },
+      "mount=floor": { model: `${ID}:block/disco_ball_floor` },
+      ...Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing},mount=wall`, { model: `${ID}:block/disco_ball_wall`, y }])),
+    },
   });
   write(`assets/${ID}/models/item/disco_ball.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/disco_ball` } });
   dropsItself("disco_ball");
