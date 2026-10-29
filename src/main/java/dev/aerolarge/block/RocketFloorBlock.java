@@ -1,5 +1,9 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.AerolargeRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -28,5 +32,11 @@ public class RocketFloorBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FLOOR, CEILING);
+    }
+
+    /** Picked, the plain cabin floor it gives back. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(AerolargeRegistry.CABIN_FLOOR.get());
     }
 }

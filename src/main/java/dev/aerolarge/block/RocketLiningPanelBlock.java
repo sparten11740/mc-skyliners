@@ -1,6 +1,10 @@
 package dev.aerolarge.block;
 
+import dev.aerolarge.AerolargeRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -27,6 +31,12 @@ public class RocketLiningPanelBlock extends Block {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         Lining.define(builder);
         builder.add(RocketFinish.PROPERTY);
+    }
+
+    /** Picked, the fabric her cover is made from, as her cover gives. */
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return new ItemStack(AerolargeRegistry.ZEPPELIN_FABRIC.get());
     }
 
     @Override
