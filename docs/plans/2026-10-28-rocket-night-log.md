@@ -28,9 +28,9 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
-  pin, and four code reviews' findings.
+  pin, and five code reviews' findings.
 
-The last version tonight is alpha.178.
+The last version tonight is alpha.179.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -101,6 +101,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N55 | 04:08 | The deck's lower ceiling at scales 3 and 4 | It now reaches her skin all round (it stopped a block short at the four ways, holes up into the sealed space) and the deck's ceiling ring of strips hangs under it, not under the cockpit's floor over it | Found checking N53 at scale 3 | Lead |
 | N56 | 04:25 | Rooms heard (fourth panel) | Yes, two rooms: the greenhouse (air through the leaves, a trickle, a drip, and now and then a bee buzzing past) and the pool (water lapping in a tiled hall, and now and then a slap), each swelling in as you step into its room, over 150 Hz to stay clear of the lift's hum, client `roomAmbience` on by default; the galley left for another night (a fridge hum would sit on the lift's), the bunks and the deck quiet on purpose, the club and the lab already heard | The sound tells a child which floor they stepped out on, matching the lift board's icons; panel (children's designer, tech lead, audio designer) | Panel, lead |
 | N57 | 04:50 | Fourth code review (of the rooms' sounds) | Fixed: a loop the game let go of (a portal, a resource reload, rejoining) left its room silent for the session; swimmers in the pool heard the greenhouse; the next bee or slap was due by another world's time; around a rocket not yet flown, standing outside her skin heard the room; her rooms are now also heard before her first flight | Independent review agent; each fix heard in game | Review, lead |
+| N58 | 05:15 | Fifth code review (of alpha.175 and alpha.176's fixes) | Fixed: her settings map's ring round the pin, her control head's circle radius and the helmet HUD's figure, none of which she flies; RETURN on her screens while told to land in the air (now her phase alone), and its chat line; Apply lit for a circle she has none of; the deck's lower ceiling told by her rooms being furnished, not a block of it | Independent review agent; the map and the header seen in game | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -205,6 +206,8 @@ Commits on main, newest last, with the versions handed out.
   the lift ridden from her entry story to her cockpit (doors opened from the landing board, walked in, the cockpit
   picked): the greenhouse's loop beginning as the car rose through it, the pool's two seconds later, the club's track
   after it, and the up chime and the doors at the cockpit.
+- alpha.179: the fifth review's fixes (N58). Play-tested on a scale-3 rocket: her map with a pin and no ring, and her
+  screen reading DESCENT once Land was pressed in her climb; not looked at: the control head's row and the helmet HUD.
 
 ## Background agents
 
@@ -253,6 +256,8 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - After that F3+T, a minute later, the dev client crashed in the game's own font code drawing a recipe toast ("Image
   is not allocated", `crash-2026-10-29_04.48.55-client.txt`), no Aerolarge code in it: a bitmap font freed by the
   resource reload. The world had saved; I note it in case it ever shows without F3+T.
+- Her settings map's two coordinate lines at its foot (hers and the pin's) run into each other once a pin is set
+  ("Z 92Pin X ..."); not new tonight, and the airliner's map is the same width.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
