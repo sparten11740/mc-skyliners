@@ -5,9 +5,11 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.FirstFlight;
 import dev.aerolarge.compat.SableFlight;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
 /**
@@ -36,8 +38,8 @@ public final class EdgeOfSpace {
      */
     private static final int WAIT_MOST = 60 * 20;
     /**
-     * How long the welcome is given to play, chime and all, in ticks, if its sound cannot be read: as long as a cabin
-     * announcement, which tools/generate_sounds.mjs keeps it shorter than (its ANNOUNCEMENT_LONGEST).
+     * How long an announcement up here is given to play, chime and all, in ticks, if its sound cannot be read: as long
+     * as a cabin announcement, which tools/generate_sounds.mjs keeps them shorter than (its ANNOUNCEMENT_LONGEST).
      */
     private static final int LONGEST = 15 * 20;
 
@@ -84,7 +86,7 @@ public final class EdgeOfSpace {
             Aboard.players(autopilot).forEach(FirstFlight.EDGE_OF_SPACE::award);
         }
         if (autopilot.quiet()) {
-            welcome(level, autopilot);
+            announce(level, autopilot, AerolargeRegistry.ANNOUNCEMENT_SPACE);
             welcomed = true;
         } else {
             waited++;
@@ -92,12 +94,15 @@ public final class EdgeOfSpace {
         }
     }
 
-    /** The welcome, to everyone aboard wherever they are in her, as long as it lasts holding her cockpit's floor. */
-    private static void welcome(ServerLevel level, AutopilotBlockEntity autopilot) {
-        autopilot.holdFloor(VoiceLength.ticks(AerolargeRegistry.ANNOUNCEMENT_SPACE, LONGEST));
+    /**
+     * One of her flight deck's announcements up here, the welcome or her artificial gravity (see {@link SpaceGravity}):
+     * to everyone aboard wherever they are in her, holding her cockpit's floor as long as it lasts.
+     */
+    static void announce(ServerLevel level, AutopilotBlockEntity autopilot, Holder<SoundEvent> announcement) {
+        autopilot.holdFloor(VoiceLength.ticks(announcement, LONGEST));
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : Aboard.players(autopilot)) {
-            player.connection.send(new ClientboundSoundEntityPacket(AerolargeRegistry.ANNOUNCEMENT_SPACE, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+            player.connection.send(new ClientboundSoundEntityPacket(announcement, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
         }
     }
 }

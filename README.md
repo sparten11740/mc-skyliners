@@ -2265,8 +2265,8 @@ camera far over the top of the world, over the game's own sky, the fog the land 
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
-climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends the smoke and the fire under her and the
-flames from her base.
+climbs past it; `SpaceGravity` makes them light up there until it announces her artificial gravity; `RocketPlumes` sends
+the smoke and the fire under her and the flames from her base.
 Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
 the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the
 view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her control
