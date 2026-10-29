@@ -2521,6 +2521,8 @@ public final class AerolargeRegistry {
         for (String old : new String[]{"windscreen", "cockpit_windscreen"}) {
             BLOCKS.addAlias(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, old), COCKPIT_GLASS.getId());
         }
+        // The Wall Washer item from alpha.183 to alpha.186: the Halo Light now, which is a wall washer on a wall.
+        ITEMS.addAlias(ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "wall_light"), HALO_LIGHT_ITEM.getId());
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
