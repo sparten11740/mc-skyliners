@@ -2272,7 +2272,7 @@ and their gadgets are blocks worked on the server in block states and scheduled 
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
 and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client and keep them
 to time on the server, `LostTicks` taking up where a rocket's assembly dropped their scheduled ticks), and its club's
-bar has `DrinkTapBlock`, pouring `StarFizzItem`, `NeonSignBlock` and `CocktailTableBlock`; its
+bar has `DrinkTapBlock`, pouring Star Fizz (a `MocktailItem`), `NeonSignBlock` and `CocktailTableBlock`; its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a

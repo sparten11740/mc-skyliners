@@ -316,7 +316,6 @@ import dev.aerolarge.item.PilotHelmetItem;
 import dev.aerolarge.item.RoverRemoteItem;
 import dev.aerolarge.item.SpaceHelmetItem;
 import dev.aerolarge.item.SpacePosterItem;
-import dev.aerolarge.item.StarFizzItem;
 import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
@@ -2006,9 +2005,7 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<DrinkTapBlock> DRINK_TAP = BLOCKS.registerBlock(
         "drink_tap", DrinkTapBlock::new, metal(MapColor.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
     );
-    public static final DeferredItem<StarFizzItem> STAR_FIZZ = ITEMS.register("star_fizz", () -> new StarFizzItem(new Item.Properties().stacksTo(16).food(
-        new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible().usingConvertsTo(Items.GLASS_BOTTLE).build()
-    )));
+    public static final DeferredItem<MocktailItem> STAR_FIZZ = ITEMS.register("star_fizz", () -> new MocktailItem(mocktail(sip().usingConvertsTo(Items.GLASS_BOTTLE)), false));
     public static final DeferredHolder<SoundEvent, SoundEvent> TAP_POUR = sound("tap_pour");
     public static final DeferredBlock<NeonSignBlock> NEON_SIGN = BLOCKS.registerBlock(
         "neon_sign", NeonSignBlock::new,

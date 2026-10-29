@@ -13,8 +13,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A high round cocktail table to stand at in the club, as high as the bar counter so that it goes with the bar stools:
  * a round top of dark glass, a ring of LED light glowing under its rim whatever the light around, on a chrome pole over
  * a round foot. It is round, so it has no front. What is looked at and clicked is the table itself; what stops a player
- * is a column round its top as high as a fence, so that whoever stands at it stands against its rim, and nobody climbs
- * on to it from a stool to walk across the room over the tables.
+ * is a column round its top as high as a fence, so that whoever stands at it stands against its rim, and nobody jumps
+ * up on to it from the floor, as over a fence.
  */
 public class CocktailTableBlock extends Block {
     private static final MapCodec<CocktailTableBlock> CODEC = simpleCodec(CocktailTableBlock::new);

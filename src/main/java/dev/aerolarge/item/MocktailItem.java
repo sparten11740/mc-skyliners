@@ -11,8 +11,9 @@ import net.neoforged.neoforge.common.EffectCures;
 
 /**
  * A mocktail from the robot bartender, with no alcohol in it: Nebula Fizz, Rocket Fuel, Zero-G Float, Supernova Sunrise
- * or Moon Milk. Drunk, not eaten, its glass gone with it, and each gives a short lift of its own (see its food
- * properties); Moon Milk instead clears away every effect milk does, as a bucket of milk would.
+ * or Moon Milk; or the drink tap's sparkling Star Fizz. Drunk, not eaten, a mocktail's glass gone with it and Star
+ * Fizz's bottle given back, and each gives a short lift of its own (see its food properties); Moon Milk instead clears
+ * away every effect milk does, as a bucket of milk would.
  */
 public class MocktailItem extends Item {
     /** Whether drinking it clears away the effects milk does. */
