@@ -52,6 +52,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
     public static final ModConfigSpec.BooleanValue ROCKET_PLUMES;
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
+    public static final ModConfigSpec.BooleanValue ROCKET_CALLOUTS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -486,6 +487,14 @@ public final class AerolargeConfig {
                 "empty. Rockets already built keep theirs."
             )
             .define("lab", true);
+        ROCKET_CALLOUTS = builder
+            .comment(
+                "Whether launch control, which counts a rocket down, also calls out her flight's milestones on its radio as she passes",
+                "them, each once a flight and never over another voice: \"Tower cleared.\" 40 blocks over the ground, \"Max Q.\" climbing",
+                "through y 300, \"Main engine cut-off.\" as she reaches her height, and \"Landing burn.\" as it starts. Off, it only",
+                "counts her down."
+            )
+            .define("callouts", true);
         builder.pop();
 
         SPEC = builder.build();

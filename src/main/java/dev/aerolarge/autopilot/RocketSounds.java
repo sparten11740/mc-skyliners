@@ -22,7 +22,8 @@ import net.minecraft.world.phys.Vec3;
  * and {@link RocketPilot}). Launch control counts her down over the radio, "ten" to "one" on the seconds of her
  * countdown and "lift-off" as her engines light, heard by everyone near her, aboard or watching from the ground; it
  * begins only once the cabin has heard its take-off announcement, as a zeppelin's ground officer waits for her control
- * car to fall quiet, and holds the flight deck's floor while it counts. Each side jet firing from rest puffs, never so
+ * car to fall quiet, and holds the flight deck's floor while it counts; on the same radio it calls her flight's
+ * milestones as she passes them (see {@link LaunchCallouts}). Each side jet firing from rest puffs, never so
  * often that a jet flickering on and off rattles. Down on her fins, the flight deck's voice says "Touchdown." And how
  * hard her engines fire is shown to the clients, who play their roar from it, their ignition as they light and their
  * cut-off as they stop, and her touchdown (see the client's {@code RocketRoar}).
@@ -111,11 +112,18 @@ final class RocketSounds {
             airtime.interrupt(now);
         }
         airtime.take(now, RocketPilot.COUNTDOWN - counted + VoiceLength.ticks(AerolargeRegistry.LAUNCH_LIFTOFF, WORD_LENGTH));
-        Holder<SoundEvent> word = left > 0 ? AerolargeRegistry.LAUNCH_COUNT.get(left - 1) : AerolargeRegistry.LAUNCH_LIFTOFF;
+        overTheRadio(level, middle, left > 0 ? AerolargeRegistry.LAUNCH_COUNT.get(left - 1) : AerolargeRegistry.LAUNCH_LIFTOFF);
+    }
+
+    /**
+     * Something launch control says over the radio, played to each one who hears it, near her middle, aboard or
+     * watching from the ground, as the flight deck's voice is played, wherever they stand (see {@link #LAUNCH_HEARD}).
+     */
+    static void overTheRadio(ServerLevel level, Vec3 middle, Holder<SoundEvent> said) {
         long seed = level.getRandom().nextLong();
         for (ServerPlayer player : level.players()) {
             if (player.position().distanceToSqr(middle) < LAUNCH_HEARD * LAUNCH_HEARD) {
-                player.connection.send(new ClientboundSoundEntityPacket(word, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+                player.connection.send(new ClientboundSoundEntityPacket(said, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
             }
         }
     }

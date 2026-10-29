@@ -1929,7 +1929,11 @@ autopilot has flown it. A Model Rocket, standing on its fins, is in the creative
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then
-"lift-off!" as her engines light with a crack and a deep whoomp and their roar swells in. The roar follows her thrust,
+"lift-off!" as her engines light with a crack and a deep whoomp and their roar swells in. It stays on the radio
+through her flight, calling each milestone once, as a real launch is called, each call a transmission of its own
+between two beeps: "Tower cleared." 40 blocks up, "Max Q." as she climbs through y 300 on her way higher, "Main engine
+cut-off." as she reaches her height, and "Landing burn." as her landing burn begins, each waiting for whatever else is
+being said to end first (the server config's `rocket.callouts` leaves them out). The roar follows her thrust,
 louder and higher the harder they push, and carries far across the ground; aboard, it comes through her hull as a deep
 rumble wherever you stand. Her side jets puff as they hold her upright. Landing, her fins take her weight with a heavy
 thunk and a hiss of their dampers, the flight deck's voice says "Touchdown.", and her engines cut off, falling away
@@ -2149,7 +2153,8 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
-from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown.
+from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown; `LaunchCallouts` has launch control
+call her milestones on the same radio, waiting its turn on the flight deck's `Airtime`.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the

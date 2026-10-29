@@ -544,6 +544,42 @@
       }
     ]
   },
+  "launch_tower_cleared": {
+    "subtitle": "subtitles.aerolarge.launch_tower_cleared",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_tower_cleared",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_max_q": {
+    "subtitle": "subtitles.aerolarge.launch_max_q",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_max_q",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_main_engine_cutoff": {
+    "subtitle": "subtitles.aerolarge.launch_main_engine_cutoff",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_main_engine_cutoff",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
+  "launch_landing_burn": {
+    "subtitle": "subtitles.aerolarge.launch_landing_burn",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_landing_burn",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.aerolarge.pa_chime",
     "sounds": [

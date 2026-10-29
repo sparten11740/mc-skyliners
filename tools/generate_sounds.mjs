@@ -2648,6 +2648,16 @@ const LAUNCH_WORDS = {
  */
 const LAUNCH_LONGEST = 0.8;
 const LIFTOFF_LONGEST = 1.2;
+// Her flight's milestones, launch control calling each as she passes it (see LaunchCallouts), each a transmission of
+// its own, opened and closed by the Quindar pair as the whole count is.
+const LAUNCH_MILESTONES = {
+  launch_tower_cleared: "Tower cleared.",
+  launch_max_q: "Max Q.",
+  launch_main_engine_cutoff: "Main engine cut-off.",
+  launch_landing_burn: "Landing burn.",
+};
+/** The longest a milestone's transmission may run, both its Quindar tones and all, in seconds (see LaunchCallouts). */
+const MILESTONE_LONGEST = 2.5;
 
 /** A Quindar tone of the pitch given, in hertz, as long as LAUNCH.quindar has it, at a peak of one. */
 function quindar(frequency) {
@@ -2656,30 +2666,38 @@ function quindar(frequency) {
     * Math.sin((2 * Math.PI * frequency * i) / RATE));
 }
 
-/** Says one of launch control's words through the radio, its Quindar tone before or after it if it has one. */
-async function launchWord(name, word) {
-  const spoken = await speaker.generate(word, { voice: LAUNCH.voice, speed: LAUNCH.pace });
+/**
+ * Says one of launch control's lines through the radio, the Quindar tone opening a transmission before it if it opens
+ * one and the tone closing one after it if it closes one, refusing it if it runs longer than the seconds given.
+ */
+async function launchLine(name, line, { opens, closes, longest }) {
+  const spoken = await speaker.generate(line, { voice: LAUNCH.voice, speed: LAUNCH.pace });
   const trimmed = trim(Float64Array.from(spoken.audio), spoken.sampling_rate);
   const said = join(scratch, `${name}.said.wav`);
   const voiced = join(scratch, `${name}.voiced.wav`);
   writeWav(said, Array.from(trimmed, (sample) => (sample / peakOf(trimmed)) * 0.5), spoken.sampling_rate);
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", LAUNCH.radio.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", voiced]);
   const voice = trim(readWav(voiced));
-  const words = Object.keys(LAUNCH_WORDS);
-  const opens = name === words[0];
-  const closes = name === words.at(-1);
-  const tone = opens || closes ? quindar(opens ? LAUNCH.quindar.open : LAUNCH.quindar.close) : new Float64Array(0);
-  const gap = tone.length > 0 ? Math.round(LAUNCH.quindar.gap * RATE) : 0;
-  const samples = new Float64Array(tone.length + gap + voice.length);
-  samples.set(voice, opens ? tone.length + gap : 0);
-  const toneAt = opens ? 0 : voice.length + gap;
+  const opening = opens ? quindar(LAUNCH.quindar.open) : new Float64Array(0);
+  const closing = closes ? quindar(LAUNCH.quindar.close) : new Float64Array(0);
+  const gap = Math.round(LAUNCH.quindar.gap * RATE);
+  const voiceAt = opens ? opening.length + gap : 0;
+  const closingAt = voiceAt + voice.length + gap;
+  const samples = new Float64Array(closes ? closingAt + closing.length : voiceAt + voice.length);
+  samples.set(voice, voiceAt);
   const level = LAUNCH.quindar.level * peakOf(voice);
-  tone.forEach((sample, i) => (samples[toneAt + i] = sample * level));
-  writeVoiced(name, samples, LAUNCH, closes ? LIFTOFF_LONGEST : LAUNCH_LONGEST);
+  opening.forEach((sample, i) => (samples[i] = sample * level));
+  closing.forEach((sample, i) => (samples[closingAt + i] = sample * level));
+  writeVoiced(name, samples, LAUNCH, longest);
 }
 if (speaker) {
+  const words = Object.keys(LAUNCH_WORDS);
   for (const [name, word] of Object.entries(LAUNCH_WORDS)) {
-    await launchWord(name, word);
+    const closes = name === words.at(-1);
+    await launchLine(name, word, { opens: name === words[0], closes, longest: closes ? LIFTOFF_LONGEST : LAUNCH_LONGEST });
+  }
+  for (const [name, line] of Object.entries(LAUNCH_MILESTONES)) {
+    await launchLine(name, line, { opens: true, closes: true, longest: MILESTONE_LONGEST });
   }
 }
 

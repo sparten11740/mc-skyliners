@@ -1262,8 +1262,9 @@ function atcLang() {
 // The rocket's sound and voice (see tools/generate_sounds.mjs, the client's RocketRoar and the autopilot's
 // RocketSounds). Her engines' roar, their ignition and cut-off and her touchdown on her fins, heard as far as
 // ROCKET_HEARD blocks off, out across the ground round her and up her whole height; the same heard aboard, round the
-// listener, and her side jets' puffs, near them; and launch control's count, played to each listener as the flight
-// deck's voice is (see heardAboard), subtitled with each word.
+// listener, and her side jets' puffs, near them; and launch control's count and its calls of her milestones (see the
+// autopilot's LaunchCallouts), played to each listener as the flight deck's voice is (see heardAboard), subtitled with
+// what is said.
 const ROCKET_HEARD = 160;
 const ROCKET_SUBTITLES = {
   rocket_roar: "Rocket engines roar",
@@ -1287,6 +1288,10 @@ const LAUNCH_SUBTITLES = {
   launch_2: "Launch control: Two",
   launch_1: "Launch control: One",
   launch_liftoff: "Launch control: Lift-off!",
+  launch_tower_cleared: "Launch control: Tower cleared",
+  launch_max_q: "Launch control: Max Q",
+  launch_main_engine_cutoff: "Launch control: Main engine cut-off",
+  launch_landing_burn: "Launch control: Landing burn",
 };
 function rocketSounds() {
   const far = ["rocket_roar", "rocket_ignition", "rocket_cutoff", "rocket_touchdown"];

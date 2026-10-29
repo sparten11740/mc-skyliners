@@ -640,6 +640,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private int countHeard;
     /** What is heard of its rocket as she flies, and how hard her engines fire as the clients are shown it. */
     private final RocketSounds rocketSounds = new RocketSounds(airtime);
+    /** Launch control calling out its rocket's milestones over the radio as she passes them. */
+    private final LaunchCallouts launchCallouts = new LaunchCallouts();
     /**
      * Its rocket's stories' floors, rows up from her fins' feet, from the entry story up, the cockpit's floor last, as
      * she was built, on the clients as on the server, so her livery can follow them (see {@link Livery.RocketSpot});
@@ -1569,6 +1571,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         if (craft == Craft.ROCKET) {
             rocket.begin(state);
             countHeard = -1;
+            launchCallouts.begin();
         }
         gearRaised = false;
         lastPitch = state.pitch();
@@ -1718,8 +1721,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     /**
      * Each tick of an assembled rocket's: it is kept loaded, as a zeppelin is; lightning strikes it in a storm and it
      * notes the villages below; everyone aboard is welcomed to space as it climbs past the edge of space (see
-     * {@link EdgeOfSpace}); engaged, it flies (see {@link RocketPilot}) until it has come down on its fins and stood
-     * there a moment, switching itself off with a bell.
+     * {@link EdgeOfSpace}); engaged, it flies (see {@link RocketPilot}), launch control calling out her milestones (see
+     * {@link LaunchCallouts}), until it has come down on its fins and stood there a moment, switching itself off with a
+     * bell.
      */
     private void rocketTick(ServerLevel level, SableFlight.State flight) {
         keepLoaded(level);
@@ -1737,6 +1741,8 @@ public class AutopilotBlockEntity extends BlockEntity {
             RocketPilot.Orders orders = new RocketPilot.Orders(phase, targetAltitude, lateral == Lateral.DESTINATION, orbitX, orbitZ);
             Phase next = rocket.fly(level, worldPosition, orders, flight, radio, SableFlight.mass(this));
             countDown(level, flight);
+            // Before the cabin is told she lands, so that its announcement waits for launch control's "Landing burn.".
+            launchCallouts.watch(level, this, phase, next, flight, radio);
             if (next == Phase.OFF) {
                 restRocket(level);
             } else if (next != phase) {

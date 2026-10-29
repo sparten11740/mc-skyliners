@@ -684,6 +684,11 @@ public final class AerolargeRegistry {
     /** Launch control counting her down over the radio: "one" to "ten", each at its number less one, and "lift-off". */
     public static final List<DeferredHolder<SoundEvent, SoundEvent>> LAUNCH_COUNT = IntStream.rangeClosed(1, 10).mapToObj(n -> sound("launch_" + n)).toList();
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_LIFTOFF = sound("launch_liftoff");
+    /** Launch control calling her flight's milestones over the radio (see dev.aerolarge.autopilot.LaunchCallouts). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_TOWER_CLEARED = sound("launch_tower_cleared");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_MAX_Q = sound("launch_max_q");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_MAIN_ENGINE_CUTOFF = sound("launch_main_engine_cutoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_LANDING_BURN = sound("launch_landing_burn");
     /** The flight deck's voice as she settles on her fins. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_TOUCHDOWN = sound("callout_touchdown");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
