@@ -408,6 +408,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_ARRIVAL = sound("announcement_arrival");
     /** The rocket's welcome to space, after the chime, as she climbs past its edge (see {@code EdgeOfSpace}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_SPACE = sound("announcement_space");
+    /** The rocket's artificial gravity announced, after the chime, once all aboard have been light a while in space. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANNOUNCEMENT_GRAVITY = sound("announcement_gravity");
     /** Low gravity aboard a rocket in space coming on, and going (see {@code autopilot.SpaceGravity}). */
     public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_LIGHT = sound("space_light");
     public static final DeferredHolder<SoundEvent, SoundEvent> SPACE_HEAVY = sound("space_heavy");

@@ -8,9 +8,11 @@ import dev.aerolarge.compat.SableFlight;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,21 +26,32 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Low gravity aboard a rocket in space, an experimental behaviour the server config's {@code rocket.lowGravity}
- * switches on. While she is at the edge of space or over it (see {@link EdgeOfSpace}), everyone aboard keeps only
- * {@link #KEPT} of the world's gravity: a jump rises three blocks and hangs in the air nearly two seconds, and a fall
- * that long does not hurt. It still pulls them down faster than she ever falls herself, so no one floats off her floor
- * as she starts back down. A rising glide and a puff of sparkles at their feet as it comes on, a falling glide as it
- * goes.
+ * Low gravity aboard a rocket as she reaches space, until her artificial gravity comes on (the server config's
+ * {@code rocket.lowGravity} leaves it out). For the first {@link #WEIGHTLESS} ticks after she reaches the edge of space
+ * (see {@link EdgeOfSpace}), everyone aboard keeps only {@link #KEPT} of the world's gravity: a jump rises three blocks
+ * and hangs in the air nearly two seconds, and a fall that long does not hurt. It still pulls them down faster than
+ * she ever falls herself, so no one floats off her floor. A rising glide and a puff of sparkles at their feet as it
+ * comes on; then her flight deck, over the cabin chime, says "Artificial gravity enabled.", and with a falling glide
+ * each of them is their own weight again as they next land. Once a climb: she has to come well back down under the
+ * edge before it happens again, and a rocket loaded again up there has had it.
  *
- * <p>Each player aboard holds a lease on it, renewed by her autopilot every few ticks while she is up there. It is
- * lifted the moment they are no longer aboard her (out of her door, a parachute's fall then as it always is), and,
- * once their lease has run out, as she comes back under the edge, only when they stand on something, so that dropping
- * under the edge mid-jump never hurts. Its modifiers are never saved, so leaving the game takes it away too.
+ * <p>Each player aboard holds a lease on it, renewed by her autopilot every few ticks while it lasts. It is lifted the
+ * moment they are no longer aboard her (out of her door, a parachute's fall then as it always is), and, once their
+ * lease has run out, only when they stand on something, so that it never ends mid-jump. Its modifiers are never saved,
+ * so leaving the game takes it away too. One window for each rocket, worked by her autopilot's block entity.
  */
 public final class SpaceGravity {
     /** How much of the world's gravity players aboard keep in space. */
     private static final double KEPT = 0.3;
+    /** How long everyone aboard is light once she reaches space, in ticks: ten seconds, then her artificial gravity. */
+    private static final int WEIGHTLESS = 10 * 20;
+    /** How long the announcement waits for her cockpit to fall quiet, at most, in ticks, before it is let go unsaid. */
+    private static final int WAIT_MOST = 10 * 20;
+    /**
+     * How long the announcement is given to play, chime and all, if its sound cannot be read, in ticks: as long as a
+     * cabin announcement, which tools/generate_sounds.mjs keeps it shorter than.
+     */
+    private static final int LONGEST = 15 * 20;
     /** How much further than usual they may fall unhurt there, in blocks: a jump's height and more. */
     private static final double SOFTER_LANDING = 4;
     /** How often her autopilot renews everyone's lease and each player's is looked at, and how long it lasts, in ticks. */
@@ -54,20 +67,75 @@ public final class SpaceGravity {
     private record Lease(BlockPos autopilot, long until) {
     }
 
-    private SpaceGravity() {
-    }
+    /**
+     * The game time she reached space this climb, from which everyone aboard is light for a while; unknown until she
+     * is first seen, when a rocket already up there, loaded again, has had it. {@link Long#MIN_VALUE} while she has
+     * not reached it since she was last well under its edge.
+     */
+    @Nullable
+    private Long reachedAt;
+    /** Whether her artificial gravity has been announced this climb, and how long the announcement has waited. */
+    private boolean announced;
+    private int waited;
 
-    /** Each tick of an assembled rocket's: every few ticks, at the edge of space or over it, everyone aboard is light. */
-    static void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
-        boolean inSpace = EdgeOfSpace.reached(flight.position().y);
-        if (!AerolargeConfig.ROCKET_LOW_GRAVITY.get() || !inSpace || level.getGameTime() % EVERY != 0) {
+    /**
+     * Each tick of an assembled rocket's: for a while once she reaches space, everyone aboard is light, renewed every
+     * few ticks; then her artificial gravity is announced.
+     */
+    void tick(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
+        double height = flight.position().y;
+        long now = level.getGameTime();
+        if (reachedAt == null) {
+            reachedAt = EdgeOfSpace.reached(height) ? now - WEIGHTLESS : Long.MIN_VALUE;
+            announced = EdgeOfSpace.reached(height);
+        }
+        if (EdgeOfSpace.wellUnder(height)) {
+            reachedAt = Long.MIN_VALUE;
+            announced = false;
+            waited = 0;
             return;
         }
-        Lease lease = new Lease(autopilot.getBlockPos(), level.getGameTime() + LEASE);
+        if (!AerolargeConfig.ROCKET_LOW_GRAVITY.get() || !EdgeOfSpace.reached(height)) {
+            return;
+        }
+        if (reachedAt == Long.MIN_VALUE) {
+            reachedAt = now;
+        }
+        long ends = reachedAt + WEIGHTLESS;
+        if (now < ends) {
+            lightenAboard(autopilot, now, ends);
+        } else if (!announced) {
+            announce(level, autopilot);
+        }
+    }
+
+    /** Every few ticks, everyone aboard is light, their lease renewed to run out when her artificial gravity comes on. */
+    private static void lightenAboard(AutopilotBlockEntity autopilot, long now, long ends) {
+        if (now % EVERY != 0) {
+            return;
+        }
+        Lease lease = new Lease(autopilot.getBlockPos(), Math.min(now + LEASE, ends));
         for (ServerPlayer player : Aboard.players(autopilot)) {
             LEASES.put(player.getUUID(), lease);
             lighten(player);
         }
+    }
+
+    /**
+     * Her flight deck announces her artificial gravity, over the cabin chime, to everyone aboard wherever they are in
+     * her, once her cockpit is quiet, holding its floor while it lasts; let go unsaid if it waits too long.
+     */
+    private void announce(ServerLevel level, AutopilotBlockEntity autopilot) {
+        if (!autopilot.quiet()) {
+            announced = ++waited >= WAIT_MOST;
+            return;
+        }
+        autopilot.holdFloor(VoiceLength.ticks(AerolargeRegistry.ANNOUNCEMENT_GRAVITY, LONGEST));
+        long seed = level.getRandom().nextLong();
+        for (ServerPlayer player : Aboard.players(autopilot)) {
+            player.connection.send(new ClientboundSoundEntityPacket(AerolargeRegistry.ANNOUNCEMENT_GRAVITY, SoundSource.VOICE, player, 1.0F, 1.0F, seed));
+        }
+        announced = true;
     }
 
     /** Every few ticks of a light player's, on the server: back to their weight once they have left her, or are due it. */

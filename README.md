@@ -1992,11 +1992,12 @@ northern lights ripple along the planet's rim to the north, a ribbon of green sh
 sinking as bright folds drift along it. Everyone aboard sees the same shooting stars and the same lights. Her camera
 display shows it all as its cameras see it. As she reaches the edge of space on the way up, the cabin chime sounds and
 her flight deck's voice says "Welcome to space. Enjoy the view.", once a climb. The client config's `spaceSky` leaves
-the sky as the game draws it, `shootingStars` keeps its stars still, and `aurora` leaves its nights dark. With the
-server config's experimental `rocket.lowGravity` on, everyone aboard feels light while she is at the edge of space or
-over it, with a soft rising glide and a puff of sparkles at their feet: a jump rises three blocks and hangs nearly two
-seconds, and a fall of seven blocks does not hurt. Their weight comes back, with the glide falling, the moment they
-leave her, and as she comes back down, once they next stand on something.
+the sky as the game draws it, `shootingStars` keeps its stars still, and `aurora` leaves its nights dark. For ten
+seconds as she reaches the edge of space everyone aboard feels light, with a soft rising glide and a puff of sparkles at
+their feet: a jump rises three blocks and hangs nearly two seconds, and a fall of seven blocks does not hurt. Then the
+chime sounds and her flight deck says "Artificial gravity enabled. Please mind your step.", and with the glide falling
+each of them has their weight back as they next land; once a climb, and at once for anyone who leaves her (the server
+config's `rocket.lowGravity` leaves it out).
 
 Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six wheels
 on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on a mast

@@ -2766,6 +2766,15 @@ if (speaker) {
     ANNOUNCEMENT_LONGEST);
 }
 
+// The rocket's flight deck announcing her artificial gravity once everyone aboard has been light a while in space
+// (see SpaceGravity), made as the welcome is; its second phrase, as the welcome's does, brings it level with the rest.
+const ARTIFICIAL_GRAVITY = { announcement_gravity: "Artificial gravity enabled. | Please mind your step." };
+if (speaker) {
+  await say(speaker, ARTIFICIAL_GRAVITY, VOICE.announcement);
+  writeVoiced("announcement_gravity", announcement(trim(readWav(join(scratch, "announcement_gravity.voiced.wav")))), VOICE.announcement,
+    ANNOUNCEMENT_LONGEST);
+}
+
 // The ground officer's call as a zeppelin is let go from her handlers' lines (see BallastValveBlockEntity): a British
 // man's voice, Kokoro's George, shouted through a megaphone, its horn's narrow band and hard middle, and the field's
 // echo after it. Tune it here.

@@ -483,11 +483,12 @@ public final class AerolargeConfig {
             .define("plumes", true);
         ROCKET_LOW_GRAVITY = builder
             .comment(
-                "Experimental: whether everyone aboard a rocket at the edge of space or over it (y 1,000) feels light, jumping three",
-                "times as high and landing softly, with a rising glide and a puff of sparkles as it comes on. It lifts the moment",
-                "they leave her, and as she comes back down they keep it to the end of a jump."
+                "Whether everyone aboard a rocket feels light for ten seconds as she reaches the edge of space (y 1,000), jumping",
+                "three times as high and landing softly, with a rising glide and a puff of sparkles as it comes on, until her flight",
+                "deck announces her artificial gravity and they are their own weight again as they next land. Once a climb; it",
+                "lifts the moment they leave her."
             )
-            .define("lowGravity", false);
+            .define("lowGravity", true);
         ROCKET_LAB = builder
             .comment(
                 "Whether a rocket is built with her lab: lab counters with microscopes and screens, and her tardigrade in its glass tank",

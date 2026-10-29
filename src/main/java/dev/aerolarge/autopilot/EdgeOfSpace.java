@@ -58,13 +58,21 @@ public final class EdgeOfSpace {
         return height >= HEIGHT - AT_EDGE;
     }
 
+    /**
+     * Whether a rocket whose control head is this high, in world blocks, is well back down under the edge of space: far
+     * enough under it that reaching it again is a climb of its own.
+     */
+    public static boolean wellUnder(double height) {
+        return height < HEIGHT - BACK_DOWN;
+    }
+
     /** Each tick of an assembled rocket's: welcomes everyone aboard to space as she climbs to its edge. */
     void watch(ServerLevel level, AutopilotBlockEntity autopilot, SableFlight.State flight) {
         double height = flight.position().y;
         if (welcomed == null) {
             welcomed = reached(height);
         }
-        if (height < HEIGHT - BACK_DOWN) {
+        if (wellUnder(height)) {
             welcomed = false;
             waited = 0;
             return;
