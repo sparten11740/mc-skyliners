@@ -20,8 +20,10 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   stars, an aurora by night); "Welcome to space" at y 1,000 and an Edge of Space advancement; low gravity up there
   (off by default, `rocket.lowGravity`).
 - **Sound and look of her flight**: launch control counting her down over the radio, her engines' roar, ignition,
-  cut-off and touchdown; smoke billowing over the ground at lift-off and landing, flames streaming up her sides as she
-  falls back from space.
+  cut-off and touchdown; smoke billowing over the ground at lift-off and landing, a bed of fire under her close over
+  it and the view shaking aboard as she lights, flames streaming up her sides as she falls back from space.
+- **A mood for each room**: strips in the colour of its lift button, lanterns hung on chains, a planetarium of
+  starlight over the observation deck, warm-coloured seats.
 - **The rover**: lowered from her cargo bay on a boom and winch, driven by remote from a chase camera, called home,
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
@@ -87,6 +89,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N46 | 02:35 | Lift sneak | No sneak is let off by the game; the car notes who sneaked and its machine sets them down outside an open door | The game set them down in the car, shut in on the ground and stuck in flight; seen in game | Lead |
 | N47 | 02:55 | Observation deck at the bigger scales | A ceiling at most 16 rows over its floor, the starlight panels under it; nothing changes at scale 2 | Its story otherwise rose 68 or 110 blocks into her nose as bare skin; seen at scale 3 | Lead |
 | N48 | 03:05 | Second code review | Fixed: the helmet's breathing reckoned by her middle (now her control head, as the welcome is); Max Q at y 300 of her head, lost at scale 3 and 4 (now 160 blocks over the ground); the plumes' packets (flames batched, smoke halved) and their size by the config's scale (now her own); the rover bay's constants; and, found play-testing the fix, a take-off announcement made after lift-off on a quick re-launch (now let go as the countdown begins) | Independent review agent, play-tests | Review, lead |
+| N49 | 03:20 | Her rooms' mood (third panel, a critique of the night's screenshots) | Each story's LED strips start in its lift button's colour (a child pressing a colour steps out into it); lanterns on chains five rows up in the entry, mess and cargo bay, soul lanterns over the bunks; the observation deck's starlight up its whole wall (a planetarium) and its seats in warm colours; red armchairs in the entry, coloured blankets; the club's windows built at their darkest | Every room was the same white tile and grey floor, the furniture low and the height over it bare | Panel, lead |
+| N50 | 03:25 | Backs of the boards and panels (same panel) | Brushed steel in a darker steel frame, the lift machine brushed steel with a hazard band | Black backs showed through the glass shaft as slabs on every story | Panel, lead |
+| N51 | 03:40 | A lift-off worth the countdown (same panel) | Under 15 blocks over the ground, a bed of flames and embers bursts from the ground under her as wide as she is built, a flash every 4 ticks (seen by night); aboard, the view shakes for 3 s at ignition (client `cameraShake`). Tried first at her fins' height and narrower: lost behind her plumes | Lift-off had looked like a gentle hover after a ten-second build-up | Panel, lead |
+| N52 | 03:40 | The panel's other ideas | Not done tonight: a carpet ring round each shaft doorway, lamps over the lab's counters, the cockpit ceiling's livery tint, and the rover camera's item name overlapping its key help (a small client fix, left for a review with you) | Lower value for the time left; the play-test comes first | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -168,6 +174,10 @@ Commits on main, newest last, with the versions handed out.
   block wide between the LED panel and the board: line up on it); y 1,200 set on the autopilot's screen and Take Off
   pressed (it assembled her and counted down); a pilot seat sat in for the climb, space from it and the Edge of Space
   goal in chat; left unattended, she came down by herself with the landing burn, touchdown and arrival calls.
+- alpha.174: her rooms' moods (N49), the steel backs (N50), the lift-off's fire and shake (N51). Play-tested: a freshly
+  built rocket at dusk (the mess warm under its lanterns, the bunk room grape, the deck a starry dome); the boards'
+  steel backs through the cargo bay's shaft glass; lift-off from the ground 40 blocks off (the bed of fire and embers
+  under her as she rose, smoke rolling out round it) and from her cockpit (the view shaking against her own screen).
 
 ## Background agents
 
