@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,6 +52,12 @@ public class HaloLightBlock extends Block {
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    /** Put down only where it hangs from something (see {@link Hanging}). */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Hanging.hangs(context) ? defaultBlockState() : null;
     }
 
     @Override

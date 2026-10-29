@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -62,6 +63,12 @@ public class DiscoBallBlock extends Block implements EntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(LIT);
+    }
+
+    /** Put down only where it hangs from something (see {@link Hanging}). */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Hanging.hangs(context) ? defaultBlockState() : null;
     }
 
     /** The ball's middle in the level, for a ball at this position. */

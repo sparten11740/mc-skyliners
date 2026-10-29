@@ -43,11 +43,11 @@ public class ExitSignBlock extends HorizontalDirectionalBlock {
         builder.add(FACING);
     }
 
-    /** Against the side of a block it faces out from it; put anywhere else it faces whoever puts it there. */
+    /** Against the side of a block it faces out from it; nowhere else, as its back is fixed to a wall. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction clicked = context.getClickedFace();
-        return defaultBlockState().setValue(FACING, clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite());
+        return clicked.getAxis().isHorizontal() ? defaultBlockState().setValue(FACING, clicked) : null;
     }
 
     @Override

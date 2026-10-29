@@ -1861,7 +1861,8 @@ ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl;
 a brass line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her
 only outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the
 wall, warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in the creative tab beside the Halo
-Light).
+Light: a wall washer goes only on a wall and a halo light only under a ceiling or a light cable, and so do the pendant
+light and the gym rings, so nothing stands on the floor with its cable up in the air).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the

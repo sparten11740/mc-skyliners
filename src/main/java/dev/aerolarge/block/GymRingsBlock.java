@@ -57,9 +57,10 @@ public class GymRingsBlock extends HorizontalDirectionalBlock {
         builder.add(FACING);
     }
 
+    /** Put down only where they hang from something (see {@link Hanging}), facing whoever puts them up. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return Hanging.hangs(context) ? defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()) : null;
     }
 
     @Override

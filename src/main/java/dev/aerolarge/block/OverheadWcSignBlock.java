@@ -97,12 +97,15 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
 
     /**
      * Against the side of a block it stands out from it, facing away; against the underside of one it hangs from it,
-     * facing whoever puts it up; put anywhere else it faces them too. Its arrow is the one it was taken down or picked
-     * with.
+     * facing whoever puts it up; not on top of one, where it would stand out from nothing. Its arrow is the one it was
+     * taken down or picked with.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction clicked = context.getClickedFace();
+        if (clicked == Direction.UP) {
+            return null;
+        }
         return defaultBlockState()
             .setValue(FACING, clicked.getAxis().isHorizontal() ? clicked : context.getHorizontalDirection().getOpposite())
             .setValue(HANGING, clicked == Direction.DOWN);

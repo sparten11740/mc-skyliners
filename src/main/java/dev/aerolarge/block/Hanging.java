@@ -1,0 +1,26 @@
+package dev.aerolarge.block;
+
+import dev.aerolarge.AerolargeRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.BlockState;
+
+/**
+ * What hangs from a ceiling (the halo and pendant lights, the gym rings and the disco ball): put down by a player only
+ * under something to hang from, the underside of a block clicked, or a solid block or a light cable over it, never
+ * standing on the floor with its cable or ropes reaching up into the air. The blueprints hang them where they hang
+ * them.
+ */
+final class Hanging {
+    private Hanging() {
+    }
+
+    /** Whether what a player puts down here would hang from something. */
+    static boolean hangs(BlockPlaceContext context) {
+        BlockPos above = context.getClickedPos().above();
+        BlockState over = context.getLevel().getBlockState(above);
+        return context.getClickedFace() == Direction.DOWN || over.is(AerolargeRegistry.LIGHT_CABLE.get())
+            || over.isFaceSturdy(context.getLevel(), above, Direction.DOWN);
+    }
+}

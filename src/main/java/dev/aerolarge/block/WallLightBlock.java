@@ -5,6 +5,7 @@ import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -58,6 +59,13 @@ public class WallLightBlock extends HorizontalDirectionalBlock {
             case COOL -> COOL_LIGHT;
             case PINK -> PINK_LIGHT;
         };
+    }
+
+    /** Put down against a wall, shining out from it; nowhere else, as its light is drawn up the wall behind it. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction clicked = context.getClickedFace();
+        return clicked.getAxis().isHorizontal() ? defaultBlockState().setValue(FACING, clicked) : null;
     }
 
     /** A wall washer shining out one way, in a tone. */

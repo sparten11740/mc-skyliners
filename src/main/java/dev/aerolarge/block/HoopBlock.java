@@ -100,10 +100,11 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         builder.add(FACING, TEAM);
     }
 
+    /** Put up against a wall, its ring out from it; not on a floor or a ceiling, where it would hang on nothing. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction clicked = context.getClickedFace();
-        return defaultBlockState().setValue(FACING, clicked.getAxis().isHorizontal() ? clicked.getOpposite() : context.getHorizontalDirection());
+        return clicked.getAxis().isHorizontal() ? defaultBlockState().setValue(FACING, clicked.getOpposite()) : null;
     }
 
     @Override
