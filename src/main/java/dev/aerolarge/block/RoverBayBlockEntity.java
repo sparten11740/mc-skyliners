@@ -11,6 +11,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -107,6 +109,12 @@ public class RoverBayBlockEntity extends BlockEntity {
     private int missing;
     private Trolley trolley = Trolley.OVER_PLATFORM;
     /** The game time the panel's lamp shows red until. */
+    /** How loud a spoken answer's note is, and its pitch: setting off, coming home, nothing to do and wait. */
+    private static final float ANSWER_VOLUME = 0.6F;
+    private static final float GOING_PITCH = 1.5F;
+    private static final float HOME_PITCH = 0.9F;
+    private static final float NOTHING_PITCH = 0.7F;
+    private static final float WAIT_PITCH = 1.0F;
     private long refusedUntil;
     /** Whether her countdown waits for the rover, and everyone aboard has been told. */
     private boolean holding;
@@ -444,7 +452,28 @@ public class RoverBayBlockEntity extends BlockEntity {
     }
 
     private static void tell(ServerPlayer player, String what) {
+        answer(player, what);
+    }
+
+    /**
+     * An answer from a rover's bay or its remote, in words over the hotbar and in a note of its own, so that a player
+     * who cannot read hears it too: a bright chime as it sets off down or a remote is handed over, a lower one as it
+     * comes home, a soft low pling for nothing to do, and a deep note for wait; a refusal has its own bass.
+     */
+    public static void answer(ServerPlayer player, String what) {
         player.displayClientMessage(Component.translatable("message.aerolarge.rover." + what), true);
+        switch (what) {
+            case "deploying", "remote_given" -> note(player, SoundEvents.NOTE_BLOCK_CHIME, GOING_PITCH);
+            case "coming_home" -> note(player, SoundEvents.NOTE_BLOCK_CHIME, HOME_PITCH);
+            case "already_out", "already_home", "has_remote", "unpaired" -> note(player, SoundEvents.NOTE_BLOCK_PLING, NOTHING_PITCH);
+            case "busy" -> note(player, SoundEvents.NOTE_BLOCK_BASS, WAIT_PITCH);
+            default -> {
+            }
+        }
+    }
+
+    private static void note(ServerPlayer player, Holder<SoundEvent> sound, float pitch) {
+        player.playNotifySound(sound.value(), SoundSource.BLOCKS, ANSWER_VOLUME, pitch);
     }
 
     private void sync() {

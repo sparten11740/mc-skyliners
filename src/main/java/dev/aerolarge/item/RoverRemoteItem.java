@@ -103,7 +103,7 @@ public class RoverRemoteItem extends Item {
             return InteractionResultHolder.pass(stack);
         }
         if (paired == null) {
-            server.displayClientMessage(Component.translatable("message.aerolarge.rover.unpaired"), true);
+            RoverBayBlockEntity.answer(server, "unpaired");
             return InteractionResultHolder.success(stack);
         }
         Rover rover = Rover.find(level, paired);
@@ -127,7 +127,7 @@ public class RoverRemoteItem extends Item {
             default -> "busy";
         };
         rover.comeHome(false);
-        player.displayClientMessage(Component.translatable("message.aerolarge.rover." + said), true);
+        RoverBayBlockEntity.answer(player, said);
     }
 
     @Override
