@@ -27,7 +27,10 @@ What the rocket has now that she did not have at 22:55, each with its server or 
 - **The rover**: lowered from her cargo bay on a boom and winch, driven by remote from a chase camera, called home,
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
-  over the spot, the lift music restarting every tick aboard, and the code review's findings.
+  over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
+  pin, and three code reviews' findings.
+
+The last version tonight is alpha.176.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -227,6 +230,10 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
   ignores them and comes back down where she rose (her screens now say RETURN, N54). With a pin, the circle tile and
   the land switch are gone for her (since 04:09); hiding the dial too wants the screen laid out again, so I left it
   for you.
+- Over her cockpit's glass, the inside of her nose shows as a stepped dome of bare cover in her livery's colour (red
+  in the default), which the design panel called a red tint over the cockpit. A ceiling over the cockpit, as the deck
+  has at the bigger scales, would hide it, but would also hide her livery from inside and needs care round what the
+  nose holds; I left the choice to you (screenshots `run/blockpilot/screenshots/2026-10-29_04.11.32.*`).
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
