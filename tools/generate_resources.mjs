@@ -4615,10 +4615,11 @@ function rocketRoomFurniture() {
   const boot = (x, z, shaft, foot) => [goods(x, x + 2.5, LOW, 1.5, z, z + 5.5, foot), goods(x, x + 2.5, LOW + 1.5, 3.5, z + 3, z + 5.5, shaft)];
   const helmet = [8, 0, 13.5, 5];
   const helmetSide = [14, 0, 16, 2];
-  // A rolled towel lying from front to back, its spiral end to the front, the rest of it its colour's stripes; and a
-  // folded one, its fold to the front.
-  const roll = (x, y, z0, z1, colour) => goods(x, x + 3.5, y, 3, z0, z1, [4 * colour, 0, 4 * colour + 3.5, 3], [4 * colour, 12, 4 * colour + 3.5, 13]);
-  const folded = (y, z0, z1, colour) => goods(10.5, 14.5, y, 1.5, z0, z1, [4 * colour, 4, 4 * colour + 4, 5.5]);
+  // A fat rolled towel lying from front to back, its spiral end to the front, the rest of it its colour's terry with a
+  // stripe; and a folded one, its fold to the front.
+  const ROLL = 4.5;
+  const roll = (x, y, z0, z1, colour) => goods(x, x + ROLL, y, ROLL, z0, z1, [5 * colour, 0, 5 * colour + 5, 5], [5 * colour, 10, 5 * colour + 5, 15]);
+  const folded = (y, z0, z1, colour) => goods(10, 14.5, y, 1.5, z0, z1, [5 * colour, 6, 5 * colour + 5, 8]);
   const kinds = {
     boots: { texture: "shelf_boots", parts: [
       ...boot(2, 4, [0, 9, 2.5, 12.5], [0, 13, 2.5, 14.5]), ...boot(5, 4, [0, 9, 2.5, 12.5], [0, 13, 2.5, 14.5]),
@@ -4643,10 +4644,9 @@ function rocketRoomFurniture() {
       goods(10, 12.5, HIGH, 4, 6, 8.5, [4, 0, 6.5, 4]), goods(12.5, 14.5, HIGH, 3, 7, 9, [0, 8, 2, 11]),
     ] },
     towels: { texture: "shelf_towels", parts: [
-      roll(1.5, LOW, 4, 12, 0), roll(5, LOW, 4, 12, 1), roll(8.5, LOW, 4, 12, 2), roll(12, LOW, 4, 12, 3),
-      roll(3.25, LOW + 3, 4.5, 11.5, 2), roll(6.75, LOW + 3, 4.5, 11.5, 0), roll(10.25, LOW + 3, 4.5, 11.5, 1),
-      roll(2, HIGH, 4, 12, 3), roll(5.5, HIGH, 4, 12, 1), roll(3.75, HIGH + 3, 4.5, 11.5, 0),
-      folded(HIGH, 5, 11, 2), folded(HIGH + 1.5, 5.5, 10.5, 0),
+      roll(1.5, LOW, 4, 12, 0), roll(6, LOW, 4, 12, 1), roll(10.5, LOW, 4, 12, 2),
+      roll(1.5, HIGH, 4, 12, 2), roll(6, HIGH, 4.5, 11.5, 0),
+      folded(HIGH, 5, 11, 1), folded(HIGH + 1.5, 5.5, 10.5, 0), folded(HIGH + 3, 5, 11, 2),
     ] },
     tools: { texture: "shelf_tools", parts: [
       goods(1.5, 8, LOW, 4, 4.5, 11, [0, 2, 6.5, 6]), goods(3.5, 6, LOW + 4, 0.75, 7, 8.5, [0, 0, 2.5, 0.75]),

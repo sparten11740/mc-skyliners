@@ -5826,18 +5826,21 @@ function rocketRoomTextures() {
     return x % 4 === 0 ? scaled(PRESERVES[jar], 1.3) : PRESERVES[jar];
   }, 3);
 
-  // Towels in four colours, four pixels across each: a roll's spiral end, a folded towel's folds, and a towel's side,
-  // its colour striped.
-  const TOWELS = [[0xe8, 0x70, 0x60], [0x2a, 0xa0, 0xa8], [0xe8, 0xf0, 0xf8], [0xe2, 0xc8, 0x8e]];
-  const STRIPES = [[0xf8, 0xf0, 0xe8], [0xf0, 0xf8, 0xf8], [0x3a, 0x6c, 0xc8], [0xc8, 0x70, 0x40]];
+  // Towels in three colours, five pixels across each: a fat roll's spiral end, round, its turns shading darker inward
+  // to a dark hollow; a folded towel's folds; and a towel's terry side, a white stripe near one end.
+  const TOWELS = [[0xf0, 0x7a, 0x66], [0x2c, 0xb0, 0xb8], [0xf2, 0xd2, 0x8a]];
   texture(blockOutput, "shelf_towels", (x, y) => {
-    const towel = Math.floor(x / 4);
-    if (y < 3) {
-      const ring = Math.round(Math.hypot(x % 4 - 1.5, y - 1)) % 2;
-      return ring === 0 ? TOWELS[towel] : scaled(TOWELS[towel], 0.78);
+    const towel = Math.floor(x / 5);
+    if (towel > 2) return [0x30, 0x33, 0x38];
+    const colour = TOWELS[towel];
+    if (y < 5) {
+      const round = Math.hypot(x % 5 - 2, y - 2);
+      if (round > 2.4) return [0x30, 0x33, 0x38];
+      if (round < 0.6) return scaled(colour, 0.45);
+      return Math.round(round * 1.5) % 2 === 0 ? colour : scaled(colour, 0.72);
     }
-    if (y >= 4 && y < 6) return y === 5 ? scaled(TOWELS[towel], 0.82) : TOWELS[towel];
-    if (y === 12) return x % 4 === 1 ? STRIPES[towel] : TOWELS[towel];
+    if (y >= 6 && y < 8) return y === 7 ? scaled(colour, 0.8) : colour;
+    if (y >= 10 && y < 15) return y === 12 ? [0xf8, 0xf6, 0xf0] : (x + y) % 3 === 0 ? scaled(colour, 0.9) : colour;
     return [0x30, 0x33, 0x38];
   }, 2);
 
