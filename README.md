@@ -2246,7 +2246,10 @@ as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`Rock
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
-them, and `RocketPilotSeats` the cockpit's seats); its
+them, and `RocketPilotSeats` the cockpit's seats); its rooms' own furniture is `ShelfUnitBlock` and `PalletRackBlock`,
+and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
+`ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
+and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
