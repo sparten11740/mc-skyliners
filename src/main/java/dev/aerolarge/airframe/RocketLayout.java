@@ -247,7 +247,7 @@ public final class RocketLayout implements Layout {
     @Nullable
     private BlockState finished(BlockPos at, BlockState state) {
         if (state.is(AerolargeRegistry.CABIN_FLOOR.get())) {
-            return finishedFloor(at.getY());
+            return inside(at) ? finishedFloor(at.getY()) : null;
         }
         RocketFinish finish = finishAt(at.getY());
         if (finish != null && state.getBlock() instanceof OvalWindowBlock) {
@@ -271,17 +271,24 @@ public final class RocketLayout implements Layout {
         return seen ? panel : null;
     }
 
+    /** Whether a block lies inside her body, not out past her skin, as the step before her door does. */
+    private boolean inside(BlockPos at) {
+        return surface.depth(at.getX(), at.getY() + 0.5, at.getZ()) < 0;
+    }
+
     /**
      * A block of plain floor finished: on a story's floor row, as that story's floor over the ceiling of the story
-     * under it; within a story, as a mezzanine or a lower ceiling of its own is, its room's on both sides; null under
-     * her entry story.
+     * under it, and on the cockpit's, as the cockpit's over her highest story's, however many stories she has; within
+     * a story, as a mezzanine or a lower ceiling of its own is, its room's on both sides; null under her entry story.
      */
     @Nullable
     private BlockState finishedFloor(int y) {
         int story = floors.indexOf(y);
-        if (story >= 0 || y == noseFoot) {
-            int over = story < 0 ? floors.size() : story;
-            return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(over), RocketFinish.ofStory(Math.max(0, over - 1)));
+        if (y == noseFoot) {
+            return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.COCKPIT, RocketFinish.ofStory(floors.size() - 1));
+        }
+        if (story >= 0) {
+            return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(story), RocketFinish.ofStory(Math.max(0, story - 1)));
         }
         RocketFinish within = finishAt(y);
         return within == null ? null : AerolargeRegistry.ROCKET_FLOOR.get().between(within, within);
