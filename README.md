@@ -1880,7 +1880,14 @@ chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on e
 the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
 bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
 light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
-creative tab after the Shaft Decoration, hangs a chain hoist; broken, each keeps what it is, its item showing it). The
+creative tab after the Shaft Decoration, hangs a chain hoist; put up by hand each takes its shape from where it goes:
+under a ceiling it hangs as these do; on a wall the patches hang flat from a rod, the hoist from a braced jib arm,
+the pans from a rail, the lights and the bunting loop along it from hooks, the basket hangs from a curled bracket, the
+spotlight angles down and out from a clamp on an arm and the tray runs on a bracket; and on the floor a patch hangs
+from a banner stand, the hoist in a little A-frame gantry, the pans from a standing rack with an upright at each end,
+the lights glow coiled in a glass jar, the basket sits on a plant stand, the bunting runs between chrome posts, the
+spotlight stands on a tripod angled up and away, and the cables cross under a yellow cable cover; broken, each keeps
+what it is, its item showing it). The
 entry story is in two
 halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space

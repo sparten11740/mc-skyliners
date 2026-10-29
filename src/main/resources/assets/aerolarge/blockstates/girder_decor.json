@@ -1,116 +1,596 @@
 {
   "variants": {
-    "axis=x,kind=mission_patches,part=first": {
+    "axis=x,kind=mission_patches,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_mission_patches_first",
       "y": 270
     },
-    "axis=x,kind=mission_patches,part=second": {
+    "axis=x,kind=mission_patches,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_mission_patches_second",
       "y": 270
     },
-    "axis=x,kind=chain_hoist,part=first": {
+    "axis=x,kind=chain_hoist,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_chain_hoist",
       "y": 270
     },
-    "axis=x,kind=chain_hoist,part=second": {
+    "axis=x,kind=chain_hoist,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_chain_hoist",
       "y": 270
     },
-    "axis=x,kind=pot_rack,part=first": {
+    "axis=x,kind=pot_rack,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_pot_rack_first",
       "y": 270
     },
-    "axis=x,kind=pot_rack,part=second": {
+    "axis=x,kind=pot_rack,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_pot_rack_second",
       "y": 270
     },
-    "axis=x,kind=fairy_lights,part=first": {
+    "axis=x,kind=fairy_lights,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_fairy_lights_first",
       "y": 270
     },
-    "axis=x,kind=fairy_lights,part=second": {
+    "axis=x,kind=fairy_lights,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_fairy_lights_second",
       "y": 270
     },
-    "axis=x,kind=hanging_basket,part=first": {
+    "axis=x,kind=hanging_basket,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_hanging_basket",
       "y": 270
     },
-    "axis=x,kind=hanging_basket,part=second": {
+    "axis=x,kind=hanging_basket,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_hanging_basket",
       "y": 270
     },
-    "axis=x,kind=bunting,part=first": {
+    "axis=x,kind=bunting,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_bunting_first",
       "y": 270
     },
-    "axis=x,kind=bunting,part=second": {
+    "axis=x,kind=bunting,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_bunting_second",
       "y": 270
     },
-    "axis=x,kind=spotlight,part=first": {
+    "axis=x,kind=spotlight,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_spotlight_first",
       "y": 270
     },
-    "axis=x,kind=spotlight,part=second": {
+    "axis=x,kind=spotlight,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_spotlight_second",
       "y": 270
     },
-    "axis=x,kind=cable_tray,part=first": {
+    "axis=x,kind=cable_tray,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_cable_tray",
       "y": 270
     },
-    "axis=x,kind=cable_tray,part=second": {
+    "axis=x,kind=cable_tray,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_cable_tray",
       "y": 270
     },
-    "axis=z,kind=mission_patches,part=first": {
+    "axis=z,kind=mission_patches,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_mission_patches_first"
     },
-    "axis=z,kind=mission_patches,part=second": {
+    "axis=z,kind=mission_patches,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_mission_patches_second"
     },
-    "axis=z,kind=chain_hoist,part=first": {
+    "axis=z,kind=chain_hoist,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_chain_hoist"
     },
-    "axis=z,kind=chain_hoist,part=second": {
+    "axis=z,kind=chain_hoist,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_chain_hoist"
     },
-    "axis=z,kind=pot_rack,part=first": {
+    "axis=z,kind=pot_rack,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_pot_rack_first"
     },
-    "axis=z,kind=pot_rack,part=second": {
+    "axis=z,kind=pot_rack,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_pot_rack_second"
     },
-    "axis=z,kind=fairy_lights,part=first": {
+    "axis=z,kind=fairy_lights,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_fairy_lights_first"
     },
-    "axis=z,kind=fairy_lights,part=second": {
+    "axis=z,kind=fairy_lights,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_fairy_lights_second"
     },
-    "axis=z,kind=hanging_basket,part=first": {
+    "axis=z,kind=hanging_basket,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_hanging_basket"
     },
-    "axis=z,kind=hanging_basket,part=second": {
+    "axis=z,kind=hanging_basket,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_hanging_basket"
     },
-    "axis=z,kind=bunting,part=first": {
+    "axis=z,kind=bunting,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_bunting_first"
     },
-    "axis=z,kind=bunting,part=second": {
+    "axis=z,kind=bunting,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_bunting_second"
     },
-    "axis=z,kind=spotlight,part=first": {
+    "axis=z,kind=spotlight,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_spotlight_first"
     },
-    "axis=z,kind=spotlight,part=second": {
+    "axis=z,kind=spotlight,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_spotlight_second"
     },
-    "axis=z,kind=cable_tray,part=first": {
+    "axis=z,kind=cable_tray,mount=ceiling,part=first": {
       "model": "aerolarge:block/girder_decor_cable_tray"
     },
-    "axis=z,kind=cable_tray,part=second": {
+    "axis=z,kind=cable_tray,mount=ceiling,part=second": {
       "model": "aerolarge:block/girder_decor_cable_tray"
+    },
+    "facing=north,kind=mission_patches,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_first"
+    },
+    "facing=north,kind=mission_patches,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_second"
+    },
+    "facing=north,kind=chain_hoist,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall"
+    },
+    "facing=north,kind=chain_hoist,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall"
+    },
+    "facing=north,kind=pot_rack,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_first"
+    },
+    "facing=north,kind=pot_rack,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_second"
+    },
+    "facing=north,kind=fairy_lights,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_first"
+    },
+    "facing=north,kind=fairy_lights,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_second"
+    },
+    "facing=north,kind=hanging_basket,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall"
+    },
+    "facing=north,kind=hanging_basket,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall"
+    },
+    "facing=north,kind=bunting,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_first"
+    },
+    "facing=north,kind=bunting,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_second"
+    },
+    "facing=north,kind=spotlight,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_first"
+    },
+    "facing=north,kind=spotlight,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_second"
+    },
+    "facing=north,kind=cable_tray,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall"
+    },
+    "facing=north,kind=cable_tray,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall"
+    },
+    "facing=east,kind=mission_patches,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_first",
+      "y": 90
+    },
+    "facing=east,kind=mission_patches,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_second",
+      "y": 90
+    },
+    "facing=east,kind=chain_hoist,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 90
+    },
+    "facing=east,kind=chain_hoist,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 90
+    },
+    "facing=east,kind=pot_rack,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_first",
+      "y": 90
+    },
+    "facing=east,kind=pot_rack,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_second",
+      "y": 90
+    },
+    "facing=east,kind=fairy_lights,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_first",
+      "y": 90
+    },
+    "facing=east,kind=fairy_lights,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_second",
+      "y": 90
+    },
+    "facing=east,kind=hanging_basket,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 90
+    },
+    "facing=east,kind=hanging_basket,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 90
+    },
+    "facing=east,kind=bunting,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_first",
+      "y": 90
+    },
+    "facing=east,kind=bunting,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_second",
+      "y": 90
+    },
+    "facing=east,kind=spotlight,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_first",
+      "y": 90
+    },
+    "facing=east,kind=spotlight,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_second",
+      "y": 90
+    },
+    "facing=east,kind=cable_tray,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 90
+    },
+    "facing=east,kind=cable_tray,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 90
+    },
+    "facing=south,kind=mission_patches,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_first",
+      "y": 180
+    },
+    "facing=south,kind=mission_patches,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_second",
+      "y": 180
+    },
+    "facing=south,kind=chain_hoist,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 180
+    },
+    "facing=south,kind=chain_hoist,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 180
+    },
+    "facing=south,kind=pot_rack,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_first",
+      "y": 180
+    },
+    "facing=south,kind=pot_rack,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_second",
+      "y": 180
+    },
+    "facing=south,kind=fairy_lights,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_first",
+      "y": 180
+    },
+    "facing=south,kind=fairy_lights,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_second",
+      "y": 180
+    },
+    "facing=south,kind=hanging_basket,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 180
+    },
+    "facing=south,kind=hanging_basket,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 180
+    },
+    "facing=south,kind=bunting,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_first",
+      "y": 180
+    },
+    "facing=south,kind=bunting,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_second",
+      "y": 180
+    },
+    "facing=south,kind=spotlight,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_first",
+      "y": 180
+    },
+    "facing=south,kind=spotlight,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_second",
+      "y": 180
+    },
+    "facing=south,kind=cable_tray,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 180
+    },
+    "facing=south,kind=cable_tray,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 180
+    },
+    "facing=west,kind=mission_patches,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_first",
+      "y": 270
+    },
+    "facing=west,kind=mission_patches,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_wall_second",
+      "y": 270
+    },
+    "facing=west,kind=chain_hoist,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 270
+    },
+    "facing=west,kind=chain_hoist,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_wall",
+      "y": 270
+    },
+    "facing=west,kind=pot_rack,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_first",
+      "y": 270
+    },
+    "facing=west,kind=pot_rack,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_wall_second",
+      "y": 270
+    },
+    "facing=west,kind=fairy_lights,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_first",
+      "y": 270
+    },
+    "facing=west,kind=fairy_lights,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_wall_second",
+      "y": 270
+    },
+    "facing=west,kind=hanging_basket,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 270
+    },
+    "facing=west,kind=hanging_basket,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_wall",
+      "y": 270
+    },
+    "facing=west,kind=bunting,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_first",
+      "y": 270
+    },
+    "facing=west,kind=bunting,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_wall_second",
+      "y": 270
+    },
+    "facing=west,kind=spotlight,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_first",
+      "y": 270
+    },
+    "facing=west,kind=spotlight,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_wall_second",
+      "y": 270
+    },
+    "facing=west,kind=cable_tray,mount=wall,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 270
+    },
+    "facing=west,kind=cable_tray,mount=wall,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_wall",
+      "y": 270
+    },
+    "facing=north,kind=mission_patches,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_first"
+    },
+    "facing=north,kind=mission_patches,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_second"
+    },
+    "facing=north,kind=chain_hoist,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor"
+    },
+    "facing=north,kind=chain_hoist,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor"
+    },
+    "facing=north,kind=pot_rack,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_first"
+    },
+    "facing=north,kind=pot_rack,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_second"
+    },
+    "facing=north,kind=fairy_lights,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor"
+    },
+    "facing=north,kind=fairy_lights,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor"
+    },
+    "facing=north,kind=hanging_basket,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor"
+    },
+    "facing=north,kind=hanging_basket,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor"
+    },
+    "facing=north,kind=bunting,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_first"
+    },
+    "facing=north,kind=bunting,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_second"
+    },
+    "facing=north,kind=spotlight,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_first"
+    },
+    "facing=north,kind=spotlight,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_second"
+    },
+    "facing=north,kind=cable_tray,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor"
+    },
+    "facing=north,kind=cable_tray,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor"
+    },
+    "facing=east,kind=mission_patches,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_first",
+      "y": 90
+    },
+    "facing=east,kind=mission_patches,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_second",
+      "y": 90
+    },
+    "facing=east,kind=chain_hoist,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 90
+    },
+    "facing=east,kind=chain_hoist,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 90
+    },
+    "facing=east,kind=pot_rack,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_first",
+      "y": 90
+    },
+    "facing=east,kind=pot_rack,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_second",
+      "y": 90
+    },
+    "facing=east,kind=fairy_lights,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 90
+    },
+    "facing=east,kind=fairy_lights,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 90
+    },
+    "facing=east,kind=hanging_basket,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 90
+    },
+    "facing=east,kind=hanging_basket,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 90
+    },
+    "facing=east,kind=bunting,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_first",
+      "y": 90
+    },
+    "facing=east,kind=bunting,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_second",
+      "y": 90
+    },
+    "facing=east,kind=spotlight,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_first",
+      "y": 90
+    },
+    "facing=east,kind=spotlight,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_second",
+      "y": 90
+    },
+    "facing=east,kind=cable_tray,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 90
+    },
+    "facing=east,kind=cable_tray,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 90
+    },
+    "facing=south,kind=mission_patches,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_first",
+      "y": 180
+    },
+    "facing=south,kind=mission_patches,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_second",
+      "y": 180
+    },
+    "facing=south,kind=chain_hoist,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 180
+    },
+    "facing=south,kind=chain_hoist,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 180
+    },
+    "facing=south,kind=pot_rack,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_first",
+      "y": 180
+    },
+    "facing=south,kind=pot_rack,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_second",
+      "y": 180
+    },
+    "facing=south,kind=fairy_lights,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 180
+    },
+    "facing=south,kind=fairy_lights,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 180
+    },
+    "facing=south,kind=hanging_basket,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 180
+    },
+    "facing=south,kind=hanging_basket,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 180
+    },
+    "facing=south,kind=bunting,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_first",
+      "y": 180
+    },
+    "facing=south,kind=bunting,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_second",
+      "y": 180
+    },
+    "facing=south,kind=spotlight,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_first",
+      "y": 180
+    },
+    "facing=south,kind=spotlight,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_second",
+      "y": 180
+    },
+    "facing=south,kind=cable_tray,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 180
+    },
+    "facing=south,kind=cable_tray,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 180
+    },
+    "facing=west,kind=mission_patches,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_first",
+      "y": 270
+    },
+    "facing=west,kind=mission_patches,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_mission_patches_floor_second",
+      "y": 270
+    },
+    "facing=west,kind=chain_hoist,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 270
+    },
+    "facing=west,kind=chain_hoist,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_chain_hoist_floor",
+      "y": 270
+    },
+    "facing=west,kind=pot_rack,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_first",
+      "y": 270
+    },
+    "facing=west,kind=pot_rack,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_pot_rack_floor_second",
+      "y": 270
+    },
+    "facing=west,kind=fairy_lights,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 270
+    },
+    "facing=west,kind=fairy_lights,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_fairy_lights_floor",
+      "y": 270
+    },
+    "facing=west,kind=hanging_basket,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 270
+    },
+    "facing=west,kind=hanging_basket,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_hanging_basket_floor",
+      "y": 270
+    },
+    "facing=west,kind=bunting,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_first",
+      "y": 270
+    },
+    "facing=west,kind=bunting,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_bunting_floor_second",
+      "y": 270
+    },
+    "facing=west,kind=spotlight,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_first",
+      "y": 270
+    },
+    "facing=west,kind=spotlight,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_spotlight_floor_second",
+      "y": 270
+    },
+    "facing=west,kind=cable_tray,mount=floor,part=first": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 270
+    },
+    "facing=west,kind=cable_tray,mount=floor,part=second": {
+      "model": "aerolarge:block/girder_decor_cable_tray_floor",
+      "y": 270
     }
   }
 }

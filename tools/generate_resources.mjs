@@ -2389,6 +2389,10 @@ function towerInstrumentsLang() {
 // and flat at its foot, each stretch of it a box turned to an angle a model allows. What glows, the bulbs, the
 // spotlights' lenses and their beams, glows whatever the light around; the beams, faint cones of coloured light, reach
 // down past the block.
+// Put up by hand, each can also be fixed to a wall or stand on the floor, each drawn facing north, its wall to the
+// south, and turned for the way it faces; what runs along a girder runs along its wall or across the floor, the first
+// of a pair on the left as it is faced, drawn in the girder's frame and turned a quarter where that is simpler. Each
+// draws in what holds it there, in the iron it hangs by, the girders' own steel or chrome.
 function girderDecor() {
   const block = (name) => `${ID}:block/${name}`;
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
@@ -2418,6 +2422,39 @@ function girderDecor() {
     return { ...element, from: [element.from[0], element.from[1], 16 - element.to[2]], to: [element.to[0], element.to[1], 16 - element.from[2]],
       ...(turned ? { rotation: turned } : {}), faces };
   };
+  // A point moved so far along each axis, in pixels; and elements moved so, with what they turn about.
+  const shift = ([x, y, z], [dx, dy, dz]) => [x + dx, y + dy, z + dz];
+  const moved = (elements, by) => elements.map((element) => ({ ...element, from: shift(element.from, by), to: shift(element.to, by),
+    ...(element.rotation ? { rotation: { ...element.rotation, origin: shift(element.rotation.origin, by) } } : {}) }));
+  // An element turned a quarter clockwise seen from above, about the middle of the block, as a blockstate's y of 90
+  // turns a model, north to east: what runs along z in the girder's frame then runs along x, across a wall or the
+  // floor, and what stood by the block's east side stands by its south. Its sides' pictures go round with it and its
+  // top's and bottom's are turned to match; a turn about x becomes one about z, and one about z one about x the other
+  // way.
+  const QUARTER_SIDES = { north: "east", east: "south", south: "west", west: "north" };
+  const QUARTER_AXES = { x: ["z", 1], y: ["y", 1], z: ["x", -1] };
+  const quarterFace = (name, face, [x0, , z0], [x1, , z1]) => {
+    if (QUARTER_SIDES[name]) return [QUARTER_SIDES[name], face];
+    const own = name === "up" ? [x0, z0, x1, z1] : [x0, 16 - z1, x1, 16 - z0];
+    return [name, { ...face, uv: face.uv ?? own, rotation: ((face.rotation ?? 0) + (name === "up" ? 90 : 270)) % 360 }];
+  };
+  const quarterRotation = ({ angle, axis, origin, ...rest }) => ({ ...rest, angle: angle * QUARTER_AXES[axis][1], axis: QUARTER_AXES[axis][0],
+    origin: [16 - origin[2], origin[1], origin[0]] });
+  const quarter = (element) => ({ ...element, from: [16 - element.to[2], element.from[1], element.from[0]], to: [16 - element.from[2], element.to[1], element.to[0]],
+    ...(element.rotation ? { rotation: quarterRotation(element.rotation) } : {}),
+    faces: Object.fromEntries(Object.entries(element.faces).map(([name, face]) => quarterFace(name, face, element.from, element.to))) });
+  const turned = (elements) => elements.map(quarter);
+  // A bar between two points through the middle of the block across x, each [z, y], so thick, at the angle between
+  // them, which must be one a model allows, reaching half its thickness past each into what it joins: a brace.
+  const strut = ([za, ya], [zb, yb], thick, texture) => {
+    const steep = Math.abs(yb - ya) >= Math.abs(zb - za);
+    const [up, out] = steep ? [yb - ya, zb - za] : [zb - za, ya - yb];
+    const sign = Math.sign(up);
+    const angle = Math.round((Math.atan2(out * sign, up * sign) * 180) / Math.PI / 22.5) * 22.5;
+    const [z, y, half, side] = [(za + zb) / 2, (ya + yb) / 2, Math.hypot(zb - za, yb - ya) / 2 + thick / 2, thick / 2];
+    const [from, to] = steep ? [[8 - side, y - half, z - side], [8 + side, y + half, z + side]] : [[8 - side, y - side, z - half], [8 + side, y + side, z + half]];
+    return part(from, to, texture, angle ? { rotation: { angle, axis: "x", origin: [8, y, z] } } : {});
+  };
 
   // The loop of string: how high its tie is, in pixels over the block's foot, how thick the string is, and its
   // stretches across the first block, each where it starts along the block, how far along it runs and how steeply it
@@ -2430,26 +2467,65 @@ function girderDecor() {
   // How high the middle of the string is so far along the first block of its pair, in pixels.
   const stringAt = (z) => STRETCHES.reduce((y, [from, run, angle]) => y - fallen(z - from, run, angle), TIE);
   // The string across the first block, and the clip it is tied to the girder by.
-  const string = (texture) => [
-    ...STRETCHES.map(([from, run, angle]) => {
-      const middle = stringAt(from);
-      const length = run / Math.cos((angle * Math.PI) / 180) + (angle ? STRING / 2 : 0);
-      return part([8 - STRING / 2, middle - STRING / 2, from], [8 + STRING / 2, middle + STRING / 2, from + length], texture,
-        angle ? { rotation: { angle, axis: "x", origin: [8, middle, from] } } : {});
-    }),
-    part([7.5, TIE - 0.5, 0], [8.5, 17, 0.75], "#iron"),
-  ];
+  const strand = (texture) => STRETCHES.map(([from, run, angle]) => {
+    const middle = stringAt(from);
+    const length = run / Math.cos((angle * Math.PI) / 180) + (angle ? STRING / 2 : 0);
+    return part([8 - STRING / 2, middle - STRING / 2, from], [8 + STRING / 2, middle + STRING / 2, from + length], texture,
+      angle ? { rotation: { angle, axis: "x", origin: [8, middle, from] } } : {});
+  });
+  const clip = part([7.5, TIE - 0.5, 0], [8.5, 17, 0.75], "#iron");
   // Along each block, where the bulbs or the pennants hang from the string.
   const ALONG = [2, 6, 10, 14];
-  // A loop's two halves, the string and what hangs from it at each place along it, given how high the string's foot is
-  // there and which along the block it is.
-  const loop = (texture, hung) => ({
-    first: [...string(texture), ...ALONG.map((z, k) => hung(z, stringAt(z) - STRING / 2, k))],
-    second: [...string(texture).map(mirrored), ...ALONG.map((z, k) => hung(z, stringAt(16 - z) - STRING / 2, k))],
+  // A loop's two halves: the string and what it is tied by, the girder's clip unless something else is given, and what
+  // hangs from it at each place along it, given how high the string's foot is there and which along the block it is.
+  const loop = (texture, hung, tie = [clip]) => ({
+    first: [...strand(texture), ...tie, ...ALONG.map((z, k) => hung(z, stringAt(z) - STRING / 2, k))],
+    second: [...[...strand(texture), ...tie].map(mirrored), ...ALONG.map((z, k) => hung(z, stringAt(16 - z) - STRING / 2, k))],
   });
-  // A fairy light's bulb, warm white and amber by turns; a pennant, in the pool's four colours in turn.
-  const bulb = (z, y, k) => part([7.4, y - 1.6, z - 0.6], [8.6, y, z + 0.6], "#bulbs", { uv: k % 2 === 0 ? [0, 0, 8, 16] : [8, 0, 16, 16], glowing: true });
+  // A fairy light's bulb so far across and along the block, warm white and amber by turns; one under a loop, in the
+  // middle across it; a pennant, in the pool's four colours in turn.
+  const bulbAt = (x, z, y, k) => part([x - 0.6, y - 1.6, z - 0.6], [x + 0.6, y, z + 0.6], "#bulbs", { uv: k % 2 === 0 ? [0, 0, 8, 16] : [8, 0, 16, 16], glowing: true });
+  const bulb = (z, y, k) => bulbAt(8, z, y, k);
   const pennant = (z, y, k) => flat([8, y - 5, z - 1.75], [8, y + 0.25, z + 1.75], "#pennants", [8 * (k % 2), 8 * (k >> 1), 8 * (k % 2) + 8, 8 * (k >> 1) + 8]);
+  // On a wall a loop hangs along it a pixel and a quarter off it, tied at each end of its pair to a hook in the wall:
+  // drawn in the girder's frame with the wall to the east, moved up to it and turned. How far the loop is moved, in
+  // pixels from the middle of the block.
+  const LOOP_OFF_WALL = 6.75;
+  const wallHook = part([7.75, TIE - 0.5, 0], [16 - LOOP_OFF_WALL, TIE + 0.5, 0.75], "#iron");
+  const alongWall = ({ first, second }) => ({ first: turned(moved(first, [LOOP_OFF_WALL, 0, 0])), second: turned(moved(second, [LOOP_OFF_WALL, 0, 0])) });
+  // On the floor bunting runs between two chrome posts, one at the outer end of each block of its pair, each on a
+  // weighted foot, so where two pairs meet end to end their posts stand side by side as one.
+  const post = [part([7.5, 1, 0], [8.5, 15.25, 1], "#post"), part([7.25, 15.25, 0], [8.75, 16, 1.25], "#post"), part([6, 0, 0], [10, 1, 2.5], "#iron")];
+  // On the floor fairy lights glow coiled in a glass jar under its copper lid, the battery in the lid: three turns of
+  // wire up inside it, each turned its own way, a bulb hanging from the middle of each side of each turn, warm white
+  // and amber by turns, and the wire up into the lid. How high each turn is, in pixels, and how far it is turned, in
+  // degrees; half a turn's width and how thick the wire is, in pixels.
+  const JAR_TURNS = [[3, 22.5], [5.75, -22.5], [8.5, 45]];
+  const COIL = 2.25;
+  const WIRE = 0.35;
+  // A point so far across and along from the middle of the block, turned so far about it as a model turns.
+  const aroundY = ([x, z], degrees) => {
+    const angle = (degrees * Math.PI) / 180;
+    return [8 + x * Math.cos(angle) + z * Math.sin(angle), 8 - x * Math.sin(angle) + z * Math.cos(angle)];
+  };
+  // The middles of the four sides of a turn, and each side as it lies before the turn is turned.
+  const COIL_SIDES = [[0, -COIL], [0, COIL], [-COIL, 0], [COIL, 0]];
+  const coilSide = ([x, z], y) => (x === 0
+    ? [[8 - COIL, y, 8 + z - WIRE / 2], [8 + COIL, y + WIRE, 8 + z + WIRE / 2]]
+    : [[8 + x - WIRE / 2, y, 8 - COIL], [8 + x + WIRE / 2, y + WIRE, 8 + COIL]]);
+  const coilTurn = ([y, angle], turn) => [
+    ...COIL_SIDES.map((side) => part(...coilSide(side, y), "#wire", { rotation: { angle, axis: "y", origin: [8, y, 8] } })),
+    ...COIL_SIDES.map((side, k) => bulbAt(...aroundY(side, angle), y, k + turn)),
+  ];
+  // The jar: its glass, its shoulder and neck, and the lid screwed on over them.
+  const jar = [
+    part([4.5, 0, 4.5], [11.5, 9.5, 11.5], "#glass"),
+    part([5.25, 9.5, 5.25], [10.75, 10.25, 10.75], "#glass"),
+    part([6, 10.25, 6], [10, 10.75, 10], "#glass"),
+    part([5.5, 10.75, 5.5], [10.5, 12.25, 10.5], "#copper"),
+    ...JAR_TURNS.flatMap(coilTurn),
+    part([8 - WIRE / 2, 8.5, 8 - WIRE / 2], [8 + WIRE / 2, 10.75, 8 + WIRE / 2], "#wire"),
+  ];
 
   // A banner on its rod, hung from two clips, a mission patch on it.
   const banner = [
@@ -2458,29 +2534,84 @@ function girderDecor() {
     part([7.75, 16, 11.5], [8.25, 17, 12.5], "#iron"),
     flat([8, 1, 2], [8, 15, 14], "#patch", [2, 1, 14, 15]),
   ];
-  // A length of chain hanging at a place across the block, between two heights, drawn as the game's own chain is.
-  const chain = (x, low, high) => [
-    { from: [x - 1.5, low, 8], to: [x + 1.5, high, 8], rotation: { angle: 45, axis: "y", origin: [x, 8, 8] },
+  // A banner's rod or crossbar so far along the block, a knob on each end.
+  const rod = (z) => [part([1.5, 15, z - 0.5], [14.5, 16, z + 0.5], "#iron"), part([1, 14.75, z - 0.75], [2, 16, z + 0.75], "#iron"),
+    part([14, 14.75, z - 0.75], [15, 16, z + 0.75], "#iron")];
+  // On a wall the banner hangs flat from its rod a pixel and a half off the wall, the rod held out on two brackets,
+  // each fixed by a plate.
+  const wallBanner = [
+    ...rod(14.5),
+    ...[4, 12].flatMap((x) => [part([x - 0.5, 15.25, 15], [x + 0.5, 15.75, 15.75], "#iron"), part([x - 0.75, 14.5, 15.75], [x + 0.75, 16, 16], "#iron")]),
+    flat([2, 1, 14.5], [14, 15, 14.5], "#patch", [2, 1, 14, 15]),
+  ];
+  // On the floor it hangs from the crossbar of a banner stand, the stand's pole behind it on a collar and a weighted
+  // foot.
+  const standBanner = [
+    ...rod(8),
+    part([7.25, 1, 8.5], [8.75, 16, 10], "#iron"),
+    part([6.75, 0.75, 8.25], [9.25, 2, 10.5], "#iron"),
+    part([5, 0, 6.25], [11, 0.75, 12.25], "#iron"),
+    flat([2, 1, 8], [14, 15, 8], "#patch", [2, 1, 14, 15]),
+  ];
+  // A length of chain hanging at a place across the block, between two heights, drawn as the game's own chain is; so
+  // far along the block, or through its middle.
+  const chain = (x, low, high, z = 8) => [
+    { from: [x - 1.5, low, z], to: [x + 1.5, high, z], rotation: { angle: 45, axis: "y", origin: [x, 8, z] },
       faces: { north: { texture: "#chain", uv: [0, 0, 3, high - low] }, south: { texture: "#chain", uv: [0, 0, 3, high - low] } } },
-    { from: [x, low, 6.5], to: [x, high, 9.5], rotation: { angle: 45, axis: "y", origin: [x, 8, 8] },
+    { from: [x, low, z - 1.5], to: [x, high, z + 1.5], rotation: { angle: 45, axis: "y", origin: [x, 8, z] },
       faces: { east: { texture: "#chain", uv: [3, 0, 6, high - low] }, west: { texture: "#chain", uv: [3, 0, 6, high - low] } } },
   ];
+  // A hoist hanging from the height given, so far along the block: its casing and its end covers, its lifting chain
+  // down to the yellow hook, whose foot is so high, and its hand chain.
+  const hoistBody = (top, z, foot = 0) => [
+    part([5, top - 5.5, z - 2.5], [11, top, z + 2.5], "#casing"),
+    part([4, top - 4.5, z - 1.5], [5, top - 1, z + 1.5], "#iron"),
+    part([11, top - 4.5, z - 1.5], [12, top - 1, z + 1.5], "#iron"),
+    ...chain(8, foot + 4, top - 5.5, z),
+    ...chain(11.5, foot + 1, top - 4.5, z),
+    part([6.5, foot + 2.5, z - 1.5], [9.5, foot + 4, z + 1.5], "#hook"),
+    part([7.5, foot + 1, z], [8.5, foot + 2.5, z + 1], "#hook"),
+    part([7.5, foot, z - 2], [8.5, foot + 1, z + 1], "#hook"),
+    part([7.5, foot + 1, z - 2], [8.5, foot + 2, z - 1], "#hook"),
+  ];
   // The chain hoist: its trolley's side plates either side of the girder's flange and the wheels on it, the plate
-  // across under it, the hoist's casing and its end covers, its lifting chain and its hand chain, and the yellow hook.
+  // across under it, and the hoist under that.
   const hoist = [
     part([0.25, 13.5, 5], [1, 19.5, 11], "#iron"),
     part([15, 13.5, 5], [15.75, 19.5, 11], "#iron"),
     ...[[5, 7], [9, 11]].flatMap(([z0, z1]) => [part([1.5, 19, z0], [3.5, 21, z1], "#steel"), part([12.5, 19, z0], [14.5, 21, z1], "#steel")]),
     part([1, 13.5, 6], [15, 15, 10], "#iron"),
-    part([5, 8, 5.5], [11, 13.5, 10.5], "#casing"),
-    part([4, 9, 6.5], [5, 12.5, 9.5], "#iron"),
-    part([11, 9, 6.5], [12, 12.5, 9.5], "#iron"),
-    ...chain(8, 4, 8),
-    ...chain(11.5, 1, 9),
-    part([6.5, 2.5, 6.5], [9.5, 4, 9.5], "#hook"),
-    part([7.5, 1, 8], [8.5, 2.5, 9], "#hook"),
-    part([7.5, 0, 6], [8.5, 1, 9], "#hook"),
-    part([7.5, 1, 6], [8.5, 2, 7], "#hook"),
+    ...hoistBody(13.5, 8),
+  ];
+  // On a wall the hoist hangs by a shackle from an eye under the end of a jib arm, a short steel beam out from a plate
+  // on the wall, braced from under it by a strut at 45 degrees, a stop across its end.
+  const jibHoist = [
+    part([5.5, 7, 15], [10.5, 16, 16], "#iron"),
+    part([6.5, 14, 2], [9.5, 16, 15], "#girder"),
+    part([6, 13.5, 1.5], [10, 16, 2], "#iron"),
+    strut([15, 8], [9, 14], 1.5, "#girder"),
+    part([7.25, 13.25, 4.75], [8.75, 14, 6.25], "#iron"),
+    part([7.5, 12.5, 5.25], [8.5, 13.25, 5.75], "#iron"),
+    ...hoistBody(12.5, 5.5),
+  ];
+  // On the floor it hangs by its shackle from an eye under the beam of a little A-frame gantry, each frame two steel
+  // legs splayed from its apex to pads on the floor and a tie across them, the hook a pixel clear of the floor. How
+  // high the frames' apexes are, in pixels; and how long their legs are, and how far out to the side their feet stand.
+  const APEX = 15;
+  const GANTRY_LEG = APEX / Math.cos(Math.PI / 8);
+  const GANTRY_SPLAY = APEX * Math.tan(Math.PI / 8);
+  const aFrame = (z) => [
+    ...[22.5, -22.5].map((angle) => part([7.25, APEX - GANTRY_LEG, z - 0.75], [8.75, APEX, z + 0.75], "#girder", { rotation: { angle, axis: "z", origin: [8, APEX, z] } })),
+    part([3.5, 4, z - 0.5], [12.5, 4.75, z + 0.5], "#iron"),
+    ...[8 - GANTRY_SPLAY, 8 + GANTRY_SPLAY].map((x) => part([x - 1, 0, z - 1], [x + 1, 0.5, z + 1], "#iron")),
+  ];
+  const gantryHoist = [
+    part([7, 14.5, 0.5], [9, 16, 15.5], "#girder"),
+    ...aFrame(1.75),
+    ...aFrame(14.25),
+    part([7.25, 13.75, 7.25], [8.75, 14.5, 8.75], "#iron"),
+    part([7.5, 13, 7.75], [8.5, 13.75, 8.25], "#iron"),
+    ...hoistBody(13, 8, 1),
   ];
   // The pot rack: its bar, from its knob in the first block to its knob in the second, hung on a rod in each; on hooks,
   // a pot and a frying pan in the first and a little pan and a smaller pot in the second.
@@ -2499,26 +2630,53 @@ function girderDecor() {
     part([7.6, 6.5, z - 0.4], [8.4, 9.5, z + 0.4], "#iron"),
     hook(z),
   ];
-  const rack = {
-    first: [part([7.5, 11, 2.5], [8.5, 12, 16], "#iron"), part([7.25, 10.75, 2], [8.75, 12.25, 3], "#iron"), part([7.75, 12, 5], [8.25, 17, 6], "#iron"),
-      ...pot(7.5, 2.5, 4, 8.5), ...pan(12.5, 6.5)],
-    second: [part([7.5, 11, 0], [8.5, 12, 13.5], "#iron"), part([7.25, 10.75, 13], [8.75, 12.25, 14], "#iron"), part([7.75, 12, 10], [8.25, 17, 11], "#iron"),
-      ...pan(3, 5), ...pot(9.5, 2, 5, 8.5)],
+  // Each half of the rack: its bar and the knob on its end, how far along the block its rod and its end are, and what
+  // hangs from it; and a shape made of each half.
+  const RACK = {
+    first: { bar: [part([7.5, 11, 2.5], [8.5, 12, 16], "#iron"), part([7.25, 10.75, 2], [8.75, 12.25, 3], "#iron")], rodAt: 5.5, end: 2.5,
+      hung: [...pot(7.5, 2.5, 4, 8.5), ...pan(12.5, 6.5)] },
+    second: { bar: [part([7.5, 11, 0], [8.5, 12, 13.5], "#iron"), part([7.25, 10.75, 13], [8.75, 12.25, 14], "#iron")], rodAt: 10.5, end: 13.5,
+      hung: [...pan(3, 5), ...pot(9.5, 2, 5, 8.5)] },
   };
+  const halves = (shape) => Object.fromEntries(Object.entries(RACK).map(([half, rack]) => [half, shape(rack)]));
+  const rack = halves(({ bar, rodAt, hung }) => [...bar, part([7.75, 12, rodAt - 0.5], [8.25, 17, rodAt + 0.5], "#iron"), ...hung]);
+  // On a wall the rack is a rail along it, three pixels off it on two brackets, each fixed by a plate, the pots against
+  // the wall and the pans' faces to the room: drawn in the girder's frame with the wall to the east, moved up to it and
+  // turned. How far the rail is moved, in pixels from the middle of the block.
+  const RAIL_OFF_WALL = 4.5;
+  const wallRack = halves(({ bar, rodAt, hung }) => turned(moved([
+    ...bar,
+    part([8.5, 11.25, rodAt - 0.5], [16 - RAIL_OFF_WALL, 11.75, rodAt + 0.5], "#iron"),
+    part([15.75 - RAIL_OFF_WALL, 10, rodAt - 1], [16 - RAIL_OFF_WALL, 13, rodAt + 1], "#iron"),
+    ...hung,
+  ], [RAIL_OFF_WALL, 0, 0])));
+  // On the floor it is a standing rack, the bar held up at its ends on an upright each, a knob on top and a foot across
+  // under it, the pots and pans raised clear of the floor, by so many pixels.
+  const RACK_RAISED = 3;
+  const standingRack = halves(({ bar, end, hung }) => turned([
+    ...moved([...bar, ...hung], [0, RACK_RAISED, 0]),
+    part([7.25, 1, end - 0.75], [8.75, 15, end + 0.75], "#iron"),
+    part([7, 15, end - 1], [9, 16, end + 1], "#iron"),
+    part([3, 0, end - 0.75], [13, 1, end + 0.75], "#iron"),
+  ]));
   // The hanging basket: its hook and ring, four cords down to its rim, the basket and its narrower foot, a tuft of
-  // leaves over it and trailing stems hanging down its four sides, each side's its own stretch of them.
-  const CORD = 7 / Math.cos(Math.PI / 8);
-  const cord = (axis, angle) => part([7.8, 16 - CORD, 7.8], [8.2, 16, 8.2], "#cord", { rotation: { angle, axis, origin: [8, 16, 8] } });
+  // leaves over it and trailing stems hanging down its four sides, each side's its own stretch of them. A cord runs
+  // from a height so far down to the rim.
+  const cord = (axis, angle, top = 16, drop = 7) => part([7.8, top - drop / Math.cos(Math.PI / 8), 7.8], [8.2, top, 8.2], "#cord",
+    { rotation: { angle, axis, origin: [8, top, 8] } });
   // Two flat pictures crossed through the middle of the block, as the game draws a flower, between two corners across
   // it and two heights.
   const crossed = (from, to, texture, uv) => [
     flat([from[0], from[1], 8], [to[0], to[1], 8], texture, uv, { rotation: { angle: 45, axis: "y", origin: [8, 8, 8] } }),
     flat([8, from[1], from[0]], [8, to[1], to[0]], texture, uv, { rotation: { angle: 45, axis: "y", origin: [8, 8, 8] } }),
   ];
-  const basket = [
-    part([7.5, 16, 7.5], [8.5, 17, 8.5], "#iron"),
-    part([7, 15.5, 7], [9, 16, 9], "#iron"),
-    cord("x", 22.5), cord("x", -22.5), cord("z", 22.5), cord("z", -22.5),
+  // What a basket hangs by, from the height given, its cords so far down to its rim; and the basket itself.
+  const basketGear = (top, drop) => [
+    part([7.5, top, 7.5], [8.5, top + 1, 8.5], "#iron"),
+    part([7, top - 0.5, 7], [9, top, 9], "#iron"),
+    cord("x", 22.5, top, drop), cord("x", -22.5, top, drop), cord("z", 22.5, top, drop), cord("z", -22.5, top, drop),
+  ];
+  const basketBody = [
     part([4.5, 5.5, 4.5], [11.5, 9, 11.5], "#wicker"),
     part([5.5, 4.5, 5.5], [10.5, 5.5, 10.5], "#wicker"),
     ...crossed([4, 8.75], [12, 13], "#foliage", [0, 0, 16, 9]),
@@ -2527,13 +2685,40 @@ function girderDecor() {
     flat([4.4, 0, 4.5], [4.4, 9.25, 11.5], "#trailing", [9, 0, 16, 16]),
     flat([11.6, 0, 4.5], [11.6, 9.25, 11.5], "#trailing", [2, 0, 9, 16]),
   ];
-  // A stage spotlight: its clamp on the girder's flange, its stem, its yoke and the can turned in it, angled down along
-  // the girder, its lens glowing and a cone of light from it: pink angled north in the first, cyan south in the second.
-  const spotlight = (angle) => {
+  const basket = [...basketGear(16, 7), ...basketBody];
+  // On a wall the basket hangs from the end of a curled wall bracket: an arm out from a plate on the wall, a knob on
+  // its end, and under it a brace curving up from the plate to the arm, a quarter circle drawn as two straight lengths.
+  // How far along the block the basket hangs, its middle, in pixels; and the brace's circle, the middle of it along and
+  // up, and its radius, in pixels, and a point on it so far round, in degrees, from the plate.
+  const BASKET_AT = 7;
+  const CURL = { z: 9.75, y: 9.5, radius: 5.5 };
+  const curlAt = (degrees) => [CURL.z + CURL.radius * Math.cos((degrees * Math.PI) / 180), CURL.y + CURL.radius * Math.sin((degrees * Math.PI) / 180)];
+  const wallBasket = [
+    part([7, 8, 15.25], [9, 16, 16], "#iron"),
+    part([7.5, 15, BASKET_AT - 0.5], [8.5, 16, 15.25], "#iron"),
+    part([7.25, 14.75, BASKET_AT - 1.25], [8.75, 16, BASKET_AT - 0.5], "#iron"),
+    strut(curlAt(0), curlAt(45), 0.75, "#iron"),
+    strut(curlAt(45), curlAt(90), 0.75, "#iron"),
+    ...moved([...basketGear(14, 5), ...basketBody], [0, 0, BASKET_AT - 8]),
+  ];
+  // On the floor the basket sits on a plant stand, raised by so many pixels so its stems trail clear of the floor: a
+  // square iron frame under its foot on four legs, and a second frame low between them.
+  const BASKET_RAISED = 3;
+  const frame = (low, high) => [
+    part([5, low, 5], [11, high, 5.75], "#iron"), part([5, low, 10.25], [11, high, 11], "#iron"),
+    part([5, low, 5.75], [5.75, high, 10.25], "#iron"), part([10.25, low, 5.75], [11, high, 10.25], "#iron"),
+  ];
+  const standBasket = [
+    ...frame(6.75, 7.5),
+    ...frame(2, 2.5),
+    ...[[5, 5], [10.25, 5], [5, 10.25], [10.25, 10.25]].map(([x, z]) => part([x, 0, z], [x + 0.75, 6.75, z + 0.75], "#iron")),
+    ...moved(basketBody, [0, BASKET_RAISED, 0]),
+  ];
+  // A stage spotlight's head: its yoke and the can turned in it so far about its pivot, its lens glowing and a cone of
+  // light from it.
+  const spotHead = (angle) => {
     const tilt = { angle, axis: "x", origin: [8, 10, 8] };
     return [
-      part([6, 15, 6], [10, 17, 10], "#iron"),
-      part([7.25, 13, 7.25], [8.75, 15, 8.75], "#iron"),
       part([4.5, 12.5, 7.25], [11.5, 13, 8.75], "#iron"),
       part([4.5, 9, 7.25], [5.25, 12.5, 8.75], "#iron"),
       part([10.75, 9, 7.25], [11.5, 12.5, 8.75], "#iron"),
@@ -2543,16 +2728,44 @@ function girderDecor() {
       flat([3, -12, 8], [13, 5.6, 8], "#beam", [0, 0, 16, 16], { glowing: true, rotation: tilt }),
     ];
   };
+  // A stage spotlight: its clamp on the girder's flange, its stem, and its head angled down along the girder: pink
+  // angled north in the first, cyan south in the second.
+  const spotlight = (angle) => [part([6, 15, 6], [10, 17, 10], "#iron"), part([7.25, 13, 7.25], [8.75, 15, 8.75], "#iron"), ...spotHead(angle)];
+  // On a wall it hangs from a clamp on an arm out from a plate on the wall, angled down and out into the room.
+  const wallSpot = [
+    part([6, 11.5, 15.25], [10, 15.5, 16], "#iron"),
+    part([7.25, 13.5, 8], [8.75, 15, 15.25], "#iron"),
+    part([6.25, 13, 6.75], [9.75, 15.5, 9.25], "#iron"),
+    ...spotHead(45),
+  ];
+  // On the floor it stands on a short tripod, two legs splayed to its sides and one behind, from a collar up its
+  // column, angled up away from whoever stood it there, its cone of light reaching up past the block. How high the legs
+  // meet the column, in pixels; and how long they are, and how far out their feet stand.
+  const HUB = 4.5;
+  const TRIPOD_LEG = HUB / Math.cos(Math.PI / 4);
+  const TRIPOD_SPLAY = HUB;
+  const tripodLeg = (axis, angle) => part([7.5, HUB - TRIPOD_LEG, 7.5], [8.5, HUB, 8.5], "#iron", { rotation: { angle, axis, origin: [8, HUB, 8] } });
+  const upward = { angle: 22.5, axis: "x", origin: [8, 11.5, 8] };
+  const standSpot = [
+    tripodLeg("z", 45), tripodLeg("z", -45), tripodLeg("x", -45),
+    ...[[8 - TRIPOD_SPLAY, 8], [8 + TRIPOD_SPLAY, 8], [8, 8 + TRIPOD_SPLAY]].map(([x, z]) => part([x - 0.75, 0, z - 0.75], [x + 0.75, 0.5, z + 0.75], "#iron")),
+    part([7, HUB - 0.75, 7], [9, HUB + 0.75, 9], "#iron"),
+    part([7.25, 2.5, 7.25], [8.75, 8.5, 8.75], "#iron"),
+    part([4.5, 8.5, 7.25], [11.5, 9, 8.75], "#iron"),
+    part([4.5, 9, 7.25], [5.25, 12.5, 8.75], "#iron"),
+    part([10.75, 9, 7.25], [11.5, 12.5, 8.75], "#iron"),
+    part([5.25, 10, 5.5], [10.75, 15.5, 10.5], "#can", { rotation: upward }),
+    part([5.75, 15.5, 6], [10.25, 15.9, 10], "#lens", { glowing: true, rotation: upward }),
+    flat([8, 15.9, 3], [8, 32, 13], "#beam", [0, 16, 16, 0], { glowing: true, rotation: upward }),
+    flat([3, 15.9, 8], [13, 32, 8], "#beam", [0, 16, 16, 0], { glowing: true, rotation: upward }),
+  ];
   // The cable tray, a ladder of it, so its cables show from below between its rungs: a trapeze of two rods from the
   // girder and a bar across under it, its two rails and its rungs, the rungs as far apart across a block's edge as
   // within it, the cables bundled on them, each its colour's patch of the cables' texture, and a white tie round them,
   // the whole way along the block.
   const RUNGS = [1.5, 5.5, 9.5, 13.5];
   const cable = (x0, y0, size, colour) => part([x0, y0, 0], [x0 + size, y0 + size, 16], "#cables", { uv: [2 * colour, 0, 2 * colour + 2, 16] });
-  const tray = [
-    part([3, 7.5, 7], [13, 8.5, 9], "#iron"),
-    part([3, 8.5, 7.5], [3.75, 17, 8.25], "#iron"),
-    part([12.25, 8.5, 7.5], [13, 17, 8.25], "#iron"),
+  const trayRun = [
     part([4, 8.5, 0], [5, 10.5, 16], "#tray"),
     part([11, 8.5, 0], [12, 10.5, 16], "#tray"),
     ...RUNGS.map((z) => part([5, 8.5, z], [11, 9.25, z + 1], "#tray")),
@@ -2560,30 +2773,85 @@ function girderDecor() {
     cable(5.75, 10.5, 1.25, 5), cable(7.25, 10.5, 1.25, 3), cable(8.5, 10.5, 1.25, 6),
     part([5, 9.15, 7.75], [10.85, 11.85, 8.25], "#cables", { uv: [14, 0, 16, 16] }),
   ];
+  const tray = [part([3, 7.5, 7], [13, 8.5, 9], "#iron"), part([3, 8.5, 7.5], [3.75, 17, 8.25], "#iron"), part([12.25, 8.5, 7.5], [13, 17, 8.25], "#iron"), ...trayRun];
+  // On a wall the tray runs along it half a pixel off it on a bracket, an arm under it out from a plate on the wall,
+  // braced from under by a strut at 45 degrees: the tray drawn in the girder's frame with the wall to the east, moved
+  // up to it, by so many pixels, and turned.
+  const TRAY_OFF_WALL = 3.5;
+  const wallTray = [
+    ...turned(moved(trayRun, [TRAY_OFF_WALL, 0, 0])),
+    part([7, 7.5, 6.5], [9, 8.5, 16], "#iron"),
+    part([6.5, 2.5, 15.25], [9.5, 9, 16], "#iron"),
+    strut([15.25, 3], [10.75, 7.5], 1, "#iron"),
+  ];
+  // On the floor the cables cross under a cable cover: a yellow lid over two channels in a black rubber hump, a cable
+  // in each, showing at its ends, and a ramp down to the floor along each side; it runs across the block, so covers
+  // laid end to end make one.
+  const coverCable = (z, colour) => part([0, 0.1, z], [16, 1.6, z + 1.5], "#cables", { uv: [2 * colour, 0, 2 * colour + 2, 16] });
+  const ramp = (z0, z1, angle, edge) => part([0, 0, z0], [16, 2.5, z1], "#iron", { rotation: { angle, axis: "x", origin: [8, 2.5, edge] } });
+  const cableCover = [
+    part([0, 1.75, 5], [16, 2.5, 11], "#lid", { uv: [1, 1, 15, 7] }),
+    ...[5, 7.625, 10.25].map((z) => part([0, 0, z], [16, 1.75, z + 0.75], "#iron")),
+    coverCable(6, 0),
+    coverCable(8.6, 1),
+    ramp(1, 5, -22.5, 5),
+    ramp(11, 15, 22.5, 11),
+  ];
 
   const fairy = loop("#wire", bulb);
   const bunting = loop("#cord", pennant);
+  const wallFairy = alongWall(loop("#wire", bulb, [wallHook]));
+  const wallBunting = alongWall(loop("#cord", pennant, [wallHook]));
+  const postBunting = loop("#cord", pennant, post);
+  const patch = (name) => ({ patch: block(`girder_decor_patch_${name}`), particle: block(`girder_decor_patch_${name}`) });
+  const hoisting = { steel: block("girder_decor_steel"), casing: block("girder_decor_hoist"), particle: block("girder_decor_hoist"), hook: block("girder_decor_yellow"), chain: "minecraft:block/chain" };
+  const steelwork = { ...hoisting, girder: block("steel_girder") };
   const copper = { copper: block("girder_decor_copper"), pan: block("girder_decor_pan"), particle: block("girder_decor_copper") };
   const lights = { wire: block("girder_decor_wire"), bulbs: block("girder_decor_bulbs"), particle: block("girder_decor_bulbs") };
+  const greenery = { cord: block("girder_decor_cord"), wicker: block("girder_decor_wicker"), particle: block("girder_decor_wicker"), foliage: block("girder_decor_foliage"),
+    trailing: block("girder_decor_trailing") };
   const pennants = { cord: block("girder_decor_cord"), pennants: block("girder_decor_pennants"), particle: block("girder_decor_pennants") };
+  const spot = (colour) => ({ can: block("girder_decor_can"), particle: block("girder_decor_can"), lens: block(`girder_decor_lens_${colour}`), beam: block(`girder_decor_beam_${colour}`) });
+  const cabling = { tray: block("girder_decor_tray"), cables: block("girder_decor_cables"), particle: block("girder_decor_cables") };
   const models = {
-    mission_patches_first: { textures: { patch: block("girder_decor_patch_a"), particle: block("girder_decor_patch_a") }, elements: banner },
-    mission_patches_second: { textures: { patch: block("girder_decor_patch_b"), particle: block("girder_decor_patch_b") }, elements: banner },
-    chain_hoist: { textures: { steel: block("girder_decor_steel"), casing: block("girder_decor_hoist"), particle: block("girder_decor_hoist"), hook: block("girder_decor_yellow"), chain: "minecraft:block/chain" },
-      elements: hoist },
+    mission_patches_first: { textures: patch("a"), elements: banner },
+    mission_patches_second: { textures: patch("b"), elements: banner },
+    chain_hoist: { textures: hoisting, elements: hoist },
     pot_rack_first: { textures: copper, elements: rack.first },
     pot_rack_second: { textures: copper, elements: rack.second },
     fairy_lights_first: { textures: lights, elements: fairy.first },
     fairy_lights_second: { textures: lights, elements: fairy.second },
-    hanging_basket: { textures: { cord: block("girder_decor_cord"), wicker: block("girder_decor_wicker"), particle: block("girder_decor_wicker"), foliage: block("girder_decor_foliage"),
-      trailing: block("girder_decor_trailing") }, elements: basket },
+    hanging_basket: { textures: greenery, elements: basket },
     bunting_first: { textures: pennants, elements: bunting.first },
     bunting_second: { textures: pennants, elements: bunting.second },
-    spotlight_first: { translucent: true, textures: { can: block("girder_decor_can"), particle: block("girder_decor_can"), lens: block("girder_decor_lens_pink"), beam: block("girder_decor_beam_pink") },
-      elements: spotlight(22.5) },
-    spotlight_second: { translucent: true, textures: { can: block("girder_decor_can"), particle: block("girder_decor_can"), lens: block("girder_decor_lens_cyan"), beam: block("girder_decor_beam_cyan") },
-      elements: spotlight(-22.5) },
-    cable_tray: { textures: { tray: block("girder_decor_tray"), cables: block("girder_decor_cables"), particle: block("girder_decor_cables") }, elements: tray },
+    spotlight_first: { translucent: true, textures: spot("pink"), elements: spotlight(22.5) },
+    spotlight_second: { translucent: true, textures: spot("cyan"), elements: spotlight(-22.5) },
+    cable_tray: { textures: cabling, elements: tray },
+    mission_patches_wall_first: { textures: patch("a"), elements: wallBanner },
+    mission_patches_wall_second: { textures: patch("b"), elements: wallBanner },
+    chain_hoist_wall: { textures: steelwork, elements: jibHoist },
+    pot_rack_wall_first: { textures: copper, elements: wallRack.first },
+    pot_rack_wall_second: { textures: copper, elements: wallRack.second },
+    fairy_lights_wall_first: { textures: lights, elements: wallFairy.first },
+    fairy_lights_wall_second: { textures: lights, elements: wallFairy.second },
+    hanging_basket_wall: { textures: greenery, elements: wallBasket },
+    bunting_wall_first: { textures: pennants, elements: wallBunting.first },
+    bunting_wall_second: { textures: pennants, elements: wallBunting.second },
+    spotlight_wall_first: { translucent: true, textures: spot("pink"), elements: wallSpot },
+    spotlight_wall_second: { translucent: true, textures: spot("cyan"), elements: wallSpot },
+    cable_tray_wall: { textures: cabling, elements: wallTray },
+    mission_patches_floor_first: { textures: patch("a"), elements: standBanner },
+    mission_patches_floor_second: { textures: patch("b"), elements: standBanner },
+    chain_hoist_floor: { textures: steelwork, elements: gantryHoist },
+    pot_rack_floor_first: { textures: copper, elements: standingRack.first },
+    pot_rack_floor_second: { textures: copper, elements: standingRack.second },
+    fairy_lights_floor: { translucent: true, textures: { ...lights, glass: block("cabin_rail_glass"), copper: block("girder_decor_copper") }, elements: jar },
+    hanging_basket_floor: { textures: greenery, elements: standBasket },
+    bunting_floor_first: { textures: { ...pennants, post: block("lavatory_basin_chrome") }, elements: turned(postBunting.first) },
+    bunting_floor_second: { textures: { ...pennants, post: block("lavatory_basin_chrome") }, elements: turned(postBunting.second) },
+    spotlight_floor_first: { translucent: true, textures: spot("pink"), elements: standSpot },
+    spotlight_floor_second: { translucent: true, textures: spot("cyan"), elements: standSpot },
+    cable_tray_floor: { textures: { ...cabling, lid: block("girder_decor_yellow") }, elements: cableCover },
   };
   for (const [name, { translucent, textures, elements }] of Object.entries(models)) {
     write(`assets/${ID}/models/block/girder_decor_${name}.json`, {
@@ -2591,14 +2859,23 @@ function girderDecor() {
       textures: { iron: block("girder_decor_iron"), particle: block("girder_decor_iron"), ...textures }, elements,
     });
   }
-  // Each kind's model for each of a pair, the same for both where the kind has only one.
-  const modelOf = (kind, half) => `${ID}:block/girder_decor_${models[`${kind}_${half}`] ? `${kind}_${half}` : kind}`;
+  // Each kind's model for each of a pair, hung under a ceiling unless a mount is given, the same for both of a pair
+  // where the kind has only one there.
+  const modelOf = (kind, half, mount = "ceiling") => {
+    const shape = mount === "ceiling" ? kind : `${kind}_${mount}`;
+    return `${ID}:block/girder_decor_${models[`${shape}_${half}`] ? `${shape}_${half}` : shape}`;
+  };
   const KINDS = ["mission_patches", "chain_hoist", "pot_rack", "fairy_lights", "hanging_basket", "bunting", "spotlight", "cable_tray"];
-  write(`assets/${ID}/blockstates/girder_decor.json`, {
-    variants: Object.fromEntries(["x", "z"].flatMap((axis) => KINDS.flatMap((kind) => ["first", "second"].map((half) =>
-      [`axis=${axis},kind=${kind},part=${half}`, { model: modelOf(kind, half), ...(axis === "x" ? { y: 270 } : {}) }])))),
-  });
-  keptLooks("girder_decor", { kind: KINDS, part: ["first", "second"] }, modelOf, ["chain_hoist", "first"]);
+  const HALVES = ["first", "second"];
+  const LOOKS = KINDS.flatMap((kind) => HALVES.map((half) => [kind, half]));
+  // Hung under a ceiling a decoration is turned by the way it runs; fixed to a wall or standing on the floor, by the
+  // way it faces.
+  const hanging = ["x", "z"].flatMap((axis) => LOOKS.map(([kind, half]) =>
+    [`axis=${axis},kind=${kind},mount=ceiling,part=${half}`, { model: modelOf(kind, half), ...(axis === "x" ? { y: 270 } : {}) }]));
+  const standing = ["wall", "floor"].flatMap((mount) => Object.entries(yRot).flatMap(([facing, y]) => LOOKS.map(([kind, half]) =>
+    [`facing=${facing},kind=${kind},mount=${mount},part=${half}`, { model: modelOf(kind, half, mount), ...(y ? { y } : {}) }])));
+  write(`assets/${ID}/blockstates/girder_decor.json`, { variants: Object.fromEntries([...hanging, ...standing]) });
+  keptLooks("girder_decor", { kind: KINDS, part: HALVES }, modelOf, ["chain_hoist", "first"]);
   // Broken, a decoration keeps its kind and which of a pair it is; a chain hoist's first is left off, so they stack.
   const decorId = `${ID}:girder_decor`;
   write(`data/${ID}/loot_table/blocks/girder_decor.json`, {

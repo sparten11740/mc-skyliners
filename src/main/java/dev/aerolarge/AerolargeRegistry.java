@@ -1097,7 +1097,8 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SHAFT_DECOR_ITEM = ITEMS.registerSimpleBlockItem(SHAFT_DECOR);
     /**
      * What hangs under the rocket's ceiling girders, themed to each room: banners, a chain hoist, pots and pans, fairy
-     * lights, hanging baskets, bunting, spotlights or a cable tray. Over head height, nothing collides with it.
+     * lights, hanging baskets, bunting, spotlights or a cable tray. Put up by hand it can also be fixed to a wall or
+     * stand on the floor; nothing collides with it.
      */
     public static final DeferredBlock<GirderDecorBlock> GIRDER_DECOR = BLOCKS.registerBlock(
         "girder_decor", GirderDecorBlock::new,
