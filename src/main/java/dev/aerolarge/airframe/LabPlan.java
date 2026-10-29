@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -16,8 +17,10 @@ import net.minecraft.world.phys.Vec3;
  * free band from the walkway round the shaft out to the ring along the skin: thin panes along its edges, lit along
  * their tops, its floor moss with a shallow pool, beds of pebbles and, where there is room, rocks; and on her right a
  * feeding hatch at chest height with the creature's vitals on a screen over it. In the front half, lab counters curve
- * round her skin either side of the way out, microscopes, sample racks and scan screens on them and a stool before
- * each microscope; by the tank's other end, stools to sit and watch it from.
+ * round her skin either side of the way out, microscopes, a centrifuge, sample racks, specimen jars and scan screens on
+ * them, a unit here and there left bare to work at, and a stool before each microscope, pushed back or aside as it was
+ * left; by the tank's other end, stools to sit and watch it from. Either side of the shaft, round her side windows,
+ * are the food lab and the wet bench (see {@link LabBays}).
  *
  * <p>The tank keeps to the room's rule but for the back window: there its glass stands in the window's front, as the
  * creature needs the room, though never in the ring along the skin just before the window. The furniture keeps to the
@@ -70,8 +73,16 @@ final class LabPlan {
     private static final double[][] COUNTER_RUNS = {{20, 75}, {285, 340}};
     /** What stands on the counters, unit by unit along each run, round from her front clockwise. */
     private static final Part[][] ON_COUNTERS = {
-        {Part.SCAN, Part.MICROSCOPE, Part.SAMPLES, Part.SCAN},
-        {Part.SAMPLES, Part.SCAN, Part.MICROSCOPE, Part.SAMPLES}};
+        {Part.SCAN, Part.MICROSCOPE, Part.CENTRIFUGE, Part.SAMPLES},
+        {Part.SPECIMENS, Part.SCAN, Part.MICROSCOPE, Part.SAMPLES}};
+    /** How likely a counter's unit is left bare, a space to work at, unless a microscope or the centrifuge is on it. */
+    private static final float BARE_CHANCE = 0.2F;
+    /**
+     * How likely a microscope's stool was left pushed back from the counter, or else aside, rather than tucked in before
+     * it.
+     */
+    private static final float PUSHED_BACK = 0.3F;
+    private static final float PUSHED_ASIDE = 0.3F;
     /** How many stools watch the tank from its end away from the hatch. */
     private static final int WATCHERS = 2;
     /** The points the creature's outline is tried at, about its middle, its feet facing either way, and its turning. */
@@ -79,14 +90,18 @@ final class LabPlan {
     private static final List<Vec3> FEET = feet();
     private static final List<Vec3> TURNING = outline(TURN_REACH + PANE, TURN_REACH + PANE);
 
-    /** What is laid, by what it is. */
+    /**
+     * What is laid, by what it is. A food machine and the sink stand two blocks tall: their upper half is TOP, over the
+     * lower half laid first.
+     */
     enum Part {
-        TANK_GLASS, HATCH, VITALS, MOSS, POOL, PEBBLES, ROCK, BENCH, MICROSCOPE, SAMPLES, SCAN, STOOL
+        TANK_GLASS, HATCH, VITALS, MOSS, POOL, PEBBLES, ROCK, BENCH, MICROSCOPE, SAMPLES, SCAN, STOOL,
+        CENTRIFUGE, SPECIMENS, BIOREACTOR, HYDROPONICS, ALGAE, TOP, PARTITION, PIPE, CABINET, FEED_CABINET, SINK
     }
 
     /**
-     * A part at a block: facing a way (the way a fitting's front looks out), and for the tank's glass the ways out of
-     * the tank it has panes on.
+     * A part at a block: facing a way (the way a fitting's front looks out), for the tank's glass the ways out of the
+     * tank it has panes on, and for a pipe the ways it runs.
      */
     record Placed(BlockPos at, Part part, Direction facing, Set<Direction> panes) {
     }
@@ -134,8 +149,11 @@ final class LabPlan {
         this.reach = (int) Math.ceil(wall);
     }
 
-    /** The lab on the story with its floor and its highest row given, the skin's inside so far out from her axis. */
-    static Plan of(Room room, int floor, int top, double wall) {
+    /**
+     * The lab on the story with its floor and its highest row given, the skin's inside so far out from her axis, what
+     * is set out unevenly drawn from the room's random sequence.
+     */
+    static Plan of(Room room, int floor, int top, double wall, RandomSource scatter) {
         LabPlan plan = new LabPlan(room, floor, top, wall);
         plan.findTank();
         Track track = plan.tank.isEmpty() ? null : plan.track();
@@ -143,10 +161,11 @@ final class LabPlan {
         if (hatch != null) {
             plan.lay(hatch, track);
         }
-        plan.counters();
+        plan.counters(scatter);
         if (hatch != null) {
             plan.watchers(hatch);
         }
+        LabBays.lay(plan, room, floor, top, scatter);
         BlockPos vitals = hatch == null ? null : new BlockPos(hatch.getX(), floor + VITALS_UP, hatch.getZ());
         return new Plan(List.copyOf(plan.parts), hatch == null ? null : track, hatch, vitals);
     }
@@ -501,30 +520,54 @@ final class LabPlan {
 
     /**
      * The lab counters: two runs curving round her skin either side of the way out, each unit facing in with what
-     * stands on it, and a stool before each microscope.
+     * stands on it, a stool before each microscope, and the floor before the others kept clear to stand on once all
+     * stand.
      */
-    private void counters() {
+    private void counters(RandomSource scatter) {
         double out = wall - COUNTER_IN;
+        List<BlockPos> fronts = new ArrayList<>();
         for (int side = 0; side < COUNTER_RUNS.length; side++) {
             List<BlockPos> run = RocketRoom.run(floor + 1, out, COUNTER_RUNS[side][0], COUNTER_RUNS[side][1]).stream()
                 .filter(at -> room.free(at.getX(), at.getY(), at.getZ())).toList();
             for (int unit = 0; unit < run.size(); unit++) {
-                Part on = ON_COUNTERS[side][unit % ON_COUNTERS[side].length];
-                counter(run.get(unit), on, on == Part.MICROSCOPE);
+                fronts.add(counter(run.get(unit), ON_COUNTERS[side][unit % ON_COUNTERS[side].length], scatter));
             }
         }
+        fronts.forEach(this::keepClear);
     }
 
-    /** A counter's unit facing in toward her axis, what stands on it, and a stool before it if it has one. */
-    private void counter(BlockPos at, Part on, boolean stool) {
+    /**
+     * A counter's unit facing in toward her axis, what stands on it unless it was left bare, and before it a stool if
+     * it has a microscope. The floor before it, to stand on.
+     */
+    private BlockPos counter(BlockPos at, Part on, RandomSource scatter) {
         Direction facing = RocketRoom.inward(RocketRoom.roundOf(at.getX(), at.getZ()));
         add(at, Part.BENCH, facing, Set.of());
-        if (room.free(at.getX(), at.getY() + 1, at.getZ())) {
+        boolean kept = on == Part.MICROSCOPE || on == Part.CENTRIFUGE;
+        boolean bare = !kept && scatter.nextFloat() < BARE_CHANCE;
+        if (!bare && room.free(at.getX(), at.getY() + 1, at.getZ())) {
             add(at.above(), on, facing, Set.of());
         }
         BlockPos before = at.relative(facing);
-        if (stool && room.free(before.getX(), before.getY(), before.getZ())) {
-            add(before, Part.STOOL, Direction.NORTH, Set.of());
+        if (on == Part.MICROSCOPE) {
+            stool(before, facing, scatter);
+        }
+        return before;
+    }
+
+    /**
+     * A microscope's stool before its counter: tucked in, or as it was left, pushed back or aside, where that is free.
+     */
+    private void stool(BlockPos before, Direction facing, RandomSource scatter) {
+        float pushed = scatter.nextFloat();
+        BlockPos left = before;
+        if (pushed < PUSHED_BACK) {
+            left = before.relative(facing);
+        } else if (pushed < PUSHED_BACK + PUSHED_ASIDE) {
+            left = before.relative(scatter.nextBoolean() ? facing.getClockWise() : facing.getCounterClockWise());
+        }
+        if (!place(left, Part.STOOL, Direction.NORTH, Set.of())) {
+            place(before, Part.STOOL, Direction.NORTH, Set.of());
         }
     }
 
@@ -544,5 +587,34 @@ final class LabPlan {
         if (room.open(at.getX(), at.getY(), at.getZ()) && laid.add(at)) {
             parts.add(new Placed(at, part, facing, Set.copyOf(panes)));
         }
+    }
+
+    /** Whether furniture may go at a block: free by the room's rule, and nothing of the lab laid or kept clear there. */
+    boolean placeable(BlockPos at) {
+        return room.free(at.getX(), at.getY(), at.getZ()) && !laid.contains(at);
+    }
+
+    /** A part at a block where furniture may go, its ways given (see {@link Placed}), and whether it went. */
+    boolean place(BlockPos at, Part part, Direction facing, Set<Direction> ways) {
+        if (!placeable(at)) {
+            return false;
+        }
+        add(at, part, facing, ways);
+        return true;
+    }
+
+    /** A part two blocks tall, its upper half over it, where both may go, and whether it went. */
+    boolean placeTall(BlockPos at, Part part, Direction facing) {
+        if (!placeable(at) || !placeable(at.above())) {
+            return false;
+        }
+        add(at, part, facing, Set.of());
+        add(at.above(), Part.TOP, facing, Set.of());
+        return true;
+    }
+
+    /** Keeps a block clear of anything laid after, as the floor before a counter or a hatch. */
+    void keepClear(BlockPos at) {
+        laid.add(at);
     }
 }

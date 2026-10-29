@@ -1911,12 +1911,29 @@ own; while the hatch stands open, moss can go to it straight from your hand. Not
 away, and it flies with her as a part of her. Over the top of the world, in space, it curls up into a tun, the dry,
 wrinkled barrel real tardigrades live through space in, with a bloop, and its screen goes slow and blue under a
 barrel's picture; back under y 300 it uncurls with a purr. Round the front of the room lab counters curve either side
-of the way out, microscopes on them, sample racks with their vials glowing and scan screens sweeping a line down a
-picture of it, a stool before each microscope and two by the tank's far end to sit and watch it from. Look into a
-microscope and you see through its eyepiece, a slide magnified in the round field, coming into focus and drifting a
-little under a fine crosshair: a water bear paddling, moss green in its gut; algae cells jostling; a lab-grown steak's
-muscle fibres twitching; or diatoms' glass shells shimmering on a dark field. Any click looks up again. A rocket too
-small for a tank has only the counters.
+of the way out, microscopes on them, a centrifuge, sample racks with their vials glowing, trays of specimen jars (a
+pickled tentacle, an eye and a sprouting potato, each in its own glowing liquid) and scan screens sweeping a line down a
+picture of it, a unit here and there left bare to work at, a stool before each microscope, tucked in or pushed back or
+aside as someone left it, and two by the tank's far end to sit and watch it from. Look into a microscope and you see
+through its eyepiece, a slide magnified in the round field, coming into focus and drifting a little under a fine
+crosshair: a water bear paddling, moss green in its gut; algae cells jostling; the bioreactors' muscle fibres twitching;
+or diatoms' glass shells shimmering on a dark field. Any click looks up again. Use a centrifuge and it spins up with a
+rising whir, its tubes blurring into a disc behind the window in its lid and its lamp turning amber, and a few seconds
+later winds down and stops with a ding, its lamp green again.
+
+On her left, round the window there, is the food lab, screened off from the counters and the tank by glazed partitions
+in steel frames, frosted at eye height with a green sprout on them: two tall bioreactors glowing pink either side of a
+gap left to look out of the window, bubbles rising through their broth round a steak growing on a white rod, and at the
+ends an algae column glowing green and a hydroponic rack of lettuces, basil and strawberries under violet grow lights,
+the bioreactors and the algae column piped up into the ceiling and their pipes joined along it. Use a bioreactor while
+its steak is whole and its cap hisses open in a puff of steam and the steak comes out to your hand, a Lab-Grown Steak,
+as filling as a cooked one and in the creative tab too; then the bars on its panel light green one by one as a new
+steak grows up the rod, a stage a minute, with a pop of bubbles at each stage and a chime once it is whole again. Used
+before that, it only gurgles. On her right is the wet bench: a sink to wash at, cabinets with jars on some, and in the
+one nearest the tank a stack of moss to feed the tardigrade with. A bigger rocket's bays are wider, with rows back to
+back further in: in the food lab racks, now and then an algae column, another bioreactor, a cabinet or a gap; on the
+wet bench lab benches, jars, sample racks, scan screens, a microscope or a centrifuge on them, and stools pushed out
+before some. A rocket too small for a tank has the counters and the bays alone.
 
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
@@ -2219,11 +2236,12 @@ Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBa
 `RocketLab` furnishes her lab as `LabPlan` lays it out: the tank's `HabitatGlassBlock`s, its `HabitatFloorBlock`s and
 `LabInstrumentBlock`s, and the `HabitatHatchBlock`, whose `HabitatHatchBlockEntity` makes her `Tardigrade` and keeps it
 pacing the line the plan found for it (in `#sable:retain_in_sub_level`, so it lives among her blocks), curling it up in
-space; on the client `TardigradeModel` and `TardigradeRenderer` draw it. The food lab's machines are
-`BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them out, and `LabGrowerBlock`s,
-the hydroponic rack and the algae column, all `LabMachineBlock`s two blocks tall, with `LabPartitionBlock`s and
-`LabPipeBlock`s round them. A `SampleCentrifugeBlock` times its spin with a scheduled tick, and a microscope sends
-`LookIntoMicroscope` to the player's client, where `MicroscopeScreen` shows the slide.
+space; on the client `TardigradeModel` and `TardigradeRenderer` draw it. `LabBays` lays the food lab and the wet bench
+either side of the shaft: the `BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them
+out, and the `LabGrowerBlock`s, the hydroponic rack and the algae column, all `LabMachineBlock`s two blocks tall; the
+`LabPartitionBlock`s and the `LabPipeBlock`s; and the galley's cupboards and the lavatory's basin. A
+`SampleCentrifugeBlock` times its spin with a scheduled tick, and a microscope sends `LookIntoMicroscope` to the
+player's client, where `MicroscopeScreen` shows the slide.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that
