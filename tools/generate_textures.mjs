@@ -3914,6 +3914,12 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const slope = 2 * Math.hypot(dx / OVAL_WIDE ** 2, dy / OVAL_TALL ** 2);
     return level / Math.max(slope, 1e-6);
   };
+  // Whether all of a pixel lies inside the reveal's lining, which the window's model draws round the oval grown by
+  // OVAL_HOLE each way: all four of its corners do. Only such pixels are left clear in the hole, the lip covering the
+  // rest of its edge, so none looks past the lining into the wall, where the skin's sides against the window, painted
+  // in her livery, and the sky beyond would show.
+  const insideLining = (x, y) => [[0, 0], [1, 0], [0, 1], [1, 1]].every(([cx, cy]) =>
+    ((x + cx - middleX) / (OVAL_WIDE + OVAL_HOLE)) ** 2 + ((y + cy - middleY) / (OVAL_TALL + OVAL_HOLE)) ** 2 < 1);
   const mix = (a, b, share) => a.map((c, i) => Math.round(c + (b[i] - c) * share));
   const halfway = (() => {
     const sun = Math.hypot(...SUN);
@@ -3957,7 +3963,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       OVAL_WALLS.push({ column, row, lowest: row === OVAL_ROWS - 1, wall: (x, y) => out(x, y) > OVAL_HOLE + HOLE_LIP });
       texture(blockOutput, `oval_window_${column}_${row}_lip`, (x, y) => {
         const o = out(x, y);
-        return o > OVAL_HOLE && o <= OVAL_HOLE + HOLE_LIP ? OVAL_RIM : CLEAR;
+        return !insideLining(column * SIZE + x, row * SIZE + y) && o <= OVAL_HOLE + HOLE_LIP ? OVAL_RIM : CLEAR;
       }, 3);
     }
   }

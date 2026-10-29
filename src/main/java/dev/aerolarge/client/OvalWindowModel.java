@@ -142,7 +142,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         int top = up + CELL;
         Corner[] outside = {dome(right, top, turn), dome(right, up, turn), dome(across, up, turn), dome(across, top, turn)};
         builder.addUnculledFace(ModelQuads.bake(outside, glass, nearest(outside), true));
-        if (!inHole(right, top) && !inHole(right, up) && !inHole(across, up) && !inHole(across, top)) {
+        if (!reachesHole(across, up)) {
             return;
         }
         Corner[] inside = new Corner[QUAD];
@@ -171,9 +171,21 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         return turned(at, facing, 1 - at.x(), 1 - at.y(), turn);
     }
 
-    /** Whether a point across and up the piece looking north, in pixels, lies inside the hole in the inner face. */
-    private boolean inHole(float across, float up) {
-        return square(fromMiddleRight(across) / (OVAL_WIDE + HOLE)) + square(fromMiddleDown(up) / (OVAL_TALL + HOLE)) < 1;
+    /**
+     * Whether any of the dome's face from a corner across and up the piece looking north, in pixels, lies inside the
+     * hole in the inner face: its point nearest the window's middle does. Where the hole's edge only cuts across a side
+     * of the face, all its corners outside, the face is still seen from inside, or the recess would be open there to
+     * the sky and the skin's sides.
+     */
+    private boolean reachesHole(int across, int up) {
+        float right = nearestToMiddle(fromMiddleRight(across), fromMiddleRight(across + CELL));
+        float down = nearestToMiddle(fromMiddleDown(up), fromMiddleDown(up + CELL));
+        return square(right / (OVAL_WIDE + HOLE)) + square(down / (OVAL_TALL + HOLE)) < 1;
+    }
+
+    /** How far from the window's middle the nearest point between two distances either side of it or on one side is. */
+    private static float nearestToMiddle(float from, float to) {
+        return from * to <= 0 ? 0 : Math.min(Math.abs(from), Math.abs(to));
     }
 
     /** How far right of the window's middle, as seen from outside, a point across the piece is, in pixels. */
