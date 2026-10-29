@@ -63,7 +63,7 @@ public class SampleCentrifugeBlock extends HorizontalDirectionalBlock {
         return SHAPES.get(state.getValue(FACING));
     }
 
-    /** Standing still, it spins up; spinning, it beeps, its spin set going again if its tick was lost. */
+    /** Standing still, it spins up; spinning, it beeps, its spin over at once if its tick was lost. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level instanceof ServerLevel server)) {
@@ -72,7 +72,7 @@ public class SampleCentrifugeBlock extends HorizontalDirectionalBlock {
         if (state.getValue(SPINNING)) {
             server.playSound(null, pos, SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.BLOCKS, BEEP_VOLUME, BEEP_PITCH);
             if (!server.getBlockTicks().hasScheduledTick(pos, this)) {
-                server.scheduleTick(pos, this, SPIN_TICKS);
+                server.scheduleTick(pos, this, 1);
             }
             return InteractionResult.CONSUME;
         }

@@ -34,7 +34,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * once grown, the cap's seal hisses open with a puff of steam and the steak comes out, a Lab-Grown Steak, to the hand,
  * and the rod starts over, growing a stage a minute (see {@link #STAGE_TICKS}), with a pop of bubbles at each stage and
  * a chime once the steak is whole again. Used before that, it only gurgles. The server keeps its growth: a stage is a
- * scheduled tick of the lower half, set again if the tick was lost, as when the rocket was moved.
+ * scheduled tick of the lower half, set again if the tick was lost, as when the rocket was assembled, when it is next
+ * used or on its own within a minute or two, as the game looks at its blocks now and then.
  */
 public class BioreactorBlock extends LabMachineBlock {
     private static final MapCodec<BioreactorBlock> CODEC = simpleCodec(BioreactorBlock::new);
@@ -115,9 +116,25 @@ public class BioreactorBlock extends LabMachineBlock {
     /** A vessel still growing gurgles, and its growth is set going again if its tick was lost. */
     private void gurgle(ServerLevel level, BlockPos lower) {
         level.playSound(null, lower, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, GURGLE_VOLUME, GURGLE_PITCH);
+        keepGrowing(level, lower);
+    }
+
+    /** A vessel's growth set going again, its next stage a stage's time away, if its tick was lost. */
+    private void keepGrowing(ServerLevel level, BlockPos lower) {
         if (!level.getBlockTicks().hasScheduledTick(lower, this)) {
             level.scheduleTick(lower, this, STAGE_TICKS);
         }
+    }
+
+    /** A vessel still growing is looked at now and then, in case its tick was lost. */
+    @Override
+    protected boolean isRandomlyTicking(BlockState state) {
+        return state.getValue(HALF) == DoubleBlockHalf.LOWER && state.getValue(GROWTH) < GROWN;
+    }
+
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        keepGrowing(level, pos);
     }
 
     /** A stage of growth, on the lower half's tick: a pop of bubbles, the next stage set going, or a chime when whole. */
