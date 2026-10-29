@@ -1,6 +1,7 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -97,21 +98,18 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
 
     /**
      * Against the side of a block it stands out from it, facing away; under one it hangs from it, facing whoever puts
-     * it up; whichever of the two the nearest way they look finds holding it, the block clicked first, and nowhere
-     * else, as on a floor, where it would stand out from nothing (see {@link Hanging}). Its arrow is the one it was
+     * it up (see {@link Mounting}); not on a floor, where it would stand out from nothing. Its arrow is the one it was
      * taken down or picked with.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        for (Direction toward : context.getNearestLookingDirections()) {
-            if (toward == Direction.UP && Hanging.hangs(context)) {
-                return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(HANGING, true);
-            }
-            if (toward.getAxis().isHorizontal() && Hanging.holds(context, toward)) {
-                return defaultBlockState().setValue(FACING, toward.getOpposite()).setValue(HANGING, false);
-            }
+        Direction toward = Mounting.support(context, EnumSet.of(Mount.CEILING, Mount.WALL));
+        if (toward == null) {
+            return null;
         }
-        return null;
+        boolean hanging = toward == Direction.UP;
+        Direction facing = hanging ? context.getHorizontalDirection().getOpposite() : toward.getOpposite();
+        return defaultBlockState().setValue(FACING, facing).setValue(HANGING, hanging);
     }
 
     /** Put up by hand, it shows the WCs whose signs are round it. */

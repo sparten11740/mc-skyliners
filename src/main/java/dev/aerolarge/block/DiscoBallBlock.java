@@ -65,10 +65,10 @@ public class DiscoBallBlock extends Block implements EntityBlock {
         builder.add(LIT);
     }
 
-    /** Put down only where it hangs from something (see {@link Hanging}). */
+    /** Put down only where it hangs from something (see {@link Mounting}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return Hanging.hangs(context) ? defaultBlockState() : null;
+        return Mounting.hangs(context) ? defaultBlockState() : null;
     }
 
     /** The ball's middle in the level, for a ball at this position. */

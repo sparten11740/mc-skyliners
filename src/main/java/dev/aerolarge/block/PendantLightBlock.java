@@ -34,10 +34,10 @@ public class PendantLightBlock extends Block {
         return CODEC;
     }
 
-    /** Put down only where it hangs from something (see {@link Hanging}). */
+    /** Put down only where it hangs from something (see {@link Mounting}). */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return Hanging.hangs(context) ? defaultBlockState() : null;
+        return Mounting.hangs(context) ? defaultBlockState() : null;
     }
 
     @Override

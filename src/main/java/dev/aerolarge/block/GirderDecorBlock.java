@@ -156,11 +156,11 @@ public class GirderDecorBlock extends Block {
 
     /**
      * Hung along the girder over it, or else the way whoever hangs it looks; only where it hangs from something (see
-     * {@link Hanging}), never standing on the floor.
+     * {@link Mounting}), never standing on the floor.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        if (!Hanging.hangs(context)) {
+        if (!Mounting.hangs(context)) {
             return null;
         }
         BlockState above = context.getLevel().getBlockState(context.getClickedPos().above());

@@ -1,11 +1,12 @@
 package dev.aerolarge.item;
 
 import dev.aerolarge.AerolargeRegistry;
-import dev.aerolarge.block.Hanging;
+import dev.aerolarge.block.Mount;
+import dev.aerolarge.block.Mounting;
 import dev.aerolarge.block.WallLightBlock;
+import java.util.EnumSet;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -25,20 +26,20 @@ public class LightFittingItem extends BlockItem {
     }
 
     /**
-     * The shape the light takes for what it is put against, the nearest way the player looks that holds it, the block
-     * clicked first: hanging from a ceiling, fixed to a wall or standing on the ground; and hanging wherever it goes
-     * under a light cable, which is too thin to click under. None where nothing holds it, as against grass in the open.
+     * The shape the light takes for what it is put against (see {@link Mounting}): hanging from a ceiling, fixed to a
+     * wall or standing on the ground, the nearest way the player looks that holds it and leaves it room, and hanging
+     * wherever it goes under a light cable, run down for it; none where nothing holds it, as against grass in the open.
      */
     @Nullable
     @Override
     protected BlockState getPlacementState(BlockPlaceContext context) {
-        BlockPos above = context.getClickedPos().above();
-        if (context.getLevel().getBlockState(above).is(AerolargeRegistry.LIGHT_CABLE.get())) {
-            return placeable(context, AerolargeRegistry.HALO_LIGHT.get().defaultBlockState());
+        if (Mounting.underCable(context)) {
+            BlockState halo = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState();
+            return canPlace(context, halo) ? halo : null;
         }
-        for (Direction toward : context.getNearestLookingDirections()) {
-            BlockState state = Hanging.holds(context, toward) ? shapeAgainst(toward) : null;
-            if (state != null && canPlace(context, state)) {
+        for (Direction toward : Mounting.supports(context, EnumSet.allOf(Mount.class))) {
+            BlockState state = shapeAgainst(toward);
+            if (canPlace(context, state)) {
                 return state;
             }
         }
@@ -52,11 +53,6 @@ public class LightFittingItem extends BlockItem {
             case DOWN -> AerolargeRegistry.FLOOR_LIGHT.get().defaultBlockState();
             default -> AerolargeRegistry.WALL_LIGHT.get().defaultBlockState().setValue(WallLightBlock.FACING, toward.getOpposite());
         };
-    }
-
-    @Nullable
-    private BlockState placeable(BlockPlaceContext context, BlockState state) {
-        return canPlace(context, state) ? state : null;
     }
 
     @Override

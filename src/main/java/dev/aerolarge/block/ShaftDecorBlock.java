@@ -161,7 +161,7 @@ public class ShaftDecorBlock extends HorizontalDirectionalBlock {
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = Hanging.onWall(context);
+        Direction facing = Mounting.onWall(context);
         return facing == null ? null : defaultBlockState().setValue(FACING, facing);
     }
 

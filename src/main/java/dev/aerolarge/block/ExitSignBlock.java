@@ -46,7 +46,7 @@ public class ExitSignBlock extends HorizontalDirectionalBlock {
     /** Against the side of a block it faces out from it; nowhere else, as its back is fixed to a wall. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = Hanging.onWall(context);
+        Direction facing = Mounting.onWall(context);
         return facing == null ? null : defaultBlockState().setValue(FACING, facing);
     }
 
