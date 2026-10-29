@@ -159,9 +159,7 @@ public class DrinkTapBlock extends HorizontalDirectionalBlock {
     private boolean pull(ServerLevel level, BlockState state, BlockPos pos, BlockHitResult hit) {
         if (state.getValue(POUR) != Pour.NONE) {
             level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_OFF, SoundSource.BLOCKS, BUSY_VOLUME, BUSY_PITCH);
-            if (!level.getBlockTicks().hasScheduledTick(pos, this)) {
-                level.scheduleTick(pos, this, 1);
-            }
+            LostTicks.rearm(level, pos, this, 1);
             return false;
         }
         Direction facing = state.getValue(FACING);
