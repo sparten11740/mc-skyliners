@@ -239,13 +239,19 @@ public final class RocketLayout implements Layout {
         cells.putAll(finished);
     }
 
-    /** A block of her cover or floor as it is finished inside; null for any other, or one no room sees. */
+    /**
+     * A block of her cover, floor or windows as it is finished inside: the cover lined, the floor finished, the wall
+     * round a window's oval the room's; null for any other block, or cover no room sees.
+     */
     @Nullable
     private BlockState finished(BlockPos at, BlockState state) {
         if (state.is(AerolargeRegistry.CABIN_FLOOR.get())) {
             return finishedFloor(at.getY());
         }
         RocketFinish finish = finishAt(at.getY());
+        if (finish != null && state.getBlock() instanceof OvalWindowBlock) {
+            return state.setValue(OvalWindowBlock.WALL, OvalWindowBlock.Wall.of(finish));
+        }
         if (!state.is(AerolargeRegistry.ZEPPELIN_COVER.get()) || finish == null) {
             return null;
         }

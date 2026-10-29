@@ -78,14 +78,21 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     /** The piece drawn: its column from the left as seen from outside and its row from the top. */
     private final int column;
     private final int row;
+    /**
+     * The tint of the wall round its oval inside, from {@code "inside_tint"}: the cover's, painted by her livery, or
+     * none for a room's own wall.
+     */
+    private final int insideTint;
 
-    private OvalWindowModel(int column, int row) {
+    private OvalWindowModel(int column, int row, int insideTint) {
         this.column = column;
         this.row = row;
+        this.insideTint = insideTint;
     }
 
     private static OvalWindowModel read(JsonObject json) {
-        return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"));
+        return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
+            GsonHelper.getAsInt(json, "inside_tint", COVER_TINT));
     }
 
     @Override
@@ -103,10 +110,10 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
         }
         flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), SKIN - OVER, Direction.NORTH, COVER_TINT, turn);
         flat(modelBuilder, spriteGetter.apply(owner.getMaterial("lip")), BLOCK + OVER, Direction.SOUTH, ModelQuads.NO_TINT, turn);
-        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), turn);
+        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, turn);
         TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
         for (Direction side : EDGES) {
-            side(modelBuilder, side, edge, turn);
+            side(modelBuilder, side, edge, COVER_TINT, turn);
         }
     }
 
@@ -221,11 +228,11 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     }
 
     /**
-     * One of the piece's flat sides, lit as a block's side is, culled against what stands against it and tinted as the
-     * cover is: its inner face, with the hole the dome is seen through, mirrored so the oval reads whole from inside,
-     * and its edges round it.
+     * One of the piece's flat sides, lit as a block's side is, culled against what stands against it and tinted as
+     * given: its inner face, with the hole the dome is seen through, mirrored so the oval reads whole from inside, and
+     * its edges round it.
      */
-    private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, Transformation turn) {
+    private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, int tint, Transformation turn) {
         float[] bounds = new float[Direction.values().length];
         bounds[FaceInfo.Constants.MIN_X] = 0;
         bounds[FaceInfo.Constants.MIN_Y] = 0;
@@ -243,7 +250,7 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             quad[k] = turned(at, facing, uv[0], uv[1], turn);
         }
         Direction turnedSide = Direction.rotate(turn.getMatrix(), side);
-        builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false, COVER_TINT));
+        builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false, tint));
     }
 
     /** The texture over a point of a flat side: the inner face as the glass seen from outside, the edges as a box's. */

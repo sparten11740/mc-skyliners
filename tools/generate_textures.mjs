@@ -117,6 +117,10 @@ function texture(folder, name, paint, noise = 4, width = SIZE, height = SIZE) {
   writeFileSync(resolve(folder, `${name}.png`), encodePng(pixels));
 }
 const clamp = (value) => Math.max(0, Math.min(255, value));
+// The rocket's oval windows' pieces, each with whether it is in the window's lowest row, on the floor, and where its
+// inner face is wall round the oval (not its hole or its lip), for the rooms' finishes to paint that wall in each
+// room's own (see the rooms' finishes, below).
+const OVAL_WALLS = [];
 
 /** Skin plating: a seam along the top and left edges, a rivet row just inside them. */
 function plating(base, seam, rivet) {
@@ -3777,6 +3781,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       const out = (x, y) => outsideOval(column * SIZE + x, row * SIZE + y);
       texture(blockOutput, `oval_window_${column}_${row}_frame`, (x, y) => (out(x, y) > OVAL_HOLE ? undoped(x, y) : CLEAR), 3);
       texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => (out(x, y) > OVAL_HOLE + HOLE_LIP ? undoped(x, y) : CLEAR), 3);
+      OVAL_WALLS.push({ column, row, lowest: row === OVAL_ROWS - 1, wall: (x, y) => out(x, y) > OVAL_HOLE + HOLE_LIP });
       texture(blockOutput, `oval_window_${column}_${row}_lip`, (x, y) => {
         const o = out(x, y);
         return o > OVAL_HOLE && o <= OVAL_HOLE + HOLE_LIP ? OVAL_RIM : CLEAR;
@@ -5198,6 +5203,12 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   for (const [finish, parts] of Object.entries(FINISHES)) {
     for (const [part, paint] of Object.entries(parts)) {
       texture(blockOutput, `rocket_${part}_${finish}`, paint, 3);
+    }
+    // The wall round each oval window's oval inside, in the room's own wall, the hole and the lip left clear; its
+    // lowest row, on the floor, the dado along the wall's foot, as the wall beside it is.
+    for (const { column, row, lowest, wall } of OVAL_WALLS) {
+      const paint = lowest ? parts.dado : parts.wall;
+      texture(blockOutput, `oval_window_${column}_${row}_inside_${finish}`, (x, y) => (wall(x, y) ? paint(x, y) : [0, 0, 0, 0]), 3);
     }
   }
 }

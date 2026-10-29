@@ -1,0 +1,16 @@
+{
+  "loader": "aerolarge:oval_window",
+  "render_type": "minecraft:translucent",
+  "column": 1,
+  "row": 1,
+  "inside_tint": -1,
+  "textures": {
+    "glass": "aerolarge:block/oval_window_1_1_dim2",
+    "frame": "aerolarge:block/oval_window_1_1_frame",
+    "inside": "aerolarge:block/oval_window_1_1_inside_club",
+    "lip": "aerolarge:block/oval_window_1_1_lip",
+    "reveal": "aerolarge:block/oval_window_reveal",
+    "edge": "aerolarge:block/zeppelin_skin",
+    "particle": "aerolarge:block/oval_window_1_1_dim2"
+  }
+}

@@ -3602,8 +3602,9 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 }
 // The rocket's oval window (see OvalWindowBlock): each block of it at each step of its dimming, the inner half of its
 // block, its glass a dome over the oval in a recess lined with steel, baked by the mod's own "oval_window" loader (see
-// OvalWindowModel), its frame and its edges the cover's undoped weave, tinted in the ship's livery as the cover is.
-// Modelled looking north, turned for the other ways. It gives back glass.
+// OvalWindowModel), its frame and its edges the cover's undoped weave, tinted in the ship's livery as the cover is,
+// and inside the wall round the oval the weave too or, in a room finished its own way, that room's wall. Modelled
+// looking north, turned for the other ways. It gives back glass.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_skin`;
@@ -3620,7 +3621,20 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
           },
         });
         for (const [facing, y] of Object.entries(yRot)) {
-          variants[`column=${column},dim=${dim},facing=${facing},row=${row}`] = { model: `${ID}:block/${name}`, y };
+          variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=cover`] = { model: `${ID}:block/${name}`, y };
+        }
+        // In a room finished its own way, the wall round the oval inside is that room's, untinted.
+        for (const finish of ROCKET_FINISHES) {
+          write(`assets/${ID}/models/block/${name}_${finish}.json`, {
+            loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row, inside_tint: -1,
+            textures: {
+              glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside_${finish}`,
+              lip: `${ID}:block/oval_window_${column}_${row}_lip`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass,
+            },
+          });
+          for (const [facing, y] of Object.entries(yRot)) {
+            variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=${finish}`] = { model: `${ID}:block/${name}_${finish}`, y };
+          }
         }
       }
     }

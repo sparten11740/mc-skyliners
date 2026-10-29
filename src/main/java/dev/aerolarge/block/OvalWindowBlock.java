@@ -1,10 +1,12 @@
 package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -29,8 +32,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * a step, from clear through light, medium and dark and back to clear, with a chime that falls as it darkens. Only the
  * glass darkens: its frame and the skin round it, and the light it lets in, stay as they are. Each piece is the inner
  * half of its block, where the skin's cut runs through the block's middle out to the four ways round a round body, so
- * it sits flush with the skin beside it. It turns with the ship as she is built facing any way. Only the blueprints
- * place it; broken, it gives back glass.
+ * it sits flush with the skin beside it. It turns with the ship as she is built facing any way. Inside, the wall round
+ * its oval is her cover's weave in her livery, or, in a room finished its own way, that room's wall (see
+ * {@link RocketFinish}), so the oval sits in the wall as the room has it. Only the blueprints place it; broken, it gives
+ * back glass.
  */
 public class OvalWindowBlock extends TransparentBlock {
     private static final MapCodec<OvalWindowBlock> CODEC = simpleCodec(OvalWindowBlock::new);
@@ -44,6 +49,23 @@ public class OvalWindowBlock extends TransparentBlock {
     /** How dark its glass is: 0 clear, up to {@link #DARKEST}. */
     public static final int DARKEST = 3;
     public static final IntegerProperty DIM = IntegerProperty.create("dim", 0, DARKEST);
+    /** What the wall round its oval is inside: her cover, or a room's finish. */
+    public static final EnumProperty<Wall> WALL = EnumProperty.create("wall", Wall.class);
+
+    /** The wall round a window's oval inside: her cover's weave, painted by her livery, or one of the rooms' finishes. */
+    public enum Wall implements StringRepresentable {
+        COVER, ENTRY, CARGO, MESS, BUNKS, GREENHOUSE, POOL, CLUB, LAB, LOUNGE, COCKPIT;
+
+        /** The wall of a room finished its own way. */
+        public static Wall of(RocketFinish finish) {
+            return valueOf(finish.name());
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
     /** The chime's pitch when clear, and how far it falls with each step darker. */
     private static final float CLEAR_PITCH = 1.5F;
     private static final float PITCH_STEP = 0.25F;
@@ -56,7 +78,7 @@ public class OvalWindowBlock extends TransparentBlock {
     public OvalWindowBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(COLUMN, 0).setValue(ROW, 0)
-            .setValue(DIM, 0));
+            .setValue(DIM, 0).setValue(WALL, Wall.COVER));
     }
 
     @Override
@@ -66,7 +88,7 @@ public class OvalWindowBlock extends TransparentBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, COLUMN, ROW, DIM);
+        builder.add(FACING, COLUMN, ROW, DIM, WALL);
     }
 
     /** A piece of a window looking out one way, by its column from the left as seen from outside and its row. */
