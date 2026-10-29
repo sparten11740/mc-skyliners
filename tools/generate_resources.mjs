@@ -1322,14 +1322,19 @@ function atcLang() {
 
 // The rocket's sound and voice (see tools/generate_sounds.mjs, the client's RocketRoar and the autopilot's
 // RocketSounds). Her engines' roar, their ignition and cut-off and her touchdown on her fins, heard as far as
-// ROCKET_HEARD blocks off, out across the ground round her and up her whole height; the same heard aboard, round the
-// listener, and her side jets' puffs, near them; and launch control's count and its calls of her milestones (see the
-// autopilot's LaunchCallouts), played to each listener as the flight deck's voice is (see heardAboard), subtitled with
-// what is said.
+// ROCKET_HEARD blocks off, out across the ground round her and up her whole height; her roar's thunder close by, heard
+// only round her feet; her lift-off's shockwave, played to each listener as it reaches them; the same heard aboard,
+// round the listener, and her side jets' puffs, near them; and launch control's count and its calls of her milestones
+// (see the autopilot's LaunchCallouts), played to each listener as the flight deck's voice is (see heardAboard),
+// subtitled with what is said.
 const ROCKET_HEARD = 160;
+// How far her roar's thunder close by carries, in blocks: round her feet, where those watching her lift off stand.
+const ROCKET_NEAR_HEARD = 64;
 const ROCKET_SUBTITLES = {
   rocket_roar: "Rocket engines roar",
   rocket_roar_aboard: "Rocket engines rumble",
+  rocket_roar_near: "Rocket engines thunder",
+  rocket_shockwave: "Shockwave booms",
   rocket_ignition: "Rocket engines ignite",
   rocket_ignition_aboard: "Rocket engines ignite",
   rocket_cutoff: "Rocket engines cut off",
@@ -1355,15 +1360,24 @@ const LAUNCH_SUBTITLES = {
   launch_landing_burn: "Launch control: Landing burn",
 };
 function rocketSounds() {
-  const far = ["rocket_roar", "rocket_ignition", "rocket_cutoff", "rocket_touchdown"];
+  // How far each of her engines' sounds that carries farther than the game's own 16 blocks is heard.
+  const heard = {
+    rocket_roar: ROCKET_HEARD, rocket_ignition: ROCKET_HEARD, rocket_cutoff: ROCKET_HEARD, rocket_touchdown: ROCKET_HEARD,
+    rocket_roar_near: ROCKET_NEAR_HEARD,
+  };
   const sounds = Object.fromEntries(Object.keys(ROCKET_SUBTITLES).map((name) => [name, {
     subtitle: `subtitles.${ID}.${name}`,
-    sounds: [far.includes(name) ? { name: `${ID}:${name}`, attenuation_distance: ROCKET_HEARD } : { name: `${ID}:${name}` }],
+    sounds: [{ name: `${ID}:${name}`, ...(heard[name] ? { attenuation_distance: heard[name] } : {}) }],
   }]));
   return { ...sounds, ...Object.fromEntries(Object.keys(LAUNCH_SUBTITLES).map((name) => [name, heardAboard(name)])) };
 }
 function rocketSoundsLang() {
   return Object.fromEntries(Object.entries({ ...ROCKET_SUBTITLES, ...LAUNCH_SUBTITLES }).map(([name, subtitle]) => [`subtitles.${ID}.${name}`, subtitle]));
+}
+// A rocket's exhaust plume, the clouds round her lift-off and her shockwave's dust share the blast's soft cloud picture
+// (see the client's BlastPuffParticle), each kind tinting it.
+for (const kind of ["exhaust", "cloud", "dust"]) {
+  write(`assets/${ID}/particles/rocket_${kind}.json`, { textures: [`${ID}:blast_puff`] });
 }
 
 // The engines' sound and the flight deck's voice (see tools/generate_sounds.mjs), and the contrail particle.

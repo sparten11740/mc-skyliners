@@ -412,6 +412,23 @@
       }
     ]
   },
+  "rocket_roar_near": {
+    "subtitle": "subtitles.aerolarge.rocket_roar_near",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_roar_near",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "rocket_shockwave": {
+    "subtitle": "subtitles.aerolarge.rocket_shockwave",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_shockwave"
+      }
+    ]
+  },
   "rocket_ignition": {
     "subtitle": "subtitles.aerolarge.rocket_ignition",
     "sounds": [

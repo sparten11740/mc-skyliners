@@ -92,6 +92,8 @@
   "subtitles.aerolarge.atc_static_clicks": "Radio clicks",
   "subtitles.aerolarge.rocket_roar": "Rocket engines roar",
   "subtitles.aerolarge.rocket_roar_aboard": "Rocket engines rumble",
+  "subtitles.aerolarge.rocket_roar_near": "Rocket engines thunder",
+  "subtitles.aerolarge.rocket_shockwave": "Shockwave booms",
   "subtitles.aerolarge.rocket_ignition": "Rocket engines ignite",
   "subtitles.aerolarge.rocket_ignition_aboard": "Rocket engines ignite",
   "subtitles.aerolarge.rocket_cutoff": "Rocket engines cut off",

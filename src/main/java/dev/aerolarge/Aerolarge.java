@@ -9,6 +9,7 @@ import dev.aerolarge.block.LaserBolt;
 import dev.aerolarge.block.LiftPanelInteraction;
 import dev.aerolarge.block.LookIntoMicroscope;
 import dev.aerolarge.autopilot.AssemblyFailed;
+import dev.aerolarge.autopilot.LaunchShock;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
 import dev.aerolarge.block.OpenTowerRadar;
@@ -37,6 +38,7 @@ import dev.aerolarge.client.LightningFlash;
 import dev.aerolarge.client.MicroscopeScreen;
 import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
+import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.TerrainMap;
 import dev.aerolarge.client.ThrownClear;
@@ -165,7 +167,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("28")
+        event.registrar("29")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -210,6 +212,8 @@ public final class Aerolarge {
                 (payload, context) -> SelfDestructWarning.alarm(payload.ticks()))
             .playToClient(BlastPayload.TYPE, BlastPayload.STREAM_CODEC,
                 (payload, context) -> BlastFlash.blast(payload.shake(), payload.flash()))
+            .playToClient(LaunchShock.TYPE, LaunchShock.STREAM_CODEC,
+                (payload, context) -> RocketRoar.shockwave(payload.strength()))
             .playToClient(ThrownClearPayload.TYPE, ThrownClearPayload.STREAM_CODEC,
                 (payload, context) -> ThrownClear.thrown());
     }

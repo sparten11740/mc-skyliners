@@ -2115,11 +2115,18 @@ her, a change climbs her a story at a time from the entry story up.
 To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
 map no circle or landing switch and on it no circle round the pin, as she circles nothing and always comes down on the
 pin. It counts down ten seconds, a note each second rising toward lift-off and a bell as the engines light, then lifts
-off straight up and climbs to the height set, white cloud and smoke billowing out over the ground from under her as she
-rises and again as she comes in to land, and fire and embers bursting from the ground under her while she is close over
-it (the server config's `rocket.plumes` leaves them out). Close over the ground her engines set it alight, fire catching
+off straight up and climbs to the height set, a plume of fire streaming from under her while her engines fire, white-hot
+where it leaves her and cooling into smoke, great white clouds billowing out over the ground from under her and piling
+up round her as she rises and again as she comes in to land, and fire and embers bursting from the ground under her
+while she is close over it (the server config's `rocket.plumes` leaves them out). Close over the ground her engines set
+it alight, fire catching
 on it round under her and burning on after her, unless fire may not spread in the world (the doFireTick game rule;
-`rocket.groundFire` leaves it out). Aboard, her engines lighting shakes the view for three seconds
+`rocket.groundFire` leaves it out). As her engines light on the ground their blast slams into it and a shockwave races
+out from under her, a ring of dust rolling over the ground: it throws whoever and whatever stands near back off their
+feet, once each and never so high that landing hurts, booms and jolts the view as it passes, and booms on later and
+quieter farther off
+(`rocket.launchBlast` leaves it out). Standing near her as she lifts off or lands, her roar thunders, deeper and
+crackling, and the ground shakes underfoot. Aboard, her engines lighting shakes the view for three seconds
 (the client setting `cameraShake` leaves it out). There it holds its height and leans toward the pin, never more than 10
 degrees, as fast across as it can still slow down by it; once over the pin and no longer drifting it falls back (or,
 circling it slowly for ten seconds, as a heavily loaded rocket can, all the same), never faster than six tenths of
@@ -2359,7 +2366,9 @@ and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `A
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
 climbs past it; `SpaceGravity` makes them light up there until it announces her artificial gravity; `RocketPlumes` sends
-the smoke and the fire under her and the flames from her base.
+the clouds and the fire under her and the flames from her base; `RocketGroundFire` sets the ground
+under her alight, and `RocketLaunchBlast` sends her lift-off's shockwave out over it, telling each player it reaches
+with a `LaunchShock`; each client draws her exhaust plume itself, from how hard her engines fire (`RocketExhaust`).
 Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
 the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the
 view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her control
@@ -2392,8 +2401,9 @@ a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem
 curtain, a board, a string of lights or a tube, each piece told by its room (`Kind`), its place across the shaft's face
 (`Along`) and its row (`Row`); put up on a floor or under a ceiling (`Mount`), it is its room's small one instead.
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
-from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown and shakes the view aboard as they
-light; `LaunchCallouts` has launch control call her milestones on the same radio, waiting its turn on the flight deck's
+from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown, her roar's thunder close by and the
+shockwave's boom, and shakes the view aboard as they light and on the ground near her; `LaunchCallouts` has launch
+control call her milestones on the same radio, waiting its turn on the flight deck's
 `Airtime`.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through

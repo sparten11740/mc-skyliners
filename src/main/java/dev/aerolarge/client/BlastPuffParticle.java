@@ -18,9 +18,11 @@ import net.minecraft.world.phys.AABB;
 /**
  * One huge, slow puff of an airliner blowing up (see {@link dev.aerolarge.selfdestruct.Blast}), as Ultrasplosive's
  * nuke draws its mushroom cloud: a few thousand of these big puffs rather than tens of thousands of vanilla's smoke, so
- * the blast reads as a solid mass and costs the client little. Every kind shares the one soft puff picture and only
- * lives, grows, fades, drifts and colours differently (see {@link Kind}). The fire and the embers glow whatever the
- * light round them while they burn; the rest is lit as the sky and the blocks round it light it, never quite black.
+ * the blast reads as a solid mass and costs the client little; and, the same way, a rocket's exhaust plume and the
+ * clouds and dust her lift-off raises (see {@link RocketExhaust} and the autopilot's RocketPlumes and
+ * RocketLaunchBlast). Every kind shares the one soft puff picture and only lives, grows, fades, drifts and colours
+ * differently (see {@link Kind}). The fire, the embers and the exhaust glow whatever the light round them while they
+ * burn; the rest is lit as the sky and the blocks round it light it, never quite black.
  */
 public final class BlastPuffParticle extends TextureSheetParticle {
     /** The least block light a puff is drawn with, so the smoke never goes black at night. */
@@ -29,9 +31,10 @@ public final class BlastPuffParticle extends TextureSheetParticle {
     private static final double BOX_MARGIN = 1.5;
     /** The most a puff turns a tick, in radians, either way. */
     private static final float SPIN = 0.006F;
-    /** The share of a fire puff's life it glows for, and an ember's. */
+    /** The share of a fire puff's life it glows for, an ember's and an exhaust puff's. */
     private static final float FIRE_GLOWS = 0.8F;
     private static final float EMBER_GLOWS = 0.7F;
+    private static final float EXHAUST_GLOWS = 0.45F;
     /** The share of the puffs made with the particle setting at Decreased: half; at Minimal, none. */
     private static final float DECREASED_SHARE = 0.5F;
 
@@ -44,7 +47,14 @@ public final class BlastPuffParticle extends TextureSheetParticle {
         /** Short lived and pale: the dust of the blast wave racing out. */
         WAVE,
         /** Small and glowing, falling as it cools from yellow to dull red: the burning bits thrown off the airliner. */
-        EMBER
+        EMBER,
+        /**
+         * Quick and fierce, white-hot where it leaves a rocket's engines, cooling through orange into smoke as it
+         * streams away and swells: her exhaust plume.
+         */
+        EXHAUST,
+        /** Big, white and billowing, rolling out over the ground and piling up: a rocket's lift-off clouds. */
+        CLOUD
     }
 
     /**
@@ -64,6 +74,10 @@ public final class BlastPuffParticle extends TextureSheetParticle {
                 case WAVE -> new Look(40, 20, 3.0F, 2.0F, 1.2F, 0.88F, 0.10F, 0.45F, 0.965F, 0.97F, 0, 0.66F + random.nextFloat() * 0.18F);
                 // The shade is how yellow an ember burns, from red-hot to yellow.
                 case EMBER -> new Look(60, 60, 0.5F, 0.6F, 0.4F, 0.9F, 0.05F, 0.45F, 0.98F, 0.98F, 0.012F, random.nextFloat());
+                // Gone in a second, the plume always renewed behind it, so it streams rather than hangs.
+                case EXHAUST -> new Look(18, 12, 1.5F, 1.0F, 2.4F, 0.95F, 0.03F, 0.5F, 0.95F, 0.95F, 0, 0);
+                // The shade is how white a cloud is: some sunlit, some in the shadow of the others.
+                case CLOUD -> new Look(110, 90, 2.8F, 2.4F, 1.5F, 0.86F, 0.06F, 0.55F, 0.955F, 0.975F, 0, 0.80F + random.nextFloat() * 0.18F);
             };
         }
     }
@@ -133,6 +147,8 @@ public final class BlastPuffParticle extends TextureSheetParticle {
                 float heat = 1 - t;
                 setColor(0.55F + 0.45F * heat, (0.18F + 0.35F * look.shade()) * heat, 0.04F * heat);
             }
+            case EXHAUST -> exhaust(t);
+            case CLOUD -> setColor(look.shade(), look.shade(), Math.min(1, look.shade() * 1.03F));
         }
     }
 
@@ -153,10 +169,25 @@ public final class BlastPuffParticle extends TextureSheetParticle {
         }
     }
 
+    /**
+     * An exhaust puff's colour at this share of its life: white-hot as it leaves the engines, yellow to orange over its
+     * first third, and cooling into pale grey smoke.
+     */
+    private void exhaust(float t) {
+        if (t < 0.3F) {
+            float k = t / 0.3F;
+            setColor(1, Mth.lerp(k, 0.95F, 0.55F), Mth.lerp(k, 0.75F, 0.12F));
+        } else {
+            float k = Math.min(1, (t - 0.3F) / 0.5F);
+            setColor(Mth.lerp(k, 1, 0.72F), Mth.lerp(k, 0.55F, 0.70F), Mth.lerp(k, 0.12F, 0.68F));
+        }
+    }
+
     /** Full bright while the fire or an ember burns; otherwise the light round it, but never too dark. */
     @Override
     protected int getLightColor(float partialTick) {
-        boolean burning = kind == Kind.FIRE && age < lifetime * FIRE_GLOWS || kind == Kind.EMBER && age < lifetime * EMBER_GLOWS;
+        boolean burning = kind == Kind.FIRE && age < lifetime * FIRE_GLOWS || kind == Kind.EMBER && age < lifetime * EMBER_GLOWS
+            || kind == Kind.EXHAUST && age < lifetime * EXHAUST_GLOWS;
         if (burning) {
             return LightTexture.FULL_BRIGHT;
         }

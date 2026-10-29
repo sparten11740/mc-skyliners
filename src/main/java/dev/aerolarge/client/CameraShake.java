@@ -17,7 +17,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * {@link dev.aerolarge.cabin.Turbulence} and {@link dev.aerolarge.cabin.AirPockets}). Only for the player riding it, only from the camera (nothing in
  * the world moves), and off with the client setting "cameraShake". An airliner blowing up shakes the view of everyone
  * near, aboard or not (see {@link BlastFlash}); a rocket's engines lighting shakes it as rough air does, for those
- * aboard her (see {@link RocketRoar}).
+ * aboard her, and the ground shakes so under those standing near her while they fire low over it, her lift-off's
+ * shockwave jolting them as a blast does as it passes (see {@link RocketRoar}).
  */
 public final class CameraShake {
     /** The rumble's strength on the runway at full speed, and the speed (blocks a second) it reaches it at. */
@@ -89,8 +90,8 @@ public final class CameraShake {
     }
 
     /**
-     * An airliner has blown up near the player, shaking their view this hard: above 0 from the edge of its reach, 1 by
-     * it; 0, too far off to shake at all.
+     * An airliner has blown up near the player, or a rocket's lift-off shockwave has reached them, shaking their view
+     * this hard: above 0 from the edge of its reach, 1 by it; 0, too far off to shake at all.
      */
     public static void blast(float strength) {
         if (strength <= 0) {
@@ -102,7 +103,7 @@ public final class CameraShake {
 
     /**
      * The airliner the player rides has run into rough air, this rough (up to 1 in clear skies), for this many ticks; or
-     * the rocket they ride has lit her engines.
+     * the rocket they ride has lit her engines, or the one they stand near fires them low over the ground.
      */
     public static void turbulence(float strength, int ticks) {
         roughStrength = strength;

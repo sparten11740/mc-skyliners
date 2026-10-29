@@ -82,6 +82,7 @@ import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RobotBartenderRenderer;
+import dev.aerolarge.client.RocketExhaust;
 import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.RoomAmbience;
 import dev.aerolarge.client.RoverClient;
@@ -247,6 +248,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(SkyTrails::stage);
         // A rocket's engines heard as they fire: her roar, its ignition and cut-off, and her touchdown.
         NeoForge.EVENT_BUS.addListener(RocketRoar::tick);
+        NeoForge.EVENT_BUS.addListener(RocketExhaust::tick);
         // The space helmet's air, breathed in it aboard a rocket in space.
         NeoForge.EVENT_BUS.addListener(HelmetBreathing::tick);
         // Her greenhouse and her pool heard as one stands in them.
@@ -317,6 +319,9 @@ public final class AerolargeClient {
         event.registerSpriteSet(AerolargeRegistry.BLAST_SMOKE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.SMOKE));
         event.registerSpriteSet(AerolargeRegistry.BLAST_WAVE.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
         event.registerSpriteSet(AerolargeRegistry.BLAST_EMBER.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.EMBER));
+        event.registerSpriteSet(AerolargeRegistry.ROCKET_EXHAUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.EXHAUST));
+        event.registerSpriteSet(AerolargeRegistry.ROCKET_CLOUD.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.CLOUD));
+        event.registerSpriteSet(AerolargeRegistry.ROCKET_DUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

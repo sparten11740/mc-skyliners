@@ -638,6 +638,8 @@ public class AutopilotBlockEntity extends BlockEntity {
     private final EdgeOfSpace space = new EdgeOfSpace();
     /** Its rocket's low gravity as she reaches space, until her artificial gravity is announced. */
     private final SpaceGravity gravity = new SpaceGravity();
+    /** Its rocket's shockwave as her engines light on the ground, racing out over it. */
+    private final RocketLaunchBlast launchBlast = new RocketLaunchBlast();
     /** How far into its rocket's countdown it last sounded it, in ticks, so each second is heard once. */
     private int countHeard;
     /** What is heard of its rocket as she flies, and how hard her engines fire as the clients are shown it. */
@@ -1756,6 +1758,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         gravity.tick(level, this, flight);
         RocketPlumes.tick(level, flight, radio, wheelsBelow, rocket.report().thrust());
         RocketGroundFire.tick(level, flight, radio, wheelsBelow, rocket.report().thrust());
+        launchBlast.tick(level, this, flight, radio, wheelsBelow, rocket.report().thrust());
         // Launch control counts her down only once the cabin has heard its take-off announcement (see RocketSounds),
         // and nothing else holds her countdown, as her rover out of its bay does.
         boolean held = rocketSounds.holdsCountdown(phase, rocket.counted(), quiet())

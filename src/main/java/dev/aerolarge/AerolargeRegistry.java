@@ -532,6 +532,14 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_SMOKE = PARTICLES.register("blast_smoke", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_WAVE = PARTICLES.register("blast_wave", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_EMBER = PARTICLES.register("blast_ember", () -> new SimpleParticleType(false));
+    /**
+     * A rocket's exhaust plume streaming from her engines, the clouds billowing round her lift-off and landing, and the
+     * dust of her lift-off's shockwave racing out over the ground (see dev.aerolarge.autopilot.RocketPlumes and
+     * RocketLaunchBlast); drawn as the blast's puffs are.
+     */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_EXHAUST = PARTICLES.register("rocket_exhaust", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_CLOUD = PARTICLES.register("rocket_cloud", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_DUST = PARTICLES.register("rocket_dust", () -> new SimpleParticleType(false));
 
     /** Opens by hand like a wooden door but sounds like the metal one it is. */
     public static final BlockSetType AIRLINER = BlockSetType.register(new BlockSetType(
@@ -716,6 +724,10 @@ public final class AerolargeRegistry {
     /** Her engines' roar, looped while they fire, swelled and pitched with their thrust; and as it is heard aboard. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR = sound("rocket_roar");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR_ABOARD = sound("rocket_roar_aboard");
+    /** Her roar heard close by, low over the ground, thundering beside it: heavier, rougher and crackling. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_ROAR_NEAR = sound("rocket_roar_near");
+    /** Her lift-off's shockwave as it passes the listener: a crack, a boom and its rumble rolling away. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_SHOCKWAVE = sound("rocket_shockwave");
     /** Her engines lighting at lift-off, and cutting off; and each as it is heard aboard. */
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_IGNITION = sound("rocket_ignition");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_IGNITION_ABOARD = sound("rocket_ignition_aboard");

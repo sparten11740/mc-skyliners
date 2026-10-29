@@ -2447,6 +2447,76 @@ function softened(samples) {
   writeSound("rocket_touchdown", touchdown, 0.9);
 }
 
+// A rocket's lift-off heard close by, with a random sequence of its own so the sounds above are unchanged (the
+// client's RocketRoar and the autopilot's RocketLaunchBlast). Her roar's thunder near her: the same roar heavier and
+// rougher, its rumble lower, its crackle three times as thick and a deeper sub under it, looped to her roar's length,
+// played beside it round her feet while she is low over the ground. And, with a random sequence of its own, her
+// shockwave as it passes the listener: the crack of its front, the air shoved out and drawn back (an N-wave), a boom
+// falling from 110 to 40 hertz, the blast's body of low noise and its roar round 300 hertz, and its rumble rolling away
+// for seconds, crackling as it goes.
+const ROCKET_NEAR = {
+  // The thunder's low-pass, in hertz; its crackles a second and how loud they are beside its rumble, as a share of
+  // the rumble's root mean square; and its sub's pitch, a whole number of turns round the loop, and its share.
+  rumbleCutoff: 380,
+  crackles: 120,
+  crackleShare: 0.6,
+  sub: 24,
+  subShare: 1.1,
+};
+const ROCKET_SHOCK = {
+  // How long the shockwave rings on, in seconds, and the middle of its blast's roar, in hertz: low enough to be heavy,
+  // high enough for small speakers to give it.
+  seconds: 4.5,
+  blastCentre: 300,
+  // Its parts' weights before it is levelled, measured to open with the crack and boom some 4 decibels under full and
+  // fall 25 under by its tail, and to be as loud above 150 hertz as her roar is (or louder).
+  weights: { crack: 8, front: 5, sub: 5, blast: 20, roar: 45, rumble: 12, crackle: 1.2 },
+  // How hard it is driven into a soft saturation once levelled, which fattens the boom's harmonics.
+  drive: 3,
+};
+{
+  const nearRandom = ownRandom(0x4e656172);
+  const near = rocketRoar(ROCKET.loop + ROCKET.crossfade, nearRandom, () => ROCKET_NEAR.rumbleCutoff, () => ROCKET_NEAR.crackles);
+  const rumbleGain = 1 / rms(near.rumble);
+  const hissGain = 10 ** (-ROCKET.hissUnder / 20) / rms(near.hiss);
+  const crackleGain = ROCKET_NEAR.crackleShare / rms(near.crackle);
+  const mixed = near.rumble.map((r, i) => rumbleGain * r + hissGain * near.hiss[i] + crackleGain * near.crackle[i]);
+  const noise = seamlessNoise(mixed, ROCKET.loop, ROCKET.crossfade);
+  const thunder = softened(noise.map((n, i) => n + ROCKET_NEAR.subShare * Math.sin((2 * Math.PI * ROCKET_NEAR.sub * i) / RATE)));
+  writeSound("rocket_roar_near", thunder, ROCKET.level);
+}
+{
+  const shockRandom = ownRandom(0x53686f63);
+  const shock = new Float64Array(Math.round(ROCKET_SHOCK.seconds * RATE));
+  const band = resonance(Float64Array.from(shock, () => shockRandom() * 2 - 1), ROCKET_SHOCK.blastCentre, 0.7);
+  let boom = 0;
+  let brown = 0;
+  let body = 0;
+  let rolling = 0;
+  for (let i = 0; i < shock.length; i++) {
+    const t = i / RATE;
+    const white = shockRandom() * 2 - 1;
+    // The front: a crack, and the air shoved out at once and drawn back over 70 milliseconds, its two edges sharp.
+    const crack = t < 0.015 ? white * Math.exp(-t / 0.004) : 0;
+    const front = t < 0.07 ? 1 - (2 * t) / 0.07 : 0;
+    boom += (2 * Math.PI * (40 + 70 * Math.exp(-t / 0.25))) / RATE;
+    const sub = Math.min(1, t / 0.004) * Math.exp(-t / 0.8) * (Math.sin(boom) + 0.5 * Math.sin(2 * boom) + 0.25 * Math.sin(3 * boom));
+    brown = (brown + 0.02 * white) * 0.996;
+    body += 0.12 * (brown - body);
+    rolling += 0.015 * (brown - rolling);
+    const blast = Math.min(1, t / 0.01) * Math.exp(-t / 0.35) * body;
+    const roar = Math.min(1, t / 0.005) * Math.exp(-t / 0.45) * band[i];
+    const rumble = Math.min(1, t / 0.3) * Math.exp(-t / 1.4) * (1 + 0.3 * Math.sin(2 * Math.PI * 1.7 * t)) * rolling;
+    const { weights } = ROCKET_SHOCK;
+    shock[i] = weights.crack * crack + weights.front * front + weights.sub * sub + weights.blast * blast + weights.roar * roar + weights.rumble * rumble;
+  }
+  for (let t = 0.04; t < ROCKET_SHOCK.seconds - 0.5; t += -Math.log(1 - shockRandom()) / (5 + 90 * Math.exp(-t / 0.6))) {
+    click(shock, t, 900 + 2600 * shockRandom(), ROCKET_SHOCK.weights.crackle * (0.15 + 0.35 * shockRandom()) * Math.exp(-t / 1.2), shockRandom);
+  }
+  const peak = peakOf(shock);
+  writeSound("rocket_shockwave", shock.map((sample) => Math.tanh((ROCKET_SHOCK.drive * sample) / peak)), 0.95);
+}
+
 // The rocket's tardigrade, with a random sequence of its own so the sounds above are unchanged. Its purr: a soft, low
 // "mrrp", a closed-mouth hum opening into a voice that rises from 380 to 620 hertz, rolled in its middle as a cat's
 // trill is, with a breath under it. Its bloop as it curls up into its tun: a round drop of a note falling from 500 to
