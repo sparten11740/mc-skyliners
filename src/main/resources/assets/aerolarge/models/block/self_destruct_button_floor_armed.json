@@ -1,0 +1,354 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "plate": "aerolarge:block/self_destruct_plate",
+    "cover": "aerolarge:block/self_destruct_cover",
+    "particle": "aerolarge:block/self_destruct_plate",
+    "button": "aerolarge:block/self_destruct_button_lit",
+    "casing": "aerolarge:block/flight_console",
+    "hazard": "aerolarge:block/shaft_decor_hazard"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        1.5,
+        5
+      ],
+      "to": [
+        12,
+        7.75,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#casing"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        0,
+        3
+      ],
+      "to": [
+        13.5,
+        1.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#hazard"
+        },
+        "south": {
+          "texture": "#hazard"
+        },
+        "east": {
+          "texture": "#hazard"
+        },
+        "west": {
+          "texture": "#hazard"
+        },
+        "up": {
+          "texture": "#hazard"
+        },
+        "down": {
+          "texture": "#hazard"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        6.5,
+        1.5
+      ],
+      "to": [
+        14.5,
+        9.5,
+        14.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing"
+        },
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          9.5,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        2,
+        9.5,
+        2
+      ],
+      "to": [
+        14,
+        11,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#plate"
+        },
+        "north": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          9.5,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        5.5,
+        11,
+        5.5
+      ],
+      "to": [
+        10.5,
+        13.5,
+        10.5
+      ],
+      "shade": false,
+      "faces": {
+        "up": {
+          "texture": "#button",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "north": {
+          "texture": "#button",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#button",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#button",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#button",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#button",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          9.5,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        4.5,
+        11,
+        3.5
+      ],
+      "to": [
+        11.5,
+        18,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cover",
+          "uv": [
+            4.5,
+            8.5,
+            11.5,
+            1.5
+          ]
+        },
+        "south": {
+          "texture": "#cover",
+          "uv": [
+            4.5,
+            8.5,
+            11.5,
+            1.5
+          ]
+        },
+        "up": {
+          "texture": "#cover",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#cover",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#cover",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          9.5,
+          8
+        ]
+      }
+    }
+  ]
+}

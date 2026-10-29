@@ -11,22 +11,20 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * The armed self-destruct button's flashing: a red flare over the lit button, facing the camera and added onto
- * whatever is behind it at full brightness, pulsing faster and faster as the time runs out, in step with the countdown
- * on the screens of everyone aboard (see {@link SelfDestructWarning#glow}). The button's cover and its steady glow are
- * the block's own model.
+ * The armed self-destruct button's flashing: a red flare over the lit button, on a wall or on its pedestal (see
+ * {@link SelfDestructButtonBlock#flare}), facing the camera and added onto whatever is behind it at full brightness,
+ * pulsing faster and faster as the time runs out, in step with the countdown on the screens of everyone aboard (see
+ * {@link SelfDestructWarning#glow}). The button's cover and its steady glow are the block's own model.
  */
 public class SelfDestructButtonRenderer implements BlockEntityRenderer<SelfDestructButtonBlockEntity> {
     private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/misc/nav_glow.png");
     /** The flare's size, in blocks, at its brightest. */
     private static final float SIZE = 1.4F;
-    /** How far from the middle of its block the button's face stands, toward the wall: three pixels. */
-    private static final double FACE = 3 / 16.0;
     /** The flare's colour: the button's red. */
     private static final float RED = 1;
     private static final float GREEN = 0.15F;
@@ -42,9 +40,9 @@ public class SelfDestructButtonRenderer implements BlockEntityRenderer<SelfDestr
         if (brightness <= 0) {
             return;
         }
-        Direction facing = button.getBlockState().getValue(SelfDestructButtonBlock.FACING);
+        Vec3 at = SelfDestructButtonBlock.flare(button.getBlockState());
         pose.pushPose();
-        pose.translate(0.5 + facing.getStepX() * FACE, 0.5, 0.5 + facing.getStepZ() * FACE);
+        pose.translate(at.x, at.y, at.z);
         pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         PoseStack.Pose last = pose.last();
         VertexConsumer consumer = buffers.getBuffer(RenderType.eyes(GLOW));

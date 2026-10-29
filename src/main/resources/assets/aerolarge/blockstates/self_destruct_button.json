@@ -1,67 +1,131 @@
 {
   "variants": {
-    "armed=false,facing=north,open=false": {
+    "armed=false,facing=north,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_shut",
       "y": 0
     },
-    "armed=false,facing=north,open=true": {
+    "armed=false,facing=north,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_open",
       "y": 0
     },
-    "armed=true,facing=north,open=false": {
+    "armed=false,facing=north,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_shut",
+      "y": 0
+    },
+    "armed=false,facing=north,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_open",
+      "y": 0
+    },
+    "armed=true,facing=north,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 0
     },
-    "armed=true,facing=north,open=true": {
+    "armed=true,facing=north,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 0
     },
-    "armed=false,facing=east,open=false": {
+    "armed=true,facing=north,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 0
+    },
+    "armed=true,facing=north,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 0
+    },
+    "armed=false,facing=east,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_shut",
       "y": 90
     },
-    "armed=false,facing=east,open=true": {
+    "armed=false,facing=east,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_open",
       "y": 90
     },
-    "armed=true,facing=east,open=false": {
+    "armed=false,facing=east,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_shut",
+      "y": 90
+    },
+    "armed=false,facing=east,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_open",
+      "y": 90
+    },
+    "armed=true,facing=east,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 90
     },
-    "armed=true,facing=east,open=true": {
+    "armed=true,facing=east,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 90
     },
-    "armed=false,facing=south,open=false": {
+    "armed=true,facing=east,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 90
+    },
+    "armed=true,facing=east,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 90
+    },
+    "armed=false,facing=south,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_shut",
       "y": 180
     },
-    "armed=false,facing=south,open=true": {
+    "armed=false,facing=south,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_open",
       "y": 180
     },
-    "armed=true,facing=south,open=false": {
+    "armed=false,facing=south,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_shut",
+      "y": 180
+    },
+    "armed=false,facing=south,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_open",
+      "y": 180
+    },
+    "armed=true,facing=south,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 180
     },
-    "armed=true,facing=south,open=true": {
+    "armed=true,facing=south,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 180
     },
-    "armed=false,facing=west,open=false": {
+    "armed=true,facing=south,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 180
+    },
+    "armed=true,facing=south,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 180
+    },
+    "armed=false,facing=west,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_shut",
       "y": 270
     },
-    "armed=false,facing=west,open=true": {
+    "armed=false,facing=west,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_open",
       "y": 270
     },
-    "armed=true,facing=west,open=false": {
+    "armed=false,facing=west,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_shut",
+      "y": 270
+    },
+    "armed=false,facing=west,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_open",
+      "y": 270
+    },
+    "armed=true,facing=west,mount=wall,open=false": {
       "model": "aerolarge:block/self_destruct_button_armed",
       "y": 270
     },
-    "armed=true,facing=west,open=true": {
+    "armed=true,facing=west,mount=wall,open=true": {
       "model": "aerolarge:block/self_destruct_button_armed",
+      "y": 270
+    },
+    "armed=true,facing=west,mount=floor,open=false": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
+      "y": 270
+    },
+    "armed=true,facing=west,mount=floor,open=true": {
+      "model": "aerolarge:block/self_destruct_button_floor_armed",
       "y": 270
     }
   }

@@ -1699,22 +1699,63 @@ function laserLang() {
   const shut = { from: [4.5, 4.5, 1.5], to: [11.5, 11.5, 5.5], faces: { south: face("#cover"), east: lidEdge, west: lidEdge, up: lidEdge, down: lidEdge } };
   const up = { from: [4.5, 11.5, 1.5], to: [11.5, 12.5, 8.5], faces: { up: face("#cover"), down: face("#cover"), south: lidEdge, east: lidEdge, west: lidEdge } };
   const looks = { shut: [button(false), shut], open: [button(false), up], armed: [button(true), up] };
+  const textures = (look) => ({
+    plate: `${ID}:block/self_destruct_plate`, cover: `${ID}:block/self_destruct_cover`, particle: `${ID}:block/self_destruct_plate`,
+    button: `${ID}:block/self_destruct_button${look === "armed" ? "_lit" : ""}`,
+  });
   for (const [look, parts] of Object.entries(looks)) {
     write(`assets/${ID}/models/block/self_destruct_button_${look}.json`, {
       parent: "minecraft:block/block",
       render_type: "minecraft:translucent",
-      textures: {
-        plate: `${ID}:block/self_destruct_plate`, cover: `${ID}:block/self_destruct_cover`, particle: `${ID}:block/self_destruct_plate`,
-        button: `${ID}:block/self_destruct_button${look === "armed" ? "_lit" : ""}`,
-      },
+      textures: textures(look),
       elements: [plate, ...parts],
+    });
+  }
+  // On the floor: the same plate, button and lid, laid flat to face up on a slab of the flight deck's console casing,
+  // the plate's underside UNDER pixels up, and all of it tilted toward whoever faces the button by TILT about the
+  // middle of the plate's underside, on top of a pedestal of the casing standing on a hazard-striped plinth; the lid
+  // flipped up stands a little over the top of the block. SelfDestructButtonBlock has the button's flare where the
+  // tilt takes it, and its outline in steps under the tilted head.
+  const TILT = 22.5;
+  const UNDER = 9.5;
+  const flatBox = (from, to, top, edge, shade = true) => ({
+    from, to, ...(shade ? {} : { shade: false }),
+    faces: { up: top, north: edge, south: edge, east: edge, west: edge, down: edge },
+  });
+  const flatButton = (lit) =>
+    flatBox([5.5, UNDER + 1.5, 5.5], [10.5, UNDER + 4, 10.5], face("#button", null, lit), face("#button", [0, 0, 16, 4], lit), !lit);
+  const flatShut = {
+    from: [4.5, UNDER + 1.5, 4.5], to: [11.5, UNDER + 5.5, 11.5],
+    faces: { up: face("#cover"), north: lidEdge, south: lidEdge, east: lidEdge, west: lidEdge },
+  };
+  // Flipped up, its striped edge is at its hinge, as on a wall.
+  const openCover = face("#cover", [4.5, 8.5, 11.5, 1.5]);
+  const flatUp = {
+    from: [4.5, UNDER + 1.5, 3.5], to: [11.5, UNDER + 8.5, 4.5],
+    faces: { north: openCover, south: openCover, up: lidEdge, east: lidEdge, west: lidEdge },
+  };
+  const head = [
+    flatBox([1.5, UNDER - 3, 1.5], [14.5, UNDER, 14.5], face("#casing"), face("#casing")),
+    flatBox([2, UNDER, 2], [14, UNDER + 1.5, 14], face("#plate"), face("#plate", [0, 0, 16, 2])),
+  ];
+  const flatLooks = { shut: [flatButton(false), flatShut], open: [flatButton(false), flatUp], armed: [flatButton(true), flatUp] };
+  const tilted = (element) => ({ ...element, rotation: { angle: TILT, axis: "x", origin: [8, UNDER, 8] } });
+  const pedestal = [solid([4, 1.5, 5], [12, 7.75, 11], "#casing"), solid([2.5, 0, 3], [13.5, 1.5, 13], "#hazard")];
+  for (const [look, parts] of Object.entries(flatLooks)) {
+    write(`assets/${ID}/models/block/self_destruct_button_floor_${look}.json`, {
+      parent: "minecraft:block/block",
+      render_type: "minecraft:translucent",
+      textures: { ...textures(look), casing: `${ID}:block/flight_console`, hazard: `${ID}:block/shaft_decor_hazard` },
+      elements: [...pedestal, ...[...head, ...parts].map(tilted)],
     });
   }
   const buttonLook = (open, armed) => (armed ? "armed" : open ? "open" : "shut");
   write(`assets/${ID}/blockstates/self_destruct_button.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
-      [false, true].flatMap((armed) => [false, true].map((open) =>
-        [`armed=${armed},facing=${facing},open=${open}`, { model: `${ID}:block/self_destruct_button_${buttonLook(open, armed)}`, y }])))),
+      [false, true].flatMap((armed) => ["wall", "floor"].flatMap((mount) => [false, true].map((open) => [
+        `armed=${armed},facing=${facing},mount=${mount},open=${open}`,
+        { model: `${ID}:block/self_destruct_button_${mount === "wall" ? "" : `${mount}_`}${buttonLook(open, armed)}`, y },
+      ]))))),
   });
   write(`assets/${ID}/models/item/self_destruct_button.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/self_destruct_button` } });
   dropsItself("self_destruct_button");

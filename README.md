@@ -312,7 +312,8 @@ part of, never another mod's vehicle, even with an autopilot put aboard by hand;
 dull thud. Armed on an airliner still standing parked as blocks, it first has its Physics Assembler put it together,
 as Take Off does, with a hum, and arms a moment later, once it has. Turn it off with `selfDestruct` in the server
 config: the button then only thuds, and airliners built while it is off have none. A Self-Destruct Button can be
-crafted and put up on a wall of an airliner in your own builds, facing you; it works the airliner of the nearest
+crafted and put up on a wall of an airliner in your own builds, facing you, or stood on its floor, where it sits on
+top of a pedestal console on a hazard-striped plinth, its plate tilted toward you; it works the airliner of the nearest
 autopilot within 24 blocks, once that airliner is assembled.
 
 ### The upper deck

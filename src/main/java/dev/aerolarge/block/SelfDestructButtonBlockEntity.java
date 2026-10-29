@@ -310,7 +310,7 @@ public class SelfDestructButtonBlockEntity extends BlockEntity {
         }
     }
 
-    /** The button taken away from the wall: if it was armed, the alarm stops for everyone aboard. */
+    /** The button taken away: if it was armed, the alarm stops for everyone aboard. */
     void taken() {
         if (getBlockState().getValue(SelfDestructButtonBlock.ARMED) && level instanceof ServerLevel) {
             SelfDestruct.silence(this);
