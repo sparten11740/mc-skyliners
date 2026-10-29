@@ -5237,4 +5237,307 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }
 }
 
+foodLabTextures();
+
+// The lab's food lab (see foodLabModels in generate_resources.mjs). The bioreactor's broth, pink and glowing, bubbles
+// rising through it a pixel a frame, a streak of the glass down one edge; the clear glass of its headspace; the steak,
+// muscle pink striped along its fibres and marbled with fat; and its panel at each stage of growth, a bar more lit green
+// for each, by its pink lamp. The hydroponic rack's violet grow light, its lettuces' frilled leaves, and its basil and
+// strawberry plants. The algae column's green, swirling and bubbling. The centrifuge's lid, its window over the rotor's
+// tubes in the vials' six colours, or spinning, a blur with a glint going round; and its panel's dial and lamp, green or
+// amber. The partition's glass, and its frosted band with a green sprout on it, the food lab's sign. The pipe's brushed
+// steel and its joint's green band. The specimen jars' cork, their liquids, a pickled tentacle, an eye and a potato
+// sprouting. The microscope's eyepiece, a round field in the dark with a fine crosshair and a scale bar, and its four
+// slides, each two frames: a water bear paddling, moss in its gut; algae cells jostling; muscle fibres twitching; and
+// diatoms' glass shells shimmering on a dark field. And the Lab-Grown Steak in its petri dish.
+function foodLabTextures() {
+  const guiOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/gui/microscope");
+  mkdirSync(guiOutput, { recursive: true });
+  // A random sequence and a smooth value noise of the food lab's own, so the textures above are unchanged.
+  let state = 0x466f6f64;
+  const next = () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let value = Math.imul(state ^ (state >>> 15), 1 | state);
+    value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+  const hash = (x, y) => {
+    let h = Math.imul(x * 2654435761 + y * 1597334677, 0x2c1b3c6d) ^ 0x466c;
+    h = Math.imul(h ^ (h >>> 15), 0x297a2d39);
+    return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
+  };
+  const smooth = (x, y, cell) => {
+    const [cx, cy] = [Math.floor(x / cell), Math.floor(y / cell)];
+    const [fx, fy] = [x / cell - cx, y / cell - cy];
+    const [sx, sy] = [fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)];
+    const top = hash(cx, cy) * (1 - sx) + hash(cx + 1, cy) * sx;
+    const bottom = hash(cx, cy + 1) * (1 - sx) + hash(cx + 1, cy + 1) * sx;
+    return top * (1 - sy) + bottom * sy;
+  };
+  const shade = ([r, g, b, a], by) => [...[r, g, b].map((c) => Math.round(Math.max(0, Math.min(255, c * by)))), ...(a === undefined ? [] : [a])];
+  const mix = (from, to, t) => from.map((c, i) => Math.round(c + ((to[i] ?? c) - c) * Math.max(0, Math.min(1, t))));
+  const FRAMES = 16;
+  const animated = (name, frames, frametime, paint) => {
+    texture(blockOutput, name, (x, y) => paint(x, y % SIZE, Math.floor(y / SIZE)), 0, SIZE, SIZE * frames);
+    writeFileSync(resolve(blockOutput, `${name}.png.mcmeta`), JSON.stringify({ animation: { frametime } }, null, 2) + "\n");
+  };
+
+  // Bubbles in a liquid: columns of them, each its own way across and its own start up the block, rising a pixel a
+  // frame so a loop of sixteen frames brings each back where it began.
+  const bubbleColumns = (columns) => columns.map(([x, start]) => ({ x, start }));
+  const bubbleAt = (columns, x, y, frame) => columns.some((column) => column.x === x && (column.start - frame - y + 64) % 8 === 0);
+  const BROTH = [0xf8, 0x9c, 0xbc, 0x68];
+  const BROTH_BUBBLE = [0xff, 0xe4, 0xee, 0xd0];
+  const brothBubbles = bubbleColumns([[3, 0], [5, 5], [8, 2], [10, 6], [12, 3]]);
+  animated("bioreactor_broth", FRAMES, 3, (x, y, frame) => {
+    if (x === 2) return [0xff, 0xd8, 0xe6, 0xb0];
+    if (bubbleAt(brothBubbles, x, y, frame)) return BROTH_BUBBLE;
+    return shade(BROTH, 0.94 + 0.12 * smooth(x, y + frame, 4));
+  });
+  texture(blockOutput, "bioreactor_glass", (x, y) => (Math.abs(x - y - 3) < 1 ? [0xff, 0xff, 0xff, 0x50] : [0xe4, 0xf2, 0xf6, 0x30]), 0);
+  const MEAT = [0xc8, 0x3c, 0x50];
+  const FAT = [0xf6, 0xe2, 0xd8];
+  texture(blockOutput, "bioreactor_meat", (x, y) => {
+    const marbling = smooth(x * 1.6, y * 0.7, 3);
+    if (marbling > 0.78) return FAT;
+    if (marbling > 0.7) return mix(MEAT, FAT, 0.5);
+    return shade(MEAT, x % 2 === 0 ? 0.92 : 1.04);
+  }, 3);
+  const PANEL = [0x1c, 0x1f, 0x23];
+  const BAR_LIT = [0x5c, 0xf0, 0x8a];
+  const BAR_OFF = [0x22, 0x44, 0x30];
+  for (let growth = 0; growth <= 3; growth++) {
+    texture(blockOutput, `bioreactor_panel_${growth}`, (x, y) => {
+      if (y < 1 || y > 2 || x < 1 || x > 10) return PANEL;
+      if (x >= 9) return [0xff, 0x7a, 0xa8];
+      const bar = Math.floor((x - 1) / 3);
+      return (x - 1) % 3 === 2 ? PANEL : bar < growth ? BAR_LIT : BAR_OFF;
+    }, 0);
+  }
+
+  const VIOLET = [0xc8, 0x5a, 0xff];
+  texture(blockOutput, "hydroponic_light", (x, y) => (y % 4 === 1 ? [0xf2, 0xd0, 0xff] : VIOLET), 0);
+  const LEAF = [0x7c, 0xc4, 0x4c];
+  texture(blockOutput, "hydroponic_lettuce", (x, y) => {
+    const frill = (y + Math.round(1.5 * Math.sin(x * 1.3))) % 4;
+    if (frill === 0) return [0x4c, 0x8c, 0x30];
+    if (x % 3 === 1) return [0xb8, 0xe8, 0x8c];
+    return shade(LEAF, 0.94 + 0.1 * smooth(x, y, 3));
+  }, 3);
+  // A plant seen from the side: a stem up its middle, pairs of leaves along it, and for the strawberries white flowers
+  // and red berries with yellow seeds hanging among them.
+  const plant = (berries) => (x, y) => {
+    const stem = Math.abs(x + 0.5 - 8) < 0.8 && y >= 8;
+    const leaves = [[4, 6, 3], [11, 6, 3], [7.5, 4, 3.4], [5, 9.5, 2.6], [10, 9.5, 2.6], [7.5, 8, 2.8]].some(([lx, ly, r]) => (x + 0.5 - lx) ** 2 + ((y + 0.5 - ly) * 1.3) ** 2 <= r * r);
+    const berry = [[3.5, 12], [12, 12.5], [9, 13.5]].some(([bx, by]) => (x + 0.5 - bx) ** 2 + (y + 0.5 - by) ** 2 <= 3.2);
+    if (berries && berry) return (x + y) % 3 === 0 ? [0xf8, 0xe0, 0x50] : [0xe0, 0x2c, 0x38];
+    if (berries && [[4, 4], [12, 3]].some(([fx, fy]) => (x + 0.5 - fx) ** 2 + (y + 0.5 - fy) ** 2 <= 1.6)) return [0xfa, 0xfa, 0xf2];
+    if (leaves) return smooth(x * 2, y * 2, 3) > 0.62 ? [0x6c, 0xc8, 0x5c] : [0x3c, 0x9a, 0x3c];
+    return stem ? [0x4a, 0x84, 0x2c] : CLEAR;
+  };
+  texture(blockOutput, "hydroponic_herbs", plant(false), 2);
+  texture(blockOutput, "hydroponic_berries", plant(true), 2);
+
+  const ALGAE = [0x58, 0xdc, 0x4c, 0xc8];
+  const algaeBubbles = bubbleColumns([[5, 1], [7, 6], [9, 3], [11, 0]]);
+  animated("algae_tube", FRAMES, 2, (x, y, frame) => {
+    if (x === 4) return [0xd8, 0xff, 0xc8, 0xd8];
+    if (bubbleAt(algaeBubbles, x, y, frame)) return [0xec, 0xff, 0xe0, 0xe8];
+    return shade(ALGAE, 0.85 + 0.25 * smooth(x + 3, y + frame, 5));
+  });
+
+  // The centrifuge's lid: white round a window over the rotor, its six tubes standing round its hub, or spinning.
+  const LID = [0xec, 0xef, 0xf2];
+  const TUBES = [[0x4f, 0xd6, 0xe0], [0xf0, 0xa8, 0x30], [0xd0, 0x4a, 0xb8], [0x8a, 0xdb, 0x4a], [0xe8, 0xc9, 0xa8], [0x60, 0x80, 0xf0]];
+  const lid = (window) => (x, y) => {
+    const [dx, dy] = [x + 0.5 - 8, y + 0.5 - 8];
+    const out = Math.hypot(dx, dy);
+    if (x <= 2 || y <= 2 || x >= 13 || y >= 13) return [0xc8, 0xce, 0xd4];
+    if (out > 4.6) return LID;
+    if (out > 4) return [0x8a, 0x92, 0x9a];
+    return window(dx, dy, out);
+  };
+  texture(blockOutput, "centrifuge_lid", lid((dx, dy, out) => {
+    if (out < 1.2) return [0xd3, 0xd8, 0xdd];
+    const tube = Math.round(((Math.atan2(dy, dx) / (2 * Math.PI)) * 6 + 6)) % 6;
+    return out > 2 && out < 3.6 ? TUBES[tube] : [0x22, 0x28, 0x30];
+  }), 0);
+  animated("centrifuge_lid_spinning", 8, 1, (x, y, frame) => lid((dx, dy, out) => {
+    const turn = (Math.atan2(dy, dx) / (2 * Math.PI) + 1 + frame / 8) % 1;
+    if (out < 1.2) return [0xd3, 0xd8, 0xdd];
+    if (out > 2 && out < 3.6) return turn < 0.12 ? [0xf4, 0xf0, 0xff] : [0xa8, 0x96, 0xb8];
+    return [0x22, 0x28, 0x30];
+  })(x, y));
+  const centrifugePanel = (lamp) => (x, y) => {
+    if (y < 11 || x < 4 || x > 11) return [0x2a, 0x2e, 0x33];
+    if ((x - 6) ** 2 + (y - 12.5) ** 2 <= 1.6) return x === 6 && y === 12 ? [0x30, 0x34, 0x3a] : [0xc9, 0xd0, 0xd7];
+    if (x >= 9 && x <= 10 && y >= 12 && y <= 13) return lamp;
+    return [0x2a, 0x2e, 0x33];
+  };
+  texture(blockOutput, "centrifuge_panel", centrifugePanel([0x46, 0xe0, 0x70]), 0);
+  texture(blockOutput, "centrifuge_panel_spinning", centrifugePanel([0xf2, 0xa8, 0x30]), 0);
+
+  const PARTITION_GLASS = [0xd8, 0xee, 0xf4, 0x38];
+  const streak = (x, y) => Math.abs(x - y - 5) < 1.2 || Math.abs(x - y + 6) < 0.6;
+  texture(blockOutput, "lab_partition_glass", (x, y) => (streak(x, y) ? [0xff, 0xff, 0xff, 0x58] : PARTITION_GLASS), 0);
+  const SPROUT = ["..#...#..", ".###.###.", "..##.##..", "....#....", "....#....", "...###..."];
+  texture(blockOutput, "lab_partition_frosted", (x, y) => {
+    if (y < 4 || y > 11) return streak(x, y) ? [0xff, 0xff, 0xff, 0x58] : PARTITION_GLASS;
+    if (SPROUT[y - 5]?.[x - 4] === "#") return [0x3c, 0xb0, 0x5a, 0xf0];
+    return [0xee, 0xf4, 0xf8, 0xb8];
+  }, 0);
+  texture(blockOutput, "lab_pipe", (x, y) => shade([0xb4, 0xbc, 0xc4], 0.9 + 0.12 * Math.abs(Math.sin(y * 0.9))), 2);
+  texture(blockOutput, "lab_pipe_joint", (x, y) => (y >= 6 && y <= 9 ? [0x3c, 0xb0, 0x5a] : [0x7c, 0x84, 0x8c]), 2);
+
+  texture(blockOutput, "lab_cork", (x, y) => shade([0xb0, 0x84, 0x58], hash(x + 7, y + 3) < 0.2 ? 0.8 : 1), 4);
+  const liquid = (colour) => (x, y) => (x === 1 || Math.abs(x - y) < 0.8 ? [0xff, 0xff, 0xff, 0x90] : colour);
+  texture(blockOutput, "lab_jar_yellow", liquid([0xf0, 0xd8, 0x70, 0x90]), 0);
+  texture(blockOutput, "lab_jar_green", liquid([0x9c, 0xe8, 0xa0, 0x88]), 0);
+  texture(blockOutput, "lab_jar_blue", liquid([0xa8, 0xd8, 0xf0, 0x78]), 0);
+  texture(blockOutput, "lab_tentacle", (x, y) => ((x + 2 * y) % 5 === 0 ? [0xf0, 0xc0, 0xe0] : [0xb8, 0x60, 0xa8]), 3);
+  texture(blockOutput, "lab_eye", (x, y) => {
+    const out = Math.hypot(x + 0.5 - 8, y + 0.5 - 8);
+    if (out < 2.5) return [0x10, 0x10, 0x14];
+    if (out < 5.5) return out < 4 ? [0x3a, 0x8c, 0xd8] : [0x2a, 0x60, 0xa8];
+    return (x * 7 + y * 3) % 11 === 0 ? [0xd8, 0x50, 0x50] : [0xf4, 0xf0, 0xe8];
+  }, 0);
+  texture(blockOutput, "lab_potato", (x, y) => shade([0xc8, 0x9c, 0x5c], hash(x + 1, y + 9) < 0.15 ? 0.75 : 1), 4);
+  texture(blockOutput, "lab_sprout", () => [0x7c, 0xd0, 0x50], 2);
+
+  // The microscope's eyepiece: open in its round middle, but for a fine crosshair with ticks and a scale bar, darkening
+  // softly toward its edge, and black all round it.
+  const EYEPIECE = 256;
+  texture(guiOutput, "eyepiece", (x, y) => {
+    const [dx, dy] = [x + 0.5 - EYEPIECE / 2, y + 0.5 - EYEPIECE / 2];
+    const out = Math.hypot(dx, dy) / (EYEPIECE / 2);
+    if (out > 0.96) return [0, 0, 0, 255];
+    const vignette = Math.max(0, Math.min(1, (out - 0.78) / 0.18));
+    const onCross = (Math.abs(dx) < 0.5 || Math.abs(dy) < 0.5) && out > 0.06 && out < 0.82;
+    const onTick = Math.abs(dy) < 2.5 && Math.abs(dx) % 16 < 0.5 && out < 0.7;
+    const onBar = y >= 196 && y <= 197 && x >= 150 && x <= 190;
+    const barEnd = (x === 150 || x === 190) && y >= 192 && y <= 201;
+    if (onBar || barEnd) return [0xf4, 0xf4, 0xf0, 0xd0];
+    if (onCross || onTick) return [0x10, 0x14, 0x18, Math.round(0x70 + 0x8f * vignette)];
+    return [0, 0, 0, Math.round(255 * vignette * vignette)];
+  }, 0, EYEPIECE, EYEPIECE);
+
+  const PICTURE = 128;
+  const slide = (name, paint) => texture(guiOutput, name, (x, y) => paint(x, y % PICTURE, Math.floor(y / PICTURE)), 2, PICTURE, PICTURE * 2);
+  // A bright field, a little brighter in its middle, specks of debris drifting in it.
+  const brightField = (base, x, y) => {
+    if (hash(x + 311, y + 17) < 0.004) return shade(base, 0.7);
+    return shade(base, 1.02 - 0.08 * Math.hypot(x - 64, y - 64) / 64);
+  };
+  const inEllipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2;
+
+  // The water bear seen from above, its head to the right: four segments, a stubby leg out to either side of each,
+  // paddling (each pair's leg forward or back, frame by frame), with pale claws; moss green in its gut, pale storage
+  // cells, the bulb of its throat and its two eye spots.
+  const SEGMENTS = [[34, 15, 18], [52, 17, 21], [70, 17, 21], [87, 15, 18]];
+  const BEAR = [0xe8, 0xc0, 0x90];
+  const BEAR_EDGE = [0x9c, 0x70, 0x48];
+  const storageCells = Array.from({ length: 22 }, () => [30 + next() * 66, 50 + next() * 28]);
+  const bear = (x, y, frame) => {
+    let body = Math.min(...SEGMENTS.map(([cx, rx, ry]) => inEllipse(x, y, cx, 64, rx, ry)), inEllipse(x, y, 101, 64, 12, 13));
+    let leg = Infinity;
+    SEGMENTS.forEach(([cx], pair) => {
+      const swing = ((pair + frame) % 2 === 0 ? 3 : -3);
+      for (const side of [-1, 1]) leg = Math.min(leg, inEllipse(x, y, cx + swing, 64 + side * 23, 6, 7));
+    });
+    const claw = SEGMENTS.some(([cx], pair) => [-1, 1].some((side) => {
+      const tip = 64 + side * 29;
+      const swing = ((pair + frame) % 2 === 0 ? 3 : -3);
+      return Math.abs(y - tip) < 2 && [-3, 0, 3].some((dx) => Math.abs(x - (cx + swing + dx)) < 0.8);
+    }));
+    if (claw && body > 1) return [0xf4, 0xec, 0xdc];
+    body = Math.min(body, leg);
+    if (body > 1) return null;
+    if (body > 0.8) return BEAR_EDGE;
+    if (inEllipse(x, y, 101, 57, 1.8, 1.8) <= 1 || inEllipse(x, y, 101, 71, 1.8, 1.8) <= 1) return [0x30, 0x20, 0x18];
+    if (Math.abs(inEllipse(x, y, 111, 64, 3, 3) - 1) < 0.5) return [0x6a, 0x48, 0x30];
+    if (inEllipse(x, y, 97, 64, 5, 4) <= 1) return [0xc0, 0x8c, 0x5c];
+    if (inEllipse(x, y, 62, 64, 24, 7) <= 1) return hash(x, y) < 0.25 ? [0x4a, 0x68, 0x2c] : [0x7a, 0x98, 0x48];
+    if (storageCells.some(([cx, cy]) => inEllipse(x, y, cx, cy, 2.2, 2.2) <= 1)) return [0xf6, 0xe0, 0xb8];
+    return shade(BEAR, 1.06 - 0.12 * body);
+  };
+  slide("microscope_tardigrade", (x, y, frame) => bear(x, y, frame) ?? brightField([0xe6, 0xec, 0xe4], x, y));
+
+  // Algae cells, round green beads jostling a pixel between frames, each with its membrane, its cup of chloroplast and
+  // a pale pyrenoid.
+  const cells = [];
+  for (let tries = 0; tries < 400 && cells.length < 30; tries++) {
+    const cell = { x: 8 + next() * 112, y: 8 + next() * 112, r: 6 + next() * 7, turn: next() * Math.PI * 2, jiggle: [next() < 0.5 ? -1 : 1, next() < 0.5 ? -1 : 1] };
+    if (cells.every((other) => Math.hypot(other.x - cell.x, other.y - cell.y) > other.r + cell.r - 1)) cells.push(cell);
+  }
+  const alga = (x, y, frame) => {
+    for (const cell of cells) {
+      const [cx, cy] = [cell.x + frame * cell.jiggle[0], cell.y + frame * cell.jiggle[1]];
+      const out = Math.hypot(x - cx, y - cy);
+      if (out > cell.r) continue;
+      if (out > cell.r - 1.5) return [0x2e, 0x7a, 0x2e];
+      const [ox, oy] = [cx + Math.cos(cell.turn) * cell.r * 0.35, cy + Math.sin(cell.turn) * cell.r * 0.35];
+      if (Math.hypot(x - ox, y - oy) < cell.r * 0.25) return [0xd8, 0xf0, 0xb8];
+      if (Math.hypot(x - ox, y - oy) > cell.r * 0.55) return [0x3c, 0x9c, 0x3a];
+      return [0x7c, 0xc8, 0x5c];
+    }
+    return null;
+  };
+  slide("microscope_algae", (x, y, frame) => alga(x, y, frame) ?? brightField([0xe8, 0xf0, 0xe0], x, y));
+
+  // Muscle from the bioreactor, stained: fibres running at a slant, banded across, dark and light, a pixel further
+  // contracted in the second frame, purple nuclei along their edges, and a few round droplets of fat.
+  const FIBRE = 15;
+  const nuclei = Array.from({ length: 14 }, () => [next() * 128, next() * 128]);
+  const fats = Array.from({ length: 4 }, () => [96 + next() * 28, 4 + next() * 40, 6 + next() * 5]);
+  const muscle = (x, y, frame) => {
+    if (fats.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) < r)) return fats.some(([cx, cy, r]) => Math.abs(Math.hypot(x - cx, y - cy) - r) < 1) ? [0xc8, 0xa0, 0xb4] : [0xfc, 0xf4, 0xf6];
+    const along = x * 0.94 + y * 0.34;
+    const across = -x * 0.34 + y * 0.94 + 128 + 2 * Math.sin(along / 18);
+    const inFibre = across % FIBRE;
+    if (inFibre < 1.2) return [0xf4, 0xe4, 0xec];
+    if (nuclei.some(([nx, ny]) => inEllipse(x, y, nx, ny, 4, 1.6) <= 1)) return [0x50, 0x30, 0x80];
+    const band = (along + frame) % 5;
+    return band < 2.5 ? [0xc0, 0x40, 0x70] : [0xe8, 0x90, 0xb0];
+  };
+  slide("microscope_muscle", muscle);
+
+  // Diatoms on a dark field, their glass shells lit: a wheel with its ribs, a boat with its midline and cross ribs, a
+  // rounded triangle dotted with pores, and two small boats, their colours shimmering between the frames.
+  const glow = (colour, frame) => shade(colour, frame === 0 ? 1 : 0.86);
+  const diatom = (x, y, frame) => {
+    const wheel = Math.hypot(x - 40, y - 46);
+    const spoke = Math.abs(((Math.atan2(y - 46, x - 40) * 180) / Math.PI + 360) % 15 - 7.5) > 6.6;
+    if (Math.abs(wheel - 18) < 1.2 || Math.abs(wheel - 10) < 0.8 || wheel < 2 || (wheel < 18 && spoke)) return glow([0x80, 0xf0, 0xff], frame);
+    const [bx, by] = [(x - 84) * 0.87 + (y - 82) * 0.5, -(x - 84) * 0.5 + (y - 82) * 0.87];
+    const boat = inEllipse(bx, by, 0, 0, 34, 9);
+    if (Math.abs(boat - 1) < 0.12 || (boat < 1 && (Math.abs(by) < 0.7 || Math.abs(bx % 4) < 0.6))) return glow([0xff, 0xd8, 0x70], 1 - frame);
+    const [tx, ty] = [x - 88, y - 30];
+    const triangle = Math.max(-ty - 14, ty * 0.5 + tx * 0.866 - 7, ty * 0.5 - tx * 0.866 - 7);
+    if (Math.abs(triangle) < 1 || (triangle < 0 && tx % 4 === 0 && ty % 4 === 0)) return glow([0xff, 0x90, 0xd0], frame);
+    for (const [cx, cy, turn] of [[30, 100, 0.4], [104, 112, -0.6]]) {
+      const [sx, sy] = [(x - cx) * Math.cos(turn) + (y - cy) * Math.sin(turn), -(x - cx) * Math.sin(turn) + (y - cy) * Math.cos(turn)];
+      if (Math.abs(inEllipse(sx, sy, 0, 0, 10, 3) - 1) < 0.25) return glow([0xc0, 0xff, 0xb0], frame);
+    }
+    return hash(x + 5, y + 71) < 0.006 ? [0x40, 0x48, 0x60] : [0x08, 0x0c, 0x18];
+  };
+  slide("microscope_diatoms", diatom);
+
+  // The steak in its petri dish: the dish's glass rim round a pale floor, the steak pink and marbled, a rind of fat
+  // along one side, edged dark, and a little blue label on the rim.
+  const steak = (x, y) => inEllipse(x + 0.5, y + 0.5, 7.6, 8.4, 5.2, 3.9) <= 1 && inEllipse(x + 0.5, y + 0.5, 12.4, 5.6, 2, 1.8) > 1;
+  texture(itemOutput, "lab_grown_steak", (x, y) => {
+    const out = Math.hypot(x + 0.5 - 8, y + 0.5 - 8);
+    if (x >= 2 && x <= 4 && y >= 12 && y <= 13) return y === 12 ? [0xf2, 0xf6, 0xfb] : [0x30, 0x7a, 0xd8];
+    if (steak(x, y)) {
+      if (!steak(x, y - 1) || !steak(x - 1, y)) return [0xf4, 0xe4, 0xcc];
+      if (Math.abs(((x + 2 * y) % 5) - 2) < 0.5 && hash(x, y) < 0.6) return [0xf6, 0xd0, 0xc8];
+      return y > 9 ? [0xb8, 0x38, 0x48] : [0xd8, 0x4c, 0x5c];
+    }
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => steak(x + dx, y + dy))) return [0x5a, 0x18, 0x20];
+    if (out > 7.5) return CLEAR;
+    if (out > 6.4) return x + y < 12 ? [0xec, 0xf6, 0xfa] : [0xa8, 0xc4, 0xd2];
+    return [0xdc, 0xec, 0xf2];
+  }, 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

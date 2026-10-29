@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,spinning=false": {
+      "model": "aerolarge:block/sample_centrifuge",
+      "y": 0
+    },
+    "facing=north,spinning=true": {
+      "model": "aerolarge:block/sample_centrifuge_spinning",
+      "y": 0
+    },
+    "facing=east,spinning=false": {
+      "model": "aerolarge:block/sample_centrifuge",
+      "y": 90
+    },
+    "facing=east,spinning=true": {
+      "model": "aerolarge:block/sample_centrifuge_spinning",
+      "y": 90
+    },
+    "facing=south,spinning=false": {
+      "model": "aerolarge:block/sample_centrifuge",
+      "y": 180
+    },
+    "facing=south,spinning=true": {
+      "model": "aerolarge:block/sample_centrifuge_spinning",
+      "y": 180
+    },
+    "facing=west,spinning=false": {
+      "model": "aerolarge:block/sample_centrifuge",
+      "y": 270
+    },
+    "facing=west,spinning=true": {
+      "model": "aerolarge:block/sample_centrifuge_spinning",
+      "y": 270
+    }
+  }
+}

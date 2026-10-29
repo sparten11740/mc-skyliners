@@ -2419,6 +2419,77 @@ function softened(samples) {
   writeSound("tardigrade_bloop", bloop, 0.55);
 }
 
+// The lab's food lab, with a random sequence of its own so the sounds above are unchanged. The bioreactor's harvest:
+// its cap's seal letting go in a bright hiss of steam, then the steak drawn out of the broth in a wet, wobbling squelch
+// falling from 320 to 110 hertz, and three bubbles blipping up after it. The sample centrifuge's spin, four seconds as
+// its block times it: a motor's whine climbing from 80 to 540 hertz over a second and a quarter with the rush of air
+// round its rotor, a faint wobble of an unbalanced tube on it, holding, then winding down to a hum. And its ding as it
+// stops: a small bell's note at G6 with its inharmonic partials, rung once and ringing away.
+{
+  const lab = ownRandom(0x4c616221);
+  const HARVEST_SECONDS = 1.4;
+  const harvest = new Float64Array(Math.round(HARVEST_SECONDS * RATE));
+  const hiss = resonance(Float64Array.from({ length: harvest.length }, () => lab() * 2 - 1), 4200, 0.9);
+  const slosh = resonance(Float64Array.from({ length: harvest.length }, () => lab() * 2 - 1), 650, 2.5);
+  let squelchPhase = 0;
+  for (let i = 0; i < harvest.length; i++) {
+    const t = i / RATE;
+    const steam = Math.min(1, t / 0.008) * Math.exp(-t / 0.22);
+    const pull = t - 0.28;
+    let squelch = 0;
+    if (pull > 0) {
+      squelchPhase += (2 * Math.PI * (110 + 210 * Math.exp(-pull / 0.18)) * (1 + 0.06 * Math.sin(2 * Math.PI * 23 * pull))) / RATE;
+      const swell = Math.min(1, pull / 0.04) * Math.exp(-pull / 0.25);
+      squelch = swell * (0.7 * Math.sin(squelchPhase) + 1.4 * slosh[i] * (0.6 + 0.4 * Math.sin(2 * Math.PI * 17 * pull)));
+    }
+    harvest[i] = 0.9 * steam * hiss[i] + squelch;
+  }
+  for (const [at, pitch] of [[0.74, 640], [0.9, 820], [1.05, 720]]) {
+    const start = Math.round(at * RATE);
+    let phase = 0;
+    for (let k = 0; k < Math.round(0.05 * RATE) && start + k < harvest.length; k++) {
+      const t = k / RATE;
+      phase += (2 * Math.PI * pitch * (1 + 8 * t)) / RATE;
+      harvest[start + k] += 0.35 * Math.sin(Math.PI * t / 0.05) * Math.sin(phase);
+    }
+  }
+  writeSound("bioreactor_harvest", harvest, 0.7);
+
+  const SPIN_SECONDS = 4;
+  const UP = 1.25;
+  const DOWN_FROM = 2.6;
+  const spin = new Float64Array(Math.round(SPIN_SECONDS * RATE));
+  const air = Float64Array.from({ length: spin.length }, () => lab() * 2 - 1);
+  const rush = resonance(air, 2400, 0.7);
+  let motorPhase = 0;
+  let rotorPhase = 0;
+  for (let i = 0; i < spin.length; i++) {
+    const t = i / RATE;
+    const rising = Math.min(1, t / UP);
+    const falling = Math.max(0, (t - DOWN_FROM) / (SPIN_SECONDS - DOWN_FROM));
+    const speed = (rising * rising * (3 - 2 * rising)) * (1 - falling * falling * (3 - 2 * falling));
+    const pitch = 80 + 460 * speed;
+    motorPhase += (2 * Math.PI * pitch) / RATE;
+    rotorPhase += (2 * Math.PI * pitch) / 8 / RATE;
+    const whine = Math.sin(motorPhase) + 0.45 * Math.sin(2 * motorPhase) + 0.2 * Math.sin(3 * motorPhase);
+    const wobble = 1 + 0.12 * Math.sin(rotorPhase);
+    const envelope = Math.min(1, t / 0.05) * Math.min(1, (SPIN_SECONDS - t) / 0.3) * (0.35 + 0.65 * speed);
+    spin[i] = envelope * wobble * (0.6 * whine + 1.2 * speed * rush[i]);
+  }
+  writeSound("centrifuge_spin", spin, 0.55);
+
+  const DING_SECONDS = 1.5;
+  const ding = new Float64Array(Math.round(DING_SECONDS * RATE));
+  const NOTE = 1568;
+  for (let i = 0; i < ding.length; i++) {
+    const t = i / RATE;
+    const strike = Math.min(1, t / 0.003);
+    ding[i] = strike * (Math.exp(-t / 0.5) * Math.sin(2 * Math.PI * NOTE * t) + 0.35 * Math.exp(-t / 0.2) * Math.sin(2 * Math.PI * NOTE * 2.76 * t)
+      + 0.15 * Math.exp(-t / 0.08) * Math.sin(2 * Math.PI * NOTE * 5.4 * t));
+  }
+  writeSound("centrifuge_ding", ding, 0.6);
+}
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

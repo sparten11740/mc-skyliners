@@ -127,6 +127,38 @@
     "dormant=true,facing=west,kind=vitals": {
       "model": "aerolarge:block/lab_vitals_dormant",
       "y": 270
+    },
+    "dormant=false,facing=north,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 0
+    },
+    "dormant=false,facing=east,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 90
+    },
+    "dormant=false,facing=south,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 180
+    },
+    "dormant=false,facing=west,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 270
+    },
+    "dormant=true,facing=north,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 0
+    },
+    "dormant=true,facing=east,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 90
+    },
+    "dormant=true,facing=south,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 180
+    },
+    "dormant=true,facing=west,kind=specimens": {
+      "model": "aerolarge:block/lab_specimens",
+      "y": 270
     }
   }
 }

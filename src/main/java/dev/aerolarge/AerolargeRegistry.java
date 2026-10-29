@@ -129,6 +129,11 @@ import dev.aerolarge.block.HabitatGlassBlock;
 import dev.aerolarge.block.HabitatHatchBlock;
 import dev.aerolarge.block.HabitatHatchBlockEntity;
 import dev.aerolarge.block.LabInstrumentBlock;
+import dev.aerolarge.block.BioreactorBlock;
+import dev.aerolarge.block.LabGrowerBlock;
+import dev.aerolarge.block.LabPartitionBlock;
+import dev.aerolarge.block.LabPipeBlock;
+import dev.aerolarge.block.SampleCentrifugeBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.JetBridgeBlock;
 import dev.aerolarge.block.JetBridgeBlockEntity;
@@ -1796,6 +1801,40 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_MRRP = sound("tardigrade_mrrp");
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_BLOOP = sound("tardigrade_bloop");
+    /**
+     * The lab's food lab (see {@link dev.aerolarge.airframe.LabPlan}): the cultured-meat bioreactor, which grows a
+     * Lab-Grown Steak over and over; the hydroponic rack and the algae column glowing beside it; the sample centrifuge
+     * on the counters; the glazed partition screening the food lab off; the pipes feeding the machines from the
+     * ceiling; the steak; and the sounds of a harvest and of a spin. Placed only by the blueprint, so the blocks have no
+     * items, and they give nothing back.
+     */
+    public static final DeferredBlock<BioreactorBlock> BIOREACTOR = BLOCKS.registerBlock(
+        "bioreactor", BioreactorBlock::new, glass().noLootTable().lightLevel(state -> BioreactorBlock.GLOW)
+    );
+    public static final DeferredBlock<LabGrowerBlock> HYDROPONIC_RACK = BLOCKS.registerBlock(
+        "hydroponic_rack", properties -> new LabGrowerBlock(properties, LabGrowerBlock.Kind.HYDROPONIC_RACK),
+        metal(MapColor.PLANT).noOcclusion().noLootTable().lightLevel(state -> LabGrowerBlock.RACK_GLOW)
+    );
+    public static final DeferredBlock<LabGrowerBlock> ALGAE_COLUMN = BLOCKS.registerBlock(
+        "algae_column", properties -> new LabGrowerBlock(properties, LabGrowerBlock.Kind.ALGAE_COLUMN),
+        glass().noLootTable().lightLevel(state -> LabGrowerBlock.COLUMN_GLOW)
+    );
+    public static final DeferredBlock<SampleCentrifugeBlock> SAMPLE_CENTRIFUGE = BLOCKS.registerBlock(
+        "sample_centrifuge", SampleCentrifugeBlock::new,
+        metal(MapColor.SNOW).noOcclusion().noLootTable()
+            .lightLevel(state -> state.getValue(SampleCentrifugeBlock.SPINNING) ? SampleCentrifugeBlock.SPIN_GLOW : 0)
+    );
+    public static final DeferredBlock<LabPartitionBlock> LAB_PARTITION = BLOCKS.registerBlock("lab_partition", LabPartitionBlock::new, glass().noLootTable());
+    public static final DeferredBlock<LabPipeBlock> LAB_PIPE = BLOCKS.registerBlock(
+        "lab_pipe", LabPipeBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable()
+    );
+    /** A steak grown in the lab's bioreactor: as filling as a cooked steak, and no cow the worse for it. */
+    public static final DeferredItem<Item> LAB_GROWN_STEAK = ITEMS.registerSimpleItem(
+        "lab_grown_steak", new Item.Properties().food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.8F).build())
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> BIOREACTOR_HARVEST = sound("bioreactor_harvest");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CENTRIFUGE_SPIN = sound("centrifuge_spin");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CENTRIFUGE_DING = sound("centrifuge_ding");
     /** The rocket's greenhouse and pool as one stands in them: their loops and what is heard now and then over them. */
     public static final DeferredHolder<SoundEvent, SoundEvent> GREENHOUSE_AIR = sound("greenhouse_air");
     public static final DeferredHolder<SoundEvent, SoundEvent> GREENHOUSE_BEE = sound("greenhouse_bee");
@@ -2155,7 +2194,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
-            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
+            TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, LAB_GROWN_STEAK, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
             BULKHEAD_SIGN_ITEM, WC_SIGN_ITEM, OVERHEAD_WC_SIGN_ITEM,

@@ -1074,6 +1074,30 @@
       }
     ]
   },
+  "bioreactor_harvest": {
+    "subtitle": "subtitles.aerolarge.bioreactor_harvest",
+    "sounds": [
+      {
+        "name": "aerolarge:bioreactor_harvest"
+      }
+    ]
+  },
+  "centrifuge_spin": {
+    "subtitle": "subtitles.aerolarge.centrifuge_spin",
+    "sounds": [
+      {
+        "name": "aerolarge:centrifuge_spin"
+      }
+    ]
+  },
+  "centrifuge_ding": {
+    "subtitle": "subtitles.aerolarge.centrifuge_ding",
+    "sounds": [
+      {
+        "name": "aerolarge:centrifuge_ding"
+      }
+    ]
+  },
   "greenhouse_air": {
     "subtitle": "subtitles.aerolarge.greenhouse_air",
     "sounds": [

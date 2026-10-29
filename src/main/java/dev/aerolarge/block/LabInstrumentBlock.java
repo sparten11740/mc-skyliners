@@ -6,34 +6,46 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The instruments of the rocket's lab, in four kinds: a microscope, white with a lit stage and its eyepieces toward
- * whoever uses it; a rack of sample vials, their liquids glowing faintly in five colours; a scan screen on its stand
- * showing a body scan of the specimen, a line sweeping down it; and the vitals screen set into the tardigrade's tank
- * over its feeding hatch, a pulse tracing across it under the creature's own picture, which goes slow and blue
- * (DORMANT) while the creature is curled up in its tun (see {@link HabitatHatchBlockEntity}). FACING is the way its
- * front looks. Only the blueprints place them; broken, they give back nothing.
+ * The instruments of the rocket's lab, in five kinds: a microscope, white with a lit stage and its eyepieces toward
+ * whoever uses it, who looks into it and sees a slide magnified (see {@link LookIntoMicroscope}); a rack of sample
+ * vials, their liquids glowing faintly in five colours; a scan screen on its stand showing a body scan of the specimen,
+ * a line sweeping down it; the vitals screen set into the tardigrade's tank over its feeding hatch, a pulse tracing
+ * across it under the creature's own picture, which goes slow and blue (DORMANT) while the creature is curled up in
+ * its tun (see {@link HabitatHatchBlockEntity}); and specimen jars, three on a tray, a pickled tentacle, an eye and a
+ * sprouting potato each in its own faintly glowing liquid. FACING is the way its front looks. Only the blueprints place
+ * them; broken, they give back nothing.
  */
 public class LabInstrumentBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LabInstrumentBlock> CODEC = simpleCodec(LabInstrumentBlock::new);
     public static final EnumProperty<Kind> KIND = EnumProperty.create("kind", Kind.class);
     public static final BooleanProperty DORMANT = BooleanProperty.create("dormant");
-    /** How brightly a kind glows, in light levels: its screen, its stage lamp or its vials. */
+    /** How brightly a kind glows, in light levels: its screen, its vials or its jars. */
     private static final int SCREEN_GLOW = 5;
     private static final int VIALS_GLOW = 3;
     private static final int DORMANT_GLOW = 2;
+    private static final int JARS_GLOW = 2;
     private static final Map<Kind, Map<Direction, VoxelShape>> SHAPES = new EnumMap<>(Kind.class);
 
     /** An instrument's kind, and its outline as drawn facing north, in pixels. */
@@ -41,7 +53,8 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
         MICROSCOPE(4, 0, 4, 12, 13, 13),
         SAMPLES(2, 0, 5, 14, 9, 11),
         SCAN(1, 0, 6, 15, 13, 11),
-        VITALS(0, 0, 0, 16, 16, 2);
+        VITALS(0, 0, 0, 16, 16, 2),
+        SPECIMENS(2, 0, 4, 14, 9, 12);
 
         private final double[] outline;
 
@@ -92,6 +105,7 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
             case SAMPLES -> VIALS_GLOW;
             case SCAN -> SCREEN_GLOW;
             case VITALS -> state.getValue(DORMANT) ? DORMANT_GLOW : SCREEN_GLOW;
+            case SPECIMENS -> JARS_GLOW;
         };
     }
 
@@ -114,6 +128,23 @@ public class LabInstrumentBlock extends HorizontalDirectionalBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(KIND)).getOrDefault(state.getValue(FACING), Shapes.block());
+    }
+
+    /**
+     * A microscope looked into: the server picks one of its slides and has the player's screen show it magnified, with
+     * the click of its focus.
+     */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (state.getValue(KIND) != Kind.MICROSCOPE) {
+            return InteractionResult.PASS;
+        }
+        if (level instanceof ServerLevel server && player instanceof ServerPlayer looker) {
+            LookIntoMicroscope.Slide[] slides = LookIntoMicroscope.Slide.values();
+            server.playSound(null, pos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            PacketDistributor.sendToPlayer(looker, new LookIntoMicroscope(slides[server.random.nextInt(slides.length)]));
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

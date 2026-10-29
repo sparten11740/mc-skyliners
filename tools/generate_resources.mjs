@@ -1413,6 +1413,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, selfDestructSounds());
   Object.assign(sounds, roverSounds());
   Object.assign(sounds, labSounds());
+  Object.assign(sounds, foodLabSounds());
   Object.assign(sounds, roomSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
@@ -4070,7 +4071,7 @@ function roverLang() {
   write(`assets/${ID}/models/block/lab_vitals_dormant.json`, screen("vitals", "lab_screen_dormant"));
   const instrumentModel = (kind, dormant) => (kind === "vitals" && dormant ? "lab_vitals_dormant" : `lab_${kind}`);
   const variants = {};
-  for (const kind of ["microscope", "samples", "scan", "vitals"]) {
+  for (const kind of ["microscope", "samples", "scan", "vitals", "specimens"]) {
     for (const dormant of [false, true]) {
       for (const [facing, y] of Object.entries(yRot)) {
         variants[`dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant)}`, y };
@@ -4099,6 +4100,7 @@ function roverLang() {
   });
   cubes.habitat_floor = null;
 }
+foodLabModels();
 // The lab's instruments and its tank's floor patches are fitted into the rocket rather than built into her: light like
 // the rest, but no part of her frame, and breakable.
 function labFittings() {
@@ -4129,6 +4131,232 @@ function labLang() {
     "entity.aerolarge.tardigrade": "Tardigrade",
     "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
     "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
+  };
+}
+
+// The lab's food lab (see LabPlan). Its bioreactor, each half drawn facing north at each stage of growth (see
+// BioreactorBlock): a dark steel plinth with a panel on its front whose bars light one by one as the steak grows, a
+// vessel of pink broth glowing and bubbling over it, a white scaffold rod up its middle with the steak on it, from a
+// tuft at its foot to a mass filling the vessel, a steel pipe up its back, and over the broth a little clear headspace
+// under a steel cap and hub, a pipe stub on top for the ceiling's pipe to meet. The hydroponic rack: a chrome frame of
+// four shelves, open front and back, each a white trough of lettuce heads, basil or strawberry plants under a bar of
+// violet grow light, lit. The algae column: a glass tube of glowing green algae on a steel foot, bubbles rising, under a
+// chrome cap. The sample centrifuge: a white drum, its lid's round window over the rotor's coloured tubes, or a blur
+// while it spins, and on its front a dial and a lamp, green or amber. The partition: glass through the middle of its
+// block between steel mullions, its foot a kick plate, its middle row frosted at eye height, its top a head rail. The
+// pipe: a steel joint at its middle and an arm out to each way it runs. The lab instrument's specimen jars: three jars
+// on a tray, a tentacle, an eye and a sprouting potato, each in its own glowing liquid under a cork. And the steak, an
+// item as drawn.
+function foodLabModels() {
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const face = (texture, extra = {}) => ({ texture, ...extra });
+  const sidesOnly = (texture, extra = {}) => Object.fromEntries(["north", "south", "east", "west"].map((side) => [side, face(texture, extra)]));
+  const litBox = (from, to, texture, faces = ["north", "south", "east", "west", "up", "down"]) => ({
+    from, to, shade: false, faces: Object.fromEntries(faces.map((side) => [side, face(texture, lit)])),
+  });
+  const glassBox = (from, to, texture, faces) => ({ from, to, faces: Object.fromEntries(faces.map((side) => [side, face(texture)])) });
+  const steel = { steel: `${ID}:block/lab_dark`, chrome: `${ID}:block/lab_chrome`, white: `${ID}:block/lab_white` };
+
+  // The steak on its rod at each stage: none, a tuft at the rod's foot, half grown, and filling the vessel into the
+  // upper half, rounded over its top.
+  const lowerMeat = [[], [[6, 3, 6], [10, 6.5, 10]], [[5, 3, 5], [11, 12, 11]], [[4, 3, 4], [12, 16, 12]]];
+  const upperMeat = [[], [], [], [[4, 0, 4], [12, 7, 12], [5, 7, 5], [11, 8.5, 11]]];
+  const meat = (boxes) => {
+    const parts = [];
+    for (let i = 0; i < boxes.length; i += 2) parts.push(solid(boxes[i], boxes[i + 1], "#meat"));
+    return parts;
+  };
+  for (let growth = 0; growth <= 3; growth++) {
+    write(`assets/${ID}/models/block/bioreactor_lower_${growth}.json`, {
+      parent: "minecraft:block/block", render_type: "minecraft:translucent",
+      textures: { ...steel, broth: `${ID}:block/bioreactor_broth`, meat: `${ID}:block/bioreactor_meat`, panel: `${ID}:block/bioreactor_panel_${growth}`,
+        particle: `${ID}:block/lab_dark` },
+      elements: [
+        solid([1, 0, 1], [15, 3, 15], "#steel"),
+        { from: [5, 0.5, 0.5], to: [11, 2.5, 1], shade: false, faces: { north: face("#panel", { uv: [0, 0, 12, 4], ...lit }) } },
+        solid([7.5, 3, 7.5], [8.5, 16, 8.5], "#white"),
+        ...meat(lowerMeat[growth]),
+        solid([7, 3, 14.25], [9, 16, 15.75], "#chrome"),
+        { from: [2, 3, 2], to: [14, 16, 14], shade: false, faces: sidesOnly("#broth", lit) },
+      ],
+    });
+    write(`assets/${ID}/models/block/bioreactor_upper_${growth}.json`, {
+      parent: "minecraft:block/block", render_type: "minecraft:translucent",
+      textures: { ...steel, broth: `${ID}:block/bioreactor_broth`, glass: `${ID}:block/bioreactor_glass`, meat: `${ID}:block/bioreactor_meat`,
+        particle: `${ID}:block/lab_chrome` },
+      elements: [
+        solid([7.5, 0, 7.5], [8.5, 11, 8.5], "#white"),
+        ...meat(upperMeat[growth]),
+        solid([7, 0, 14.25], [9, 11, 15.75], "#chrome"),
+        solid([1, 11, 1], [15, 13.5, 15], "#chrome"),
+        solid([5, 13.5, 5], [11, 15, 11], "#steel"),
+        solid([6, 15, 6], [10, 16, 10], "#chrome"),
+        { from: [2, 0, 2], to: [14, 9, 14], shade: false, faces: { ...sidesOnly("#broth", lit), up: face("#broth", lit) } },
+        glassBox([2, 9, 2], [14, 11, 14], "#glass", ["north", "south", "east", "west"]),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/bioreactor.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [0, 1, 2, 3].flatMap((growth) => ["lower", "upper"].map((half) =>
+      [`facing=${facing},growth=${growth},half=${half}`, { model: `${ID}:block/bioreactor_${half}_${growth}`, y }])))),
+  });
+  cubes.bioreactor = null;
+
+  // A shelf of the rack: its plate, its trough, and what grows in it under a bar of grow light so far over it.
+  const cross = (x, y, z, width, height, texture) => [45, -45].map((angle) => ({
+    from: [x - width / 2, y, z], to: [x + width / 2, y + height, z], shade: false,
+    rotation: { angle, axis: "y", origin: [x, y, z] },
+    faces: { north: face(texture, { uv: [0, 0, 16, 16] }), south: face(texture, { uv: [0, 0, 16, 16] }) },
+  }));
+  const lettuces = (y) => [[2.5, 6], [6.25, 9.75], [10, 13.5]].map(([x0, x1]) => solid([x0, y, 5.5], [x1, y + 3, 10.5], "#lettuce"));
+  const plants = (y, texture) => [5, 11].flatMap((x) => cross(x, y, 8, 5, 4, texture));
+  const shelf = (y, crop, light) => [
+    solid([1, y, 3], [15, y + 1, 13], "#frame"),
+    solid([2, y + 1, 4], [14, y + 2.5, 12], "#trough"),
+    ...(crop === "lettuce" ? lettuces(y + 2.5) : plants(y + 2.5, `#${crop}`)),
+    litBox([2, light, 7], [14, light + 0.5, 9], "#light", ["down", "north", "south"]),
+  ];
+  const posts = (top) => [[1, 3], [14, 3], [1, 12], [14, 12]].map(([x, z]) => solid([x, 0, z], [x + 1, top, z + 1], "#frame"));
+  const rackTextures = { frame: `${ID}:block/lab_chrome`, trough: `${ID}:block/lab_white`, lettuce: `${ID}:block/hydroponic_lettuce`,
+    herbs: `${ID}:block/hydroponic_herbs`, berries: `${ID}:block/hydroponic_berries`, light: `${ID}:block/hydroponic_light`, particle: `${ID}:block/lab_chrome` };
+  write(`assets/${ID}/models/block/hydroponic_rack_lower.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:cutout", textures: rackTextures,
+    elements: [...posts(16), ...shelf(0, "lettuce", 7), ...shelf(7.5, "herbs", 15)],
+  });
+  write(`assets/${ID}/models/block/hydroponic_rack_upper.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:cutout", textures: rackTextures,
+    elements: [...posts(15), ...shelf(0, "lettuce", 7), ...shelf(7.5, "berries", 14.5), solid([1, 15, 3], [15, 16, 13], "#frame")],
+  });
+  const machineStates = (name) => write(`assets/${ID}/blockstates/${name}.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].map((half) =>
+      [`facing=${facing},half=${half}`, { model: `${ID}:block/${name}_${half}`, y }]))),
+  });
+  machineStates("hydroponic_rack");
+  cubes.hydroponic_rack = null;
+
+  const columnTextures = { ...steel, algae: `${ID}:block/algae_tube`, particle: `${ID}:block/algae_tube` };
+  write(`assets/${ID}/models/block/algae_column_lower.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", textures: columnTextures,
+    elements: [
+      solid([3, 0, 3], [13, 2, 13], "#steel"),
+      solid([3.5, 2, 3.5], [12.5, 3, 12.5], "#chrome"),
+      litBox([5.5, 0.5, 2.5], [10.5, 1.5, 3], "#algae", ["north"]),
+      { from: [4, 3, 4], to: [12, 16, 12], shade: false, faces: sidesOnly("#algae", lit) },
+    ],
+  });
+  write(`assets/${ID}/models/block/algae_column_upper.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent", textures: columnTextures,
+    elements: [
+      solid([3, 12, 3], [13, 14, 13], "#chrome"),
+      solid([6, 14, 6], [10, 16, 10], "#chrome"),
+      { from: [4, 0, 4], to: [12, 12, 12], shade: false, faces: sidesOnly("#algae", lit) },
+    ],
+  });
+  machineStates("algae_column");
+  cubes.algae_column = null;
+
+  for (const spinning of [false, true]) {
+    const name = `sample_centrifuge${spinning ? "_spinning" : ""}`;
+    write(`assets/${ID}/models/block/${name}.json`, {
+      parent: "minecraft:block/block",
+      textures: { body: `${ID}:block/lab_white`, chrome: `${ID}:block/lab_chrome`, lid: `${ID}:block/centrifuge_lid${spinning ? "_spinning" : ""}`,
+        panel: `${ID}:block/centrifuge_panel${spinning ? "_spinning" : ""}`, particle: `${ID}:block/lab_white` },
+      elements: [
+        solid([2, 0, 2], [14, 6, 14], "#body"),
+        { from: [2, 6, 2], to: [14, 7.5, 14], faces: { ...sidesOnly("#body"), up: face("#lid"), down: face("#body") } },
+        litBox([4, 1, 1.5], [12, 5, 2], "#panel", ["north"]),
+        solid([4, 6, 14], [12, 7, 14.5], "#chrome"),
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/sample_centrifuge.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((spinning) =>
+      [`facing=${facing},spinning=${spinning}`, { model: `${ID}:block/sample_centrifuge${spinning ? "_spinning" : ""}`, y }]))),
+  });
+  cubes.sample_centrifuge = null;
+
+  const pane = (from, to, texture) => ({ from, to, faces: { north: face(texture), south: face(texture) } });
+  const mullions = [solid([0, 0, 7], [1, 16, 9], "#steel"), solid([15, 0, 7], [16, 16, 9], "#steel")];
+  const partition = {
+    bottom: [solid([0, 0, 7], [16, 3, 9], "#steel"), pane([1, 3, 7.75], [15, 16, 8.25], "#glass")],
+    middle: [pane([1, 0, 7.75], [15, 16, 8.25], "#frosted")],
+    top: [pane([1, 0, 7.75], [15, 15, 8.25], "#glass"), solid([0, 15, 7], [16, 16, 9], "#steel")],
+  };
+  for (const [row, parts] of Object.entries(partition)) {
+    write(`assets/${ID}/models/block/lab_partition_${row}.json`, {
+      parent: "minecraft:block/block", render_type: "minecraft:translucent", ambientocclusion: false,
+      textures: { steel: `${ID}:block/lab_chrome`, glass: `${ID}:block/lab_partition_glass`, frosted: `${ID}:block/lab_partition_frosted`,
+        particle: `${ID}:block/lab_chrome` },
+      elements: [...mullions, ...parts],
+    });
+  }
+  write(`assets/${ID}/blockstates/lab_partition.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(partition).map((row) =>
+      [`facing=${facing},row=${row}`, { model: `${ID}:block/lab_partition_${row}`, y }]))),
+  });
+  cubes.lab_partition = null;
+
+  const pipeTextures = { pipe: `${ID}:block/lab_pipe`, joint: `${ID}:block/lab_pipe_joint`, particle: `${ID}:block/lab_pipe` };
+  write(`assets/${ID}/models/block/lab_pipe_joint.json`, boxes(pipeTextures, [[[5.5, 5.5, 5.5], [10.5, 10.5, 10.5], "#joint"]]));
+  write(`assets/${ID}/models/block/lab_pipe_arm.json`, boxes(pipeTextures, [[[6, 6, 0], [10, 10, 5.5], "#pipe"]]));
+  const arms = { north: {}, east: { y: 90 }, south: { y: 180 }, west: { y: 270 }, up: { x: 270 }, down: { x: 90 } };
+  write(`assets/${ID}/blockstates/lab_pipe.json`, {
+    multipart: [
+      { apply: { model: `${ID}:block/lab_pipe_joint` } },
+      ...Object.entries(arms).map(([way, turn]) => ({ when: { [way]: "true" }, apply: { model: `${ID}:block/lab_pipe_arm`, ...turn } })),
+    ],
+  });
+  cubes.lab_pipe = null;
+
+  // The specimen jars: each its liquid, its cork and what floats in it.
+  const jar = (from, to, liquid, contents) => [
+    { from, to, shade: false, faces: Object.fromEntries(["north", "south", "east", "west", "up"].map((side) => [side, face(liquid, lit)])) },
+    solid([from[0] - 0.25, to[1], from[2] - 0.25], [to[0] + 0.25, to[1] + 1, to[2] + 0.25], "#cork"),
+    ...contents,
+  ];
+  write(`assets/${ID}/models/block/lab_specimens.json`, {
+    parent: "minecraft:block/block", render_type: "minecraft:translucent",
+    textures: { tray: `${ID}:block/lab_dark`, cork: `${ID}:block/lab_cork`, yellow: `${ID}:block/lab_jar_yellow`, green: `${ID}:block/lab_jar_green`,
+      blue: `${ID}:block/lab_jar_blue`, tentacle: `${ID}:block/lab_tentacle`, eye: `${ID}:block/lab_eye`, potato: `${ID}:block/lab_potato`,
+      sprout: `${ID}:block/lab_sprout`, particle: `${ID}:block/lab_dark` },
+    elements: [
+      solid([2, 0, 4], [14, 1, 12], "#tray"),
+      ...jar([3, 1, 6], [6.5, 8, 9.5], "#yellow", [
+        solid([4, 1, 7.25], [5.25, 4, 8.5], "#tentacle"), solid([4.5, 4, 7.5], [5.5, 6, 8.25], "#tentacle"), solid([5, 5.5, 7.5], [5.75, 7, 8.25], "#tentacle"),
+      ]),
+      ...jar([7, 1, 5.5], [10, 6, 8.5], "#green", [{
+        from: [7.75, 2.5, 6.25], to: [9.25, 4, 7.75],
+        faces: { ...Object.fromEntries(["south", "east", "west", "up", "down"].map((side) => [side, face("#eye", { uv: [0, 0, 3, 3] })])), north: face("#eye", { uv: [0, 0, 16, 16] }) },
+      }]),
+      ...jar([10.5, 1, 7], [13.5, 5, 10], "#blue", [solid([11.25, 1.5, 7.75], [12.75, 3, 9.25], "#potato"), solid([11.75, 3, 8.25], [12.25, 4.5, 8.75], "#sprout")]),
+    ],
+  });
+
+  write(`assets/${ID}/models/item/lab_grown_steak.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/lab_grown_steak` } });
+}
+// The food lab's machines and fittings are fitted into the rocket rather than built into her: light like the rest, but
+// no part of her frame, and breakable.
+function foodLabFittings() {
+  return ["bioreactor", "hydroponic_rack", "algae_column", "sample_centrifuge", "lab_partition", "lab_pipe"];
+}
+// The bioreactor's cap hissing open on a harvest, and the centrifuge's whir and the ding as it stops.
+function foodLabSounds() {
+  return Object.fromEntries(["bioreactor_harvest", "centrifuge_spin", "centrifuge_ding"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function foodLabLang() {
+  return {
+    "block.aerolarge.bioreactor": "Bioreactor",
+    "block.aerolarge.hydroponic_rack": "Hydroponic Rack",
+    "block.aerolarge.algae_column": "Algae Column",
+    "block.aerolarge.sample_centrifuge": "Sample Centrifuge",
+    "block.aerolarge.lab_partition": "Lab Partition",
+    "block.aerolarge.lab_pipe": "Lab Pipe",
+    "item.aerolarge.lab_grown_steak": "Lab-Grown Steak",
+    "screen.aerolarge.microscope": "Microscope",
+    "subtitles.aerolarge.bioreactor_harvest": "Bioreactor hisses open",
+    "subtitles.aerolarge.centrifuge_spin": "Centrifuge whirs",
+    "subtitles.aerolarge.centrifuge_ding": "Centrifuge dings",
   };
 }
 
@@ -6503,6 +6731,7 @@ FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...labFittings());
+FITTINGS.push(...foodLabFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7244,6 +7473,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...spacePosterLang(),
   ...roverLang(),
   ...labLang(),
+  ...foodLabLang(),
   ...roomLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],

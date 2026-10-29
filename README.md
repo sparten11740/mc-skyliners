@@ -1912,7 +1912,10 @@ away, and it flies with her as a part of her. Over the top of the world, in spac
 wrinkled barrel real tardigrades live through space in, with a bloop, and its screen goes slow and blue under a
 barrel's picture; back under y 300 it uncurls with a purr. Round the front of the room lab counters curve either side
 of the way out, microscopes on them, sample racks with their vials glowing and scan screens sweeping a line down a
-picture of it, a stool before each microscope and two by the tank's far end to sit and watch it from. A rocket too
+picture of it, a stool before each microscope and two by the tank's far end to sit and watch it from. Look into a
+microscope and you see through its eyepiece, a slide magnified in the round field, coming into focus and drifting a
+little under a fine crosshair: a water bear paddling, moss green in its gut; algae cells jostling; a lab-grown steak's
+muscle fibres twitching; or diatoms' glass shells shimmering on a dark field. Any click looks up again. A rocket too
 small for a tank has only the counters.
 
 Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
@@ -2216,7 +2219,11 @@ Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBa
 `RocketLab` furnishes her lab as `LabPlan` lays it out: the tank's `HabitatGlassBlock`s, its `HabitatFloorBlock`s and
 `LabInstrumentBlock`s, and the `HabitatHatchBlock`, whose `HabitatHatchBlockEntity` makes her `Tardigrade` and keeps it
 pacing the line the plan found for it (in `#sable:retain_in_sub_level`, so it lives among her blocks), curling it up in
-space; on the client `TardigradeModel` and `TardigradeRenderer` draw it.
+space; on the client `TardigradeModel` and `TardigradeRenderer` draw it. The food lab's machines are
+`BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them out, and `LabGrowerBlock`s,
+the hydroponic rack and the algae column, all `LabMachineBlock`s two blocks tall, with `LabPartitionBlock`s and
+`LabPipeBlock`s round them. A `SampleCentrifugeBlock` times its spin with a scheduled tick, and a microscope sends
+`LookIntoMicroscope` to the player's client, where `MicroscopeScreen` shows the slide.
 `SafetyCanopy` opens a canopy over anyone falling from a zeppelin, gliding as `Parachute` does. `Earshot` leaves out a
 sound that starts too far off to be heard, so a zeppelin's burners crackling at the far end of it do not take every
 sound channel there is. Assets are generated: `node tools/generate_textures.mjs` writes the textures (ordinary PNGs that

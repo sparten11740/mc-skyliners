@@ -7,6 +7,7 @@ import dev.aerolarge.airport.RunwayBuild;
 import dev.aerolarge.block.BrewCoffee;
 import dev.aerolarge.block.LaserBolt;
 import dev.aerolarge.block.LiftPanelInteraction;
+import dev.aerolarge.block.LookIntoMicroscope;
 import dev.aerolarge.autopilot.AssemblyFailed;
 import dev.aerolarge.autopilot.OpenAutopilotScreen;
 import dev.aerolarge.block.OpenCoffeeMachine;
@@ -33,6 +34,7 @@ import dev.aerolarge.client.CameraShake;
 import dev.aerolarge.client.CoffeeMachineScreen;
 import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LightningFlash;
+import dev.aerolarge.client.MicroscopeScreen;
 import dev.aerolarge.client.RadarPicture;
 import dev.aerolarge.client.RadarScreen;
 import dev.aerolarge.client.SelfDestructWarning;
@@ -163,7 +165,7 @@ public final class Aerolarge {
     }
 
     private static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("27")
+        event.registrar("28")
             .playToServer(OpenParachute.TYPE, OpenParachute.STREAM_CODEC, Parachute::handle)
             .playToServer(SetAutopilot.TYPE, SetAutopilot.STREAM_CODEC, SetAutopilot::handle)
             .playToServer(UnstickAirliner.TYPE, UnstickAirliner.STREAM_CODEC, UnstickAirliner::handle)
@@ -192,6 +194,8 @@ public final class Aerolarge {
                 (payload, context) -> AutopilotSettingsScreen.assemblyFailed(payload.pos()))
             .playToClient(OpenCoffeeMachine.TYPE, OpenCoffeeMachine.STREAM_CODEC,
                 (payload, context) -> CoffeeMachineScreen.open(payload.pos()))
+            .playToClient(LookIntoMicroscope.TYPE, LookIntoMicroscope.STREAM_CODEC,
+                (payload, context) -> MicroscopeScreen.open(payload.slide()))
             .playToClient(VillagesBelow.TYPE, VillagesBelow.STREAM_CODEC,
                 (payload, context) -> TerrainMap.villages(payload.villages()))
             .playToClient(OpenTransponder.TYPE, OpenTransponder.STREAM_CODEC,
