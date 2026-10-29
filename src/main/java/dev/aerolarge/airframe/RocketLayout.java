@@ -62,7 +62,7 @@ public final class RocketLayout implements Layout {
     static final int SHAFT = 2;
     /** How wide and tall the front door is, in blocks, over the entry story's floor. */
     private static final int DOOR_HALF = 1;
-    private static final int DOOR_ROWS = 3;
+    static final int DOOR_ROWS = 3;
     /** How many rows over each story's floor its windows' lowest row is: a standing player's eyes are in the middle. */
     private static final int WINDOW_FROM = 1;
     /** How many rows of the nose's skin over the cockpit's floor are glass, its windows all round. */

@@ -937,6 +937,7 @@
   "block.aerolarge.airlock_panel": "Airlock Panel",
   "subtitles.aerolarge.airlock_cycle": "Airlock cycles",
   "subtitles.aerolarge.airlock_clear": "Airlock chimes clear",
+  "block.aerolarge.airlock_door": "Airlock Door",
   "block.aerolarge.parcel_scanner": "Parcel Scanner",
   "subtitles.aerolarge.scanner_sweep": "Scanner whirrs",
   "subtitles.aerolarge.scanner_pass": "Scanner beeps: packed",

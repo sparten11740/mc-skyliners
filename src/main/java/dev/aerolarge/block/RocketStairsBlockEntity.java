@@ -27,12 +27,14 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A rocket's boarding stairs (see {@link RocketStairsButtonBlock}): the stairs button inside by her front door keeps
  * her integral airstairs, four blocks wide, out of the door down to the ground (see {@link BoardingAirstairs}),
- * folded away in a bay under her entry floor behind a hatch in her skin below the door. They come down of their own
- * accord once she first stands built, and again once she is down on her fins after flying with her autopilot off;
- * they fold away as soon as her autopilot is set to fly or she moves, and her countdown waits until they are all away
- * (see {@link #holdsCountdown}), as they wait, with a chime, until nobody is on them. Any of her stairs buttons works
- * them by hand while she stands with her autopilot off; flying, it only sounds a low note. The call button low on her
- * front right fin, calling them from the ground, keeps no flight of its own.
+ * folded away in a bay under her entry floor behind a hatch in her skin below the door, and the sliding airlock doors
+ * across the doorway, which open as the stairs come out and shut as they fold away (see {@link AirlockDoors}). The
+ * stairs come down of their own accord once she first stands built, and again once she is down on her fins after
+ * flying with her autopilot off; they fold away as soon as her autopilot is set to fly or she moves, and her countdown
+ * waits until they are all away and the doors shut (see {@link #holdsCountdown}), as they wait, with a chime, until
+ * nobody is on them or in the doorway. Any of her stairs buttons works the stairs by hand while she stands with her
+ * autopilot off, and her airlock panel the doors while the stairs are out; flying, either only sounds a low note. The
+ * call button low on her front right fin, calling the stairs from the ground, keeps no flight of its own.
  */
 public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, BoardingAirstairs.Keeper {
     private static final Loaded<RocketStairsBlockEntity> LOADED = new Loaded<>(RocketStairsBlockEntity.class);
@@ -48,7 +50,10 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     /** Her airstairs, kept by the button by her door; none in the call button. */
     @Nullable
     private BoardingAirstairs stairs;
-    /** Whether she has flown since the stairs were last worked, so they come down of their own accord once she is down. */
+    /** The airlock doors across her doorway, kept with the stairs; none in a rocket built before them. */
+    @Nullable
+    private AirlockDoors doors;
+    /** Whether she has flown since the stairs were last worked, so they come down by themselves once she is down. */
     private boolean flown;
     private int stillLooks;
 
@@ -67,6 +72,56 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         stairs = new BoardingAirstairs(this, head, out, right, rise, sections, WIDTH, hatch, new BoardingAirstairs.Bay(hatchInset, mouth));
         flown = true;
         setChanged();
+    }
+
+    /**
+     * Hands the button the airlock doors across the doorway its stairs come out of, as she is built with them shut:
+     * where the doorway's bottom left block seen from outside is from it, the ways out and to the right, and how many
+     * rows tall it is.
+     */
+    public void rigDoors(BlockPos corner, Direction out, Direction right, int rows) {
+        doors = new AirlockDoors(this, corner, out, right, WIDTH, rows);
+        setChanged();
+    }
+
+    /** The airlock doors it keeps, for its renderer to draw; none in a rocket built before them, or the call button. */
+    @Nullable
+    public AirlockDoors doors() {
+        return doors;
+    }
+
+    /** Her stairs button whose airlock doors an airlock panel at a block stands by; none by an open doorway. */
+    @Nullable
+    static RocketStairsBlockEntity doorsBy(ServerLevel level, BlockPos panel) {
+        for (RocketStairsBlockEntity keeper : LOADED.in(level)) {
+            if (keeper.doors != null && keeper.doors.near(panel)) {
+                return keeper;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Her airlock panel used, on the server: while she stands with her stairs out, its cycle opens the doors, or they
+     * shut; flying, or with her stairs away and nothing to step out onto, only a low note.
+     */
+    void workDoors(ServerLevel level, BlockPos panel) {
+        if (doors == null) {
+            return;
+        }
+        if (flying(level, worldPosition) || stairs == null || !stairs.down()) {
+            level.playSound(null, panel, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
+            return;
+        }
+        doors.cycle(level, panel);
+    }
+
+    /** Opens the doors as the stairs set out, or shuts them once the flight is back off the sill. */
+    @Override
+    public void doorTo(ServerLevel level, boolean open) {
+        if (doors != null) {
+            doors.set(level, open);
+        }
     }
 
     /**
@@ -113,7 +168,7 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
 
     /**
      * Whether her stairs hold her countdown before it begins (see {@code RocketPilot#holdCountdownWhile}): any of them
-     * in her autopilot's frame not yet all away.
+     * in her autopilot's frame not yet all away, or their doors not yet shut.
      */
     public static boolean holdsCountdown(ServerLevel level, BlockPos autopilotAt) {
         BoundingBox frame = level.getBlockEntity(autopilotAt) instanceof AutopilotBlockEntity autopilot ? autopilot.frame() : null;
@@ -121,11 +176,16 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
             return false;
         }
         for (RocketStairsBlockEntity flight : LOADED.in(level)) {
-            if (flight.stairs != null && frame.isInside(flight.getBlockPos()) && !flight.stairs.stowed()) {
+            if (flight.stairs != null && frame.isInside(flight.getBlockPos()) && !flight.closedUp()) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Whether the stairs are all away and the doors shut. */
+    private boolean closedUp() {
+        return stairs != null && stairs.stowed() && (doors == null || doors.shut());
     }
 
     /** Sets the stairs off down or up, if they are not already going that way. */
@@ -145,6 +205,9 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
             watch(level);
         }
         stairs.tick(level);
+        if (doors != null) {
+            doors.tick(level);
+        }
     }
 
     /** Once a tick, on a client: the stairs' clock, so they are drawn on their way between the server's word. */
@@ -152,11 +215,14 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         if (stairs != null) {
             stairs.clientTick();
         }
+        if (doors != null) {
+            doors.clientTick();
+        }
     }
 
     /**
-     * Folds the stairs away as she sets off, by her autopilot or otherwise; brings them down again once she is still
-     * on the ground after flying, her autopilot off.
+     * Folds the stairs away as she sets off, by her autopilot or otherwise, and makes sure the doors shut behind them;
+     * brings them down again once she is still on the ground after flying, her autopilot off.
      */
     private void watch(ServerLevel level) {
         if (flying(level, worldPosition)) {
@@ -164,6 +230,8 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
             flown = true;
             if (stairs.down()) {
                 go(level, false);
+            } else if (stairs.stowed() && doors != null && !doors.shutting()) {
+                doors.set(level, false);
             }
             return;
         }
@@ -226,6 +294,11 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
             stairs.save(airstairs);
             tag.put("Airstairs", airstairs);
         }
+        if (doors != null) {
+            CompoundTag saved = new CompoundTag();
+            doors.save(saved);
+            tag.put("Doors", saved);
+        }
         Turning.save(tag, getBlockState());
     }
 
@@ -235,6 +308,7 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         Rotation turn = Turning.since(tag, getBlockState());
         flown = tag.getBoolean("Flown");
         stairs = tag.contains("Airstairs") ? BoardingAirstairs.load(this, tag.getCompound("Airstairs"), turn, registries) : null;
+        doors = tag.contains("Doors") ? AirlockDoors.load(this, tag.getCompound("Doors"), turn) : null;
     }
 
     @Override

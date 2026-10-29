@@ -34,12 +34,13 @@ import net.minecraft.world.phys.Vec3;
  * airliner's hatch is its hull's skin; coming down, the hatch's blocks are taken away and the flight swings straight
  * down through the opening. A rocket's lies in a bay under her entry floor behind the mouth in her skin below the door
  * ({@link Bay}), as the airliner's does: its hatch is her skin over the mouth, and coming out the flight slides out of
- * the bay, rises to the sill and swings down. Either way it comes out with the clunk of its latch, its sections run
- * out to the ground and its handrails rise, to the hum of the motor; once down, the steps it is walked on are laid (see
+ * the bay, rises to the sill and swings down. Either way it comes out with the clunk of its latch, its sections run out
+ * to the ground and its handrails rise, to the hum of the motor; once down, the steps it is walked on are laid (see
  * {@link AirstairSteps}). Going away it waits, with a chime, until nobody is on it, runs back, and the hatch's blocks
- * come back last. Its button keeps it and works it with the rest of her stairs (see {@link BoardingStairsBlockEntity}
- * and {@link RocketStairsBlockEntity}); the server runs it and tells every client where it is going, each client
- * running the same clock to draw it in between.
+ * come back last; out of a door, the door opens as it sets out and shuts once it is back off the sill (see
+ * {@link Keeper#doorTo}). Its button keeps it and works it with the rest of her stairs (see
+ * {@link BoardingStairsBlockEntity} and {@link RocketStairsBlockEntity}); the server runs it and tells every client
+ * where it is going, each client running the same clock to draw it in between.
  */
 final class BoardingAirstairs {
     /** While someone stands on the stairs, how often folding looks again whether they have stepped off. */
@@ -58,6 +59,13 @@ final class BoardingAirstairs {
 
         /** Tells the clients where the flight is going, which draw it. */
         void sync();
+
+        /**
+         * Opens the door the flight comes out of as it sets out, or shuts it once it is back off the sill; a flight
+         * hung in a zeppelin's belly has none.
+         */
+        default void doorTo(ServerLevel level, boolean open) {
+        }
     }
 
     /**
@@ -101,6 +109,8 @@ final class BoardingAirstairs {
     private boolean laid;
     private boolean foot;
     private boolean hatchOpen;
+    /** Going away, the door is still to be shut, once the flight is back off the sill (see {@link Keeper#doorTo}). */
+    private boolean doorToShut;
 
     BoardingAirstairs(Keeper button, BlockPos head, Direction out, Direction right, int rise, int sections, int width,
                       List<AirstairControllerBlockEntity.Step> hatch, @Nullable Bay bay) {
@@ -179,6 +189,8 @@ final class BoardingAirstairs {
         }
         deploying = true;
         held = false;
+        doorToShut = false;
+        button.doorTo(level, true);
         if (ticks < AirstairFlight.OUT) {
             sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
         }
@@ -187,6 +199,7 @@ final class BoardingAirstairs {
     /** Sets the stairs going away: at once, or once nobody is on them. */
     private void fold(ServerLevel level) {
         deploying = false;
+        doorToShut = true;
         if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, width, length))) {
             held = true;
             cooldown = CLEAR_CHECK_TICKS;
@@ -223,6 +236,10 @@ final class BoardingAirstairs {
             button.sync();
         } else if (!deploying && (ticks > 0 || hatchOpen)) {
             ticks = Math.max(0, ticks - 1);
+            if (doorToShut && ticks <= AirstairFlight.SLIDE) {
+                button.doorTo(level, false);
+                doorToShut = false;
+            }
             if (stepEnds(ticks)) {
                 sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
             }
@@ -343,6 +360,7 @@ final class BoardingAirstairs {
         tag.putBoolean("Laid", laid);
         tag.putBoolean("Foot", foot);
         tag.putBoolean("HatchOpen", hatchOpen);
+        tag.putBoolean("DoorToShut", doorToShut);
     }
 
     /**
@@ -373,6 +391,7 @@ final class BoardingAirstairs {
         stairs.laid = tag.getBoolean("Laid");
         stairs.foot = tag.getBoolean("Foot");
         stairs.hatchOpen = tag.getBoolean("HatchOpen");
+        stairs.doorToShut = tag.getBoolean("DoorToShut");
         return stairs;
     }
 }

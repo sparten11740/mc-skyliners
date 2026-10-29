@@ -6076,6 +6076,17 @@ function airlockPanelLang() {
     "subtitles.aerolarge.airlock_clear": "Airlock chimes clear",
   };
 }
+// The blocks of the rocket's front doorway where her sliding airlock doors close (see AirlockDoorBlock): drawn whole
+// by her stairs button's renderer (see RocketStairsRenderer), so the model only gives the particles, in her steel.
+// Placed only by her blueprint, so no item and no loot; part of her hull, in its tags (see cubes).
+write(`assets/${ID}/blockstates/airlock_door.json`, { variants: { "": { model: `${ID}:block/airlock_door` } } });
+write(`assets/${ID}/models/block/airlock_door.json`, { textures: { particle: `${ID}:block/airlock_casing` } });
+cubes.airlock_door = null;
+function airlockDoorLang() {
+  return {
+    "block.aerolarge.airlock_door": "Airlock Door",
+  };
+}
 
 // The cargo bay's parcel scanner (see ParcelScannerBlock), drawn facing north: a graphite cabinet as high as a table,
 // its screen on its front, a conveyor belt for its top and a hazard-striped gantry over the belt, its posts just outside
@@ -10054,6 +10065,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...greenhouseLang(),
   ...rocketRoomLang(),
   ...airlockPanelLang(),
+  ...airlockDoorLang(),
   ...parcelScannerLang(),
   ...galleyFridgeLang(),
   ...waveMachineLang(),

@@ -84,6 +84,7 @@ import dev.aerolarge.client.PropellerRenderer;
 import dev.aerolarge.client.RobotBartenderRenderer;
 import dev.aerolarge.client.RocketExhaust;
 import dev.aerolarge.client.RocketRoar;
+import dev.aerolarge.client.RocketStairsRenderer;
 import dev.aerolarge.client.RoomAmbience;
 import dev.aerolarge.client.RoverClient;
 import dev.aerolarge.client.RubberDuckRenderer;
@@ -358,7 +359,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.COCKPIT_DOOR_ENTITY.get(), context -> new CockpitDoorRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.AIRSTAIR_CONTROLLER_ENTITY.get(), context -> new AirstairRenderer<>());
         event.registerBlockEntityRenderer(AerolargeRegistry.BOARDING_STAIRS_ENTITY.get(), context -> new AirstairRenderer<>());
-        event.registerBlockEntityRenderer(AerolargeRegistry.ROCKET_STAIRS_ENTITY.get(), context -> new AirstairRenderer<>());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ROCKET_STAIRS_ENTITY.get(), context -> new RocketStairsRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.SLIDE_CONTROL_ENTITY.get(), context -> new SlideRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TRANSPONDER_ENTITY.get(), context -> new TransponderRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.TOWER_RADAR_ENTITY.get(), context -> new TowerRadarRenderer());

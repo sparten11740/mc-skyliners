@@ -20,16 +20,17 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
  * Her airstairs at the front door, in place of her crew ladder (see {@link RocketLadder}): the airliner's integral
  * airstairs, four blocks wide, kept by a stairs button (see {@link RocketStairsBlockEntity}). Her door is widened to
  * the flight's width by a column on her left: her axis runs through a block's middle, so the door and the stairs sit
- * half a block to her left of it, the airlock panel's side, where the new column opens onto floor kept clear before
- * her front window anyway. Stowed, the flight lies folded level in a bay under her entry floor, in the engine room's
- * top row, which nothing else takes: from behind the mouth in her skin below the door as far in as the folded flight
- * needs, its sections as few as fit there. The hatch over the mouth is her skin there, cut to her curve, which the
- * button takes away as the hatch opens and puts back as it shuts. The button stands inside by the door on her right,
- * on her skin at eye height; a call button stands low on the front of her front right fin's tip, where someone on the
- * ground reaches it. She is built with them away, to come down as soon as she stands.
+ * half a block to her left of it, the airlock panel's side, where the new column opens onto floor kept clear before her
+ * front window anyway. Across the doorway's outermost row stand her sliding airlock doors (see {@code AirlockDoors}),
+ * shut, kept with the stairs, to open as they come out. Stowed, the flight lies folded level in a bay under her entry
+ * floor, in the engine room's top row, which nothing else takes: from behind the mouth in her skin below the door as
+ * far in as the folded flight needs, its sections as few as fit there. The hatch over the mouth is her skin there, cut
+ * to her curve, which the button takes away as the hatch opens and puts back as it shuts. The button stands inside by
+ * the door on her right, on her skin at eye height; a call button stands low on the front of her front right fin's tip,
+ * where someone on the ground reaches it. She is built with them away, to come down as soon as she stands.
  */
 final class RocketAirstairs implements RocketPiece {
-    /** The door's columns, across her from her axis, from her left to her right: one more on her left than the ladder's. */
+    /** The door's columns, across her from her axis, from her left to her right: one more on her left than before. */
     private static final int LEFT_COLUMN = -2;
     private static final int RIGHT_COLUMN = LEFT_COLUMN + RocketStairsBlockEntity.WIDTH - 1;
     /**
@@ -68,6 +69,7 @@ final class RocketAirstairs implements RocketPiece {
         }
         // Seen from outside, looking at her front, the flight's left column is her right.
         BlockPos head = new BlockPos(RIGHT_COLUMN, floor + 1, front);
+        doors(head);
         int mouthRow = floor - 1;
         int mouth = mouth(mouthRow, front);
         int rise = floor + 1;
@@ -94,13 +96,23 @@ final class RocketAirstairs implements RocketPiece {
         return held ? new BlockPos(BUTTON_ACROSS, y, z) : null;
     }
 
-    /** Her door's outermost row, along her: the frontmost of her skin over the door's width, where the sill's edge is. */
+    /** Her door's outermost row, along her: the frontmost of her skin across the door, where the sill's edge is. */
     private int frontRow(int floor) {
         int front = 0;
         for (int x = LEFT_COLUMN; x <= RIGHT_COLUMN; x++) {
             front = Math.min(front, layout.frontSkin(x, floor));
         }
         return front;
+    }
+
+    /** The airlock doors' blocks across the doorway's outermost row, from its bottom left seen from outside, shut. */
+    private void doors(BlockPos corner) {
+        BlockState shut = AerolargeRegistry.AIRLOCK_DOOR.get().shut(Direction.NORTH);
+        for (int x = LEFT_COLUMN; x <= RIGHT_COLUMN; x++) {
+            for (int up = 0; up < RocketLayout.DOOR_ROWS; up++) {
+                layout.set(x, corner.getY() + up, corner.getZ(), shut);
+            }
+        }
     }
 
     /** The first open block going in from her front at a block across and a row, past her skin. */
@@ -112,7 +124,7 @@ final class RocketAirstairs implements RocketPiece {
         return z;
     }
 
-    /** How deep the bay's mouth is, in blocks in from the door's outermost row: as deep as her skin is, at its deepest. */
+    /** How deep the bay's mouth is, in blocks in from the door's outermost row: her skin's depth at its deepest. */
     private int mouth(int row, int front) {
         int deepest = 1;
         for (int x = LEFT_COLUMN; x <= RIGHT_COLUMN; x++) {
@@ -121,7 +133,7 @@ final class RocketAirstairs implements RocketPiece {
         return deepest;
     }
 
-    /** How many blocks of the row under her entry floor are open from the bay's start in, across all the door's columns. */
+    /** How many blocks of the row under her entry floor are open from the bay's start in, across the door's columns. */
     private int bayRoom(int row, int start) {
         int room = 0;
         while (start + room <= layout.reach() && openAcross(row, start + room)) {
@@ -139,7 +151,10 @@ final class RocketAirstairs implements RocketPiece {
         return true;
     }
 
-    /** The hatch over the bay's mouth: her skin in the row under her entry floor across the door, each block from the button. */
+    /**
+     * The hatch over the bay's mouth: her skin in the row under her entry floor across the door, each block from the
+     * button.
+     */
     private List<AirstairControllerBlockEntity.Step> hatch(int row, BlockPos button) {
         List<AirstairControllerBlockEntity.Step> hatch = new ArrayList<>();
         for (int x = LEFT_COLUMN; x <= RIGHT_COLUMN; x++) {
@@ -178,15 +193,18 @@ final class RocketAirstairs implements RocketPiece {
     }
 
     /**
-     * Hands the button its airstairs, turned as the rocket was placed: built front north, they come down north, their
-     * right as seen from outside to the west.
+     * Hands the button its airstairs and the doors across their doorway, turned as the rocket was placed: built front
+     * north, they come down north, their right as seen from outside to the west.
      */
     private static void rig(BlockEntity blockEntity, BlockPos head, int rise, int sections, List<AirstairControllerBlockEntity.Step> hatch,
                             float inset, int mouth, Rotation rotation) {
         if (blockEntity instanceof RocketStairsBlockEntity stairs) {
-            stairs.rigAirstairs(head.rotate(rotation), rotation.rotate(Direction.NORTH), rotation.rotate(Direction.WEST), rise, sections,
+            Direction out = rotation.rotate(Direction.NORTH);
+            Direction right = rotation.rotate(Direction.WEST);
+            stairs.rigAirstairs(head.rotate(rotation), out, right, rise, sections,
                 hatch.stream().map(part -> new AirstairControllerBlockEntity.Step(part.offset().rotate(rotation), part.state().rotate(rotation))).toList(),
                 inset, mouth);
+            stairs.rigDoors(head.rotate(rotation), out, right, RocketLayout.DOOR_ROWS);
         }
     }
 }

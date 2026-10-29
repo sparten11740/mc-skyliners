@@ -29,9 +29,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The airlock panel by the rocket's door: a steel post with a screen tilted toward whoever stands at it, a door on it
  * under a lamp bar, which shows how the airlock stands (CYCLE). Sealed, the door is shut under a red bar. Used, it
  * cycles: the latches clunk, air hisses out of the vents at its foot in a cloud and chevrons sweep amber along the bar,
- * and after a few seconds a chime rings and the door on the screen stands open under a green bar, clear to go, until it
- * seals itself again with a clunk; used again before then, it only clicks. It is only to play with: the door itself is
- * always open. FACING is the way its screen faces.
+ * and after a few seconds a chime rings and the door on the screen stands open under a green bar, clear to go. By a
+ * rocket's sliding airlock doors (see {@link AirlockDoors}) it works them and shows them as they stand: used while she
+ * stands with her stairs out, it cycles and they open, or they shut and seal; in flight they are shut, its screen
+ * sealed, and using it only gives a low note. In a rocket built before her doors, with an open doorway, it is only to
+ * play with: once clear, it seals itself again with a clunk a while later. Used while it is on its way, it only clicks.
+ * FACING is the way its screen faces.
  */
 public class AirlockPanelBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<AirlockPanelBlock> CODEC = simpleCodec(AirlockPanelBlock::new);
@@ -51,7 +54,7 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
     private static final double PUFF_RISE = 0.05;
     /** How loud its seal's clunk is as it seals again, and its click when it is used while busy. */
     private static final float SEAL_VOLUME = 0.6F;
-    private static final float BUSY_VOLUME = 0.4F;
+    static final float BUSY_VOLUME = 0.4F;
     /** How bright its screen glows, sealed, cycling and clear, in light levels. */
     private static final int SEALED_GLOW = 4;
     private static final int CYCLING_GLOW = 7;
@@ -101,14 +104,20 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
     }
 
     /**
-     * Starts a cycle when sealed: the clunk and the hiss, and a cloud of air from its vents; while it cycles or stands
-     * clear, only a click, as its cycle runs on to its end, or moves on at once where its next step was lost, as when
-     * the rocket was assembled in the middle of one.
+     * By airlock doors, works them (see {@link RocketStairsBlockEntity#workDoors}). By an open doorway, starts a cycle
+     * when sealed: the clunk and the hiss, and a cloud of air from its vents; while it cycles or stands clear, only a
+     * click, as its cycle runs on to its end, or moves on at once where its next step was lost, as when the rocket was
+     * assembled in the middle of one.
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level instanceof ServerLevel server) || player.isSpectator()) {
             return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        RocketStairsBlockEntity doors = RocketStairsBlockEntity.doorsBy(server, pos);
+        if (doors != null) {
+            doors.workDoors(server, pos);
+            return InteractionResult.SUCCESS;
         }
         if (state.getValue(CYCLE) != Cycle.SEALED) {
             server.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_OFF, SoundSource.BLOCKS, BUSY_VOLUME, 1.0F);
@@ -118,11 +127,27 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
             return InteractionResult.SUCCESS;
         }
         server.setBlock(pos, state.setValue(CYCLE, Cycle.CYCLING), Block.UPDATE_ALL);
-        server.playSound(null, pos, AerolargeRegistry.AIRLOCK_CYCLE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
-        server.sendParticles(ParticleTypes.CLOUD, pos.getX() + 0.5, pos.getY() + VENTS_UP, pos.getZ() + 0.5, PUFFS, PUFF_SPREAD, PUFF_RISE,
-            PUFF_SPREAD, PUFF_SPEED);
+        cycleEffects(server, pos);
         server.scheduleTick(pos, this, CYCLE_TICKS);
         return InteractionResult.SUCCESS;
+    }
+
+    /** A cycle's start heard and seen at a panel: the latches' clunk, the hiss, and a cloud of air from its vents. */
+    static void cycleEffects(ServerLevel level, BlockPos pos) {
+        level.playSound(null, pos, AerolargeRegistry.AIRLOCK_CYCLE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        level.sendParticles(ParticleTypes.CLOUD, pos.getX() + 0.5, pos.getY() + VENTS_UP, pos.getZ() + 0.5, PUFFS, PUFF_SPREAD, PUFF_RISE,
+            PUFF_SPREAD, PUFF_SPEED);
+    }
+
+    /** Shows how airlock doors stand on a panel at a block, if one stands there; nothing where it is not loaded. */
+    static void show(ServerLevel level, BlockPos pos, Cycle cycle) {
+        if (!level.isLoaded(pos)) {
+            return;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof AirlockPanelBlock && state.getValue(CYCLE) != cycle) {
+            level.setBlock(pos, state.setValue(CYCLE, cycle), Block.UPDATE_ALL);
+        }
     }
 
     /** Cycled, the airlock is clear, with a chime; clear a while, it seals again with a clunk. */

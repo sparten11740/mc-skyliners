@@ -7,6 +7,7 @@ import dev.aerolarge.airframe.RocketLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
+import dev.aerolarge.block.AirlockDoorBlock;
 import dev.aerolarge.block.AirlockPanelBlock;
 import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairButtonBlock;
@@ -2367,6 +2368,11 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CYCLE = sound("airlock_cycle");
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CLEAR = sound("airlock_clear");
+    /** The blocks of her front doorway, where her sliding airlock doors close: a plate across it shut, nothing open. */
+    public static final DeferredBlock<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.registerBlock(
+        "airlock_door", AirlockDoorBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().isValidSpawn(AerolargeRegistry::never)
+            .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+    );
     /** The cargo bay's parcel scanner, its lamp and screen glowing, and its whirr as it scans, its beep and its buzz. */
     public static final DeferredBlock<ParcelScannerBlock> PARCEL_SCANNER = BLOCKS.registerBlock(
         "parcel_scanner", ParcelScannerBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion().noLootTable().lightLevel(ParcelScannerBlock::glow)
