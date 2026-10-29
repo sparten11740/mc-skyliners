@@ -2571,6 +2571,67 @@ function breathSwell(along, peak) {
   writeSound("space_helmet_breath", soft.map((s, i) => s + BREATH.supplyShare * supply[i]), BREATH.level);
 }
 
+// The rocket's snack machine (see SnackMachineBlock), with a random sequence of its own so the sounds above are
+// unchanged. Its whirr, as long as its spiral turns (SnackMachineBlock.TURN_TICKS): a little geared motor spinning up
+// to a buzzing whine, the coil it turns ticking round a step at a time, and slowing to a stop as the packet tips off
+// its end. Its clunk as the snack drops: the packet's crinkle as it falls, a hollow thump as it lands in the bin behind
+// the flap, and the flap knocking twice after it. Tune them here.
+const SNACK = {
+  // How long the whirr runs and when its motor stops, in seconds; how fast it turns, in hertz, and how far the gear
+  // whine is over it, in harmonics.
+  whirrSeconds: 1.4,
+  motorStops: 1.2,
+  motorHz: 210,
+  gearHarmonic: 9,
+  // The coil's ticks: the first, the gap between, in seconds, and their pitch, in hertz.
+  firstTick: 0.12,
+  tickGap: 0.16,
+  tickHz: 2400,
+  // How long the clunk runs and how long the packet falls before it lands, in seconds; the thump's pitch and the
+  // knocks' (the bin's, then the flap's two), in hertz, and when the flap knocks, in seconds.
+  clunkSeconds: 0.6,
+  falls: 0.08,
+  thumpHz: 70,
+  binHz: 520,
+  flapHz: [900, 950],
+  flapAt: [0.2, 0.29],
+};
+{
+  const snackRandom = ownRandom(0x536e6163);
+  const whirr = new Float64Array(Math.round(SNACK.whirrSeconds * RATE));
+  let phase = 0;
+  for (let i = 0; i < whirr.length; i++) {
+    const t = i / RATE;
+    const spinUp = Math.min(1, t / 0.06);
+    const spinDown = t < SNACK.motorStops ? 1 : Math.exp(-(t - SNACK.motorStops) / 0.05);
+    phase += (2 * Math.PI * SNACK.motorHz * (0.5 + 0.5 * spinUp) * (0.3 + 0.7 * spinDown)) / RATE;
+    let motor = 0;
+    for (let n = 1; n <= 6; n++) motor += Math.sin(n * phase) / n;
+    const gear = 0.25 * Math.sin(SNACK.gearHarmonic * phase);
+    whirr[i] = spinUp * spinDown * (0.4 * motor + gear + 0.03 * (snackRandom() * 2 - 1));
+  }
+  for (let tick = SNACK.firstTick; tick < SNACK.motorStops + SNACK.tickGap / 2; tick += SNACK.tickGap) {
+    click(whirr, tick, SNACK.tickHz, 0.35, snackRandom);
+  }
+  writeSound("snack_machine_whirr", whirr, 0.5);
+
+  const clunk = new Float64Array(Math.round(SNACK.clunkSeconds * RATE));
+  let previous = 0;
+  let crinkle = 0;
+  for (let i = 0; i < Math.round(SNACK.falls * RATE); i++) {
+    const white = snackRandom() * 2 - 1;
+    const high = white - previous;
+    previous = white;
+    if (snackRandom() < 0.004) crinkle = 1;
+    crinkle *= Math.exp(-1 / (0.002 * RATE));
+    clunk[i] += 0.4 * (0.2 + crinkle) * high;
+  }
+  thunk(clunk, SNACK.falls, SNACK.thumpHz, 1, snackRandom);
+  click(clunk, SNACK.falls, SNACK.binHz, 0.6, snackRandom);
+  SNACK.flapAt.forEach((at, knock) => click(clunk, at, SNACK.flapHz[knock], 0.25 / (knock + 1), snackRandom));
+  writeSound("snack_machine_clunk", clunk, 0.8);
+}
+
 // The flight deck's voice, for the callouts and the cabin announcements: a calm, warm British woman's, as an airline's
 // recorded announcements are. Kokoro (see say) says each stretch of a line between its pauses, and FFmpeg plays it
 // through the cabin's loudspeakers, their band and the bright middle they give a voice and the speakers further along

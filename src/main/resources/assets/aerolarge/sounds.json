@@ -1130,6 +1130,22 @@
       }
     ]
   },
+  "snack_machine_whirr": {
+    "subtitle": "subtitles.aerolarge.snack_machine_whirr",
+    "sounds": [
+      {
+        "name": "aerolarge:snack_machine_whirr"
+      }
+    ]
+  },
+  "snack_machine_clunk": {
+    "subtitle": "subtitles.aerolarge.snack_machine_clunk",
+    "sounds": [
+      {
+        "name": "aerolarge:snack_machine_clunk"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

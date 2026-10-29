@@ -5540,4 +5540,82 @@ function foodLabTextures() {
   }, 0);
 }
 
+// The rocket's snack machine (see SnackMachineBlock), its parts as its models show them, a block's front seen from
+// outside with its left edge at the texture's left. Its cabinet: midnight-blue gloss with a faint sheen across it, its
+// top a vent grille, a chrome kick plate along its foot; the front of its upper block crowned with an orange band
+// carrying its badge, a little white ringed planet; the front of its lower block with a dark recess round the flap.
+// Its showcase, lit: dark glass over rows of bright packets and bars standing in their chrome spirals, a glint across
+// it, the upper block's two rows and the lower block's one their own, under that the dark of the drop. The flap: smoked
+// under a chrome pull, or lit green with the dropped packet lying in it. Its lamp: cyan while it is ready, blinking
+// amber while the spiral turns, green with a snack in the flap. Its keypad: buttons in the packets' colours on a dark
+// panel; its card reader: a small cyan screen with a tap's waves on it.
+{
+  const NAVY = [0x1a, 0x26, 0x52];
+  const NAVY_SHINE = [0x24, 0x34, 0x6a];
+  const NAVY_DARK = [0x0e, 0x14, 0x2c];
+  const ORANGE = [0xf2, 0x7a, 0x22];
+  const BADGE = [0xf6, 0xf4, 0xee];
+  const BADGE_RING = [0xff, 0xd8, 0x5a];
+  const GLASS_DARK = [0x0a, 0x10, 0x1c];
+  const GLASS_GLINT = [0x2c, 0x3c, 0x58];
+  const SPIRAL = [0xc8, 0xd0, 0xd8];
+  const SPIRAL_DARK = [0x6c, 0x74, 0x7c];
+  const GREEN = [0x46, 0xe0, 0x70];
+  const AMBER = [0xf2, 0xb8, 0x30];
+  const AMBER_DIM = [0x6a, 0x48, 0x14];
+  const CYAN = [0x46, 0xc8, 0xf0];
+  // The packets' wrappers, bright as a vending machine's are: crisps red, a chocolate bar purple, sweets yellow, a
+  // cereal bar green, biscuits orange, mints sky blue.
+  const WRAPPERS = [[0xe0, 0x30, 0x3a], [0x8a, 0x3c, 0xc8], [0xf4, 0xd0, 0x2a], [0x3c, 0xb8, 0x4a], [0xf0, 0x86, 0x2a], [0x50, 0xb4, 0xf0]];
+  const lighter = (colour) => colour.map((c) => Math.min(255, c + 0x40));
+  const gloss = (x, y) => ((x + y) % 13 === 0 || (x + y) % 13 === 1 ? NAVY_SHINE : NAVY);
+  texture(blockOutput, "snack_machine_side", gloss, 2);
+  texture(blockOutput, "snack_machine_top", (x, y) => (x >= 3 && x <= 12 && y >= 3 && y <= 12 && y % 2 === 1 ? NAVY_DARK : NAVY), 2);
+  texture(blockOutput, "snack_machine_trim", (x, y) => ((x + y) % 5 === 0 ? [0xf0, 0xf4, 0xf8] : [0xc4, 0xca, 0xd0]), 2);
+  // The badge in the band along the top of the upper block's front, rows of seven over its middle: a white planet,
+  // its yellow ring across it ("r").
+  const PLANET = ["..###..", "rr###rr", "..###.."];
+  texture(blockOutput, "snack_machine_front_upper", (x, y) => {
+    if (y <= 3) {
+      const mark = PLANET[y]?.[x - 5];
+      if (mark === "#") return BADGE;
+      if (mark === "r") return BADGE_RING;
+      return y === 3 ? [0xc8, 0x5c, 0x14] : ORANGE;
+    }
+    return gloss(x, y);
+  }, 2);
+  texture(blockOutput, "snack_machine_front_lower", (x, y) => (x >= 1 && x <= 11 && y >= 10 && y <= 15 ? NAVY_DARK : gloss(x, y)), 2);
+  // A row of packets two pixels wide standing in their spirals, from columns 2, 5 and 8, the row's tallest reaching up
+  // to a row, every other one a bar a pixel lower; their spirals' coil along the row under them.
+  const packets = (x, y, top, row) => {
+    if (y === top + 4) return (x + y) % 2 === 0 ? SPIRAL : SPIRAL_DARK;
+    const packet = Math.floor((x - 2) / 3);
+    const height = (packet + row) % 2 === 0 ? 4 : 3;
+    if (x < 2 || y < top + 4 - height || y > top + 3 || (x - 2) % 3 === 2) return null;
+    const wrapper = WRAPPERS[(packet * 5 + row * 2) % WRAPPERS.length];
+    return y === top + 4 - height ? lighter(wrapper) : wrapper;
+  };
+  const glass = (x, y) => ((x - y + 32) % 11 === 0 ? GLASS_GLINT : GLASS_DARK);
+  // The upper block shows columns 2 to 9 and rows 4 to 15 of its showcase; the lower block columns 2 to 9, rows 0 to 8.
+  texture(blockOutput, "snack_machine_showcase_upper", (x, y) => packets(x, y, 5, 0) ?? packets(x, y, 11, 1) ?? glass(x, y), 0);
+  texture(blockOutput, "snack_machine_showcase_lower", (x, y) => packets(x, y, 1, 2) ?? (y >= 6 ? NAVY_DARK : glass(x, y)), 0);
+  // The flap: columns 2 to 9, rows 11 to 13.
+  texture(blockOutput, "snack_machine_flap", (x, y) => (y === 11 ? SPIRAL : [0x14, 0x18, 0x20]), 2);
+  texture(blockOutput, "snack_machine_flap_lit", (x, y) => {
+    if (y === 11) return SPIRAL;
+    if (y >= 12 && x >= 4 && x <= 7) return y === 12 ? lighter(WRAPPERS[4]) : WRAPPERS[4];
+    return GREEN;
+  }, 0);
+  // The lamp: columns 11 to 13, rows 5 and 6, a highlight in its corner. Turning, it blinks: two frames, lit and dim.
+  const lamp = (colour) => (x, y) => (x === 11 && y === 5 ? lighter(colour) : colour);
+  texture(blockOutput, "snack_machine_lamp_ready", lamp(CYAN), 0);
+  texture(blockOutput, "snack_machine_lamp_dropped", lamp(GREEN), 0);
+  texture(blockOutput, "snack_machine_lamp_turning", (x, y) => lamp(y < SIZE ? AMBER : AMBER_DIM)(x, y % SIZE), 0, SIZE, SIZE * 2);
+  writeFileSync(resolve(blockOutput, "snack_machine_lamp_turning.png.mcmeta"), JSON.stringify({ animation: { frametime: 4 } }, null, 2) + "\n");
+  // The keypad: columns 11 to 13, rows 8 to 13, a button in every other pixel.
+  texture(blockOutput, "snack_machine_keypad", (x, y) => ((x + y) % 2 === 1 ? WRAPPERS[(x + y * 2) % WRAPPERS.length] : [0x20, 0x24, 0x2c]), 0);
+  // The card reader: columns 11 to 13, rows 3 to 5, a tap's waves in white on cyan.
+  texture(blockOutput, "snack_machine_reader", (x, y) => (x === 12 || (x === 13 && y === 4) ? [0xf0, 0xfa, 0xff] : CYAN), 0);
+}
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

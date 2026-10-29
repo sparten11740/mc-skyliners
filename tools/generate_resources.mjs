@@ -1415,6 +1415,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, labSounds());
   Object.assign(sounds, foodLabSounds());
   Object.assign(sounds, roomSounds());
+  Object.assign(sounds, snackMachineSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -3897,6 +3898,68 @@ function spacePosterLang() {
     "item.aerolarge.solar_system_poster": "Solar System Poster",
     "item.aerolarge.quasar_poster": "Quasar Poster",
     "item.aerolarge.earthrise_poster": "Earthrise Poster",
+  };
+}
+
+// The rocket's snack machine in her cafeteria (see SnackMachineBlock), two blocks tall, drawn facing north: a
+// midnight-blue cabinet a pixel in from its sides and back, the front of its upper block crowned with its orange badge,
+// a chrome kick plate along its foot. Its showcase of snacks, lit, runs down from the upper block into the lower,
+// with the control column beside it on the right as one faces it: the lamp and the keypad above, the card reader
+// below; under the showcase, the flap a snack drops into, lit green with the packet in it once one has. The lamp's
+// colour is the step it is at: cyan ready, blinking amber while the spiral turns, green with a snack in the flap. One
+// model for each block and step (the lower block shows only whether a snack waits), turned for each facing. Only the
+// blueprint places it, so it has no item and gives nothing back.
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const cabinet = { side: block("snack_machine_side"), top: block("snack_machine_top"), trim: block("snack_machine_trim"), particle: block("snack_machine_side") };
+  const VENDS = ["ready", "turning", "dropped"];
+  for (const vend of VENDS) {
+    write(`assets/${ID}/models/block/snack_machine_upper_${vend}.json`, boxes(
+      { ...cabinet, front: block("snack_machine_front_upper"), showcase: block("snack_machine_showcase_upper"), lamp: block(`snack_machine_lamp_${vend}`),
+        keypad: block("snack_machine_keypad") },
+      [
+        [[1, 0, 2], [15, 16, 15], { north: "#front", up: "#top", all: "#side" }],
+        [[6, 0, 1.5], [14, 12, 2], "#showcase", true],
+        [[2, 9, 1.25], [5, 11, 2], "#lamp", true],
+        [[2, 2, 1.5], [5, 8, 2], "#keypad", true],
+      ],
+    ));
+  }
+  for (const dropped of [false, true]) {
+    write(`assets/${ID}/models/block/snack_machine_lower_${dropped ? "dropped" : "ready"}.json`, boxes(
+      { ...cabinet, front: block("snack_machine_front_lower"), showcase: block("snack_machine_showcase_lower"), reader: block("snack_machine_reader"),
+        flap: block(dropped ? "snack_machine_flap_lit" : "snack_machine_flap") },
+      [
+        [[1, 0, 2], [15, 16, 15], { north: "#front", all: "#side" }],
+        [[1, 0, 1.25], [15, 1, 2], "#trim"],
+        [[6, 7, 1.5], [14, 16, 2], "#showcase", true],
+        [[6, 2, 1.25], [14, 5, 2], "#flap", dropped],
+        [[2, 10, 1.5], [5, 13, 2], "#reader", true],
+      ],
+    ));
+  }
+  const model = (half, vend) => (half === "upper" ? `snack_machine_upper_${vend}` : `snack_machine_lower_${vend === "dropped" ? "dropped" : "ready"}`);
+  write(`assets/${ID}/blockstates/snack_machine.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => VENDS.map((vend) =>
+      [`facing=${facing},half=${half},vend=${vend}`, { model: `${ID}:block/${model(half, vend)}`, y }])))),
+  });
+  cubes.snack_machine = null;
+}
+// The snack machine is fitted into the rocket rather than built into her: light like the rest, but no part of her
+// frame, and breakable.
+function snackMachineFittings() {
+  return ["snack_machine"];
+}
+// The whirr of its spiral turning and the clunk of a snack dropping into its flap (see tools/generate_sounds.mjs).
+function snackMachineSounds() {
+  return Object.fromEntries(["snack_machine_whirr", "snack_machine_clunk"].map((name) =>
+    [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function snackMachineLang() {
+  return {
+    "block.aerolarge.snack_machine": "Snack Machine",
+    "subtitles.aerolarge.snack_machine_whirr": "Snack machine whirs",
+    "subtitles.aerolarge.snack_machine_clunk": "Snack drops",
   };
 }
 // The rocket's rover bay (see RoverHatchBlock and RoverPanelBlock). Its door's parts are drawn only by the bay's
@@ -6730,6 +6793,7 @@ FITTINGS.push(...barFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
+FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
 FITTINGS.push(...foodLabFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
@@ -7471,6 +7535,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...christeningLang(),
   ...flankScreenLang(),
   ...spacePosterLang(),
+  ...snackMachineLang(),
   ...roverLang(),
   ...labLang(),
   ...foodLabLang(),

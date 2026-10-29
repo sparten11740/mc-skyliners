@@ -221,6 +221,7 @@ import dev.aerolarge.block.SignalFlareBlockEntity;
 import dev.aerolarge.block.SlideControlBlock;
 import dev.aerolarge.block.SlideControlBlockEntity;
 import dev.aerolarge.block.SlideStepBlock;
+import dev.aerolarge.block.SnackMachineBlock;
 import dev.aerolarge.block.SpacePoster;
 import dev.aerolarge.block.SpacePosterBlock;
 import dev.aerolarge.block.SpringboardBlock;
@@ -1774,6 +1775,16 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LedConsoleBlockEntity>> LED_CONSOLE_ENTITY =
         BLOCK_ENTITIES.register("led_console", () -> BlockEntityType.Builder.of(LedConsoleBlockEntity::new, LED_CONSOLE.get()).build(null));
+    /**
+     * The snack machine in the rocket's cafeteria, on her observation deck's mezzanine (see
+     * {@link dev.aerolarge.airframe.RocketObservationDeck}), and the whirr of its spiral turning and the clunk of a snack
+     * dropping into its flap. Placed only by the blueprint, so no item, and it gives nothing back.
+     */
+    public static final DeferredBlock<SnackMachineBlock> SNACK_MACHINE = BLOCKS.registerBlock(
+        "snack_machine", SnackMachineBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().noLootTable().lightLevel(SnackMachineBlock::light)
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> SNACK_MACHINE_WHIRR = sound("snack_machine_whirr");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SNACK_MACHINE_CLUNK = sound("snack_machine_clunk");
     /**
      * The rocket's lab (see {@link dev.aerolarge.airframe.RocketLab}): the glass of her tardigrade's tank, its lowest
      * row mossy and its highest lit; its feeding hatch, whose block entity keeps the creature; the lab's instruments,
