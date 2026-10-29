@@ -1899,7 +1899,7 @@ is a kitchen garden someone tends: paths out from the walkway to its three windo
 each, raised beds in spruce frames stand in rows a path apart, turned a quarter from the quarter before, no two rows
 ending alike. They grow carrots, potatoes, beetroots and wheat at every stage, sometimes two in one bed, berry bushes,
 pumpkins and melons on their vines, or flowers, with a gap here and there where something was picked; a magenta grow
-light hangs over each on its cable, and a sprinkler stands in water in its middle, keeping its soil dark and moist.
+light hangs over each on its cable, and sprinklers stand in water among them, keeping their soil dark and moist.
 Beside the way out from the lift stands the irrigation valve: turn its red wheel and it squeaks open, its sight glass
 glowing blue, and every sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds, green
 sparkles showing where a plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a bigger

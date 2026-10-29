@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -30,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A pop-up sprinkler in a raised bed: a brass head on a copper riser in a little box of spruce boards, which in the
  * greenhouse stands in water, so the bed round it stays moist, the water held in by the box (its sides and its bottom
- * let nothing through, so it never runs out over the floor). Turned on from an irrigation valve (see
+ * let nothing through, so it never runs out over the floor, and broken, it takes its water with it). Turned on from an irrigation valve (see
  * {@link IrrigationValveBlock}), its head pops up and sweeps a jet round over the beds, and what grows in them comes
  * on (see {@link SprinklerBlockEntity}). SPRAYING is whether it is spraying now.
  */
@@ -74,6 +75,12 @@ public class SprinklerBlock extends Block implements EntityBlock, SimpleWaterlog
     @Override
     protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
         return BOX;
+    }
+
+    /** Broken, it takes its water with it: none is left to run out over the floor where it stood. */
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, Fluids.EMPTY.defaultFluidState());
     }
 
     @Override
