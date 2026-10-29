@@ -2,12 +2,15 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
+import dev.aerolarge.block.PlanterBlock;
 import dev.aerolarge.block.PoolCopingBlock;
 import dev.aerolarge.block.RubberDuckBlock;
+import dev.aerolarge.block.ShelfUnitBlock;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * way of her back, sunk into the floor, its coping round its edges and the rest of the floor laid with non-slip deck
  * tiles. Its walls are glass mosaic lit from under the water line, and its bottom is clear glass: the channel hangs
  * into the greenhouse's ceiling under it, and from among the leaves there swimmers are seen overhead. Rubber ducks
- * float round it; on the deck at her front, between the channel's two ends, bean bags look out of the front window.
+ * float round it. The deck at her front, between the channel's two ends, is the sunbathers': on her right, loungers
+ * looking out of the front window with a side table between them; on her left, a towel shelf by the way in from the
+ * lift; and bamboo in planters, the pool's palms, at the channel's ends.
  */
 final class RocketPool extends RocketRoom {
     /** Her swimming pool's story, from the entry story up. */
@@ -34,9 +39,8 @@ final class RocketPool extends RocketRoom {
     /** How far round from her front the ducks float, in degrees, and how far in from the skin's inside, in blocks. */
     private static final double[] DUCKS = {100, 180, 260};
     private static final double DUCKS_IN = 3;
-    /** How far round from her front the bean bags on the deck are, in degrees, and how far in from the skin. */
-    private static final double[] BEAN_BAGS = {18, 34, 326, 342};
-    private static final double BEAN_BAGS_IN = 3;
+    /** The loungers' colours, taken in turn. */
+    private static final DyeColor[] LOUNGERS = {DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.WHITE};
 
     private final Set<BlockPos> water = new HashSet<>();
 
@@ -59,10 +63,12 @@ final class RocketPool extends RocketRoom {
         for (double round : DUCKS) {
             duck(across(wall() - DUCKS_IN, round), along(wall() - DUCKS_IN, round), clockwise(round));
         }
-        double out = wall() - BEAN_BAGS_IN;
-        for (double round : BEAN_BAGS) {
-            put(across(out, round), floor + 1, along(out, round), AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
-                .setValue(BeanBagBlock.FACING, inward(round).getOpposite()).setValue(BeanBagBlock.COLOR, DyeColor.WHITE));
+        RandomSource random = scatter();
+        int corner = corner();
+        loungers(RocketQuarter.FRONT_RIGHT, floor + 1, corner, random);
+        towels(RocketQuarter.FRONT_LEFT, floor + 1);
+        for (RocketQuarter quarter : new RocketQuarter[]{RocketQuarter.FRONT_RIGHT, RocketQuarter.FRONT_LEFT}) {
+            palm(quarter, floor + 1, corner);
         }
     }
 
@@ -122,6 +128,46 @@ final class RocketPool extends RocketRoom {
         if (water.contains(new BlockPos(x, floor(), z))) {
             layout.set(x, floor(), z, AerolargeRegistry.RUBBER_DUCK.get().defaultBlockState().setValue(RubberDuckBlock.FACING, facing)
                 .setValue(RubberDuckBlock.WATERLOGGED, true));
+        }
+    }
+
+    /**
+     * The sunbathers' corner: loungers in a row looking out of the front window, a low table between the first two, one
+     * of the others turned toward the water; as many as the deck has room for, out from beside the way in.
+     */
+    private void loungers(RocketQuarter quarter, int y, int corner, RandomSource random) {
+        int along = RocketQuarter.INNER + 1;
+        int turned = 1 + random.nextInt(LOUNGERS.length - 1);
+        for (int lounger = 0; lounger < LOUNGERS.length; lounger++) {
+            int across = RocketQuarter.INNER - 2 + 2 * lounger;
+            Direction facing = lounger == turned ? quarter.side() : quarter.end();
+            standing(quarter.x(across), y, quarter.z(along), AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
+                .setValue(BeanBagBlock.FACING, facing).setValue(BeanBagBlock.COLOR, LOUNGERS[lounger]));
+        }
+        standing(quarter.x(RocketQuarter.INNER - 1), y, quarter.z(along), AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState());
+        if (corner - RocketQuarter.INNER >= 2) {
+            standing(quarter.x(RocketQuarter.INNER - 1), y, quarter.z(corner), AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
+                .setValue(BeanBagBlock.FACING, quarter.end()).setValue(BeanBagBlock.COLOR, DyeColor.ORANGE));
+        }
+    }
+
+    /** A shelf of rolled towels beside the way in from the lift, facing it, two long. */
+    private void towels(RocketQuarter quarter, int y) {
+        BlockState shelf = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.TOWELS, quarter.side().getOpposite());
+        for (int along = RocketQuarter.INNER; along <= RocketQuarter.INNER + 1; along++) {
+            standing(quarter.x(RocketQuarter.INNER - 2), y, quarter.z(along), shelf);
+        }
+    }
+
+    /** Bamboo in a planter, a palm by the pool, at the first of a few spots on the deck by the channel's end that is free. */
+    private void palm(RocketQuarter quarter, int y, int corner) {
+        BlockState planter = PlanterBlock.planted(AerolargeRegistry.PLANTER.get(), PlanterBlock.Plant.BAMBOO, quarter.end().getOpposite());
+        int[][] spots = {{RocketQuarter.INNER, RocketQuarter.INNER}, {RocketQuarter.INNER - 1, corner + 1}, {RocketQuarter.INNER - 2, corner + 1},
+            {RocketQuarter.INNER - 1, RocketQuarter.INNER}};
+        for (int[] spot : spots) {
+            if (standing(quarter.x(spot[0]), y, quarter.z(spot[1]), planter)) {
+                return;
+            }
         }
     }
 }

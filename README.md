@@ -1899,9 +1899,12 @@ irrigation valves and grow lights are in the creative tab and can be crafted, fo
 frame runs round however many beds stand together, it never dries back to dirt or gets trampled, and a valve sets off
 every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a channel two deep curving round the
 shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber ducks
-afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. Both are heard as
-you stand in them: the air through the greenhouse's leaves over a trickle of irrigation, a bee now and then buzzing
-past, and the pool's water lapping in its tiled hall, now and then slapping against its side (the client setting
+afloat on it and deck tiles all round. The deck at the front, between the channel's ends, is the sunbathers': bean bag
+loungers on her right looking out of the front window, a side table between the first two and one turned toward the
+water, a shelf of rolled towels on her left by the way in from the lift, and bamboo in planters, the pool's palms, by
+the channel's ends. Both are heard as you stand in them: the air through the greenhouse's leaves over a trickle of
+irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then slapping
+against its side (the client setting
 `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
 stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round
 her left side with stools; its windows are built at their darkest, so daylight does not wash out the floor's colours.
