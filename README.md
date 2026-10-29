@@ -1861,27 +1861,28 @@ Each story is furnished as a room of its own (the server config's `rocket.rooms`
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
 skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather leave
 her in flight, crew lockers along both sides, a Space Helmet waiting in each (see Souvenirs), red armchairs at the back
-to wait for the lift in, and lanterns hanging on chains at the four diagonals round the shaft. The cargo bay over it
-holds a pair of baggage containers by the way in from the lift and care-package crates stacked two high by its side
-windows, ready to be packed and dropped, lanterns hanging round the shaft as in the entry, its back left to the rover
-(below). The galley and mess has galley units curving round the back either side of its window, an oven in each run and
-a coffee machine, and four tables with an armchair either side and a lantern hanging over each, two of them by the side
-windows. The bunk room has bunk beds two high at each of the four diagonals, their reading lights on, a soul lantern
-hanging over each pair, and a crew locker for each, a Space Helmet in it too. The greenhouse has raised moss beds in a
-ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in them, a cherry tree at two diagonals and
-an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its ceiling, its
-bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep curving round
-the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber
-ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. Both are
-heard as you stand in them: the air through the greenhouse's leaves over a trickle of irrigation, a bee now and then
-buzzing past, and the pool's water lapping in its tiled hall, now and then slapping against its side (the client setting
-`roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
-stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round
-her left side with stools; its windows are built at their darkest, so daylight does not wash out the floor's colours.
-The observation deck, her highest story, sees all round through its band of smoked glass: an orange armchair looking out
-to each side and the back, yellow bean bags beside each and light blue pairs at the diagonals, all facing out, under the
-airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up the wall from the
-band to it, so the room over the band is a starry dome, a planetarium.
+to wait for the lift in, and halo lights, a ring of warm light on fine spokes, hanging on slim cables at the four
+diagonals round the shaft. The cargo bay over it holds a pair of baggage containers by the way in from the lift and
+care-package crates stacked two high by its side windows, ready to be packed and dropped, halo lights hanging round the
+shaft as in the entry, its back left to the rover (below). The galley and mess has galley units curving round the back
+either side of its window, an oven in each run and a coffee machine, and four tables with an armchair either side and a
+halo light hanging over each, two of them by the side windows. The bunk room has bunk beds two high at each of the four
+diagonals, their reading lights on, a blue halo light hanging over each pair, and a crew locker for each, a Space Helmet
+in it too. The greenhouse has raised moss beds in a ring broken by a path out to each window, ferns, flowers, azaleas
+and bamboo in them, a cherry tree at two diagonals and an azalea at the others, and glow berry vines hanging from the
+ceiling; the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from under the
+trees. The swimming pool is a channel two deep curving round the shaft by way of her back, lined with glass mosaic lit
+from under the water line, coped round its edge, with rubber ducks afloat on it, deck tiles all round and bean bags on
+the deck at the front looking out of the window. Both are heard as you stand in them: the air through the greenhouse's
+leaves over a trickle of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall,
+now and then slapping against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the
+dance floor's black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls, the DJ deck
+behind the shaft playing the whole room, and a bar curving round her left side with stools; its windows are built at
+their darkest, so daylight does not wash out the floor's colours. The observation deck, her highest story, sees all
+round through its band of smoked glass: an orange armchair looking out to each side and the back, yellow bean bags
+beside each and light blue pairs at the diagonals, all facing out, under the airliner's starlight panels, dimmed so the
+stars outside outshine them, all over the ceiling and up the wall from the band to it, so the room over the band is a
+starry dome, a planetarium.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there

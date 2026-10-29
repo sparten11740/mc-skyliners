@@ -4,6 +4,7 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.CrewLockerBlockEntity;
+import dev.aerolarge.block.HaloLightBlock;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -11,9 +12,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChainBlock;
-import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,14 +39,14 @@ abstract class RocketRoom implements RocketPiece {
     private static final double WINDOW_CLEAR = 4;
     /** How far either side of her front-to-back line the way out from the lift's door is kept clear, in blocks. */
     private static final int WAY_OUT_HALF = 1;
-    /** How many rows over the floor a pendant lamp hangs, on its chain down from the ceiling: well over a head. */
+    /** How many rows over the floor a pendant lamp hangs, on its cable down from the ceiling: well over a head. */
     private static final int LAMP_UP = 5;
-    /** How far out from her axis the lanterns hanging at the four diagonals round her shaft are, in blocks. */
+    /** How far out from her axis the lights hanging at the four diagonals round her shaft are, in blocks. */
     private static final double LAMPS_OUT = 5.5;
-    /** A lantern and a soul lantern hanging from a chain, and a link of the chain. */
-    protected static final BlockState LANTERN = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
-    protected static final BlockState SOUL_LANTERN = Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
-    private static final BlockState CHAIN = Blocks.CHAIN.defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
+    /** Her halo lights (see {@link HaloLightBlock}), warm white and a cool blue night light, and a length of cable. */
+    protected static final BlockState WARM_LIGHT = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState();
+    protected static final BlockState NIGHT_LIGHT = AerolargeRegistry.HALO_LIGHT.get().defaultBlockState().setValue(HaloLightBlock.TONE, HaloLightBlock.Tone.COOL);
+    private static final BlockState CABLE = AerolargeRegistry.LIGHT_CABLE.get().defaultBlockState();
     /** What a room's random sequence starts from, its story added, so each room comes out the same every build. */
     private static final long SCATTER_SEED = 0x526f6f6d73L;
 
@@ -139,8 +137,8 @@ abstract class RocketRoom implements RocketPiece {
 
     /**
      * A pendant lamp at a spot of the floor plan: the lamp given hanging {@link #LAMP_UP} rows over the floor from a
-     * chain down from the ceiling, where every block of them is free, breaking up a tall room's bare height with a
-     * line and a pool of warm light.
+     * cable down from the ceiling, where every block of them is free, breaking up a tall room's bare height with a
+     * line and a pool of light.
      */
     protected void pendant(int x, int z, BlockState lamp) {
         int lowest = floor() + LAMP_UP;
@@ -151,14 +149,14 @@ abstract class RocketRoom implements RocketPiece {
         }
         layout.set(x, lowest, z, lamp);
         for (int y = lowest + 1; y <= top(); y++) {
-            layout.set(x, y, z, CHAIN);
+            layout.set(x, y, z, CABLE);
         }
     }
 
-    /** Lanterns hanging at the four diagonals round her shaft, just out from the walkway's corners. */
-    protected void lanternsRoundShaft() {
+    /** Warm halo lights hanging at the four diagonals round her shaft, just out from the walkway's corners. */
+    protected void lightsRoundShaft() {
         for (double round = 45; round < 360; round += 90) {
-            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
+            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), WARM_LIGHT);
         }
     }
 

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * Her cargo bay's load, round its front and sides, well clear of her rover's cradle and its way out at her back (see
  * {@link RocketRoverBay}): a pair of the airliner's baggage containers either side of the way in from the lift, their
  * doors facing in, care-package crates stacked two high either side of the side windows, ready to be packed and
- * dropped, and lanterns hanging round the shaft. Laid after the rover's bay, so nothing of it stands where the bay has
+ * dropped, and halo lights hanging round the shaft. Laid after the rover's bay, so nothing of it stands where the bay has
  * put anything.
  */
 final class RocketCargoHold extends RocketRoom {
@@ -39,7 +39,7 @@ final class RocketCargoHold extends RocketRoom {
             double round = CONTAINERS[k];
             container(new BlockPos(across(out, round), y, along(out, round)), inward(round), k);
         }
-        lanternsRoundShaft();
+        lightsRoundShaft();
         double crates = wall() - CRATES_IN;
         for (double round : CRATES) {
             BlockState crate = AerolargeRegistry.CARGO_CRATE.get().defaultBlockState().setValue(CargoCrateBlock.FACING, inward(round));

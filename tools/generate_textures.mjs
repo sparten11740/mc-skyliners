@@ -5061,6 +5061,15 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   });
 }
 
+// The rocket's halo light (see HaloLightBlock): its ring's light, bright in the middle of its band and a little paler
+// at its edges, warm white or cool blue; and its hub and spokes, dark brushed metal.
+{
+  const glow = (core, edge) => (x, y) => (y >= 5 && y <= 10 ? core : edge);
+  texture(blockOutput, "halo_light_warm", glow([0xff, 0xf2, 0xd8], [0xff, 0xe0, 0xb0]), 2);
+  texture(blockOutput, "halo_light_cool", glow([0xc8, 0xdc, 0xff], [0x96, 0xb4, 0xf0]), 2);
+  texture(blockOutput, "halo_light_hub", (x, y) => [0x2c + (y % 3) * 3, 0x2e + (y % 3) * 3, 0x34 + (y % 3) * 3], 2);
+}
+
 // The rocket's rooms finished inside (see RocketFinish), each its own way: for every room its wall, the dado along the
 // wall's foot, a ledge where the wall turns level, its ceiling and its floor. Painted from a few materials (boards,
 // tiles, bricks, quilting, foam, plating, parquet, padding, carpet), each block's own boards, tiles or bricks a shade

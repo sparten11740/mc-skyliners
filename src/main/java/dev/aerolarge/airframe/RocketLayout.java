@@ -305,7 +305,7 @@ public final class RocketLayout implements Layout {
 
     /**
      * Whether a room sees a block of her cover: on a side, the block there in her body and open or not filling its
-     * place (an LED strip, a lantern, a stool), and not her skin's own glass; on no side given, on any side.
+     * place (an LED strip, a light, a stool), and not her skin's own glass; on no side given, on any side.
      */
     private boolean seenFromInside(BlockPos at, @Nullable Direction side) {
         if (side == null) {

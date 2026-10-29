@@ -7,7 +7,7 @@ import net.minecraft.world.item.DyeColor;
 /**
  * The entry story, where the front door lets the crew in: a parachute rack either side of the way in from the door,
  * for anyone who would rather leave her in flight; a run of crew lockers along her sides, to change into a flight suit,
- * a space helmet in each; a pair of red armchairs either side at her back, to wait in for the lift; and lanterns
+ * a space helmet in each; a pair of red armchairs either side at her back, to wait in for the lift; and halo lights
  * hanging round the shaft.
  */
 final class RocketEntry extends RocketRoom {
@@ -40,6 +40,6 @@ final class RocketEntry extends RocketRoom {
         for (double round : SEATS) {
             seat(across(out, round), y, along(out, round), inward(round), DyeColor.RED);
         }
-        lanternsRoundShaft();
+        lightsRoundShaft();
     }
 }

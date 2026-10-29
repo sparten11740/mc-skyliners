@@ -13,7 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The galley and mess: the galley's units in a curve round her back wall either side of its window, worktops and
  * stowage, an oven in the middle of each run and a coffee machine at its end, facing in; and round the room's front
- * and sides four tables, two by the side windows, an armchair either side of each and a lantern hanging over it.
+ * and sides four tables, two by the side windows, an armchair either side of each and a halo light
+ * hanging over it.
  */
 final class RocketMess extends RocketRoom {
     /** Her galley and mess's story, from the entry story up. */
@@ -50,7 +51,7 @@ final class RocketMess extends RocketRoom {
         Direction on = clockwise(round);
         seat(x + on.getStepX(), y, z + on.getStepZ(), on.getOpposite(), DyeColor.BLUE);
         seat(x - on.getStepX(), y, z - on.getStepZ(), on, DyeColor.BLUE);
-        pendant(x, z, LANTERN);
+        pendant(x, z, WARM_LIGHT);
     }
 
     /** A run of galley units round the back wall between two angles, an oven in its middle, a coffee machine on it. */

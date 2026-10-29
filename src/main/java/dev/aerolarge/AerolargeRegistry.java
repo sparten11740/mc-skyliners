@@ -118,6 +118,7 @@ import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.GymFloorBlock;
 import dev.aerolarge.block.GymMatBlock;
 import dev.aerolarge.block.GymRingsBlock;
+import dev.aerolarge.block.HaloLightBlock;
 import dev.aerolarge.block.HandsetBlock;
 import dev.aerolarge.block.HideAndSeekButtonBlock;
 import dev.aerolarge.block.HoopBlock;
@@ -1007,6 +1008,11 @@ public final class AerolargeRegistry {
         "light_cable", LightCableBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.2F).sound(SoundType.CHAIN).noCollission().noOcclusion()
     );
+    /** The rocket's halo light, hung on the cable above, warm white or a cool blue night light. */
+    public static final DeferredBlock<HaloLightBlock> HALO_LIGHT = BLOCKS.registerBlock(
+        "halo_light", HaloLightBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion().lightLevel(HaloLightBlock::light)
+    );
     /** The overhead lockers along the cabin walls. */
     public static final DeferredBlock<OverheadBinBlock> OVERHEAD_BIN = BLOCKS.registerBlock(
         "overhead_bin", OverheadBinBlock::new,
@@ -1027,6 +1033,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> STARLIGHT_PANEL_ITEM = ITEMS.registerSimpleBlockItem(STARLIGHT_PANEL);
     public static final DeferredItem<BlockItem> PENDANT_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(PENDANT_LIGHT);
     public static final DeferredItem<BlockItem> LIGHT_CABLE_ITEM = ITEMS.registerSimpleBlockItem(LIGHT_CABLE);
+    public static final DeferredItem<BlockItem> HALO_LIGHT_ITEM = ITEMS.registerSimpleBlockItem(HALO_LIGHT);
     public static final DeferredItem<BlockItem> OVERHEAD_BIN_ITEM = ITEMS.registerSimpleBlockItem(OVERHEAD_BIN);
     /** The passengers' screens in the seat backs and bulkheads, showing how the airliner flies. */
     public static final DeferredBlock<PassengerScreenBlock> PASSENGER_SCREEN = BLOCKS.registerBlock(
@@ -2137,7 +2144,7 @@ public final class AerolargeRegistry {
             DROP_RELEASE_ITEM, SELF_DESTRUCT_BUTTON_ITEM
         )),
         new TabSection("cabin", List.of(
-            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
+            SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,

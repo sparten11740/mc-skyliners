@@ -2205,6 +2205,32 @@ function towerInstrumentsLang() {
   }
 }
 
+// The rocket's halo light (see HaloLightBlock), drawn as the pendant's cable comes down onto it: a slim black cable to
+// a small dark hub, four fine spokes out from it and a ring of light round them, a little under the hub, glowing at
+// full brightness, warm white or a cool night-light blue.
+{
+  const ring = (glow) => [
+    [[5, 6, 2], [11, 7.5, 3.5], glow, true], [[5, 6, 12.5], [11, 7.5, 14], glow, true],
+    [[2, 6, 5], [3.5, 7.5, 11], glow, true], [[12.5, 6, 5], [14, 7.5, 11], glow, true],
+    [[3, 6, 3], [5, 7.5, 5], glow, true], [[11, 6, 3], [13, 7.5, 5], glow, true],
+    [[3, 6, 11], [5, 7.5, 13], glow, true], [[11, 6, 11], [13, 7.5, 13], glow, true],
+  ];
+  const spokes = [[[7.75, 7, 3.5], [8.25, 7.5, 7], "#hub"], [[7.75, 7, 9], [8.25, 7.5, 12.5], "#hub"],
+    [[3.5, 7, 7.75], [7, 7.5, 8.25], "#hub"], [[9, 7, 7.75], [12.5, 7.5, 8.25], "#hub"]];
+  for (const tone of ["warm", "cool"]) {
+    write(`assets/${ID}/models/block/halo_light_${tone}.json`, boxes(
+      { cable: `${ID}:block/light_cable`, hub: `${ID}:block/halo_light_hub`, glow: `${ID}:block/halo_light_${tone}`, particle: `${ID}:block/halo_light_hub` },
+      [[[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"], [[7, 7, 7], [9, 8, 9], "#hub"], ...spokes, ...ring("#glow")],
+    ));
+  }
+  write(`assets/${ID}/blockstates/halo_light.json`, {
+    variants: { "tone=warm": { model: `${ID}:block/halo_light_warm` }, "tone=cool": { model: `${ID}:block/halo_light_cool` } },
+  });
+  write(`assets/${ID}/models/item/halo_light.json`, { parent: `${ID}:block/halo_light_warm` });
+  dropsItself("halo_light");
+  cubes.halo_light = null;
+}
+
 // The passenger screen: a slim seat-back display, drawn facing north with its back against the south side of its
 // block, dark glass in a thin grey bezel; its renderer draws the flight information over the glass.
 write(`assets/${ID}/models/block/passenger_screen.json`, boxes(
@@ -6400,7 +6426,7 @@ write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gy
 const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));
 // What is fitted into the cabin rather than built into the airliner: light like the rest, but not hull, and breakable.
-const FITTINGS = ["light_strip", "pendant_light", "light_cable", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
+const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "overhead_bin", "passenger_screen", "hoop", "scoreboard", "ball_rack", "galley",
   "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
@@ -6528,6 +6554,7 @@ shaped("seatbelt_sign", ["GLG"], { G: "minecraft:glass_pane", L: "minecraft:reds
 shaped("seatbelt_switch", ["L", "P"], { L: "minecraft:stone_button", P: `${ID}:instrument_panel` }, 1);
 shaped("light_strip", ["GGG", "RLR"], { G: "minecraft:glass_pane", R: "minecraft:redstone", L: "minecraft:glowstone_dust" }, 6);
 shaped("pendant_light", ["C", "I", "G"], { C: `${ID}:light_cable`, I: "minecraft:iron_ingot", G: "minecraft:glowstone" }, 1);
+shaped("halo_light", ["C", "Q", "G"], { C: `${ID}:light_cable`, Q: "minecraft:quartz", G: "minecraft:glowstone_dust" }, 1);
 shaped("light_cable", ["S", "S", "S"], { S: "minecraft:string" }, 3);
 shaped("overhead_bin", ["PPP", "P P", "PPP"], { P: `${ID}:airframe_panel` }, 2);
 shaped("passenger_screen", ["GGG", "PRP"], { G: "minecraft:black_stained_glass_pane", P: `${ID}:airframe_panel`, R: "minecraft:redstone" }, 3);
@@ -6869,6 +6896,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...ROOM_DIVIDER_LANG,
   "block.aerolarge.light_strip": "LED Light Strip",
   "block.aerolarge.pendant_light": "Pendant Light",
+  "block.aerolarge.halo_light": "Halo Light",
   "block.aerolarge.light_cable": "Light Cable",
   "block.aerolarge.overhead_bin": "Overhead Locker",
   "container.aerolarge.overhead_bin": "Overhead Locker",

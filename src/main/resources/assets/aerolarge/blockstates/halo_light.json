@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "tone=warm": {
+      "model": "aerolarge:block/halo_light_warm"
+    },
+    "tone=cool": {
+      "model": "aerolarge:block/halo_light_cool"
+    }
+  }
+}

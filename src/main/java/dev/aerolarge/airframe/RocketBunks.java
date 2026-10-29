@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 
 /**
  * The bunk room: bunk beds two high against her skin between the windows, a pair at each of the four diagonals, their
- * reading lights on, their blankets each in a colour of their own and a soul lantern hanging over each pair, as dim as
+ * reading lights on, their blankets each in a colour of their own and a blue halo light hanging over each pair, as dim as
  * a night light; and crew lockers either side of the way out and of the back window, one for each bunk's sleeper, a
  * space helmet in each.
  */
@@ -40,7 +40,7 @@ final class RocketBunks extends RocketRoom {
                 double round = diagonal + side * PAIR_APART;
                 bunkBed(across(out, round), y, along(out, round), inward(round));
             }
-            pendant(across(out, diagonal), along(out, diagonal), SOUL_LANTERN);
+            pendant(across(out, diagonal), along(out, diagonal), NIGHT_LIGHT);
         }
         for (double round : LOCKERS) {
             crewLocker(across(out, round), y, along(out, round), inward(round));
