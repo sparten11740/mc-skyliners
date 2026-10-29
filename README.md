@@ -1904,23 +1904,25 @@ loungers on her right looking out of the front window, a side table between the 
 water, a shelf of rolled towels on her left by the way in from the lift, and bamboo in planters, the pool's palms, by
 the channel's ends. Both are heard as you stand in them: the air through the greenhouse's leaves over a trickle of
 irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then slapping
-against its side (the client setting
-`roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
-stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round
-her left side with stools; its windows are built at their darkest, so daylight does not wash out the floor's colours.
-The observation deck, her highest story and her chillout lounge, sees all round through its band of smoked glass, under
-the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up the wall from
-the band to it, so the room over the band is a starry dome, a planetarium. Its lounge is set out unevenly in groups to
-talk in, armchairs and bean bags facing each other round low tables on round rugs, with plants here and there, pairs of
-bean bags by the glass to watch the land fall away or the stars come out, and a bookcase tucked under the top of the
-stairs. Over its back third, from behind the shaft out to her skin, a mezzanine holds her cafeteria, a glass rail along
-its edge and carpeted stairs climbing her right-hand wall up to it from near the lift's door: round the back wall a
-counter of galley units with the coffee machine, a cake and a pot of flowers on it, a lit drinks cabinet, tables with
-bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine with a lit showcase of bright
-packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a snack drops into its flap,
-which lights up green with the packet in it, and using it again takes the snack out into your hand: a cookie, an apple,
-a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a surprise. Cabin lights set
-into the mezzanine's floor glow both ways, over the groups under it and along its edge.
+against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass
+tiles all over its floor, speaker stacks at the diagonals, four disco balls and the DJ deck behind the shaft playing the
+whole room. Along her left side a bar curves round the window there, its counter parting the bar from the floor, stools
+before it and the back bar's lit shelves of bottles behind it; at the front right is a booth, purple and magenta
+armchairs round a low table, walled off from the way in by shelves of records; and at the front left, by the bar's end,
+a coat corner of lockers, a Space Helmet in each. Its windows are built at their darkest, so daylight does not wash out
+the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round through its band of
+smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and
+up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its lounge is set out
+unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round rugs, with plants
+here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and a bookcase tucked
+under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine holds her
+cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the lift's
+door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a lit
+drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine with a
+lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a snack
+drops into its flap, which lights up green with the packet in it, and using it again takes the snack out into your hand:
+a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a
+surprise. Cabin lights set into the mezzanine's floor glow both ways, over the groups under it and along its edge.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
