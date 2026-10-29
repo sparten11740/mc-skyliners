@@ -207,7 +207,8 @@ Commits on main, newest last, with the versions handed out.
   picked): the greenhouse's loop beginning as the car rose through it, the pool's two seconds later, the club's track
   after it, and the up chime and the doors at the cockpit.
 - alpha.179: the fifth review's fixes (N58). Play-tested on a scale-3 rocket: her map with a pin and no ring, and her
-  screen reading DESCENT once Land was pressed in her climb; not looked at: the control head's row and the helmet HUD.
+  screen reading DESCENT once Land was pressed in her climb; her control head after landing, its heading row drawn as
+  before; not looked at: the helmet HUD, or the control head set to a circle.
 
 ## Background agents
 
