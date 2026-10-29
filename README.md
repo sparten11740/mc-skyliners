@@ -1873,28 +1873,32 @@ side a wall of pallet racks three bays high, loaded with taped boxes, drums and 
 empty, parts the front from the back (with a gap in it in a big rocket); at the back right is a workbench corner, a
 crafting table, a stool and a grindstone under shelves of tool cases, and at the back left crates are piled where they
 were set down. Lanterns hang round the shaft as in the entry, and the middle of its back is left to the rover (below).
-The galley and mess has galley units curving round the back either side of its window, an oven in each run and a coffee
-machine, and four tables with an armchair either side and a halo light hanging over each, two of them by the side
-windows. The bunk room has bunk beds two high at each of the four diagonals, their reading lights on, a blue halo light
-hanging over each pair, and a crew locker for each, a Space Helmet in it too. The greenhouse is a kitchen garden someone
-tends: paths out from the walkway to its three windows cut it into four quarters, and in each, raised beds in spruce
-frames stand in rows a path apart, turned a quarter from the quarter before, no two rows ending alike. They grow
-carrots, potatoes, beetroots and wheat at every stage, sometimes two in one bed, berry bushes, pumpkins and melons on
-their vines, or flowers, with a gap here and there where something was picked; a magenta grow light hangs over each on
-its cable, and a sprinkler stands in water in its middle, keeping its soil dark and moist. Beside the way out from the
-lift stands the irrigation valve: turn its red wheel and it squeaks open, its sight glass glowing blue, and every
-sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds, green sparkles showing where a
-plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a bigger rocket), a composter, a
-water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots and a green bean bag on the
-spots left over, moss grows over the paths in patches, and glow berry vines hang from the ceiling; the pool's channel
-hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds. Garden beds, sprinklers,
-irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen garden anywhere: a bed's
-frame runs round however many beds stand together, it never dries back to dirt or gets trampled, and a valve sets off
-every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a channel two deep curving round the
-shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber ducks
-afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. Both are heard as
-you stand in them: the air through the greenhouse's leaves over a trickle of irrigation, a bee now and then buzzing
-past, and the pool's water lapping in its tiled hall, now and then slapping against its side (the client setting
+The galley and mess has its kitchen at the back and its dining room at the front. Galley units curve round the back
+either side of its window, an oven in each run and a coffee machine; out to either side a pass of worktops parts the
+kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of tulips beside them; and
+in a big rocket an island stands in the kitchen. At the front right a long communal table runs out from the way in, its
+chairs every kind and colour, armchairs, stools and bean bags, a few places left empty; at the front left is a smaller
+table with its own odd set. A halo light hangs over each table. The bunk room has bunk beds two high at each of the four
+diagonals, their reading lights on, a blue halo light hanging over each pair, and a crew locker for each, a Space Helmet
+in it too. The greenhouse is a kitchen garden someone tends: paths out from the walkway to its three windows cut it into
+four quarters, and in each, raised beds in spruce frames stand in rows a path apart, turned a quarter from the quarter
+before, no two rows ending alike. They grow carrots, potatoes, beetroots and wheat at every stage, sometimes two in one
+bed, berry bushes, pumpkins and melons on their vines, or flowers, with a gap here and there where something was picked;
+a magenta grow light hangs over each on its cable, and a sprinkler stands in water in its middle, keeping its soil dark
+and moist. Beside the way out from the lift stands the irrigation valve: turn its red wheel and it squeaks open, its
+sight glass glowing blue, and every sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds,
+green sparkles showing where a plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a
+bigger rocket), a composter, a water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots
+and a green bean bag on the spots left over, moss grows over the paths in patches, and glow berry vines hang from the
+ceiling; the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds.
+Garden beds, sprinklers, irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen
+garden anywhere: a bed's frame runs round however many beds stand together, it never dries back to dirt or gets
+trampled, and a valve sets off every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a
+channel two deep curving round the shaft by way of her back, lined with glass mosaic lit from under the water line,
+coped round its edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the deck at the front
+looking out of the window. Both are heard as you stand in them: the air through the greenhouse's leaves over a trickle
+of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then slapping
+against its side (the client setting
 `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
 stacks at the diagonals, four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round
 her left side with stools; its windows are built at their darkest, so daylight does not wash out the floor's colours.
