@@ -186,6 +186,9 @@ Commits on main, newest last, with the versions handed out.
   of Space goal), across 300 blocks leaning at most 9.6 degrees, down at 37 blocks a second and onto the pin 4 blocks
   from it, touchdown call, cut-off, bell and arrival announcement heard; the rover's remote taken from its panel, the
   rover lowered and driven, its camera clear of the item's name, and called home; the planetarium at scales 2 and 3.
+- alpha.176: the deck's lower ceiling at scales 3 and 4 (N55); a rocket's pin without the airliner's circle and land
+  switch. Play-tested: a fresh rocket at scale 3 (the ceiling meeting her skin, its strips under it); a rocket's
+  screen set to a pin; a photo tour of every story of a fresh scale-2 rocket at noon, nothing floating or misplaced.
 
 ## Background agents
 
@@ -220,9 +223,10 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - A slip of mine at 03:36: testing the lift-off fire I ran `./gradlew build` on uncommitted code, which rewrote
   alpha.173's jar in `build/libs` with it. Nothing was handed out (the desktop drive was not mounted); I rebuilt
   alpha.173 from its own commit in a scratch worktree and put that jar back, checked by its plume class.
-- The autopilot's settings screen offers a rocket the airliner's heading and circle modes; she ignores them and comes
-  back down where she rose (her screens now say RETURN, N54). Hiding them for a rocket wants the screen laid out
-  again, so I left it for you.
+- The autopilot's settings screen offers a rocket without a pin the airliner's heading dial and circle tiles; she
+  ignores them and comes back down where she rose (her screens now say RETURN, N54). With a pin, the circle tile and
+  the land switch are gone for her (since 04:09); hiding the dial too wants the screen laid out again, so I left it
+  for you.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
