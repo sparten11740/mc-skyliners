@@ -30,7 +30,7 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
   pin, and six code reviews' findings.
 
-The last version tonight is alpha.181.
+The last version tonight is alpha.181; the morning's, alpha.187.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -126,6 +126,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N80 | 10:40 | Every item on its own (**Jan**: placeable outside the rocket, nothing glitchy) | All 181 block items put down one by one on bare ground as a player would and photographed close up; hanging pieces (pendant light, gym rings, disco ball, girder decorations) now go up only under something to hang from, wall pieces (wall washer, hoop, exit sign, shaft decorations) only on a wall, the overhead WC sign on a wall or a ceiling | 172 placed on the floor at first, the seven wall pieces on a wall; the glitches were cables and fans standing over bare floor | Lead |
 | N81 | 10:50 | The decorations merged | Shaft and girder decorations per room, from the two agents; seen in every room of a fresh rocket | 426 and 104 blocks at scale 2 | Lead |
 | N82 | 10:55 | One light (**Jan**: merge the halo light and the wall light, with a ground version) | The Halo Light hangs as a ring under a ceiling, is a wall washer on a wall and a new floor light on the ground; warm, night blue or pink, switched by use with a click; the Wall Washer item gone | Seen in game: all three placed by the one item, the tone cycling | Lead |
+| N83 | 11:15 | Review of the decorations and the one light | Fixed: old Wall Washer stacks load as Halo Lights (the item's old id an alias); lights and wall pieces fixed only to a block that holds them, the nearest way the player looks first, so none stands out from a tuft of grass, and the Halo Light hangs under a light cable; each girder decoration sounds and breaks as what it is made of | Seen in game: the old id given as three Halo Lights; the light aimed at grass from the side standing on the ground as a floor light; one hung under a cable | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -240,7 +241,10 @@ Commits on main, newest last, with the versions handed out.
 - alpha.185 (29 October, 09:30): the catch-up review's fixes (N72, N73), the club (N74), the towels (N75). Copied to the
   desktop at 09:31 in place of alpha.157, once the game there had closed.
 - alpha.186 (10:05): the lift tinted and its corner girders (N76), the ceiling girders to the wall (N77), the reviews'
-  fixes (N78). Waiting to be copied to the desktop, which was off the network.
+  fixes (N78). Never copied: the desktop stayed off the network.
+- alpha.187 (11:17): the decorations on the shaft and the girders (N79, N81), every item placeable on its own (N80),
+  the one Halo Light with its floor light (N82), the review's fixes (N83). Waiting to be copied to the desktop, still
+  off the network, in place of alpha.185.
 
 ## Background agents
 
