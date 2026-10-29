@@ -33,9 +33,9 @@ import org.joml.Vector3d;
  * it. Its head turns toward whoever is nearest (see {@link #look}) and its visor blinks now and then, twice in a row
  * now and again. Told of a sale (see {@link RobotBartenderBlockEntity#servedAt}), it holds the glass out over the bar,
  * shakes a cocktail shaker over its shoulder for a second and a half, tips it over the glass to pour, the glass
- * filling, sets the drink down on the bar in front of it, where it stands a few seconds, and goes back to polishing
- * with a fresh glass. Each arm is held as an {@link Arm} at each step, and between steps it moves smoothly from one to
- * the next.
+ * filling, sets the drink down on the bar in front of it, where it stands a few seconds, even as the next sale is
+ * served, and goes back to polishing with a fresh glass. Each arm is held as an {@link Arm} at each step, and between
+ * steps it moves smoothly from one to the next.
  */
 public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartenderBlockEntity> {
     /**
@@ -187,7 +187,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         pose.popPose();
         arm(north, Side.LEFT, moves.left(), moves.leftHolds(), 0, 0, pose, buffers, light);
         arm(north, Side.RIGHT, moves.right(), moves.rightHolds(), moves.lean(), moves.roll(), pose, buffers, light);
-        if (moves.onTheBar()) {
+        if (moves.onTheBar() || onTheBar(time - bartender.servedBefore())) {
             pose.pushPose();
             toHand(Side.LEFT, LEFT_SETTING_DOWN, pose);
             upright(Side.LEFT, LEFT_SETTING_DOWN, 0, 0, pose);
@@ -257,7 +257,7 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
     private static Moves moves(float time, float age) {
         float circle = time * POLISH_SPEED;
         Arm polishing = RIGHT_POLISHING.plus(0, POLISH_CIRCLE * Mth.sin(circle), POLISH_CIRCLE * Mth.cos(circle));
-        boolean onTheBar = age >= LET_GO && age < ON_THE_BAR;
+        boolean onTheBar = onTheBar(age);
         if (age < 0 || age >= SERVED) {
             return new Moves(LEFT_POLISHING, polishing, RobotBartenderBlock.Part.GLASS, RobotBartenderBlock.Part.CLOTH, 0, 0, onTheBar);
         }
@@ -283,6 +283,11 @@ public class RobotBartenderRenderer implements BlockEntityRenderer<RobotBartende
         float into = eased((age - LET_GO) / (SERVED - LET_GO));
         return new Moves(LEFT_SETTING_DOWN.toward(LEFT_POLISHING, into), RIGHT_LOWERED.toward(polishing, into), null, RobotBartenderBlock.Part.CLOTH, 0, 0,
             onTheBar);
+    }
+
+    /** Whether the drink of a serve begun this many ticks ago stands on the bar: set down and not yet taken. */
+    private static boolean onTheBar(float age) {
+        return age >= LET_GO && age < ON_THE_BAR;
     }
 
     /** A share of the way from one pose to the next, eased in and out so it starts and stops gently; 1 past the end. */

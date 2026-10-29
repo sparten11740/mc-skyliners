@@ -13,11 +13,11 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The robot bartender's moves, in its lower block (see {@link RobotBartenderBlock}). On the server: when it last began
- * serving, so that one serve plays out before the next begins. On the client, for its renderer: when it began serving,
- * told by a block event, which way its head is turned and whom it is looking at. Each client tick it is handed to
- * {@link #clientTicker}, which the client sets (to turn its head toward whoever is nearest, see the client's
- * RobotBartenderRenderer) so this class stays safe to load on a dedicated server. Nothing is saved: a bartender that
- * comes into sight is polishing a glass.
+ * serving, so that one serve plays out before the next begins. On the client, for its renderer: when it began serving
+ * and the time before, told by block events, which way its head is turned and whom it is looking at. Each client tick
+ * it is handed to {@link #clientTicker}, which the client sets (to turn its head toward whoever is nearest, see the
+ * client's RobotBartenderRenderer) so this class stays safe to load on a dedicated server. Nothing is saved: a
+ * bartender that comes into sight is polishing a glass.
  */
 public class RobotBartenderBlockEntity extends BlockEntity {
     /** Set by the client: each tick, the bartender in sight. */
@@ -37,6 +37,11 @@ public class RobotBartenderBlockEntity extends BlockEntity {
 
     /** When it last began serving, in game ticks: on the server and, as told, on the client. */
     private long servedAt = NEVER;
+    /**
+     * When it began the serve before that, as told on the client: that drink may still stand on the bar while it
+     * serves the next, a sale coming before the drink is taken.
+     */
+    private long servedBefore = NEVER;
     /**
      * How far its head is turned, now and a tick ago, in degrees: to its left of straight ahead, and up; and the
      * player it is looking at, if any. Only ever set on the client.
@@ -73,6 +78,7 @@ public class RobotBartenderBlockEntity extends BlockEntity {
             return super.triggerEvent(id, param);
         }
         if (level != null) {
+            servedBefore = servedAt;
             servedAt = level.getGameTime();
         }
         return true;
@@ -81,6 +87,11 @@ public class RobotBartenderBlockEntity extends BlockEntity {
     /** When it last began serving, in game ticks; long ago if it has not since it came into sight. */
     public long servedAt() {
         return servedAt;
+    }
+
+    /** When it began the serve before the last, in game ticks; long ago if it has not. */
+    public long servedBefore() {
+        return servedBefore;
     }
 
     /** Ticks it on the client: its head's turn a tick ago is kept for drawing between ticks, then it looks about. */
