@@ -27,7 +27,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * are (see {@link EngineSounds}), louder and higher the harder they push, and heard far across the ground. As her
  * engines light at lift-off, their ignition, the loop rising in under it; as they stop, their cut-off, the loop dying
  * away into it; and stopping as she lands, her touchdown on her fins with it. Aboard her, all of it comes through her
- * hull instead, muffled and quieter, round the listener wherever they stand in her.
+ * hull instead, muffled and quieter, round the listener wherever they stand in her, and her engines lighting shakes
+ * their view (see {@link CameraShake}).
  */
 public final class RocketRoar {
     /** What each rocket's engines were last heard doing, until her autopilot goes away. */

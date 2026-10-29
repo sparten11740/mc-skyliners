@@ -4195,21 +4195,23 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 0, 32, 32);
 }
 
-// The rocket's lift (see LiftMachineBlockEntity). Its machine's housing: dark brushed steel with a vent grille across
-// it and bolts at its corners. Its landing doors: a pane of smoked glass in a brushed steel frame, the frame along the
+// The rocket's lift (see LiftMachineBlockEntity). Its machine's housing: brushed steel banded with hazard stripes,
+// bolted at its corners. Its landing doors: a pane of smoked glass in a brushed steel frame, the frame along the
 // lower half's foot and the upper half's head and up both their sides, so the two read as one tall door. Its picture
-// boards' casing, a near-black. And the boards' icons, white on clear, one for each of her rooms and two arrows: a
-// doorway, a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, her nose, up and down.
+// boards' fronts, a near-black under what they show, and the backs they share with her LED panels, brushed steel in a
+// darker frame. And the boards' icons, white on clear, one for each of her rooms and two arrows: a doorway, a crate, a
+// fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, her nose, up and down.
 {
   const STEEL = [0x4a, 0x50, 0x58];
   const STEEL_LIGHT = [0x9a, 0xa3, 0xad];
   const STEEL_DARK = [0x2a, 0x2e, 0x33];
   const PANE = [0x14, 0x16, 0x1a, 0x90];
-  // The lift's machine: a casing of brushed steel round a band of hazard stripes, its corners bolted.
+  // Brushed steel, its grain running across in short strokes.
   const BRUSHED = (x, y) => {
     const v = 0xa4 + ((y * 7 + (x >> 2) * 3) % 5) * 4;
     return [v - 6, v, v + 6];
   };
+  // The lift's machine: a casing of brushed steel round a band of hazard stripes, its corners bolted.
   texture(blockOutput, "lift_machine", (x, y) => {
     if (x === 0 || y === 0 || x === 15 || y === 15) return STEEL;
     if ((x === 2 || x === 13) && (y === 2 || y === 13)) return STEEL_DARK;

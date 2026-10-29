@@ -7,7 +7,8 @@ import net.minecraft.world.item.DyeColor;
 /**
  * The entry story, where the front door lets the crew in: a parachute rack either side of the way in from the door,
  * for anyone who would rather leave her in flight; a run of crew lockers along her sides, to change into a flight suit,
- * a space helmet in each; and a pair of armchairs either side at her back, to wait in for the lift.
+ * a space helmet in each; a pair of red armchairs either side at her back, to wait in for the lift; and lanterns
+ * hanging round the shaft.
  */
 final class RocketEntry extends RocketRoom {
     /** Her entry story, from the bottom up. */
@@ -18,8 +19,6 @@ final class RocketEntry extends RocketRoom {
     private static final double RACKS = 24;
     /** The runs of lockers along her sides, from and to how far round from her front, in degrees. */
     private static final double[][] LOCKERS = {{48, 72}, {288, 312}};
-    /** How far out from her axis the lamps hanging at the four diagonals round her shaft are, in blocks. */
-    private static final double LAMPS_OUT = 5.5;
     /** How far round from her front the armchairs at her back are, in degrees. */
     private static final double[] SEATS = {140, 150, 210, 220};
 
@@ -41,8 +40,6 @@ final class RocketEntry extends RocketRoom {
         for (double round : SEATS) {
             seat(across(out, round), y, along(out, round), inward(round), DyeColor.RED);
         }
-        for (double round = 45; round < 360; round += 90) {
-            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
-        }
+        lanternsRoundShaft();
     }
 }

@@ -9,8 +9,9 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 
 /**
  * The bunk room: bunk beds two high against her skin between the windows, a pair at each of the four diagonals, their
- * reading lights on and their blankets each in a colour of their own; and crew lockers either side of the way out
- * and of the back window, one for each bunk's sleeper, a space helmet in each.
+ * reading lights on, their blankets each in a colour of their own and a soul lantern hanging over each pair, as dim as
+ * a night light; and crew lockers either side of the way out and of the back window, one for each bunk's sleeper, a
+ * space helmet in each.
  */
 final class RocketBunks extends RocketRoom {
     /** Her bunk room's story, from the entry story up. */

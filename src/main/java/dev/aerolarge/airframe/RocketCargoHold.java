@@ -11,8 +11,9 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Her cargo bay's load, round its front and sides, well clear of her rover's cradle and its way out at her back (see
  * {@link RocketRoverBay}): a pair of the airliner's baggage containers either side of the way in from the lift, their
- * doors facing in, and care-package crates stacked two high either side of the side windows, ready to be packed and
- * dropped. Laid after the rover's bay, so nothing of it stands where the bay has put anything.
+ * doors facing in, care-package crates stacked two high either side of the side windows, ready to be packed and
+ * dropped, and lanterns hanging round the shaft. Laid after the rover's bay, so nothing of it stands where the bay has
+ * put anything.
  */
 final class RocketCargoHold extends RocketRoom {
     /** Her cargo bay's story, from the entry story up. */
@@ -23,8 +24,6 @@ final class RocketCargoHold extends RocketRoom {
     /** How far round from her front the containers and the crates' stacks stand, in degrees: none toward her back. */
     private static final double[] CONTAINERS = {42, 318};
     private static final double[] CRATES = {56, 64, 124, 236, 296, 304};
-    /** How far out from her axis the lamps hanging at the four diagonals round her shaft are, in blocks. */
-    private static final double LAMPS_OUT = 5.5;
     /** How many crates a stack is. */
     private static final int STACKED = 2;
 
@@ -40,9 +39,7 @@ final class RocketCargoHold extends RocketRoom {
             double round = CONTAINERS[k];
             container(new BlockPos(across(out, round), y, along(out, round)), inward(round), k);
         }
-        for (double round = 45; round < 360; round += 90) {
-            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
-        }
+        lanternsRoundShaft();
         double crates = wall() - CRATES_IN;
         for (double round : CRATES) {
             BlockState crate = AerolargeRegistry.CARGO_CRATE.get().defaultBlockState().setValue(CargoCrateBlock.FACING, inward(round));

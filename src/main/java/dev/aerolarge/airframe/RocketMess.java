@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The galley and mess: the galley's units in a curve round her back wall either side of its window, worktops and
  * stowage, an oven in the middle of each run and a coffee machine at its end, facing in; and round the room's front
- * and sides four tables, two by the side windows, an armchair either side of each.
+ * and sides four tables, two by the side windows, an armchair either side of each and a lantern hanging over it.
  */
 final class RocketMess extends RocketRoom {
     /** Her galley and mess's story, from the entry story up. */

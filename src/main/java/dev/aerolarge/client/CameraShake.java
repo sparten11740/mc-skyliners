@@ -16,7 +16,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * dropping away and swinging back as it falls into an air pocket (the server says when, see
  * {@link dev.aerolarge.cabin.Turbulence} and {@link dev.aerolarge.cabin.AirPockets}). Only for the player riding it, only from the camera (nothing in
  * the world moves), and off with the client setting "cameraShake". An airliner blowing up shakes the view of everyone
- * near, aboard or not (see {@link BlastFlash}).
+ * near, aboard or not (see {@link BlastFlash}); a rocket's engines lighting shakes it as rough air does, for those
+ * aboard her (see {@link RocketRoar}).
  */
 public final class CameraShake {
     /** The rumble's strength on the runway at full speed, and the speed (blocks a second) it reaches it at. */
@@ -99,7 +100,10 @@ public final class CameraShake {
         blastTicks = 0;
     }
 
-    /** The airliner the player rides has run into rough air, this rough (up to 1 in clear skies), for this many ticks. */
+    /**
+     * The airliner the player rides has run into rough air, this rough (up to 1 in clear skies), for this many ticks; or
+     * the rocket they ride has lit her engines.
+     */
     public static void turbulence(float strength, int ticks) {
         roughStrength = strength;
         roughLeft = ticks;

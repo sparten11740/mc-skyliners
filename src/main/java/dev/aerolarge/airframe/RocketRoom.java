@@ -10,10 +10,10 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChainBlock;
 import net.minecraft.world.level.block.LanternBlock;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,6 +43,8 @@ abstract class RocketRoom implements RocketPiece {
     private static final int WAY_OUT_HALF = 1;
     /** How many rows over the floor a pendant lamp hangs, on its chain down from the ceiling: well over a head. */
     private static final int LAMP_UP = 5;
+    /** How far out from her axis the lanterns hanging at the four diagonals round her shaft are, in blocks. */
+    private static final double LAMPS_OUT = 5.5;
     /** A lantern and a soul lantern hanging from a chain, and a link of the chain. */
     protected static final BlockState LANTERN = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
     protected static final BlockState SOUL_LANTERN = Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
@@ -139,6 +141,13 @@ abstract class RocketRoom implements RocketPiece {
         layout.set(x, lowest, z, lamp);
         for (int y = lowest + 1; y <= top(); y++) {
             layout.set(x, y, z, CHAIN);
+        }
+    }
+
+    /** Lanterns hanging at the four diagonals round her shaft, just out from the walkway's corners. */
+    protected void lanternsRoundShaft() {
+        for (double round = 45; round < 360; round += 90) {
+            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
         }
     }
 

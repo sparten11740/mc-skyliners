@@ -14,7 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * The techno club: its floor laid all over with the dance floor's black glass tiles round the shaft, speaker stacks
  * two high at the four diagonals facing in, a disco ball over each quarter of the floor, and behind the shaft at her
  * back the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor; along her left side, a bar
- * curving round the window there, stools before it.
+ * curving round the window there, stools before it; and its windows built at their darkest, so daylight does not wash
+ * out the dance floor.
  */
 final class RocketClub extends RocketRoom {
     /** Her techno club's story, from the entry story up. */
