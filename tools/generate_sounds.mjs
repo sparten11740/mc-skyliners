@@ -2679,6 +2679,31 @@ function waveMachineSounds() {
 }
 waveMachineSounds();
 
+// The club's fog machine (see FogMachineBlock), with a random sequence of its own so the sounds round it are unchanged:
+// five seconds, as long as it pumps. A burst of pressurised hiss as its valve opens, settling into a steady bright jet
+// over a broad rush, its pump sputtering under it several times a second, and a sigh as the valve closes.
+function fogMachineSounds() {
+  const own = ownRandom(0x466f6767);
+  const SECONDS = 5;
+  const samples = new Float64Array(SECONDS * RATE);
+  const air = Float64Array.from({ length: samples.length }, () => own() * 2 - 1);
+  const jet = resonance(air, 4200, 1.8);
+  const rush = resonance(air, 1300, 0.6);
+  const SPUTTER = 7;
+  let phase = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const burst = 1 + 0.8 * Math.exp(-t / 0.15);
+    const envelope = Math.min(1, t / 0.03) * Math.min(1, (SECONDS - t) / 0.4);
+    const sputter = 0.75 + 0.25 * Math.sin(2 * Math.PI * SPUTTER * t) ** 2;
+    phase += (2 * Math.PI * 70) / RATE;
+    const pump = Math.max(0, Math.sin(2 * Math.PI * SPUTTER * t)) * Math.sin(phase);
+    samples[i] = envelope * (burst * sputter * (0.9 * jet[i] + 0.6 * rush[i]) + 0.25 * pump);
+  }
+  writeSound("fog_hiss", samples, 0.7);
+}
+fogMachineSounds();
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

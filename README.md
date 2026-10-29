@@ -1918,8 +1918,11 @@ for ten seconds the whole channel churns with splashes and bubbles to the sound 
 stand in them: the air through the greenhouse's leaves over a trickle of irrigation, a bee now and then buzzing past,
 and the pool's water lapping in its tiled hall, now and then slapping against its side (the client setting
 `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass tiles all over its floor, speaker
-stacks at the diagonals, four disco balls and the DJ deck behind the shaft playing the whole room. Along her left side a
-bar curves round the window there, its counter parting the bar from the floor, stools before it and the back bar's lit
+stacks at the diagonals, four disco balls and the DJ deck behind the shaft playing the whole room. Beside the deck sits
+the Fog Machine, a black flight case, its little light green: press it and it hisses and pumps a stream of thick fog out
+of its glowing nozzle for five seconds, the fog rolling out over the floor behind the shaft and hanging in the disco
+balls' light; then its light turns amber while it heats up again, and a beep says when it is ready. Along her left side
+a bar curves round the window there, its counter parting the bar from the floor, stools before it and the back bar's lit
 shelves of bottles behind it; at the front right is a booth, purple and magenta armchairs round a low table, walled off
 from the way in by shelves of records; and at the front left, by the bar's end, a coat corner of lockers, a Space Helmet
 in each. Its windows are built at their darkest, so daylight does not wash out the floor's colours. The observation

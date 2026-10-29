@@ -99,6 +99,8 @@ import dev.aerolarge.block.FlightMapBlockEntity;
 import dev.aerolarge.block.FlightStripBoardBlock;
 import dev.aerolarge.block.FlightStripBoardBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
+import dev.aerolarge.block.FogMachineBlock;
+import dev.aerolarge.block.FogMachineBlockEntity;
 import dev.aerolarge.block.GalleyBlock;
 import dev.aerolarge.block.GalleyFridgeBlock;
 import dev.aerolarge.block.GalleyFridgeBlockEntity;
@@ -2235,6 +2237,13 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WaveMachineBlockEntity>> WAVE_MACHINE_ENTITY =
         BLOCK_ENTITIES.register("wave_machine", () -> BlockEntityType.Builder.of(WaveMachineBlockEntity::new, WAVE_MACHINE.get()).build(null));
     public static final DeferredHolder<SoundEvent, SoundEvent> WAVE_SURGE = sound("wave_surge");
+    /** The club's fog machine, its nozzle glowing as it pumps, the block entity that draws its fog, and its hiss. */
+    public static final DeferredBlock<FogMachineBlock> FOG_MACHINE = BLOCKS.registerBlock(
+        "fog_machine", FogMachineBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion().noLootTable().lightLevel(FogMachineBlock::glow)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FogMachineBlockEntity>> FOG_MACHINE_ENTITY =
+        BLOCK_ENTITIES.register("fog_machine", () -> BlockEntityType.Builder.of(FogMachineBlockEntity::new, FOG_MACHINE.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> FOG_HISS = sound("fog_hiss");
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired

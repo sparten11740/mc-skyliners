@@ -1226,6 +1226,14 @@
       }
     ]
   },
+  "fog_hiss": {
+    "subtitle": "subtitles.aerolarge.fog_hiss",
+    "sounds": [
+      {
+        "name": "aerolarge:fog_hiss"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

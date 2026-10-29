@@ -5868,4 +5868,25 @@ function waveMachineTextures() {
 }
 waveMachineTextures();
 
+// The club's fog machine (see fogMachine in generate_resources.mjs): its black flight case, aluminium round its edges
+// and a ball corner at each; its aluminium handle; its chrome nozzle, a dark ring of a mouth, or that ring glowing white
+// as it pumps; and its little light, green, white or amber.
+function fogMachineTextures() {
+  const ALUMINIUM = [0xb4, 0xba, 0xc2];
+  texture(blockOutput, "fog_case", (x, y) => {
+    const edge = x === 0 || x === 15 || y === 0 || y === 15;
+    if (edge && (x === 0 || x === 15) && (y === 0 || y === 15)) return [0xe0, 0xe4, 0xe8];
+    return edge ? ALUMINIUM : (x + 2 * y) % 7 === 0 ? [0x24, 0x25, 0x28] : [0x18, 0x19, 0x1b];
+  }, 2);
+  texture(blockOutput, "fog_trim", () => ALUMINIUM, 2);
+  texture(blockOutput, "fog_nozzle", (x, y) => (y % 4 === 0 ? [0xe8, 0xec, 0xf0] : [0xa8, 0xb0, 0xb8]), 1);
+  const ring = (x, y) => Math.abs(Math.hypot(x - 7.5, y - 7.5) - 4.5) < 1.5;
+  texture(blockOutput, "fog_mouth", (x, y) => (ring(x, y) ? [0x1a, 0x1b, 0x1e] : [0xa8, 0xb0, 0xb8]), 1);
+  texture(blockOutput, "fog_mouth_hot", (x, y) => (ring(x, y) ? [0xf8, 0xf4, 0xff] : Math.hypot(x - 7.5, y - 7.5) < 3 ? [0xd8, 0xd0, 0xf0] : [0xa8, 0xb0, 0xb8]), 1);
+  texture(blockOutput, "fog_light_ready", () => [0x40, 0xf0, 0x70], 0);
+  texture(blockOutput, "fog_light_fogging", () => [0xf8, 0xf8, 0xff], 0);
+  texture(blockOutput, "fog_light_heating", () => [0xf8, 0xa8, 0x28], 0);
+}
+fogMachineTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

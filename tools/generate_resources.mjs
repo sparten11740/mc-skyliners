@@ -1421,6 +1421,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, parcelScannerSounds());
   Object.assign(sounds, galleyFridgeSounds());
   Object.assign(sounds, waveMachineSounds());
+  Object.assign(sounds, fogMachineSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4905,6 +4906,50 @@ function waveMachineLang() {
     "subtitles.aerolarge.wave_surge": "Waves surge",
   };
 }
+// The club's fog machine (see FogMachineBlock), drawn facing north: a black flight case on the floor, a handle on its
+// top and a little light by it, and a chrome nozzle out of its front. One model for each way it stands: its light green
+// ready, white as it pumps, its nozzle's mouth glowing too, and amber as it heats up; the light glows whatever the light
+// around.
+function fogMachine() {
+  const block = (name) => `${ID}:block/${name}`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  for (const fog of ["ready", "fogging", "heating"]) {
+    const nozzle = solid([6.5, 2, 1], [9.5, 5, 3], "#nozzle");
+    nozzle.faces.north = { texture: fog === "fogging" ? "#hot" : "#mouth", ...(fog === "fogging" ? lit : {}) };
+    write(`assets/${ID}/models/block/fog_machine_${fog}.json`, {
+      parent: "minecraft:block/block",
+      textures: { case: block("fog_case"), trim: block("fog_trim"), nozzle: block("fog_nozzle"), mouth: block("fog_mouth"), hot: block("fog_mouth_hot"),
+        light: block(`fog_light_${fog}`), particle: block("fog_case") },
+      elements: [
+        solid([2, 0, 3], [14, 7, 15], "#case"),
+        solid([6, 7, 8], [10, 8.5, 9.5], "#trim"),
+        nozzle,
+        { from: [11, 7, 4], to: [12.5, 7.5, 5.5], shade: false,
+          faces: Object.fromEntries(["north", "south", "east", "west", "up"].map((face) => [face, { texture: "#light", ...lit }])) },
+      ],
+    });
+  }
+  write(`assets/${ID}/blockstates/fog_machine.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ready", "fogging", "heating"].map((fog) =>
+      [`facing=${facing},fog=${fog}`, { model: `${ID}:block/fog_machine_${fog}`, y }]))),
+  });
+  cubes.fog_machine = null;
+}
+fogMachine();
+// The fog machine is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function fogMachineFittings() {
+  return ["fog_machine"];
+}
+// Its hiss as it pumps fog, its pump sputtering under it (see tools/generate_sounds.mjs).
+function fogMachineSounds() {
+  return { fog_hiss: { subtitle: `subtitles.${ID}.fog_hiss`, sounds: [{ name: `${ID}:fog_hiss` }] } };
+}
+function fogMachineLang() {
+  return {
+    "block.aerolarge.fog_machine": "Fog Machine",
+    "subtitles.aerolarge.fog_hiss": "Fog machine hisses",
+  };
+}
 function parcelScannerLang() {
   return {
     "block.aerolarge.parcel_scanner": "Parcel Scanner",
@@ -7295,6 +7340,7 @@ FITTINGS.push(...airlockPanelFittings());
 FITTINGS.push(...parcelScannerFittings());
 FITTINGS.push(...galleyFridgeFittings());
 FITTINGS.push(...waveMachineFittings());
+FITTINGS.push(...fogMachineFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -8046,6 +8092,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...parcelScannerLang(),
   ...galleyFridgeLang(),
   ...waveMachineLang(),
+  ...fogMachineLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

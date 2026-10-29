@@ -3,6 +3,7 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BarCounterBlock;
 import dev.aerolarge.block.DisplayShelfBlock;
+import dev.aerolarge.block.FogMachineBlock;
 import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.ShelfUnitBlock;
 import dev.aerolarge.block.SpeakerBlock;
@@ -18,11 +19,12 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The techno club: its floor laid all over with the dance floor's black glass tiles round the shaft, speaker stacks
  * two high at the four diagonals facing in, a disco ball over each quarter of the floor, and behind the shaft at her
- * back the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor. Along her left side a bar curves
- * round the window there, its counter parting the bar from the floor, stools before it and the back bar's lit shelves
- * of bottles behind it either side of the window. At her front right a booth: armchairs round a low table, walled off
- * from the way in by shelves of records; at her front left, by the bar's end, a coat corner of lockers. Its windows are
- * built at their darkest, so daylight does not wash out the dance floor.
+ * back the DJ deck that plays the room (see {@link TechnoDeckBlock}), facing the floor, the fog machine beside it (see
+ * {@link FogMachineBlock}). Along her left side a bar curves round the window there, its counter parting the bar from
+ * the floor, stools before it and the back bar's lit shelves of bottles behind it either side of the window. At her
+ * front right a booth: armchairs round a low table, walled off from the way in by shelves of records; at her front left,
+ * by the bar's end, a coat corner of lockers. Its windows are built at their darkest, so daylight does not wash out the
+ * dance floor.
  */
 final class RocketClub extends RocketRoom {
     /** Her techno club's story, from the entry story up. */
@@ -41,6 +43,11 @@ final class RocketClub extends RocketRoom {
     /** From and to how far round from her front the coat corner's lockers run, in degrees, past the bar's end. */
     private static final double COATS_FROM = 308;
     private static final double COATS_TO = 340;
+    /**
+     * How far to her right of the DJ deck the fog machine stands, in blocks, its nozzle out along the floor behind the
+     * shaft.
+     */
+    private static final int FOG_ACROSS = 2;
     /** How far out toward her side from the booth's table its wall of records stands, in blocks, and how high. */
     private static final int BOOTH_WALL = 2;
     private static final int RECORDS_HIGH = 2;
@@ -65,6 +72,7 @@ final class RocketClub extends RocketRoom {
         }
         bar(y);
         deck(new BlockPos(0, y, (int) Math.round(DECK_OUT)));
+        put(FOG_ACROSS, y, (int) Math.round(DECK_OUT), AerolargeRegistry.FOG_MACHINE.get().defaultBlockState().setValue(FogMachineBlock.FACING, Direction.EAST));
         booth(RocketQuarter.FRONT_RIGHT, y, random);
         coats(y);
         darken();
