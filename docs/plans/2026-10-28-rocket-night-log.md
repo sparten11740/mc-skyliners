@@ -28,7 +28,7 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
-  pin, and five code reviews' findings.
+  pin, and four code reviews' findings.
 
 The last version tonight is alpha.178.
 
@@ -100,7 +100,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N54 | 03:55 | A rocket's autopilot naming its mode | "over to the pin and down on it" or "and back down where she rose" in chat, TO PIN or RETURN on her screens, in place of the airliner's "circling it, radius 225" and "heading 000" | Found on the final play-test: a rocket circles nothing | Lead |
 | N55 | 04:08 | The deck's lower ceiling at scales 3 and 4 | It now reaches her skin all round (it stopped a block short at the four ways, holes up into the sealed space) and the deck's ceiling ring of strips hangs under it, not under the cockpit's floor over it | Found checking N53 at scale 3 | Lead |
 | N56 | 04:25 | Rooms heard (fourth panel) | Yes, two rooms: the greenhouse (air through the leaves, a trickle, a drip, and now and then a bee buzzing past) and the pool (water lapping in a tiled hall, and now and then a slap), each swelling in as you step into its room, over 150 Hz to stay clear of the lift's hum, client `roomAmbience` on by default; the galley left for another night (a fridge hum would sit on the lift's), the bunks and the deck quiet on purpose, the club and the lab already heard | The sound tells a child which floor they stepped out on, matching the lift board's icons; panel (children's designer, tech lead, audio designer) | Panel, lead |
-| N57 | 04:50 | Fifth code review (of the rooms' sounds) | Fixed: a loop the game let go of (a portal, a resource reload, rejoining) left its room silent for the session; swimmers in the pool heard the greenhouse; the next bee or slap was due by another world's time; around a rocket not yet flown, standing outside her skin heard the room; her rooms are now also heard before her first flight | Independent review agent; each fix heard in game | Review, lead |
+| N57 | 04:50 | Fourth code review (of the rooms' sounds) | Fixed: a loop the game let go of (a portal, a resource reload, rejoining) left its room silent for the session; swimmers in the pool heard the greenhouse; the next bee or slap was due by another world's time; around a rocket not yet flown, standing outside her skin heard the room; her rooms are now also heard before her first flight | Independent review agent; each fix heard in game | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -199,7 +199,7 @@ Commits on main, newest last, with the versions handed out.
   her lift-off fire by night (a glowing bed of flames and embers, no strobe); the deck by night at y 1,200 (stars
   through the band, the planetarium over it); the world quit and reloaded while she climbed through y 350 with me
   aboard (she carried on climbing, held at her height and came back down beside where she rose).
-- alpha.178: the fifth review's fixes to the rooms' sounds (N57). Play-tested in a fresh scale-3 rocket never flown:
+- alpha.178: the fourth review's fixes to the rooms' sounds (N57). Play-tested in a fresh scale-3 rocket never flown:
   the greenhouse and the pool heard there, the pool's loop starting again after a resource reload (F3+T), the pool and
   not the greenhouse heard while swimming in it, nothing a few blocks outside her skin at greenhouse height.
 
