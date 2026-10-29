@@ -44,7 +44,10 @@ public record DriveRover(int rover, float forward, float turn, boolean honk) imp
             return;
         }
         rover.drive(player, held(payload.forward()), held(payload.turn()), payload.honk());
-        RoverDrivers.heard(player);
+        // Only a rover on its way to the ground or on it is driven: word for one in its bay or hoisted covers no fall.
+        if (rover.state() == Rover.State.OUT || rover.state() == Rover.State.LOWERING) {
+            RoverDrivers.heard(player);
+        }
     }
 
     /** An input held to its range, from -1 to 1; nothing for one that is not a number. */
