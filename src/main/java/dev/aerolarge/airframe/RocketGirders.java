@@ -1,20 +1,23 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.OvalWindowBlock;
+import dev.aerolarge.block.ShellBlock;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Steel girders under her rooms' ceilings (see {@code AerolargeRegistry.STEEL_GIRDER}), so her rooms show the steel
  * they are built round, as the girders up the corners of her lift shaft do: in every furnished story but the
- * observation deck, under whose starry dome nothing hangs, one out from the shaft along each of the four ways to her
- * skin, in the story's highest row. A girder is laid only where that row is open all the way, short of the block by
- * her skin, which the LED strip along the ceiling takes, so it never ends in the middle of a room at a lamp's cable.
- * Laid once the rooms have their furniture, and before the wall washers, the posters and the LED strips.
+ * observation deck, under whose starry dome nothing hangs, one out from the shaft along each of the four ways right up
+ * to her skin, in the story's highest row, the LED strip along the ceiling running on either side of its end. A girder
+ * is laid only where that row is open all the way, so it never ends in the middle of a room at a lamp's cable. Laid
+ * once the rooms have their furniture, and before the wall washers, the posters and the LED strips.
  */
 final class RocketGirders implements RocketPiece {
     /** The stories with nothing hanging from their ceilings: the observation deck. */
@@ -54,25 +57,24 @@ final class RocketGirders implements RocketPiece {
     }
 
     /**
-     * The blocks a girder takes along a way out from the shaft, in a row: from the shaft's wall out to the last before
-     * the one by her skin; none where something stands in the way before then.
+     * The blocks a girder takes along a way out from the shaft, in a row: from the shaft's wall out to her skin; none
+     * where something stands in the way before then.
      */
     private List<BlockPos> run(Direction way, int y) {
         List<BlockPos> run = new ArrayList<>();
-        BlockPos at = new BlockPos(0, y, 0).relative(way, RocketLayout.SHAFT + 1);
-        while (layout.isOpen(at.getX(), at.getY(), at.getZ())) {
-            BlockPos next = at.relative(way);
-            if (!layout.isOpen(next.getX(), next.getY(), next.getZ())) {
-                return byTheSkin(next) ? run : List.of();
+        for (int out = RocketLayout.SHAFT + 1; out <= layout.reach(); out++) {
+            BlockPos at = new BlockPos(0, y, 0).relative(way, out);
+            if (!layout.isOpen(at.getX(), at.getY(), at.getZ())) {
+                return skin(at) ? run : List.of();
             }
             run.add(at);
-            at = next;
         }
         return List.of();
     }
 
-    /** Whether a block is her skin, where a girder's run ends: her cover, a window or the glass round her cockpit. */
-    private boolean byTheSkin(BlockPos at) {
-        return !layout.inFrom(at.getX(), at.getY(), at.getZ(), 0);
+    /** Whether a block is her skin, where a girder's run ends: her cover cut to her curve or whole, or a window. */
+    private boolean skin(BlockPos at) {
+        Block block = layout.stateAt(at.getX(), at.getY(), at.getZ()).getBlock();
+        return block instanceof ShellBlock || block instanceof OvalWindowBlock;
     }
 }

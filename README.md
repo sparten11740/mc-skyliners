@@ -1866,7 +1866,7 @@ Light).
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
 skin. Under every room's ceiling but the observation deck's, steel girders run out from the shaft along the four ways to
-her skin. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
+her wall. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
 boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
