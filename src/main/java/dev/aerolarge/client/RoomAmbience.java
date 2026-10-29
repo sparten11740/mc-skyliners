@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
@@ -137,8 +138,8 @@ public final class RoomAmbience {
     /** The room of a furnished rocket the player stands in that is heard, null for none. */
     @Nullable
     private static Room roomOf(LocalPlayer player) {
-        AutopilotBlockEntity autopilot = SableClient.autopilot(player);
-        if (autopilot == null || autopilot.craft() != Craft.ROCKET || !autopilot.rocketRooms()) {
+        AutopilotBlockEntity autopilot = rocketAround(player);
+        if (autopilot == null || !autopilot.rocketRooms()) {
             return null;
         }
         int story = storyOf(player, autopilot);
@@ -146,6 +147,25 @@ public final class RoomAmbience {
             return Room.GREENHOUSE;
         }
         return story == RocketSilhouette.POOL_STORY ? Room.POOL : null;
+    }
+
+    /**
+     * The rocket the player is in: the one they ride, or one standing as she was built, before she first flew, her
+     * blocks round them; null for none. An assembled rocket's blocks are in her plot, far from any player.
+     */
+    @Nullable
+    private static AutopilotBlockEntity rocketAround(LocalPlayer player) {
+        AutopilotBlockEntity ridden = SableClient.autopilot(player);
+        if (ridden != null) {
+            return ridden.craft() == Craft.ROCKET ? ridden : null;
+        }
+        for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(player.level())) {
+            BoundingBox frame = autopilot.frame();
+            if (autopilot.craft() == Craft.ROCKET && frame != null && frame.isInside(player.blockPosition())) {
+                return autopilot;
+            }
+        }
+        return null;
     }
 
     /**
