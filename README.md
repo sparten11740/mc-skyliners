@@ -1829,11 +1829,12 @@ there, easing off and in, at up to six blocks a second, while its motor hums; on
 going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an
 electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the
 Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone in
-the doorway or moves with a door open, and no one gets off between floors. While she counts down, flies or lands, it
-stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards; in place of her
-floors they show how high she flies, a little rocket climbing a column of sky in the colours of each height, from the
-sea at its foot to her ceiling, past a dashed line with a star where space begins, stars twinkling over it once she is
-up there (the client config's `heightGauge` keeps her floors on them).
+the doorway or moves with a door open, and no one gets off between floors; while its doors stand open at a floor, sneak
+to step out of it. While she counts down, flies or lands, it stands at a floor with its doors open and takes no rides,
+and an amber bar lies across its boards; in place of her floors they show how high she flies, a little rocket climbing a
+column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed line with a star
+where space begins, stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on
+them).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along

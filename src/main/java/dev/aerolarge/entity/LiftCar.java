@@ -2,6 +2,9 @@ package dev.aerolarge.entity;
 
 import dev.aerolarge.block.LiftMachineBlockEntity;
 import dev.aerolarge.compat.SableFlight;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -60,6 +63,13 @@ public class LiftCar extends Entity {
     /** Where its riders get off, among the ship's blocks, while its machine lets them; null while it may not. */
     @Nullable
     private Vec3 letOffAt;
+    /** Whether its machine is setting a rider down now, which no sneaking stops. */
+    private boolean releasing;
+    /**
+     * The riders who sneaked to get off since its machine last held it, for the machine to set down outside the door if
+     * it stands open: the game forgets a rider's sneak in the tick it is refused.
+     */
+    private final Set<UUID> askedOff = new HashSet<>();
 
     public LiftCar(EntityType<? extends LiftCar> type, Level level) {
         super(type, level);
@@ -88,7 +98,13 @@ public class LiftCar extends Entity {
         entityData.set(MACHINE, machine);
         heldAt = level.getGameTime();
         letOffAt = letOff;
+        askedOff.clear();
         follow();
+    }
+
+    /** Whether a rider sneaked to get off since its machine last held it. */
+    public boolean askedOff(Entity rider) {
+        return askedOff.contains(rider.getUUID());
     }
 
     /** Sets a ride off from where the car stands now to so far under its machine, in blocks, from this tick on. */
@@ -207,13 +223,25 @@ public class LiftCar extends Entity {
     }
 
     /**
-     * No one gets off between floors, by sneaking or otherwise: only at a floor whose door its machine has open, or
-     * when the rider is gone, dead or teleported.
+     * A rider set down by its machine, which then puts them outside the door: the only way off but for the rider
+     * going, dying or being teleported.
+     */
+    public void release(Entity rider) {
+        releasing = true;
+        rider.stopRiding();
+        releasing = false;
+    }
+
+    /**
+     * No one gets off by sneaking, between floors or at one: at a floor whose door is open, its machine sets a sneaking
+     * rider down outside the door itself (see {@link LiftMachineBlockEntity}), as it does its riders as the car comes
+     * in. Left to the game, a rider would be set down in the car, where the doors would shut on them.
      */
     public static void onMount(EntityMountEvent event) {
-        if (event.isDismounting() && event.getEntityBeingMounted() instanceof LiftCar car && car.isAlive() && !car.lettingOff()
+        if (event.isDismounting() && event.getEntityBeingMounted() instanceof LiftCar car && car.isAlive() && !car.releasing
             && !event.getLevel().isClientSide && event.getEntityMounting().isAlive() && event.getEntityMounting().isShiftKeyDown()) {
             event.setCanceled(true);
+            car.askedOff.add(event.getEntityMounting().getUUID());
         }
     }
 

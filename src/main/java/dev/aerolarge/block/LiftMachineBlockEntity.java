@@ -15,6 +15,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -249,6 +250,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
                 }
             }
             case PARKED -> {
+                letSneakersOff(level, running);
                 takeAboard(level, running);
                 if (resting) {
                     target = -1;
@@ -288,10 +290,11 @@ public class LiftMachineBlockEntity extends BlockEntity {
     }
 
     /**
-     * Standing open: whoever steps in is taken aboard; once it has stood long enough, with a floor picked or no one
-     * aboard, and no one in the way, the doors close.
+     * Standing open: whoever steps in is taken aboard and whoever sneaks in it is set down outside; once it has stood
+     * long enough, with a floor picked or no one aboard, and no one in the way, the doors close.
      */
     private void boarding(ServerLevel level, LiftCar running) {
+        letSneakersOff(level, running);
         takeAboard(level, running);
         boolean picked = target >= 0 && target != at;
         if (ticks < lasts || !picked && running.isVehicle() || doorwayTaken(level)) {
@@ -326,14 +329,32 @@ public class LiftMachineBlockEntity extends BlockEntity {
 
     /** Opens the doors at the floor it has come to, letting its riders out there. */
     private void letOff(ServerLevel level, LiftCar running) {
-        Vec3 exit = exitAt(level, at);
         for (Entity rider : List.copyOf(running.getPassengers())) {
-            rider.stopRiding();
-            if (rider instanceof ServerPlayer player) {
-                player.connection.teleport(exit.x, exit.y, exit.z, player.getYRot(), player.getXRot());
-            } else {
-                rider.teleportTo(exit.x, exit.y, exit.z);
+            setDown(level, running, rider);
+        }
+    }
+
+    /** While its doors stand open at a floor, whoever sneaks in the car is set down outside them. */
+    private void letSneakersOff(ServerLevel level, LiftCar running) {
+        for (Entity rider : List.copyOf(running.getPassengers())) {
+            if (running.askedOff(rider)) {
+                setDown(level, running, rider);
             }
+        }
+    }
+
+    /**
+     * A rider off the car and outside the door of the floor it is at. A player is told they are off the car before
+     * they are moved, or their game would ride on a moment and put them back in the car.
+     */
+    private void setDown(ServerLevel level, LiftCar running, Entity rider) {
+        Vec3 exit = exitAt(level, at);
+        running.release(rider);
+        if (rider instanceof ServerPlayer player) {
+            player.connection.send(new ClientboundSetPassengersPacket(running));
+            player.connection.teleport(exit.x, exit.y, exit.z, player.getYRot(), player.getXRot());
+        } else {
+            rider.teleportTo(exit.x, exit.y, exit.z);
         }
     }
 
