@@ -50,4 +50,11 @@ public class FogMachineBlockEntity extends BlockEntity {
                 RISE, facing.getStepZ() * ROLL_SPEED + random.triangle(0, SPREAD));
         }
     }
+
+    /** The server's tick: it stops pumping and heats up in time, even where its scheduled next step was lost. */
+    static void serverTick(Level level, BlockPos pos, BlockState state, FogMachineBlockEntity machine) {
+        if (state.getValue(FogMachineBlock.FOG) != FogMachineBlock.Fog.READY) {
+            LostTicks.resume(level, pos, state);
+        }
+    }
 }

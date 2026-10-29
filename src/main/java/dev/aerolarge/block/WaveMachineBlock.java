@@ -112,10 +112,11 @@ public class WaveMachineBlock extends BaseEntityBlock {
         return new WaveMachineBlockEntity(pos, state);
     }
 
-    /** Only the client has anything to do each tick: the waves' splashes while they run. */
+    /** The waves' splashes on the client while they run; on the server, their end kept to where it was lost. */
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? createTickerHelper(type, AerolargeRegistry.WAVE_MACHINE_ENTITY.get(), WaveMachineBlockEntity::clientTick) : null;
+        return createTickerHelper(type, AerolargeRegistry.WAVE_MACHINE_ENTITY.get(),
+            level.isClientSide ? WaveMachineBlockEntity::clientTick : WaveMachineBlockEntity::serverTick);
     }
 }

@@ -156,10 +156,11 @@ public class FogMachineBlock extends BaseEntityBlock {
         return new FogMachineBlockEntity(pos, state);
     }
 
-    /** Only the client has anything to do each tick: the fog it pumps out. */
+    /** The fog it pumps out, on the client; on the server, its next step kept to where it was lost. */
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? createTickerHelper(type, AerolargeRegistry.FOG_MACHINE_ENTITY.get(), FogMachineBlockEntity::clientTick) : null;
+        return createTickerHelper(type, AerolargeRegistry.FOG_MACHINE_ENTITY.get(),
+            level.isClientSide ? FogMachineBlockEntity::clientTick : FogMachineBlockEntity::serverTick);
     }
 }

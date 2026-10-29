@@ -46,6 +46,13 @@ public class WaveMachineBlockEntity extends BlockEntity {
         }
     }
 
+    /** The server's tick: its waves die down in time, even where their scheduled end was lost. */
+    static void serverTick(Level level, BlockPos pos, BlockState state, WaveMachineBlockEntity machine) {
+        if (state.getValue(WaveMachineBlock.RUNNING)) {
+            LostTicks.resume(level, pos, state);
+        }
+    }
+
     /** Splashes jumping off the water's surface at a block of it, bubbles rising under them, now and then a wake. */
     private static void splash(Level level, BlockPos water, RandomSource random) {
         double x = water.getX() + random.nextDouble();
