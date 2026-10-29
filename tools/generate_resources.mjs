@@ -7510,16 +7510,15 @@ function planterLang() {
     [5.5, 10.25, [["round", "blue"], ["slim", "amber"], ["tall", "clear"], ["square", "green"], ["slim", "red"], ["decanter", "violet"], ["tall", "amber"]]],
     [10.75, 15, [["square", "violet"], ["round", "red"], ["decanter", "clear"], ["round", "green"], ["square", "blue"]]],
   ];
-  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   // A tier: its glass shelf, but on the cabinet's top; the LED strip along the front of its foot; the mirror behind it,
   // its glow drawn from the texture's foot up so that it glows up from the strip; and its row of bottles.
   const tier = ([from, to, row]) => [
     ...(from > 0 ? [furniture([ROW_FROM, from - 0.5, 8], [ROW_FROM + ROW_WIDTH, from, 15], "#glass")] : []),
     furniture([ROW_FROM, Math.max(0, from - 0.5), 7.75], [ROW_FROM + ROW_WIDTH, Math.max(0.5, from), 8], "#led", { south: null }, true),
     furniture([ROW_FROM, from, 14.9], [ROW_FROM + ROW_WIDTH, to, 14.9], "#mirror", {
-      north: { texture: "#mirror", uv: [ROW_FROM, 16 - (to - from), ROW_FROM + ROW_WIDTH, 16], ...lit },
+      north: { texture: "#mirror", uv: [ROW_FROM, 16 - (to - from), ROW_FROM + ROW_WIDTH, 16] },
       south: null, east: null, west: null, up: null, down: null,
-    }),
+    }, true),
     ...bottleRow(from, row),
   ];
   const backBar = {
