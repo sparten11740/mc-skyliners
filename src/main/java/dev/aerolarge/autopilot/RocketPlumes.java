@@ -1,6 +1,7 @@
 package dev.aerolarge.autopilot;
 
 import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.airframe.RocketSilhouette;
 import dev.aerolarge.compat.SableFlight;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -34,9 +35,12 @@ final class RocketPlumes {
     /** How high she must be and how fast falling for her base to glow, in world blocks and blocks a second. */
     private static final double GLOW_FROM = 500;
     private static final double GLOW_FALL = 20;
-    /** How many flames a tick stream up from round her base, and how far out from her axis they start, in blocks. */
-    private static final int FLAMES = 6;
-    private static final double FLAMES_OUT = 6;
+    /**
+     * How many flames a tick stream up from round her base, and how far outside her skin they start, in metres: they
+     * stand in the air where they start as she falls, so they must be clear of her to be seen streaming up her sides.
+     */
+    private static final int FLAMES = 24;
+    private static final double FLAMES_CLEAR = 1;
     /** How far off those who see the particles may be, in blocks: the length of her and more, so all aboard do. */
     private static final double SEEN_WITHIN = 256;
 
@@ -74,11 +78,11 @@ final class RocketPlumes {
         }
     }
 
-    /** Flames round the rim of her base, left standing in the air as she falls, so they stream up behind her. */
+    /** Flames round her foot, just outside her skin, left standing in the air as she falls, streaming up her sides. */
     private static void flames(ServerLevel level, Vec3 foot) {
         for (int flame = 0; flame < FLAMES; flame++) {
             double way = level.getRandom().nextDouble() * Mth.TWO_PI;
-            double out = FLAMES_OUT * AerolargeConfig.SCALE.get() / 2;
+            double out = (RocketSilhouette.body(RocketSilhouette.height() / 2) + FLAMES_CLEAR) * AerolargeConfig.SCALE.get();
             ParticleOptions kind = flame % 3 == 0 ? ParticleTypes.LAVA : ParticleTypes.FLAME;
             send(level, kind, foot.x + Math.cos(way) * out, foot.y, foot.z + Math.sin(way) * out, 0, 0, 0);
         }
