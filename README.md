@@ -1876,7 +1876,7 @@ chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on e
 the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
 bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
 light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
-creative tab after the Lift Glass, hangs a chain hoist; broken, each keeps what it is). The entry story is in two
+creative tab after the Shaft Decoration, hangs a chain hoist; broken, each keeps what it is). The entry story is in two
 halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,

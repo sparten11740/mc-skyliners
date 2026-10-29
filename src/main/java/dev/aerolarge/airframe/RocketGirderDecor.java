@@ -11,11 +11,11 @@ import net.minecraft.core.Direction;
 /**
  * What hangs under the steel girders across her rooms' ceilings (see {@link GirderDecorBlock}), each room's own: in the
  * entry, mission-patch banners every other block; in the cargo bay, a chain hoist every third; in the mess, racks of
- * copper pots and pans two blocks long, a block apart; in the bunk room, warm fairy lights looping the whole way along; in the
- * greenhouse, a hanging basket every third block; at the pool, bunting the whole way along; in the club, spotlights
- * every other block, pink and cyan by turns; and in the lab, a cable tray the whole way along. Each hangs in the block
- * under a girder, touching it face to face, so it is assembled with her, and only where that block is open; nothing is
- * hung right by the shaft, whose glass is left to what is fixed to it. Laid straight after the girders (see
+ * copper pots and pans two blocks long, a block apart; in the bunk room, warm fairy lights looping the whole way along;
+ * in the greenhouse, a hanging basket every third block; at the pool, bunting the whole way along; in the club,
+ * spotlights every other block, pink and cyan by turns; and in the lab, a cable tray the whole way along. Each hangs in
+ * the block under a girder, touching it face to face, so it is assembled with her, and only where that block is open;
+ * nothing is hung right by the shaft, whose glass is left to what is fixed to it. Laid straight after the girders (see
  * {@link RocketGirders}), in a row clear of what is laid after it: the wall washers lower down her wall, the posters on
  * the shaft and the LED strips along her skin under the ceiling.
  */

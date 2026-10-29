@@ -1048,7 +1048,7 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.3F).sound(SoundType.LANTERN).noCollission().noOcclusion()
             .lightLevel(WallLightBlock::light)
     );
-    /** The rocket's halo light, hung on the cable above, warm white or a cool blue night light. */
+    /** The rocket's halo light, hung on the cable above, warm white, a cool blue night light or pink. */
     public static final DeferredBlock<HaloLightBlock> HALO_LIGHT = BLOCKS.registerBlock(
         "halo_light", HaloLightBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.3F).sound(SoundType.GLASS).noOcclusion().lightLevel(HaloLightBlock::light)
