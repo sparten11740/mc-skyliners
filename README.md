@@ -1835,7 +1835,8 @@ telegraph rings for the port engines, on its red plate; they fly a zeppelin only
 
 A rocket standing on four fins, as tall as the airliner is long at the scale the server config sets (145 blocks at the
 default 2) and 20 blocks across, a pointed nose on top with a band of smoked, nearly black glass round the cockpit under
-it, cut to the nose's curve. The Rocket Blueprint builds one just past where it is used, its front, with its door,
+it, cut to the nose's curve, one pane thick and topped inside by a level ring of ceiling. The Rocket Blueprint builds
+one just past where it is used, its front, with its door,
 facing you, and operators with `/aerolarge build <pos> <north|east|south|west> rocket`. It is driven by Create
 Propulsion's creative thrusters, which need no fuel: five bells of them in its flat bottom, their plumes trailing as
 they fire, and two rings of four side jets in its skin, near the nose and near the bottom, that hold it upright. Its

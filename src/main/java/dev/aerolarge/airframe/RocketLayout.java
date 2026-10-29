@@ -68,6 +68,11 @@ public final class RocketLayout implements Layout {
     /** How many rows of the nose's skin over the cockpit's floor are glass, its windows all round. */
     private static final int COCKPIT_GLASS = 7;
     /**
+     * How far in from her surface the ring of ceiling over the cockpit's glass reaches, in blocks: past the first few
+     * steps of the nose's lining, which it hides from under it.
+     */
+    private static final double SOFFIT_REACH = 3;
+    /**
      * The engine bells: thrusters in a plus round each bell's middle, the middle bell under the shaft and one out to
      * each of the four ways, so many metres out from the axis.
      */
@@ -463,7 +468,7 @@ public final class RocketLayout implements Layout {
 
     /**
      * The skin: every block the body's surface passes through, cut to it, over the flat bottom; glass all round the
-     * cockpit in the nose (each story's windows are set in once its floors stand).
+     * cockpit in the nose, one pane thick (each story's windows are set in once its floors stand).
      */
     private void skin() {
         int out = (int) Math.ceil(radius) + 2;
@@ -477,7 +482,7 @@ public final class RocketLayout implements Layout {
     private void skinRow(int x, int y, int out) {
         for (int z = -out; z <= out; z++) {
             int shape = SurfaceCut.shape(surface, x - 0.5, y, z - 0.5);
-            if (shape != ShellGeometry.NONE) {
+            if (shape != ShellGeometry.NONE && !behindGlass(x, y, z, shape)) {
                 set(x, y, z, ShellBlock.withShape(skinAt(y), shape));
             }
         }
@@ -485,8 +490,34 @@ public final class RocketLayout implements Layout {
 
     /** What the skin is made of at a row: smoked glass round the cockpit, cut to the nose's curve, the cover elsewhere. */
     private BlockState skinAt(int y) {
-        return y > noseFoot && y <= noseFoot + COCKPIT_GLASS ? AerolargeRegistry.SMOKED_GLASS.get().defaultBlockState()
-            : AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState();
+        return cockpitGlass(y) ? AerolargeRegistry.SMOKED_GLASS.get().defaultBlockState() : AerolargeRegistry.ZEPPELIN_COVER.get().defaultBlockState();
+    }
+
+    private boolean cockpitGlass(int y) {
+        return y > noseFoot && y <= noseFoot + COCKPIT_GLASS;
+    }
+
+    /**
+     * Whether a whole block of the cockpit's glass stands behind others of her skin, touching the sky on no side, as
+     * where the nose curves in: left out, so the glass is one pane thick there and shows no darker doubled pane. Each
+     * block of her skin beside it keeps its whole side toward it, as every corner it shares with a whole block is
+     * kept, so her skin stays closed.
+     */
+    private boolean behindGlass(int x, int y, int z, int shape) {
+        if (shape != ShellGeometry.WHOLE || !cockpitGlass(y)) {
+            return false;
+        }
+        for (Direction side : Direction.values()) {
+            if (sky(x + side.getStepX(), y + side.getStepY(), z + side.getStepZ())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a block lies wholly outside her surface, in the sky. */
+    private boolean sky(int x, int y, int z) {
+        return SurfaceCut.shape(surface, x - 0.5, y, z - 0.5) == ShellGeometry.NONE && surface.depth(x, y + 0.5, z) > 0;
     }
 
     /**
@@ -740,6 +771,7 @@ public final class RocketLayout implements Layout {
      * either side of it, wired once it stands.
      */
     private void cockpit() {
+        soffit();
         int y = noseFoot + 1;
         int front = frontWall(y);
         head = new BlockPos(0, y, front + HEAD_BACK);
@@ -752,6 +784,24 @@ public final class RocketLayout implements Layout {
                 wire(autopilot, head, rotation);
             }
         });
+    }
+
+    /**
+     * A ring of ceiling round the top of the cockpit's glass, flush with it, from her skin a few blocks in: the glass
+     * meets her hull in one level line, inside and out, rather than under the steps of the nose's lining, and the nose
+     * stays open over the middle of the cockpit. Laid as floor, it is finished as the cockpit's ceiling.
+     */
+    private void soffit() {
+        int y = noseFoot + COCKPIT_GLASS + 1;
+        int out = (int) Math.ceil(radius);
+        int side = 2 * out + 1;
+        for (int i = 0; i < side * side; i++) {
+            int x = i % side - out;
+            int z = i / side - out;
+            if (isOpen(x, y, z) && inFrom(x, y, z, 0) && !inFrom(x, y, z, SOFFIT_REACH)) {
+                set(x, y, z, AerolargeRegistry.CABIN_FLOOR.get().defaultBlockState());
+            }
+        }
     }
 
     /** How far forward the inside of the front wall is at a row, in blocks: the first block a skin's thickness in. */
