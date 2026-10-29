@@ -1812,8 +1812,10 @@ they fire, and two rings of four side jets in its skin, near the nose and near t
 fins are its legs; between them a crew ladder, the pool's chrome ladder up a column beside the door, climbs to a step in
 front of the doorway. Inside, over an engine room, stories stand one above another round a glass lift shaft up the
 middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the front, but on the
-entry story, where the door is, and on the observation deck, which has a band of glass all round instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the
-front between two flight displays. The windows' glass bulges out of the skin in a dome, the sun glinting off it, and
+entry story, where the door is, and on the observation deck, which has a band of glass all round instead), and the
+cockpit sits in the glass of the nose, the autopilot's control head facing the front between two flight displays, two
+pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The windows' glass bulges out
+of the skin in a dome, the sun glinting off it, and
 sits inside in a recess lined with steel; it dims electrically: use one to darken its glass a step, from clear through
 light and medium to dark, and once more to clear it again, a chime falling as it darkens.
 
@@ -2121,7 +2123,7 @@ The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayo
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
-`RocketObservationDeck`); its
+`RocketObservationDeck`, and `RocketPilotSeats` the cockpit's seats); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
