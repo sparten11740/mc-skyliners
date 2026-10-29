@@ -140,6 +140,15 @@ public final class SableFlight {
         return SABLE && blockEntity.getLevel() != null ? Access.rides(entity, blockEntity) : null;
     }
 
+    /**
+     * Whether a point in the world lies inside the hull of the assembled airliner the block entity is part of, as it
+     * lies now, whoever rides it: where a player in the air mid-jump is, whom Sable lets go of until they land; false
+     * when the block entity is not part of an assembled airliner.
+     */
+    public static boolean withinHull(BlockEntity blockEntity, Vec3 point) {
+        return SABLE && blockEntity.getLevel() != null && Access.withinHull(blockEntity, point);
+    }
+
     /** Whether the entity rides any assembled airliner. */
     public static boolean ridesAny(Entity entity) {
         return SABLE && Access.ridesAny(entity);
@@ -560,6 +569,11 @@ public final class SableFlight {
                 return null;
             }
             return airliner == Sable.HELPER.getTrackingOrVehicleSubLevel(entity) || airliner == Sable.HELPER.getContaining(entity);
+        }
+
+        static boolean withinHull(BlockEntity blockEntity, Vec3 point) {
+            SubLevel airliner = Sable.HELPER.getContaining(blockEntity);
+            return airliner != null && hullAround(blockEntity.getLevel(), point) == airliner;
         }
 
         static boolean ridesAny(Entity entity) {
