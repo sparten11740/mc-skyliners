@@ -28,8 +28,6 @@ final class RocketObservationDeck extends RocketRoom {
      * player's size, its story would otherwise rise up into her nose as a tower of bare skin.
      */
     private static final int TALLEST = 16;
-    /** How far in from her surface a block against her skin's inside lies at most, in blocks. */
-    private static final double AGAINST_SKIN = 2;
     /** The band of glass's lowest and highest rows over the floor. */
     private static final int BAND_FROM = 1;
     private static final int BAND_TO = 5;
@@ -112,18 +110,34 @@ final class RocketObservationDeck extends RocketRoom {
     }
 
     /**
-     * The starlight panels up the wall too, over the band of glass to the ceiling, in every open block against her
-     * skin, so that the whole room over the band is a starry dome, a planetarium.
+     * The starlight panels up the wall too, over the band of glass to the ceiling, in every open block from her skin in
+     * to the ceiling's panels, so that the whole room over the band is a starry dome, a planetarium; but for the blocks
+     * against her skin in the story's top row, under the cockpit's floor, where her LED strips run round under it (see
+     * {@link RocketLedStrips}).
      */
     private void starryWall(int highest) {
         int reach = (int) Math.ceil(wall()) + 1;
         BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState().setValue(Brightness.PROPERTY, Brightness.DIM);
         for (BlockPos at : BlockPos.betweenClosed(-reach, floor() + BAND_TO + 1, -reach, reach, highest, reach)) {
-            boolean againstSkin = layout.inside(at.getX(), at.getY(), at.getZ()) && !layout.inFrom(at.getX(), at.getY(), at.getZ(), AGAINST_SKIN);
-            if (againstSkin && layout.isOpen(at.getX(), at.getY(), at.getZ())) {
-                layout.set(at.getX(), at.getY(), at.getZ(), panel);
+            int x = at.getX();
+            int y = at.getY();
+            int z = at.getZ();
+            boolean wall = layout.inFrom(x, y, z, 0) && !inRoom(x, y, z, 0) && layout.isOpen(x, y, z);
+            if (wall && !(y == top() && againstSkin(x, y, z))) {
+                layout.set(x, y, z, panel);
             }
         }
+    }
+
+    /** Whether the cover of her skin stands beside a block, further out from her axis, as an LED strip runs along it. */
+    private boolean againstSkin(int x, int y, int z) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            boolean outward = side.getStepX() * x + side.getStepZ() * z > 0;
+            if (outward && layout.stateAt(x + side.getStepX(), y, z + side.getStepZ()).is(AerolargeRegistry.ZEPPELIN_COVER.get())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static BlockState beanBag(Direction facing, DyeColor colour) {
