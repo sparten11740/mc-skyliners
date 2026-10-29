@@ -14,6 +14,8 @@ mkdirSync(blockOutput, { recursive: true });
 mkdirSync(itemOutput, { recursive: true });
 
 const SIZE = 16;
+// A rocket's airlock doors' pictures' size (see airlockDoorTextures): the whole doorway, three blocks each way.
+const AIRLOCK_DOOR = 48;
 const WHITE = [0xe8, 0xec, 0xf0];
 const SEAM = [0xc4, 0xcb, 0xd3];
 const RIVET = [0xb0, 0xb8, 0xc1];
@@ -3858,6 +3860,20 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const UNDOPED = 1.2;
   const undoped = (x, y) => fabric(x, y).map((c) => clamp(Math.round(c * UNDOPED)));
   texture(blockOutput, "zeppelin_skin", undoped, 3);
+  // A rocket's airlock doors' skin outside (see RocketStairsRenderer), tinted as her cover is: the same weave, block
+  // for block, over the whole doorway, both leaves side by side as seen from outside, so they are of a piece with her
+  // skin round it; each leaf's edges sunk in a dark groove, its top and left catching the light and its foot and right
+  // in shadow, so the two read as panels set into her.
+  const DOOR = AIRLOCK_DOOR;
+  const DOOR_GROOVE = [0x6a, 0x70, 0x78];
+  const DOOR_LIT = [0xf2, 0xf4, 0xf6];
+  const DOOR_SHADOW = [0xa2, 0xa8, 0xb0];
+  texture(blockOutput, "airlock_door_skin", (x, y) => {
+    if (y === 0 || y === DOOR - 1 || x === 0 || x === DOOR - 1 || x === DOOR / 2 - 1 || x === DOOR / 2) return DOOR_GROOVE;
+    if (y === 1 || x === 1 || x === DOOR / 2 + 1) return DOOR_LIT;
+    if (y === DOOR - 2 || x === DOOR - 2 || x === DOOR / 2 - 2) return DOOR_SHADOW;
+    return undoped(x % SIZE, y % SIZE);
+  }, 3, DOOR, DOOR);
   // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall, one texture for each block of it
   // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
   // polished steel rim, set in the cover's weave. The glass is a dome (see OvalWindowModel, whose oval this is): clear
@@ -6091,6 +6107,100 @@ function airlockPanelTextures() {
   writeFileSync(resolve(blockOutput, "airlock_screen_cycling.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
 }
 airlockPanelTextures();
+
+// A rocket's sliding airlock doors (see RocketStairsRenderer), each picture the whole doorway, both leaves side by side
+// as seen from its own side, three blocks wide and three tall, each leaf mirroring the other about their meeting edge;
+// their skin outside is her cover's weave (airlock_door_skin, with the zeppelin's). Outside, a stripe round the doorway
+// tinted as her fins are, and over it the parts in their own colours: a black rubber seal down the meeting edge between
+// steel edging, two latch dogs across it, a tall slim window beside the seal in each leaf, dark glass glinting in a
+// steel frame, and a band of hazard chevrons along the foot pointing in to the seam; no handles, as the doors work
+// themselves. Inside, brushed steel stiffened by two ribs across, the same windows and seal, a grab bar under each
+// window and a hazard kick plate along the foot.
+function airlockDoorTextures() {
+  const DOOR = AIRLOCK_DOOR;
+  const LEAF = DOOR / 2;
+  const RUBBER = [0x1c, 0x1d, 0x20];
+  const EDGING = [0xb8, 0xbe, 0xc6];
+  const STEEL_LIGHT = [0xc4, 0xca, 0xd0];
+  const STEEL_SHINE = [0xdc, 0xe0, 0xe4];
+  const STEEL_SHADE = [0x8e, 0x96, 0x9e];
+  const LIP = [0x3a, 0x3f, 0x45];
+  const YELLOW = [0xf0, 0xbe, 0x22];
+  const BLACK = [0x22, 0x22, 0x26];
+  // Across a leaf from the doorway's side, toward the seal at LEAF - 1, whichever leaf a column is in.
+  const across = (x) => (x < LEAF ? x : DOOR - 1 - x);
+  // The window's glass, across a leaf and down from the top, from first to last pixel; its frame and dark lip round
+  // it, the lip's corners cut off so it reads rounded.
+  const GLASS = { left: 15, right: 19, top: 9, bottom: 24 };
+  const window = (x, y) => {
+    const a = across(x);
+    const out = Math.max(GLASS.left - a, a - GLASS.right, GLASS.top - y, y - GLASS.bottom, 0);
+    const corner = (a < GLASS.left || a > GLASS.right) && (y < GLASS.top || y > GLASS.bottom);
+    if (out > 2 || out === 2 && corner) return null;
+    if (out === 2) return LIP;
+    if (out === 1) {
+      if (a < GLASS.left || y < GLASS.top) return corner ? STEEL_LIGHT : STEEL_SHINE;
+      return STEEL_SHADE;
+    }
+    const along = a - GLASS.left + y - GLASS.top;
+    if (along === 3 || along === 4 || along === 8) return [0xb4, 0xd8, 0xf0];
+    const down = (y - GLASS.top) / (GLASS.bottom - GLASS.top);
+    return [0x26 - 0x14 * down, 0x48 - 0x22 * down, 0x64 - 0x28 * down].map(Math.round);
+  };
+  // The seal down the meeting edge between its steel edging.
+  const seal = (x) => (x === LEAF - 1 || x === LEAF ? RUBBER : x === LEAF - 2 || x === LEAF + 1 ? EDGING : null);
+  // A band of chevrons from row top to row bottom, outlined in black, across a leaf short of its edges.
+  const chevrons = (x, y, top, bottom) => {
+    const a = across(x);
+    if (y < top - 1 || y > bottom + 1 || a < 2 || a > LEAF - 3) return null;
+    if (y === top - 1 || y === bottom + 1) return BLACK;
+    return (a + y) % 6 < 3 ? YELLOW : BLACK;
+  };
+  // Outside: the stripe round the doorway, for her fins' tint, two pixels wide three in from its edges, broken at the
+  // seam.
+  const STRIPE_IN = 3;
+  texture(blockOutput, "airlock_door_stripe", (x, y) => {
+    const a = across(x);
+    const band = (at) => at === STRIPE_IN || at === STRIPE_IN + 1;
+    const inFrame = a >= STRIPE_IN && y >= STRIPE_IN && y <= DOOR - 1 - STRIPE_IN && a < LEAF - STRIPE_IN;
+    return inFrame && (band(a) || band(y) || band(DOOR - 1 - y)) ? [0xf4, 0xf4, 0xf4] : CLEAR;
+  }, 3, DOOR, DOOR);
+  // Outside: a latch dog across the seam, so many rows down.
+  const latch = (x, y, top) => {
+    const a = across(x);
+    if (a < LEAF - 3 || y < top || y > top + 2) return null;
+    return y === top ? STEEL_SHINE : STEEL_DARK;
+  };
+  texture(blockOutput, "airlock_door_trim", (x, y) =>
+    latch(x, y, 4) ?? latch(x, y, 32) ?? seal(x) ?? window(x, y) ?? chevrons(x, y, 38, 41) ?? CLEAR, 2, DOOR, DOOR);
+  // Inside: brushed steel, its grain along the rows; a darker edge round each leaf; two ribs across, light over dark,
+  // short of the windows; a grab bar under each window standing off on brackets, its shadow under it; and the kick
+  // plate.
+  const BRUSHED = [0x9c, 0xa4, 0xad];
+  const brushed = (y) => BRUSHED.map((c) => c + (((y * 37) % 7) - 3) * 2);
+  const rib = (x, y) => {
+    const a = across(x);
+    if (a < 3 || a > LEAF - 4) return null;
+    if (y === 15 || y === 33) return [0xc8, 0xce, 0xd4];
+    return y === 16 || y === 34 ? [0x6c, 0x74, 0x7c] : null;
+  };
+  const grabBar = (x, y) => {
+    const a = across(x);
+    if (a < 9 || a > 20 || y < 28 || y > 30) return null;
+    if (a < 11 || a > 18) return y === 30 ? null : STEEL_DARK;
+    if (y === 28) return STEEL_SHINE;
+    return y === 29 ? STEEL_LIGHT : [0x50, 0x56, 0x5c];
+  };
+  const leafEdge = (x, y) => {
+    const a = across(x);
+    if (a === 0 || y === 0 || y === DOOR - 1) return STEEL_DARK;
+    if (a === 1 || y === 1) return EDGING;
+    return a === LEAF - 3 || y === DOOR - 2 ? [0x7a, 0x82, 0x8b] : null;
+  };
+  texture(blockOutput, "airlock_door_inside", (x, y) =>
+    seal(x) ?? leafEdge(x, y) ?? window(x, y) ?? grabBar(x, y) ?? chevrons(x, y, 38, 44) ?? rib(x, y) ?? brushed(y), 3, DOOR, DOOR);
+}
+airlockDoorTextures();
 
 // The cargo bay's parcel scanner (see parcelScanner in generate_resources.mjs): its graphite cabinet with a vent grille,
 // its steel rollers and its black belt ridged across its run, its gantry striped yellow and black, and its lamp in each

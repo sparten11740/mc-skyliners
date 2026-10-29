@@ -1860,9 +1860,12 @@ too; and they fold away by themselves as soon as she moves. With
 the server config's `rocket.airstairs` off she is built with a crew ladder instead, the pool's chrome ladder up a column
 beside an open doorway three blocks wide, climbing to a step in front of it; a rocket built before keeps her ladder.
 
-Her doorway closes with sliding airlock doors: two leaves meeting in its middle, each a thick plate in her livery's
-colour outside and brushed steel inside, a black rubber seal down its meeting edge and a square porthole of dark glass
-at eye height. Shut, they seal the doorway and nobody walks through. They slide apart into her skin either side as her
+Her doorway closes with sliding airlock doors: two leaves meeting in its middle, faced outside in her skin's own weave
+and livery colour inside a stripe of her fins' colour, a black rubber seal down their meeting edge with latch dogs
+across it, a tall slim window of dark glass in a steel frame beside the seal in each, and hazard chevrons along their
+foot; they need no handles, as they work themselves. Inside they are ribbed brushed steel, a grab bar under each window
+and a hazard kick plate along their foot. Shut, they seal the doorway and nobody walks through. They slide apart into
+her skin either side as her
 stairs come out, with the clunk and hiss of the airlock and its chime once they stand open, and slide shut again,
 sealing with a clunk, once the stairs are back off the sill going away. They never close on anyone in the doorway:
 they wait open, with a chime, until it is clear, and slide back open if someone steps in as they close. In flight they
