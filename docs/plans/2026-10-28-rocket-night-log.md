@@ -78,7 +78,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N37 | 01:15 | Height gauge | While the lift is parked for her flight, its boards show a column of sky (sea at the foot, her ceiling at the top) with the edge of space dashed and starred and a little rocket at her height, in place of her floors; client config `heightGauge` | Panel's E | Panel, lead |
 | N38 | 01:25 | Plumes | Cloud and smoke billowing over the ground within 40 blocks of it while her engines fire (lift-off and landing); flames streaming up her sides falling back from over y 500 faster than 20 b/s; `rocket.plumes`, on | Look of a launch; fun over realism (N7) | Lead |
 | N39 | 01:30 | Circling over the spot | After 10 s within 12 blocks of the spot drifting under 3 b/s, she starts down anyway | Heavier now, she circled the spot 6–9 blocks off and never came down (over ten minutes seen); retuning the lean loop blind was riskier | Lead |
-| N40 | 01:40 | Code review | Fixed: low gravity's lease lookup loading chunks; bamboo still growing; poster protection only at its middle; rover fall cover renewable while stowed; rover answers in words only. Left for Jan: the rover's 96/160-block reach is longer than a server with a short view distance tracks | Independent review agent | Review, lead |
+| N40 | 01:40 | Code review | Fixed: low gravity's lease lookup loading chunks; bamboo still growing; poster protection only at its middle; rover fall cover renewable while stowed; rover answers in words only. And at 02:15 the rover's range, capped by the server's view and simulation distances (seen at 6: about 56 blocks) | Independent review agent | Review, lead |
 | N41 | 01:55 | Launch control callouts | "Tower cleared." at 40 blocks up, "Max Q." at y 300, "Main engine cut-off." into the cruise, "Landing burn." into the burn; each once a flight, waiting for quiet; `rocket.callouts`, on | Fun for adults who know real launches (N7); built by an agent on the countdown's voice | Lead, callouts agent |
 | N42 | 02:00 | More furnishing | The cargo bay's baggage containers and crates; two pilot seats in the cockpit; a dimmed starlight ceiling over the observation deck | Seen bare at eye level | Lead |
 | N43 | 02:10 | Black hole poster | A poster skips a shaft face with something standing within two blocks in front of it: the lab's tank put the black hole facing into it; it now hangs on the east face | Jan asked for it specially; it should be seen | Lead |
@@ -168,7 +168,5 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - N33: low gravity in space is off by default (`rocket.lowGravity`); worth a try with it on.
 - N34: the lab's tank stands partly in front of the back window at scale 2.
 - The shooting stars are subtle (short, small); easy to make bigger if you would like them showier.
-- The rover's reach (96 blocks from her door, its driver up to 160 off) assumes a view distance of 10 or more; on a
-  server with less, its driver's client can lose it at the edge (from the review). Not changed tonight.
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
