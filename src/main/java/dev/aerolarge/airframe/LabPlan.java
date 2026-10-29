@@ -100,10 +100,10 @@ final class LabPlan {
     }
 
     /**
-     * A part at a block: facing a way (the way a fitting's front looks out), for the tank's glass the ways out of the
-     * tank it has panes on, and for a pipe the ways it runs.
+     * A part at a block: facing a way (the way a fitting's front looks out), and its sides: for the tank's glass the
+     * ways out of the tank it has panes on, and for a pipe the ways it runs.
      */
-    record Placed(BlockPos at, Part part, Direction facing, Set<Direction> panes) {
+    record Placed(BlockPos at, Part part, Direction facing, Set<Direction> sides) {
     }
 
     /**
@@ -593,9 +593,9 @@ final class LabPlan {
     }
 
     /** A part at a block, where nothing stands yet, of the rocket or of the lab. */
-    private void add(BlockPos at, Part part, Direction facing, Set<Direction> panes) {
+    private void add(BlockPos at, Part part, Direction facing, Set<Direction> sides) {
         if (room.open(at.getX(), at.getY(), at.getZ()) && laid.add(at)) {
-            parts.add(new Placed(at, part, facing, Set.copyOf(panes)));
+            parts.add(new Placed(at, part, facing, Set.copyOf(sides)));
         }
     }
 

@@ -38,11 +38,6 @@ public abstract class LabMachineBlock extends HorizontalDirectionalBlock {
         return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
     }
 
-    /** The other half of a machine, over or under the half given. */
-    protected static BlockPos otherHalf(BlockPos pos, BlockState state) {
-        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos.above() : pos.below();
-    }
-
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbour, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
         DoubleBlockHalf half = state.getValue(HALF);

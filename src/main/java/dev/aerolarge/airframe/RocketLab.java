@@ -90,7 +90,7 @@ final class RocketLab extends RocketRoom {
         LabInstrumentBlock instruments = AerolargeRegistry.LAB_INSTRUMENT.get();
         HabitatFloorBlock patches = AerolargeRegistry.HABITAT_FLOOR.get();
         return switch (placed.part()) {
-            case TANK_GLASS -> AerolargeRegistry.HABITAT_GLASS.get().panes(placed.panes(), row(placed.at().getY()));
+            case TANK_GLASS -> AerolargeRegistry.HABITAT_GLASS.get().panes(placed.sides(), row(placed.at().getY()));
             case HATCH -> AerolargeRegistry.HABITAT_HATCH.get().defaultBlockState().setValue(HabitatHatchBlock.FACING, placed.facing());
             case VITALS -> instruments.of(LabInstrumentBlock.Kind.VITALS, placed.facing());
             case MICROSCOPE -> instruments.of(LabInstrumentBlock.Kind.MICROSCOPE, placed.facing());
@@ -109,7 +109,7 @@ final class RocketLab extends RocketRoom {
             case ALGAE -> AerolargeRegistry.ALGAE_COLUMN.get().defaultBlockState().setValue(LabGrowerBlock.FACING, placed.facing());
             case TOP -> upperHalf(placed.at());
             case PARTITION -> AerolargeRegistry.LAB_PARTITION.get().of(partitionRow(placed.at().getY()), placed.facing());
-            case PIPE -> AerolargeRegistry.LAB_PIPE.get().running(placed.panes());
+            case PIPE -> AerolargeRegistry.LAB_PIPE.get().running(placed.sides());
             case CABINET, FEED_CABINET -> AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, placed.facing());
             case SINK -> AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, placed.facing());
         };
