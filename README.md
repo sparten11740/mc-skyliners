@@ -1979,7 +1979,7 @@ your view goes to a camera behind and over it, your movement keys drive and stee
 swings the camera round it, and sneaking gives you your own view back, as does being hurt. Meanwhile your own body
 stays where you stood and takes no fall damage, and a red warning triangle shows while a monster is near it. The rover
 whirs over the gravel as it drives, its beacon blinking, climbs a block as a horse does and goes no further than 96
-blocks from her: as it nears the edge the signal bars in the corner drop, an amber arrow points back to her and a soft
+blocks from her (less on a server whose view or simulation distance is short, so it never drives out of sight): as it nears the edge the signal bars in the corner drop, an amber arrow points back to her and a soft
 tone sounds. Sneak and use the remote, or press the panel's arrow up, and it drives back under the boom's tip by
 itself, reversing up the platform once hoisted, and the door shuts behind it; stuck on the way, it is hoisted from
 where it stands. It comes home by itself, too, once nobody is near enough to drive it, and when her autopilot is

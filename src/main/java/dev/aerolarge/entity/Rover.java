@@ -41,7 +41,7 @@ import net.minecraft.world.phys.Vec3;
  * her cargo bay on its cradle, is lowered to the ground from a platform her bay's door folds down into and hoisted
  * back the same way (see {@link RoverRoute} and {@code block.RoverBayBlockEntity}, which works its door and its
  * winch), and once down is driven by whoever holds its paired remote (see {@link RoverRemoteItem}), looking at it
- * from a camera behind and over it. It climbs a block as a horse does, and never goes further than {@link #RANGE}
+ * from a camera behind and over it. It climbs a block as a horse does, and never goes further than {@link #range}
  * blocks from her. Nothing hurts it.
  *
  * <p>Stowed, it lives among her blocks, in Sable's plot, its type in {@code #sable:retain_in_sub_level}, so Sable
@@ -71,19 +71,29 @@ public class Rover extends Entity {
         }
     }
 
-    /** How far from her it may go, across the ground from her bay's door, in blocks. */
+    /** How far from her it may go, across the ground from her bay's door, in blocks, at most (see {@link #range}). */
     public static final double RANGE = 96;
     /**
      * Where its driver may be, at most, in blocks from it: aboard her, a fair way back from her door, with the rover
-     * at the edge of its range on the other side.
+     * at the edge of its range on the other side; no further than the server shows its driver an entity.
      */
     public static final double DRIVER_REACH = 160;
+    /**
+     * How far inside what the server ticks and shows round its driver its range is kept, in blocks: its driver's body
+     * stands about so far from her door; and how short its range is at least, in blocks, however short that is.
+     */
+    private static final double DRIVER_MARGIN = 24;
+    private static final double SHORTEST_RANGE = 32;
+    /** How often its range is worked out again from the server's view and simulation distances, in ticks. */
+    private static final int RANGE_LOOK = 100;
 
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> LEG = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<BlockPos> BAY = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.BLOCK_POS);
     private static final EntityDataAccessor<Float> HOOK = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> MOVING = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.BOOLEAN);
+    /** How far from her it may go now, in blocks (see {@link #range}), so that its driver's screen shows it too. */
+    private static final EntityDataAccessor<Float> RANGE_NOW = SynchedEntityData.defineId(Rover.class, EntityDataSerializers.FLOAT);
 
     /**
      * Driving: its top speed forward and in reverse, in blocks a tick (six and three blocks a second), how quickly it
@@ -258,6 +268,7 @@ public class Rover extends Entity {
         builder.define(BAY, BlockPos.ZERO);
         builder.define(HOOK, -1F);
         builder.define(MOVING, false);
+        builder.define(RANGE_NOW, (float) RANGE);
     }
 
     public State state() {
@@ -302,7 +313,28 @@ public class Rover extends Entity {
      * among her blocks, far from where she is seen. On the server.
      */
     public boolean withinReach(Player player) {
-        return player.position().distanceToSqr(SableFlight.toWorld(level(), position())) <= DRIVER_REACH * DRIVER_REACH;
+        double reach = driverReach();
+        return player.position().distanceToSqr(SableFlight.toWorld(level(), position())) <= reach * reach;
+    }
+
+    /**
+     * How far from her it may go now, across the ground from her bay's door, in blocks: {@link #RANGE}, or less on a
+     * server whose view or simulation distance is short, where it would otherwise drive on past where its driver's
+     * game still shows it or the server still moves it.
+     */
+    public double range() {
+        return entityData.get(RANGE_NOW);
+    }
+
+    /** How far from its driver it may be, in blocks: {@link #DRIVER_REACH}, or less where the server shows less. */
+    private double driverReach() {
+        return level().getServer() == null ? DRIVER_REACH : Math.min(DRIVER_REACH, level().getServer().getPlayerList().getViewDistance() * 16.0);
+    }
+
+    /** Works its range out again from how far round its driver the server shows and moves things. */
+    private void lookAtRange(ServerLevel level) {
+        int chunks = Math.min(level.getServer().getPlayerList().getViewDistance(), level.getServer().getPlayerList().getSimulationDistance());
+        entityData.set(RANGE_NOW, (float) Mth.clamp((chunks - 1) * 16.0 - DRIVER_MARGIN, SHORTEST_RANGE, RANGE));
     }
 
     /** Whether it is on the hook, being let down, hoisted or carried along the boom. */
@@ -420,6 +452,9 @@ public class Rover extends Entity {
         }
         ServerLevel level = (ServerLevel) level();
         tickedAt = level.getGameTime();
+        if (tickCount % RANGE_LOOK == 1) {
+            lookAtRange(level);
+        }
         if (snapping) {
             snap(level);
         }
@@ -709,7 +744,7 @@ public class Rover extends Entity {
         }
         roll(ahead, right);
         honk(level, heard && honk && !forced);
-        if (now % LEFT_ALONE_LOOK == 0 && !homing && !heard && level.getNearestPlayer(this, DRIVER_REACH) == null) {
+        if (now % LEFT_ALONE_LOOK == 0 && !homing && !heard && level.getNearestPlayer(this, driverReach()) == null) {
             comeHome(false);
         }
     }
@@ -745,7 +780,7 @@ public class Rover extends Entity {
         double dx = getX() + step.x - home.x;
         double dz = getZ() + step.z - home.z;
         double away = Math.hypot(dx, dz);
-        if (away <= RANGE) {
+        if (away <= range()) {
             return step;
         }
         Vec3 outward = new Vec3(dx / away, 0, dz / away);

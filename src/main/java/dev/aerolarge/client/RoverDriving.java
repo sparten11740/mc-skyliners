@@ -334,7 +334,7 @@ public final class RoverDriving {
         Vec3 her = RoverRenderer.drawn(rover.level(), RoverRoute.hinge(rover.bay()), 1);
         drive.fromHer = Math.hypot(her.x - at.x, her.z - at.z);
         drive.toHer = (float) Math.toDegrees(Math.atan2(-(her.x - at.x), her.z - at.z));
-        double edge = drive.fromHer - (Rover.RANGE - WARNING);
+        double edge = drive.fromHer - (rover.range() - WARNING);
         if (edge > 0 && drive.ticks % TONE_TICKS == 0) {
             float nearing = (float) Mth.clamp(edge / WARNING, 0, 1);
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(AerolargeRegistry.ROVER_RANGE.get(), 1 + nearing * TONE_RISE, TONE_VOLUME));
@@ -462,7 +462,7 @@ public final class RoverDriving {
         boolean blink = drive.ticks / BLINK_TICKS % 2 == 0;
         label(graphics, minecraft.font, blink);
         bars(graphics, drive);
-        if (drive.fromHer > Rover.RANGE - WARNING && blink) {
+        if (drive.fromHer > drive.rover.range() - WARNING && blink) {
             arrow(graphics, drive, minecraft.player == null ? 0 : minecraft.player.getViewYRot(deltaTracker.getGameTimeDeltaPartialTick(true)));
         }
         if (drive.danger && blink) {
@@ -490,7 +490,7 @@ public final class RoverDriving {
 
     /** The signal bars in the top right corner, fewer lit the further the rover is from her, red at the last. */
     private static void bars(GuiGraphics graphics, Driving drive) {
-        int lit = (int) Math.ceil(BARS * Mth.clamp(1 - drive.fromHer / Rover.RANGE, 0, 1));
+        int lit = (int) Math.ceil(BARS * Mth.clamp(1 - drive.fromHer / drive.rover.range(), 0, 1));
         int colour = lit <= 1 ? RED : lit == 2 ? AMBER : LIVE;
         int right = graphics.guiWidth() - MARGIN;
         int left = right - BARS * (BAR_WIDTH + BAR_GAP) + BAR_GAP;
