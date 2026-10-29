@@ -24,8 +24,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * them a plum club carpet out to her skin; speaker stacks two high at the four diagonals facing in, a disco ball over
  * each quarter of the floor, and behind the shaft at her back the DJ deck that plays the room (see
  * {@link TechnoDeckBlock}), facing the floor, the fog machine beside it (see {@link FogMachineBlock}). Along her left
- * side a bar curves round the window there: its counter parting the bar from the floor, two drink taps on it (see
- * {@link DrinkTapBlock}) and stools before it; behind its middle the robot bartender, who sells mocktails (see
+ * side a straight bar stands across the window there: its counter parting the bar from the floor, two drink taps on it
+ * (see {@link DrinkTapBlock}) and stools before it; behind its middle the robot bartender, who sells mocktails (see
  * {@link RobotBartenderBlock}), his back to the window; and behind him either side of the window the back bar, cabinets
  * under two tiers of lit shelves of bottles. At her front right a booth, armchairs round a low table; at her back right
  * two high tables with stools (see {@link CocktailTableBlock}); at her front left, by the bar's end, a coat corner of
@@ -138,8 +138,8 @@ final class RocketClub extends RocketRoom {
     /**
      * The bar, straight across the window at her left: its counter facing in, a stool before every other block of it
      * and a drink tap on it halfway out to either end (see {@link DrinkTapBlock}); behind its middle the robot
-     * bartender; and behind the rest, either side of the window, the back bar, its cabinets under two tiers of lit
-     * shelves of bottles.
+     * bartender, where the counter's middle stands; and behind the rest, either side of the window, the back bar, its
+     * cabinets under two tiers of lit shelves of bottles.
      */
     private void bar(int y) {
         double out = wall() - BAR_IN;
@@ -162,7 +162,9 @@ final class RocketClub extends RocketRoom {
             }
         }
         BlockPos behind = middle.relative(facing.getOpposite());
-        bartender(behind, facing);
+        if (layout.stateAt(middle.getX(), y, middle.getZ()).is(AerolargeRegistry.BAR_COUNTER.get())) {
+            bartender(behind, facing);
+        }
         backBar(behind, along, reach + 1, facing);
     }
 
