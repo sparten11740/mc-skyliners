@@ -1985,8 +1985,11 @@ bars in the corner drop, an amber arrow points back to her and a soft tone sound
 the panel's arrow up, and it drives back under the boom's tip by itself, reversing up the platform once hoisted, and the
 door shuts behind it; stuck on the way, it is hoisted from where it stands. It comes home by itself, too, once nobody is
 near enough to drive it, and when her autopilot is switched on, her countdown waiting for it to be back in its bay with
-the door shut, its beep heard in her cockpit while it waits. A remote works its rover from up to 160 blocks off, and is
-paired with a rover by using it on the rover or on its bay's panel, its antenna's tip turning from red to green.
+the door shut, its beep heard in her cockpit while it waits. A remote works its rover from up to 160 blocks off (less
+where the server shows less), and is paired with a rover by using it on the rover or on its bay's panel, its antenna's
+tip turning from red to green. The panel and the remote answer every touch in words over the hotbar and with a note of
+their own: a bright chime as the rover sets off down or a remote is handed over, a lower one as it comes home, a soft
+pling when there is nothing to do and a deep note for wait.
 
 ### Settings
 
