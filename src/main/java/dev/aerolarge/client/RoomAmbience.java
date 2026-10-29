@@ -14,6 +14,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -34,8 +35,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class RoomAmbience {
     /** How often the listener's room is looked for, in ticks: finding her autopilot looks through her chunks. */
     private static final int LOOK_TICKS = 20;
-    /** How fast a room's loop swells in and fades out, a share of full a tick: some two seconds either way. */
-    private static final float FADE = 0.02F;
+    /** How long a room's loop takes to swell in to how loud it is, or to fade out from it, in ticks: two seconds. */
+    private static final int FADE_TICKS = 40;
     /** How far under a floor's top the listener's feet may be and still stand on it, in blocks. */
     private static final double SLACK = 0.5;
     /**
@@ -57,17 +58,18 @@ public final class RoomAmbience {
 
         private final Supplier<SoundEvent> loop;
         private final float loopVolume;
-        private final Supplier<SoundEvent> now;
-        private final float nowVolume;
+        private final Supplier<SoundEvent> occasional;
+        private final float occasionalVolume;
         private final int least;
         private final int most;
         private final double rise;
 
-        Room(Supplier<SoundEvent> loop, float loopVolume, Supplier<SoundEvent> now, float nowVolume, int least, int most, double rise) {
+        Room(Supplier<SoundEvent> loop, float loopVolume, Supplier<SoundEvent> occasional, float occasionalVolume, int least, int most,
+             double rise) {
             this.loop = loop;
             this.loopVolume = loopVolume;
-            this.now = now;
-            this.nowVolume = nowVolume;
+            this.occasional = occasional;
+            this.occasionalVolume = occasionalVolume;
             this.least = least;
             this.most = most;
             this.rise = rise;
@@ -76,20 +78,25 @@ public final class RoomAmbience {
 
     private static final RandomSource RANDOM = RandomSource.create();
     private static final Map<Room, Loop> LOOPS = new EnumMap<>(Room.class);
-    /** The room the listener stood in at the last look, null for none, and the game time its next sound is due. */
+    /**
+     * The room the listener stood in at the last look, null for none, and the game time the next sound heard now and
+     * then in it is due; none is due until they have stood in it a while.
+     */
     @Nullable
     private static Room here;
-    private static long nextNow = Long.MIN_VALUE;
+    private static long nextOccasional = Long.MIN_VALUE;
 
     private RoomAmbience() {
     }
 
     /** A room's loop, played round the listener, swelling and fading toward how loud it should be. */
     private static final class Loop extends AbstractTickableSoundInstance {
+        private final float step;
         private float wanted;
 
         Loop(Room room) {
             super(room.loop.get(), SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
+            step = room.loopVolume / FADE_TICKS;
             looping = true;
             delay = 0;
             relative = true;
@@ -104,7 +111,7 @@ public final class RoomAmbience {
 
         @Override
         public void tick() {
-            volume = volume < wanted ? Math.min(wanted, volume + FADE) : Math.max(wanted, volume - FADE);
+            volume = volume < wanted ? Math.min(wanted, volume + step) : Math.max(wanted, volume - step);
             if (wanted <= 0 && volume <= 0) {
                 stop();
             }
@@ -118,20 +125,26 @@ public final class RoomAmbience {
         LocalPlayer player = minecraft.player;
         if (level == null || player == null) {
             here = null;
+            nextOccasional = Long.MIN_VALUE;
+            LOOPS.clear();
             return;
         }
         if (level.getGameTime() % LOOK_TICKS == 0) {
             here = AerolargeClientConfig.ROOM_AMBIENCE.get() ? roomOf(player) : null;
         }
-        LOOPS.values().removeIf(Loop::isStopped);
+        SoundManager sounds = minecraft.getSoundManager();
+        // A loop the sound engine has let go of, as it does going to another dimension, is never stopped: start anew.
+        LOOPS.values().removeIf(loop -> loop.isStopped() || !sounds.isActive(loop));
         if (here != null && !LOOPS.containsKey(here)) {
             Loop loop = new Loop(here);
             LOOPS.put(here, loop);
-            minecraft.getSoundManager().play(loop);
+            sounds.play(loop);
         }
         LOOPS.forEach((room, loop) -> loop.wanted = room == here ? room.loopVolume : 0);
-        if (here != null) {
-            now(level, player, here);
+        if (here == null) {
+            nextOccasional = Long.MIN_VALUE;
+        } else {
+            occasional(level, player, here);
         }
     }
 
@@ -150,8 +163,8 @@ public final class RoomAmbience {
     }
 
     /**
-     * The rocket the player is in: the one they ride, or one standing as she was built, before she first flew, her
-     * blocks round them; null for none. An assembled rocket's blocks are in her plot, far from any player.
+     * The rocket the player is in: the one they ride, or one standing as she was built, before she first flew, round
+     * them; null for none. An assembled rocket's blocks are in her plot, far from any player.
      */
     @Nullable
     private static AutopilotBlockEntity rocketAround(LocalPlayer player) {
@@ -161,7 +174,7 @@ public final class RoomAmbience {
         }
         for (AutopilotBlockEntity autopilot : AutopilotBlockEntity.loaded(player.level())) {
             BoundingBox frame = autopilot.frame();
-            if (autopilot.craft() == Craft.ROCKET && frame != null && frame.isInside(player.blockPosition())) {
+            if (autopilot.craft() == Craft.ROCKET && frame != null && within(autopilot, frame, player)) {
                 return autopilot;
             }
         }
@@ -169,9 +182,25 @@ public final class RoomAmbience {
     }
 
     /**
+     * Whether the player is within a rocket standing as built: in the box round her blocks, which is square round her
+     * axis, and no further from her axis than her body's radius at her middle, as she was built, not out among her
+     * fins.
+     */
+    private static boolean within(AutopilotBlockEntity autopilot, BoundingBox frame, LocalPlayer player) {
+        int[] floors = autopilot.rocketStories();
+        if (floors.length == 0 || !frame.isInside(player.blockPosition())) {
+            return false;
+        }
+        double axisX = (frame.minX() + frame.maxX() + 1) / 2.0;
+        double axisZ = (frame.minZ() + frame.maxZ() + 1) / 2.0;
+        double body = RocketSilhouette.body(RocketSilhouette.height() / 2) * RocketSilhouette.scaleOf(floors[floors.length - 1] + 1);
+        return Math.hypot(player.getX() - axisX, player.getZ() - axisZ) <= body;
+    }
+
+    /**
      * The story the player stands on, from the entry story up; -1 under her entry story, in her cockpit, or where her
      * stories are not known. Reckoned from her control head, which stands on her cockpit's floor, along her own up, so
-     * it holds as she leans.
+     * it holds as she leans; in water, as in her pool's channel sunk into its floor, from the water's top.
      */
     private static int storyOf(LocalPlayer player, AutopilotBlockEntity autopilot) {
         int[] floors = autopilot.rocketStories();
@@ -182,7 +211,8 @@ public final class RoomAmbience {
         Vec3 head = Vec3.atBottomCenterOf(autopilot.getBlockPos());
         Vec3 onCockpitFloor = SableClient.toWorld(level, head);
         Vec3 up = SableClient.toWorld(level, head.add(0, 1, 0)).subtract(onCockpitFloor);
-        double feet = floors[floors.length - 1] + 1 + player.position().subtract(onCockpitFloor).dot(up) + SLACK;
+        double swum = player.isInWater() ? RocketSilhouette.POOL_DEPTH : 0;
+        double feet = floors[floors.length - 1] + 1 + player.position().subtract(onCockpitFloor).dot(up) + SLACK + swum;
         for (int story = floors.length - 1; story >= 0; story--) {
             if (feet >= floors[story] + 1) {
                 return story == floors.length - 1 ? -1 : story;
@@ -192,18 +222,18 @@ public final class RoomAmbience {
     }
 
     /** What is heard now and then in the room, from a spot of its own round the listener, once it is due. */
-    private static void now(ClientLevel level, LocalPlayer player, Room room) {
+    private static void occasional(ClientLevel level, LocalPlayer player, Room room) {
         long time = level.getGameTime();
-        if (time < nextNow) {
+        if (time < nextOccasional) {
             return;
         }
-        if (nextNow != Long.MIN_VALUE) {
+        if (nextOccasional != Long.MIN_VALUE) {
             double away = Mth.lerp(RANDOM.nextDouble(), NEAR, FAR);
             double round = RANDOM.nextDouble() * 2 * Math.PI;
             float pitch = 1 + (RANDOM.nextFloat() * 2 - 1) * STRAY;
             level.playLocalSound(player.getX() + Math.cos(round) * away, player.getEyeY() + room.rise, player.getZ() + Math.sin(round) * away,
-                room.now.get(), SoundSource.AMBIENT, room.nowVolume, pitch, false);
+                room.occasional.get(), SoundSource.AMBIENT, room.occasionalVolume, pitch, false);
         }
-        nextNow = time + room.least + RANDOM.nextInt(room.most - room.least);
+        nextOccasional = time + room.least + RANDOM.nextInt(room.most - room.least);
     }
 }

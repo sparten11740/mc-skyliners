@@ -1,6 +1,5 @@
 package dev.aerolarge.airframe;
 
-import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.CabinSeatBlock;
 import dev.aerolarge.block.CrewLockerBlock;
@@ -60,7 +59,7 @@ abstract class RocketRoom implements RocketPiece {
 
     @Override
     public boolean wanted() {
-        return AerolargeConfig.ROCKET_ROOMS.get() && layout.floors().size() > story;
+        return layout.rooms() && layout.floors().size() > story;
     }
 
     /** The room's floor row. */

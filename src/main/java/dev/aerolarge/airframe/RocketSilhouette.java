@@ -7,9 +7,13 @@ package dev.aerolarge.airframe;
  * stories' rows as {@link RocketLayout} builds her, which her liveries follow, and which of them are which rooms.
  */
 public final class RocketSilhouette {
-    /** Her greenhouse's story and her pool's, from the entry story up, for clients to hear them by. */
+    /**
+     * Her greenhouse's story and her pool's, from the entry story up, and how deep her pool's water is sunk into its
+     * floor, in blocks, for clients to hear them by.
+     */
     public static final int GREENHOUSE_STORY = RocketGreenhouse.STORY;
     public static final int POOL_STORY = RocketPool.STORY;
+    public static final int POOL_DEPTH = RocketPool.DEPTH;
 
     private RocketSilhouette() {
     }
@@ -47,7 +51,7 @@ public final class RocketSilhouette {
         return (headOverFeet - 1) / RocketShape.NOSE_BASE;
     }
 
-        /** How tall one built at a scale stands, in rows. */
+    /** How tall one built at a scale stands, in rows. */
     public static int rows(double scale) {
         return RocketLayout.heightRows(scale);
     }

@@ -28,7 +28,7 @@ final class RocketPool extends RocketRoom {
     /** How many blocks clear of the walkway round the shaft its inner edge is: a block for the coping. */
     private static final int INNER_CLEAR = 1;
     /** How deep the water is, in blocks, its top row the floor's. */
-    private static final int DEPTH = 2;
+    static final int DEPTH = 2;
     /** How often a block of its walls just under the water line is a light, in blocks. */
     private static final int LIGHT_EVERY = 4;
     /** How far round from her front the ducks float, in degrees, and how far in from the skin's inside, in blocks. */

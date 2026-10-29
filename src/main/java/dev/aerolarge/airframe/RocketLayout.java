@@ -111,6 +111,8 @@ public final class RocketLayout implements Layout {
 
     private final AirframePalette.Balloon palette;
     private final double scale;
+    /** Whether her stories are furnished as her rooms, as the server config says as she is laid out. */
+    private final boolean rooms;
     /** How tall the rocket stands, in rows, and its body's radius, in blocks. */
     private final int height;
     private final double radius;
@@ -151,6 +153,7 @@ public final class RocketLayout implements Layout {
     private RocketLayout(AirframePalette.Balloon palette, double scale) {
         this.palette = palette;
         this.scale = scale;
+        this.rooms = AerolargeConfig.ROCKET_ROOMS.get();
         this.height = heightRows(scale);
         this.radius = RocketShape.RADIUS * scale;
         this.bottom = bottomRow(scale);
@@ -235,6 +238,11 @@ public final class RocketLayout implements Layout {
     /** Whether a block's middle lies at least so many blocks in from the body's surface. */
     boolean inFrom(int x, int y, int z, double blocks) {
         return surface.depth(x, y + 0.5, z) < -blocks;
+    }
+
+    /** Whether her stories are furnished as her rooms. */
+    boolean rooms() {
+        return rooms;
     }
 
     /** The highest row of a story, its index from the entry story up: under the next floor, or the cockpit's. */
@@ -628,7 +636,7 @@ public final class RocketLayout implements Layout {
     private void wire(AutopilotBlockEntity autopilot, BlockPos at, Rotation rotation) {
         List<List<BlockPos>> turned = bells.stream().map(relays -> offsets(at, relays, rotation)).toList();
         autopilot.configureRocket(turned, jets(at, topJets, rotation), jets(at, bottomJets, rotation), at.getY(), storyRows(scale),
-            AerolargeConfig.ROCKET_ROOMS.get());
+            rooms);
         autopilot.paint(BUILT_IN);
         int reach = reach();
         List<BlockPos> frame = offsets(at, List.of(new BlockPos(-reach, 0, -reach), new BlockPos(reach, height, reach)), rotation);

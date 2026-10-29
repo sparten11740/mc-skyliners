@@ -3967,6 +3967,14 @@ function labSounds() {
 function roomSounds() {
   return Object.fromEntries(["greenhouse_air", "greenhouse_bee", "pool_water", "pool_slap"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
 }
+function roomLang() {
+  return {
+    "subtitles.aerolarge.greenhouse_air": "Leaves rustle",
+    "subtitles.aerolarge.greenhouse_bee": "Bee buzzes by",
+    "subtitles.aerolarge.pool_water": "Pool water laps",
+    "subtitles.aerolarge.pool_slap": "Water slaps",
+  };
+}
 function labLang() {
   return {
     "block.aerolarge.habitat_glass": "Tank Glass",
@@ -3976,10 +3984,6 @@ function labLang() {
     "entity.aerolarge.tardigrade": "Tardigrade",
     "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
     "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
-    "subtitles.aerolarge.greenhouse_air": "Leaves rustle",
-    "subtitles.aerolarge.greenhouse_bee": "Bee buzzes by",
-    "subtitles.aerolarge.pool_water": "Pool water laps",
-    "subtitles.aerolarge.pool_slap": "Water slaps",
   };
 }
 
@@ -7090,6 +7094,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...spacePosterLang(),
   ...roverLang(),
   ...labLang(),
+  ...roomLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
