@@ -86,14 +86,26 @@ public class IrrigationValveBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel server) {
-            if (state.getValue(OPEN)) {
-                server.playSound(null, pos, SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS, KNOCK_VOLUME, KNOCK_PITCH);
-            } else {
-                open(server, pos, state);
-            }
+        if (!(level instanceof ServerLevel server)) {
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        if (state.getValue(OPEN)) {
+            knock(server, pos);
+        } else {
+            open(server, pos, state);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    /**
+     * Already open, only a knock on its wheel; and where the spray's end was lost, as when the rocket was assembled
+     * while it sprayed, it turns back at once.
+     */
+    private void knock(ServerLevel level, BlockPos pos) {
+        level.playSound(null, pos, SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS, KNOCK_VOLUME, KNOCK_PITCH);
+        if (!level.getBlockTicks().hasScheduledTick(pos, this)) {
+            level.scheduleTick(pos, this, 1);
+        }
     }
 
     /** The water on: the wheel turned, and every sprinkler in reach spraying until it turns back. */
