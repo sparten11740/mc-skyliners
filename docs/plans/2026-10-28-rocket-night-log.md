@@ -162,6 +162,12 @@ Commits on main, newest last, with the versions handed out.
   y 1,000; "Tower cleared.", "Max Q." 4 s later and "Main engine cut-off." on a flight flown straight after landing,
   with no stray announcement; the lift-off smoke rolling out over the ground; the black hole poster on the shaft's
   east face, beside the tank.
+  Then a first-time player's walkthrough in a fresh world, in survival up to the door: the blueprint built her; the
+  crew ladder climbed in ten seconds, a sideways step onto the step and in through the door (the ladder runs up the
+  column beside it); the lift called by its board and ridden from the entry story to the cockpit (the doorway is one
+  block wide between the LED panel and the board: line up on it); y 1,200 set on the autopilot's screen and Take Off
+  pressed (it assembled her and counted down); a pilot seat sat in for the climb, space from it and the Edge of Space
+  goal in chat; left unattended, she came down by herself with the landing burn, touchdown and arrival calls.
 
 ## Background agents
 
