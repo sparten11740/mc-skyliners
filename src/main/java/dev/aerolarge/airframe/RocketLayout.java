@@ -114,7 +114,7 @@ public final class RocketLayout implements Layout {
      */
     private static final int COCKPIT_WALL_ROWS = 3;
     /** The livery she is built in, one of her own (see {@link Livery#swatches}). */
-    private static final Livery BUILT_IN = Livery.RED_TRIM;
+    private static final Livery BUILT_IN = Livery.MIDNIGHT;
 
     private final AirframePalette.Balloon palette;
     private final double scale;

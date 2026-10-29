@@ -2126,8 +2126,8 @@ buttons show where each camera is on an outline of her, and its test card carrie
 
 Under it stands her livery selector (the server config's `liveryBoard` leaves it out), as the zeppelin's does, with
 pictures of her laid on her side in her six liveries: the comic-book moon rocket's red and white checks, white with
-black roll stripes, silver with a red nose and fins (as she is built), the airliner's white with a blue cheatline up
-each side and blue fins, polar red with white fins, and midnight blue with gold stars all over her. The one she wears
+black roll stripes, silver with a red nose and fins, the airliner's white with a blue cheatline up each side and blue
+fins, polar red with white fins, and midnight blue with gold stars all over her (as she is built). The one she wears
 is framed in gold. Use a picture and the new paint runs down her from her nose to her foot over a minute, with a
 brush's sound; it is a tint, so no block of her changes, and her windows' frames take it too.
 
