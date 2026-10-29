@@ -1184,8 +1184,8 @@ function zeppelinControlsLang() {
   };
 }
 // The zeppelin's fabric is far lighter than the airliner's aluminium: its cover and fins weigh a tenth of a block,
-// against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size; the
-// rocket's cover lined inside her rooms is the same cover, and weighs the same.
+// against the airframe's quarter (sable:super_light), which it overrides, so the hot air carries a hull of its size;
+// the rocket's cover lined inside her rooms is the same cover, and weighs the same.
 write(`data/${ID}/tags/block/zeppelin_fabric.json`, { replace: false, values: [`${ID}:zeppelin_fabric`, `${ID}:zeppelin_cover`,
   `${ID}:rocket_lined_cover`, `${ID}:rocket_lining_panel`] });
 write(`data/${ID}/physics_block_properties/zeppelin_fabric.json`, {

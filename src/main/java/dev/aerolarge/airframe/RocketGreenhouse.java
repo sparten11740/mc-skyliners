@@ -40,8 +40,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 /**
  * The greenhouse, among her tallest rooms, a kitchen garden someone tends (laid out by {@link GreenhousePlan}): paths
  * out from the walkway to its windows cut it into four quarters, and in each the raised beds stand in rows a path
- * apart, a quarter turn from the quarter before, no two rows ending alike. Their soil is moist from a sprinkler in each
- * bed, and they grow carrots, potatoes, beetroots and wheat at every stage, half a bed sometimes another vegetable,
+ * apart, a quarter turn from the quarter before, no two rows ending alike. Their soil is moist from the sprinklers among
+ * them, and they grow carrots, potatoes, beetroots and wheat at every stage, half a bed sometimes another vegetable,
  * berry bushes, pumpkins and melons on their vines, or flowers, a gap here and there where something was picked; a
  * grow light hangs over each on its cable, bright magenta. By the way out from the lift stands the irrigation valve
  * that sets every sprinkler going. A cherry and an azalea grow among the beds, two cherries in a bigger greenhouse; in
