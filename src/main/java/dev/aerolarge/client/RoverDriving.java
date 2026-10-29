@@ -440,8 +440,10 @@ public final class RoverDriving {
         }
     }
 
+    /** No crosshair over the rover camera's picture, nor the name of the remote in hand over the keys' hint. */
     public static void guiLayer(RenderGuiLayerEvent.Pre event) {
-        if (driving != null && event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
+        boolean hidden = event.getName().equals(VanillaGuiLayers.CROSSHAIR) || event.getName().equals(VanillaGuiLayers.SELECTED_ITEM_NAME);
+        if (driving != null && hidden) {
             event.setCanceled(true);
         }
     }
