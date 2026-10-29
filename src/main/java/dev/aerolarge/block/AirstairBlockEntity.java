@@ -328,12 +328,13 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
         if (rise <= 0 || standing() || ticks == 0 && lastTicks == 0 && !hatchOpen) {
             return null;
         }
-        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, hatchInset, mouth(), hatchOpen, false);
+        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, AirstairFlight.WIDTH, hatchInset, mouth(),
+            hatchOpen, false);
     }
 
     /** How far down the stairs could come this time: blocks clear all the way from the door, up to their whole rise. */
     private int reach(ServerLevel level) {
-        return AirstairSteps.reach(level, this::step, rise, cell -> false);
+        return AirstairSteps.reach(level, this::step, AirstairFlight.WIDTH, rise, cell -> false);
     }
 
     /**
@@ -354,7 +355,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
     /** Whether a block is one of the steps this controller has laid. */
     @Override
     public boolean holds(Level level, BlockPos pos) {
-        return laid && level == this.level && AirstairSteps.holds(this::step, laidDown(), pos);
+        return laid && level == this.level && AirstairSteps.holds(this::step, AirstairFlight.WIDTH, laidDown(), pos);
     }
 
     /** Lays the steps under the flight, each with a guard over it holding its side's handrail, and the foot below. */
@@ -364,7 +365,7 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
             return;
         }
         Direction up = level.getBlockState(door).getValue(PlugDoorBlock.FACING).getOpposite();
-        foot = AirstairSteps.lay(level, this::step, length, up);
+        foot = AirstairSteps.lay(level, this::step, AirstairFlight.WIDTH, length, up);
         laid = true;
     }
 
@@ -375,14 +376,14 @@ public class AirstairBlockEntity extends AirstairControllerBlockEntity implement
 
     /** Takes the steps up, and the guards with them; only the steps' own blocks, whatever stands in their place. */
     private void takeUp(ServerLevel level) {
-        AirstairSteps.takeUp(level, this::step, laidDown());
+        AirstairSteps.takeUp(level, this::step, AirstairFlight.WIDTH, laidDown());
         laid = false;
         foot = false;
     }
 
     /** Whether anyone is on the steps, or in the way just over them. */
     private boolean anyoneOn(ServerLevel level) {
-        return anyoneIn(level, AirstairSteps.spots(this::step, length));
+        return anyoneIn(level, AirstairSteps.spots(this::step, AirstairFlight.WIDTH, length));
     }
 
     /**

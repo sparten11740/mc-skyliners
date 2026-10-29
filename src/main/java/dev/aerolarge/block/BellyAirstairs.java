@@ -108,12 +108,13 @@ final class BellyAirstairs {
         if (ticks == 0 && lastTicks == 0 && !hatchOpen) {
             return null;
         }
-        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, 0, 1, hatchOpen, true);
+        return new AirstairFlight.Motion(Mth.lerp(partialTick, lastTicks, ticks), length, rise, sections, AirstairFlight.WIDTH, 0, 1, hatchOpen,
+            true);
     }
 
     /** Whether a block is one of the steps laid under the flight. */
     boolean holds(Level level, BlockPos pos) {
-        return laid && level == button.getLevel() && AirstairSteps.holds(this::step, laidDown(), pos);
+        return laid && level == button.getLevel() && AirstairSteps.holds(this::step, AirstairFlight.WIDTH, laidDown(), pos);
     }
 
     private int laidDown() {
@@ -132,7 +133,7 @@ final class BellyAirstairs {
     /** Sets the stairs coming down, unless something stands in the way right under the hatch. */
     private void deploy(ServerLevel level) {
         if (ticks == 0) {
-            int reach = AirstairSteps.reach(level, this::step, rise, this::inHatch);
+            int reach = AirstairSteps.reach(level, this::step, AirstairFlight.WIDTH, rise, this::inHatch);
             if (reach < AirstairFlight.shortest(rise, sections)) {
                 level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
                 return;
@@ -151,7 +152,7 @@ final class BellyAirstairs {
     /** Sets the stairs going away: at once, or once nobody is on them. */
     private void fold(ServerLevel level) {
         deploying = false;
-        if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, length))) {
+        if (laid && AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, AirstairFlight.WIDTH, length))) {
             held = true;
             cooldown = CLEAR_CHECK_TICKS;
             level.playSound(null, button.getBlockPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1.0F, 0.7F);
@@ -180,7 +181,7 @@ final class BellyAirstairs {
                 sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
             }
             if (ticks == AirstairFlight.OUT) {
-                foot = AirstairSteps.lay(level, this::step, length, out.getOpposite());
+                foot = AirstairSteps.lay(level, this::step, AirstairFlight.WIDTH, length, out.getOpposite());
                 laid = true;
                 sound(level, AerolargeRegistry.AIRSTAIR_LATCH.get(), LATCH_VOLUME, 1.0F);
             }
@@ -204,7 +205,7 @@ final class BellyAirstairs {
             return;
         }
         cooldown = CLEAR_CHECK_TICKS;
-        if (!AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, length))) {
+        if (!AirstairControllerBlockEntity.anyoneIn(level, button.getBlockPos(), AirstairSteps.spots(this::step, AirstairFlight.WIDTH, length))) {
             held = false;
             takeUp(level);
             sound(level, AerolargeRegistry.AIRSTAIR_MOTOR.get(), MOTOR_VOLUME, 1.0F);
@@ -221,7 +222,7 @@ final class BellyAirstairs {
     }
 
     private void takeUp(ServerLevel level) {
-        AirstairSteps.takeUp(level, this::step, laidDown());
+        AirstairSteps.takeUp(level, this::step, AirstairFlight.WIDTH, laidDown());
         laid = false;
         foot = false;
     }

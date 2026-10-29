@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
  * The blocks integral airstairs are walked on once they are down (see {@link AirstairStepBlock}), and the ground they
  * come down to, the same for an airliner's out of its door and a zeppelin's out of her belly: how far down the ground
  * lets them reach, the steps laid under the flight with their guards and a foot below, taken up again, and whether
- * anyone is on them. Each flight says where its steps go ({@link StepAt}).
+ * anyone is on them. Each flight says where its steps go ({@link StepAt}), in as many columns as it is wide.
  */
 final class AirstairSteps {
     /**
@@ -36,7 +36,7 @@ final class AirstairSteps {
 
     /**
      * Where a flight's step goes: {@code down} blocks below the sill, as far out as it is down, in one of the flight's
-     * two columns (0 the left, seen from outside); null while the flight has nowhere to be.
+     * columns (0 the left, seen from outside); null while the flight has nowhere to be.
      */
     @FunctionalInterface
     interface StepAt {
@@ -45,15 +45,15 @@ final class AirstairSteps {
     }
 
     /**
-     * How far down a flight could come this time: blocks clear all the way from its sill, up to its whole rise. A block
-     * the flight's own hatch will take away as it opens is no hindrance.
+     * How far down a flight so many blocks wide could come this time: blocks clear all the way from its sill, up to its
+     * whole rise. A block the flight's own hatch will take away as it opens is no hindrance.
      */
-    static int reach(ServerLevel level, StepAt steps, int rise, Predicate<BlockPos> cleared) {
+    static int reach(ServerLevel level, StepAt steps, int width, int rise, Predicate<BlockPos> cleared) {
         for (int down = 1; down <= rise; down++) {
             if (steps.at(down, 0) == null) {
                 return 0;
             }
-            if (rowBlocked(level, steps, down, cleared)) {
+            if (rowBlocked(level, steps, width, down, cleared)) {
                 return down - 1;
             }
         }
@@ -61,8 +61,8 @@ final class AirstairSteps {
     }
 
     /** Whether anything stands where a row of steps would go, or in the room over it. */
-    private static boolean rowBlocked(ServerLevel level, StepAt steps, int down, Predicate<BlockPos> cleared) {
-        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+    private static boolean rowBlocked(ServerLevel level, StepAt steps, int width, int down, Predicate<BlockPos> cleared) {
+        for (int column = 0; column < width; column++) {
             BlockPos step = steps.at(down, column);
             if (step == null || blocked(level, step, cleared) || blocked(level, step.above(), cleared)) {
                 return true;
@@ -76,25 +76,31 @@ final class AirstairSteps {
     }
 
     /**
-     * Lays the steps under a flight this many blocks long, each with a guard over it holding its side's handrail, the
-     * steps rising toward {@code up}; and the foot below the bottom step where it is wanted. Gives whether a foot was
-     * laid.
+     * Lays the steps under a flight so many blocks wide and this many long, the steps rising toward {@code up}, a guard
+     * over each step at either side holding its side's handrail; and the foot below the bottom step where it is wanted.
+     * Gives whether a foot was laid.
      */
-    static boolean lay(ServerLevel level, StepAt steps, int length, Direction up) {
+    static boolean lay(ServerLevel level, StepAt steps, int width, int length, Direction up) {
         BlockState block = AerolargeRegistry.AIRSTAIR_STEP.get().defaultBlockState();
         for (int down = 1; down <= length; down++) {
-            layRow(level, steps, down, up, block);
+            layRow(level, steps, width, down, up, block);
         }
-        return layFoot(level, steps, length, AirstairStepBlock.foot(block, up));
+        return layFoot(level, steps, width, length, AirstairStepBlock.foot(block, up));
     }
 
-    /** Lays a row of steps, the guards over them holding the handrails on the left and on the right. */
-    private static void layRow(ServerLevel level, StepAt steps, int down, Direction up, BlockState block) {
-        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+    /**
+     * Lays a row of steps, the guards over the outer two holding the handrails on the left and on the right; the
+     * steps between them, under a wide flight, are open over them, as nothing runs along its middle.
+     */
+    private static void layRow(ServerLevel level, StepAt steps, int width, int down, Direction up, BlockState block) {
+        for (int column = 0; column < width; column++) {
             BlockPos step = steps.at(down, column);
-            AirstairStepBlock.Edge edge = column == 0 ? AirstairStepBlock.Edge.LEFT : AirstairStepBlock.Edge.RIGHT;
-            if (step != null) {
-                place(level, step, AirstairStepBlock.step(block, up));
+            if (step == null) {
+                continue;
+            }
+            place(level, step, AirstairStepBlock.step(block, up));
+            if (column == 0 || column == width - 1) {
+                AirstairStepBlock.Edge edge = column == 0 ? AirstairStepBlock.Edge.LEFT : AirstairStepBlock.Edge.RIGHT;
                 place(level, step.above(), AirstairStepBlock.guard(block, up, edge));
             }
         }
@@ -107,9 +113,9 @@ final class AirstairSteps {
      * middle of the foot's block but stays below its top, the plate at least {@link #FOOT_CLEARANCE} over it; never on
      * the ground's own blocks, under stairs that stand on them. Gives whether any was laid.
      */
-    private static boolean layFoot(ServerLevel level, StepAt steps, int length, BlockState foot) {
+    private static boolean layFoot(ServerLevel level, StepAt steps, int width, int length, BlockState foot) {
         boolean laidAny = false;
-        for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+        for (int column = 0; column < width; column++) {
             BlockPos at = steps.at(length + 1, column);
             if (at != null && wantsFoot(level, at)) {
                 laidAny |= place(level, at, foot);
@@ -141,12 +147,12 @@ final class AirstairSteps {
     }
 
     /**
-     * Takes up the steps laid this many blocks down, the foot included, and the guards with them; only the steps' own
-     * blocks, whatever stands in their place.
+     * Takes up the steps laid this many blocks down under a flight so many blocks wide, the foot included, and the
+     * guards with them; only the steps' own blocks, whatever stands in their place.
      */
-    static void takeUp(ServerLevel level, StepAt steps, int laidDown) {
+    static void takeUp(ServerLevel level, StepAt steps, int width, int laidDown) {
         for (int down = 1; down <= laidDown; down++) {
-            for (int column = 0; column < AirstairFlight.WIDTH; column++) {
+            for (int column = 0; column < width; column++) {
                 takeUp(level, steps.at(down, column));
             }
         }
@@ -164,22 +170,31 @@ final class AirstairSteps {
         }
     }
 
-    /** Whether a block is one of the steps laid this many blocks down, the foot included. */
-    static boolean holds(StepAt steps, int laidDown, BlockPos pos) {
+    /** Whether a block is one of the steps laid this many blocks down under a flight so wide, the foot included. */
+    static boolean holds(StepAt steps, int width, int laidDown, BlockPos pos) {
         for (int down = 1; down <= laidDown; down++) {
-            if (pos.equals(steps.at(down, 0)) || pos.equals(steps.at(down, AirstairFlight.WIDTH - 1))) {
+            if (inRow(steps, width, down, pos)) {
                 return true;
             }
         }
         return false;
     }
 
-    /** The room over each row of a flight this many blocks long, where anyone on it stands. */
-    static List<AABB> spots(StepAt steps, int length) {
+    private static boolean inRow(StepAt steps, int width, int down, BlockPos pos) {
+        for (int column = 0; column < width; column++) {
+            if (pos.equals(steps.at(down, column))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The room over each row of a flight so many blocks wide and this many long, where anyone on it stands. */
+    static List<AABB> spots(StepAt steps, int width, int length) {
         List<AABB> spots = new ArrayList<>();
         for (int down = 1; down <= length; down++) {
             BlockPos left = steps.at(down, 0);
-            BlockPos right = steps.at(down, AirstairFlight.WIDTH - 1);
+            BlockPos right = steps.at(down, width - 1);
             if (left != null && right != null) {
                 spots.add(AABB.encapsulatingFullBlocks(left, right.above(2)));
             }

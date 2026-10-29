@@ -7,11 +7,11 @@ import org.joml.Vector3f;
 
 /**
  * The integral airstairs' build and motion, as the renderer draws them and the airliner leaves room for them. A
- * straight flight of open treads at 45 degrees, two blocks wide, running straight out from the door: two half-block
- * treads a block, the top one level with the sill, each a non-slip plate with a yellow nosing, between slim aluminium
- * stringers, with a handrail along each side on thin posts. It is made of a few telescoping sections, nested in the
- * top one, and stows under the cabin floor in a bay behind a hatch in the hull below the door. Coming out it runs
- * through five steps, which going away runs back:
+ * straight flight of open treads at 45 degrees, as wide as its doorway (the airliner's two blocks, a rocket's four),
+ * running straight out from the door: two half-block treads a block, the top one level with the sill, each a non-slip
+ * plate with a yellow nosing, between slim aluminium stringers, with a handrail along each side on thin posts. It is
+ * made of a few telescoping sections, nested in the top one, and stows under the cabin floor in a bay behind a hatch in
+ * the hull below the door. Coming out it runs through five steps, which going away runs back:
  * <ol>
  * <li>{@link #HATCH}: the hatch, hinged along its foot, swings down and out of the way;</li>
  * <li>{@link #SLIDE}: the folded flight slides out of its bay on its rails, level;</li>
@@ -34,8 +34,10 @@ public final class AirstairFlight {
     public static final int SWING = 50;
     public static final int EXTEND = 80;
     public static final int OUT = 92;
-    /** The flight's width, in blocks: the doorway's. */
+    /** The airliner's flight's width, and a zeppelin's, in blocks: the airliner's doorway's. */
     public static final int WIDTH = PlugDoorBlock.COLUMNS;
+    /** How wide a hatch plate is, in blocks, as its picture is: the airliner's; a wider mouth has plates side by side. */
+    private static final int HATCH_WIDTH = PlugDoorBlock.COLUMNS;
     /** The fewest sections the flight is made of; more where the bay is short. */
     public static final int FEWEST_SECTIONS = 3;
     /** The most it may be made of, however short the bay. */
@@ -94,11 +96,12 @@ public final class AirstairFlight {
 
     /**
      * The airstairs at a moment: how far through coming out ({@code ticks}, 0 stowed to {@link #OUT}), how many blocks
-     * they reach down ({@code length}), how many they are built to reach ({@code rise}) and in how many sections; how
-     * far in from the door's face the hull's skin over the bay's mouth lies, and how deep the mouth is; whether the
-     * hatch is off the mouth; and whether they hang in a zeppelin's belly rather than in an airliner's door.
+     * they reach down ({@code length}), how many they are built to reach ({@code rise}), in how many sections and how
+     * many blocks wide; how far in from the door's face the hull's skin over the bay's mouth lies, and how deep the
+     * mouth is; whether the hatch is off the mouth; and whether they hang in a zeppelin's belly rather than in a door.
      */
-    public record Motion(float ticks, int length, int rise, int sections, float hatchInset, int mouth, boolean hatchOpen, boolean belly) {
+    public record Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
+                         boolean belly) {
     }
 
     /**
@@ -149,19 +152,25 @@ public final class AirstairFlight {
         float coverEnd = 0;
         for (int section = 0; section < motion.sections(); section++) {
             float offset = Math.min(extension, section * (treads - 1F));
-            section(nest, section, offset, treads, coverEnd, rails, sink);
+            section(nest, section, offset, treads, motion.width(), coverEnd, rails, sink);
             coverEnd = offset + treads;
         }
     }
 
-    /** The hatch, a plate over the mouth hinged along its foot, swung this far open (0 shut, 1 hanging down). */
+    /**
+     * The hatch over the mouth, hinged along its foot, swung this far open (0 shut, 1 hanging down): a plate for every
+     * {@link #HATCH_WIDTH} blocks across it, side by side.
+     */
     private static void hatch(Motion motion, float open, Sink sink) {
         float face = 1 - motion.hatchInset();
         Matrix4f pose = new Matrix4f()
             .translate(0, MOUTH_BOTTOM, face)
             .rotateX((float) Math.PI * open)
             .translate(0, -MOUTH_BOTTOM, -face);
-        sink.box(pose, new Vector3f(PX / 2, MOUTH_BOTTOM, face - HATCH_THICKNESS), new Vector3f(WIDTH - PX / 2, MOUTH_TOP, face), Part.HATCH);
+        for (int from = 0; from < motion.width(); from += HATCH_WIDTH) {
+            float to = Math.min(motion.width(), from + HATCH_WIDTH);
+            sink.box(pose, new Vector3f(from + PX / 2, MOUTH_BOTTOM, face - HATCH_THICKNESS), new Vector3f(to - PX / 2, MOUTH_TOP, face), Part.HATCH);
+        }
     }
 
     /** Where the folded flight is: slid, raised and tilted, by its pose's three amounts. */
@@ -195,15 +204,15 @@ public final class AirstairFlight {
     }
 
     /**
-     * One section, run out this many treads down the slope from where it nests: its stringers, the treads not hidden
-     * under the section above, and its handrails, raised this high. The top section also has the platform: the top
-     * tread on beams level with the sill, and the handrail's post at the hull.
+     * One section of a flight so many blocks wide, run out this many treads down the slope from where it nests: its
+     * stringers, the treads not hidden under the section above, and its handrails, raised this high. The top section
+     * also has the platform: the top tread on beams level with the sill, and the handrail's post at the hull.
      */
-    private static void section(Matrix4f nest, int section, float offset, int treads, float coverEnd, float rails, Sink sink) {
+    private static void section(Matrix4f nest, int section, float offset, int treads, int width, float coverEnd, float rails, Sink sink) {
         Matrix4f pose = new Matrix4f(nest).translate(0, -offset / 2, offset / 2);
         float inset = section * NEST_INSET;
         float left = inset;
-        float right = WIDTH - inset;
+        float right = width - inset;
         float inner = STRINGER_WIDTH;
         // Each nested section a little shallower top and bottom, so no faces of two meet.
         float shrink = section * PX / 4;
@@ -215,7 +224,7 @@ public final class AirstairFlight {
         for (int tread = 1; tread <= treads; tread++) {
             boolean covered = section > 0 && offset + tread <= coverEnd + 0.001F;
             if (!covered) {
-                tread(pose, tread, left + inner, right - inner, sink);
+                tread(pose, tread, left + inner, right - inner, width, sink);
             }
             if (tread > 1) {
                 for (float side : new float[]{left, right - inner}) {
@@ -229,15 +238,17 @@ public final class AirstairFlight {
         }
     }
 
-    /** A tread: its plate, and the yellow nosing along its front edge. */
-    private static void tread(Matrix4f pose, int tread, float from, float to, Sink sink) {
+    /** A tread across a flight so many blocks wide: its plate, and the yellow nosing along its front edge. */
+    private static void tread(Matrix4f pose, int tread, float from, float to, int width, Sink sink) {
         float back = (tread - 1) / 2F;
         float front = tread / 2F;
         float top = (1 - tread) / 2F;
-        // Split at the middle so no box is wider than a block, as the textures repeat by the block.
-        for (float[] span : new float[][]{{from, WIDTH / 2F}, {WIDTH / 2F, to}}) {
-            sink.box(pose, new Vector3f(span[0], top - TREAD_THICKNESS, back), new Vector3f(span[1], top, front - NOSING_DEPTH), Part.TREAD);
-            sink.box(pose, new Vector3f(span[0], top - NOSING_THICKNESS, front - NOSING_DEPTH), new Vector3f(span[1], top, front), Part.NOSING);
+        // Split at each block's edge so no box is wider than a block, as the textures repeat by the block.
+        for (int block = 0; block < width; block++) {
+            float left = Math.max(from, block);
+            float right = Math.min(to, block + 1);
+            sink.box(pose, new Vector3f(left, top - TREAD_THICKNESS, back), new Vector3f(right, top, front - NOSING_DEPTH), Part.TREAD);
+            sink.box(pose, new Vector3f(left, top - NOSING_THICKNESS, front - NOSING_DEPTH), new Vector3f(right, top, front), Part.NOSING);
         }
     }
 
@@ -305,7 +316,7 @@ public final class AirstairFlight {
 
     /**
      * How far the folded flight reaches, out from the hull's face and up from the sill, swung up level about its
-     * pivot, its sections nested and its rails down.
+     * pivot, its sections nested and its rails down: the same whatever its width, so measured on the airliner's.
      */
     private record Bounds(float minU, float maxU, float minY, float maxY) {
         /** Worked out once for each build of stairs, by rise and sections: every frame draws from them. */
@@ -330,7 +341,7 @@ public final class AirstairFlight {
                 }
             };
             for (int section = 0; section < sections; section++) {
-                section(nest, section, 0, treads, treads, 0, measure);
+                section(nest, section, 0, treads, WIDTH, treads, 0, measure);
             }
             return new Bounds(reach[0], reach[1], reach[2], reach[3]);
         }
