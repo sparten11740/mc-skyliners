@@ -4060,6 +4060,25 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       }, 0);
     }
   }
+// The "z" rising from a sleeping tardigrade (see SleepParticle): a bold letter in pale blue-white, outlined in a night
+// blue so it reads against anything behind it.
+{
+  const particleOutput = resolve(ROOT, "src/main/resources/assets/aerolarge/textures/particle");
+  const Z = ["#######", ".....##", "....##.", "...##..", "..##...", ".##....", "#######"];
+  texture(particleOutput, "sleep_z", (x, y) => {
+    const at = (px, py) => Z[py - 1]?.[px - 1] === "#";
+    if (at(x, y)) return [0xf0, 0xf4, 0xff];
+    const near = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]].some(([dx, dy]) => at(x + dx, y + dy));
+    return near ? [0x2a, 0x34, 0x6a] : CLEAR;
+  }, 0, 9, 9);
+  // A glowing spore of the tardigrade's spore drive (see SporeParticle): a round speck, white at its heart, its rim
+  // the blue it is tinted.
+  texture(particleOutput, "spore", (x, y) => {
+    const r = Math.hypot(x - 2, y - 2);
+    if (r > 2.3) return CLEAR;
+    return r < 1.2 ? [0xff, 0xff, 0xff] : [0xb8, 0xe8, 0xff];
+  }, 0, 5, 5);
+}
   const GIRDER = [0x2f, 0x5f, 0xb3];
   const GIRDER_DARK = [0x23, 0x48, 0x8a];
   texture(blockOutput, "zeppelin_girder", (x, y) => {
@@ -5220,6 +5239,17 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (y === trace(x, frame, PULSE)) return [0x5c, 0xf0, 0x8a];
     if (y > 4 && Math.abs(y - trace(x, frame, PULSE)) === 1 && PULSE[(x + frame) % 16] !== 0) return [0x1f, 0x6a, 0x3c];
     return x % 4 === 0 || y % 4 === 0 ? GRID : SCREEN;
+  });
+  // Asleep: the creature lying low and long under a crescent moon, its pulse slow and gentle, a night blue round it.
+  const LYING = ["..######..", ".########.", "##########"];
+  const MOON = ["..##", ".#..", ".#..", "..##"];
+  const SLOW = [0, 0, 0, 0, 0, -1, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0];
+  animated("lab_screen_asleep", 6, (x, y, frame) => {
+    if (!onScreen(x, y)) return BEZEL;
+    if (outline(MOON, x, y, 10, 2)) return [0xf4, 0xe2, 0x8c];
+    if (outline(LYING, x, y, 2, 6)) return SKIN;
+    if (y === trace(x, frame, SLOW)) return [0x7c, 0xb8, 0xf0];
+    return x % 4 === 0 || y % 4 === 0 ? [0x12, 0x14, 0x30] : [0x08, 0x08, 0x1c];
   });
   const STILL = [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0];
   animated("lab_screen_dormant", 8, (x, y, frame) => {

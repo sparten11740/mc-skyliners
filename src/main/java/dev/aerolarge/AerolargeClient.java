@@ -97,9 +97,11 @@ import dev.aerolarge.client.ShipsColoursRenderer;
 import dev.aerolarge.client.ShipsPlaqueRenderer;
 import dev.aerolarge.client.SkyTrails;
 import dev.aerolarge.client.SkywritingBoardRenderer;
+import dev.aerolarge.client.SleepParticle;
 import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.SpaceSky;
+import dev.aerolarge.client.SporeParticle;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
@@ -324,6 +326,8 @@ public final class AerolargeClient {
         event.registerSpriteSet(AerolargeRegistry.ROCKET_EXHAUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.EXHAUST));
         event.registerSpriteSet(AerolargeRegistry.ROCKET_CLOUD.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.CLOUD));
         event.registerSpriteSet(AerolargeRegistry.ROCKET_DUST.get(), sprites -> new BlastPuffParticle.Provider(sprites, BlastPuffParticle.Kind.WAVE));
+        event.registerSpriteSet(AerolargeRegistry.SLEEP_Z.get(), SleepParticle.Provider::new);
+        event.registerSpriteSet(AerolargeRegistry.SPORE.get(), SporeParticle.Provider::new);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

@@ -2091,7 +2091,15 @@ softly along the glass's top: moss on its floor with a shallow pool and beds of 
 goes mossy boulders and rocks, ferns and azaleas growing from beds of moss, glow lichen on her skin and spore blossoms
 hanging from the ceiling, their spores drifting down. It lumbers to and fro, rests, turns round where its tank is deep
 enough to (at the default scale it is not, and it always faces its hatch), and turns its head to look at whoever is
-near. In the tank's glass on her right is a feeding hatch at chest height,
+near. At night it settles down to sleep with a drowsy purr, low on its tucked-up legs, its head resting and its eyes
+shut, breathing slowly and snoring softly, a "z" rising from it now and then and its screen showing it lying under a
+crescent moon; at daybreak it wakes with a stretch and a purr, and fed or touched in the night it wakes to come, and
+drifts off again a while after. Whatever lands in its tank, thrown through the open hatch, it goes for and sucks in
+with a slurp, the thing flying to its mouth, chews with bits of it falling and then burps, as it does after every
+meal. And now and then, resting awake, it jumps away through the spore drive, as its cousin on a certain starship does:
+it glows spore blue as glowing spores swirl in round it with a rising hum, vanishes in a burst of them with a deep
+whump, and a few seconds later is back where it was in another, whooshing in. In the tank's glass on her right is a
+feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
 with an empty hand to reach in and touch it, and it wriggles and gives a soft, low purr, as it does now and then on its
@@ -2462,7 +2470,8 @@ Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBa
 `RocketLab` furnishes her lab as `LabPlan` lays it out: the tank's `HabitatGlassBlock`s, its `HabitatFloorBlock`s and
 `LabInstrumentBlock`s, and the `HabitatHatchBlock`, whose `HabitatHatchBlockEntity` makes her `Tardigrade` and keeps it
 pacing the line the plan found for it (in `#sable:retain_in_sub_level`, so it lives among her blocks), curling it up in
-space; on the client `TardigradeModel` and `TardigradeRenderer` draw it. `LabBays` lays the food lab and the wet bench
+space; on the client `TardigradeModel` and `TardigradeRenderer` draw it, `SleepParticle` its "z"s asleep and
+`SporeParticle` the spores of its jumps. `LabBays` lays the food lab and the wet bench
 either side of the shaft: the `BioreactorBlock`s, which grow their steaks on scheduled ticks of their own and hand them
 out, and the `LabGrowerBlock`s, the hydroponic rack and the algae column, all `LabMachineBlock`s two blocks tall; the
 `LabPartitionBlock`s and the `LabPipeBlock`s; and the galley's cupboards and the lavatory's basin. A

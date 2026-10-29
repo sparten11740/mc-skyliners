@@ -1513,6 +1513,9 @@ for (const kind of ["exhaust", "cloud", "dust"]) {
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.
   write(`assets/${ID}/particles/flare_smoke.json`, { textures: [`${ID}:contrail`] });
+  // The "z" rising from her sleeping tardigrade (see SleepParticle), and the glowing spores of its spore drive.
+  write(`assets/${ID}/particles/sleep_z.json`, { textures: [`${ID}:sleep_z`] });
+  write(`assets/${ID}/particles/spore.json`, { textures: [`${ID}:spore`] });
   selfDestructParticles();
 }
 
@@ -5415,8 +5418,8 @@ function roverLang() {
 // middle and a steel flap over it, slid aside when open. The instruments, each modelled facing north: a microscope in
 // white enamel on a charcoal foot, its eyepieces tilted up toward whoever uses it and its stage lit from under; a rack
 // of five vials, their liquids glowing; a scan screen on a stand; and the vitals screen, a panel of the tank's wall,
-// beating or, curled up, still. The tank's floor patches lie on the floor as a carpet does: the pool, rippling water
-// over gravel; the pebbles, smooth stones in moss. All are placed only by the blueprint, so they have no items and
+// beating, asleep beating slowly under a moon, or, curled up, still. The tank's floor patches lie on the floor as a
+// carpet does: the pool, rippling water over gravel; the pebbles, smooth stones in moss. All are placed only by the blueprint, so they have no items and
 // give nothing back; the glass and the hatch are built into her, the rest fitted (see labFittings).
 {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
@@ -5507,12 +5510,18 @@ function roverLang() {
   write(`assets/${ID}/models/block/lab_scan.json`, screen("scan", "lab_screen_scan"));
   write(`assets/${ID}/models/block/lab_vitals.json`, screen("vitals", "lab_screen_vitals"));
   write(`assets/${ID}/models/block/lab_vitals_dormant.json`, screen("vitals", "lab_screen_dormant"));
-  const instrumentModel = (kind, dormant) => (kind === "vitals" && dormant ? "lab_vitals_dormant" : `lab_${kind}`);
+  write(`assets/${ID}/models/block/lab_vitals_asleep.json`, screen("vitals", "lab_screen_asleep"));
+  // The vitals screen curled up still, else asleep slow, else beating; every other instrument as it is.
+  const instrumentModel = (kind, dormant, asleep) => {
+    if (kind !== "vitals") return `lab_${kind}`;
+    if (dormant) return "lab_vitals_dormant";
+    return asleep ? "lab_vitals_asleep" : "lab_vitals";
+  };
   const variants = {};
   for (const kind of ["microscope", "samples", "scan", "vitals", "specimens"]) {
-    for (const dormant of [false, true]) {
+    for (const [dormant, asleep] of [[false, false], [false, true], [true, false], [true, true]]) {
       for (const [facing, y] of Object.entries(yRot)) {
-        variants[`dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant)}`, y };
+        variants[`asleep=${asleep},dormant=${dormant},facing=${facing},kind=${kind}`] = { model: `${ID}:block/${instrumentModel(kind, dormant, asleep)}`, y };
       }
     }
   }
@@ -5544,9 +5553,11 @@ foodLabModels();
 function labFittings() {
   return ["lab_instrument", "habitat_floor"];
 }
-// Her tardigrade's purr, soft and low now and then, and the bloop as it curls up into its tun.
+// Her tardigrade's purr, soft and low now and then, the bloop as it curls up into its tun, its snore asleep, its slurp
+// sucking in what is thrown into its tank and its burp after, and its jump through the spore drive and its return.
 function labSounds() {
-  return Object.fromEntries(["tardigrade_mrrp", "tardigrade_bloop"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+  return Object.fromEntries(["tardigrade_mrrp", "tardigrade_bloop", "tardigrade_snore", "tardigrade_slurp", "tardigrade_burp", "tardigrade_jump",
+    "tardigrade_return"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
 }
 // Her greenhouse's air and the bee buzzing past, her pool's water and its bigger slaps (see RoomAmbience).
 function roomSounds() {
@@ -5712,6 +5723,11 @@ function labLang() {
     "entity.aerolarge.tardigrade": "Tardigrade",
     "subtitles.aerolarge.tardigrade_mrrp": "Tardigrade purrs",
     "subtitles.aerolarge.tardigrade_bloop": "Tardigrade curls up",
+    "subtitles.aerolarge.tardigrade_snore": "Tardigrade snores",
+    "subtitles.aerolarge.tardigrade_slurp": "Tardigrade slurps",
+    "subtitles.aerolarge.tardigrade_burp": "Tardigrade burps",
+    "subtitles.aerolarge.tardigrade_jump": "Tardigrade jumps away",
+    "subtitles.aerolarge.tardigrade_return": "Tardigrade jumps back",
   };
 }
 

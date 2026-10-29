@@ -2520,7 +2520,13 @@ const ROCKET_SHOCK = {
 // The rocket's tardigrade, with a random sequence of its own so the sounds above are unchanged. Its purr: a soft, low
 // "mrrp", a closed-mouth hum opening into a voice that rises from 380 to 620 hertz, rolled in its middle as a cat's
 // trill is, with a breath under it. Its bloop as it curls up into its tun: a round drop of a note falling from 500 to
-// 180 hertz, a little bubble at its start.
+// 180 hertz, a little bubble at its start. Its snore asleep: a slow breath in, the soft palate fluttering low as it
+// goes, a hum at 95 hertz rattled 26 times a second, and out again in a long soft puff of breath through a warm
+// resonance, the two swelling and fading as a sleeper's breaths do. Its slurp sucking in what is thrown into its tank:
+// a rush of air through a narrowing mouth, its pitch sweeping up from 300 to 1500 hertz as it swells, ending in a
+// gulp. Its burp after a meal: a deep rough voice at about 80 hertz, wobbling and rattled, through a hollow resonance.
+// Its jump through the spore drive: a shimmering hum charging up from 200 to 900 hertz, then a deep whump; and its
+// return, the same played backwards, whooshing in.
 {
   const tardigradeRandom = ownRandom(0x54617264);
   const PURR_SECONDS = 0.45;
@@ -2554,6 +2560,85 @@ const ROCKET_SHOCK = {
     bloop[i] = drop + bubble + 0.02 * (tardigradeRandom() * 2 - 1) * Math.exp(-t / 0.03);
   }
   writeSound("tardigrade_bloop", bloop, 0.55);
+  const SNORE_SECONDS = 1.9;
+  const BREATH_IN = 0.8;
+  const BREATH_OUT_FROM = 0.95;
+  const BREATH_OUT = 0.9;
+  const snore = new Float64Array(Math.round(SNORE_SECONDS * RATE));
+  let humPhase = 0;
+  let air = 0;
+  for (let i = 0; i < snore.length; i++) {
+    const t = i / RATE;
+    const breathIn = t < BREATH_IN ? Math.sin((Math.PI * t) / BREATH_IN) : 0;
+    const breathOut = t > BREATH_OUT_FROM ? Math.sin(Math.PI * Math.min(1, (t - BREATH_OUT_FROM) / BREATH_OUT)) : 0;
+    humPhase += (2 * Math.PI * 95) / RATE;
+    const rattle = 0.55 + 0.45 * Math.sin(2 * Math.PI * 26 * t);
+    const hum = rattle * (Math.sin(humPhase) + 0.5 * Math.sin(2 * humPhase) + 0.2 * Math.sin(3 * humPhase));
+    air += 0.1 * (tardigradeRandom() * 2 - 1 - air);
+    snore[i] = breathIn * breathIn * (0.6 * hum + 0.35 * air) + breathOut * 0.8 * air;
+  }
+  const hush = resonance(snore, 420, 1.5);
+  writeSound("tardigrade_snore", snore.map((sample, i) => sample + 0.6 * hush[i]), 0.45);
+  // A band of noise whose middle sweeps from one pitch to another over a sound, swelling as it goes.
+  const sweptAir = (seconds, fromHz, toHz, q) => {
+    const out = new Float64Array(Math.round(seconds * RATE));
+    let [x1, x2, y1, y2] = [0, 0, 0, 0];
+    for (let i = 0; i < out.length; i++) {
+      const along = i / out.length;
+      const w = (2 * Math.PI * (fromHz + (toHz - fromHz) * along ** 1.5)) / RATE;
+      const alpha = Math.sin(w) / (2 * q);
+      const x = tardigradeRandom() * 2 - 1;
+      const y = (alpha * x - alpha * x2 + 2 * Math.cos(w) * y1 - (1 - alpha) * y2) / (1 + alpha);
+      [x2, x1, y2, y1] = [x1, x, y1, y];
+      out[i] = y;
+    }
+    return out;
+  };
+  const SLURP_SECONDS = 0.7;
+  const SUCK = 0.6;
+  const slurp = sweptAir(SLURP_SECONDS, 300, 1500, 3);
+  let gulpPhase = 0;
+  for (let i = 0; i < slurp.length; i++) {
+    const t = i / RATE;
+    const swell = Math.min(1, t / SUCK) ** 2 * (t < SUCK ? 1 : 0);
+    gulpPhase += (2 * Math.PI * (200 + 400 * Math.exp(-Math.max(0, t - SUCK) / 0.03))) / RATE;
+    const gulp = t >= SUCK ? Math.exp(-(t - SUCK) / 0.04) * Math.sin(gulpPhase) : 0;
+    slurp[i] = swell * slurp[i] * 3 + 0.8 * gulp;
+  }
+  writeSound("tardigrade_slurp", slurp, 0.5);
+  const BURP_SECONDS = 0.8;
+  const burp = new Float64Array(Math.round(BURP_SECONDS * RATE));
+  let voicePhase = 0;
+  let wobble = 0;
+  for (let i = 0; i < burp.length; i++) {
+    const t = i / RATE;
+    wobble += 0.002 * (tardigradeRandom() * 2 - 1 - wobble);
+    const pitch = 80 * (1 + 0.12 * Math.sin(2 * Math.PI * 3 * t) + 4 * wobble) * (1 - 0.15 * t / BURP_SECONDS);
+    voicePhase += (2 * Math.PI * pitch) / RATE;
+    const saw = 2 * ((voicePhase / (2 * Math.PI)) % 1) - 1;
+    const rattle = 0.6 + 0.4 * Math.abs(Math.sin(2 * Math.PI * 23 * t + 3 * wobble));
+    const envelope = Math.min(1, t / 0.04) * Math.min(1, (BURP_SECONDS - t) / 0.25);
+    burp[i] = envelope * rattle * saw;
+  }
+  const hollow = resonance(burp, 380, 2.5);
+  writeSound("tardigrade_burp", burp.map((sample, i) => 0.4 * sample + hollow[i]), 0.6);
+  const JUMP_SECONDS = 1.6;
+  const CHARGE = 1.1;
+  const jump = new Float64Array(Math.round(JUMP_SECONDS * RATE));
+  let humPhase2 = 0;
+  let whumpPhase = 0;
+  for (let i = 0; i < jump.length; i++) {
+    const t = i / RATE;
+    const charging = Math.min(1, t / CHARGE);
+    humPhase2 += (2 * Math.PI * (200 + 700 * charging ** 2)) / RATE;
+    const shimmer = 0.6 + 0.4 * Math.sin(2 * Math.PI * (6 + 18 * charging) * t);
+    const hum = t < CHARGE ? charging * shimmer * (Math.sin(humPhase2) + 0.3 * Math.sin(2 * humPhase2) + 0.15 * Math.sin(3.01 * humPhase2)) : 0;
+    whumpPhase += (2 * Math.PI * (55 + 120 * Math.exp(-Math.max(0, t - CHARGE) / 0.05))) / RATE;
+    const whump = t >= CHARGE ? Math.exp(-(t - CHARGE) / 0.18) * (Math.sin(whumpPhase) + 0.3 * (tardigradeRandom() * 2 - 1)) : 0;
+    jump[i] = 0.5 * hum + 1.2 * whump;
+  }
+  writeSound("tardigrade_jump", jump, 0.6);
+  writeSound("tardigrade_return", jump.slice().reverse(), 0.6);
 }
 
 // The lab's food lab, with a random sequence of its own so the sounds above are unchanged. The bioreactor's harvest:

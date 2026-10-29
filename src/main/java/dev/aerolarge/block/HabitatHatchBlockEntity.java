@@ -23,7 +23,8 @@ import net.minecraft.world.phys.Vec3;
  * the tank, where on it it can turn round and where the hatch is, bringing it back to the tank if it is ever found far
  * from it, as when her blocks are assembled into a flying body and moved away from where it stood. Every second it
  * looks how high she is in the world: over the top of the world, in space, the creature curls up into its tun and its
- * vitals screen over the hatch goes still; back under it, it uncurls.
+ * vitals screen over the hatch goes still; back under it, it uncurls. And every second it shows on that screen whether
+ * the creature sleeps: lying under a moon, its pulse slow, while it does.
  *
  * <p>Its line is set as the rocket is built (see {@link #configure}), as offsets from the hatch's middle turned as she
  * was placed, and turned again with the hatch's facing if it is ever loaded facing another way (see {@link Turning}).
@@ -34,8 +35,8 @@ public class HabitatHatchBlockEntity extends BlockEntity {
      * first is made at once.
      */
     private static final int MISSING = 100;
-    /** How often the keeper looks how high she is, in ticks. */
-    private static final int HEIGHT_EVERY = 20;
+    /** How often the keeper looks how high she is and whether the creature sleeps, in ticks. */
+    private static final int LOOK_EVERY = 20;
     /**
      * How high in the world the creature curls up into its tun, over the top of the world where only sky is, and how
      * low it has come back down to uncurl, in blocks.
@@ -107,9 +108,26 @@ public class HabitatHatchBlockEntity extends BlockEntity {
             Vec3 home = keeper.home(middle);
             found.teleportTo(home.x, home.y, home.z);
         }
-        if (level.getGameTime() % HEIGHT_EVERY == 0) {
+        if (level.getGameTime() % LOOK_EVERY == 0) {
             keeper.lookHowHigh(level, found);
+            keeper.showSleep(level, found);
         }
+    }
+
+    /** The vitals screen over the hatch shown asleep while the creature sleeps, and awake while it is awake. */
+    private void showSleep(ServerLevel level, Tardigrade found) {
+        BlockState shown = vitals(level);
+        if (shown != null && shown.getValue(LabInstrumentBlock.ASLEEP) != found.isAsleep()) {
+            level.setBlock(worldPosition.above(), shown.setValue(LabInstrumentBlock.ASLEEP, found.isAsleep()), Block.UPDATE_ALL);
+        }
+    }
+
+    /** The vitals screen over the hatch as it stands; null if it is not there. */
+    @Nullable
+    private BlockState vitals(ServerLevel level) {
+        BlockState shown = level.getBlockState(worldPosition.above());
+        boolean vitals = shown.getBlock() instanceof LabInstrumentBlock && shown.getValue(LabInstrumentBlock.KIND) == LabInstrumentBlock.Kind.VITALS;
+        return vitals ? shown : null;
     }
 
     /** Whether the creature is further from its line than it can wander: out of the tank. */
@@ -164,17 +182,16 @@ public class HabitatHatchBlockEntity extends BlockEntity {
         }
         curled = nowCurled;
         found.setCurled(curled);
-        BlockPos screen = worldPosition.above();
-        BlockState shown = level.getBlockState(screen);
-        if (shown.getBlock() instanceof LabInstrumentBlock && shown.getValue(LabInstrumentBlock.KIND) == LabInstrumentBlock.Kind.VITALS) {
-            level.setBlock(screen, shown.setValue(LabInstrumentBlock.DORMANT, curled), Block.UPDATE_ALL);
+        BlockState shown = vitals(level);
+        if (shown != null) {
+            level.setBlock(worldPosition.above(), shown.setValue(LabInstrumentBlock.DORMANT, curled), Block.UPDATE_ALL);
         }
         setChanged();
     }
 
     /**
-     * Calls the creature to the hatch, to be fed or touched; whether it comes (not curled up in its tun, and there to
-     * come).
+     * Calls the creature to the hatch, to be fed or touched; whether it comes (not curled up in its tun nor away
+     * through the spore drive, and there to come).
      */
     public boolean call(ServerLevel level, boolean feed) {
         Tardigrade found = creature(level);

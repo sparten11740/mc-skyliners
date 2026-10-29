@@ -1,0 +1,65 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "screen": "aerolarge:block/lab_screen_asleep",
+    "casing": "aerolarge:block/lab_dark",
+    "stand": "aerolarge:block/lab_chrome",
+    "particle": "aerolarge:block/lab_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0.1
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#casing"
+        },
+        "down": {
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        0.1
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#screen",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

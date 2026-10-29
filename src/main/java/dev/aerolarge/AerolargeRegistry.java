@@ -545,6 +545,10 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_EXHAUST = PARTICLES.register("rocket_exhaust", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_CLOUD = PARTICLES.register("rocket_cloud", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ROCKET_DUST = PARTICLES.register("rocket_dust", () -> new SimpleParticleType(false));
+    /** A "z" rising from the rocket's tardigrade as it sleeps (see entity.Tardigrade). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEEP_Z = PARTICLES.register("sleep_z", () -> new SimpleParticleType(false));
+    /** A glowing spore of the spore drive the rocket's tardigrade jumps through (see entity.Tardigrade). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SPORE = PARTICLES.register("spore", () -> new SimpleParticleType(false));
 
     /** Opens by hand like a wooden door but sounds like the metal one it is. */
     public static final BlockSetType AIRLINER = BlockSetType.register(new BlockSetType(
@@ -1957,6 +1961,11 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_MRRP = sound("tardigrade_mrrp");
     public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_BLOOP = sound("tardigrade_bloop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_SNORE = sound("tardigrade_snore");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_SLURP = sound("tardigrade_slurp");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_BURP = sound("tardigrade_burp");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_JUMP = sound("tardigrade_jump");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TARDIGRADE_RETURN = sound("tardigrade_return");
     /**
      * The lab's food lab (see {@link dev.aerolarge.airframe.LabPlan}): the cultured-meat bioreactor, which grows a
      * Lab-Grown Steak over and over; the hydroponic rack and the algae column glowing beside it; the sample centrifuge

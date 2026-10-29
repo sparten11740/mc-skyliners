@@ -1135,6 +1135,46 @@
       }
     ]
   },
+  "tardigrade_snore": {
+    "subtitle": "subtitles.aerolarge.tardigrade_snore",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_snore"
+      }
+    ]
+  },
+  "tardigrade_slurp": {
+    "subtitle": "subtitles.aerolarge.tardigrade_slurp",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_slurp"
+      }
+    ]
+  },
+  "tardigrade_burp": {
+    "subtitle": "subtitles.aerolarge.tardigrade_burp",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_burp"
+      }
+    ]
+  },
+  "tardigrade_jump": {
+    "subtitle": "subtitles.aerolarge.tardigrade_jump",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_jump"
+      }
+    ]
+  },
+  "tardigrade_return": {
+    "subtitle": "subtitles.aerolarge.tardigrade_return",
+    "sounds": [
+      {
+        "name": "aerolarge:tardigrade_return"
+      }
+    ]
+  },
   "bioreactor_harvest": {
     "subtitle": "subtitles.aerolarge.bioreactor_harvest",
     "sounds": [
