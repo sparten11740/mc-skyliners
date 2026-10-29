@@ -91,8 +91,8 @@ public final class ShootingStars {
      * distance, and the glow's opacity at its middle, fading to nothing at its edge.
      */
     private static final float DISTANCE = 100;
-    private static final float WIDTH = 0.18F;
-    private static final float GLOW = 0.7F;
+    private static final float WIDTH = 0.28F;
+    private static final float GLOW = 1.1F;
     private static final float GLOW_OPACITY = 0.6F;
     /** How many pieces its tail, and the glow round its head, are drawn in. */
     private static final int TAIL_PIECES = 8;
