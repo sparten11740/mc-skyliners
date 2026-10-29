@@ -175,7 +175,8 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - N23: the observation deck's band of smoked glass in place of its oval windows.
 - N33: low gravity in space is off by default (`rocket.lowGravity`); worth a try with it on.
 - N34: the lab's tank stands partly in front of the back window at scale 2.
-- The shooting stars are subtle (short, small); easy to make bigger if you would like them showier.
+- The shooting stars are a little bolder since alpha.172 (half as wide again, a bigger glow), but still meteor-sized;
+  easy to make longer if you would like them showier.
 - At scales 3 and 4 the nine stories keep their player-sized heights, so her observation deck becomes an atrium 68 or
   110 blocks tall up into her nose, its band of glass at its foot and its starlight ceiling far overhead (seen at
   scale 4, which built 327,000 blocks in 3 s and every room, the pool a wide lagoon). More stories at the bigger
