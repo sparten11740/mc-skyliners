@@ -3961,35 +3961,71 @@ function coffeeMachineLang() {
   };
 }
 
-// Basketball, drawn facing north. The hoop: an orange ring on a dark bracket to the backboard, with its net hanging
-// below; the side it counts for does not show. The scoreboard: a dark face, the score drawn over it by its renderer.
-// The ball rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
+// Basketball, drawn facing north. The hoop: an orange ring with its net hanging below, as high in its block however
+// it is put up, so it scores the same (see HoopBlock); the side it counts for does not show. On a wall, a dark bracket
+// to the wall or backboard behind it. On the floor, a little backboard along the north side of the block behind the
+// ring, a pane of the glass backboard's glass in its aluminium frame with the red shooter's square over the ring and a
+// short dark bracket under the ring to it, on top of a steel pole standing in a dark weighted base. Under a ceiling, a
+// shorter board of the same, hung from the ceiling on two steel rods, each with a plate where it meets it. Those two
+// are drawn translucent, for the glass. The scoreboard: a dark face, the score drawn over it by its renderer. The ball
+// rack: a steel frame of balls. The ball: an item sprite, drawn the same in flight.
 {
-  const hoop = {
-    ...boxes(
-      { rim: `${ID}:block/hoop_rim`, bracket: `${ID}:block/handset_cradle`, net: `${ID}:block/hoop_net`, particle: `${ID}:block/hoop_rim` },
-      [
-        [[2, 10, 2], [14, 11, 3.5], "#rim"],
-        [[2, 10, 12.5], [14, 11, 14], "#rim"],
-        [[2, 10, 3.5], [3.5, 11, 12.5], "#rim"],
-        [[12.5, 10, 3.5], [14, 11, 12.5], "#rim"],
-        [[7, 9, 0], [9, 11, 2], "#bracket"],
-      ],
-    ),
-    render_type: "minecraft:cutout",
-  };
+  const ring = [
+    [[2, 10, 2], [14, 11, 3.5], "#rim"],
+    [[2, 10, 12.5], [14, 11, 14], "#rim"],
+    [[2, 10, 3.5], [3.5, 11, 12.5], "#rim"],
+    [[12.5, 10, 3.5], [14, 11, 12.5], "#rim"],
+  ];
   // The net: four sides hanging from the ring, seen from inside and out.
-  for (const [from, to, faces] of [
+  const net = [
     [[3, 4, 3.5], [13, 10, 3.5], ["north", "south"]],
     [[3, 4, 12.5], [13, 10, 12.5], ["north", "south"]],
     [[3.5, 4, 3], [3.5, 10, 13], ["east", "west"]],
     [[12.5, 4, 3], [12.5, 10, 13], ["east", "west"]],
-  ]) {
-    hoop.elements.push({ from, to, faces: Object.fromEntries(faces.map((face) => [face, { texture: "#net" }])) });
-  }
+  ].map(([from, to, faces]) => ({ from, to, faces: Object.fromEntries(faces.map((face) => [face, { texture: "#net" }])) }));
+  const hoopTextures = { rim: `${ID}:block/hoop_rim`, bracket: `${ID}:block/handset_cradle`, net: `${ID}:block/hoop_net`, particle: `${ID}:block/hoop_rim` };
+  const hoop = { ...boxes(hoopTextures, [...ring, [[7, 9, 0], [9, 11, 2], "#bracket"]]), render_type: "minecraft:cutout" };
+  hoop.elements.push(...net);
   write(`assets/${ID}/models/block/hoop.json`, hoop);
+  // The little backboard from under the ring up to the top given: its frame round it, the square on its front over the
+  // ring and the bracket under the ring to it; its pane goes in on its own, glass seen through from either side.
+  const BOARD_BOTTOM = 9;
+  const littleBoard = (top) => [
+    [[1, top - 1, 0], [15, top, 2], "#frame"],
+    [[1, BOARD_BOTTOM, 0], [15, BOARD_BOTTOM + 1, 2], "#frame"],
+    [[1, BOARD_BOTTOM + 1, 0], [2, top - 1, 2], "#frame"],
+    [[14, BOARD_BOTTOM + 1, 0], [15, top - 1, 2], "#frame"],
+    [[5.5, 11, 1.5], [10.5, 11.75, 1.75], "#red"],
+    [[5.5, top - 2.75, 1.5], [10.5, top - 2, 1.75], "#red"],
+    [[5.5, 11.75, 1.5], [6.25, top - 2.75, 1.75], "#red"],
+    [[9.75, 11.75, 1.5], [10.5, top - 2.75, 1.75], "#red"],
+    [[7, BOARD_BOTTOM, 2], [9, BOARD_BOTTOM + 1, 3], "#bracket"],
+  ];
+  const pane = (top) => ({ from: [1, BOARD_BOTTOM, 0.5], to: [15, top, 1.5], faces: { north: { texture: "#glass" }, south: { texture: "#glass" } } });
+  const boardTextures = { ...hoopTextures, glass: `${ID}:block/glass_backboard`, frame: `${ID}:block/cabin_rail_steel`, red: `${ID}:block/backboard_red` };
+  const mounted = {
+    floor: [16, [
+      [[7, 4, 0.25], [9, BOARD_BOTTOM, 1.75], "#frame"],
+      [[6.5, 3, 0], [9.5, 4, 2.25], "#bracket"],
+      [[3.5, 1.5, 0], [12.5, 3, 5], "#bracket"],
+      [[2, 0, 0], [14, 1.5, 7], "#bracket"],
+    ]],
+    ceiling: [14.5, [
+      [[2.75, 14.5, 0.25], [4.25, 16, 1.75], "#frame"],
+      [[11.75, 14.5, 0.25], [13.25, 16, 1.75], "#frame"],
+      [[2.5, 15.5, 0], [4.5, 16, 2], "#frame"],
+      [[11.5, 15.5, 0], [13.5, 16, 2], "#frame"],
+    ]],
+  };
+  for (const [mount, [top, holder]] of Object.entries(mounted)) {
+    const model = { ...boxes(boardTextures, [...ring, ...littleBoard(top), ...holder]), render_type: "minecraft:translucent" };
+    model.elements.push(pane(top), ...net);
+    write(`assets/${ID}/models/block/hoop_${mount}.json`, model);
+  }
+  const hoopModel = (mount) => `${ID}:block/hoop${mount === "wall" ? "" : `_${mount}`}`;
   write(`assets/${ID}/blockstates/hoop.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).map(([facing, y]) => [`facing=${facing}`, { model: `${ID}:block/hoop`, y }])),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+      ["ceiling", "wall", "floor"].map((mount) => [`facing=${facing},mount=${mount}`, { model: hoopModel(mount), y }]))),
   });
   for (const name of ["scoreboard", "ball_rack"]) {
     write(`assets/${ID}/models/block/${name}.json`, {

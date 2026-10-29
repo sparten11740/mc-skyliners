@@ -36,14 +36,20 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A basketball hoop: an orange ring with its net, on a bracket to the backboard. Only the bracket is solid, so a ball
- * drops through the ring, and a ball whose middle drops through near enough its centre scores for the hoop's side:
- * two points, or three thrown from beyond the three-point line, on every scoreboard nearby. FACING is the way to the
- * backboard; sneak and use it with an empty hand to change the side it counts for.
+ * A basketball hoop: an orange ring with its net, held up in the shape that fits where it is put (MOUNT). On a wall,
+ * or the front of a glass backboard, it is fixed by a bracket; on the floor it stands on a steel pole in a weighted
+ * base, a little glass backboard of its own on top of the pole behind the ring; under a ceiling it hangs from it on two
+ * rods by such a backboard. The ring is as high in its block whatever holds it, so it scores the same everywhere. Only
+ * what holds it is solid, so a ball drops through the ring, and a ball whose middle drops through near enough its
+ * centre scores for the hoop's side: two points, or three thrown from beyond the three-point line, on every scoreboard
+ * nearby. FACING is the way to the backboard, its own or the wall's; sneak and use it with an empty hand to change the
+ * side it counts for.
  */
 public class HoopBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<HoopBlock> CODEC = simpleCodec(HoopBlock::new);
     public static final EnumProperty<Team> TEAM = EnumProperty.create("team", Team.class);
+    /** How the hoop is put up; one saved before it had a mount was on a wall, as every hoop then was. */
+    public static final EnumProperty<Mount> MOUNT = Mount.property(Mount.CEILING, Mount.WALL, Mount.FLOOR);
     /**
      * The ring's height in the block, and how near its middle a ball's middle has to drop through it, in blocks: as
      * near as a ball that grazes the rim on its way in, its middle a ball's half width inside the ring's outer edge.
@@ -66,6 +72,21 @@ public class HoopBlock extends HorizontalDirectionalBlock {
         Direction.WEST, Block.box(0, 9, 7, 2, 11, 9),
         Direction.EAST, Block.box(14, 9, 7, 16, 11, 9)
     ));
+    /** The short bracket under the ring to the little backboard, on the floor or under a ceiling, facing north. */
+    private static final VoxelShape LITTLE_BOARD_BRACKET = Block.box(7, 9, 2, 9, 10, 3);
+    /**
+     * Standing on the floor, drawn facing north as its model is: the weighted base, the pole up from it and the little
+     * backboard on top of the pole, along the north side of the block behind the ring.
+     */
+    private static final Map<Direction, VoxelShape> STAND = TurnedShapes.of(Shapes.or(
+        Block.box(2, 0, 0, 14, 1.5, 7), Block.box(3.5, 1.5, 0, 12.5, 3, 5), Block.box(6.5, 3, 0, 9.5, 4, 2.25),
+        Block.box(7, 4, 0.25, 9, 9, 1.75), Block.box(1, 9, 0, 15, 16, 2), LITTLE_BOARD_BRACKET
+    ));
+    /** Hung under a ceiling, drawn facing north: the little backboard behind the ring and the two rods up from it. */
+    private static final Map<Direction, VoxelShape> HANGER = TurnedShapes.of(Shapes.or(
+        Block.box(1, 9, 0, 15, 14.5, 2), Block.box(2.5, 14.5, 0, 4.5, 16, 2), Block.box(11.5, 14.5, 0, 13.5, 16, 2),
+        LITTLE_BOARD_BRACKET
+    ));
 
     /** The two sides of a game, as the scoreboard shows them. */
     public enum Team implements StringRepresentable {
@@ -87,7 +108,8 @@ public class HoopBlock extends HorizontalDirectionalBlock {
 
     public HoopBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TEAM, Team.HOME));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TEAM, Team.HOME)
+            .setValue(MOUNT, Mount.WALL));
     }
 
     @Override
@@ -97,24 +119,43 @@ public class HoopBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, TEAM);
+        builder.add(FACING, TEAM, MOUNT);
     }
 
-    /** Put up against a wall, its ring out from it; not on a floor or a ceiling, where it would hang on nothing. */
+    /**
+     * Put up against what holds it (see {@link Mounting}): on a wall its ring stands out from it; on the floor or
+     * under a ceiling its ring faces whoever puts it up, its backboard beyond it. Nowhere where nothing holds it.
+     */
+    @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = Mounting.onWall(context);
-        return facing == null ? null : defaultBlockState().setValue(FACING, facing.getOpposite());
+        Direction toward = Mounting.support(context, MOUNT.getPossibleValues());
+        if (toward == null) {
+            return null;
+        }
+        Mount mount = Mount.against(toward);
+        Direction backboard = mount == Mount.WALL ? toward : context.getHorizontalDirection();
+        return defaultBlockState().setValue(MOUNT, mount).setValue(FACING, backboard);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.or(RING, BRACKETS.get(state.getValue(FACING)));
+        return Shapes.or(RING, holder(state));
     }
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return BRACKETS.get(state.getValue(FACING));
+        return holder(state);
+    }
+
+    /** What holds the ring up, the hoop's only solid part: its bracket, its stand or its hanger. */
+    private static VoxelShape holder(BlockState state) {
+        Direction facing = state.getValue(FACING);
+        return switch (state.getValue(MOUNT)) {
+            case WALL -> BRACKETS.get(facing);
+            case FLOOR -> STAND.get(facing);
+            case CEILING -> HANGER.get(facing);
+        };
     }
 
     @Override
