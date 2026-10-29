@@ -81,6 +81,12 @@ public class RoverBayBlockEntity extends BlockEntity {
      */
     private static final double STILL = 0.3;
     private static final double UPRIGHT = 0.99;
+    /** How loud a spoken answer's note is, and its pitch: setting off, coming home, nothing to do and wait. */
+    private static final float ANSWER_VOLUME = 0.6F;
+    private static final float GOING_PITCH = 1.5F;
+    private static final float HOME_PITCH = 0.9F;
+    private static final float NOTHING_PITCH = 0.7F;
+    private static final float WAIT_PITCH = 1.0F;
 
     /** Where the boom's trolley waits while the rover is not on its hook, so the client draws it there. */
     public enum Trolley {
@@ -109,12 +115,6 @@ public class RoverBayBlockEntity extends BlockEntity {
     private int missing;
     private Trolley trolley = Trolley.OVER_PLATFORM;
     /** The game time the panel's lamp shows red until. */
-    /** How loud a spoken answer's note is, and its pitch: setting off, coming home, nothing to do and wait. */
-    private static final float ANSWER_VOLUME = 0.6F;
-    private static final float GOING_PITCH = 1.5F;
-    private static final float HOME_PITCH = 0.9F;
-    private static final float NOTHING_PITCH = 0.7F;
-    private static final float WAIT_PITCH = 1.0F;
     private long refusedUntil;
     /** Whether her countdown waits for the rover, and everyone aboard has been told. */
     private boolean holding;
