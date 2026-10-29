@@ -167,14 +167,19 @@ final class DestinationMap extends MapWidget {
         MapPainter.line(image, x0, y0, x1, y1, RUNWAY_WIDTH, RUNWAY);
     }
 
-    /** Beside the middle's coordinates, the pin's in the bottom right corner once it is dropped. */
+    /**
+     * Beside the middle's coordinates, the pin's in the bottom right corner once it is dropped, a line over them where
+     * the map is too narrow for both side by side.
+     */
     @Override
     void readouts(GuiGraphics graphics) {
         super.readouts(graphics);
         if (pin != null) {
             Font font = Minecraft.getInstance().font;
             Component pinned = Component.translatable("screen.aerolarge.autopilot_settings.map.pin", pin.getX(), pin.getZ());
-            label(graphics, pinned, getRight() - READOUT_INSET - font.width(pinned), PanelArt.RED);
+            int x = getRight() - READOUT_INSET - font.width(pinned);
+            boolean crowded = x < getX() + READOUT_INSET + font.width(middleReadout()) + READOUT_GAP;
+            label(graphics, pinned, x, PanelArt.RED, crowded ? 1 : 0);
         }
     }
 

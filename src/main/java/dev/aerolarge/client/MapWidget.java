@@ -45,6 +45,8 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
     /** The coordinates along the bottom: how far in from the edges, and the band behind them. */
     static final int READOUT_INSET = 3;
     private static final int READOUT_BACKGROUND = 0xB0081226;
+    /** How far apart two readouts on lines of their own are kept, in GUI pixels, so their dark bands do not touch. */
+    static final int READOUT_GAP = 3;
 
     private final DynamicTexture texture;
     private final ResourceLocation location;
@@ -145,14 +147,23 @@ abstract class MapWidget extends AbstractWidget implements AutoCloseable {
 
     /** The coordinates of the map's middle, in its bottom left corner; the map may add its own (see {@link #label}). */
     void readouts(GuiGraphics graphics) {
-        Component middle = Component.translatable("screen.aerolarge.autopilot_settings.map.middle", Mth.floor(centreX), Mth.floor(centreZ));
-        label(graphics, middle, getX() + READOUT_INSET, PanelArt.WHITE);
+        label(graphics, middleReadout(), getX() + READOUT_INSET, PanelArt.WHITE);
+    }
+
+    /** The coordinates of the map's middle, as its bottom left corner shows them. */
+    Component middleReadout() {
+        return Component.translatable("screen.aerolarge.autopilot_settings.map.middle", Mth.floor(centreX), Mth.floor(centreZ));
     }
 
     /** A line of text along the map's bottom edge, on a dark band so it reads over any land. */
     void label(GuiGraphics graphics, Component text, int x, int colour) {
+        label(graphics, text, x, colour, 0);
+    }
+
+    /** A line of text so many lines up from the map's bottom edge, on a dark band so it reads over any land. */
+    void label(GuiGraphics graphics, Component text, int x, int colour, int line) {
         Font font = Minecraft.getInstance().font;
-        int y = getBottom() - READOUT_INSET - font.lineHeight;
+        int y = getBottom() - READOUT_INSET - font.lineHeight - line * (font.lineHeight + READOUT_GAP);
         graphics.fill(x - 2, y - 2, x + font.width(text) + 1, y + font.lineHeight, READOUT_BACKGROUND);
         graphics.drawString(font, text, x, y, colour, false);
     }
