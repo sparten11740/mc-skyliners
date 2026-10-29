@@ -212,7 +212,7 @@ final class RocketClub extends RocketRoom {
     private void signs() {
         for (int sign = 0; sign < SIGN_ROUNDS.length; sign++) {
             int y = floor() + SIGN_UPS[sign];
-            SkinMount mount = y < top() ? SkinMount.find(layout, SIGN_ROUNDS[sign], y, 1) : null;
+            SkinMount mount = y < top() ? SkinMount.find(layout, SIGN_ROUNDS[sign], y, 1, inward(SIGN_ROUNDS[sign])) : null;
             if (mount != null) {
                 layout.set(mount.at().getX(), y, mount.at().getZ(), AerolargeRegistry.NEON_SIGN.get().defaultBlockState()
                     .setValue(NeonSignBlock.FACING, mount.facing()).setValue(NeonSignBlock.DESIGN, SIGNS[sign]));

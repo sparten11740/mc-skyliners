@@ -27,11 +27,20 @@ record SkinMount(BlockPos at, Direction facing) {
      */
     @Nullable
     static SkinMount find(RocketLayout layout, double round, int y, int rows) {
+        return find(layout, round, y, rows, null);
+    }
+
+    /**
+     * The same, but only a spot from which what is fixed there faces a way given, as a sign must to be seen from the
+     * room; any way, given none.
+     */
+    @Nullable
+    static SkinMount find(RocketLayout layout, double round, int y, int rows, @Nullable Direction facing) {
         SkinMount found = null;
         for (double out = layout.radius() - SEARCH_IN; out <= layout.radius() + SEARCH_OUT; out += STEP) {
             BlockPos on = new BlockPos(RocketRoom.across(out, round), y, RocketRoom.along(out, round));
             for (BlockPos at : List.of(on, on.relative(outward(on, true)), on.relative(outward(on, false)))) {
-                SkinMount mount = at(layout, at, rows);
+                SkinMount mount = at(layout, at, rows, facing);
                 if (mount != null && (found == null || farther(at, found.at()))) {
                     found = mount;
                 }
@@ -48,10 +57,13 @@ record SkinMount(BlockPos at, Direction facing) {
         return at.getZ() < 0 ? Direction.NORTH : Direction.SOUTH;
     }
 
-    /** The spot at a block, open with so many rows from it up and her cover beside it; null where it cannot be. */
+    /**
+     * The spot at a block, open with so many rows from it up and her cover beside it, behind whatever faces the way
+     * given if any; null where it cannot be.
+     */
     @Nullable
-    private static SkinMount at(RocketLayout layout, BlockPos at, int rows) {
-        Direction back = skinBeside(layout, at.getX(), at.getY(), at.getZ());
+    private static SkinMount at(RocketLayout layout, BlockPos at, int rows, @Nullable Direction facing) {
+        Direction back = skinBeside(layout, at.getX(), at.getY(), at.getZ(), facing == null ? null : facing.getOpposite());
         if (back == null) {
             return null;
         }
@@ -68,11 +80,11 @@ record SkinMount(BlockPos at, Direction facing) {
         return at.getX() * at.getX() + at.getZ() * at.getZ() > than.getX() * than.getX() + than.getZ() * than.getZ();
     }
 
-    /** The side of a block, facing out from her axis, that her cover stands on; null for none. */
+    /** The side of a block, facing out from her axis, that her cover stands on, the one given if any; null for none. */
     @Nullable
-    private static Direction skinBeside(RocketLayout layout, int x, int y, int z) {
+    private static Direction skinBeside(RocketLayout layout, int x, int y, int z, @Nullable Direction only) {
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            boolean outward = side.getStepX() * x + side.getStepZ() * z > 0;
+            boolean outward = side.getStepX() * x + side.getStepZ() * z > 0 && (only == null || side == only);
             if (outward && layout.stateAt(x + side.getStepX(), y, z + side.getStepZ()).is(AerolargeRegistry.ZEPPELIN_COVER.get())) {
                 return side;
             }
