@@ -1851,7 +1851,7 @@ curving round the shaft by way of her back, lined with glass mosaic lit from und
 edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the
 window. The techno club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals,
 four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round her left side with
-stools. The observation deck, her highest story, sees all round through its band of smoked glass: a lookout glass
+stools. The observation deck, her highest story, sees all round through its band of smoked glass: an armchair
 looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out, under the
 airliner's starlight ceiling, dimmed so the stars outside outshine it.
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words

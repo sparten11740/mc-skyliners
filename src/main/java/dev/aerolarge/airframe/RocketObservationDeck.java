@@ -3,7 +3,6 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
-import dev.aerolarge.block.LookoutGlassBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
@@ -12,15 +11,14 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The observation deck, her highest story under the cockpit: in place of its oval windows, a band of the cockpit's
  * smoked glass all the way round her at eye height, so the whole horizon is seen from it; out to her sides and her back
- * a lookout glass on its stand looking out, a bean bag either side of it to lie back in and watch the land fall away
- * or the stars come out, and between them a pair of bean bags at each diagonal, facing out too; and overhead, as the
- * airliner's lounge has, a starlight ceiling of the airliner's starlight panels, dimmed so the stars outside outshine
- * it.
+ * an armchair facing out of it, a bean bag either side of it to lie back in and watch the land fall away or the stars
+ * come out, and between them a pair of bean bags at each diagonal, facing out too; and overhead, as the airliner's
+ * lounge has, a starlight ceiling of the airliner's starlight panels, dimmed so the stars outside outshine it.
  */
 final class RocketObservationDeck extends RocketRoom {
     /** Her observation deck's story, from the entry story up. */
     static final int STORY = 8;
-    /** How far in from the skin's inside the glasses and the bean bags at the windows stand, in blocks. */
+    /** How far in from the skin's inside the armchairs and the bean bags out to her sides and back stand, in blocks. */
     private static final double AT_WINDOW = 3.5;
     /** How far round either side of a window the bean bags beside its glass are, in degrees. */
     private static final double BESIDE = 16;
@@ -49,7 +47,7 @@ final class RocketObservationDeck extends RocketRoom {
         double out = wall() - AT_WINDOW;
         for (double round : new double[]{90, 180, 270}) {
             Direction facing = inward(round).getOpposite();
-            put(across(out, round), y, along(out, round), AerolargeRegistry.LOOKOUT_GLASS.get().defaultBlockState().setValue(LookoutGlassBlock.FACING, facing));
+            seat(across(out, round), y, along(out, round), facing, DyeColor.GRAY);
             for (int side = -1; side <= 1; side += 2) {
                 double at = round + side * BESIDE;
                 put(across(out, at), y, along(out, at), beanBag(facing, DyeColor.GRAY));
