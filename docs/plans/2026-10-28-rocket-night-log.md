@@ -86,6 +86,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N45 | 02:35 | Space helmet | A round white helmet with a big gold visor, worn as its own model like the pilot helmet, a lighter gold tint and no HUD from inside; a crew locker on the entry story and in the bunk room each holds one; breathing in it above the edge of space (client `helmetBreathing`); a recipe matching the pilot helmet's | Fun for children and adults; built by an agent | Lead, helmet agent |
 | N46 | 02:35 | Lift sneak | No sneak is let off by the game; the car notes who sneaked and its machine sets them down outside an open door | The game set them down in the car, shut in on the ground and stuck in flight; seen in game | Lead |
 | N47 | 02:55 | Observation deck at the bigger scales | A ceiling at most 16 rows over its floor, the starlight panels under it; nothing changes at scale 2 | Its story otherwise rose 68 or 110 blocks into her nose as bare skin; seen at scale 3 | Lead |
+| N48 | 03:05 | Second code review | Fixed: the helmet's breathing reckoned by her middle (now her control head, as the welcome is); Max Q at y 300 of her head, lost at scale 3 and 4 (now 160 blocks over the ground); the plumes' packets (flames batched, smoke halved) and their size by the config's scale (now her own); the rover bay's constants; and, found play-testing the fix, a take-off announcement made after lift-off on a quick re-launch (now let go as the countdown begins) | Independent review agent, play-tests | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -156,6 +157,11 @@ Commits on main, newest last, with the versions handed out.
   monster warning (the red triangle blinking while a zombie stood by the driver's body); the cockpit's camera display at
   y 1,400 (the orbit camera showing her against space and the planet's rim); a rocket built with `rocket.rooms` off
   (bare stories, no tardigrade, the lift and 756 LED strips still there).
+- alpha.173: the observation deck's ceiling at the bigger scales (N47); the second review's fixes (N48). Play-tested:
+  the deck at scale 3 (starlit ceiling 15 rows up, the shaft open through it); the helmet's breath while holding at
+  y 1,000; "Tower cleared.", "Max Q." 4 s later and "Main engine cut-off." on a flight flown straight after landing,
+  with no stray announcement; the lift-off smoke rolling out over the ground; the black hole poster on the shaft's
+  east face, beside the tank.
 
 ## Background agents
 
