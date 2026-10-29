@@ -2,10 +2,12 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -14,7 +16,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * a round top of dark glass, a ring of LED light glowing under its rim whatever the light around, on a chrome pole over
  * a round foot. It is round, so it has no front. What is looked at and clicked is the table itself; what stops a player
  * is a column round its top as high as a fence, so that whoever stands at it stands against its rim, and nobody jumps
- * up on to it from the floor, as over a fence.
+ * up on to it from the floor, as over a fence; but something dropped on it lies on its glass.
  */
 public class CocktailTableBlock extends Block {
     private static final MapCodec<CocktailTableBlock> CODEC = simpleCodec(CocktailTableBlock::new);
@@ -45,8 +47,9 @@ public class CocktailTableBlock extends Block {
         return SHAPE;
     }
 
+    /** The column round its top, but for a dropped item, which comes to rest on the table itself. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return COLLISION;
+        return context instanceof EntityCollisionContext entity && entity.getEntity() instanceof ItemEntity ? SHAPE : COLLISION;
     }
 }

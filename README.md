@@ -1965,7 +1965,8 @@ of its own: a martini glass with an olive, a pair of music notes, a ringed plane
 lightning bolt. Click it to switch it off and on, its transformer clinking and its tubes buzzing as they strike or die
 away, and sneak and click it with an empty hand for the next picture. A Cocktail Table is a high round table to stand
 at, as high as the counter, its dark glass top ringed with blue LED light under its rim; it is fenced round as high as a
-fence, so nobody jumps up on to it from the floor. Its windows are built at their darkest, so daylight does not wash out
+fence, so nobody jumps up on to it from the floor, though something dropped on it lies on its glass. Its windows are
+built at their darkest, so daylight does not wash out
 the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
 through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
 over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
