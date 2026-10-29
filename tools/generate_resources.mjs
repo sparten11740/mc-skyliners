@@ -6555,13 +6555,38 @@ const ROOM_DIVIDER_LANG = {
     random_sequence: `${ID}:blocks/cabin_arch`,
   });
 }
-// The exit sign: a thin plate with its back to the wall, drawn facing north, glowing whatever the light around.
-write(`assets/${ID}/models/block/exit_sign.json`, boxes(
-  { face: `${ID}:block/exit_sign`, casing: `${ID}:block/cabin_partition`, particle: `${ID}:block/exit_sign` },
-  [[[1, 4, 14.5], [15, 12, 16], { north: "#face", all: "#casing" }, true]],
-));
-facing("exit_sign");
-write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
+// The exit sign (see ExitSignBlock), drawn facing north, glowing whatever the light around: on a wall a thin plate
+// with its back to it. Under a ceiling, the sign lit on both faces across the middle of the block, hung on two short
+// brushed steel rods as the overhead WC sign is; on the floor, the same sign on a short steel post standing in a
+// steel base, a collar where the post meets each. Off the wall the picture is pinned to its place on the texture.
+{
+  const sign = { face: `${ID}:block/exit_sign`, casing: `${ID}:block/cabin_partition`, particle: `${ID}:block/exit_sign` };
+  write(`assets/${ID}/models/block/exit_sign.json`, boxes(sign, [[[1, 4, 14.5], [15, 12, 16], { north: "#face", all: "#casing" }, true]]));
+  const textures = { ...sign, rod: `${ID}:block/bulkhead_sign_bezel`, steel: `${ID}:block/cabin_rail_steel` };
+  // The sign lit on both faces, its bottom at the height given, eight pixels tall as on a wall.
+  const bothFaces = (bottom) => {
+    const face = { texture: "#face", uv: [1, 4, 15, 12] };
+    return furniture([1, bottom, 7.25], [15, bottom + 8, 8.75], "#casing", { north: face, south: face }, true);
+  };
+  const shapes = {
+    ceiling: [bothFaces(6), solid([3, 14, 7.5], [4, 16, 8.5], "#rod"), solid([12, 14, 7.5], [13, 16, 8.5], "#rod")],
+    floor: [
+      bothFaces(7),
+      solid([6.5, 6.5, 6.75], [9.5, 7, 9.25], "#steel"),
+      solid([7, 1.5, 7], [9, 6.5, 9], "#steel"),
+      solid([6.5, 1, 6.5], [9.5, 1.5, 9.5], "#steel"),
+      solid([4, 0, 5], [12, 1, 11], "#steel"),
+    ],
+  };
+  for (const [mount, elements] of Object.entries(shapes)) {
+    write(`assets/${ID}/models/block/exit_sign_${mount}.json`, { parent: "minecraft:block/block", textures, elements });
+  }
+  write(`assets/${ID}/blockstates/exit_sign.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ceiling", "wall", "floor"].map((mount) =>
+      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/exit_sign${mount === "wall" ? "" : `_${mount}`}`, y }]))),
+  });
+  write(`assets/${ID}/models/item/exit_sign.json`, { parent: `${ID}:block/exit_sign` });
+}
 
 // The bulkhead sign (see BulkheadSignBlock), drawn facing north, one model for each picture: a whole block of the
 // partition's cream panelling, and on its north face the lightbox, a brushed steel bezel round the block's edge standing

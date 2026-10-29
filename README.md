@@ -714,8 +714,10 @@ the piece used, with a swish; drawn open, only its gathered ends and its rail sh
 dye on it to dye all of it, for one dye, and taken down it keeps its colour. It is only cloth: players, villagers,
 trolleys and basketballs pass straight through it, open or shut, and it keeps no light out. A Cabin Partition is a
 plain cream bulkhead panel to build walls with, a Cabin Arch a white archway in one, a Bulkhead Sign a
-backlit sign set into one, and an Exit Sign a green running man heading out through a doorway. All five can be
-crafted. A Cabin Arch puts up a whole archway like the airliner's: a round white arch over an opening three blocks
+backlit sign set into one, and an Exit Sign a green running man heading out through a doorway: on a wall it is a
+thin plate, under a ceiling it hangs on two short rods and on the floor it stands on a short post, both of those lit
+on both faces, facing you. All five can be crafted.
+A Cabin Arch puts up a whole archway like the airliner's: a round white arch over an opening three blocks
 wide, on white jambs three blocks tall either side of it, smooth white panelling round the opening with a moulding
 along its edge, a bead and a groove behind it, the arch, its moulding and the panelling's edge all running smoothly
 round the curve as the cockpit door's arch does, without a step, set into cream panels like the partition's and the
