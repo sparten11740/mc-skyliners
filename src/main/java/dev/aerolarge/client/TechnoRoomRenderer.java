@@ -59,7 +59,7 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
      * Which tiles of a room are dance floor, a bit for each tile of a square, the squares by their place in its rows,
      * and when that was seen.
      */
-    private record Floor(long seen, byte[] tiles) {
+    private record Floor(long seen, int[] tiles) {
     }
 
     @Override
@@ -82,7 +82,7 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     }
 
     /** Which of the room's tiles are dance floor: looked at again every so often, as tiles can be broken or laid. */
-    private byte[] danceFloor(TechnoDeckBlockEntity deck, BlockPos from, BlockPos to) {
+    private int[] danceFloor(TechnoDeckBlockEntity deck, BlockPos from, BlockPos to) {
         Level level = deck.getLevel();
         long now = level == null ? 0 : level.getGameTime();
         Floor floor = floors.get(deck);
@@ -94,9 +94,9 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     }
 
     /** Which of the room's tiles are dance floor, a bit for each tile of a square, by the square's place in its rows. */
-    private static byte[] tilesOn(@Nullable Level level, BlockPos deck, BlockPos from, BlockPos to) {
+    private static int[] tilesOn(@Nullable Level level, BlockPos deck, BlockPos from, BlockPos to) {
         int along = (to.getZ() + 1 - from.getZ()) / SQUARE;
-        byte[] tiles = new byte[(to.getX() + 1 - from.getX()) / SQUARE * along];
+        int[] tiles = new int[(to.getX() + 1 - from.getX()) / SQUARE * along];
         for (int square = 0; square < tiles.length && level != null; square++) {
             BlockPos corner = deck.offset(from.getX() + square / along * SQUARE, from.getY() - 1, from.getZ() + square % along * SQUARE);
             tiles[square] = tiled(level, corner);
@@ -105,18 +105,18 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     }
 
     /** Which tiles of the square of floor from a corner are dance floor's: a bit for each, across it then along. */
-    private static byte tiled(Level level, BlockPos corner) {
+    private static int tiled(Level level, BlockPos corner) {
         int tiles = 0;
         for (int tile = 0; tile < SQUARE * SQUARE; tile++) {
             if (level.getBlockState(corner.offset(tile % SQUARE, 0, tile / SQUARE)).is(AerolargeRegistry.DANCE_FLOOR.get())) {
                 tiles |= 1 << tile;
             }
         }
-        return (byte) tiles;
+        return tiles;
     }
 
     /** The dance floor's squares, lit as the track has got to, each over those of its tiles that are dance floor. */
-    private static void floor(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, float at, int beat, boolean dropped, byte[] tiled) {
+    private static void floor(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, float at, int beat, boolean dropped, int[] tiled) {
         int step = dropped ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : at >= BUILD_TICK ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : beat;
         float y = from.getY() + LIFT;
         int square = 0;
@@ -139,7 +139,7 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     }
 
     /** A square lit in a colour: whole where all its tiles are dance floor, or each of those of them that are. */
-    private static void square(VertexConsumer consumer, PoseStack.Pose pose, int x, float y, int z, byte tiles, int colour) {
+    private static void square(VertexConsumer consumer, PoseStack.Pose pose, int x, float y, int z, int tiles, int colour) {
         if (tiles == FULL) {
             patch(consumer, pose, colour, x, y, z, SQUARE);
             return;
