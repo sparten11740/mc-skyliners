@@ -1011,7 +1011,8 @@ the gym hall's court is lined.
 Over the court the gym hall's pendant lights hang from metal roof trusses (Create's girders). From the trusses either
 side of the middle hang gymnastic rings on chains, over the side of the court by the wall bars: use them to swing up
 off the floor. The teams' banners hang between the upper windows, orange at the HOME end, blue at the GUEST end.
-Gymnastic Rings can be crafted too.
+Gymnastic Rings can be crafted too: put up under a ceiling they hang from it, on the ground from a free-standing steel
+frame, and on a wall from a steel bracket held out from it.
 
 Wall Bars (Sprossenwand) can be crafted for a gym of your own: pale ash uprights against the wall with four round
 rungs between them to every block, climbed as a ladder is. Bars side by side make one wall of them, and stacked up,
@@ -1868,8 +1869,7 @@ halo ring, against a wall it is a wall washer, and on the ground a floor light, 
 round its top shining up. Use one to switch it from warm white to night blue to pink, with a soft click; broken, any of
 them gives back the Halo Light. The pendant light takes its shape from where it is put too: under a ceiling or a light
 cable it hangs on its cable, on the ground it is a floor lamp, its shade on a slim pole over a weighted round base, and
-on a wall a wall sconce, its shade hung from a short arm out from the wall. The gym rings go up only under a ceiling, so
-nothing stands on the floor with its straps up in the air.
+on a wall a wall sconce, its shade hung from a short arm out from the wall.
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the

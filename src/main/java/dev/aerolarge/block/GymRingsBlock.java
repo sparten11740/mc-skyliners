@@ -17,22 +17,37 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Gymnastic rings: a pair of wooden rings on straps, hung on chains from the gym hall's roof truss. Nothing bumps into
- * them; using them is grabbing them, and swings you up off the floor with a creak of the straps. FACING is the way
- * the pair faces, the rings side by side across it.
+ * Gymnastic rings: a pair of wooden rings on straps. Where they are put up (MOUNT) they hang under a ceiling, as the
+ * gym hall's hang on chains from its roof truss; from the crossbar of a free-standing steel frame on the floor, two
+ * uprights on long feet; or from a steel bracket's bar held out from a wall on two arms, facing out from it. Nothing
+ * bumps into them, nor into their frame or bracket; using them is grabbing them, and swings you up off the floor with a
+ * creak of the straps. FACING is the way the pair faces, the rings side by side across it.
  */
 public class GymRingsBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<GymRingsBlock> CODEC = simpleCodec(GymRingsBlock::new);
-    private static final Map<Direction.Axis, VoxelShape> SHAPES = Map.of(
+    /** How they are put up; rings saved before they had a mount were hung, and load hanging. */
+    public static final EnumProperty<Mount> MOUNT = Mount.property(Mount.CEILING, Mount.WALL, Mount.FLOOR);
+    /** Hung, by the way the pair runs across: the rings and their straps. */
+    private static final Map<Direction.Axis, VoxelShape> HANGING = Map.of(
         Direction.Axis.Z, Block.box(2, 0, 6, 14, 16, 10),
         Direction.Axis.X, Block.box(6, 0, 2, 10, 16, 14)
     );
+    /** On their frame, by the way they face: the rings and straps, the crossbar, the uprights and their feet. */
+    private static final Map<Direction, VoxelShape> STANDING = TurnedShapes.of(Shapes.or(Block.box(2, 4, 6, 14, 14.5, 10),
+        Block.box(0, 14.5, 7, 16, 16, 9), Block.box(0.5, 1, 7.25, 2, 14.5, 8.75), Block.box(14, 1, 7.25, 15.5, 14.5, 8.75),
+        Block.box(0, 0, 3, 2.5, 1, 13), Block.box(13.5, 0, 3, 16, 1, 13)));
+    /** On their bracket, by the way they face: the rings and straps, the bar, its arms and their wall plates. */
+    private static final Map<Direction, VoxelShape> ON_WALL = TurnedShapes.of(Shapes.or(Block.box(2, 0, 6, 14, 14.5, 10),
+        Block.box(0, 14.5, 7, 16, 16, 9), Block.box(1, 14.5, 9, 2.5, 16, 15), Block.box(13.5, 14.5, 9, 15, 16, 15),
+        Block.box(0.5, 12, 15, 3, 16, 16), Block.box(13, 12, 15, 15.5, 16, 16)));
     /** How hard grabbing the rings swings you up, in blocks a tick: about a block off the floor. */
     private static final double SWING = 0.45;
     /** The straps creak as you grab them, a little deeper than leather armour going on. */
@@ -44,7 +59,7 @@ public class GymRingsBlock extends HorizontalDirectionalBlock {
 
     public GymRingsBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(MOUNT, Mount.CEILING));
     }
 
     @Override
@@ -54,18 +69,32 @@ public class GymRingsBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, MOUNT);
     }
 
-    /** Put down only where they hang from something (see {@link Mounting}), facing whoever puts them up. */
+    /**
+     * Put up against what holds them (see {@link Mounting}): hung under a ceiling or a light cable, or stood on the
+     * floor on their frame, facing whoever puts them up; or on their bracket on a wall, facing out from it; nowhere
+     * that nothing holds them.
+     */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return Mounting.hangs(context) ? defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()) : null;
+        Direction toward = Mounting.support(context, MOUNT.getPossibleValues());
+        if (toward == null) {
+            return null;
+        }
+        Direction facing = toward.getAxis().isHorizontal() ? toward.getOpposite() : context.getHorizontalDirection().getOpposite();
+        return defaultBlockState().setValue(MOUNT, Mount.against(toward)).setValue(FACING, facing);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(FACING).getAxis());
+        Direction facing = state.getValue(FACING);
+        return switch (state.getValue(MOUNT)) {
+            case CEILING -> HANGING.get(facing.getAxis());
+            case FLOOR -> STANDING.get(facing);
+            case WALL -> ON_WALL.get(facing);
+        };
     }
 
     @Override

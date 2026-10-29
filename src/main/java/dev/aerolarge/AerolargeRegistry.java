@@ -1542,7 +1542,7 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(0.8F).sound(SoundType.WOOL).noOcclusion()
     );
     public static final DeferredItem<BlockItem> SPRINGBOARD_ITEM = ITEMS.registerSimpleBlockItem(SPRINGBOARD);
-    /** Gymnastic rings, hung on chains from the gym hall's roof truss. */
+    /** Gymnastic rings, hung on chains from the gym hall's roof truss, or put up on their frame or a wall bracket. */
     public static final DeferredBlock<GymRingsBlock> GYM_RINGS = BLOCKS.registerBlock(
         "gym_rings", GymRingsBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F).sound(SoundType.WOOD).noCollission().noOcclusion()

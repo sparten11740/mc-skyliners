@@ -7372,22 +7372,49 @@ const cabinDecorLang = {};
   cabinDecorLang["block.aerolarge.starlight_panel"] = "Starlight Panel";
 }
 // The gymnastic rings, drawn facing north: two wooden rings side by side, each a square loop on a leather strap up to
-// the top of the block, where the chain they hang from carries on.
+// the top of the block, where the chain they hang from carries on. Put up elsewhere (see GymRingsBlock.MOUNT), their
+// straps end under a dark steel bar across the top of the block instead: on the floor the crossbar of a free-standing
+// frame, on two uprights with long feet on the floor, the rings three pixels higher, clear of the floor; on a wall, its
+// back on the south side of its block, a bracket's bar, held out from the wall on two arms from their wall plates.
 {
-  const parts = [];
-  for (const cx of [4.5, 11.5]) {
-    parts.push(
-      [[cx - 2, 1, 7.5], [cx + 2, 1.75, 8.5], "#wood"],
-      [[cx - 2, 4.25, 7.5], [cx + 2, 5, 8.5], "#wood"],
-      [[cx - 2, 1.75, 7.5], [cx - 1.25, 4.25, 8.5], "#wood"],
-      [[cx + 1.25, 1.75, 7.5], [cx + 2, 4.25, 8.5], "#wood"],
-      [[cx - 0.5, 5, 7.75], [cx + 0.5, 16, 8.25], "#strap"],
-    );
+  const textures = { wood: `${ID}:block/gym_rings_wood`, strap: `${ID}:block/gym_rings_strap`, particle: `${ID}:block/gym_rings_wood` };
+  // The two rings, their bottoms so many pixels up, on their straps up to a height.
+  const rings = (low, top) => [4.5, 11.5].flatMap((cx) => [
+    [[cx - 2, low, 7.5], [cx + 2, low + 0.75, 8.5], "#wood"],
+    [[cx - 2, low + 3.25, 7.5], [cx + 2, low + 4, 8.5], "#wood"],
+    [[cx - 2, low + 0.75, 7.5], [cx - 1.25, low + 3.25, 8.5], "#wood"],
+    [[cx + 1.25, low + 0.75, 7.5], [cx + 2, low + 3.25, 8.5], "#wood"],
+    [[cx - 0.5, low + 4, 7.75], [cx + 0.5, top, 8.25], "#strap"],
+  ]);
+  // The bar across the top of the block the straps hang from, on a frame or a bracket.
+  const bar = [[0, 14.5, 7], [16, 16, 9], "#frame"];
+  const framed = { ...textures, frame: `${ID}:block/shelf_steel` };
+  const mounts = {
+    gym_rings: [textures, rings(1, 16)],
+    gym_rings_floor: [framed, [
+      bar,
+      [[0.5, 1, 7.25], [2, 14.5, 8.75], "#frame"],
+      [[14, 1, 7.25], [15.5, 14.5, 8.75], "#frame"],
+      [[0, 0, 3], [2.5, 1, 13], "#frame"],
+      [[13.5, 0, 3], [16, 1, 13], "#frame"],
+      ...rings(4, 14.5),
+    ]],
+    gym_rings_wall: [framed, [
+      bar,
+      [[1, 14.5, 9], [2.5, 16, 15], "#frame"],
+      [[13.5, 14.5, 9], [15, 16, 15], "#frame"],
+      [[0.5, 12, 15], [3, 16, 16], "#frame"],
+      [[13, 12, 15], [15.5, 16, 16], "#frame"],
+      ...rings(1, 14.5),
+    ]],
+  };
+  for (const [name, [modelTextures, parts]] of Object.entries(mounts)) {
+    write(`assets/${ID}/models/block/${name}.json`, boxes(modelTextures, parts));
   }
-  write(`assets/${ID}/models/block/gym_rings.json`, boxes(
-    { wood: `${ID}:block/gym_rings_wood`, strap: `${ID}:block/gym_rings_strap`, particle: `${ID}:block/gym_rings_wood` }, parts,
-  ));
-  facing("gym_rings");
+  write(`assets/${ID}/blockstates/gym_rings.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["ceiling", "wall", "floor"].map((mount) =>
+      [`facing=${facing},mount=${mount}`, { model: `${ID}:block/gym_rings${mount === "ceiling" ? "" : `_${mount}`}`, y }]))),
+  });
   write(`assets/${ID}/models/item/gym_rings.json`, { parent: `${ID}:block/gym_rings` });
   dropsItself("gym_rings");
   cubes.gym_rings = null;
