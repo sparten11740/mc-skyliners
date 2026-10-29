@@ -12,6 +12,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CarpetBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,7 +26,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * walkway round it, the way out from the lift's door to the front, the fronts of her four oval windows, and a ring
  * along the skin left to walk round and for the light strips along it. Furniture is placed by how far out from her
  * axis it stands and how far round from her front, clockwise seen from above, so a room comes out round at every
- * scale, and anything that does not fit is left out.
+ * scale, or in one of the room's quarters (see {@link RocketQuarter}), as a corner of its own; and anything that does
+ * not fit is left out.
  */
 abstract class RocketRoom implements RocketPiece {
     /** How far in from the skin's surface furniture keeps, in blocks: the ring along it is left clear. */
@@ -185,6 +188,79 @@ abstract class RocketRoom implements RocketPiece {
         if (blockEntity instanceof CrewLockerBlockEntity locker) {
             locker.setItem(0, new ItemStack(AerolargeRegistry.SPACE_HELMET.get()));
         }
+    }
+
+    /**
+     * Puts a block where it is free and stands on something, and says whether it did: the block under it taken, and
+     * neither water nor a rug, so nothing stands on the pool or floats over a carpet.
+     */
+    protected boolean standing(int x, int y, int z, BlockState state) {
+        BlockState under = layout.stateAt(x, y - 1, z);
+        if (layout.isOpen(x, y - 1, z) || !under.getFluidState().isEmpty() || under.getBlock() instanceof CarpetBlock) {
+            return false;
+        }
+        return put(x, y, z, state);
+    }
+
+    /** Stands a block so many high, one on another, as far up as each is free. */
+    protected void stack(int x, int y, int z, BlockState state, int high) {
+        int up = 0;
+        while (up < high && standing(x, y + up, z, state)) {
+            up++;
+        }
+    }
+
+    /** A rug of carpet over every free block of the floor between two corners of the floor plan. */
+    protected void rug(int fromX, int fromZ, int toX, int toZ, BlockState carpet) {
+        int y = floor() + 1;
+        for (BlockPos at : BlockPos.betweenClosed(Math.min(fromX, toX), y, Math.min(fromZ, toZ), Math.max(fromX, toX), y, Math.max(fromZ, toZ))) {
+            standing(at.getX(), y, at.getZ(), carpet);
+        }
+    }
+
+    /**
+     * How far out the room's corners reach, the same across and along: the furthest a spot so far out both ways at a
+     * diagonal is in the room (see {@link RocketQuarter}).
+     */
+    protected int corner() {
+        int y = floor() + 1;
+        int out = RocketQuarter.INNER;
+        while (inRoom(out + 1, y, out + 1, 0)) {
+            out++;
+        }
+        return out;
+    }
+
+    /**
+     * How far out toward her side the room reaches at so far along toward her front or back, the same in any quarter:
+     * the last spot free going out from the walkway, found before anything is laid in the room; one short of the first
+     * spot out from the walkway where none is free.
+     */
+    protected int reach(int along) {
+        int y = floor() + 1;
+        int out = RocketQuarter.INNER - 1;
+        while (free(out + 1, y, along)) {
+            out++;
+        }
+        return out;
+    }
+
+    /**
+     * The way a piece of a curved run of furniture faces, its front toward her axis: the nearest of the four ways in,
+     * unless another piece of the run stands there, as at a corner where the run steps round, and then the other way in.
+     */
+    protected static Direction facingOff(List<BlockPos> run, BlockPos at) {
+        double round = roundOf(at.getX(), at.getZ());
+        Direction in = inward(round);
+        if (!run.contains(at.relative(in))) {
+            return in;
+        }
+        double sin = Math.sin(Math.toRadians(round));
+        double cos = Math.cos(Math.toRadians(round));
+        if (in.getAxis() == Direction.Axis.X) {
+            return cos > 0 ? Direction.SOUTH : Direction.NORTH;
+        }
+        return sin > 0 ? Direction.WEST : Direction.EAST;
     }
 
     /**

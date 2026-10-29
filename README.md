@@ -1860,9 +1860,13 @@ warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in t
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
-skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather leave
-her in flight, crew lockers along both sides, a Space Helmet waiting in each (see Souvenirs), red armchairs at the back
-to wait for the lift in, and halo lights, a ring of warm light on fine spokes, hanging on slim cables at the four
+skin. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
+parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
+Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
+boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
+walk through in a big rocket), a model rocket left on top; and somebody's suitcase dropped by the bench or the lockers.
+At its back, either side, is a waiting lounge for the lift: red or orange armchairs round a low table on a rug, one of
+them turned away as if someone just got up, and bamboo in a planter. Halo lights hang on slim cables at the four
 diagonals round the shaft. The cargo bay over it holds a pair of baggage containers by the way in from the lift and
 care-package crates stacked two high by its side windows, ready to be packed and dropped, halo lights hanging round the
 shaft as in the entry, its back left to the rover (below). The galley and mess has galley units curving round the back
@@ -2209,7 +2213,8 @@ The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayo
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
-`RocketObservationDeck`, and `RocketPilotSeats` the cockpit's seats); its
+`RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
+them, and `RocketPilotSeats` the cockpit's seats); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
