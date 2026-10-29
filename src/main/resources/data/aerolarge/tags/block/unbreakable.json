@@ -91,6 +91,7 @@
     "aerolarge:thrust_lever",
     "aerolarge:instrument_panel",
     "aerolarge:pilot_seat",
+    "aerolarge:bunk_ladder",
     "aerolarge:airliner_door",
     {
       "id": "createpropulsion:wing",

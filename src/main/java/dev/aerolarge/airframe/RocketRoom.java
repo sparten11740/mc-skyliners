@@ -92,7 +92,15 @@ abstract class RocketRoom implements RocketPiece {
 
     /** Whether a block is free for furniture: open, well in from the skin, and clear of everything kept clear. */
     protected boolean free(int x, int y, int z) {
-        if (!layout.isOpen(x, y, z) || !inRoom(x, y, z, 0)) {
+        return free(x, y, z, 0);
+    }
+
+    /**
+     * Whether a block is free for furniture so many blocks further in from the ring along the skin than furniture
+     * keeps, or nearer it for a negative distance, and clear of everything else kept clear.
+     */
+    protected boolean free(int x, int y, int z, double further) {
+        if (!layout.isOpen(x, y, z) || !inRoom(x, y, z, further)) {
             return false;
         }
         return offTheWays(x, z, 0) && !beforeWindow(x, y, z);

@@ -3231,7 +3231,10 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
 // blanket under a white top bar on a post; on the headboard's inside a chrome arm holding the reading light over the
 // pillow, its shade lit at full brightness while it is on. The foot: the blanket drawn right over it and hanging down
 // its front, and the footboard at its end. In the hand both halves side by side, smaller. Only the head drops the bunk,
-// in its colour.
+// in its colour. In a bunk bed (its tier) the lower bunk's corner posts at its ends run up two blocks, and the upper
+// bunk's, three blocks over the lower, carry on from them up past its guards: a tall padded rail along all of its
+// open side and its back, under a white top bar, and its headboard raised as high; its foot end is left open, the
+// way in from its ladder.
 {
   const block = (name) => `${ID}:block/${name}`;
   // A box, every face showing the texture over the part of it the box covers, tinted if the blanket's colour; a face
@@ -3275,13 +3278,52 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     part([1, 4, 1], [16, 7.75, 1.5], "#blanket", true),
     part([0, 0, 1], [1, 10, 16], "#frame"),
   ];
-  for (const lit of [false, true]) {
-    write(`assets/${ID}/models/block/bunk_head${lit ? "_lit" : ""}.json`, { parent: "minecraft:block/block", textures: textures(lit), elements: head(lit) });
+  // A part reaching out of its block, textured as one inside it would be (see patched), tinted if the blanket's colour.
+  const tall = (from, to, texture, tinted = false) => {
+    const element = patched(from, to, texture);
+    if (tinted) Object.values(element.faces).forEach((face) => { face.tintindex = 0; });
+    return element;
+  };
+  // A bunk bed's corner posts at a head's end (to the east) or a foot's (to the west), from so far up to so far.
+  const posts = (atHead, from, to) => {
+    const [x0, x1] = atHead ? [14.5, 16] : [0, 1.5];
+    return [tall([x0, from, 0], [x1, to, 1.5], "#frame"), tall([x0, from, 14.5], [x1, to, 16], "#frame")];
+  };
+  // An upper bunk's guards along a half, from so far along to so far: its padded rail up over the head's own, on the
+  // open side and the back, each under a top bar; and at the head, the headboard raised as high.
+  const GUARD_TOP = 19;
+  const guards = (atHead) => {
+    const [x0, x1] = atHead ? [1.5, 14.5] : [1.5, 16];
+    const along = [];
+    for (const [z0, z1, bar0, bar1] of [[0.5, 1.5, 0.25, 1.75], [14.5, 15.5, 14.25, 15.75]]) {
+      const from = atHead && z0 < 1 ? 12 : 4;
+      along.push(tall([x0, from, z0], [x1, GUARD_TOP - 1, z1], "#rail", true), tall([x0, GUARD_TOP - 1, bar0], [x1, GUARD_TOP, bar1], "#frame"));
+    }
+    return atHead ? [...along, tall([15, 14, 1.5], [16, GUARD_TOP, 14.5], "#frame")] : along;
+  };
+  // Each tier's extra parts for a half: the lower's posts up two blocks over its floor; the upper's down the block
+  // under it to meet them and up past its guards, and the guards.
+  const TIERS = {
+    single: () => [],
+    lower: (atHead) => posts(atHead, 0, 32),
+    upper: (atHead) => [...posts(atHead, -16, GUARD_TOP + 2), ...guards(atHead)],
+  };
+  const tierSuffix = (tier) => (tier === "single" ? "" : `_${tier}`);
+  for (const [tier, extra] of Object.entries(TIERS)) {
+    for (const lit of [false, true]) {
+      write(`assets/${ID}/models/block/bunk_head${lit ? "_lit" : ""}${tierSuffix(tier)}.json`, {
+        parent: "minecraft:block/block", textures: textures(lit), elements: [...head(lit), ...extra(true)],
+      });
+    }
+    write(`assets/${ID}/models/block/bunk_foot${tierSuffix(tier)}.json`, {
+      parent: "minecraft:block/block", textures: textures(false), elements: [...foot, ...extra(false)],
+    });
   }
-  write(`assets/${ID}/models/block/bunk_foot.json`, { parent: "minecraft:block/block", textures: textures(false), elements: foot });
   write(`assets/${ID}/blockstates/bunk.json`, {
-    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => ["head", "foot"].map((half) =>
-      [`facing=${facing},lit=${lit},part=${half}`, { model: `${ID}:block/bunk_${half === "head" && lit ? "head_lit" : half}`, ...(y ? { y } : {}) }])))),
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].flatMap((lit) => ["head", "foot"].flatMap((half) =>
+      Object.keys(TIERS).map((tier) => [`facing=${facing},lit=${lit},part=${half},tier=${tier}`, {
+        model: `${ID}:block/bunk_${half === "head" && lit ? "head_lit" : half}${tierSuffix(tier)}`, ...(y ? { y } : {}),
+      }]))))),
   });
   // In the hand the halves side by side, the foot to the west of the head, both moved east half a block so the bunk is
   // held by its middle.
@@ -8290,6 +8332,34 @@ const POOL = ["pool_deck_tile", "pool_mosaic", "pool_coping", "pool_steps", "poo
   });
   write(`assets/${ID}/models/item/pool_ladder.json`, { parent: `${ID}:block/pool_ladder_top` });
 }
+// The bunk ladder up a bunk bed's foot end (see RungLadderBlock), drawn facing north, the bunk's end to the south: two
+// white steel uprights up against it with a round chrome rung between them every quarter block. Its top piece's
+// uprights carry on up past its top and hook over onto the upper bunk's footboard beyond it, to hold on to climbing
+// off. It has no item: it comes with its bunk bed.
+{
+  const textures = { frame: `${ID}:block/bunk_frame`, chrome: `${ID}:block/lavatory_basin_chrome`, particle: `${ID}:block/bunk_frame` };
+  const piece = [];
+  const top = [];
+  for (const [x0, x1] of [[1.5, 3], [13, 14.5]]) {
+    piece.push([[x0, 0, 13.5], [x1, 16, 15], "#frame"]);
+    top.push(
+      [[x0, 16, 13.5], [x1, 22, 15], "#frame"],
+      [[x0, 20.5, 15], [x1, 22, 19], "#frame"],
+    );
+  }
+  for (const y of [2, 6, 10, 14]) {
+    piece.push([[3, y, 13.75], [13, y + 1, 14.75], "#chrome"]);
+  }
+  write(`assets/${ID}/models/block/bunk_ladder.json`, boxes(textures, piece));
+  // Its hooks reach out of the block, textured as they would be inside it (see patched).
+  const ladder = boxes(textures, piece);
+  write(`assets/${ID}/models/block/bunk_ladder_top.json`, { ...ladder, elements: [...ladder.elements, ...top.map(([from, to, texture]) => patched(from, to, texture))] });
+  write(`assets/${ID}/blockstates/bunk_ladder.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isTop) =>
+      [`facing=${facing},top=${isTop}`, { model: `${ID}:block/bunk_ladder${isTop ? "_top" : ""}`, ...(y ? { y } : {}) }]))),
+  });
+  cubes.bunk_ladder = null;
+}
 // The pool's tiles and ladder are fitted into the cabin rather than built into the airliner: breakable, and no part of
 // the airframe.
 function poolFittings() {
@@ -8315,6 +8385,7 @@ function poolLang() {
     "block.aerolarge.pool_coping": "Pool Coping",
     "block.aerolarge.pool_steps": "Pool Steps",
     "block.aerolarge.pool_ladder": "Pool Ladder",
+    "block.aerolarge.bunk_ladder": "Bunk Ladder",
   };
 }
 for (const name of POOL) {
@@ -9253,7 +9324,7 @@ write("data/minecraft/tags/item/doors.json", tag([`${ID}:airliner_door`]));
 // Villagers find their way through it like a wooden door; this lets them open it on the way to their seats too.
 write("data/minecraft/tags/block/mob_interactable_doors.json", tag([`${ID}:airliner_door`]));
 // Climbed as a ladder is.
-write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable()].map((name) => `${ID}:${name}`)));
+write("data/minecraft/tags/block/climbable.json", tag([...poolClimbable(), ...gymHallClimbable(), "bunk_ladder"].map((name) => `${ID}:${name}`)));
 // Sable's physics: the whole airframe is aircraft-light, and the tires let it roll down a runway on their own.
 const GROUND = ["landing_target", "tower_radio", "tower_radar", "transponder", "motion_sensor", "lift_panel", "jet_bridge", "check_in_desk", ...towerInstrumentsGround()];
 const airliner = blocks.filter((b) => !GROUND.some((ground) => b.endsWith(`:${ground}`)));

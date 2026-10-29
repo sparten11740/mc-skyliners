@@ -1421,6 +1421,15 @@ public final class AerolargeRegistry {
     );
     public static final DeferredItem<BlockItem> BUNK_ITEM = ITEMS.registerSimpleBlockItem(BUNK);
     /**
+     * The ladder up a bunk bed's foot end to its upper bunk (see {@link BunkBlock.Tier}), climbed as any ladder is: it
+     * comes and goes with its bunk bed, so it has no item and drops nothing.
+     */
+    public static final DeferredBlock<RungLadderBlock> BUNK_LADDER = BLOCKS.registerBlock(
+        "bunk_ladder", properties -> new RungLadderBlock(properties, RungLadderBlock.Kind.BUNK_LADDER),
+        metal(MapColor.SNOW).sound(SoundType.METAL).noOcclusion().noLootTable().pushReaction(PushReaction.DESTROY)
+            .isValidSpawn(AerolargeRegistry::never)
+    );
+    /**
      * The den's bean bags: one of Create's seats underneath, as soft and as quick to take up as wool; nothing spawns
      * on them.
      */

@@ -1964,7 +1964,9 @@ inside lit up, shelves of milk, cheese, greens, jars and bottles; it holds three
 milk, apples, carrots, melon, chicken, sweet berries, pumpkin pie and cookies. At the front right a long communal table
 runs out from the way in, its chairs every kind and colour, armchairs, stools and bean bags, a few places left empty; at
 the front left is a smaller table with its own odd set. A halo light hangs over each table. The bunk room has bunk beds
-two high at each of the four diagonals, their reading lights on, a blue halo light hanging over each pair; along each
+two high at each of the four diagonals, the upper bunk on the lower's corner posts high enough to stand up under it,
+a guard rail all along its open side and a white ladder up its foot end to climb into it, their reading lights on and
+a blue halo light hanging in front of each pair; along each
 bunk a rug of its sleeper's own colour, by each pair the sleepers' things, a suitcase and now and then a bean bag, and
 crew lockers by the way out and by the back window, a Space Helmet in each. Out to either side a wall of bookshelves,
 one high here and two there, parts the front pairs from the back ones, and behind the shaft a reading nook looks at the
