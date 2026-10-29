@@ -1411,8 +1411,14 @@ public class AutopilotBlockEntity extends BlockEntity {
         return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), modeSaid());
     }
 
-    /** The mode it flies, as it says it: the heading, the circle and its radius, or the pin and what it does there. */
+    /**
+     * The mode it flies, as it says it: the heading, the circle and its radius, or the pin and what it does there; a
+     * rocket comes down on the pin, or without one back where she rose, whatever the mode.
+     */
     private Component modeSaid() {
+        if (craft == Craft.ROCKET) {
+            return Component.translatable(lateral == Lateral.DESTINATION ? "message.aerolarge.autopilot.mode.rocket_pin" : "message.aerolarge.autopilot.mode.rocket_back");
+        }
         if (lateral == Lateral.HEADING) {
             return Component.translatable("message.aerolarge.autopilot.mode.heading", compass(targetHeading));
         }

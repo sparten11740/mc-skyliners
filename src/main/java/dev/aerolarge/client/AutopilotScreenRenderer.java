@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
@@ -131,7 +132,10 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         text(font, pose, buffers, targets(autopilot), header.x1() - 0.04, y, TARGET, ScreenDrawing.Align.RIGHT);
     }
 
-    /** What the autopilot is doing: waiting for the airliner to be assembled, switched off, or its phase and mode. */
+    /**
+     * What the autopilot is doing: waiting for the airliner to be assembled, switched off, or its phase and mode; a
+     * rocket's mode is only whether she comes down on a pin or back where she rose.
+     */
     static Component state(@Nullable AutopilotBlockEntity autopilot, @Nullable SableClient.Attitude attitude) {
         if (attitude == null) {
             return Component.translatable("screen.aerolarge.autopilot.standby");
@@ -140,6 +144,10 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             return Component.translatable("screen.aerolarge.autopilot.disengaged");
         }
         Component phase = Component.translatable("message.aerolarge.autopilot.phase." + autopilot.phase().name().toLowerCase(Locale.ROOT));
+        if (autopilot.craft() == Craft.ROCKET) {
+            String goal = autopilot.lateral() == AutopilotBlockEntity.Lateral.DESTINATION ? "rocket_pin" : "rocket_back";
+            return Component.translatable("screen.aerolarge.autopilot.mode", phase, Component.translatable("screen.aerolarge.autopilot.mode." + goal));
+        }
         Component mode = switch (autopilot.lateral()) {
             case HEADING -> Component.translatable("screen.aerolarge.autopilot.mode.heading", AutopilotBlockEntity.compass(autopilot.targetHeading()));
             case ORBIT_LEFT -> Component.translatable("screen.aerolarge.autopilot.mode.orbit_left", Math.round(autopilot.orbitRadius()));
