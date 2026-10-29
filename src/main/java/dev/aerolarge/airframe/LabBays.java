@@ -225,7 +225,10 @@ final class LabBays {
         return laid && feed;
     }
 
-    /** A lab bench, what stands on it unless it is bare, and maybe a stool pushed out a little before it. */
+    /**
+     * A lab bench, what stands on it unless it is bare, and maybe a stool pushed out a little before it, but never into
+     * the way across the bay to its window.
+     */
     private void bench(BlockPos at, Direction facing) {
         if (!plan.place(at, LabPlan.Part.BENCH, facing, Set.of())) {
             return;
@@ -234,7 +237,9 @@ final class LabBays {
             plan.place(at.above(), onBench(), facing, Set.of());
         }
         if (scatter.nextFloat() < STOOL_CHANCE) {
-            plan.place(at.relative(facing).offset(0, 0, scatter.nextInt(3) - 1), LabPlan.Part.STOOL, Direction.NORTH, Set.of());
+            BlockPos before = at.relative(facing);
+            BlockPos pushed = before.offset(0, 0, scatter.nextInt(3) - 1);
+            plan.place(pushed.getZ() == 0 ? before : pushed, LabPlan.Part.STOOL, Direction.NORTH, Set.of());
         }
     }
 

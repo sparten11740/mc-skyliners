@@ -525,40 +525,50 @@ final class LabPlan {
      */
     private void counters(RandomSource scatter) {
         double out = wall - COUNTER_IN;
+        List<List<BlockPos>> runs = new ArrayList<>();
         List<BlockPos> fronts = new ArrayList<>();
-        for (int side = 0; side < COUNTER_RUNS.length; side++) {
-            List<BlockPos> run = RocketRoom.run(floor + 1, out, COUNTER_RUNS[side][0], COUNTER_RUNS[side][1]).stream()
+        for (double[] ends : COUNTER_RUNS) {
+            List<BlockPos> run = RocketRoom.run(floor + 1, out, ends[0], ends[1]).stream()
                 .filter(at -> room.free(at.getX(), at.getY(), at.getZ())).toList();
+            runs.add(run);
+            run.forEach(at -> fronts.add(at.relative(counterFacing(at))));
+        }
+        for (int side = 0; side < runs.size(); side++) {
+            List<BlockPos> run = runs.get(side);
             for (int unit = 0; unit < run.size(); unit++) {
-                fronts.add(counter(run.get(unit), ON_COUNTERS[side][unit % ON_COUNTERS[side].length], scatter));
+                counter(run.get(unit), ON_COUNTERS[side][unit % ON_COUNTERS[side].length], scatter, fronts);
             }
         }
         fronts.forEach(this::keepClear);
     }
 
+    /** The way a counter's unit faces: in toward her axis. */
+    private static Direction counterFacing(BlockPos at) {
+        return RocketRoom.inward(RocketRoom.roundOf(at.getX(), at.getZ()));
+    }
+
     /**
      * A counter's unit facing in toward her axis, what stands on it unless it was left bare, and before it a stool if
-     * it has a microscope. The floor before it, to stand on.
+     * it has a microscope, clear of the floor before the other units.
      */
-    private BlockPos counter(BlockPos at, Part on, RandomSource scatter) {
-        Direction facing = RocketRoom.inward(RocketRoom.roundOf(at.getX(), at.getZ()));
+    private void counter(BlockPos at, Part on, RandomSource scatter, List<BlockPos> fronts) {
+        Direction facing = counterFacing(at);
         add(at, Part.BENCH, facing, Set.of());
         boolean kept = on == Part.MICROSCOPE || on == Part.CENTRIFUGE;
         boolean bare = !kept && scatter.nextFloat() < BARE_CHANCE;
         if (!bare && room.free(at.getX(), at.getY() + 1, at.getZ())) {
             add(at.above(), on, facing, Set.of());
         }
-        BlockPos before = at.relative(facing);
         if (on == Part.MICROSCOPE) {
-            stool(before, facing, scatter);
+            stool(at.relative(facing), facing, scatter, fronts);
         }
-        return before;
     }
 
     /**
-     * A microscope's stool before its counter: tucked in, or as it was left, pushed back or aside, where that is free.
+     * A microscope's stool before its counter: tucked in, or as it was left, pushed back or aside, where that is free
+     * and not the floor before another unit.
      */
-    private void stool(BlockPos before, Direction facing, RandomSource scatter) {
+    private void stool(BlockPos before, Direction facing, RandomSource scatter, List<BlockPos> fronts) {
         float pushed = scatter.nextFloat();
         BlockPos left = before;
         if (pushed < PUSHED_BACK) {
@@ -566,7 +576,7 @@ final class LabPlan {
         } else if (pushed < PUSHED_BACK + PUSHED_ASIDE) {
             left = before.relative(scatter.nextBoolean() ? facing.getClockWise() : facing.getCounterClockWise());
         }
-        if (!place(left, Part.STOOL, Direction.NORTH, Set.of())) {
+        if (fronts.contains(left) && !left.equals(before) || !place(left, Part.STOOL, Direction.NORTH, Set.of())) {
             place(before, Part.STOOL, Direction.NORTH, Set.of());
         }
     }
