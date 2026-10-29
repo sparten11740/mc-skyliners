@@ -60,7 +60,7 @@ public class HoopBlock extends HorizontalDirectionalBlock {
      * How far lower in its block the ring, its net and its board hang under a ceiling, in pixels: low enough that a
      * ball, and the arc a throw is helped along (see the entity's Basketball), clear the ceiling over it.
      */
-    private static final double HUNG_DROP = 6;
+    private static final double HUNG_DROP = 8;
     /** Thrown from farther than this, across the floor, a basket is worth three: the real line, in metres, scaled like the airliner. */
     private static final double THREE_POINT_METRES = 6.75;
     /** Scoreboards this close to the hoop count its baskets, and players this close hear of them. */
@@ -94,7 +94,7 @@ public class HoopBlock extends HorizontalDirectionalBlock {
      * it to the ceiling.
      */
     private static final Map<Direction, VoxelShape> HANGER = TurnedShapes.of(Shapes.or(
-        Block.box(1, 3, 0, 15, 10, 2), Block.box(2.5, 10, 0, 4.5, 16, 2), Block.box(11.5, 10, 0, 13.5, 16, 2),
+        Block.box(1, 1, 0, 15, 8, 2), Block.box(2.5, 8, 0, 4.5, 16, 2), Block.box(11.5, 8, 0, 13.5, 16, 2),
         LITTLE_BOARD_BRACKET.move(0, -HUNG_DROP / 16, 0)
     ));
 

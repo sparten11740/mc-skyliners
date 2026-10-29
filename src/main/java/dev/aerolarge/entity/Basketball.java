@@ -62,9 +62,12 @@ public class Basketball extends Entity implements ItemSupplier {
     private static final double ASSIST_CONE = 15;
     private static final int ASSIST_RANGE = 20;
     private static final int ASSIST_REACH_UP = 10;
-    /** How high over the higher of the ball and the ring the helped arc peaks, in blocks, and how far under the ceiling at most. */
+    /**
+     * How high over the higher of the ball and the ring the helped arc peaks, in blocks, and how far under the ceiling
+     * at most: room for the ball's top half and a little more, so a hoop hung from a ceiling still has an arc into it.
+     */
     private static final double ARC_RISE = 1.5;
-    private static final double CEILING_ROOM = 0.6;
+    private static final double CEILING_ROOM = 0.3;
 
     @Nullable
     private UUID thrower;

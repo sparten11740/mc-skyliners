@@ -4047,7 +4047,7 @@ function coffeeMachineLang() {
   ];
   const pane = (top) => ({ from: [1, BOARD_BOTTOM, 0.5], to: [15, top, 1.5], faces: { north: { texture: "#glass" }, south: { texture: "#glass" } } });
   const boardTextures = { ...hoopTextures, glass: `${ID}:block/glass_backboard`, frame: `${ID}:block/cabin_rail_steel`, red: `${ID}:block/backboard_red` };
-  const HUNG_DROP = 6;
+  const HUNG_DROP = 8;
   const lowered = ([from, to, texture]) => [[from[0], from[1] - HUNG_DROP, from[2]], [to[0], to[1] - HUNG_DROP, to[2]], texture];
   const loweredElement = (element) => ({ ...element, from: [element.from[0], element.from[1] - HUNG_DROP, element.from[2]],
     to: [element.to[0], element.to[1] - HUNG_DROP, element.to[2]] });
