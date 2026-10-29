@@ -5298,6 +5298,14 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   // Hazard stripes running down to the left, yellow and near-black.
   const hazard = (x, y) => ((x + y) % 8 < 4 ? [0xe8, 0xb4, 0x20] : [0x22, 0x22, 0x26]);
   // Studded rubber: round studs on a dark mat.
+  // A club's carpet: deep plum, a lattice of darker diagonals across it and a neon dot where they cross.
+  const lattice = (base, line, dot) => (x, y) => {
+    const up = (x + y) % 8;
+    const down = (x - y + 16) % 8;
+    if (up === 0 && down === 0) return dot;
+    if (up === 0 || down === 0) return line;
+    return hash(x * 7 + 3, y * 11 + 5) < 0.12 ? shade(base, 8) : base;
+  };
   const studded = (base) => (x, y) => {
     const u = x % 4 - 1.5;
     const v = y % 4 - 1.5;
@@ -5350,7 +5358,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     },
     club: {
       wall: foam(hex(0x2a2430)), dado: band(hex(0x141218), hex(0x7a2aa0)), ledge: plaster(hex(0x18161c)),
-      ceiling: night(hex(0x100e14), hex(0xff4ac8)), floor: studded(hex(0x18161c)),
+      ceiling: night(hex(0x100e14), hex(0xff4ac8)), floor: lattice(hex(0x2c1434), hex(0x1c0c22), hex(0xff4ac8)),
     },
     lab: {
       wall: tiles(hex(0x9cc0a4), hex(0xe8f0ea), 4, true), dado: band(hex(0xeef2ee), hex(0x4ab89a)), ledge: plaster(hex(0xeef2ee)),

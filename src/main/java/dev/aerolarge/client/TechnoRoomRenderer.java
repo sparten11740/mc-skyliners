@@ -2,29 +2,38 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
 import it.unimi.dsi.fastutil.HashCommon;
+import java.util.BitSet;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 /**
  * Draws the secret techno room's lights while this player is in it (see {@link TechnoRoom}): the dance floor's tiles
- * lit two by two in the beat, a checkerboard of pink and blue changing every beat at first, quickening with the build;
- * then, from the drop, every tile its own colour each half beat, the beams of light from over the deck sweeping the
- * dancers, and a white flash on the ceiling on every beat of the first bars. All at full brightness, so the room glows
- * with them.
+ * lit two by two in the beat, wherever all four of a square's are dance floor (the rocket's club has its tiles only
+ * in the middle, round her shaft), a checkerboard of pink and blue changing every beat at first, quickening with the
+ * build; then, from the drop, every tile its own colour each half beat, the beams of light from over the deck sweeping
+ * the dancers, and a white flash on the ceiling on every beat of the first bars. All at full brightness, so the room
+ * glows with them.
  */
 public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEntity> {
     /** How big the dance floor's lit squares are, in blocks, and how far over the floor they are drawn. */
     private static final int SQUARE = 2;
     private static final float LIFT = 0.02F;
+    /** How often which of a room's squares are dance floor is looked at again, in game ticks: tiles can be broken. */
+    private static final int LOOK_EVERY = 40;
     /** Where in the track the build starts, in ticks: the tiles flash twice as fast from there. */
     private static final int BUILD_TICK = 300;
     /** How long the ceiling flashes on each beat after the drop, in ticks, and for how many beats. */
@@ -40,6 +49,13 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     private static final int DARK = 0xFF100818;
     private static final int FLASH = 0xFFF8F8FF;
 
+    /** Which of each deck's room's squares are dance floor, as last looked at. */
+    private final Map<TechnoDeckBlockEntity, Floor> floors = new WeakHashMap<>();
+
+    /** Which of a room's squares are dance floor, by their place in its rows of squares, and when that was seen. */
+    private record Floor(long seen, BitSet squares) {
+    }
+
     @Override
     public void render(TechnoDeckBlockEntity deck, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         float at = TechnoRoom.playing(deck, partialTick);
@@ -52,19 +68,57 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
         PoseStack.Pose last = pose.last();
         int beat = (int) (at / TechnoRoom.BEAT_TICKS);
         boolean dropped = at >= TechnoRoom.DROP_TICK;
-        floor(consumer, last, from, to, at, beat, dropped);
+        floor(consumer, last, from, to, at, beat, dropped, danceFloor(deck, from, to));
         if (dropped) {
             beams(consumer, last, from, to, at);
             flash(consumer, last, from, to, at, beat);
         }
     }
 
-    /** The dance floor's squares, lit as the track has got to. */
-    private static void floor(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, float at, int beat, boolean dropped) {
-        int step = dropped ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : at >= BUILD_TICK ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : beat;
-        float y = from.getY() + LIFT;
+    /** Which of the room's squares are dance floor: looked at again every so often, as tiles can be broken or laid. */
+    private BitSet danceFloor(TechnoDeckBlockEntity deck, BlockPos from, BlockPos to) {
+        Level level = deck.getLevel();
+        long now = level == null ? 0 : level.getGameTime();
+        Floor floor = floors.get(deck);
+        if (floor == null || now - floor.seen() >= LOOK_EVERY || now < floor.seen()) {
+            floor = new Floor(now, squaresOn(level, deck.getBlockPos(), from, to));
+            floors.put(deck, floor);
+        }
+        return floor.squares();
+    }
+
+    /** The room's squares whose four tiles are all dance floor, by their place in its rows of squares. */
+    private static BitSet squaresOn(@Nullable Level level, BlockPos deck, BlockPos from, BlockPos to) {
+        BitSet squares = new BitSet();
+        int square = 0;
         for (int x = from.getX(); x + SQUARE <= to.getX() + 1; x += SQUARE) {
             for (int z = from.getZ(); z + SQUARE <= to.getZ() + 1; z += SQUARE) {
+                squares.set(square++, level != null && tiled(level, deck.offset(x, from.getY() - 1, z)));
+            }
+        }
+        return squares;
+    }
+
+    /** Whether the square of floor from a corner is all dance floor's tiles. */
+    private static boolean tiled(Level level, BlockPos corner) {
+        for (BlockPos tile : BlockPos.betweenClosed(corner, corner.offset(SQUARE - 1, 0, SQUARE - 1))) {
+            if (!level.getBlockState(tile).is(AerolargeRegistry.DANCE_FLOOR.get())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** The dance floor's squares, lit as the track has got to. */
+    private static void floor(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, float at, int beat, boolean dropped, BitSet tiled) {
+        int step = dropped ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : at >= BUILD_TICK ? (int) (at / (TechnoRoom.BEAT_TICKS / 2)) : beat;
+        float y = from.getY() + LIFT;
+        int square = 0;
+        for (int x = from.getX(); x + SQUARE <= to.getX() + 1; x += SQUARE) {
+            for (int z = from.getZ(); z + SQUARE <= to.getZ() + 1; z += SQUARE) {
+                if (!tiled.get(square++)) {
+                    continue;
+                }
                 int colour = dropped ? PALETTE[Math.floorMod(HashCommon.mix(x * 31 + z * 7 + step * 131), PALETTE.length)]
                     : (x / SQUARE + z / SQUARE + step) % 2 == 0 ? PALETTE[0] : PALETTE[1];
                 FlatQuads.quad(consumer, pose, LightTexture.FULL_BRIGHT, (x / SQUARE + z / SQUARE) % 3 == 0 && !dropped ? DARK : colour, 0, 1, 0,

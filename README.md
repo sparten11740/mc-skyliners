@@ -1921,33 +1921,38 @@ rising whine, the button sinks and glows, its wave rolling, and for ten seconds 
 and bubbles to the sound of waves washing. Both are heard as you stand in them: the air through the greenhouse's leaves
 over a trickle of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and
 then slapping against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance
-floor's black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls and the DJ deck behind
-the shaft playing the whole room. Beside the deck sits the Fog Machine, a black flight case, its little light green:
-press it and it hisses and pumps a stream of thick fog out of its glowing nozzle for five seconds, the fog rolling out
-over the floor behind the shaft and hanging in the disco balls' light; then its light turns amber while it heats up
-again, and a beep says when it is ready. Along her left side a bar curves round the window there, its counter parting
-the bar from the floor, stools before it and the back bar's lit shelves of bottles behind it; at the front right is a
-booth, purple and magenta armchairs round a low table; and at the front left, by the bar's end, a coat corner of
-lockers, a Space Helmet in each. Behind the bar works a Robot Bartender, a chrome and white android two blocks tall on a
-pedestal glowing cyan round its foot, polishing a glass, its head turning with a servo's whirr toward whoever comes near
-and its cyan visor blinking now and then (craftable, and put down it faces you, so it can stand behind any bar). Use it
-and it greets you in its robot voice and opens its shop of mocktails, none with any alcohol in it, each shown in its own
-glass with its price in emeralds: an emerald buys two Nebula Fizzes, violet-blue and sparkling, for a minute of Night
-Vision, two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Slow Falling, or two Moon Milks, silvery
-white with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and
-Jump Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a
-sip of food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of
-ice, pours it into the glass and sets the drink down on the bar. Its bar has furniture of its own, in the creative tab
-by the DJ Deck and all of it craftable. A Drink Tap stands on a bar counter, three tall neon handles, pink, cyan and
-lime, on a chrome tower over a drip tray: use it and the handle you click tips down, and a stream of glowing violet Star
-Fizz runs fizzing into the tray for a second, filling a glass bottle held under it with a bottle of Star Fizz, a
-sparkling soda to drink (the empty bottle comes back). A Neon Sign hangs on a wall, no words on it, only a picture bent
-in glowing tubes in colours of its own: a martini glass with an olive, a pair of music notes, a ringed planet, a rocket,
-a pair of lips or a lightning bolt. Click it to switch it off and on, its transformer clinking and its tubes buzzing as
-they strike or die away, and sneak and click it with an empty hand for the next picture. A Cocktail Table is a high
-round table to stand at, as high as the counter, its dark glass top ringed with blue LED light under its rim; it is
-fenced round as high as a fence, so nobody climbs on to it. Its windows are built at their darkest, so daylight does not
-wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
+floor's black glass tiles round the shaft, lit two by two in pink and blue to the beat while its music plays, and past
+them out to her skin a plum club carpet dotted with pink; speaker stacks at the diagonals, four disco balls and the DJ
+deck behind the shaft playing the whole room. Beside the deck sits the Fog Machine, a black flight case, its little
+light green: press it and it hisses and pumps a stream of thick fog out of its glowing nozzle for five seconds, the fog
+rolling out over the floor behind the shaft and hanging in the disco balls' light; then its light turns amber while it
+heats up again, and a beep says when it is ready. Along her left side a straight bar stands across the window there: its
+counter, stools before it and two Drink Taps on it; behind its middle, his back to the window and the stars, the Robot
+Bartender; and either side of the window the back bar, three tiers of shelves of bottles of every shape and colour lit
+from below (the airliner lounge's back bar has them too). At the front right is a booth, purple and magenta armchairs
+round a low table; at the back right two Cocktail Tables with stools; at the front left, by the bar's end, a coat corner
+of lockers, a Space Helmet in each; and round the wall over head height hang neon signs: a martini glass over the back
+bar, music notes over the window behind the deck, a lightning bolt by the bar's end, lips over the booth, a planet over
+the tables and a rocket over the coats. The Robot Bartender is a chrome and white android two blocks tall on a pedestal
+glowing cyan round its foot, polishing a glass, its head turning with a servo's whirr toward whoever comes near and its
+cyan visor blinking now and then (craftable, and put down it faces you, so it can stand behind any bar). Use it and it
+greets you in its robot voice and opens its shop of mocktails, none with any alcohol in it, each shown in its own glass
+with its price in emeralds: an emerald buys two Nebula Fizzes, violet-blue and sparkling, for a minute of Night Vision,
+two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Slow Falling, or two Moon Milks, silvery white
+with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and Jump
+Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a sip of
+food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of ice,
+pours it into the glass and sets the drink down on the bar. The bar's furniture is in the creative tab by the DJ Deck
+and all of it craftable. A Drink Tap stands on a bar counter, three tall neon handles, pink, cyan and lime, on a chrome
+tower over a drip tray: use it and the handle you click tips down, and a stream of glowing Star Fizz runs fizzing into
+the tray for a second, filling a glass bottle held under it with a bottle of Star Fizz, a sparkling soda to drink (the
+empty bottle comes back). A Neon Sign hangs on a wall, no words on it, only a picture bent in glowing tubes in colours
+of its own: a martini glass with an olive, a pair of music notes, a ringed planet, a rocket, a pair of lips or a
+lightning bolt. Click it to switch it off and on, its transformer clinking and its tubes buzzing as they strike or die
+away, and sneak and click it with an empty hand for the next picture. A Cocktail Table is a high round table to stand
+at, as high as the counter, its dark glass top ringed with blue LED light under its rim; it is fenced round as high as a
+fence, so nobody jumps up on to it from the floor. Its windows are built at their darkest, so daylight does not wash out
+the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
 through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
 over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
 lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
@@ -2305,7 +2310,8 @@ Last of all `RocketLayout.finishInside` finishes her rooms (`RocketFinish`): her
 `RocketLinedCoverBlock` (cut to her curve) or a `RocketLiningPanelBlock` (whole), drawn by `ShellModel` with her livery
 outside and the room's lining, untinted, on the faces it sees, as the airliner's cabin is lined (`Lining`), and each
 story's floor a `RocketFloorBlock`, its room on top and the room under it underneath. `RocketWallLights` fixes the
-wall washers (`WallLightBlock`) to her skin round each story, once the rooms have their furniture.
+wall washers (`WallLightBlock`) to her skin round each story, once the rooms have their furniture, where `SkinMount`
+finds room on her wall, as it does for the club's neon signs.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their
