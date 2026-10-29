@@ -120,6 +120,9 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N74 | 08:20 | The club (**Jan**: "why is there books on the dance floor?", a bar with bottles, taps and a bartender to buy from) | Record shelves gone; a straight bar across the window at her left with two drink taps; a robot bartender, two blocks tall, his back to the window (past the window-front rule: behind the counter nothing else fits), selling five mocktails for emeralds; three tiers of lit bottles; six neon signs, two high tables; the dance floor's tiles only round the shaft, a plum carpet past them; the beat's lights on the tiles only | A robot, not a villager: a block, so nobody wanders off or is left behind, and fitting a spacecraft (Arthur in *Passengers*). The curved counter came out jagged at scale 2 | Lead, two agents |
 | N75 | 09:28 | The pool's towels | Fat rolls with spiral ends and a pile of folded ones | From a few steps the thin rolls read as a bookcase | Lead |
 | N76 | 09:35 | The lift (**Jan**: darker tinted glass, metal beams up its four corners, a few girders in places) | Lift Glass, smoky blue-grey with a glint, for the shaft and the cockpit booth; Steel Girder, a riveted gunmetal I-beam, up the corners, and under every room's ceiling but the observation deck's, out along the four ways to her skin | Seen in the mess | Lead |
+| N77 | 09:45 | Girders to the wall (**Jan**: they stopped half way) | Each ceiling girder runs right up to her skin, the LED strip on either side of its end; its run ends on her skin by what the block is, so the girders are laid at every scale (none at 1.5 before); girders end to end hide their joints | Seen in the mess at scale 2 and read block by block at 1.5 | Lead |
+| N78 | 09:55 | Reviews of the club and the shaft | Fixed: the beat's lights on every dance floor tile (whole squares only before, six of them); neon signs facing into the room; the bartender only behind a counter; spectators not aboard; the girder in its tags (super light, frame, pickaxe), Lift Glass crafted from tinted glass (its old recipe was gray stained glass's) | Seen in game: the lit floor round the shaft, the notes sign facing north | Reviews, lead |
+| N79 | 10:00 | Decorations on the shaft and the girders (**Jan**) | Two agents: on the shaft's glass per room (the observation deck's velvet curtains, the entry's pictogram board, the cargo bay's corner guards, the mess's chalkboard menu, the bunk room's fairy lights, the greenhouse's ivy, the pool's life ring, the club's neon tubes, the lab's whiteboard); under the girders per room (mission patches, a chain hoist, copper pans, fairy lights, hanging baskets, bunting, stage spotlights, a cable tray) | No collision, so the walkway stays walkable; over head height under the girders | Lead, agents |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -233,6 +236,8 @@ Commits on main, newest last, with the versions handed out.
   tile alone under her heading dial.
 - alpha.185 (29 October, 09:30): the catch-up review's fixes (N72, N73), the club (N74), the towels (N75). Copied to the
   desktop at 09:31 in place of alpha.157, once the game there had closed.
+- alpha.186 (10:05): the lift tinted and its corner girders (N76), the ceiling girders to the wall (N77), the reviews'
+  fixes (N78). Waiting to be copied to the desktop, which was off the network.
 
 ## Background agents
 
