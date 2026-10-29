@@ -14,14 +14,16 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The space posters on the outside of the rocket's glass lift shaft (see {@link SpacePosterBlock}), one on a story:
  * Earthrise on the entry story, the solar system in the bunk room, the black hole in the lab and the quasar on the
- * observation deck. Each hangs on the shaft's back if it fits there, else on its right or its left, never on its front,
- * where the doorway is; a story she is too short to have has none, and nor does a story where the poster fits on no
- * face. Every block of a poster hangs against the shaft's glass, face to face, so it is assembled with her and rides
- * along.
+ * observation deck. Each hangs on the shaft's back if it fits there and nothing stands up against it (as the lab's tank
+ * does), else on its right or its left, never on its front, where the doorway is; a story she is too short to have has
+ * none, and nor does a story where the poster fits on no face. Every block of a poster hangs against the shaft's glass,
+ * face to face, so it is assembled with her and rides along.
  */
 final class RocketPosters implements RocketPiece {
     /** How many rows over a story's floor a poster's lowest row is: a row of glass showing under it. */
     private static final int UP = 2;
+    /** How many blocks straight out in front of a poster's middle are to be open for it to be seen, in blocks. */
+    private static final int IN_VIEW = 2;
     /** Which poster hangs on which story, by the story's index from the entry story up. */
     private static final Map<Integer, SpacePoster> BY_STORY = Map.of(
         0, SpacePoster.EARTHRISE,
@@ -52,11 +54,11 @@ final class RocketPosters implements RocketPiece {
         }
     }
 
-    /** Hangs a poster over a story's floor on the first of the shaft's faces it fits on, if any. */
+    /** Hangs a poster over a story's floor on the first of the shaft's faces it fits on and can be seen on, if any. */
     private void hang(SpacePoster poster, int floor) {
         for (Direction face : FACES) {
             Map<BlockPos, BlockState> pieces = pieces(poster, floor, face);
-            if (pieces != null) {
+            if (pieces != null && inView(poster, floor, face)) {
                 pieces.forEach((at, piece) -> layout.set(at.getX(), at.getY(), at.getZ(), piece));
                 return;
             }
@@ -85,6 +87,20 @@ final class RocketPosters implements RocketPiece {
             pieces.put(at, AerolargeRegistry.SPACE_POSTER.get().piece(poster, face, column, row));
         }
         return pieces;
+    }
+
+    /**
+     * Whether a poster on a face of the shaft over a story's floor can be seen: open air for {@link #IN_VIEW} blocks
+     * straight out in front of its middle, where the lab's tank, say, would stand up against it.
+     */
+    private boolean inView(SpacePoster poster, int floor, Direction face) {
+        int middle = floor + UP + poster.rows() / 2;
+        for (int out = RocketLayout.SHAFT + 2; out <= RocketLayout.SHAFT + 1 + IN_VIEW; out++) {
+            if (!layout.isOpen(face.getStepX() * out, middle, face.getStepZ() * out)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Whether a block of a poster looking out one way can hang at a position: open air inside her, glass behind it. */
