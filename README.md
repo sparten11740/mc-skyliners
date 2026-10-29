@@ -2085,10 +2085,13 @@ curtains go only on a wall, the fairy lights not on a floor, and the life ring a
 The lab, her eighth story (the server config's `rocket.lab` leaves it bare, as `rocket.rooms` leaves every room), is
 where her tardigrade lives: a water bear the size of an elephant, about six blocks long and three and a half tall, soft
 peach with darker folds between the four plump segments of its body, eight stubby legs with pale claws, two dark eye
-spots and a small round mouth at the tip of its snout. Its glass tank stands behind the lift shaft, past the walkway
-round it, lit softly along its top, moss on its floor with a shallow pool and beds of pebbles. It lumbers to and fro,
-rests, turns round where its tank is deep enough to (at the default scale it is not, and it always faces its hatch),
-and turns its head to look at whoever is near. In the tank's glass on her right is a feeding hatch at chest height,
+spots and a small round mouth at the tip of its snout. Its tank fills the room behind the lift shaft, past the walkway
+round it, right out to her skin behind it and on her left, which are its walls there, glazed toward the room and lit
+softly along the glass's top: moss on its floor with a shallow pool and beds of pebbles, and wherever the creature never
+goes mossy boulders and rocks, ferns and azaleas growing from beds of moss, glow lichen on her skin and spore blossoms
+hanging from the ceiling, their spores drifting down. It lumbers to and fro, rests, turns round where its tank is deep
+enough to (at the default scale it is not, and it always faces its hatch), and turns its head to look at whoever is
+near. In the tank's glass on her right is a feeding hatch at chest height,
 and over it a screen of its vitals, its picture and a green pulse tracing across. Use the hatch with moss in hand and
 the hatch slides open, the creature comes and munches the moss, bits of it falling, with a crunch at each bite; use it
 with an empty hand to reach in and touch it, and it wriggles and gives a soft, low purr, as it does now and then on its
@@ -2099,7 +2102,7 @@ barrel's picture; back under y 300 it uncurls with a purr. Round the front of th
 of the way out, microscopes on them, a centrifuge, sample racks with their vials glowing, trays of specimen jars (a
 pickled tentacle, an eye and a sprouting potato, each in its own glowing liquid) and scan screens sweeping a line down a
 picture of it, a unit here and there left bare to work at, a stool before each microscope, tucked in or pushed back or
-aside as someone left it, and two by the tank's far end to sit and watch it from. Look into a microscope and you see
+aside as someone left it, and one or two by the hatch to sit and watch it from. Look into a microscope and you see
 through its eyepiece, a slide magnified in the round field, coming into focus and drifting a little under a fine
 crosshair: a water bear paddling, moss green in its gut; algae cells jostling; the bioreactors' muscle fibres twitching;
 or diatoms' glass shells shimmering on a dark field. Any click looks up again. Use a centrifuge and it spins up with a

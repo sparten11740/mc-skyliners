@@ -127,7 +127,7 @@ abstract class RocketRoom implements RocketPiece {
     }
 
     /** Whether a block stands in front of one of the story's windows, out to the four ways, near the skin. */
-    private boolean beforeWindow(int x, int y, int z) {
+    protected boolean beforeWindow(int x, int y, int z) {
         if (!windowed()) {
             return false;
         }

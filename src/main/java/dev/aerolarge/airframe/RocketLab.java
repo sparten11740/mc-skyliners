@@ -14,10 +14,13 @@ import dev.aerolarge.block.LabInstrumentBlock;
 import dev.aerolarge.block.LabPartitionBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.SampleCentrifugeBlock;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,9 +29,9 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The lab, her eighth story, under the observation deck: the glass tank of her tardigrade behind the shaft, lit soft
- * along its top, moss, a pool and pebbles on its floor, a feeding hatch on her right with the creature's vitals over
- * it; lab counters curving round the front, microscopes, a centrifuge, sample racks, jars and scan screens on them,
+ * The lab, her eighth story, under the observation deck: the glass tank of her tardigrade behind the shaft, out to her
+ * skin, lit soft along its top, moss, a pool and pebbles on its floor, ferns, azaleas, boulders and glow lichen where
+ * the creature never goes, a feeding hatch on her right with the creature's vitals over it; lab counters curving round the front, microscopes, a centrifuge, sample racks, jars and scan screens on them,
  * stools before the microscopes and by the tank; on her left the food lab behind its glazed partitions, bioreactors
  * growing steaks, algae columns and hydroponic racks glowing, piped up into the ceiling; on her right the wet bench,
  * a sink, cabinets and lab benches. Laid out by {@link LabPlan} and {@link LabBays}; the hatch keeps the creature,
@@ -65,7 +68,10 @@ final class RocketLab extends RocketRoom {
         }
     }
 
-    /** The room as the plan sees it: her blocks, the room's rule for furniture, and the ring along the skin. */
+    /**
+     * The room as the plan sees it: her blocks, the room's rule for furniture, the ring along the skin, her surface and
+     * the fronts of her windows.
+     */
     private LabPlan.Room room() {
         return new LabPlan.Room() {
             @Override
@@ -81,6 +87,16 @@ final class RocketLab extends RocketRoom {
             @Override
             public boolean within(int x, int y, int z) {
                 return inRoom(x, y, z, 0);
+            }
+
+            @Override
+            public boolean inside(int x, int y, int z) {
+                return layout.inFrom(x, y, z, 0);
+            }
+
+            @Override
+            public boolean beforeWindow(int x, int y, int z) {
+                return RocketLab.this.beforeWindow(x, y, z);
             }
         };
     }
@@ -112,7 +128,24 @@ final class RocketLab extends RocketRoom {
             case PIPE -> AerolargeRegistry.LAB_PIPE.get().running(placed.sides());
             case CABINET, FEED_CABINET -> AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, placed.facing());
             case SINK -> AerolargeRegistry.LAVATORY_BASIN.get().defaultBlockState().setValue(LavatoryBasinBlock.FACING, placed.facing());
+            case MOSS_BED -> Blocks.MOSS_BLOCK.defaultBlockState();
+            case FERN -> Blocks.FERN.defaultBlockState();
+            case LARGE_FERN -> Blocks.LARGE_FERN.defaultBlockState();
+            case AZALEA -> Blocks.AZALEA.defaultBlockState();
+            case FLOWERING_AZALEA -> Blocks.FLOWERING_AZALEA.defaultBlockState();
+            case BOULDER -> Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+            case LICHEN -> lichen(placed.sides());
+            case SPORE_BLOSSOM -> Blocks.SPORE_BLOSSOM.defaultBlockState();
         };
+    }
+
+    /** Glow lichen growing on her skin on the sides given. */
+    private static BlockState lichen(Set<Direction> sides) {
+        BlockState lichen = Blocks.GLOW_LICHEN.defaultBlockState();
+        for (Direction side : sides) {
+            lichen = lichen.setValue(MultifaceBlock.getFaceProperty(side), true);
+        }
+        return lichen;
     }
 
     /** The upper half of the two blocks tall machine or sink laid under a block, as its lower half is. */

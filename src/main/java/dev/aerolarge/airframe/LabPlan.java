@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,18 +14,20 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The rocket's lab worked out on its story before a block is chosen (see {@link RocketLab}), so it can be drawn and
- * checked without the game's blocks. Behind the shaft stands the glass tank of her tardigrade, filling the room's
- * free band from the walkway round the shaft out to the ring along the skin: thin panes along its edges, lit along
- * their tops, its floor moss with a shallow pool, beds of pebbles and, where there is room, rocks; and on her right a
- * feeding hatch at chest height with the creature's vitals on a screen over it. In the front half, lab counters curve
+ * checked without the game's blocks. Behind the shaft stands the tank of her tardigrade, from the walkway round the
+ * shaft right out to her skin behind it and on her left, which are its walls there, and glazed toward the room, thin
+ * panes lit along their tops: its floor moss with a shallow pool and beds of pebbles, and wherever the creature never
+ * goes something to look at, mossy boulders and rocks, ferns and azaleas growing from beds of moss, glow lichen on her
+ * skin and a spore blossom hanging from the ceiling; and on her right, in its glass there, a feeding hatch at chest
+ * height with the creature's vitals on a screen over it. In the front half, lab counters curve
  * round her skin either side of the way out, microscopes, a centrifuge, sample racks, specimen jars and scan screens on
  * them, a unit here and there left bare to work at, and a stool before each microscope, pushed back or aside as it was
- * left; by the tank's other end, stools to sit and watch it from. Either side of the shaft, round her side windows,
+ * left; by the hatch, stools to sit and watch it from. Either side of the shaft, round her side windows,
  * are the food lab and the wet bench (see {@link LabBays}).
  *
- * <p>The tank keeps to the room's rule but for the back window: there its glass stands in the window's front, as the
- * creature needs the room, though never in the ring along the skin just before the window. The furniture keeps to the
- * room's rule everywhere.
+ * <p>The tank takes the ring along the skin that the room's rule keeps clear, as the creature needs the room, its back
+ * window looking into it; the lights laid after it along the skin go round it, or light it. The furniture keeps to
+ * the room's rule everywhere.
  *
  * <p>The creature paces a straight line along the tank, east and west, so long a body never meets its glass: the line
  * is where its whole outline, seen from above, stays inside the tank's panes, and it turns round only where nothing is
@@ -33,7 +36,11 @@ import net.minecraft.world.phys.Vec3;
 final class LabPlan {
     /** How far behind the shaft's back wall the tank starts, in blocks: past the walkway round it. */
     private static final int TANK_BEHIND = 2;
-    /** How far out to either side the tank reaches, for each block it reaches back: a little over half as far. */
+    /**
+     * How far out on her right the tank reaches, for each block the room reaches back in from the ring along her skin:
+     * a little over half as far, its glass there, with the hatch in it, standing in the room. On her left it reaches
+     * out to her skin.
+     */
     private static final double TANK_SPREAD = 0.6;
     /** How thick the tank's panes are, in blocks, standing at the very edge of its outer blocks. */
     static final double PANE = 1 / 16.0;
@@ -60,6 +67,20 @@ final class LabPlan {
     /** How many beds of pebbles lie on the tank's floor at most, and how many rocks where the creature never goes. */
     private static final int PEBBLE_BEDS = 3;
     private static final int ROCKS = 3;
+    /**
+     * What else grows and stands where the creature never goes, taken in turn: how many at most, and how far apart,
+     * in blocks; how likely a boulder is two high; and how many patches of glow lichen grow on her skin in the tank,
+     * and how many spore blossoms hang from its ceiling, at most.
+     */
+    private static final int GROWING = 8;
+    private static final int GROWING_SPACING = 2;
+    private static final Part[] GROWS = {
+        Part.AZALEA, Part.FERN, Part.BOULDER, Part.LARGE_FERN, Part.FLOWERING_AZALEA, Part.FERN, Part.BOULDER};
+    private static final float TALL_BOULDER = 0.5F;
+    private static final int LICHENS = 6;
+    /** How many rows over the tank's floor the glow lichen grows from, clear of the creature's back as it passes. */
+    private static final int LICHEN_FROM = 2;
+    private static final int SPORE_BLOSSOMS = 2;
     /** How far apart the pebble beds, and the rocks, lie at least, in blocks. */
     private static final int SPACING = 3;
     /** The pool's size, across and front to back, in blocks. */
@@ -83,20 +104,23 @@ final class LabPlan {
      */
     private static final float PUSHED_BACK = 0.3F;
     private static final float PUSHED_ASIDE = 0.3F;
-    /** How many stools watch the tank from its end away from the hatch. */
-    private static final int WATCHERS = 2;
     /** The points the creature's outline is tried at, about its middle, its feet facing either way, and its turning. */
     private static final List<Vec3> OUTLINE = outline(HALF_LENGTH + PANE, HALF_WIDTH + PANE);
     private static final List<Vec3> FEET = feet();
     private static final List<Vec3> TURNING = outline(TURN_REACH + PANE, TURN_REACH + PANE);
 
     /**
-     * What is laid, by what it is. A food machine and the sink stand two blocks tall: their upper half is TOP, over the
-     * lower half laid first.
+     * What is laid, by what it is. A food machine, the sink and the large fern stand two blocks tall: their upper half
+     * is TOP, over the lower half laid first.
      */
     enum Part {
         TANK_GLASS, HATCH, VITALS, MOSS, POOL, PEBBLES, ROCK, BENCH, MICROSCOPE, SAMPLES, SCAN, STOOL,
-        CENTRIFUGE, SPECIMENS, BIOREACTOR, HYDROPONICS, ALGAE, TOP, PARTITION, PIPE, CABINET, FEED_CABINET, SINK
+        CENTRIFUGE, SPECIMENS, BIOREACTOR, HYDROPONICS, ALGAE, TOP, PARTITION, PIPE, CABINET, FEED_CABINET, SINK,
+        /**
+         * The tank's growth: a bed of moss a plant grows from; a fern, a large fern's halves, an azalea, a flowering
+         * one; a mossy boulder; glow lichen on her skin, on the sides given; and a spore blossom under the ceiling.
+         */
+        MOSS_BED, FERN, LARGE_FERN, AZALEA, FLOWERING_AZALEA, BOULDER, LICHEN, SPORE_BLOSSOM
     }
 
     /**
@@ -130,6 +154,12 @@ final class LabPlan {
 
         /** Whether a block lies in from the ring kept clear along the skin. */
         boolean within(int x, int y, int z);
+
+        /** Whether a block's middle lies inside her skin's surface: open air there is her rooms', not the sky's. */
+        boolean inside(int x, int y, int z);
+
+        /** Whether a block stands in front of one of her windows, near the skin in the rows they are in. */
+        boolean beforeWindow(int x, int y, int z);
     }
 
     private final Room room;
@@ -159,7 +189,7 @@ final class LabPlan {
         Track track = plan.tank.isEmpty() ? null : plan.track();
         BlockPos hatch = track == null ? null : plan.hatch(track);
         if (hatch != null) {
-            plan.lay(hatch, track);
+            plan.lay(hatch, track, scatter);
         }
         plan.counters(scatter);
         if (hatch != null) {
@@ -218,27 +248,31 @@ final class LabPlan {
     }
 
     /**
-     * The tank's columns: behind the walkway round the shaft, in from the ring along the skin, out to either side a
-     * little over half as far as the tank reaches back, and open all the way up.
+     * The tank's columns: behind the walkway round the shaft, out to her skin behind it and on her left, on her right
+     * a little over half as far as the room reaches back in from the ring along her skin, and open all the way up.
      */
     private void findTank() {
         int from = RocketLayout.SHAFT + TANK_BEHIND;
         int back = from;
-        while (back < reach && room.within(0, floor + 1, back + 1)) {
+        while (back < reach && room.open(0, floor + 1, back + 1)) {
             back++;
         }
-        int side = (int) (back * TANK_SPREAD);
+        int roomBack = from;
+        while (roomBack < reach && room.within(0, floor + 1, roomBack + 1)) {
+            roomBack++;
+        }
+        int right = (int) (roomBack * TANK_SPREAD);
         for (BlockPos at : columns(from, back)) {
-            if (Math.abs(at.getX()) <= side && RocketRoom.offTheWays(at.getX(), at.getZ(), 0) && openColumn(at.getX(), at.getZ())) {
+            if (at.getX() <= right && RocketRoom.offTheWays(at.getX(), at.getZ(), 0) && openColumn(at.getX(), at.getZ())) {
                 tank.add(column(at));
             }
         }
     }
 
-    /** Whether a column is in from the ring and open from the floor to the ceiling. */
+    /** Whether a column is open from the floor to the ceiling, inside her skin. */
     private boolean openColumn(int x, int z) {
         for (int y = floor + 1; y <= top; y++) {
-            if (!room.open(x, y, z) || !room.within(x, y, z)) {
+            if (!room.open(x, y, z) || !room.inside(x, y, z)) {
                 return false;
             }
         }
@@ -249,15 +283,31 @@ final class LabPlan {
         return tank.contains(column(x, z));
     }
 
-    /** The ways out of the tank a column of it has panes on: toward each column beside it that is not the tank's. */
+    /**
+     * The ways out of the tank a column of it has panes on: toward each column beside it in the room, not the tank's;
+     * toward her skin, which is the tank's wall there, none.
+     */
     private Set<Direction> panes(int x, int z) {
         Set<Direction> panes = new HashSet<>();
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            if (!inTank(x + side.getStepX(), z + side.getStepZ())) {
+            int besideX = x + side.getStepX();
+            int besideZ = z + side.getStepZ();
+            if (!inTank(besideX, besideZ) && room.open(besideX, floor + 1, besideZ)) {
                 panes.add(side);
             }
         }
         return panes;
+    }
+
+    /** The ways from a column of the tank that her skin stands, the tank's wall there. */
+    private Set<Direction> skinBeside(int x, int z) {
+        Set<Direction> skin = new HashSet<>();
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (!inTank(x + side.getStepX(), z + side.getStepZ()) && !room.open(x + side.getStepX(), floor + 1, z + side.getStepZ())) {
+                skin.add(side);
+            }
+        }
+        return skin;
     }
 
     /** Whether every point of an outline about a middle lies inside the tank. */
@@ -276,15 +326,16 @@ final class LabPlan {
     }
 
     /**
-     * The creature's line: of the lines east and west across the tank, the longest stretch its outline fits along,
-     * preferring one it can turn round from; null where it fits nowhere.
+     * The creature's line: of the lines east and west across the tank in a row its hatch can go in, so its mouth meets
+     * the hatch at the line's end, the longest stretch its outline fits along, preferring one it can turn round from;
+     * null where it fits nowhere.
      */
     @Nullable
     private Track track() {
         Track best = null;
         double bestScore = 0;
         for (double z = RocketLayout.SHAFT + TANK_BEHIND; z <= reach; z += STEP) {
-            Track line = stretch(z);
+            Track line = hatchable((int) Math.floor(z)) ? stretch(z) : null;
             double score = line == null ? 0 : line.from().distanceTo(line.to()) + (line.turn() != null ? reach : 0);
             if (line != null && (best == null || score > bestScore)) {
                 best = line;
@@ -363,21 +414,21 @@ final class LabPlan {
     }
 
     /**
-     * Where the feeding hatch goes: in the tank's glass on her right, as near level with the creature's line as it can
-     * be, where that glass has a pane only on its outside and the room's floor before it is free to stand on; null for
-     * none.
+     * Where the feeding hatch goes: in the tank's glass on her right, level with the creature's line, which is only
+     * ever laid along a row the hatch can go in (see {@link #hatchable}).
      */
-    @Nullable
     private BlockPos hatch(Track track) {
-        int line = (int) Math.floor(track.from().z);
-        for (int i = 0; i <= 2 * reach; i++) {
-            int z = line + ((i & 1) == 0 ? i / 2 : -(i + 1) / 2);
-            int x = edge(z, -1);
-            if (x != Integer.MIN_VALUE && panes(x, z).equals(Set.of(Direction.EAST)) && room.free(x + 1, floor + 1, z)) {
-                return new BlockPos(x, floor + HATCH_UP, z);
-            }
-        }
-        return null;
+        int z = (int) Math.floor(track.from().z);
+        return new BlockPos(edge(z, -1), floor + HATCH_UP, z);
+    }
+
+    /**
+     * Whether the feeding hatch can go in a row of the tank: in its glass on her right, where that glass has a pane
+     * only on its outside and the room's floor before it is free to stand on.
+     */
+    private boolean hatchable(int z) {
+        int x = edge(z, -1);
+        return x != Integer.MIN_VALUE && panes(x, z).equals(Set.of(Direction.EAST)) && room.free(x + 1, floor + 1, z);
     }
 
     /**
@@ -395,16 +446,20 @@ final class LabPlan {
 
     /**
      * Lays the tank: the hatch and the vitals screen in its glass on her right, the floor before the hatch kept clear,
-     * its glass all the way up its edges, and its floor.
+     * its glass all the way up its edges in the room, its floor, and what grows in it.
      */
-    private void lay(BlockPos hatch, Track track) {
+    private void lay(BlockPos hatch, Track track, RandomSource scatter) {
         add(hatch, Part.HATCH, Direction.EAST, Set.of());
         add(new BlockPos(hatch.getX(), floor + VITALS_UP, hatch.getZ()), Part.VITALS, Direction.EAST, Set.of());
         laid.add(new BlockPos(hatch.getX() + 1, floor + 1, hatch.getZ()));
         for (long at : tank) {
             glass(BlockPos.getX(at), BlockPos.getZ(at));
         }
-        tankFloor(track);
+        Set<Long> swept = swept(track);
+        List<BlockPos> growing = tankFloor(track, swept);
+        grow(growing, scatter);
+        lichen(swept, scatter);
+        sporeBlossoms(track);
     }
 
     /** A column of the tank's glass on its edge, floor to ceiling, its panes on the sides that look out of it. */
@@ -423,8 +478,7 @@ final class LabPlan {
      * goes, moss on their tops; a pool toward the back behind the middle of its line; beds of pebbles, low enough to
      * walk over, apart from the rocks; and moss over the rest.
      */
-    private void tankFloor(Track track) {
-        Set<Long> swept = swept(track);
+    private List<BlockPos> tankFloor(Track track, Set<Long> swept) {
         List<BlockPos> inner = columns(-reach, reach).stream().filter(at -> inTank(at.getX(), at.getZ()) && panes(at.getX(), at.getZ()).isEmpty()).toList();
         List<BlockPos> rocks = apart(inner.stream().filter(at -> !swept.contains(column(at))).toList(), ROCKS);
         Set<Long> taken = new HashSet<>();
@@ -432,11 +486,75 @@ final class LabPlan {
         Set<Long> pool = pool(inner, taken, track);
         taken.addAll(pool);
         List<BlockPos> beds = apart(inner.stream().filter(at -> !taken.contains(column(at))).toList(), PEBBLE_BEDS);
+        beds.forEach(at -> taken.add(column(at)));
+        List<BlockPos> growing = apart(inner.stream().filter(at -> !swept.contains(column(at)) && !taken.contains(column(at))).toList(), GROWING,
+            GROWING_SPACING);
+        growing.forEach(at -> taken.add(column(at)));
         for (BlockPos at : inner) {
-            add(at.atY(floor + 1), floorPart(at, rocks, pool, beds), Direction.NORTH, Set.of());
+            if (!growing.contains(at)) {
+                add(at.atY(floor + 1), floorPart(at, rocks, pool, beds), Direction.NORTH, Set.of());
+            }
         }
         for (BlockPos rock : rocks) {
             add(rock.atY(floor + 2), Part.MOSS, Direction.NORTH, Set.of());
+        }
+        return growing;
+    }
+
+    /**
+     * What grows and stands in the tank where the creature never goes, one of its kinds in turn at each spot: a plant
+     * growing from a bed of moss, or a mossy boulder, one or two high, moss on its top.
+     */
+    private void grow(List<BlockPos> spots, RandomSource scatter) {
+        for (int i = 0; i < spots.size(); i++) {
+            BlockPos at = spots.get(i).atY(floor + 1);
+            Part kind = GROWS[i % GROWS.length];
+            if (kind == Part.BOULDER) {
+                boulder(at, scatter.nextFloat() < TALL_BOULDER);
+            } else {
+                plant(at, kind);
+            }
+        }
+    }
+
+    /** A plant growing from a bed of moss, the large fern two blocks tall. */
+    private void plant(BlockPos at, Part kind) {
+        add(at, Part.MOSS_BED, Direction.NORTH, Set.of());
+        add(at.above(), kind, Direction.NORTH, Set.of());
+        if (kind == Part.LARGE_FERN) {
+            add(at.above(2), Part.TOP, Direction.NORTH, Set.of());
+        }
+    }
+
+    /** A mossy boulder, one or two high, moss on its top. */
+    private void boulder(BlockPos at, boolean tall) {
+        int high = tall ? 2 : 1;
+        for (int up = 0; up < high; up++) {
+            add(at.above(up), Part.BOULDER, Direction.NORTH, Set.of());
+        }
+        add(at.above(high), Part.MOSS, Direction.NORTH, Set.of());
+    }
+
+    /**
+     * Glow lichen on her skin where it is the tank's wall, out of the creature's way: a patch at a time, a few rows up,
+     * on the skin beside a column it never passes over, never on a window's glass.
+     */
+    private void lichen(Set<Long> swept, RandomSource scatter) {
+        List<BlockPos> walls = columns(-reach, reach).stream()
+            .filter(at -> inTank(at.getX(), at.getZ()) && !swept.contains(column(at)) && !skinBeside(at.getX(), at.getZ()).isEmpty()).toList();
+        for (BlockPos at : apart(walls, LICHENS, GROWING_SPACING)) {
+            List<Integer> rows = IntStream.range(floor + LICHEN_FROM, top).filter(y -> !room.beforeWindow(at.getX(), y, at.getZ())).boxed().toList();
+            if (!rows.isEmpty()) {
+                add(at.atY(rows.get(scatter.nextInt(rows.size()))), Part.LICHEN, Direction.NORTH, skinBeside(at.getX(), at.getZ()));
+            }
+        }
+    }
+
+    /** Spore blossoms under the tank's ceiling, over the creature's line, dropping their spores slowly down to it. */
+    private void sporeBlossoms(Track track) {
+        for (int i = 1; i <= SPORE_BLOSSOMS; i++) {
+            Vec3 over = track.from().lerp(track.to(), i / (SPORE_BLOSSOMS + 1.0));
+            add(new BlockPos((int) Math.floor(over.x), top, (int) Math.floor(over.z)), Part.SPORE_BLOSSOM, Direction.NORTH, Set.of());
         }
     }
 
@@ -472,11 +590,16 @@ final class LabPlan {
 
     /** Up to so many of the columns given, toward the tank's back first and apart from each other. */
     private static List<BlockPos> apart(List<BlockPos> candidates, int most) {
+        return apart(candidates, most, SPACING);
+    }
+
+    /** Up to so many of the columns given, toward the tank's back first and so far apart from each other at least. */
+    private static List<BlockPos> apart(List<BlockPos> candidates, int most, int spacing) {
         List<BlockPos> sorted = new ArrayList<>(candidates);
         sorted.sort(Comparator.comparingInt((BlockPos at) -> -at.getZ()).thenComparingInt(at -> Math.abs(at.getX())).thenComparingInt(BlockPos::getX));
         List<BlockPos> chosen = new ArrayList<>();
         for (BlockPos candidate : sorted) {
-            boolean clear = chosen.stream().allMatch(other -> other.distManhattan(candidate) >= SPACING);
+            boolean clear = chosen.stream().allMatch(other -> other.distManhattan(candidate) >= spacing);
             if (chosen.size() < most && clear) {
                 chosen.add(candidate);
             }
@@ -581,11 +704,11 @@ final class LabPlan {
         }
     }
 
-    /** Stools by the tank's west end, level with the hatch at its east end, to sit and watch the creature from. */
+    /** Stools either side of the floor before the hatch, to sit and watch the creature from. */
     private void watchers(BlockPos hatch) {
-        int x = edge(hatch.getZ(), 1) - 1;
-        for (int i = 0; i < WATCHERS; i++) {
-            int z = hatch.getZ() - i;
+        int x = hatch.getX() + 1;
+        for (int side = -1; side <= 1; side += 2) {
+            int z = hatch.getZ() + side;
             if (room.free(x, floor + 1, z)) {
                 add(new BlockPos(x, floor + 1, z), Part.STOOL, Direction.NORTH, Set.of());
             }
