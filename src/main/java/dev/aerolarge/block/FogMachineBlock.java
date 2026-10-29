@@ -122,9 +122,7 @@ public class FogMachineBlock extends BaseEntityBlock {
         }
         if (state.getValue(FOG) != Fog.READY) {
             server.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_OFF, SoundSource.BLOCKS, BUSY_VOLUME, 1.0F);
-            if (!server.getBlockTicks().hasScheduledTick(pos, this)) {
-                server.scheduleTick(pos, this, 1);
-            }
+            LostTicks.rearm(server, pos, this, 1);
             return InteractionResult.SUCCESS;
         }
         server.setBlock(pos, state.setValue(FOG, Fog.FOGGING), Block.UPDATE_ALL);

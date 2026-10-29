@@ -71,9 +71,7 @@ public class SampleCentrifugeBlock extends HorizontalDirectionalBlock {
         }
         if (state.getValue(SPINNING)) {
             server.playSound(null, pos, SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.BLOCKS, BEEP_VOLUME, BEEP_PITCH);
-            if (!server.getBlockTicks().hasScheduledTick(pos, this)) {
-                server.scheduleTick(pos, this, 1);
-            }
+            LostTicks.rearm(server, pos, this, 1);
             return InteractionResult.CONSUME;
         }
         server.setBlock(pos, state.setValue(SPINNING, true), Block.UPDATE_ALL);

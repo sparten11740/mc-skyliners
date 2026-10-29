@@ -121,9 +121,7 @@ public class BioreactorBlock extends LabMachineBlock {
 
     /** A vessel's growth set going again, its next stage a stage's time away, if its tick was lost. */
     private void keepGrowing(ServerLevel level, BlockPos lower) {
-        if (!level.getBlockTicks().hasScheduledTick(lower, this)) {
-            level.scheduleTick(lower, this, STAGE_TICKS);
-        }
+        LostTicks.rearm(level, lower, this, STAGE_TICKS);
     }
 
     /** A vessel still growing is looked at now and then, in case its tick was lost. */

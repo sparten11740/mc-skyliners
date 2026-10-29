@@ -13,7 +13,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The fog machine's fog, drawn on the client while it pumps: each tick a jet of cloud out of its nozzle, shooting out
  * the way it points and slowing as it spreads, and thick smoke rolling after it, which drifts and hangs a long while,
- * slowly rising, over the floor.
+ * slowly rising, over the floor. On the server it sees that the machine stops pumping and heats up in time, even where
+ * its scheduled next step was lost (see {@link LostTicks}).
  */
 public class FogMachineBlockEntity extends BlockEntity {
     /** Where its nozzle's mouth is, in pixels in the model drawn facing north: across, up and along. */

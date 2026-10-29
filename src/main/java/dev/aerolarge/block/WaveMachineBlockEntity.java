@@ -13,9 +13,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The wave machine's waves, drawn on the client while it runs: each tick a few spots of the pool's water round it, a row
- * under its foot where it stands open to the air, splash and bubble, so the whole channel churns. The open water is
+ * The wave machine's waves, drawn on the client while it runs: each tick a few spots of the pool's water round it, a
+ * row under its foot where it stands open to the air, splash and bubble, so the whole channel churns. The open water is
  * looked for once as the waves start on this client, within so many blocks of it, and none of it while it stands idle.
+ * On the server it sees that the waves die down in time, even where their scheduled end was lost (see
+ * {@link LostTicks}).
  */
 public class WaveMachineBlockEntity extends BlockEntity {
     /** How far round it the waves reach, in blocks: past the far side of the widest rocket's pool. */

@@ -2250,7 +2250,8 @@ her livery selector, and a `RocketRoom` for each furnished story, from `RocketEn
 them, and `RocketPilotSeats` the cockpit's seats); its rooms' own furniture is `ShelfUnitBlock` and `PalletRackBlock`,
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
-and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client); its
+and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client and keep them
+to time on the server, `LostTicks` taking up where a rocket's assembly dropped their scheduled ticks); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
