@@ -125,22 +125,23 @@ final class RocketEntry extends RocketRoom {
     private void bench(RocketQuarter quarter, int y, int arm, RandomSource random) {
         int length = arm - RocketQuarter.INNER >= ROOMY ? 3 : 2;
         int first = RocketQuarter.INNER + (arm - RocketQuarter.INNER + 1 - length) / 2;
-        Direction facing = quarter.end().getOpposite();
+        BlockState piece = AerolargeRegistry.GYM_BENCH.get().defaultBlockState().setValue(GymBenchBlock.FACING, quarter.end().getOpposite());
         List<BlockPos> bench = new ArrayList<>();
         for (int across = first; across < first + length; across++) {
-            if (put(quarter.x(across), y, quarter.z(BENCH_ALONG), AerolargeRegistry.GYM_BENCH.get().defaultBlockState().setValue(GymBenchBlock.FACING, facing))) {
+            if (put(quarter.x(across), y, quarter.z(BENCH_ALONG), piece)) {
                 bench.add(new BlockPos(quarter.x(across), y, quarter.z(BENCH_ALONG)));
             }
         }
         for (BlockPos at : bench) {
-            BlockState piece = layout.stateAt(at.getX(), y, at.getZ());
-            layout.set(at.getX(), y, at.getZ(), AerolargeRegistry.GYM_BENCH.get().joined(piece, way -> layout.stateAt(at.getX() + way.getStepX(), y, at.getZ() + way.getStepZ())));
+            layout.set(at.getX(), y, at.getZ(), AerolargeRegistry.GYM_BENCH.get().joined(piece,
+                way -> layout.stateAt(at.getX() + way.getStepX(), y, at.getZ() + way.getStepZ())));
         }
         int inner = RocketQuarter.INNER;
         int[][] spots = {{inner, inner}, {inner + 1, inner}, {inner, inner + 1}, {first + length, BENCH_ALONG + 1}};
         int start = random.nextInt(spots.length);
         BlockState suitcase = AerolargeRegistry.SUITCASE.get().defaultBlockState()
-            .setValue(SuitcaseBlock.FACING, Direction.from2DDataValue(random.nextInt(4))).setValue(SuitcaseBlock.COLOR, CASES[random.nextInt(CASES.length)]);
+            .setValue(SuitcaseBlock.FACING, Direction.from2DDataValue(random.nextInt(4)))
+            .setValue(SuitcaseBlock.COLOR, CASES[random.nextInt(CASES.length)]);
         for (int spot = 0; spot < spots.length; spot++) {
             int[] at = spots[(start + spot) % spots.length];
             if (standing(quarter.x(at[0]), y, quarter.z(at[1]), suitcase)) {

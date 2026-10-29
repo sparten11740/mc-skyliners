@@ -43,6 +43,9 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
     private static final int PUFFS = 14;
     private static final double PUFF_SPREAD = 0.3;
     private static final double PUFF_SPEED = 0.03;
+    /** How high over its foot its vents are, and how far up from them its puffs of air spread, in blocks. */
+    private static final double VENTS_UP = 0.15;
+    private static final double PUFF_RISE = 0.05;
     /** How loud its seal's clunk is as it seals again, and its click when it is used while busy. */
     private static final float SEAL_VOLUME = 0.6F;
     private static final float BUSY_VOLUME = 0.4F;
@@ -113,7 +116,8 @@ public class AirlockPanelBlock extends HorizontalDirectionalBlock {
         }
         server.setBlock(pos, state.setValue(CYCLE, Cycle.CYCLING), Block.UPDATE_ALL);
         server.playSound(null, pos, AerolargeRegistry.AIRLOCK_CYCLE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
-        server.sendParticles(ParticleTypes.CLOUD, pos.getX() + 0.5, pos.getY() + 0.15, pos.getZ() + 0.5, PUFFS, PUFF_SPREAD, 0.05, PUFF_SPREAD, PUFF_SPEED);
+        server.sendParticles(ParticleTypes.CLOUD, pos.getX() + 0.5, pos.getY() + VENTS_UP, pos.getZ() + 0.5, PUFFS, PUFF_SPREAD, PUFF_RISE,
+            PUFF_SPREAD, PUFF_SPEED);
         server.scheduleTick(pos, this, CYCLE_TICKS);
         return InteractionResult.SUCCESS;
     }

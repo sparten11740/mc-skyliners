@@ -31,8 +31,9 @@ public class GalleyFridgeBlockEntity extends RandomizableContainerBlockEntity {
     private static final float VOLUME = 0.7F;
     /** What the blueprint stocks a fridge with, from its first slot on: something for everyone aboard. */
     private static final List<ItemStack> STOCK = List.of(
-        new ItemStack(Items.MILK_BUCKET), new ItemStack(Items.APPLE, 4), new ItemStack(Items.CARROT, 6), new ItemStack(Items.MELON_SLICE, 8),
-        new ItemStack(Items.COOKED_CHICKEN, 3), new ItemStack(Items.SWEET_BERRIES, 12), new ItemStack(Items.PUMPKIN_PIE, 2), new ItemStack(Items.COOKIE, 6));
+        new ItemStack(Items.MILK_BUCKET), new ItemStack(Items.APPLE, 4), new ItemStack(Items.CARROT, 6),
+        new ItemStack(Items.MELON_SLICE, 8), new ItemStack(Items.COOKED_CHICKEN, 3), new ItemStack(Items.SWEET_BERRIES, 12),
+        new ItemStack(Items.PUMPKIN_PIE, 2), new ItemStack(Items.COOKIE, 6));
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private final ContainerOpenersCounter openers = new ContainerOpenersCounter() {

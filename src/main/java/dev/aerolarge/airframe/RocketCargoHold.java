@@ -140,7 +140,8 @@ final class RocketCargoHold extends RocketRoom {
     private void workbench(RocketQuarter quarter, int y, int corner) {
         List<BlockPos> run = run(y, wall() - CRATES_IN, TOOLS_FROM, TOOLS_TO);
         for (BlockPos at : run) {
-            stack(at.getX(), y, at.getZ(), ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.TOOLS, facingOff(run, at)), TOOL_SHELVES);
+            BlockState tools = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.TOOLS, facingOff(run, at));
+            stack(at.getX(), y, at.getZ(), tools, TOOL_SHELVES);
         }
         int middle = (RocketQuarter.INNER + corner + 1) / 2;
         put(quarter.x(middle), y, quarter.z(middle), Blocks.CRAFTING_TABLE.defaultBlockState());

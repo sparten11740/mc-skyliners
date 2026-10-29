@@ -116,7 +116,8 @@ final class RocketBunks extends RocketRoom {
         int inner = RocketQuarter.INNER;
         int[][] spots = {{middle, middle}, {inner, middle}, {middle, inner}, {inner, inner}, {inner - 2, inner}, {inner - 2, inner + 1}};
         BlockState suitcase = AerolargeRegistry.SUITCASE.get().defaultBlockState()
-            .setValue(SuitcaseBlock.FACING, Direction.from2DDataValue(random.nextInt(4))).setValue(SuitcaseBlock.COLOR, CASES[random.nextInt(CASES.length)]);
+            .setValue(SuitcaseBlock.FACING, Direction.from2DDataValue(random.nextInt(4)))
+            .setValue(SuitcaseBlock.COLOR, CASES[random.nextInt(CASES.length)]);
         BlockState beanBag = random.nextInt(BEAN_BAG_EVERY) == 0 ? AerolargeRegistry.BEAN_BAG.get().defaultBlockState()
             .setValue(BeanBagBlock.FACING, quarter.end().getOpposite()).setValue(BeanBagBlock.COLOR, BEAN_BAGS[random.nextInt(BEAN_BAGS.length)]) : null;
         for (int[] spot : spots) {

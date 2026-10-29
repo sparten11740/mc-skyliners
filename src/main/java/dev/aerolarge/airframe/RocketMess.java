@@ -127,7 +127,8 @@ final class RocketMess extends RocketRoom {
             return;
         }
         int jars = laid.getLast();
-        standing(quarter.x(jars), y + 1, quarter.z(PASS_ALONG), ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.JARS, Direction.NORTH));
+        BlockState shelf = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.JARS, Direction.NORTH);
+        standing(quarter.x(jars), y + 1, quarter.z(PASS_ALONG), shelf);
         if (laid.size() > 1) {
             standing(quarter.x(laid.get(random.nextInt(laid.size() - 1))), y + 1, quarter.z(PASS_ALONG), treat);
         }

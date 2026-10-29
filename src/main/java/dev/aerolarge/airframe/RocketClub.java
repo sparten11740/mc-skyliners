@@ -72,7 +72,8 @@ final class RocketClub extends RocketRoom {
         }
         bar(y);
         deck(new BlockPos(0, y, (int) Math.round(DECK_OUT)));
-        put(FOG_ACROSS, y, (int) Math.round(DECK_OUT), AerolargeRegistry.FOG_MACHINE.get().defaultBlockState().setValue(FogMachineBlock.FACING, Direction.EAST));
+        put(FOG_ACROSS, y, (int) Math.round(DECK_OUT),
+            AerolargeRegistry.FOG_MACHINE.get().defaultBlockState().setValue(FogMachineBlock.FACING, Direction.EAST));
         booth(RocketQuarter.FRONT_RIGHT, y, random);
         coats(y);
         darken();
