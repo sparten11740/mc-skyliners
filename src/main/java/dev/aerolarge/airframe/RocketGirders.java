@@ -1,13 +1,10 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
-import dev.aerolarge.block.OvalWindowBlock;
-import dev.aerolarge.block.ShellBlock;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -72,9 +69,8 @@ final class RocketGirders implements RocketPiece {
         return List.of();
     }
 
-    /** Whether a block is her skin, where a girder's run ends: her cover cut to her curve or whole, or a window. */
+    /** Whether a block is her skin, where a girder's run ends. */
     private boolean skin(BlockPos at) {
-        Block block = layout.stateAt(at.getX(), at.getY(), at.getZ()).getBlock();
-        return block instanceof ShellBlock || block instanceof OvalWindowBlock;
+        return RocketLayout.skin(layout.stateAt(at.getX(), at.getY(), at.getZ()));
     }
 }

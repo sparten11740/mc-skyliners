@@ -335,8 +335,12 @@ public final class RocketLayout implements Layout {
             return true;
         }
         BlockState there = stateAt(next.getX(), next.getY(), next.getZ());
-        boolean skin = there.getBlock() instanceof ShellBlock || there.getBlock() instanceof OvalWindowBlock;
-        return !there.canOcclude() && !skin;
+        return !there.canOcclude() && !skin(there);
+    }
+
+    /** Whether a block is her skin: her cover, cut to her curve or whole, or a window in it. */
+    static boolean skin(BlockState state) {
+        return state.getBlock() instanceof ShellBlock || state.getBlock() instanceof OvalWindowBlock;
     }
 
     void set(int x, int y, int z, BlockState state) {
