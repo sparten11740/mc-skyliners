@@ -256,9 +256,10 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - The greenhouse's and the pool's new sounds (N56) are synthesised and were measured (about 10 dB under the lift's
   hum, 30 dB down under 150 Hz) and heard playing in game, but nobody has listened to them by ear: worth a listen,
   and `node tools/generate_sounds.mjs greenhouse_air greenhouse_bee pool_water pool_slap` remakes just those.
-- After that F3+T, a minute later, the dev client crashed in the game's own font code drawing a recipe toast ("Image
-  is not allocated", `crash-2026-10-29_04.48.55-client.txt`), no Aerolarge code in it: a bitmap font freed by the
-  resource reload. The world had saved; I note it in case it ever shows without F3+T.
+- Testing the rooms' sounds with a resource reload (F3+T) at 04:48, the dev client crashed a minute later in the
+  game's own font code drawing a recipe toast ("Image is not allocated", `crash-2026-10-29_04.48.55-client.txt`), no
+  Aerolarge code in it: a bitmap font freed by the reload. The world had saved; I note it in case it ever shows
+  without F3+T.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
