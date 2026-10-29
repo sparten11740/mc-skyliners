@@ -5816,4 +5816,38 @@ function parcelScannerTextures() {
 }
 parcelScannerTextures();
 
+// The galley's fridge (see galleyFridge in generate_resources.mjs): brushed stainless steel; its door, brushed too, a
+// blue light by its handle; its white inside; its door's inside, white bins holding bottles; and its food sheet, a patch
+// four pixels square for each thing kept in it: milk, cheese, greens, tomatoes, orange juice, a pink cake, a green
+// bottle and a brown one, and a carton.
+function galleyFridgeTextures() {
+  const STEEL = [0xc4, 0xca, 0xd0];
+  const brushed = (x, y) => (y % 3 === 0 ? [0xb4, 0xba, 0xc1] : STEEL);
+  texture(blockOutput, "fridge_steel", brushed, 2);
+  texture(blockOutput, "fridge_door", (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 15) return [0x9a, 0xa1, 0xa9];
+    if (x === 13 && y >= 3 && y <= 4) return [0x40, 0xa8, 0xff];
+    return brushed(x, y);
+  }, 2);
+  texture(blockOutput, "fridge_inside", (x, y) => (y % 5 === 0 ? [0xe2, 0xea, 0xf0] : [0xf6, 0xfa, 0xfc]), 1);
+  const BOTTLES = [[0x3a, 0x9a, 0x4a], [0xf0, 0xa0, 0x30], [0xe8, 0xe8, 0xe0], [0x8a, 0x4a, 0x22]];
+  texture(blockOutput, "fridge_door_inside", (x, y) => {
+    if (y === 6 || y === 12) return [0xd8, 0xe2, 0xea];
+    if ((y > 1 && y < 6 || y > 7 && y < 12) && x % 4 !== 0) return BOTTLES[(Math.floor(x / 4) + Math.floor(y / 6)) % BOTTLES.length];
+    return [0xf6, 0xfa, 0xfc];
+  }, 1);
+  // Each thing's colour, and its label or mark, row by row of the sheet's four-pixel patches.
+  const FOOD = [
+    [[0xf4, 0xf6, 0xf8], [0x3a, 0x6c, 0xd0]], [[0xf0, 0xc8, 0x40], [0xd0, 0xa0, 0x20]], [[0x4a, 0xa8, 0x3a], [0x2e, 0x80, 0x28]],
+    [[0xd8, 0x30, 0x24], [0xf2, 0xee, 0xe2]], [[0xf8, 0x9a, 0x20], [0xf2, 0xee, 0xe2]], [[0xf0, 0x9a, 0xb8], [0xfa, 0xf0, 0xf4]],
+    [[0x2e, 0x8a, 0x3e], [0x1e, 0x5a, 0x28]], [[0x7a, 0x44, 0x1e], [0xe8, 0xc8, 0x80]], [[0xf0, 0xf2, 0xf4], [0x2a, 0x7a, 0xd8]],
+  ];
+  texture(blockOutput, "fridge_food", (x, y) => {
+    const patch = FOOD[Math.floor(y / 4) * 4 + Math.floor(x / 4)];
+    if (!patch) return [0xf6, 0xfa, 0xfc];
+    return y % 4 === 1 || y % 4 === 2 && x % 4 === 1 ? patch[1] : patch[0];
+  }, 2);
+}
+galleyFridgeTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

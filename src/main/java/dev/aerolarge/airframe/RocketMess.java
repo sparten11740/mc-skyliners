@@ -3,6 +3,8 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.CoffeeMachineBlock;
+import dev.aerolarge.block.GalleyFridgeBlock;
+import dev.aerolarge.block.GalleyFridgeBlockEntity;
 import dev.aerolarge.block.GalleyOvenBlock;
 import dev.aerolarge.block.GalleyUnitBlock;
 import dev.aerolarge.block.ShelfUnitBlock;
@@ -13,16 +15,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The galley and mess, its kitchen at her back and its dining room at her front. The galley's units curve round her
  * back wall either side of its window, worktops and stowage, an oven in the middle of each run and a coffee machine at
- * its end, facing in; out to either side a pass of worktops parts the kitchen from the dining room, bar stools before
- * it, a shelf of jars on it and a cake or a pot of tulips beside them; and where the kitchen is roomy an island stands
- * in it. At her front right a long communal table runs out from the way in, its chairs every which kind and colour,
- * armchairs, stools and a bean bag, a few left out; at her front left a smaller table with its own odd set of chairs.
- * A halo light hangs over each table.
+ * its end, facing in, and at the window's end of her right's run the fridge, stocked; out to either side a pass of
+ * worktops parts the kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of
+ * tulips beside them; and where the kitchen is roomy an island stands in it. At her front right a long communal table
+ * runs out from the way in, its chairs every which kind and colour, armchairs, stools and a bean bag, a few left out; at
+ * her front left a smaller table with its own odd set of chairs. A halo light hangs over each table.
  */
 final class RocketMess extends RocketRoom {
     /** Her galley and mess's story, from the entry story up. */
@@ -56,9 +60,8 @@ final class RocketMess extends RocketRoom {
         RandomSource random = scatter();
         int pass = reach(PASS_ALONG);
         int corner = corner();
-        for (double[] run : RUNS) {
-            galley(y, run[0], run[1]);
-        }
+        galley(y, RUNS[0][0], RUNS[0][1], true);
+        galley(y, RUNS[1][0], RUNS[1][1], false);
         pass(RocketQuarter.BACK_RIGHT, y, pass, Blocks.CAKE.defaultBlockState(), random);
         pass(RocketQuarter.BACK_LEFT, y, pass, Blocks.POTTED_RED_TULIP.defaultBlockState(), random);
         if (corner - RocketQuarter.INNER >= ROOMY) {
@@ -68,20 +71,39 @@ final class RocketMess extends RocketRoom {
         table(RocketQuarter.FRONT_LEFT, y, corner, random);
     }
 
-    /** A run of galley units round the back wall between two angles, an oven in its middle, a coffee machine on it. */
-    private void galley(int y, double from, double to) {
+    /**
+     * A run of galley units round the back wall between two angles, an oven in its middle, a coffee machine on it, and
+     * at its end by the window, where asked, the fridge, stocked (see {@link GalleyFridgeBlock}).
+     */
+    private void galley(int y, double from, double to, boolean fridge) {
         List<BlockPos> run = run(y, wall() - GALLEY_IN, from, to);
         for (int unit = 0; unit < run.size(); unit++) {
             BlockPos at = run.get(unit);
             Direction facing = inward(roundOf(at.getX(), at.getZ()));
             if (unit == run.size() / 2) {
                 put(at.getX(), y, at.getZ(), AerolargeRegistry.GALLEY_OVEN.get().defaultBlockState().setValue(GalleyOvenBlock.FACING, facing));
+            } else if (fridge && unit == run.size() - 1) {
+                fridge(at, facing);
             } else if (unit % 2 == 1) {
                 put(at.getX(), y, at.getZ(), AerolargeRegistry.GALLEY_STOWAGE.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, facing));
             } else if (put(at.getX(), y, at.getZ(), AerolargeRegistry.GALLEY_WORKTOP.get().defaultBlockState().setValue(GalleyUnitBlock.FACING, facing))
                 && unit == 0) {
                 put(at.getX(), y + 1, at.getZ(), AerolargeRegistry.COFFEE_MACHINE.get().defaultBlockState().setValue(CoffeeMachineBlock.FACING, facing));
             }
+        }
+    }
+
+    /** The fridge at a block of the galley, facing the way given, stocked once it stands. */
+    private void fridge(BlockPos at, Direction facing) {
+        if (put(at.getX(), at.getY(), at.getZ(), AerolargeRegistry.GALLEY_FRIDGE.get().defaultBlockState().setValue(GalleyFridgeBlock.FACING, facing))) {
+            layout.fit(at, RocketMess::stockFridge);
+        }
+    }
+
+    /** The fridge stocked as the blueprint stocks it. */
+    private static void stockFridge(BlockEntity blockEntity, Rotation rotation) {
+        if (blockEntity instanceof GalleyFridgeBlockEntity fridge) {
+            fridge.stock();
         }
     }
 

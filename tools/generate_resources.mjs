@@ -1419,6 +1419,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, greenhouseSounds());
   Object.assign(sounds, airlockPanelSounds());
   Object.assign(sounds, parcelScannerSounds());
+  Object.assign(sounds, galleyFridgeSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4796,6 +4797,70 @@ function parcelScannerFittings() {
 function parcelScannerSounds() {
   return Object.fromEntries(["scanner_sweep", "scanner_pass", "scanner_fail"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
 }
+// The galley's fridge (see GalleyFridgeBlock), drawn facing north: a stainless body as high as a worktop, its door on
+// its front with a steel handle and a blue light by it. Open, the door has swung out a quarter turn on its hinge at the
+// left as seen from the front, showing the bins and bottles on its inside, and the body is a lit cavity: white walls,
+// two glass shelves and what is kept on them, each thing a patch of the food sheet (see galleyFridgeTextures).
+function galleyFridge() {
+  const block = (name) => `${ID}:block/${name}`;
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const textures = { steel: block("fridge_steel"), door: block("fridge_door"), inside: block("fridge_inside"), food: block("fridge_food"),
+    bins: block("fridge_door_inside"), particle: block("fridge_steel") };
+  // Something kept in the fridge, its box and the patch of the food sheet every face of it shows, lit with the inside.
+  const food = (from, to, u, v) => ({ from, to, shade: false,
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, { texture: "#food", uv: [u, v, u + 4, v + 4], ...lit }])) });
+  const glowing = (from, to, texture, faces) => ({ from, to, shade: false,
+    faces: Object.fromEntries(faces.map((face) => [face, { texture, ...lit }])) });
+  // A box of steel whose face toward the inside, the way given, is the lit inside's.
+  const wall = (from, to, inward) => {
+    const box = solid(from, to, "#steel");
+    box.faces[inward] = { texture: "#inside", ...lit };
+    return box;
+  };
+  const door = solid([0, 0, 0], [16, 16, 1.5], "#steel");
+  door.faces.north = { texture: "#door" };
+  const shut = [solid([0, 0, 1.5], [16, 16, 16], "#steel"), door, solid([2.5, 3, -1], [3.5, 13, 0], "#steel")];
+  const open = [
+    wall([0, 0, 1.5], [1, 16, 16], "east"),
+    wall([15, 0, 1.5], [16, 16, 16], "west"),
+    wall([1, 15, 1.5], [15, 16, 16], "down"),
+    wall([1, 0, 1.5], [15, 1, 16], "up"),
+    glowing([1, 1, 14], [15, 15, 15], "#inside", ["north"]),
+    glowing([1, 5.5, 2], [15, 6, 14], "#inside", ["up", "down", "north"]),
+    glowing([1, 10.5, 2], [15, 11, 14], "#inside", ["up", "down", "north"]),
+    food([2.5, 1, 4], [4.5, 5, 6], 0, 0), food([6, 1, 5], [9, 3, 8], 4, 0), food([10, 1, 4], [14, 3.5, 9], 8, 0),
+    food([3, 6, 5], [5, 8.5, 7], 12, 0), food([6, 6, 6], [8, 9, 8], 0, 4), food([10, 6, 5], [13, 8, 9], 4, 4),
+    food([3, 11, 6], [4.5, 15, 7.5], 8, 4), food([5.5, 11, 6], [7, 14.5, 7.5], 12, 4), food([9, 11, 5], [12, 14.5, 8], 0, 8),
+    { from: [16, 0, -14.5], to: [17.5, 16, 1.5], faces: { east: { texture: "#door" }, west: { texture: "#bins" }, north: { texture: "#steel" },
+      south: { texture: "#steel" }, up: { texture: "#steel" }, down: { texture: "#steel" } } },
+    solid([17.5, 3, -12.5], [18.5, 13, -11.5], "#steel"),
+  ];
+  for (const [state, elements] of [["shut", shut], ["open", open]]) {
+    write(`assets/${ID}/models/block/galley_fridge_${state}.json`, { parent: "minecraft:block/block", textures, elements });
+  }
+  write(`assets/${ID}/blockstates/galley_fridge.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((isOpen) =>
+      [`facing=${facing},open=${isOpen}`, { model: `${ID}:block/galley_fridge_${isOpen ? "open" : "shut"}`, y }]))),
+  });
+  cubes.galley_fridge = null;
+}
+galleyFridge();
+// The fridge is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function galleyFridgeFittings() {
+  return ["galley_fridge"];
+}
+// Its door's pop as its seal lets go, with the hum of its cooling swelling behind it, and its soft thud shut.
+function galleyFridgeSounds() {
+  return Object.fromEntries(["fridge_open", "fridge_close"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function galleyFridgeLang() {
+  return {
+    "block.aerolarge.galley_fridge": "Galley Fridge",
+    "container.aerolarge.galley_fridge": "Fridge",
+    "subtitles.aerolarge.fridge_open": "Fridge opens and hums",
+    "subtitles.aerolarge.fridge_close": "Fridge shuts",
+  };
+}
 function parcelScannerLang() {
   return {
     "block.aerolarge.parcel_scanner": "Parcel Scanner",
@@ -7184,6 +7249,7 @@ FITTINGS.push(...greenhouseFittings());
 FITTINGS.push(...rocketRoomFittings());
 FITTINGS.push(...airlockPanelFittings());
 FITTINGS.push(...parcelScannerFittings());
+FITTINGS.push(...galleyFridgeFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7933,6 +7999,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...rocketRoomLang(),
   ...airlockPanelLang(),
   ...parcelScannerLang(),
+  ...galleyFridgeLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

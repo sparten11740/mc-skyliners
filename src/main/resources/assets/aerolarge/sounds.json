@@ -1202,6 +1202,22 @@
       }
     ]
   },
+  "fridge_open": {
+    "subtitle": "subtitles.aerolarge.fridge_open",
+    "sounds": [
+      {
+        "name": "aerolarge:fridge_open"
+      }
+    ]
+  },
+  "fridge_close": {
+    "subtitle": "subtitles.aerolarge.fridge_close",
+    "sounds": [
+      {
+        "name": "aerolarge:fridge_close"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

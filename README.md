@@ -1860,77 +1860,78 @@ warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in t
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
-skin.
-The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a parachute
-rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space Helmet waiting
-in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves, boots on the lower
-shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to walk through in a
-big rocket), a model rocket left on top; and somebody's suitcase dropped by the bench or the lockers. By the door on
-her left stands the Airlock Panel, a screen on a post showing a shut door under a red bar: use it and the latches
-clunk, air hisses out of its vents in a cloud and amber chevrons sweep along the bar, then a chime rings and the door on
-the screen slides open under a green bar, clear to go, until a while later it seals itself again with a clunk (it is
-only to play with: the door itself is always open). At its back, either side, is a waiting lounge for the lift: red or
-orange armchairs round a low table on a rug, one of them turned away as if someone just got up, and bamboo in a planter.
-Halo lights hang on slim cables at the four diagonals round the shaft.
-The cargo bay over it is a storeroom. At its front stand a pair of baggage containers by the way in from the lift and
-care-package crates stacked unevenly beside them, ready to be packed and dropped; out to either side a wall of pallet
-racks three bays high, loaded with taped boxes, drums and crates and now and then a bay left empty, parts the front from
-the back (with a gap in it in a big rocket); at the back right is a workbench corner, a crafting table, a stool and a
-grindstone under shelves of tool cases, and at the back left crates are piled where they were set down. By the way in on
-its left stands the Parcel Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt: set a
-crate on it, or use it, and a red curtain of laser light fills the gantry with a rising whirr while a line sweeps down
-the crate on its screen, then a bright double beep and a green tick if something is packed in the crate, ready to drop,
-or a low buzz and a red cross if not. Halo lights hang round the shaft as in the entry, and the middle of its back is left
-to the rover (below).
-The galley and mess has its kitchen at the back and its dining room at the front. Galley units curve round the back
-either side of its window, an oven in each run and a coffee machine; out to either side a pass of worktops parts the
-kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of tulips beside them; and
-in a big rocket an island stands in the kitchen. At the front right a long communal table runs out from the way in, its
-chairs every kind and colour, armchairs, stools and bean bags, a few places left empty; at the front left is a smaller
-table with its own odd set. A halo light hangs over each table. The bunk room has bunk beds two high at each of the four
-diagonals, their reading lights on, a blue halo light hanging over each pair; along each bunk a rug of its sleeper's own
-colour, by each pair the sleepers' things, a suitcase and now and then a bean bag, and crew lockers by the way out and
-by the back window, a Space Helmet in each. Out to either side a wall of bookshelves, one high here and two there, parts
-the front pairs from the back ones, and behind the shaft a reading nook looks at the solar system poster (below): an
-armchair between two low bookshelves on a rug, a blue halo light over it. The greenhouse is a kitchen garden someone
-tends: paths out from the walkway to its three windows cut it into four quarters, and in each, raised beds in spruce
-frames stand in rows a path apart, turned a quarter from the quarter before, no two rows ending alike. They grow
-carrots, potatoes, beetroots and wheat at every stage, sometimes two in one bed, berry bushes, pumpkins and melons on
-their vines, or flowers, with a gap here and there where something was picked; a magenta grow light hangs over each on
-its cable, and a sprinkler stands in water in its middle, keeping its soil dark and moist. Beside the way out from the
-lift stands the irrigation valve: turn its red wheel and it squeaks open, its sight glass glowing blue, and every
-sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds, green sparkles showing where a
-plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a bigger rocket), a composter, a
-water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots and a green bean bag on the
-spots left over, moss grows over the paths in patches, and glow berry vines hang from the ceiling; the pool's channel
-hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds. Garden beds, sprinklers,
-irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen garden anywhere: a bed's
-frame runs round however many beds stand together, it never dries back to dirt or gets trampled, and a valve sets off
-every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a channel two deep curving round the
-shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber ducks
-afloat on it and deck tiles all round. The deck at the front, between the channel's ends, is the sunbathers': bean bag
-loungers on her right looking out of the front window, a side table between the first two and one turned toward the
-water, a shelf of rolled towels on her left by the way in from the lift, and bamboo in planters, the pool's palms, by
-the channel's ends. Both are heard as you stand in them: the air through the greenhouse's leaves over a trickle of
-irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then slapping
-against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance floor's black glass
-tiles all over its floor, speaker stacks at the diagonals, four disco balls and the DJ deck behind the shaft playing the
-whole room. Along her left side a bar curves round the window there, its counter parting the bar from the floor, stools
-before it and the back bar's lit shelves of bottles behind it; at the front right is a booth, purple and magenta
-armchairs round a low table, walled off from the way in by shelves of records; and at the front left, by the bar's end,
-a coat corner of lockers, a Space Helmet in each. Its windows are built at their darkest, so daylight does not wash out
-the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round through its band of
-smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and
-up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its lounge is set out
-unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round rugs, with plants
-here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and a bookcase tucked
-under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine holds her
-cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the lift's
-door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a lit
-drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine with a
-lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a snack
-drops into its flap, which lights up green with the packet in it, and using it again takes the snack out into your hand:
-a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a
+skin. The entry story is in two halves. At its front, either side of the way in from the door, is a kit-up room: a
+parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
+Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
+boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
+walk through in a big rocket), a model rocket left on top; and somebody's suitcase dropped by the bench or the lockers.
+By the door on her left stands the Airlock Panel, a screen on a post showing a shut door under a red bar: use it and the
+latches clunk, air hisses out of its vents in a cloud and amber chevrons sweep along the bar, then a chime rings and the
+door on the screen slides open under a green bar, clear to go, until a while later it seals itself again with a clunk
+(it is only to play with: the door itself is always open). At its back, either side, is a waiting lounge for the lift:
+red or orange armchairs round a low table on a rug, one of them turned away as if someone just got up, and bamboo in a
+planter. Halo lights hang on slim cables at the four diagonals round the shaft. The cargo bay over it is a storeroom. At
+its front stand a pair of baggage containers by the way in from the lift and care-package crates stacked unevenly beside
+them, ready to be packed and dropped; out to either side a wall of pallet racks three bays high, loaded with taped
+boxes, drums and crates and now and then a bay left empty, parts the front from the back (with a gap in it in a big
+rocket); at the back right is a workbench corner, a crafting table, a stool and a grindstone under shelves of tool
+cases, and at the back left crates are piled where they were set down. By the way in on its left stands the Parcel
+Scanner, a conveyor under a striped gantry with an empty crate waiting on its belt: set a crate on it, or use it, and a
+red curtain of laser light fills the gantry with a rising whirr while a line sweeps down the crate on its screen, then a
+bright double beep and a green tick if something is packed in the crate, ready to drop, or a low buzz and a red cross if
+not. Halo lights hang round the shaft as in the entry, and the middle of its back is left to the rover (below). The
+galley and mess has its kitchen at the back and its dining room at the front. Galley units curve round the back either
+side of its window, an oven in each run and a coffee machine; out to either side a pass of worktops parts the kitchen
+from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of tulips beside them; and in a
+big rocket an island stands in the kitchen. At the window's end of the galley's right run stands the Galley Fridge, a
+blue light by its handle: use it and its door swings open with the pop of its seal and the hum of its cooling, its
+inside lit up, shelves of milk, cheese, greens, jars and bottles; it holds three rows of things, and comes stocked with
+milk, apples, carrots, melon, chicken, sweet berries, pumpkin pie and cookies. At the front right a long communal table
+runs out from the way in, its chairs every kind and colour, armchairs, stools and bean bags, a few places left empty; at
+the front left is a smaller table with its own odd set. A halo light hangs over each table. The bunk room has bunk beds
+two high at each of the four diagonals, their reading lights on, a blue halo light hanging over each pair; along each
+bunk a rug of its sleeper's own colour, by each pair the sleepers' things, a suitcase and now and then a bean bag, and
+crew lockers by the way out and by the back window, a Space Helmet in each. Out to either side a wall of bookshelves,
+one high here and two there, parts the front pairs from the back ones, and behind the shaft a reading nook looks at the
+solar system poster (below): an armchair between two low bookshelves on a rug, a blue halo light over it. The greenhouse
+is a kitchen garden someone tends: paths out from the walkway to its three windows cut it into four quarters, and in
+each, raised beds in spruce frames stand in rows a path apart, turned a quarter from the quarter before, no two rows
+ending alike. They grow carrots, potatoes, beetroots and wheat at every stage, sometimes two in one bed, berry bushes,
+pumpkins and melons on their vines, or flowers, with a gap here and there where something was picked; a magenta grow
+light hangs over each on its cable, and a sprinkler stands in water in its middle, keeping its soil dark and moist.
+Beside the way out from the lift stands the irrigation valve: turn its red wheel and it squeaks open, its sight glass
+glowing blue, and every sprinkler pops up and sweeps a hissing, ticking jet over the beds for eight seconds, green
+sparkles showing where a plant comes on a stage. A cherry and an azalea grow among the beds (two cherries in a bigger
+rocket), a composter, a water butt and a barrel or a potting bench with pots on them stand in a corner, herb pots and a
+green bean bag on the spots left over, moss grows over the paths in patches, and glow berry vines hang from the ceiling;
+the pool's channel hangs into its ceiling, its bottom glass, so swimmers are seen overhead from among the beds. Garden
+beds, sprinklers, irrigation valves and grow lights are in the creative tab and can be crafted, for a kitchen garden
+anywhere: a bed's frame runs round however many beds stand together, it never dries back to dirt or gets trampled, and a
+valve sets off every sprinkler within 24 blocks, two rows up or down at most. The swimming pool is a channel two deep
+curving round the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge,
+with rubber ducks afloat on it and deck tiles all round. The deck at the front, between the channel's ends, is the
+sunbathers': bean bag loungers on her right looking out of the front window, a side table between the first two and one
+turned toward the water, a shelf of rolled towels on her left by the way in from the lift, and bamboo in planters, the
+pool's palms, by the channel's ends. Both are heard as you stand in them: the air through the greenhouse's leaves over a
+trickle of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and then
+slapping against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance floor's
+black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls and the DJ deck behind the shaft
+playing the whole room. Along her left side a bar curves round the window there, its counter parting the bar from the
+floor, stools before it and the back bar's lit shelves of bottles behind it; at the front right is a booth, purple and
+magenta armchairs round a low table, walled off from the way in by shelves of records; and at the front left, by the
+bar's end, a coat corner of lockers, a Space Helmet in each. Its windows are built at their darkest, so daylight does
+not wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
+through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
+over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
+lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
+rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and
+a bookcase tucked under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine
+holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the
+lift's door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a
+lit drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine
+with a lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a
+snack drops into its flap, which lights up green with the packet in it, and using it again takes the snack out into your
+hand: a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a
 surprise. Cabin lights set into the mezzanine's floor glow both ways, over the groups under it and along its edge.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words

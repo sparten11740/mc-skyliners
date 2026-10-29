@@ -2627,6 +2627,31 @@ function parcelScannerSounds() {
 }
 parcelScannerSounds();
 
+// The galley's fridge (see GalleyFridgeBlock), with a random sequence of its own so the sounds round it are unchanged.
+// Opening: the soft pop of its seal letting go, a low thump with a breath of air drawn in, and the hum of its cooling
+// swelling up behind it and fading. Shutting: a padded thud, the bottles in its door clinking twice.
+function galleyFridgeSounds() {
+  const own = ownRandom(0x46726467);
+  const OPEN_SECONDS = 1.6;
+  const open = new Float64Array(Math.round(OPEN_SECONDS * RATE));
+  const breath = resonance(Float64Array.from({ length: open.length }, () => own() * 2 - 1), 700, 1.2);
+  for (let i = 0; i < open.length; i++) {
+    const t = i / RATE;
+    const suck = t < 0.25 ? Math.sin((Math.PI * t) / 0.25) : 0;
+    const hum = Math.min(1, Math.max(0, (t - 0.15) / 0.3)) * Math.min(1, (OPEN_SECONDS - t) / 0.6);
+    open[i] = 0.5 * suck * breath[i] + 0.22 * hum * (Math.sin(2 * Math.PI * 100 * t) + 0.5 * Math.sin(2 * Math.PI * 200 * t) + 0.2 * Math.sin(2 * Math.PI * 300 * t));
+  }
+  thunk(open, 0, 85, 0.6, own);
+  writeSound("fridge_open", open, 0.6);
+
+  const close = new Float64Array(Math.round(0.5 * RATE));
+  thunk(close, 0, 60, 1, own);
+  click(close, 0.06, 2900, 0.25, own);
+  click(close, 0.11, 3400, 0.18, own);
+  writeSound("fridge_close", lowPassed(close, 5000), 0.6);
+}
+galleyFridgeSounds();
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

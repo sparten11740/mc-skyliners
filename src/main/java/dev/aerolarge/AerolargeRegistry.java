@@ -100,6 +100,8 @@ import dev.aerolarge.block.FlightStripBoardBlock;
 import dev.aerolarge.block.FlightStripBoardBlockEntity;
 import dev.aerolarge.block.FloorHatchBlock;
 import dev.aerolarge.block.GalleyBlock;
+import dev.aerolarge.block.GalleyFridgeBlock;
+import dev.aerolarge.block.GalleyFridgeBlockEntity;
 import dev.aerolarge.block.GalleyOvenBlock;
 import dev.aerolarge.block.GalleyOvenBlockEntity;
 import dev.aerolarge.block.GalleyUnitBlock;
@@ -2216,6 +2218,14 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_SWEEP = sound("scanner_sweep");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_PASS = sound("scanner_pass");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCANNER_FAIL = sound("scanner_fail");
+    /** The galley's fridge, lit inside while it stands open, what it holds, and its door's pop and hum and its thud. */
+    public static final DeferredBlock<GalleyFridgeBlock> GALLEY_FRIDGE = BLOCKS.registerBlock(
+        "galley_fridge", GalleyFridgeBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable().lightLevel(GalleyFridgeBlock::glow)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GalleyFridgeBlockEntity>> GALLEY_FRIDGE_ENTITY =
+        BLOCK_ENTITIES.register("galley_fridge", () -> BlockEntityType.Builder.of(GalleyFridgeBlockEntity::new, GALLEY_FRIDGE.get()).build(null));
+    public static final DeferredHolder<SoundEvent, SoundEvent> FRIDGE_OPEN = sound("fridge_open");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FRIDGE_CLOSE = sound("fridge_close");
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired
