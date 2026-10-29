@@ -19,10 +19,10 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Who is aboard an airliner, seen from one of its blocks (the flight deck's handset, the autopilot, a seatbelt switch).
  * Once assembled, everyone riding it: standing on it or seated in it, wherever it flies, and the loose things carried
- * among its blocks (see {@link SableFlight#keepWithCabin}); and anyone inside its hull all the same, as a player is in
- * the air mid-jump, whom Sable lets go of until they land: a jump in a rocket's low gravity in space hangs nearly two
- * seconds. Standing as blocks in the world, everyone inside its hull within its length of that block: airframe
- * somewhere overhead and somewhere underfoot, whatever hangs from the ceiling or stands on the floor between.
+ * among its blocks (see {@link SableFlight#keepWithCabin}); and anyone but a spectator inside its hull all the same, as
+ * a player is in the air mid-jump, whom Sable lets go of until they land: a jump in a rocket's low gravity in space
+ * hangs nearly two seconds. Standing as blocks in the world, everyone inside its hull within its length of that block:
+ * airframe somewhere overhead and somewhere underfoot, whatever hangs from the ceiling or stands on the floor between.
  */
 public final class Aboard {
     /** How far an airliner's cabin reaches from any of its blocks, in blocks per unit of scale: nose to tail and more. */
@@ -44,7 +44,7 @@ public final class Aboard {
         }
         Boolean riding = SableFlight.rides(entity, anchor);
         if (riding != null) {
-            return riding || SableFlight.withinHull(anchor, entity.getEyePosition());
+            return riding || !entity.isSpectator() && SableFlight.withinHull(anchor, entity.getEyePosition());
         }
         double reach = REACH_PER_SCALE * AerolargeConfig.SCALE.get();
         return entity.distanceToSqr(Vec3.atCenterOf(anchor.getBlockPos())) < reach * reach
