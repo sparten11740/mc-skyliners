@@ -78,7 +78,8 @@ final class RocketLedStrips implements RocketPiece {
         List<Integer> spans = new ArrayList<>();
         for (int story = 0; story < floors.size(); story++) {
             int floor = floors.get(story);
-            int ceiling = story + 1 < floors.size() ? floors.get(story + 1) : layout.cockpitFloor();
+            int over = story + 1 < floors.size() ? floors.get(story + 1) : layout.cockpitFloor();
+            int ceiling = RocketObservationDeck.ceilingOf(layout, story, floor, over);
             BlockPos panel = story(floor, ceiling, setting(story));
             if (panel != null) {
                 panels.add(panel);

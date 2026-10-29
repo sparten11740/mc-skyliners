@@ -28,6 +28,11 @@ final class RocketObservationDeck extends RocketRoom {
      * player's size, its story would otherwise rise up into her nose as a tower of bare skin.
      */
     private static final int TALLEST = 16;
+    /**
+     * How far out from the shaft, on her front-to-back line in front of it, the block of that ceiling is that tells it
+     * is laid: past the walkway round the shaft, in blocks.
+     */
+    private static final int LID_PROBE = 2;
     /** The band of glass's lowest and highest rows over the floor. */
     private static final int BAND_FROM = 1;
     private static final int BAND_TO = 5;
@@ -43,6 +48,17 @@ final class RocketObservationDeck extends RocketRoom {
     @Override
     protected boolean windowed() {
         return false;
+    }
+
+    /**
+     * The row a story's ceiling is over its floor, given the row of the floor over it: that row, or for the observation
+     * deck the lower ceiling of its own that it has where its story is taller than {@link #TALLEST}, once laid. Her LED
+     * strips run round under it (see {@link RocketLedStrips}).
+     */
+    static int ceilingOf(RocketLayout layout, int story, int floor, int over) {
+        int lid = floor + TALLEST;
+        boolean lidded = story == STORY && lid < over && !layout.isOpen(0, lid, -(RocketLayout.SHAFT + LID_PROBE));
+        return lidded ? lid : over;
     }
 
     @Override
@@ -90,11 +106,11 @@ final class RocketObservationDeck extends RocketRoom {
      * shaft, which runs on up through it to her cockpit.
      */
     private void lid(int y) {
-        int reach = (int) Math.ceil(wall());
+        int reach = (int) Math.ceil(wall()) + 1;
         BlockState floor = AerolargeRegistry.CABIN_FLOOR.get().defaultBlockState();
         for (BlockPos at : BlockPos.betweenClosed(-reach, y, -reach, reach, y, reach)) {
             boolean inShaft = Math.abs(at.getX()) < RocketLayout.SHAFT && Math.abs(at.getZ()) < RocketLayout.SHAFT;
-            if (!inShaft && layout.isOpen(at.getX(), y, at.getZ()) && layout.inside(at.getX(), y, at.getZ())) {
+            if (!inShaft && layout.isOpen(at.getX(), y, at.getZ()) && layout.inFrom(at.getX(), y, at.getZ(), 0)) {
                 layout.set(at.getX(), y, at.getZ(), floor);
             }
         }
@@ -112,7 +128,7 @@ final class RocketObservationDeck extends RocketRoom {
     /**
      * The starlight panels up the wall too, over the band of glass to the ceiling, in every open block from her skin in
      * to the ceiling's panels, so that the whole room over the band is a starry dome, a planetarium; but for the blocks
-     * against her skin in the story's top row, under the cockpit's floor, where her LED strips run round under it (see
+     * against her skin in the row under the ceiling, where her LED strips run round under it (see
      * {@link RocketLedStrips}).
      */
     private void starryWall(int highest) {
@@ -123,7 +139,7 @@ final class RocketObservationDeck extends RocketRoom {
             int y = at.getY();
             int z = at.getZ();
             boolean wall = layout.inFrom(x, y, z, 0) && !inRoom(x, y, z, 0) && layout.isOpen(x, y, z);
-            if (wall && !(y == top() && againstSkin(x, y, z))) {
+            if (wall && !(y == highest && againstSkin(x, y, z))) {
                 layout.set(x, y, z, panel);
             }
         }
