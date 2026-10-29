@@ -2194,19 +2194,40 @@ function towerInstrumentsLang() {
 // panel underneath; open, its door shows the luggage inside.
 {
   const brightness = { bright: ["", "light_strip", true], dim: ["_dim", "light_strip", false], night: ["_night", "light_strip_night", true] };
+  // The pendant light's shade and the glow under it, the glow's underside so many pixels up.
+  const pendantShade = (low, lit) => [[[3, low + 0.5, 3], [13, low + 4, 13], "#shade"], [[4, low, 4], [12, low + 0.5, 12], "#glow", lit]];
+  // The pendant light for each way it is put up (see PendantLightBlock.MOUNT), by its model's suffix: hung on its cable
+  // from the ceiling; on the floor a floor lamp, the shade at the top of its block on a slim black pole over a weighted
+  // round base in the shade's grey; and on a wall, its back on the south side of its block, a wall sconce, the shade
+  // hung as low as the pendant's on a short drop of cable from the end of a grey arm out from a small wall plate.
+  const pendantMounts = (lit) => ({
+    "": [[[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"], ...pendantShade(4, lit)],
+    _floor: [
+      [[4, 0, 6], [12, 1, 10], "#shade"],
+      [[5, 0, 5], [11, 1, 11], "#shade"],
+      [[6, 0, 4], [10, 1, 12], "#shade"],
+      [[6.5, 1, 6.5], [9.5, 1.5, 9.5], "#shade"],
+      [[7.5, 1.5, 7.5], [8.5, 12, 8.5], "#cable"],
+      ...pendantShade(12, lit),
+    ],
+    _wall: [
+      [[6.5, 10.5, 15], [9.5, 15.5, 16], "#shade"],
+      [[7.5, 12.5, 8.5], [8.5, 13.5, 15], "#shade"],
+      [[7.5, 8, 7.5], [8.5, 13.5, 8.5], "#cable"],
+      ...pendantShade(4, lit),
+    ],
+  });
   for (const [suffix, glow, lit] of [...Object.values(brightness), ["_alarm", "light_strip_alarm", true]]) {
     write(`assets/${ID}/models/block/light_strip${suffix}.json`, boxes(
       { strip: `${ID}:block/${glow}`, particle: `${ID}:block/${glow}` },
       [[[0, 12, 0], [16, 15, 3], "#strip", lit]],
     ));
-    write(`assets/${ID}/models/block/pendant_light${suffix}.json`, boxes(
-      { cable: `${ID}:block/light_cable`, shade: `${ID}:block/pendant_shade`, glow: `${ID}:block/${glow}`, particle: `${ID}:block/pendant_shade` },
-      [
-        [[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"],
-        [[3, 4.5, 3], [13, 8, 13], "#shade"],
-        [[4, 4, 4], [12, 4.5, 12], "#glow", lit],
-      ],
-    ));
+    for (const [mount, parts] of Object.entries(pendantMounts(lit))) {
+      write(`assets/${ID}/models/block/pendant_light${mount}${suffix}.json`, boxes(
+        { cable: `${ID}:block/light_cable`, shade: `${ID}:block/pendant_shade`, glow: `${ID}:block/${glow}`, particle: `${ID}:block/pendant_shade` },
+        parts,
+      ));
+    }
   }
   write(`assets/${ID}/blockstates/light_strip.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [
@@ -2215,11 +2236,18 @@ function towerInstrumentsLang() {
       [`alarm=true,facing=${facing}`, { model: `${ID}:block/light_strip_alarm`, y }],
     ])),
   });
+  // Hung or standing, the pendant light is round and looks the same whichever way it faces; on a wall it faces out.
+  const pendantVariants = (mount, keys, turn = {}) => [
+    ...Object.entries(brightness).map(([level, [suffix]]) =>
+      [`alarm=false,brightness=${level},${keys}`, { model: `${ID}:block/pendant_light${mount}${suffix}`, ...turn }]),
+    [`alarm=true,${keys}`, { model: `${ID}:block/pendant_light${mount}_alarm`, ...turn }],
+  ];
   write(`assets/${ID}/blockstates/pendant_light.json`, {
-    variants: {
-      ...Object.fromEntries(Object.entries(brightness).map(([level, [suffix]]) => [`alarm=false,brightness=${level}`, { model: `${ID}:block/pendant_light${suffix}` }])),
-      "alarm=true": { model: `${ID}:block/pendant_light_alarm` },
-    },
+    variants: Object.fromEntries([
+      ...pendantVariants("", "mount=ceiling"),
+      ...pendantVariants("_floor", "mount=floor"),
+      ...Object.entries(yRot).flatMap(([facing, y]) => pendantVariants("_wall", `facing=${facing},mount=wall`, { y })),
+    ]),
   });
   write(`assets/${ID}/models/block/light_cable.json`, boxes(
     { cable: `${ID}:block/light_cable`, particle: `${ID}:block/light_cable` },

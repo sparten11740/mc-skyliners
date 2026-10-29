@@ -6,6 +6,8 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.Brightness;
 import dev.aerolarge.block.CabinLightBlock;
 import dev.aerolarge.block.LightStripBlock;
+import dev.aerolarge.block.Mount;
+import dev.aerolarge.block.PendantLightBlock;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -139,8 +141,10 @@ public final class NightLights {
         STRIP(3.5F, 12, 80, 0.1, -0.3125, 0.34375),
         /** A cabin light set into the crown, a wall, the hold's belly or the upper deck's floor, shining from a face. */
         PANEL(3.0F, 12, 70, 0.5, 0.5, 0),
-        /** A pendant light, glowing down from under its shade. */
-        PENDANT(2.5F, 9, 75, 0.3, 0.25, 0);
+        /** A pendant light, hung or on a wall, glowing down from under its shade. */
+        PENDANT(2.5F, 9, 75, 0.3, 0.25, 0),
+        /** A pendant light standing on the floor as a floor lamp, its shade half a block higher in its block. */
+        FLOOR_LAMP(2.5F, 9, 75, 0.3, 0.25, 0.5);
 
         final float brightness;
         final float distance;
@@ -489,14 +493,17 @@ public final class NightLights {
         if (state.is(AerolargeRegistry.LIGHT_STRIP.get())) {
             return Lamp.STRIP;
         }
-        return state.is(AerolargeRegistry.PENDANT_LIGHT.get()) ? Lamp.PENDANT : null;
+        if (state.is(AerolargeRegistry.PENDANT_LIGHT.get())) {
+            return state.getValue(PendantLightBlock.MOUNT) == Mount.FLOOR ? Lamp.FLOOR_LAMP : Lamp.PENDANT;
+        }
+        return null;
     }
 
     /** The ways a lamp shines: a strip out from its wall, a pendant down, a cabin light as {@link #panel} finds. */
     private static List<Direction> shining(Level level, BlockPos pos, Lamp lamp, BlockState state) {
         return switch (lamp) {
             case STRIP -> List.of(state.getValue(LightStripBlock.FACING).getOpposite());
-            case PENDANT -> List.of(Direction.DOWN);
+            case PENDANT, FLOOR_LAMP -> List.of(Direction.DOWN);
             case PANEL -> panel(level, pos);
         };
     }

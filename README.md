@@ -1865,8 +1865,10 @@ wall, warm white, a cool blue in the bunk room and pink in the club. They and he
 Light in the creative tab, which takes its shape from where it is put: under a ceiling or a light cable it hangs as a
 halo ring, against a wall it is a wall washer, and on the ground a floor light, a low dark drum with a ring of light
 round its top shining up. Use one to switch it from warm white to night blue to pink, with a soft click; broken, any of
-them gives back the Halo Light. The pendant light and the gym rings go up only under a ceiling too, so nothing stands on
-the floor with its cable up in the air.
+them gives back the Halo Light. The pendant light takes its shape from where it is put too: under a ceiling or a light
+cable it hangs on its cable, on the ground it is a floor lamp, its shade on a slim pole over a weighted round base, and
+on a wall a wall sconce, its shade hung from a short arm out from the wall. The gym rings go up only under a ceiling, so
+nothing stands on the floor with its straps up in the air.
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
