@@ -35,6 +35,12 @@ public final class LiftSounds {
     private static final double MUSIC_REACH = 3;
     /** How fast the music fades away as the car comes in, and back if it sets off again, a share of full a tick. */
     private static final float MUSIC_FADE = 1F / 6;
+    /**
+     * How long music the sound engine has not ticked is waited for before it is started afresh, in ticks: music it
+     * never played, as when the jukebox's volume is down, or has let go of. Whether the engine plays it cannot be asked
+     * of it, since on a ship in flight Sable plays her sounds through instances of its own.
+     */
+    private static final int MUSIC_RETRY = 20;
 
     private LiftSounds() {
     }
@@ -58,17 +64,18 @@ public final class LiftSounds {
 
     /**
      * Starts a riding car's music for this client's player when it is not playing yet and they are in earshot. Music
-     * the sound engine never played, as when the jukebox's volume is down, or has let go of is started afresh.
+     * the sound engine has not ticked for a while (see {@link #MUSIC_RETRY}) is started afresh.
      */
     private static void music(LiftCar car) {
         Music music = MUSIC.get(car);
-        if (music != null && !music.isStopped() && Minecraft.getInstance().getSoundManager().isActive(music)) {
+        long now = car.level().getGameTime();
+        if (music != null && !music.isStopped() && now - music.ticked < MUSIC_RETRY) {
             return;
         }
         if (!inEarshot(car)) {
             return;
         }
-        music = new Music(car);
+        music = new Music(car, now);
         MUSIC.values().removeIf(Music::isStopped);
         MUSIC.put(car, music);
         Minecraft.getInstance().getSoundManager().play(music);
@@ -128,12 +135,17 @@ public final class LiftSounds {
      * still or the client config turns it off, and back in if the car sets off again first.
      */
     private static final class Music extends Riding {
-        Music(LiftCar car) {
+        /** The game tick the sound engine last ticked it, or it was started. */
+        private long ticked;
+
+        Music(LiftCar car, long startedAt) {
             super(AerolargeRegistry.LIFT_MUSIC.get(), SoundSource.RECORDS, car, 1);
+            ticked = startedAt;
         }
 
         @Override
         public void tick() {
+            ticked = car.level().getGameTime();
             if (car.isRemoved()) {
                 stop();
                 return;
