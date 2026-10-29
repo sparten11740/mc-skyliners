@@ -51,7 +51,7 @@ public class NeonSignBlock extends HorizontalDirectionalBlock {
     /** The sign facing north: its board against the south side of the block, its tubes standing off it. */
     private static final Map<Direction, VoxelShape> SHAPES = TurnedShapes.of(Block.box(0, 0, 13.5, 16, 16, 16));
 
-    /** The pictures a neon sign shows, kept in its state by name. */
+    /** The pictures a neon sign shows, kept in its state by name; its item's looks follow this order. */
     public enum Design implements StringRepresentable {
         COCKTAIL,
         NOTE,

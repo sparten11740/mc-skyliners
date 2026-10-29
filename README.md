@@ -732,7 +732,7 @@ behind a slim brushed steel bezel, glowing whatever the light around (though it 
 cabin lights set for the night. Each picture says what lies beyond without a word, in its room's colour: a seat, a
 drop of water over the waves, a basketball, a steaming cup, or a man and a woman for the lavatories. Put down, it
 faces you; use it with an empty hand for the next picture, sneaking for the one before. Taken down, or picked, it
-keeps its picture.
+keeps its picture, and its item shows it.
 
 The WC signs say whether a WC is free, in pictures. A WC Sign is the one over a WC's door: a block of the partition's
 cream panelling with the bulkhead sign's lightbox in its face, showing a toilet on a dark face, lit green while
@@ -745,7 +745,8 @@ in an airliner's cabin that shows the way to the WCs: a slim off-white lightbox 
 is free and red, someone sitting on it, while all of them are taken. Against the side of a block it stands out from
 it; against the underside of one it hangs from it on two short rods. Put up by hand, it shows every WC whose sign is
 within 16 blocks of it (8 up or down); use it with an empty hand for the next arrow, sneaking for the one before (one
-put up before any WC sign round it looks for them again then). Taken down, or picked, it keeps its arrow. Both can be
+put up before any WC sign round it looks for them again then). Taken down, or picked, it keeps its arrow, which its item
+shows. Both can be
 crafted.
 
 In the furnished airliner a partition wall stands between each room and the doors' aisle beside it, and between
@@ -930,7 +931,7 @@ runner along its aisle, the lounge and the duty-free kiosk red, and the den's st
 A Planter is a slim white planter box for the cabin, put down with its back to the wall you face. It comes planted
 with low clipped greenery; use a small flower on it to plant it with greenery in flower, bamboo for a stand of bamboo
 canes up to the top of the block, or a fern or leaves for greenery again, the plant used up (unless in creative mode).
-Taken up, it keeps what grows in it. It can be crafted.
+Taken up, it keeps what grows in it, and its item shows it. It can be crafted.
 
 ### Passenger screens
 
@@ -1876,7 +1877,8 @@ chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on e
 the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
 bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
 light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
-creative tab after the Shaft Decoration, hangs a chain hoist; broken, each keeps what it is). The entry story is in two
+creative tab after the Shaft Decoration, hangs a chain hoist; broken, each keeps what it is, its item showing it). The
+entry story is in two
 halves. At its front, either side of the way in from the door, is a kit-up room: a
 parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the corner, a Space
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
@@ -1963,7 +1965,8 @@ the tray for a second, filling a glass bottle held under it with a bottle of Sta
 empty bottle comes back). A Neon Sign hangs on a wall, no words on it, only a picture bent in glowing tubes in colours
 of its own: a martini glass with an olive, a pair of music notes, a ringed planet, a rocket, a pair of lips or a
 lightning bolt. Click it to switch it off and on, its transformer clinking and its tubes buzzing as they strike or die
-away, and sneak and click it with an empty hand for the next picture. A Cocktail Table is a high round table to stand
+away, and sneak and click it with an empty hand for the next picture. Taken down, it keeps its picture, and its item
+shows it. A Cocktail Table is a high round table to stand
 at, as high as the counter, its dark glass top ringed with blue LED light under its rim; it is fenced round as high as a
 fence, so nobody jumps up on to it from the floor, though something dropped on it lies on its glass. Its windows are
 built at their darkest, so daylight does not wash out

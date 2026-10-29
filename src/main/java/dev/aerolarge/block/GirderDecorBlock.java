@@ -52,7 +52,10 @@ public class GirderDecorBlock extends Block {
     private static final VoxelShape ALONG_X = Block.box(0, 2, 3, 16, 16, 13);
     private static final VoxelShape ALONG_Z = Block.box(3, 2, 0, 13, 16, 16);
 
-    /** Which room's decoration it is, kept in its state by name, and whether the two of a pair of it differ. */
+    /**
+     * Which room's decoration it is, kept in its state by name, and whether the two of a pair of it differ; its item's
+     * looks follow this order.
+     */
     public enum Kind implements StringRepresentable {
         /** The entry's: banners hanging down, each a round embroidered mission patch on navy cloth. */
         MISSION_PATCHES(true, SoundType.WOOL),

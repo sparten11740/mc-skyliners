@@ -1,3 +1,35 @@
 {
-  "parent": "aerolarge:block/overhead_wc_sign_ahead"
+  "parent": "aerolarge:block/overhead_wc_sign_ahead",
+  "overrides": [
+    {
+      "predicate": {
+        "aerolarge:arrow": 0
+      },
+      "model": "aerolarge:block/overhead_wc_sign_ahead"
+    },
+    {
+      "predicate": {
+        "aerolarge:arrow": 0.2
+      },
+      "model": "aerolarge:block/overhead_wc_sign_left"
+    },
+    {
+      "predicate": {
+        "aerolarge:arrow": 0.4
+      },
+      "model": "aerolarge:block/overhead_wc_sign_right"
+    },
+    {
+      "predicate": {
+        "aerolarge:arrow": 0.6
+      },
+      "model": "aerolarge:block/overhead_wc_sign_down"
+    },
+    {
+      "predicate": {
+        "aerolarge:arrow": 0.8
+      },
+      "model": "aerolarge:block/overhead_wc_sign_none"
+    }
+  ]
 }

@@ -58,7 +58,7 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
     private static final Map<Direction, VoxelShape> ON_WALL = TurnedShapes.of(Block.box(0, 2, 13, 16, 14, 16));
     private static final Map<Direction, VoxelShape> HUNG = TurnedShapes.of(Block.box(0, 2, 6.5, 16, 16, 9.5));
 
-    /** Which way the arrow points, seen from in front of the sign; in the order using it goes through them. */
+    /** Which way the arrow points, seen from in front; in the order using it goes through them, as its item's looks. */
     public enum Arrow implements StringRepresentable {
         AHEAD, LEFT, RIGHT, DOWN, NONE;
 

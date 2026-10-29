@@ -1899,6 +1899,21 @@ function dropsHaloLight(name) {
     random_sequence: `${ID}:blocks/${name}`,
   });
 }
+// An item that keeps what its block showed when broken or picked, drawn as what it keeps (see the client's KeptLooks):
+// for each block state property it keeps, by name, its values in the Java enum's order, and an override for each of
+// their combinations, chosen by how far through each property's values its value is; the plain look, a stack's from
+// the creative tab, is the model's own.
+function keptLooks(item, looks, modelOf, plain) {
+  const names = Object.keys(looks);
+  const combinations = names.reduce((sofar, name) => sofar.flatMap((combination) => looks[name].map((value) => [...combination, value])), [[]]);
+  write(`assets/${ID}/models/item/${item}.json`, {
+    parent: modelOf(...plain),
+    overrides: combinations.map((combination) => ({
+      predicate: Object.fromEntries(names.map((name, at) => [`${ID}:${name}`, looks[name].indexOf(combination[at]) / looks[name].length])),
+      model: modelOf(...combination),
+    })),
+  });
+}
 function dropsItself(name) {
   write(`data/${ID}/loot_table/blocks/${name}.json`, {
     type: "minecraft:block",
@@ -2555,7 +2570,7 @@ function girderDecor() {
     variants: Object.fromEntries(["x", "z"].flatMap((axis) => KINDS.flatMap((kind) => ["first", "second"].map((half) =>
       [`axis=${axis},kind=${kind},part=${half}`, { model: modelOf(kind, half), ...(axis === "x" ? { y: 270 } : {}) }])))),
   });
-  write(`assets/${ID}/models/item/girder_decor.json`, { parent: `${ID}:block/girder_decor_chain_hoist` });
+  keptLooks("girder_decor", { kind: KINDS, part: ["first", "second"] }, modelOf, ["chain_hoist", "first"]);
   // Broken, a decoration keeps its kind and which of a pair it is; a chain hoist's first is left off, so they stack.
   const decorId = `${ID}:girder_decor`;
   write(`data/${ID}/loot_table/blocks/girder_decor.json`, {
@@ -5813,7 +5828,7 @@ function clubBar() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(NEON_SIGNS).flatMap((design) => [true, false].map((lit) =>
       [`design=${design},facing=${facing},lit=${lit}`, { model: `${ID}:block/neon_sign_${design}${lit ? "" : "_off"}`, ...(y ? { y } : {}) }])))),
   });
-  write(`assets/${ID}/models/item/neon_sign.json`, { parent: `${ID}:block/neon_sign_cocktail` });
+  keptLooks("neon_sign", { design: Object.keys(NEON_SIGNS) }, (design) => `${ID}:block/neon_sign_${design}`, ["cocktail"]);
   // Broken, a sign keeps its picture, as a planter keeps its plant; the martini glass is left off, so they stack.
   const signId = `${ID}:neon_sign`;
   write(`data/${ID}/loot_table/blocks/neon_sign.json`, {
@@ -6217,7 +6232,7 @@ function bulkheadLightbox(name, picture) {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => BULKHEAD_SIGN_PICTURES.map((picture) =>
       [`facing=${facing},picture=${picture}`, { model: `${ID}:block/bulkhead_sign_${picture}`, ...(y ? { y } : {}) }]))),
   });
-  write(`assets/${ID}/models/item/bulkhead_sign.json`, { parent: `${ID}:block/bulkhead_sign_${BULKHEAD_SIGN_PICTURES[0]}` });
+  keptLooks("bulkhead_sign", { picture: BULKHEAD_SIGN_PICTURES }, (picture) => `${ID}:block/bulkhead_sign_${picture}`, [BULKHEAD_SIGN_PICTURES[0]]);
   const sign = `${ID}:bulkhead_sign`;
   write(`data/${ID}/loot_table/blocks/bulkhead_sign.json`, {
     type: "minecraft:block",
@@ -6301,7 +6316,7 @@ const WC_SIGN_ARROWS = ["ahead", "left", "right", "down", "none"];
       ]))))),
   });
   write(`assets/${ID}/models/item/wc_sign.json`, { parent: `${ID}:block/wc_sign` });
-  write(`assets/${ID}/models/item/overhead_wc_sign.json`, { parent: `${ID}:block/overhead_wc_sign_${WC_SIGN_ARROWS[0]}` });
+  keptLooks("overhead_wc_sign", { arrow: WC_SIGN_ARROWS }, (arrow) => `${ID}:block/overhead_wc_sign_${arrow}`, [WC_SIGN_ARROWS[0]]);
   dropsItself("wc_sign");
   const sign = `${ID}:overhead_wc_sign`;
   write(`data/${ID}/loot_table/blocks/overhead_wc_sign.json`, {
@@ -7977,7 +7992,7 @@ function galleyUnitLang() {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(plants).map((plant) =>
       [`facing=${facing},plant=${plant}`, { model: `${ID}:block/planter_${plant}`, ...(y ? { y } : {}) }]))),
   });
-  write(`assets/${ID}/models/item/planter.json`, { parent: `${ID}:block/planter_greenery` });
+  keptLooks("planter", { plant: Object.keys(plants) }, (plant) => `${ID}:block/planter_${plant}`, ["greenery"]);
   const planterId = `${ID}:planter`;
   write(`data/${ID}/loot_table/blocks/planter.json`, {
     type: "minecraft:block",

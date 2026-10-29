@@ -42,7 +42,7 @@ public class PlanterBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<PlanterBlock> CODEC = simpleCodec(PlanterBlock::new);
     public static final EnumProperty<Plant> PLANT = EnumProperty.create("plant", Plant.class);
 
-    /** What grows in it, and how high, in pixels. */
+    /** What grows in it, and how high, in pixels; its item's looks follow this order. */
     public enum Plant implements StringRepresentable {
         GREENERY(12.5),
         FLOWERS(12.5),

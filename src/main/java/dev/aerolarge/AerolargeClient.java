@@ -55,6 +55,7 @@ import dev.aerolarge.client.GearBayRenderer;
 import dev.aerolarge.client.HelmRenderer;
 import dev.aerolarge.client.HelmetBreathing;
 import dev.aerolarge.client.HelmetVisor;
+import dev.aerolarge.client.KeptLooks;
 import dev.aerolarge.client.LaserBolts;
 import dev.aerolarge.client.LaserTurretRenderer;
 import dev.aerolarge.client.LedLights;
@@ -274,6 +275,7 @@ public final class AerolargeClient {
         PassengerScreenBlockEntity.clientUse = PassengerCameras::use;
         LookoutGlassBlockEntity.clientUse = LookoutView::look;
         RoverClient.register(modEventBus);
+        KeptLooks.register(modEventBus);
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
         RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;

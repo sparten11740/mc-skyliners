@@ -41,7 +41,7 @@ public class BulkheadSignBlock extends HorizontalDirectionalBlock {
     /** The click of a new picture going into the lightbox: an item frame's turn, a little higher. */
     private static final float CHANGE_PITCH = 1.3F;
 
-    /** What a sign shows, in the order using it goes through them. */
+    /** What a sign shows, in the order using it goes through them, which its item's looks follow. */
     public enum Picture implements StringRepresentable {
         SEAT, DROP, BALL, CUP, LAVATORY;
 
