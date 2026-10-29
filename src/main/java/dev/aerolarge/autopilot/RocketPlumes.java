@@ -13,11 +13,11 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * A rocket's flight as it looks round her from outside, beyond her engines' own plumes: as she lifts off or comes in
- * to land, her engines lit near the ground, smoke billows out over it from under her and rolls away; and falling back
- * from space fast, her base glows and a trail of flame streams up behind it, as a heat shield's does coming back in.
- * It is not as hot as that, but it looks the part. The particles are sent from the server to everyone near enough to
- * see her, long-distance, so that those aboard, high over her base, see it too. The server config's
- * {@code rocket.plumes} leaves them out.
+ * to land, her engines lit near the ground, smoke billows out over it from under her and rolls away, and closer still
+ * flames burst from under her and flash on the ground; and falling back from space fast, her base glows and a trail
+ * of flame streams up behind it, as a heat shield's does coming back in. It is not as hot as that, but it looks the
+ * part. The particles are sent from the server to everyone near enough to see her, long-distance, so that those
+ * aboard, high over her base, see it too. The server config's {@code rocket.plumes} leaves them out.
  */
 final class RocketPlumes {
     /** How high over the ground her foot may be for her lit engines to raise smoke from it, in blocks. */
@@ -34,6 +34,18 @@ final class RocketPlumes {
     private static final double SLOWEST_ROLL = 0.3;
     private static final double FASTEST_ROLL = 0.9;
     private static final double RISE = 0.08;
+    /**
+     * Close over the ground, her engines blazing on it: how high her foot may be, in blocks; how many flames a tick
+     * burst from the ground under her, how far round under her they spread on a rocket built at scale 1, in blocks,
+     * and how fast they fly, in blocks a tick; how many embers of lava a tick leap from among them; and how often a
+     * flash lights the ground under her, in ticks.
+     */
+    private static final double BLAZE_UNDER = 15;
+    private static final int BLAZE_FLAMES = 40;
+    private static final double BLAZE_SPREAD = 1.25;
+    private static final double BLAZE_SPEED = 0.15;
+    private static final int EMBERS = 3;
+    private static final int FLASH_EVERY = 4;
     /** How high she must be and how fast falling for her base to glow, in world blocks and blocks a second. */
     private static final double GLOW_FROM = 500;
     private static final double GLOW_FALL = 20;
@@ -67,6 +79,9 @@ final class RocketPlumes {
         if (thrust > 0 && radio < SMOKE_UNDER) {
             smoke(level, foot);
         }
+        if (thrust > 0 && radio < BLAZE_UNDER) {
+            blaze(level, foot, footBelow);
+        }
         if (flight.position().y > GLOW_FROM && flight.velocity().y < -GLOW_FALL) {
             flames(level, foot, footBelow);
         }
@@ -74,14 +89,34 @@ final class RocketPlumes {
 
     /** Puffs of white cloud rolling out every way over the ground under her foot, and smoke lingering after them. */
     private static void smoke(ServerLevel level, Vec3 foot) {
-        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(foot.x), Mth.floor(foot.z));
+        Vec3 under = ground(level, foot);
         for (int puff = 0; puff < PUFFS; puff++) {
             double way = level.getRandom().nextDouble() * Mth.TWO_PI;
             double speed = Mth.lerp(level.getRandom().nextDouble(), SLOWEST_ROLL, FASTEST_ROLL);
             Vec3 out = new Vec3(Math.cos(way), 0, Math.sin(way));
-            Vec3 at = new Vec3(foot.x, ground + SMOKE_OVER, foot.z).add(out.scale(SMOKE_FROM));
+            Vec3 at = under.add(out.scale(SMOKE_FROM));
             roll(level, puff % LINGERING == 0 ? ParticleTypes.CAMPFIRE_COSY_SMOKE : ParticleTypes.CLOUD, at, out.scale(speed).add(0, RISE, 0));
         }
+    }
+
+    /**
+     * Flames bursting from the ground under her in one packet, spread as wide as she is built, embers leaping from
+     * them, and every so often a flash lighting it.
+     */
+    private static void blaze(ServerLevel level, Vec3 foot, int footBelow) {
+        Vec3 under = ground(level, foot);
+        double spread = BLAZE_SPREAD * RocketSilhouette.scaleOf(footBelow);
+        send(level, ParticleTypes.FLAME, under, BLAZE_FLAMES, spread, BLAZE_SPEED);
+        send(level, ParticleTypes.LAVA, under, EMBERS, spread, 0);
+        if (level.getGameTime() % FLASH_EVERY == 0) {
+            send(level, ParticleTypes.FLASH, under, 1, 0, 0);
+        }
+    }
+
+    /** The spot just over the ground straight under her foot, where her smoke and her fire start. */
+    private static Vec3 ground(ServerLevel level, Vec3 foot) {
+        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(foot.x), Mth.floor(foot.z));
+        return new Vec3(foot.x, ground + SMOKE_OVER, foot.z);
     }
 
     /**

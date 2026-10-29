@@ -1936,16 +1936,18 @@ her, a change climbs her a story at a time from the entry story up.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set, white
-cloud and smoke billowing out over the ground from under her as she rises and again as she comes in to land (the server
-config's `rocket.plumes` leaves it out). There it holds its height and leans toward the pin, never more than 10 degrees,
-as fast across as it can still slow down by it; once over the pin and no longer drifting it falls back (or, circling it
-slowly for ten seconds, as a heavily loaded rocket can, all the same), never faster than six tenths of gravity, so
-whoever stands aboard keeps their feet, and a landing burn catches it, leaning only a little to stop drifting for the
-last 20 blocks and not at all for the last 3, touching down at a block and a half a second. Falling back from space, her
-base glows and flames stream up behind it. Down on its fins it lets its engines go at once and switches itself off with
-a bell. Without a pin it comes back down where it rose. Told to land, or switched off in the air, it falls back where it
-is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model
-Rocket, standing on its fins, is in the creative tab.
+cloud and smoke billowing out over the ground from under her as she rises and again as she comes in to land, and fire
+bursting and flashing on the ground under her while she is close over it (the server config's `rocket.plumes` leaves
+them out). Aboard, her engines lighting shakes the view for three seconds (the client setting `cameraShake` leaves it
+out). There it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still
+slow down by it; once over the pin and no longer drifting it falls back (or, circling it slowly for ten seconds, as a
+heavily loaded rocket can, all the same), never faster than six tenths of gravity, so whoever stands aboard keeps their
+feet, and a landing burn catches it, leaning only a little to stop drifting for the last 20 blocks and not at all for
+the last 3, touching down at a block and a half a second. Falling back from space, her base glows and flames stream up
+behind it. Down on its fins it lets its engines go at once and switches itself off with a bell. Without a pin it comes
+back down where it rose. Told to land, or switched off in the air, it falls back where it is and lands there. Like the
+zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket, standing on its fins, is
+in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then
@@ -2167,8 +2169,8 @@ camera far over the top of the world, over the game's own sky, the fog the land 
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
-climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends the smoke under her and the flames from
-her base.
+climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends the smoke and the fire under her and the
+flames from her base.
 Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
 the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the
 view, the pilot helmet's under the `PilotHud`, and `HelmetBreathing` loops the space helmet's air while her middle is
@@ -2181,8 +2183,9 @@ modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConso
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketSounds` counts her down and puffs her side jets on the server, and shows the clients how hard her engines fire,
-from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown; `LaunchCallouts` has launch control
-call her milestones on the same radio, waiting its turn on the flight deck's `Airtime`.
+from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown and shakes the view aboard as they
+light; `LaunchCallouts` has launch control call her milestones on the same radio, waiting its turn on the flight deck's
+`Airtime`.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the

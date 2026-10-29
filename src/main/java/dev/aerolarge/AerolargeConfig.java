@@ -469,8 +469,8 @@ public final class AerolargeConfig {
         ROCKET_PLUMES = builder
             .comment(
                 "Whether a rocket's flight shows round her as well as in her engines' own plumes: smoke billowing out over the",
-                "ground from under her as she lifts off and lands, and, falling back from space, her base glowing and a trail of",
-                "flame streaming up behind it."
+                "ground from under her as she lifts off and lands, fire bursting on the ground while she is close over it, and,",
+                "falling back from space, her base glowing and a trail of flame streaming up behind it."
             )
             .define("plumes", true);
         ROCKET_LOW_GRAVITY = builder

@@ -56,6 +56,13 @@ public final class RocketRoar {
     private static final int IGNITION_RISE = 25;
     private static final int CUTOFF_FADE = 4;
     /**
+     * How hard her engines lighting shakes the view of those aboard, as a share of the roughest clear air (see
+     * {@link CameraShake#turbulence}), and for how long, in ticks, fading out at its end: her lift-off felt through
+     * her floor; the client setting {@code cameraShake} leaves it out with every shake.
+     */
+    private static final float LIFT_OFF_SHAKE = 0.8F;
+    private static final int LIFT_OFF_SHAKE_TICKS = 60;
+    /**
      * How fast the loop swells or fades otherwise, as the listener boards her or leaves her, or first hears her, a share
      * of full a tick; and how fast its pitch follows her thrust, a share a tick.
      */
@@ -127,6 +134,9 @@ public final class RocketRoar {
             if (heard == 0 && thrust > 0 && rocket.phase() == AutopilotBlockEntity.Phase.TAKEOFF) {
                 litAt = now;
                 once(minecraft, rocket, AerolargeRegistry.ROCKET_IGNITION, AerolargeRegistry.ROCKET_IGNITION_ABOARD, IGNITION_VOLUME, inside);
+                if (inside) {
+                    CameraShake.turbulence(LIFT_OFF_SHAKE, LIFT_OFF_SHAKE_TICKS);
+                }
             }
             if (heard > 0 && thrust <= 0) {
                 stopping(minecraft, rocket, inside, now);
