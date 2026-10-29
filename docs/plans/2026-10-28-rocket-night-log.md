@@ -150,6 +150,9 @@ Commits on main, newest last, with the versions handed out.
   stopped about 56 blocks out at view distance 6; sneaking out of the open car on the ground and in a climb, set down
   outside its door; the lockers' helmets; the helmet worn (front view, the tint from inside); its breathing at y 1,100,
   stopping as it came off; a scale-4 rocket (327,000 blocks, every room).
+  Since, on alpha.172's code: the LED panel's modes and swatches (chase in cherry runs round the floor), the club's DJ
+  deck playing aboard, the pool's water and ducks kept through flights, the Rocket Blueprint building one, the rover's
+  monster warning (the red triangle blinking while a zombie stood by the driver's body).
 
 ## Background agents
 
