@@ -80,8 +80,8 @@ public class RobotBartenderBlock extends BaseEntityBlock {
         new Shop.Trade(1, AerolargeRegistry.SUPERNOVA_SUNRISE, 1)
     );
     /**
-     * Its shop: a greeting as it opens and an answer to each sale, both in its robot voice, the answer and the serve
-     * after it once a serve is over, so a sale while one is under way is not answered twice.
+     * Its shop: a greeting as it opens and an answer to each sale, both in its robot voice, the answer only with a
+     * serve, so a sale while one is under way, from this shopper or another, is not answered twice.
      */
     private static final Shop.Shopfront SHOPFRONT = new Shop.Shopfront(Component.translatable("container.aerolarge.mocktail_bar"), STOCK,
         AerolargeRegistry.BARTENDER_GREET, AerolargeRegistry.BARTENDER_SERVE, RobotBartenderBlockEntity.SERVE_TICKS, RobotBartenderBlock::sold);
@@ -200,10 +200,8 @@ public class RobotBartenderBlock extends BaseEntityBlock {
     }
 
     /** A sale: it serves the drink, unless it is still serving the last one. */
-    private static void sold(ServerLevel level, BlockPos bartender, @Nullable ServerPlayer shopper) {
-        if (level.getBlockEntity(bartender) instanceof RobotBartenderBlockEntity robot) {
-            robot.serve();
-        }
+    private static boolean sold(ServerLevel level, BlockPos bartender, @Nullable ServerPlayer shopper) {
+        return level.getBlockEntity(bartender) instanceof RobotBartenderBlockEntity robot && robot.serve();
     }
 
     @Override
@@ -236,9 +234,4 @@ public class RobotBartenderBlock extends BaseEntityBlock {
             : null;
     }
 
-    @Override
-    protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int id, int param) {
-        BlockEntity bartender = level.getBlockEntity(pos);
-        return bartender != null && bartender.triggerEvent(id, param);
-    }
 }

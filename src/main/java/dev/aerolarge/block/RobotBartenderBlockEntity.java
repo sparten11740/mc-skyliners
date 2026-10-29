@@ -54,16 +54,17 @@ public class RobotBartenderBlockEntity extends BlockEntity {
 
     /**
      * On the server, after a sale: unless a serve is still under way, it starts one, the shaker rattling, and every
-     * client in sight sees it.
+     * client in sight sees it; whether it did.
      */
-    void serve() {
+    boolean serve() {
         if (!(level instanceof ServerLevel server) || server.getGameTime() - servedAt < SERVE_TICKS) {
-            return;
+            return false;
         }
         servedAt = server.getGameTime();
         BlockPos pos = getBlockPos();
         server.blockEvent(pos, getBlockState().getBlock(), SERVE, 0);
         server.playSound(null, pos, AerolargeRegistry.BARTENDER_SHAKE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        return true;
     }
 
     @Override

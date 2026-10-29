@@ -58,10 +58,13 @@ public final class Shop implements Merchant {
     record Trade(int emeralds, Supplier<? extends ItemLike> item, int count) {
     }
 
-    /** What a sale does at its shop's block besides its sound, given the shopper; once a sale's quiet is over. */
+    /**
+     * What a sale does at its shop's block, given the shopper, once a sale's quiet is over; and whether the shop's sale
+     * sound is to be made with it, as it is unless the block has its hands full already.
+     */
     @FunctionalInterface
     interface Sale {
-        void made(ServerLevel level, BlockPos stand, @Nullable ServerPlayer shopper);
+        boolean made(ServerLevel level, BlockPos stand, @Nullable ServerPlayer shopper);
     }
 
     private Shop(ServerLevel level, BlockPos stand, Shopfront front, Player shopper) {
@@ -110,7 +113,10 @@ public final class Shop implements Merchant {
     public void overrideOffers(MerchantOffers offers) {
     }
 
-    /** A sale: its sound, and whatever more it does at the shop's block, unless the last one's quiet is not over. */
+    /**
+     * A sale: whatever it does at the shop's block, and its sound unless the block says not, unless the last one's
+     * quiet is not over.
+     */
     @Override
     public void notifyTrade(MerchantOffer offer) {
         long now = level.getGameTime();
@@ -118,8 +124,9 @@ public final class Shop implements Merchant {
             return;
         }
         rang = now;
-        level.playSound(null, stand, getNotifyTradeSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
-        front.sold().made(level, stand, shopper instanceof ServerPlayer player ? player : null);
+        if (front.sold().made(level, stand, shopper instanceof ServerPlayer player ? player : null)) {
+            level.playSound(null, stand, getNotifyTradeSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
     }
 
     @Override

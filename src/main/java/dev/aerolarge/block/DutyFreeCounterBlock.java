@@ -81,11 +81,12 @@ public class DutyFreeCounterBlock extends HorizontalDirectionalBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** A sale at the counter: it sparkles, and the first one is the Duty Free advancement. */
-    private static void sold(ServerLevel level, BlockPos counter, @Nullable ServerPlayer shopper) {
+    /** A sale at the counter: it sparkles, the till rings, and the first one is the Duty Free advancement. */
+    private static boolean sold(ServerLevel level, BlockPos counter, @Nullable ServerPlayer shopper) {
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, counter.getX() + 0.5, counter.getY() + 1.1, counter.getZ() + 0.5, 6, 0.3, 0.1, 0.3, 0.0);
         if (shopper != null) {
             FirstFlight.DUTY_FREE.award(shopper);
         }
+        return true;
     }
 }
