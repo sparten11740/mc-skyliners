@@ -91,8 +91,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N48 | 03:05 | Second code review | Fixed: the helmet's breathing reckoned by her middle (now her control head, as the welcome is); Max Q at y 300 of her head, lost at scale 3 and 4 (now 160 blocks over the ground); the plumes' packets (flames batched, smoke halved) and their size by the config's scale (now her own); the rover bay's constants; and, found play-testing the fix, a take-off announcement made after lift-off on a quick re-launch (now let go as the countdown begins) | Independent review agent, play-tests | Review, lead |
 | N49 | 03:20 | Her rooms' mood (third panel, a critique of the night's screenshots) | Each story's LED strips start in its lift button's colour (a child pressing a colour steps out into it); lanterns on chains five rows up in the entry, mess and cargo bay, soul lanterns over the bunks; the observation deck's starlight up its whole wall (a planetarium) and its seats in warm colours; red armchairs in the entry, coloured blankets; the club's windows built at their darkest | Every room was the same white tile and grey floor, the furniture low and the height over it bare | Panel, lead |
 | N50 | 03:25 | Backs of the boards and panels (same panel) | Brushed steel in a darker steel frame, the lift machine brushed steel with a hazard band | Black backs showed through the glass shaft as slabs on every story | Panel, lead |
-| N51 | 03:40 | A lift-off worth the countdown (same panel) | Under 15 blocks over the ground, a bed of flames and embers bursts from the ground under her as wide as she is built, a flash every 4 ticks (seen by night); aboard, the view shakes for 3 s at ignition (client `cameraShake`). Tried first at her fins' height and narrower: lost behind her plumes | Lift-off had looked like a gentle hover after a ten-second build-up | Panel, lead |
+| N51 | 03:40 | A lift-off worth the countdown (same panel) | Under 15 blocks over the ground, a bed of flames and embers bursts from the ground under her as wide as she is built, (a flash every 4 ticks, taken out by N53); aboard, the view shakes for 3 s at ignition (client `cameraShake`). Tried first at her fins' height and narrower: lost behind her plumes | Lift-off had looked like a gentle hover after a ten-second build-up | Panel, lead |
 | N52 | 03:40 | The panel's other ideas | Not done tonight: a carpet ring round each shaft doorway, lamps over the lab's counters, the cockpit ceiling's livery tint, and the rover camera's item name overlapping its key help (a small client fix, left for a review with you) | Lower value for the time left; the play-test comes first | Lead |
+| N53 | 04:00 | Third code review (of alpha.174) | Fixed: the lift-off fire's flash, five a second through her landing burn's last ten seconds, faster than the three a second the LED modes keep to (now no flash at all, rather than a slower strobe); the planetarium's notches at the ceiling's edge and slots at the four ways (it now fills from her skin in, but for the top row's skin blocks, where 36 of the deck's 48 ceiling strips had been lost); the shaft lanterns' copied loop and stale comments | Independent review agent; seen in fresh rockets at scales 2 and 3 | Review, lead |
+| N54 | 03:55 | A rocket's autopilot naming its mode | "over to the pin and down on it" or "and back down where she rose" in chat, TO PIN or RETURN on her screens, in place of the airliner's "circling it, radius 225" and "heading 000" | Found on the final play-test: a rocket circles nothing | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -178,6 +180,11 @@ Commits on main, newest last, with the versions handed out.
   built rocket at dusk (the mess warm under its lanterns, the bunk room grape, the deck a starry dome); the boards'
   steel backs through the cargo bay's shaft glass; lift-off from the ground 40 blocks off (the bed of fire and embers
   under her as she rose, smoke rolling out round it) and from her cockpit (the view shaking against her own screen).
+- alpha.175: the rover camera's held-item name kept off its key hint; a rocket's autopilot naming its mode (N54); the
+  third review's fixes (N53). Play-tested: a full flight from a freshly built rocket's cockpit, up to y 1,200 (the Edge
+  of Space goal), across 300 blocks leaning at most 9.6 degrees, down at 37 blocks a second and onto the pin 4 blocks
+  from it, touchdown call, cut-off, bell and arrival announcement heard; the rover's remote taken from its panel, the
+  rover lowered and driven, its camera clear of the item's name, and called home; the planetarium at scales 2 and 3.
 
 ## Background agents
 
@@ -209,5 +216,14 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
   110 blocks tall up into her nose (seen at scale 4, which built 327,000 blocks in 3 s and every room, the pool a wide
   lagoon). Since 02:55 it has a ceiling 16 rows over its floor at those scales, the space over it up to the cockpit
   sealed off and the shaft running on through it (N47); more stories at the bigger scales would use that space.
+- A slip of mine at 03:36: testing the lift-off fire I ran `./gradlew build` on uncommitted code, which rewrote
+  alpha.173's jar in `build/libs` with it. Nothing was handed out (the desktop drive was not mounted); I rebuilt
+  alpha.173 from its own commit in a scratch worktree and put that jar back, checked by its plume class.
+- The autopilot's settings screen offers a rocket the airliner's heading and circle modes; she ignores them and comes
+  back down where she rose (her screens now say RETURN, N54). Hiding them for a rocket wants the screen laid out
+  again, so I left it for you.
+- At scales 3 and 4 the observation deck's ceiling ring of LED strips still runs under the cockpit's floor, over its
+  lowered ceiling where nobody sees it (since N47); its floor ring is there.
+- Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
