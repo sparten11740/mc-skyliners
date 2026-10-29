@@ -95,6 +95,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N52 | 03:40 | The panel's other ideas | Not done tonight: a carpet ring round each shaft doorway, lamps over the lab's counters, the cockpit ceiling's livery tint, and the rover camera's item name overlapping its key help (a small client fix, left for a review with you) | Lower value for the time left; the play-test comes first | Lead |
 | N53 | 04:00 | Third code review (of alpha.174) | Fixed: the lift-off fire's flash, five a second through her landing burn's last ten seconds, faster than the three a second the LED modes keep to (now no flash at all, rather than a slower strobe); the planetarium's notches at the ceiling's edge and slots at the four ways (it now fills from her skin in, but for the top row's skin blocks, where 36 of the deck's 48 ceiling strips had been lost); the shaft lanterns' copied loop and stale comments | Independent review agent; seen in fresh rockets at scales 2 and 3 | Review, lead |
 | N54 | 03:55 | A rocket's autopilot naming its mode | "over to the pin and down on it" or "and back down where she rose" in chat, TO PIN or RETURN on her screens, in place of the airliner's "circling it, radius 225" and "heading 000" | Found on the final play-test: a rocket circles nothing | Lead |
+| N55 | 04:08 | The deck's lower ceiling at scales 3 and 4 | It now reaches her skin all round (it stopped a block short at the four ways, holes up into the sealed space) and the deck's ceiling ring of strips hangs under it, not under the cockpit's floor over it | Found checking N53 at scale 3 | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -222,8 +223,6 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - The autopilot's settings screen offers a rocket the airliner's heading and circle modes; she ignores them and comes
   back down where she rose (her screens now say RETURN, N54). Hiding them for a rocket wants the screen laid out
   again, so I left it for you.
-- At scales 3 and 4 the observation deck's ceiling ring of LED strips still runs under the cockpit's floor, over its
-  lowered ceiling where nobody sees it (since N47); its floor ring is there.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
