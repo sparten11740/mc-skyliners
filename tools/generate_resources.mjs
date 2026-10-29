@@ -2206,22 +2206,38 @@ function towerInstrumentsLang() {
 }
 
 // The rocket's halo light (see HaloLightBlock), drawn as the pendant's cable comes down onto it: a slim black cable to
-// a small dark hub, four fine spokes out from it and a ring of light round them, a little under the hub, glowing at
-// full brightness, warm white or a cool night-light blue.
+// a small dark hub, four fine spokes out from it, and round them a ring of light a little under the hub, glowing at
+// full brightness, warm white or a cool night-light blue. The ring is sixteen short segments round a circle, each
+// turned to run along it: a model's elements turn only in steps of 22.5 degrees, so each lies along one of them, a
+// segment running across (x) turned by up to 45 degrees either way, or one running along (z) where it would need more.
 {
-  const ring = (glow) => [
-    [[5, 6, 2], [11, 7.5, 3.5], glow, true], [[5, 6, 12.5], [11, 7.5, 14], glow, true],
-    [[2, 6, 5], [3.5, 7.5, 11], glow, true], [[12.5, 6, 5], [14, 7.5, 11], glow, true],
-    [[3, 6, 3], [5, 7.5, 5], glow, true], [[11, 6, 3], [13, 7.5, 5], glow, true],
-    [[3, 6, 11], [5, 7.5, 13], glow, true], [[11, 6, 11], [13, 7.5, 13], glow, true],
-  ];
-  const spokes = [[[7.75, 7, 3.5], [8.25, 7.5, 7], "#hub"], [[7.75, 7, 9], [8.25, 7.5, 12.5], "#hub"],
-    [[3.5, 7, 7.75], [7, 7.5, 8.25], "#hub"], [[9, 7, 7.75], [12.5, 7.5, 8.25], "#hub"]];
+  const HALO = { radius: 5.25, thick: 1.25, low: 6, high: 7.25, length: 2.4, segments: 16 };
+  const ring = (glow) => Array.from({ length: HALO.segments }, (_, k) => {
+    const round = (360 / HALO.segments) * k;
+    const x = 8 + HALO.radius * Math.cos((round * Math.PI) / 180);
+    const z = 8 + HALO.radius * Math.sin((round * Math.PI) / 180);
+    // Turned this much a segment running across lies along the circle here; out of reach, one running along does.
+    const across = ((((90 - round) % 180) + 270) % 180) - 90;
+    const alongX = Math.abs(across) <= 45;
+    const angle = alongX ? across : ((((across - 90) % 180) + 270) % 180) - 90;
+    const [halfX, halfZ] = alongX ? [HALO.length / 2, HALO.thick / 2] : [HALO.thick / 2, HALO.length / 2];
+    return {
+      from: [x - halfX, HALO.low, z - halfZ], to: [x + halfX, HALO.high, z + halfZ], shade: false,
+      rotation: { angle, axis: "y", origin: [x, (HALO.low + HALO.high) / 2, z] },
+      faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, {
+        texture: glow, neoforge_data: { block_light: 15, sky_light: 15 },
+      }])),
+    };
+  });
+  const spokes = [[[7.75, 7, 3.25], [8.25, 7.5, 7], "#hub"], [[7.75, 7, 9], [8.25, 7.5, 12.75], "#hub"],
+    [[3.25, 7, 7.75], [7, 7.5, 8.25], "#hub"], [[9, 7, 7.75], [12.75, 7.5, 8.25], "#hub"]];
   for (const tone of ["warm", "cool"]) {
-    write(`assets/${ID}/models/block/halo_light_${tone}.json`, boxes(
+    const model = boxes(
       { cable: `${ID}:block/light_cable`, hub: `${ID}:block/halo_light_hub`, glow: `${ID}:block/halo_light_${tone}`, particle: `${ID}:block/halo_light_hub` },
-      [[[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"], [[7, 7, 7], [9, 8, 9], "#hub"], ...spokes, ...ring("#glow")],
-    ));
+      [[[7.5, 8, 7.5], [8.5, 16, 8.5], "#cable"], [[7, 7, 7], [9, 8, 9], "#hub"], ...spokes],
+    );
+    model.elements.push(...ring("#glow"));
+    write(`assets/${ID}/models/block/halo_light_${tone}.json`, model);
   }
   write(`assets/${ID}/blockstates/halo_light.json`, {
     variants: { "tone=warm": { model: `${ID}:block/halo_light_warm` }, "tone=cool": { model: `${ID}:block/halo_light_cool` } },
