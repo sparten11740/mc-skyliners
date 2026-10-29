@@ -429,9 +429,9 @@ public final class AerolargeConfig {
         builder.push("rocket");
         ROCKET_LIFT = builder
             .comment(
-                "Whether a rocket is built with a lift: a car riding her glass shaft from the entry story to the cockpit, a picture board",
-                "by each landing's sliding doors to pick a floor by its icon. It stands open at a floor while she flies. Off, the shaft is",
-                "open, and rockets already built keep theirs."
+                "Whether a rocket is built with a lift: a car riding her glass shaft from the entry story to the cockpit, a call button",
+                "by each landing's sliding doors and a picture board inside to pick a floor by its icon. It stands open at a floor while",
+                "she flies. Off, the shaft is open, and rockets already built keep theirs."
             )
             .define("lift", true);
         ROCKET_ROOMS = builder

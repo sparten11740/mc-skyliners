@@ -46,7 +46,7 @@ final class RocketLedStrips implements RocketPiece {
     private static final int TWO_THIRDS = 2;
     /**
      * Where each story's panel stands, from her axis and the story's floor: at eye height, beside the lift's doorway on
-     * its west side as she is laid out (the lift's picture board has the east side), its back on the shaft's glass.
+     * its west side as she is laid out (the lift's call button has the east side), its back on the shaft's glass.
      */
     private static final int PANEL_X = -1;
     private static final int PANEL_UP = 2;

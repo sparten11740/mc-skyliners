@@ -3,23 +3,25 @@ package dev.aerolarge.airframe;
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.LiftBoardBlock;
-import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftDoorBlock;
 import dev.aerolarge.block.LiftMachineBlockEntity;
+import dev.aerolarge.block.LiftStopBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
  * The rocket's lift (see {@link LiftMachineBlockEntity}): its car rides her glass shaft from the entry story to the
  * cockpit, where the shaft runs on up into the cockpit as a glass booth roofed over, its machine in the middle of the
- * roof. Each landing has sliding doors in the shaft's doorway, a picture board beside them outside (right of the door)
- * and another on the shaft's back wall inside, both listing her floors by their rooms' icons and colours. The lift
- * knows her autopilot, so it stands open at a floor while she flies. Everything it lays touches the shaft or the
- * cockpit's floor face to face, so it is assembled with her.
+ * roof. Each landing has sliding doors in the shaft's doorway, a call button beside them outside (right of the door)
+ * and a picture board on the shaft's back wall inside, listing her floors by their rooms' icons and colours, to pick
+ * one on. The lift knows her autopilot, so it stands open at a floor while she flies. Everything it lays touches the
+ * shaft or the cockpit's floor face to face, so it is assembled with her.
  */
 final class RocketLift implements RocketPiece {
     /** How many rows the car stands inside, from its floor to its roof, and over that the machine. */
@@ -79,13 +81,24 @@ final class RocketLift implements RocketPiece {
         return new LiftMachineBlockEntity.Landing(machine.getY() - (floor + 1), door, exit, colour, icon);
     }
 
-    /** A landing's doors in the shaft's doorway and its two boards, outside beside the door and inside on the back. */
+    /**
+     * A landing's doors in the shaft's doorway, its call button outside beside the door and its board inside on the
+     * back wall, facing whoever steps into the car.
+     */
     private void landing(BlockPos machine, int floor, int stop) {
         LiftDoorBlock door = AerolargeRegistry.LIFT_DOOR.get();
         layout.set(0, floor + 1, -RocketLayout.SHAFT, door.half(Direction.NORTH, DoubleBlockHalf.LOWER));
         layout.set(0, floor + 2, -RocketLayout.SHAFT, door.half(Direction.NORTH, DoubleBlockHalf.UPPER));
-        board(machine, new BlockPos(1, floor + BOARD_UP, -RocketLayout.SHAFT - 1), stop);
+        callButton(machine, new BlockPos(1, floor + BOARD_UP, -RocketLayout.SHAFT - 1), stop);
         board(machine, new BlockPos(0, floor + BOARD_UP, RocketLayout.SHAFT - 1), stop);
+    }
+
+    /** A call button on the shaft's wall facing north, at a place, wired to the machine and a landing. */
+    private void callButton(BlockPos machine, BlockPos at, int stop) {
+        BlockState button = AerolargeRegistry.LIFT_CALL_BUTTON.get().defaultBlockState()
+            .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.NORTH);
+        layout.set(at.getX(), at.getY(), at.getZ(), button);
+        wire(machine, at, stop);
     }
 
     /** A picture board two blocks tall facing north, its lower block at a place, wired to the machine and a landing. */
@@ -94,8 +107,13 @@ final class RocketLift implements RocketPiece {
         for (int part = 0; part < LiftBoardBlock.BOARD_ROWS; part++) {
             layout.set(at.getX(), at.getY() + part, at.getZ(), board.setValue(LiftBoardBlock.PART, part));
         }
+        wire(machine, at, stop);
+    }
+
+    /** The board or button at a place wired to the machine and a landing, as she is fitted out once placed. */
+    private void wire(BlockPos machine, BlockPos at, int stop) {
         layout.fit(at, (blockEntity, rotation) -> {
-            if (blockEntity instanceof LiftBoardBlockEntity wired) {
+            if (blockEntity instanceof LiftStopBlockEntity wired) {
                 wired.configure(machine.subtract(at), stop, rotation);
             }
         });

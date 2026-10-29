@@ -1846,12 +1846,16 @@ clear it again, a chime falling as it darkens.
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
 and Lift Glass are in the creative tab after the Halo Light, and can be crafted), where the shaft runs on up into a
 glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
-`rocket.lift` leaves it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture
-board, its back brushed steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at
-the bottom: each an icon on its story's colour (a doorway for the entry, then a crate, a fork and knife, a bed, a
-sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the board's own floor framed in white and
-the car's lit. Touch a floor and the car comes, its doors slide open with a soft rush, you step in, and after a moment
-it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes
+`rocket.lift` leaves it out). By each landing's sliding doors is a call button, a lit push-button with an arrow up and
+an arrow down on its pale cap: press it and the car comes, the button glowing amber until it is there (busy with someone
+else's ride, it comes once that is done), and its doors slide open with a soft rush. Step in, and on the shaft's back
+wall facing you a picture board, its back brushed steel where it shows through the shaft's glass, shows her floors as
+square buttons two to a row, the lowest at the bottom: each an icon on its story's colour (a doorway for the entry, then
+a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the
+floor you are on framed in white, the car's lit, and the one you look at lit up brighter in a bold white frame. The car
+waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
+moment it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as
+it comes
 in going up, two going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa
 nova on an electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes
 in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on
@@ -2029,7 +2033,8 @@ the bunk room warm fairy lights are strung across the glass over head height, st
 greenhouse ivy climbs the corners and trails across the top; at the pool a red and white life ring hangs on a chrome
 hook; in the club pink and cyan neon tubes glow from the floor to the ceiling; and in the lab a whiteboard shows a
 molecule of balls and sticks, an arrow and a graph climbing past a dashed line, a sticky note with a water bear on it in
-its corner. They go only where nothing else stands, a poster, the lift's board or its LED panel, and never in front of
+its corner. They go only where nothing else stands, a poster, the lift's call button or its LED panel, and never in
+front of
 the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
 to have has none. Shaft Decoration is in the creative tab after the Lift Glass: used on the side of a block, it puts up
 a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
@@ -2094,7 +2099,7 @@ brush's sound; it is a tint, so no block of her changes, and her windows' frames
 
 Round every story run two rings of LED strip along the inside of her skin, one along the floor and one under the
 ceiling, stopping short of her windows (the server config's `rocket.ledStrips` leaves them out, and their panels and
-console with them). The slim panel on the other side of each story's lift doors from its picture board sets its strips,
+console with them). The slim panel on the other side of each story's lift doors from its call button sets its strips,
 and every control on it is a picture: a swatch for each of ten colours (cherry, tangerine, sunshine, lime, mint, sky,
 ocean, grape, pink and snow); a sun for each brightness, a dark ring struck through for off, then bigger and with more
 rays for a third, two thirds and full; and a little strip for each way of lighting, doing what it does: steady;
@@ -2356,8 +2361,10 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
 on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
-`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing (`LiftBoardRenderer` drawing them,
-and `HeightGauge` in flight); on the client `LiftSounds` plays a riding car's hum, and its music for whoever rides it or
+`LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
+inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,
+the floor looked at lit, and `HeightGauge` in flight); on the client `LiftSounds` plays a riding car's hum, and its
+music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
 pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space round any

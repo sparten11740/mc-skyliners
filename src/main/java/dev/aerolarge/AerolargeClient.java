@@ -159,6 +159,7 @@ public final class AerolargeClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CockpitDisplayRenderer::hideOutline);
+        NeoForge.EVENT_BUS.addListener(LiftBoardRenderer::hideOutline);
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);

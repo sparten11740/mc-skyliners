@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -191,15 +192,29 @@ public class LiftCar extends Entity {
     }
 
     /**
-     * Its riders stand each in a quarter of the car, facing as they will, their feet on its floor: the game lowers a
-     * rider by where it sits on a vehicle, which a standing rider does not, so that is put back.
+     * Its riders stand each in a quarter of the car, facing as they will, their feet on its floor: the first two in the
+     * quarters by its doors, a step back from the board on the far wall that they pick their floor on, and the next two
+     * behind them. The game lowers a rider by where it sits on a vehicle, which a standing rider does not, so that is
+     * put back.
      */
     @Override
     public Vec3 getPassengerRidingPosition(Entity passenger) {
         int place = Math.max(0, getPassengers().indexOf(passenger));
+        Direction doors = doorsSide();
+        Direction side = doors.getClockWise();
         double across = (place & 1) == 0 ? -RIDER_OUT : RIDER_OUT;
-        double along = (place & 2) == 0 ? -RIDER_OUT : RIDER_OUT;
-        return position().add(across, 0, along).add(passenger.getVehicleAttachmentPoint(this));
+        double along = (place & 2) == 0 ? RIDER_OUT : -RIDER_OUT;
+        Vec3 spot = Vec3.atLowerCornerOf(side.getNormal()).scale(across).add(Vec3.atLowerCornerOf(doors.getNormal()).scale(along));
+        return position().add(spot).add(passenger.getVehicleAttachmentPoint(this));
+    }
+
+    /** The side of the shaft its doors are on, as its machine's landings have them; north without them. */
+    private Direction doorsSide() {
+        if (!(level().getBlockEntity(machine()) instanceof LiftMachineBlockEntity lift) || lift.landings().isEmpty()) {
+            return Direction.NORTH;
+        }
+        BlockPos door = lift.landings().getFirst().door();
+        return Direction.getNearest(door.getX(), 0, door.getZ());
     }
 
     @Override

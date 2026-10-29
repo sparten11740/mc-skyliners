@@ -5,7 +5,10 @@ import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.LiftCar;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -31,9 +34,10 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The machine of a ship's lift, at the top of its glass shaft: it owns the lift's car (see {@link LiftCar}) and runs it
- * between the landings. A landing's picture board (see {@link LiftBoardBlock}) asks for a ride from its floor to the
- * one touched: the car comes if it is elsewhere, its doors slide open, whoever steps in rides, the doors close, and the
- * car takes them to their floor, where a chime sounds, the doors open and they step out. The car moves only with every
+ * between the landings. A landing's call button (see {@link LiftCallButtonBlock}) calls the car: it comes if it is
+ * elsewhere and its doors slide open; whoever steps in picks their floor on the board inside (see
+ * {@link LiftBoardBlock}), the doors close, and the car takes them there, where a chime sounds, the doors open and they
+ * step out. The car moves only with every
  * door shut and no one in a doorway, and lets no one off between floors.
  *
  * <p>While the ship is not resting on the ground (her autopilot counting down, climbing, flying or landing), the lift
@@ -45,9 +49,12 @@ import net.minecraft.world.phys.Vec3;
  * was placed, and the colour and the icon its boards show the floor by. They are sent to the clients for the boards.
  */
 public class LiftMachineBlockEntity extends BlockEntity {
-    /** How long the doors take to slide open or shut, and how long they stand open, in ticks. */
+    /**
+     * How long the doors take to slide open or shut, and how long they stand open with nobody aboard, in ticks: long
+     * enough for whoever called the car to walk in.
+     */
     public static final int DOOR_TICKS = 10;
-    private static final int OPEN_TICKS = 80;
+    private static final int OPEN_TICKS = 160;
     /** How long the doors stay open once a rider has picked a floor from inside the car, in ticks. */
     private static final int PICKED_TICKS = 20;
     /** How long the car may be missing before a new one is set in the shaft, in ticks: its own chunk may load late. */
@@ -133,6 +140,11 @@ public class LiftMachineBlockEntity extends BlockEntity {
     /** Whether the car's ride now, or its last, goes up: the chime it comes in with. */
     private boolean goingUp;
     /**
+     * The landings whose call buttons were pressed while the car was busy, in the order they were, each answered once
+     * the car stands free; not saved, as a press is soon made again.
+     */
+    private final Set<Integer> calls = new LinkedHashSet<>();
+    /**
      * The landing whose doors slide now, or -1, and the ticks they have slid; and whether its doors have been looked
      * over since it was loaded, for any left sliding when it was saved.
      */
@@ -183,9 +195,67 @@ public class LiftMachineBlockEntity extends BlockEntity {
     }
 
     /**
-     * Asks for a ride from a landing to another, as its board was touched; whether the lift took it. A ride is taken
-     * while the lift stands shut, or stands open at that landing (the floor picked from inside the car, or picked
-     * again); never while it is on its way or parked.
+     * Calls the car to a landing, as its call button (or an older ship's board outside the doors) was pressed; whether
+     * the lift took the call. Standing shut, it comes if it is elsewhere and its doors open there, for whoever is
+     * waiting to step in and pick their floor inside; standing open there already, it stays open a while longer; busy
+     * with another ride, it comes once that is done. Never while the ship is not resting and the lift parked.
+     */
+    public boolean call(ServerLevel level, int from) {
+        if (from < 0 || from >= landings.size() || phase == Phase.PARKED) {
+            return false;
+        }
+        if (phase == Phase.IDLE) {
+            return ask(level, from, from);
+        }
+        if ((phase == Phase.FETCHING || phase == Phase.OPENING) && at == from) {
+            return true;
+        }
+        if (phase == Phase.BOARDING && at == from) {
+            if (target < 0 || target == at) {
+                lasts = Math.max(lasts, ticks + OPEN_TICKS);
+                changed();
+            }
+            return true;
+        }
+        calls.add(from);
+        return true;
+    }
+
+    /** Whether the car is called to a landing and not there yet: on its way to it, or to come once it is free. */
+    public boolean coming(int landing) {
+        return phase == Phase.FETCHING && at == landing || calls.contains(landing);
+    }
+
+    /** Standing shut and free once more, the car goes to the first landing that called it meanwhile, if one did. */
+    private void answerCalls(ServerLevel level) {
+        Iterator<Integer> waiting = calls.iterator();
+        if (waiting.hasNext()) {
+            int next = waiting.next();
+            waiting.remove();
+            call(level, next);
+        }
+    }
+
+    /**
+     * Whether a block at a landing is inside the shaft, as the board inside the car is, rather than out beyond its
+     * doors: nearer the shaft's middle, under the machine, than the landing's doors are.
+     */
+    public boolean inside(BlockPos at, int landing) {
+        if (landing < 0 || landing >= landings.size()) {
+            return false;
+        }
+        return across(at.subtract(worldPosition)) < across(landings.get(landing).door());
+    }
+
+    /** How far out from the shaft's middle an offset from the machine is, across, along the farther way. */
+    private static int across(BlockPos offset) {
+        return Math.max(Math.abs(offset.getX()), Math.abs(offset.getZ()));
+    }
+
+    /**
+     * Asks for a ride from a landing to another, as the board inside the car was touched; whether the lift took it. A
+     * ride is taken while the lift stands shut, or stands open at that landing (the floor picked from inside the car,
+     * or picked again); never while it is on its way or parked.
      */
     public boolean ask(ServerLevel level, int from, int to) {
         if (from < 0 || from >= landings.size() || to < 0 || to >= landings.size()) {
@@ -291,13 +361,17 @@ public class LiftMachineBlockEntity extends BlockEntity {
 
     /**
      * Standing open: whoever steps in is taken aboard and whoever sneaks in it is set down outside; once it has stood
-     * long enough, with a floor picked or no one aboard, and no one in the way, the doors close.
+     * long enough, with a floor picked or no one aboard, and no one in the way, the doors close. With another landing
+     * calling, it stands open only a moment empty, and no longer than it would empty for a rider who has picked no
+     * floor: it goes to answer the call, taking them along.
      */
     private void boarding(ServerLevel level, LiftCar running) {
         letSneakersOff(level, running);
         takeAboard(level, running);
         boolean picked = target >= 0 && target != at;
-        if (ticks < lasts || !picked && running.isVehicle() || doorwayTaken(level)) {
+        boolean waited = !calls.isEmpty();
+        int stays = waited && !running.isVehicle() ? Math.min(lasts, PICKED_TICKS) : lasts;
+        if (ticks < stays || !picked && running.isVehicle() && !waited || doorwayTaken(level)) {
             return;
         }
         enter(Phase.CLOSING);
@@ -315,6 +389,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
         } else {
             target = -1;
             enter(Phase.IDLE);
+            answerCalls(level);
         }
         changed();
     }
@@ -322,6 +397,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
     /** Stands at its floor with its doors open, the ship not resting: riders may get out, and no ride is taken. */
     private void park(ServerLevel level) {
         target = -1;
+        calls.clear();
         enter(Phase.PARKED);
         doors(level, at, true);
         changed();
@@ -462,6 +538,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
 
     private void enter(Phase next) {
         if (next == Phase.OPENING && level instanceof ServerLevel server) {
+            calls.remove(at);
             doors(server, at, true);
             sound(server, AerolargeRegistry.LIFT_DOOR_SOUND.get(), 1.0F);
         }

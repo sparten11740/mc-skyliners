@@ -192,8 +192,9 @@ function cockpitDoorLang() {
 // middle six pixels of its texture, its picture, the right way up for someone standing at the button's foot; on a
 // wall, turned up off the floor, it would stand on its head and back to front, so a wall button's face is turned half
 // round to read the right way up. In the hand, the button upright, its cap to the north. A button may wear another's
-// cap, its picture and all.
-function litButton(name, capName = name) {
+// cap, its picture and all; one that works only wired to what it works as an airframe lays it, as the lift's call
+// button, can be no item and drop nothing.
+function litButton(name, capName = name, asItem = true) {
   const block = (texture) => `${ID}:block/${texture}`;
   const bezel = block("airstair_button_bezel");
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
@@ -211,6 +212,11 @@ function litButton(name, capName = name) {
       });
     }
   }
+  litButtonState(name);
+  cubes[name] = null;
+  if (!asItem) {
+    return;
+  }
   write(`assets/${ID}/models/block/${name}_inventory.json`, {
     parent: "minecraft:block/block",
     textures: { bezel, cap: block(capName), particle: bezel },
@@ -219,8 +225,12 @@ function litButton(name, capName = name) {
       { from: [5, 5, 6.5], to: [11, 11, 8], shade: false, faces: Object.fromEntries(["north", "east", "west", "up", "down"].map((face) => [face, { texture: "#cap", ...lit }])) },
     ],
   });
-  // Turned as vanilla's: on the floor and the wall to face the way it looks, on the ceiling upside down and the other
-  // way round.
+  write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
+  dropsItself(name);
+}
+// A lit button's blockstate, turned as vanilla's: on the floor and the wall to face the way it looks, on the ceiling
+// upside down and the other way round.
+function litButtonState(name) {
   const ceiling = { north: 180, east: 270, south: 0, west: 90 };
   write(`assets/${ID}/blockstates/${name}.json`, {
     variants: Object.fromEntries(["floor", "wall", "ceiling"].flatMap((face) => Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((powered) => {
@@ -232,9 +242,6 @@ function litButton(name, capName = name) {
       }];
     })))),
   });
-  write(`assets/${ID}/models/item/${name}.json`, { parent: `${ID}:block/${name}_inventory` });
-  dropsItself(name);
-  cubes[name] = null;
 }
 // The airstair button beside the controller (see AirstairButtonBlock), its cap showing the controller's staircase.
 litButton("airstair_button");
@@ -4528,6 +4535,8 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
       [false, true].map((tilted) => [`facing=${facing},part=${part},tilted=${tilted}`, { model: `${ID}:block/lift_board${tilted ? "_tilted" : ""}`, y }])))),
   });
   cubes.lift_board = null;
+  // The call button beside each landing's doors (see LiftCallButtonBlock), its cap showing a lift's arrows up and down.
+  litButton("lift_call_button", "lift_call_button", false);
 }
 
 // The rocket's LED strips (see LedStripBlock): a thin bar along each side of its block that her skin stands on, lying
@@ -9542,6 +9551,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.oval_window": "Oval Window",
   "block.aerolarge.lift_machine": "Lift Machine",
+  "block.aerolarge.lift_call_button": "Lift Call Button",
   "block.aerolarge.lift_door": "Lift Door",
   "block.aerolarge.lift_board": "Lift Board",
   "entity.aerolarge.lift_car": "Lift Car",

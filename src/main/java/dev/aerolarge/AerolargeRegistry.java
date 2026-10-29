@@ -162,6 +162,8 @@ import dev.aerolarge.block.LavIceBlock;
 import dev.aerolarge.block.LavatoryBasinBlock;
 import dev.aerolarge.block.LiftBoardBlock;
 import dev.aerolarge.block.LiftBoardBlockEntity;
+import dev.aerolarge.block.LiftCallButtonBlock;
+import dev.aerolarge.block.LiftCallButtonBlockEntity;
 import dev.aerolarge.block.LiftDoorBlock;
 import dev.aerolarge.block.LiftDoorBlockEntity;
 import dev.aerolarge.block.LiftMachineBlock;
@@ -697,8 +699,9 @@ public final class AerolargeRegistry {
     /** The rocket's big oval windows, each a few blocks of it, their glass dimming in steps. */
     public static final DeferredBlock<OvalWindowBlock> OVAL_WINDOW = BLOCKS.registerBlock("oval_window", OvalWindowBlock::new, glass());
     /**
-     * The rocket's lift: its machine at the top of the glass shaft, its landing doors, the picture boards by the doors
-     * and on the car's back wall, the car that rides the shaft, and its sounds (see {@link LiftMachineBlockEntity}).
+     * The rocket's lift: its machine at the top of the glass shaft, its landing doors, the call buttons by the doors
+     * (picture boards on ships built before) and the boards on the car's back wall, the car that rides the shaft, and
+     * its sounds (see {@link LiftMachineBlockEntity}).
      */
     public static final DeferredBlock<LiftMachineBlock> LIFT_MACHINE = BLOCKS.registerBlock("lift_machine", LiftMachineBlock::new, metal(MapColor.METAL));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftMachineBlockEntity>> LIFT_MACHINE_ENTITY =
@@ -709,6 +712,13 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<LiftBoardBlock> LIFT_BOARD = BLOCKS.registerBlock("lift_board", LiftBoardBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftBoardBlockEntity>> LIFT_BOARD_ENTITY =
         BLOCK_ENTITIES.register("lift_board", () -> BlockEntityType.Builder.of(LiftBoardBlockEntity::new, LIFT_BOARD.get()).build(null));
+    public static final DeferredBlock<LiftCallButtonBlock> LIFT_CALL_BUTTON = BLOCKS.registerBlock(
+        "lift_call_button",
+        properties -> new LiftCallButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftCallButtonBlockEntity>> LIFT_CALL_BUTTON_ENTITY =
+        BLOCK_ENTITIES.register("lift_call_button", () -> BlockEntityType.Builder.of(LiftCallButtonBlockEntity::new, LIFT_CALL_BUTTON.get()).build(null));
     public static final DeferredHolder<EntityType<?>, EntityType<LiftCar>> LIFT_CAR = ENTITY_TYPES.register(
         "lift_car", () -> EntityType.Builder.<LiftCar>of(LiftCar::new, MobCategory.MISC).sized(2.9F, 0.2F)
             .clientTrackingRange(10).updateInterval(20).noSummon().fireImmune().build("lift_car")

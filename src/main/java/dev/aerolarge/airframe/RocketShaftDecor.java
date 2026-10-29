@@ -24,11 +24,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * and in the lab a whiteboard of a molecule and a graph.
  *
  * <p>Each piece goes in the ring of cells against the shaft's glass and its corner girders, the walkway round it, which
- * stays walkable as nothing collides with them: only in open cells, never where a poster, the lift's door or its board,
- * or anything else stands, and on the shaft's front only before its corner girders, as the doorway, the lift's board
- * and the LED panel beside it have the middle three. A piece of several blocks is laid whole or not at all. Every block
- * touches the shaft face to face, so it is assembled with her. Laid after the posters, which have the first pick of the
- * shaft's faces, and before the LED strips, whose panel by each lift door is kept clear.
+ * stays walkable as nothing collides with them: only in open cells, never where a poster, the lift's door or its call
+ * button, or anything else stands, and on the shaft's front only before its corner girders, as the doorway, the lift's
+ * call button and the LED panel beside it have the middle three. A piece of several blocks is laid whole or not at all.
+ * Every block touches the shaft face to face, so it is assembled with her. Laid after the posters, which have the first
+ * pick of the shaft's faces, and before the LED strips, whose panel by each lift door is kept clear.
  */
 final class RocketShaftDecor implements RocketPiece {
     /** How far out from her axis the cells against the shaft's walls are, in blocks: the walkway's ring round it. */
@@ -39,7 +39,9 @@ final class RocketShaftDecor implements RocketPiece {
      */
     private static final int CORNER = RocketLayout.SHAFT;
     private static final int GLASS = CORNER - 1;
-    /** How far to either side of the front's middle the lift's doorway, its board and LED panel reach, in blocks. */
+    /**
+     * How far to either side of the front's middle the lift's doorway, its call button and LED panel reach, in blocks.
+     */
     private static final int LIFT_HALF = 1;
     /** How many rows over the floor a board's lower row is: at eye height, as the lift's boards are. */
     private static final int BOARD_UP = 2;

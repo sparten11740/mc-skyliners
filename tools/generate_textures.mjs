@@ -432,6 +432,14 @@ const litCap = (picture) => (glow, glyph) => (x, y) => (picture[y - 5]?.[x - 5] 
   texture(blockOutput, "door_button", cap([0x3c, 0xb4, 0xf0], [0x0a, 0x2a, 0x5c]), 1);
   texture(blockOutput, "door_button_pressed", cap([0xd2, 0xf2, 0xff], [0x1a, 0x5c, 0xa8]), 1);
 }
+// A lift's call button (see LiftCallButtonBlock), in the airstair button's bezel: its cap a pale steel with an arrow up
+// over an arrow down on it in dark grey, as a lift's call button has; pressed, called, it glows amber, the arrows a
+// deep brown on it, until the car comes.
+{
+  const cap = litCap(["..##..", ".####.", "......", "......", ".####.", "..##.."]);
+  texture(blockOutput, "lift_call_button", cap([0xd6, 0xdc, 0xe2], [0x34, 0x3a, 0x42]), 1);
+  texture(blockOutput, "lift_call_button_pressed", cap([0xff, 0xc4, 0x48], [0x6a, 0x3c, 0x06]), 1);
+}
 // A zeppelin's speed boost button (see BoostButtonBlock), in the airstair button's bezel: its cap a fiery red, with a
 // fast-forward arrow on it in dark red, two bold chevrons pointing the way she goes; pressed, the cap glows brighter,
 // nearly white, the arrow a deeper red on it.
