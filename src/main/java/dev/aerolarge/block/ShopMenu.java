@@ -7,18 +7,19 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * A duty-free counter's trading screen, as the server holds it: vanilla's, but closing once the counter is gone or out
- * of reach, and buying with a shift-click without taking the shop for a villager. The client opens vanilla's own.
+ * A shop's trading screen, as the server holds it (see {@link Shop}): vanilla's, but closing once the shop's block is
+ * gone or out of reach, and buying with a shift-click without taking the shop for a villager. The client opens
+ * vanilla's own.
  */
-final class DutyFreeMenu extends MerchantMenu {
+final class ShopMenu extends MerchantMenu {
     /** The menu's slots: what is bought, then the shopper's inventory, from the first slot to past the last. */
     private static final int BOUGHT = 2;
     private static final int INVENTORY_START = 3;
     private static final int INVENTORY_END = 39;
 
-    private final DutyFreeShop shop;
+    private final Shop shop;
 
-    DutyFreeMenu(int containerId, Inventory inventory, DutyFreeShop shop) {
+    ShopMenu(int containerId, Inventory inventory, Shop shop) {
         super(containerId, inventory, shop);
         this.shop = shop;
     }
@@ -30,8 +31,8 @@ final class DutyFreeMenu extends MerchantMenu {
 
     /**
      * Shift-clicking what is on offer buys it straight into the inventory, as vanilla's does, but for its trade sound:
-     * vanilla plays that from the merchant, taking it for the villager it would be, and the shop is a counter. The
-     * shop's own till rings for the sale instead.
+     * vanilla plays that from the merchant, taking it for the villager it would be, and the shop is a block. The
+     * shop's own sale sound plays instead.
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
