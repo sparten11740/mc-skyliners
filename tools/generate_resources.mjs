@@ -1417,6 +1417,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, roomSounds());
   Object.assign(sounds, snackMachineSounds());
   Object.assign(sounds, greenhouseSounds());
+  Object.assign(sounds, airlockPanelSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4708,6 +4709,46 @@ function rocketRoomLang() {
   };
 }
 
+// The rocket's airlock panel (see AirlockPanelBlock), drawn facing north: a steel foot and post under its head, the
+// head tilted back so its screen looks up at whoever stands at it, the screen glowing whatever the light around, its
+// picture the middle band of its texture, twice as wide as it is tall; one model for each way the airlock stands, its
+// screen's picture showing it (see airlockPanelTextures).
+function airlockPanel() {
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  const tilt = { angle: 22.5, axis: "x", origin: [8, 9, 10] };
+  const screen = { from: [3, 9.5, 5.9], to: [13, 14.5, 6], rotation: tilt, shade: false, faces: { north: { texture: "#screen", uv: [0, 4, 16, 12], ...lit } } };
+  for (const cycle of ["sealed", "cycling", "clear"]) {
+    write(`assets/${ID}/models/block/airlock_panel_${cycle}.json`, {
+      parent: "minecraft:block/block",
+      textures: { casing: `${ID}:block/airlock_casing`, post: `${ID}:block/airlock_post`, screen: `${ID}:block/airlock_screen_${cycle}`,
+        particle: `${ID}:block/airlock_casing` },
+      elements: [solid([4, 0, 4], [12, 1, 12], "#casing"), solid([6.5, 1, 7], [9.5, 10, 10], "#post"), solid([2.5, 9, 6], [13.5, 15, 10], "#casing", tilt),
+        screen],
+    });
+  }
+  write(`assets/${ID}/blockstates/airlock_panel.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["sealed", "cycling", "clear"].map((cycle) =>
+      [`cycle=${cycle},facing=${facing}`, { model: `${ID}:block/airlock_panel_${cycle}`, y }]))),
+  });
+  cubes.airlock_panel = null;
+}
+airlockPanel();
+// The panel is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function airlockPanelFittings() {
+  return ["airlock_panel"];
+}
+// Its cycle, the latches' clunk and the air's hiss, and the chime as it clears (see tools/generate_sounds.mjs).
+function airlockPanelSounds() {
+  return Object.fromEntries(["airlock_cycle", "airlock_clear"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+function airlockPanelLang() {
+  return {
+    "block.aerolarge.airlock_panel": "Airlock Panel",
+    "subtitles.aerolarge.airlock_cycle": "Airlock cycles",
+    "subtitles.aerolarge.airlock_clear": "Airlock chimes clear",
+  };
+}
+
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
@@ -7085,6 +7126,7 @@ FITTINGS.push(...labFittings());
 FITTINGS.push(...foodLabFittings());
 FITTINGS.push(...greenhouseFittings());
 FITTINGS.push(...rocketRoomFittings());
+FITTINGS.push(...airlockPanelFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7832,6 +7874,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...roomLang(),
   ...greenhouseLang(),
   ...rocketRoomLang(),
+  ...airlockPanelLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],

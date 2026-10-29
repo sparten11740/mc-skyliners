@@ -5734,4 +5734,44 @@ function rocketRoomTextures() {
 }
 rocketRoomTextures();
 
+// The rocket's airlock panel (see airlockPanel in generate_resources.mjs): its brushed steel casing and darker post, and
+// its screen's three pictures, in the middle band of each texture, which is all the screen shows. Under a lamp bar
+// along the top, a door in its frame: sealed, shut and locked under a red bar; cycling, shut, air streaming out past it
+// either side and amber chevrons sweeping along the bar, a frame at a time; clear, slid open under a green bar, the
+// doorway between its panels glowing green.
+function airlockPanelTextures() {
+  const FRAMES = 8;
+  const BACK = [0x0c, 0x12, 0x1a];
+  const FRAME = [0xc8, 0xd0, 0xd8];
+  const PANEL = [0x8e, 0x98, 0xa4];
+  const BAR = { sealed: [0xe8, 0x34, 0x30], clear: [0x3c, 0xe0, 0x6a] };
+  const AMBER = [0xf8, 0xb0, 0x28];
+  const AMBER_DIM = [0x6a, 0x46, 0x10];
+  texture(blockOutput, "airlock_casing", (x, y) => (x === 0 || y === 0 ? [0x7a, 0x82, 0x8b] : [0x9c, 0xa4, 0xad]), 3);
+  texture(blockOutput, "airlock_post", () => [0x58, 0x5e, 0x66], 2);
+  // The door's frame round its opening, and whether a spot of the band is in the opening.
+  const frame = (x, y) => (x === 5 || x === 10) && y >= 6 || y === 6 && x >= 5 && x <= 10;
+  const opening = (x, y) => x >= 6 && x <= 9 && y >= 7;
+  const screen = (bar, door) => (x, y, frame0 = 0) => {
+    if (y < 4 || y > 11) return BACK;
+    if (y === 4) return x >= 1 && x <= 14 ? bar(x, frame0) : BACK;
+    if (frame(x, y)) return FRAME;
+    return door(x, y, frame0) ?? BACK;
+  };
+  const shut = (x, y) => (opening(x, y) ? (x === 7 ? [0x5a, 0x62, 0x6c] : PANEL) : null);
+  texture(blockOutput, "airlock_screen_sealed", screen(() => BAR.sealed, (x, y) => (x === 8 && y === 9 ? BAR.sealed : shut(x, y))), 0);
+  texture(blockOutput, "airlock_screen_clear", screen(() => BAR.clear, (x, y) => {
+    if (!opening(x, y)) return null;
+    return x === 6 || x === 9 ? PANEL : [0x9c, 0xf0, 0xb8];
+  }), 0);
+  const cycling = screen((x, at) => ((x + at) % 4 < 2 ? AMBER : AMBER_DIM), (x, y, at) => {
+    const streaming = y >= 7 && y <= 10 && (x <= 3 || x >= 12);
+    if (streaming) return (Math.abs(x - 7.5) + at + y) % 3 < 1 ? [0xb8, 0xe4, 0xff] : null;
+    return shut(x, y);
+  });
+  texture(blockOutput, "airlock_screen_cycling", (x, y) => cycling(x, y % SIZE, FRAMES - 1 - Math.floor(y / SIZE)), 0, SIZE, SIZE * FRAMES);
+  writeFileSync(resolve(blockOutput, "airlock_screen_cycling.png.mcmeta"), JSON.stringify({ animation: { frametime: 2 } }, null, 2) + "\n");
+}
+airlockPanelTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

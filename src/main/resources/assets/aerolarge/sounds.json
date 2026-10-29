@@ -1162,6 +1162,22 @@
       }
     ]
   },
+  "airlock_cycle": {
+    "subtitle": "subtitles.aerolarge.airlock_cycle",
+    "sounds": [
+      {
+        "name": "aerolarge:airlock_cycle"
+      }
+    ]
+  },
+  "airlock_clear": {
+    "subtitle": "subtitles.aerolarge.airlock_clear",
+    "sounds": [
+      {
+        "name": "aerolarge:airlock_clear"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

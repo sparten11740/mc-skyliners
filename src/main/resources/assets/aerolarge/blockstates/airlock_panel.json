@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "cycle=sealed,facing=north": {
+      "model": "aerolarge:block/airlock_panel_sealed",
+      "y": 0
+    },
+    "cycle=cycling,facing=north": {
+      "model": "aerolarge:block/airlock_panel_cycling",
+      "y": 0
+    },
+    "cycle=clear,facing=north": {
+      "model": "aerolarge:block/airlock_panel_clear",
+      "y": 0
+    },
+    "cycle=sealed,facing=east": {
+      "model": "aerolarge:block/airlock_panel_sealed",
+      "y": 90
+    },
+    "cycle=cycling,facing=east": {
+      "model": "aerolarge:block/airlock_panel_cycling",
+      "y": 90
+    },
+    "cycle=clear,facing=east": {
+      "model": "aerolarge:block/airlock_panel_clear",
+      "y": 90
+    },
+    "cycle=sealed,facing=south": {
+      "model": "aerolarge:block/airlock_panel_sealed",
+      "y": 180
+    },
+    "cycle=cycling,facing=south": {
+      "model": "aerolarge:block/airlock_panel_cycling",
+      "y": 180
+    },
+    "cycle=clear,facing=south": {
+      "model": "aerolarge:block/airlock_panel_clear",
+      "y": 180
+    },
+    "cycle=sealed,facing=west": {
+      "model": "aerolarge:block/airlock_panel_sealed",
+      "y": 270
+    },
+    "cycle=cycling,facing=west": {
+      "model": "aerolarge:block/airlock_panel_cycling",
+      "y": 270
+    },
+    "cycle=clear,facing=west": {
+      "model": "aerolarge:block/airlock_panel_clear",
+      "y": 270
+    }
+  }
+}

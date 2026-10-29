@@ -7,6 +7,7 @@ import dev.aerolarge.airframe.RocketLayout;
 import dev.aerolarge.airframe.ZeppelinLayout;
 import dev.aerolarge.airframe.ZeppelinOptions;
 import dev.aerolarge.airframe.ZeppelinSize;
+import dev.aerolarge.block.AirlockPanelBlock;
 import dev.aerolarge.block.AirstairBlockEntity;
 import dev.aerolarge.block.AirstairButtonBlock;
 import dev.aerolarge.block.AirstairCallButtonBlock;
@@ -2201,6 +2202,12 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<PalletRackBlock> PALLET_RACK = BLOCKS.registerBlock(
         "pallet_rack", PalletRackBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().noLootTable()
     );
+    /** The entry's airlock panel, its screen glowing, and its cycle's clunk and hiss and the chime as it clears. */
+    public static final DeferredBlock<AirlockPanelBlock> AIRLOCK_PANEL = BLOCKS.registerBlock(
+        "airlock_panel", AirlockPanelBlock::new, metal(MapColor.METAL).noOcclusion().noLootTable().lightLevel(AirlockPanelBlock::glow)
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CYCLE = sound("airlock_cycle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_CLEAR = sound("airlock_clear");
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired

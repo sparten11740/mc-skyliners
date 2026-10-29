@@ -1865,14 +1865,18 @@ parachute rack by the door, for anyone who would rather leave her in flight; cre
 Helmet waiting in each (see Souvenirs) and one of them left ajar; a mudroom bench facing a low wall of boot shelves,
 boots on the lower shelf and helmets on the upper, which parts the kit-up room from the back of the story (with a gap to
 walk through in a big rocket), a model rocket left on top; and somebody's suitcase dropped by the bench or the lockers.
-At its back, either side, is a waiting lounge for the lift: red or orange armchairs round a low table on a rug, one of
-them turned away as if someone just got up, and bamboo in a planter. Halo lights hang on slim cables at the four
-diagonals round the shaft. The cargo bay over it is a storeroom. At its front stand a pair of baggage containers by the
-way in from the lift and care-package crates stacked unevenly beside them, ready to be packed and dropped; out to either
-side a wall of pallet racks three bays high, loaded with taped boxes, drums and crates and now and then a bay left
-empty, parts the front from the back (with a gap in it in a big rocket); at the back right is a workbench corner, a
-crafting table, a stool and a grindstone under shelves of tool cases, and at the back left crates are piled where they
-were set down. Lanterns hang round the shaft as in the entry, and the middle of its back is left to the rover (below).
+By the door on her left stands the Airlock Panel, a screen on a post showing a shut door under a red bar: use it and the
+latches clunk, air hisses out of its vents in a cloud and amber chevrons sweep along the bar, then a chime rings and the
+door on the screen slides open under a green bar, clear to go, until a while later it seals itself again with a clunk
+(it is only to play with: the door itself is always open). At its back, either side, is a waiting lounge for the lift:
+red or orange armchairs round a low table on a rug, one of them turned away as if someone just got up, and bamboo in a
+planter. Halo lights hang on slim cables at the four diagonals round the shaft. The cargo bay over it is a storeroom. At
+its front stand a pair of baggage containers by the way in from the lift and care-package crates stacked unevenly beside
+them, ready to be packed and dropped; out to either side a wall of pallet racks three bays high, loaded with taped
+boxes, drums and crates and now and then a bay left empty, parts the front from the back (with a gap in it in a big
+rocket); at the back right is a workbench corner, a crafting table, a stool and a grindstone under shelves of tool
+cases, and at the back left crates are piled where they were set down. Halo lights hang round the shaft as in the entry,
+and the middle of its back is left to the rover (below).
 The galley and mess has its kitchen at the back and its dining room at the front. Galley units curve round the back
 either side of its window, an oven in each run and a coffee machine; out to either side a pass of worktops parts the
 kitchen from the dining room, bar stools before it, a shelf of jars on it and a cake or a pot of tulips beside them; and

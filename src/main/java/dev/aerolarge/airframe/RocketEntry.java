@@ -1,6 +1,7 @@
 package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.AirlockPanelBlock;
 import dev.aerolarge.block.CrewLockerBlock;
 import dev.aerolarge.block.GymBenchBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
@@ -22,8 +23,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  * kit-up room: a parachute rack by the door, for anyone who would rather leave her in flight; crew lockers round the
  * corner, a space helmet in each and one left ajar; a mudroom bench across the room facing a low wall of boot shelves,
  * which parts the kit-up rooms from the back of the story, a model rocket left on top; and somebody's suitcase dropped
- * nearby. At her back, either side, a waiting lounge for the lift: armchairs round a low table on a rug, one of them
- * turned away, and bamboo in a planter. Halo lights hang round the shaft.
+ * nearby. By the door on her left stands the airlock panel, to cycle the airlock with. At her back, either side, a
+ * waiting lounge for the lift: armchairs round a low table on a rug, one of them turned away, and bamboo in a planter.
+ * Halo lights hang round the shaft.
  */
 final class RocketEntry extends RocketRoom {
     /** Her entry story, from the bottom up. */
@@ -67,7 +69,22 @@ final class RocketEntry extends RocketRoom {
         }
         lounge(RocketQuarter.BACK_RIGHT, y, corner, DyeColor.RED, Blocks.CYAN_CARPET.defaultBlockState(), random);
         lounge(RocketQuarter.BACK_LEFT, y, corner, DyeColor.ORANGE, Blocks.LIGHT_GRAY_CARPET.defaultBlockState(), random);
+        airlockPanel(RocketQuarter.FRONT_LEFT, y);
         lightsRoundShaft();
+    }
+
+    /**
+     * The airlock panel beside the way in from the door, as near the door as the room has space for, its screen facing
+     * the way in (see {@link AirlockPanelBlock}).
+     */
+    private void airlockPanel(RocketQuarter quarter, int y) {
+        int across = RocketQuarter.INNER - 2;
+        int along = RocketQuarter.INNER;
+        while (free(quarter.x(across), y, quarter.z(along + 1))) {
+            along++;
+        }
+        put(quarter.x(across), y, quarter.z(along), AerolargeRegistry.AIRLOCK_PANEL.get().defaultBlockState()
+            .setValue(AirlockPanelBlock.FACING, quarter.side().getOpposite()));
     }
 
     /** A quarter's lockers round its corner, facing in, one of them left ajar. */

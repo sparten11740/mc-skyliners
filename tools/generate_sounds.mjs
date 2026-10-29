@@ -2556,6 +2556,34 @@ function softened(samples) {
   }
   writeSound("centrifuge_ding", ding, 0.6);
 }
+// The rocket's airlock panel (see AirlockPanelBlock), with a random sequence of its own so the sounds round it are
+// unchanged. Its cycle: the latches clunking home, then air hissing out of the vents, a bright jet over a broad rush,
+// swelling and easing off over a few seconds as the pressure falls, a pump droning low under it. Its chime as it
+// clears: two clean notes rising a fifth, a soft click before them.
+function airlockPanelSounds() {
+  const own = ownRandom(0x4169726c);
+  const CYCLE_SECONDS = 3.2;
+  const cycle = new Float64Array(Math.round(CYCLE_SECONDS * RATE));
+  const air = Float64Array.from({ length: cycle.length }, () => own() * 2 - 1);
+  const jet = resonance(air, 3400, 2.5);
+  const rush = resonance(air, 900, 0.7);
+  for (let i = 0; i < cycle.length; i++) {
+    const t = i / RATE;
+    const swell = Math.min(1, Math.max(0, (t - 0.25) / 0.2)) * Math.exp(-Math.max(0, t - 0.6) / 1.1);
+    const pump = Math.min(1, t / 0.4) * Math.min(1, (CYCLE_SECONDS - t) / 0.5) * (Math.sin(2 * Math.PI * 92 * t) + 0.4 * Math.sin(2 * Math.PI * 184 * t));
+    cycle[i] = swell * (0.9 * jet[i] + 0.7 * rush[i]) + 0.12 * pump;
+  }
+  thunk(cycle, 0.02, 70, 0.8, own);
+  thunk(cycle, 0.14, 95, 0.5, own);
+  writeSound("airlock_cycle", cycle, 0.8);
+
+  const chime = new Float64Array(Math.round(1.1 * RATE));
+  click(chime, 0, 2400, 0.3, own);
+  bell(chime, 0.05, 659.3, 0.35);
+  bell(chime, 0.3, 987.8, 0.45);
+  writeSound("airlock_clear", chime, 0.6);
+}
+airlockPanelSounds();
 
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
