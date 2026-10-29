@@ -1853,10 +1853,11 @@ the entry riveted steel over a hazard-striped dado on studded rubber under a per
 over a steel kick plate on diamond-plate tread under corrugated sheet; the mess oak boards over a walnut dado on
 herringbone parquet under cream plaster; the bunk room quilted blue on teal carpet under a night ceiling of faint stars;
 the greenhouse whitewashed brick over terracotta; the pool blue mosaic; the club black acoustic foam under a black
-ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the lounge walnut panelling, a brass
-line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her only
-outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the wall,
-warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in the creative tab beside the Halo Light).
+ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the observation deck walnut panelling,
+a brass line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her
+only outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the
+wall, warm white, a cool blue in the bunk room and pink in the club (Wall Washer, in the creative tab beside the Halo
+Light).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
 the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
