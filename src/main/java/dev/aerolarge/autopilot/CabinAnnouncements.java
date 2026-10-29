@@ -80,14 +80,14 @@ public final class CabinAnnouncements {
             return;
         }
         asked.put(announcement, now);
-        if (!clear(now, announcement) || !play(level, autopilot, announcement)) {
+        if (!clear(now, announcement, autopilot) || !play(level, autopilot, announcement)) {
             waiting = announcement;
         }
     }
 
     /** Whether an announcement may be made at this game time: nothing else said, nor a callout due before it ends. */
-    private boolean clear(long now, Announcement announcement) {
-        return airtime.free(now) && !callouts.mayCall(now, VoiceLength.ticks(announcement.sound, LONGEST));
+    private boolean clear(long now, Announcement announcement, BlockEntity autopilot) {
+        return airtime.free(now) && !callouts.mayCall(now, VoiceLength.ticks(sound(announcement, autopilot), LONGEST));
     }
 
     /**
@@ -126,7 +126,7 @@ public final class CabinAnnouncements {
 
     /** Each tick: makes the one waiting, once whatever is being said on the flight deck has ended. */
     void tick(BlockEntity autopilot) {
-        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && clear(level.getGameTime(), waiting) && play(level, autopilot, waiting)) {
+        if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && clear(level.getGameTime(), waiting, autopilot) && play(level, autopilot, waiting)) {
             waiting = null;
         }
     }
