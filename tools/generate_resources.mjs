@@ -7361,9 +7361,10 @@ write("data/sable/tags/block/super_light.json", tag(airliner));
 const outsideButton = (b) => b.endsWith("_button") && !b.endsWith(":self_destruct_button");
 write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !outsideButton(b))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
-// controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes.
+// controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes, nor
+// the rocket's floors finished as her rooms', which stand in its place.
 write(`data/${ID}/tags/block/unbreakable.json`, tag([
-  ...structure.filter((b) => !b.endsWith("cabin_floor")),
+  ...structure.filter((b) => !b.endsWith("cabin_floor") && !b.endsWith(":rocket_floor")),
   ...["createpropulsion:wing", "createpropulsion:creative_thruster", "createpropulsion:thruster", "offroad:wheel_mount",
     "simulated:physics_assembler"].map((id) => ({ id, required: false })),
 ]));
