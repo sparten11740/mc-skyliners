@@ -50,6 +50,10 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N34 | 01:00 | Lab's tank | Accepted: at scale 2 its back glass stands inside the back window's 4-block clearance (the window and the cells just inside it stay clear); the creature paces a straight line facing the hatch, turning round only from scale 3 | No 3-wide creature fits the free ring otherwise (lab agent) | Lab agent, lead |
 | N35 | 01:00 | Shooting stars | 7-second slots, one streak each, 4 to 10 s apart, worked out from the game's time so all clients agree; drawn last so those under the rim show over the planet; as bright as the stars there | Sky agent | Sky agent |
 | N36 | 01:00 | Lift music | Original bossa nova, 16 s loop, on the jukebox's volume (records), heard in the car and right by it | Lift agent's design, from the panel | Lift agent |
+| N37 | 01:15 | Height gauge | While the lift is parked for her flight, its boards show a column of sky (sea at the foot, her ceiling at the top) with the edge of space dashed and starred and a little rocket at her height, in place of her floors; client config `heightGauge` | Panel's E | Panel, lead |
+| N38 | 01:25 | Plumes | Cloud and smoke billowing over the ground within 40 blocks of it while her engines fire (lift-off and landing); flames streaming up her sides falling back from over y 500 faster than 20 b/s; `rocket.plumes`, on | Look of a launch; fun over realism (N7) | Lead |
+| N39 | 01:30 | Circling over the spot | After 10 s within 12 blocks of the spot drifting under 3 b/s, she starts down anyway | Heavier now, she circled the spot 6–9 blocks off and never came down (over ten minutes seen); retuning the lean loop blind was riskier | Lead |
+| N40 | 01:40 | Code review | Fixed: low gravity's lease lookup loading chunks; bamboo still growing; poster protection only at its middle; rover fall cover renewable while stowed; rover answers in words only. Left for Jan: the rover's 96/160-block reach is longer than a server with a short view distance tracks | Independent review agent | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -98,6 +102,11 @@ Commits on main, newest last, with the versions handed out.
   tank behind the shaft), its tardigrade fed moss at the hatch (the hatch clicks open, it purrs and munches), carried in
   her plot to y 420 and curling up there with its bloop. Not tried: the tardigrade's tun seen (it had uncurled by the
   time I looked), reloading the lab, the Edge of Space toast.
+- alpha.170: the height gauge (N37); the plumes (N38); her coming down after circling (N39); the review's fixes (N40).
+  Play-tested: the gauge at y 673 and 1,400 (the rocket kept inside the column); the lift-off billow by day from 40
+  blocks; the fall-back flames, seen with the tick frozen at y 600; the circling rocket starting down and landing
+  upright; bamboo planted done growing; the rover's answers' notes; the Edge of Space advancement earned; the lab
+  reloaded with one tardigrade before and after; the rover reloaded mid-lowering (on the ground, one rover).
 
 ## Background agents
 
@@ -124,5 +133,7 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - N33: low gravity in space is off by default (`rocket.lowGravity`); worth a try with it on.
 - N34: the lab's tank stands partly in front of the back window at scale 2.
 - The shooting stars are subtle (short, small); easy to make bigger if you would like them showier.
+- The rover's reach (96 blocks from her door, its driver up to 160 off) assumes a view distance of 10 or more; on a
+  server with less, its driver's client can lose it at the edge (from the review). Not changed tonight.
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
