@@ -2704,6 +2704,115 @@ function fogMachineSounds() {
 }
 fogMachineSounds();
 
+// The club's bar (see DrinkTapBlock and NeonSignBlock), each sound with a random sequence of its own so the sounds
+// round it are unchanged. The tap's pour, about as long as a pull pours (DrinkTapBlock.POUR_TICKS): the clack of its
+// handle, the stream running into the drip tray, a wash of noise with a bubbling gurgle in it, bubbles chirping as they
+// rise, and over it all the soda's fizz, a dense crackle of tiny pops that goes on a moment after the stream stops.
+// The neon sign switched on: its transformer's clink, then its tubes' buzz, the mains' hum and its harmonics,
+// flickering on and off as the tubes strike, each strike ticking, and settling into a steady, softer buzz that fades
+// out. Switched off: the clink, and the buzz dying away at once. Tune them here.
+const CLUB_BAR = {
+  // The pour: how long it runs, and when the stream starts and stops, in seconds; the stream's band, its centre in
+  // hertz and its q; how many bubbles a second chirp in it, from and to what pitch, in hertz; and the fizz's pops a
+  // second, their pitch, in hertz, and how long the fizz goes on after the stream, in seconds.
+  pourSeconds: 1.4,
+  streamFrom: 0.05,
+  streamTo: 1.0,
+  streamHz: 900,
+  streamQ: 1.2,
+  bubblesPerSecond: 110,
+  bubbleFrom: 500,
+  bubbleTo: 1900,
+  popsPerSecond: 900,
+  popHz: 6500,
+  fizzAfter: 0.35,
+  // The neon sign: how long its switching on and off run, in seconds; the mains' hum its tubes buzz at, in hertz, and
+  // how many harmonics are in it; how long they flicker as they strike, and the shortest and longest flicker, in
+  // seconds; and the clink's two pitches, in hertz.
+  onSeconds: 1.2,
+  offSeconds: 0.45,
+  humHz: 100,
+  harmonics: 14,
+  strikeFor: 0.32,
+  flickerShortest: 0.018,
+  flickerLongest: 0.06,
+  clinkHz: [3200, 4700],
+};
+/** The tubes' buzz: the mains' hum with its harmonics, the odd ones strongest, as a choke's buzz is, t seconds in. */
+function neonBuzz(t) {
+  let buzz = 0;
+  for (let n = 1; n <= CLUB_BAR.harmonics; n++) {
+    buzz += Math.sin(2 * Math.PI * CLUB_BAR.humHz * n * t) / (n % 2 === 1 ? n : 2 * n);
+  }
+  return buzz;
+}
+/** The transformer's clink as the sign is switched: two short metallic clicks, a high one just after the first. */
+function neonClink(samples, own) {
+  click(samples, 0, CLUB_BAR.clinkHz[0], 0.6, own);
+  click(samples, 0.012, CLUB_BAR.clinkHz[1], 0.3, own);
+}
+function clubBarSounds() {
+  const own = ownRandom(0x43727562);
+  const pour = new Float64Array(Math.round(CLUB_BAR.pourSeconds * RATE));
+  const water = Float64Array.from({ length: pour.length }, () => own() * 2 - 1);
+  const stream = resonance(water, CLUB_BAR.streamHz, CLUB_BAR.streamQ);
+  const gurgle = lowPassed(Float64Array.from({ length: pour.length }, () => own() * 2 - 1), 12);
+  const pops = resonance(Float64Array.from({ length: pour.length }, () => (own() < CLUB_BAR.popsPerSecond / RATE ? own() * 2 - 1 : 0)),
+    CLUB_BAR.popHz, 3);
+  for (let i = 0; i < pour.length; i++) {
+    const t = i / RATE;
+    const running = Math.min(1, Math.max(0, (t - CLUB_BAR.streamFrom) / 0.03)) * Math.min(1, Math.max(0, (CLUB_BAR.streamTo - t) / 0.08));
+    const fizzing = Math.min(1, Math.max(0, (t - CLUB_BAR.streamFrom) / 0.15)) * Math.exp(-Math.max(0, t - CLUB_BAR.streamTo) / (CLUB_BAR.fizzAfter / 3));
+    pour[i] = running * stream[i] * (0.6 + 4 * Math.abs(gurgle[i])) + 2.5 * fizzing * pops[i];
+  }
+  for (let at = CLUB_BAR.streamFrom; at < CLUB_BAR.streamTo; at += (-Math.log(1 - own()) / CLUB_BAR.bubblesPerSecond)) {
+    bubble(pour, at, CLUB_BAR.bubbleFrom + own() * (CLUB_BAR.bubbleTo - CLUB_BAR.bubbleFrom), 0.15 + 0.2 * own());
+  }
+  click(pour, 0, 1500, 0.5, own);
+  thunk(pour, 0, 180, 0.15, own);
+  writeSound("tap_pour", lowPassed(pour, 9000), 0.7);
+
+  const on = new Float64Array(Math.round(CLUB_BAR.onSeconds * RATE));
+  neonClink(on, own);
+  // When the tubes flicker on and off again as they strike, on at the first, each strike ticking.
+  const flickers = [];
+  for (let at = 0.04; at < CLUB_BAR.strikeFor; at += CLUB_BAR.flickerShortest + own() * (CLUB_BAR.flickerLongest - CLUB_BAR.flickerShortest)) {
+    flickers.push(at);
+  }
+  for (let k = 0; k < flickers.length; k += 2) {
+    click(on, flickers[k], 5200, 0.2, own);
+  }
+  const struck = (t) => flickers.filter((at) => at <= t).length % 2 === 1;
+  for (let i = 0; i < on.length; i++) {
+    const t = i / RATE;
+    const level = t >= CLUB_BAR.strikeFor ? 0.35 + 0.65 * Math.exp(-(t - CLUB_BAR.strikeFor) / 0.12) : struck(t) ? 1 : 0;
+    on[i] += 0.3 * level * Math.min(1, (CLUB_BAR.onSeconds - t) / 0.5) * neonBuzz(t);
+  }
+  writeSound("neon_on", lowPassed(on, 5000), 0.55);
+
+  const off = new Float64Array(Math.round(CLUB_BAR.offSeconds * RATE));
+  neonClink(off, own);
+  for (let i = 0; i < off.length; i++) {
+    const t = i / RATE;
+    off[i] += 0.3 * Math.exp(-t / 0.07) * neonBuzz(t);
+  }
+  writeSound("neon_off", lowPassed(off, 5000), 0.5);
+}
+/**
+ * A bubble rising through a drink at a time in seconds: a short sine chirping up from its pitch, in hertz, as it
+ * shrinks and pops, at the gain given.
+ */
+function bubble(samples, start, pitch, gain) {
+  const begin = Math.round(start * RATE);
+  let phase = 0;
+  for (let i = 0; i < Math.round(0.03 * RATE) && begin + i < samples.length; i++) {
+    const t = i / RATE;
+    phase += (2 * Math.PI * pitch * (1 + 8 * t)) / RATE;
+    samples[begin + i] += gain * Math.exp(-t / 0.008) * Math.sin(phase);
+  }
+}
+clubBarSounds();
+
 // The space helmet's air, looped in the helmet aboard a rocket in space (see HelmetBreathing), with a random sequence
 // of its own so the sounds above are unchanged: a calm, slow breath, a few seconds round. The breath in is air drawn
 // through the helmet's valve, a soft hiss in a narrow band over a wider, lower rush, swelling and easing away; a

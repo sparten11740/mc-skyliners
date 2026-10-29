@@ -1937,8 +1937,17 @@ Vision, two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Sl
 white with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and
 Jump Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a
 sip of food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of
-ice, pours it into the glass and sets the drink down on the bar. Its windows are built at their darkest, so daylight
-does not wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
+ice, pours it into the glass and sets the drink down on the bar. Its bar has furniture of its own, in the creative tab
+by the DJ Deck and all of it craftable. A Drink Tap stands on a bar counter, three tall neon handles, pink, cyan and
+lime, on a chrome tower over a drip tray: use it and the handle you click tips down, and a stream of glowing violet Star
+Fizz runs fizzing into the tray for a second, filling a glass bottle held under it with a bottle of Star Fizz, a
+sparkling soda to drink (the empty bottle comes back). A Neon Sign hangs on a wall, no words on it, only a picture bent
+in glowing tubes in colours of its own: a martini glass with an olive, a pair of music notes, a ringed planet, a rocket,
+a pair of lips or a lightning bolt. Click it to switch it off and on, its transformer clinking and its tubes buzzing as
+they strike or die away, and sneak and click it with an empty hand for the next picture. A Cocktail Table is a high
+round table to stand at, as high as the counter, its dark glass top ringed with blue LED light under its rim; it is
+fenced round as high as a fence, so nobody climbs on to it. Its windows are built at their darkest, so daylight does not
+wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
 through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
 over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
 lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
@@ -2262,7 +2271,8 @@ them, and `RocketPilotSeats` the cockpit's seats); its rooms' own furniture is `
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
 and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client and keep them
-to time on the server, `LostTicks` taking up where a rocket's assembly dropped their scheduled ticks); its
+to time on the server, `LostTicks` taking up where a rocket's assembly dropped their scheduled ticks), and its club's
+bar has `DrinkTapBlock`, pouring `StarFizzItem`, `NeonSignBlock` and `CocktailTableBlock`; its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a

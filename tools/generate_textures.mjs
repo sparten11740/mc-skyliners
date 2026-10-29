@@ -6019,4 +6019,85 @@ function fogMachineTextures() {
 }
 fogMachineTextures();
 
+// The club's bar (see the club's bar in generate_resources.mjs). The neon signs' tubes, lit each colour bright and a
+// little whitened, as a hot tube is, and off a dark glass with a tint of its colour and a glint here and there; their
+// black acrylic backing board, a lighter edge round it and a screw in each corner. The drink tap's drip tray grate,
+// chrome bars over dark slots; the little badge on its column, a gold sparkle on violet in its top left corner, three
+// pixels square; and its stream of Star Fizz, a glowing violet you can half see through, bubbles and the odd gold
+// spark running down it a frame at a time. The cocktail table's top: black glass, a streak of sheen across it. And
+// Star Fizz's picture: a bottle of glowing violet soda under a gold cap, a gold star on it, bubbles in it and a few
+// rising from it.
+function clubBarTextures() {
+  const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * t));
+  const NEON = {
+    pink: [0xff, 0x4a, 0xc4], cyan: [0x3c, 0xec, 0xff], lime: [0x9a, 0xff, 0x3c], red: [0xff, 0x34, 0x4c],
+    violet: [0xb4, 0x64, 0xff], amber: [0xff, 0x9c, 0x2c], yellow: [0xff, 0xec, 0x48], white: [0xf2, 0xf6, 0xff],
+  };
+  const DARK_GLASS = [0x26, 0x28, 0x2e];
+  for (const [name, colour] of Object.entries(NEON)) {
+    texture(blockOutput, `neon_${name}`, () => mix(colour, [0xff, 0xff, 0xff], 0.2), 0);
+    texture(blockOutput, `neon_${name}_off`, (x, y) => mix(colour, DARK_GLASS, (x + 2 * y) % 5 === 0 ? 0.55 : 0.8), 1);
+  }
+  texture(blockOutput, "neon_backer", (x, y) => {
+    if ((x === 1 || x === 14) && (y === 1 || y === 14)) return [0x9a, 0xa0, 0xa8];
+    return x === 0 || x === 15 || y === 0 || y === 15 ? [0x24, 0x24, 0x2a] : [0x0e, 0x0e, 0x12];
+  }, 1);
+
+  texture(blockOutput, "drink_tap_grate", (x, y) => (y % 2 === 0 ? [0x9a, 0xa2, 0xaa] : [0x18, 0x19, 0x1c]), 1);
+  const VIOLET = [0x5a, 0x2c, 0xc0];
+  const SPARKLE = [[VIOLET, GOLD, VIOLET], [GOLD, [0xff, 0xfa, 0xe0], GOLD], [VIOLET, GOLD, VIOLET]];
+  texture(blockOutput, "drink_tap_badge", (x, y) => (y < SPARKLE.length && x < 3 ? SPARKLE[y][x] : VIOLET), 0);
+  const FRAMES = 8;
+  // Each frame a little further down: bubbles every eight rows and sparks every sixteen, two rows a frame, so the
+  // eighth frame runs on into the first.
+  texture(blockOutput, "star_fizz_stream", (x, y) => {
+    const row = y % SIZE;
+    const down = 2 * Math.floor(y / SIZE);
+    if ((row + 3 * x - down + 64) % 8 === 0) return [0xf0, 0xea, 0xff, 0xf0];
+    if ((row + 5 * x - down + 64) % 16 === 9) return [0xff, 0xe0, 0x70, 0xff];
+    return [0x8a, 0x5c, 0xff, 0xc8];
+  }, 0, SIZE, SIZE * FRAMES);
+  writeFileSync(resolve(blockOutput, "star_fizz_stream.png.mcmeta"), JSON.stringify({ animation: { frametime: 1 } }, null, 2) + "\n");
+
+  texture(blockOutput, "cocktail_table_glass", (x, y) => {
+    const streak = (x - y + SIZE) % SIZE;
+    if (streak === 3 || streak === 4) return [0x40, 0x44, 0x50];
+    return streak === 7 ? [0x26, 0x28, 0x30] : [0x12, 0x13, 0x18];
+  }, 1);
+
+  // The bottle, row by row, each letter a colour of INK: its cap, its neck, the soda in it with its bubbles and the
+  // star on it; and fizz rising from it, not outlined.
+  const BOTTLE = [
+    "................",
+    ".......YY.......",
+    "......yYYy......",
+    ".......gg.......",
+    ".......gg.......",
+    ".......hs.......",
+    "......hsbs......",
+    ".....hssssb.....",
+    ".....hsssss.....",
+    ".....hss*ss.....",
+    ".....h*****.....",
+    ".....hs***s.....",
+    ".....hs*s*s.....",
+    ".....hsbsss.....",
+    ".....dddddd.....",
+    "................",
+  ];
+  const FIZZ = [[10, 1], [11, 3], [4, 2]];
+  const INK = {
+    Y: GOLD, y: [0xb8, 0x8a, 0x22], g: [0xc0, 0xd8, 0xe4], h: [0xc4, 0xa8, 0xff], s: [0x7c, 0x4c, 0xf0], b: [0xe8, 0xe0, 0xff],
+    "*": [0xff, 0xe0, 0x50], d: [0x4a, 0x30, 0x9c],
+  };
+  const inBottle = (x, y) => (x >= 0 && x < SIZE && y >= 0 && y < SIZE ? INK[BOTTLE[y][x]] : undefined);
+  texture(itemOutput, "star_fizz", (x, y) => {
+    const ink = inBottle(x, y);
+    if (ink) return ink;
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => inBottle(x + dx, y + dy))) return [0x1a, 0x12, 0x30];
+    return FIZZ.some(([fx, fy]) => fx === x && fy === y) ? [0xd8, 0xcc, 0xff] : CLEAR;
+  }, 0);
+}
+clubBarTextures();
+
 console.log("Textures written to", blockOutput, "and", itemOutput);

@@ -282,6 +282,9 @@ import dev.aerolarge.block.SouvenirModelBlock;
 import dev.aerolarge.block.SpeakerBlock;
 import dev.aerolarge.block.TechnoDeckBlock;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
+import dev.aerolarge.block.CocktailTableBlock;
+import dev.aerolarge.block.DrinkTapBlock;
+import dev.aerolarge.block.NeonSignBlock;
 import dev.aerolarge.block.TelegraphBlock;
 import dev.aerolarge.block.TrimWinchBlock;
 import dev.aerolarge.block.TrimWinchBlockEntity;
@@ -313,6 +316,7 @@ import dev.aerolarge.item.PilotHelmetItem;
 import dev.aerolarge.item.RoverRemoteItem;
 import dev.aerolarge.item.SpaceHelmetItem;
 import dev.aerolarge.item.SpacePosterItem;
+import dev.aerolarge.item.StarFizzItem;
 import dev.aerolarge.item.TrolleyItem;
 import dev.aerolarge.compat.SableFlight;
 import java.util.List;
@@ -346,6 +350,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -1993,6 +1998,28 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOL));
     /** The secret techno room's track, a minute of build and drop, looped while anyone is in the room. */
     public static final DeferredHolder<SoundEvent, SoundEvent> TECHNO_TRACK = sound("techno_track");
+    /**
+     * The club's bar: the drink tap on its counter, its three neon handles glowing, and the sparkling soda it pours,
+     * Star Fizz, a bottle of it for an empty glass bottle, and its fizzy pour; the neon signs on its walls, and their
+     * transformers' clink and their tubes' buzz as they switch on and off; and the high cocktail tables to stand at.
+     */
+    public static final DeferredBlock<DrinkTapBlock> DRINK_TAP = BLOCKS.registerBlock(
+        "drink_tap", DrinkTapBlock::new, metal(MapColor.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredItem<StarFizzItem> STAR_FIZZ = ITEMS.register("star_fizz", () -> new StarFizzItem(new Item.Properties().stacksTo(16).food(
+        new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible().usingConvertsTo(Items.GLASS_BOTTLE).build()
+    )));
+    public static final DeferredHolder<SoundEvent, SoundEvent> TAP_POUR = sound("tap_pour");
+    public static final DeferredBlock<NeonSignBlock> NEON_SIGN = BLOCKS.registerBlock(
+        "neon_sign", NeonSignBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(0.5F).sound(SoundType.GLASS).noCollission().noOcclusion()
+            .lightLevel(NeonSignBlock::glow).pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> NEON_ON = sound("neon_on");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NEON_OFF = sound("neon_off");
+    public static final DeferredBlock<CocktailTableBlock> COCKTAIL_TABLE = BLOCKS.registerBlock(
+        "cocktail_table", CocktailTableBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
     /** The Lookout's Glass in a zeppelin's control car, and the ship's bell struck twice as a lookout marks a spot. */
     public static final DeferredBlock<LookoutGlassBlock> LOOKOUT_GLASS = BLOCKS.registerBlock(
         "lookout_glass", LookoutGlassBlock::new, metal(MapColor.GOLD).noOcclusion()
@@ -2156,6 +2183,9 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> SPEAKER_ITEM = ITEMS.registerSimpleBlockItem(SPEAKER);
     public static final DeferredItem<BlockItem> DANCE_FLOOR_ITEM = ITEMS.registerSimpleBlockItem(DANCE_FLOOR);
     public static final DeferredItem<BlockItem> CLUB_WALL_ITEM = ITEMS.registerSimpleBlockItem(CLUB_WALL);
+    public static final DeferredItem<BlockItem> DRINK_TAP_ITEM = ITEMS.registerSimpleBlockItem(DRINK_TAP);
+    public static final DeferredItem<BlockItem> NEON_SIGN_ITEM = ITEMS.registerSimpleBlockItem(NEON_SIGN);
+    public static final DeferredItem<BlockItem> COCKTAIL_TABLE_ITEM = ITEMS.registerSimpleBlockItem(COCKTAIL_TABLE);
     public static final DeferredItem<BlockItem> LOOKOUT_GLASS_ITEM = ITEMS.registerSimpleBlockItem(LOOKOUT_GLASS);
     public static final DeferredItem<BlockItem> SCREEN_STAND_ITEM = ITEMS.registerSimpleBlockItem(SCREEN_STAND);
     public static final DeferredItem<BlockItem> BALLAST_VALVE_ITEM = ITEMS.registerSimpleBlockItem(BALLAST_VALVE);
@@ -2362,7 +2392,8 @@ public final class AerolargeRegistry {
         )),
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
-            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM,
+            DRINK_TAP_ITEM, STAR_FIZZ, NEON_SIGN_ITEM, COCKTAIL_TABLE_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, ROVER_REMOTE

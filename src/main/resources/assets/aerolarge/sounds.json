@@ -1278,6 +1278,30 @@
       }
     ]
   },
+  "tap_pour": {
+    "subtitle": "subtitles.aerolarge.tap_pour",
+    "sounds": [
+      {
+        "name": "aerolarge:tap_pour"
+      }
+    ]
+  },
+  "neon_on": {
+    "subtitle": "subtitles.aerolarge.neon_on",
+    "sounds": [
+      {
+        "name": "aerolarge:neon_on"
+      }
+    ]
+  },
+  "neon_off": {
+    "subtitle": "subtitles.aerolarge.neon_off",
+    "sounds": [
+      {
+        "name": "aerolarge:neon_off"
+      }
+    ]
+  },
   "zeppelin_horn": {
     "subtitle": "subtitles.aerolarge.zeppelin_horn",
     "sounds": [

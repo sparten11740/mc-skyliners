@@ -1425,6 +1425,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, galleyFridgeSounds());
   Object.assign(sounds, waveMachineSounds());
   Object.assign(sounds, fogMachineSounds());
+  Object.assign(sounds, clubBarSounds());
   // The zeppelin's horn and its echo off the ground, played loud enough to carry some 320 blocks, its sleigh bells, the
   // pulley of its flag halyard, the ship's bell a lookout's spot is struck with, and her take-off on her handlers'
   // lines: the officer's whistles, her bow's water ballast pouring and his call "Up ship!".
@@ -4956,6 +4957,316 @@ function fogMachineLang() {
     "subtitles.aerolarge.fog_hiss": "Fog machine hisses",
   };
 }
+
+// The club's bar (see DrinkTapBlock, NeonSignBlock and CocktailTableBlock), drawn facing north. The drink tap: a chrome
+// drip tray, its grate over it, and a chrome column on a foot plate, a little badge on its front, under a head across
+// the top of it, three spouts reaching forward out of the head over the tray; on each spout a chrome ferrule, a tall
+// neon handle, pink, cyan or lime, and a white knob, both glowing whatever the light around. One model for each way it
+// stands: its handles upright, or one of them pulled, tipped down toward whoever pulls it, and a stream of Star Fizz
+// glowing from its spout down to the grate. The neon signs: a black backing board against the back of the block and
+// the tubes of the picture standing half a pixel off it, a pixel thick, one box for each run of tube of a colour; lit,
+// the tubes glow in their colours, and off they are dark glass. The cocktail table: a round foot, a chrome pole up to
+// a plate under the top, a ring of LED light glowing under the rim, and the round top of dark glass.
+//
+// The neon signs' pictures (see NeonSignBlock.Design), a character to a pixel of the sign as seen from in front, its
+// top row first: a dot where there is no tube, a letter the colour of the tube there (see NEON_COLOURS).
+const NEON_COLOURS = { c: "cyan", g: "lime", p: "pink", r: "red", v: "violet", a: "amber", y: "yellow", w: "white" };
+const NEON_SIGNS = {
+  // A martini glass, an olive on a pick in it, the red of its pimento at its middle.
+  cocktail: [
+    "................",
+    ".............p..",
+    "............p...",
+    "...........p....",
+    "ccccccccccpcccc.",
+    ".c.......p...c..",
+    "..c...ggg...c...",
+    "...c..grg..c....",
+    "....c.ggg.c.....",
+    ".....c...c......",
+    "......c.c.......",
+    ".......c........",
+    ".......c........",
+    ".......c........",
+    "....ccccccc.....",
+    "................",
+  ],
+  // Two quavers beamed together, pink, their round heads violet.
+  note: [
+    "................",
+    "................",
+    ".....pppppppppp.",
+    ".....pppppppppp.",
+    ".....p........p.",
+    ".....p........p.",
+    ".....p........p.",
+    ".....p........p.",
+    ".....p........p.",
+    ".....p........p.",
+    "...vvp......vvp.",
+    "..vvvv.....vvvv.",
+    "...vv.......vv..",
+    "................",
+    "................",
+    "................",
+  ],
+  // A planet, amber, tilted in its cyan ring, the ring passing in front of it and round behind it; a star either side.
+  planet: [
+    "................",
+    "..y.............",
+    ".yyy............",
+    "..y...aaaa......",
+    "....aa....aa....",
+    "....a......a....",
+    "...a........a...",
+    "...a........a...",
+    ".cca........acc.",
+    "c..a........a..c",
+    ".cccccccccccccc.",
+    "....aa....aa....",
+    "......aaaa...y..",
+    "............yyy.",
+    ".............y..",
+    "................",
+  ],
+  // A rocket, white, its porthole cyan and its fins red, an amber and yellow flame under it.
+  rocket: [
+    "................",
+    ".......ww.......",
+    "......w..w......",
+    ".....w....w.....",
+    "....w......w....",
+    "....w..cc..w....",
+    "....w.c..c.w....",
+    "....w..cc..w....",
+    "....w......w....",
+    "...rw......wr...",
+    "..r.w......w.r..",
+    "..rrwwwwwwwwrr..",
+    ".....a.yy.a.....",
+    "......ayya......",
+    ".......aa.......",
+    "................",
+  ],
+  // A pair of lips, red, a pink line between them.
+  lips: [
+    "................",
+    "................",
+    "................",
+    "....rr....rr....",
+    "...r..rrrr..r...",
+    "..r..........r..",
+    ".r............r.",
+    "rppppppppppppppr",
+    ".r............r.",
+    "..r..........r..",
+    "...rr......rr...",
+    ".....rrrrrr.....",
+    "................",
+    "................",
+    "................",
+    "................",
+  ],
+  // A lightning bolt, yellow.
+  bolt: [
+    "................",
+    "........yyyyyy..",
+    ".......y....y...",
+    "......y....y....",
+    ".....y....y.....",
+    "....y....yyyyy..",
+    "...yyyyy....y...",
+    ".......y...y....",
+    "......y...y.....",
+    "......y..y......",
+    ".....y..y.......",
+    ".....y.y........",
+    "....y.y.........",
+    "....yy..........",
+    "...yy...........",
+    "................",
+  ],
+};
+// The boxes a picture's tubes are drawn with: from each pixel of tube not drawn yet, a run of its colour to the right,
+// carried on down the rows under it for as long as they have the same run.
+function neonTubes(rows) {
+  const drawn = rows.map((row) => [...row].map((pixel) => pixel === "."));
+  const tubes = [];
+  for (let top = 0; top < rows.length; top++) {
+    tubes.push(...neonRuns(rows, drawn, top));
+  }
+  return tubes;
+}
+// The runs starting in a row of a picture, each marked drawn as it is found: its colour's letter, and its first and
+// last column and row.
+function neonRuns(rows, drawn, top) {
+  const runs = [];
+  for (let left = 0; left < rows[top].length; left++) {
+    if (!drawn[top][left]) {
+      runs.push(neonRun(rows, drawn, top, left));
+    }
+  }
+  return runs;
+}
+function neonRun(rows, drawn, top, left) {
+  const colour = rows[top][left];
+  const free = (row, column) => rows[row][column] === colour && !drawn[row][column];
+  let right = left;
+  while (right + 1 < rows[top].length && free(top, right + 1)) right++;
+  const across = Array.from({ length: right - left + 1 }, (_, i) => left + i);
+  let bottom = top;
+  while (bottom + 1 < rows.length && across.every((column) => free(bottom + 1, column))) bottom++;
+  for (let row = top; row <= bottom; row++) drawn[row].fill(true, left, right + 1);
+  return { colour, left, right, top, bottom };
+}
+function clubBar() {
+  const block = (name) => `${ID}:block/${name}`;
+  // Where each handle and its spout are across the tower, in pixels (DrinkTapBlock.Pour).
+  const HANDLES = { pink: 4, cyan: 8, lime: 12 };
+  const tap = {
+    chrome: block("lavatory_basin_chrome"), grate: block("drink_tap_grate"), badge: block("drink_tap_badge"), knob: block("neon_white"),
+    stream: block("star_fizz_stream"), ...Object.fromEntries(Object.keys(HANDLES).map((colour) => [colour, block(`neon_${colour}`)])),
+    particle: block("lavatory_basin_chrome"),
+  };
+  // A spout reaching forward out of the head, its nozzle pointing down over the tray (DrinkTapBlock.SPOUT_Z).
+  const spout = (across) => [
+    furniture([across - 0.5, 6.5, 3.5], [across + 0.5, 7.5, 7], "#chrome"),
+    furniture([across - 0.5, 5.25, 3.5], [across + 0.5, 6.5, 4.5], "#chrome", { up: null }),
+  ];
+  // A handle on its spout, upright, or pulled: tipped as far as a model can tip it, toward the front.
+  const handle = (colour, across, pulled) => {
+    const rotation = { origin: [across, 7.5, 6], axis: "x", angle: -45 };
+    return [
+      furniture([across - 0.5, 7.5, 5.5], [across + 0.5, 8.5, 6.5], "#chrome"),
+      furniture([across - 0.75, 8.5, 5.25], [across + 0.75, 12.5, 6.75], `#${colour}`, {}, true),
+      furniture([across - 0.5, 12.5, 5.5], [across + 0.5, 13, 6.5], "#knob", {}, true),
+    ].map((part) => (pulled ? { ...part, rotation } : part));
+  };
+  const tower = [
+    furniture([3, 0, 1.5], [13, 0.5, 6], "#chrome"),
+    furniture([3.5, 0.5, 2], [12.5, 0.75, 5.5], "#grate", { down: null }),
+    furniture([6, 0, 7], [10, 0.5, 11], "#chrome"),
+    furniture([6.5, 0.5, 7.5], [9.5, 6, 10.5], "#chrome"),
+    furniture([6.5, 2.5, 7.25], [9.5, 5.5, 7.5], "#chrome", { north: { texture: "#badge", uv: [0, 0, 3, 3] } }),
+    furniture([2.5, 6, 7], [13.5, 8, 9.5], "#chrome"),
+    ...Object.values(HANDLES).flatMap(spout),
+  ];
+  for (const pour of ["none", ...Object.keys(HANDLES)]) {
+    const handles = Object.entries(HANDLES).flatMap(([colour, across]) => handle(colour, across, colour === pour));
+    const stream = pour === "none" ? [] : [furniture([HANDLES[pour] - 0.4, 0.75, 3.6], [HANDLES[pour] + 0.4, 5.25, 4.4], "#stream",
+      { up: null, down: null }, true)];
+    write(`assets/${ID}/models/block/drink_tap${pour === "none" ? "" : `_${pour}`}.json`, {
+      parent: "minecraft:block/block",
+      ...(pour === "none" ? {} : { render_type: "minecraft:translucent" }),
+      textures: tap,
+      elements: [...tower, ...handles, ...stream],
+    });
+  }
+  write(`assets/${ID}/blockstates/drink_tap.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["none", ...Object.keys(HANDLES)].map((pour) =>
+      [`facing=${facing},pour=${pour}`, { model: `${ID}:block/drink_tap${pour === "none" ? "" : `_${pour}`}`, ...(y ? { y } : {}) }]))),
+  });
+  write(`assets/${ID}/models/item/drink_tap.json`, { parent: `${ID}:block/drink_tap` });
+  write(`assets/${ID}/models/item/star_fizz.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/star_fizz` } });
+
+  for (const [design, rows] of Object.entries(NEON_SIGNS)) {
+    const tubes = neonTubes(rows);
+    const colours = [...new Set(tubes.map((tube) => NEON_COLOURS[tube.colour]))];
+    for (const lit of [true, false]) {
+      const glass = Object.fromEntries(colours.map((colour) => [colour, block(`neon_${colour}${lit ? "" : "_off"}`)]));
+      write(`assets/${ID}/models/block/neon_sign_${design}${lit ? "" : "_off"}.json`, {
+        parent: "minecraft:block/block",
+        textures: { backer: block("neon_backer"), particle: block("neon_backer"), ...glass },
+        elements: [
+          furniture([0, 0, 15], [16, 16, 16], "#backer"),
+          // Seen from in front, from the north, the picture's left is the model's east.
+          ...tubes.map(({ colour, left, right, top, bottom }) =>
+            furniture([15 - right, 15 - bottom, 13.5], [16 - left, 16 - top, 14.5], `#${NEON_COLOURS[colour]}`, { south: null }, lit)),
+        ],
+      });
+    }
+  }
+  write(`assets/${ID}/blockstates/neon_sign.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(NEON_SIGNS).flatMap((design) => [true, false].map((lit) =>
+      [`design=${design},facing=${facing},lit=${lit}`, { model: `${ID}:block/neon_sign_${design}${lit ? "" : "_off"}`, ...(y ? { y } : {}) }])))),
+  });
+  write(`assets/${ID}/models/item/neon_sign.json`, { parent: `${ID}:block/neon_sign_cocktail` });
+  // Broken, a sign keeps its picture, as a planter keeps its plant; the martini glass is left off, so they stack.
+  const signId = `${ID}:neon_sign`;
+  write(`data/${ID}/loot_table/blocks/neon_sign.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{
+        type: "minecraft:item",
+        name: signId,
+        functions: [{
+          function: "minecraft:copy_state", block: signId, properties: ["design"],
+          conditions: [{ condition: "minecraft:inverted", term: { condition: "minecraft:block_state_property", block: signId, properties: { design: "cocktail" } } }],
+        }],
+      }],
+      conditions: [{ condition: "minecraft:survives_explosion" }],
+    }],
+    random_sequence: `${ID}:blocks/neon_sign`,
+  });
+
+  const table = {
+    glass: block("cocktail_table_glass"), led: block("bar_led"), chrome: block("lavatory_basin_chrome"), foot: block("cabin_seat_frame"),
+    particle: block("cocktail_table_glass"),
+  };
+  const ring = { up: null, down: null };
+  write(`assets/${ID}/models/block/cocktail_table.json`, {
+    parent: "minecraft:block/block",
+    textures: table,
+    elements: [
+      furniture([4, 0, 5], [12, 1, 11], "#foot"),
+      furniture([5, 0, 4], [11, 1, 12], "#foot"),
+      furniture([7, 1, 7], [9, 14, 9], "#chrome"),
+      furniture([5.5, 14, 5.5], [10.5, 14.5, 10.5], "#chrome"),
+      furniture([1.25, 14.5, 3.25], [14.75, 15.25, 12.75], "#led", ring, true),
+      furniture([3.25, 14.5, 1.25], [12.75, 15.25, 14.75], "#led", ring, true),
+      furniture([2.25, 14.5, 2.25], [13.75, 15.25, 13.75], "#led", ring, true),
+      furniture([1, 15.25, 3], [15, 16, 13], "#glass"),
+      furniture([3, 15.25, 1], [13, 16, 15], "#glass"),
+      furniture([2, 15.25, 2], [14, 16, 14], "#glass"),
+    ],
+  });
+  write(`assets/${ID}/blockstates/cocktail_table.json`, { variants: { "": { model: `${ID}:block/cocktail_table` } } });
+  write(`assets/${ID}/models/item/cocktail_table.json`, { parent: `${ID}:block/cocktail_table` });
+  dropsItself("drink_tap");
+  dropsItself("cocktail_table");
+  for (const name of clubBarFittings()) {
+    cubes[name] = null;
+  }
+}
+clubBar();
+// The club's bar is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function clubBarFittings() {
+  return ["drink_tap", "neon_sign", "cocktail_table"];
+}
+// The tap's fizzy pour, and a neon sign's transformer clinking and its tubes buzzing on, or dying away (see
+// tools/generate_sounds.mjs).
+function clubBarSounds() {
+  return Object.fromEntries(["tap_pour", "neon_on", "neon_off"].map((name) => [name, { subtitle: `subtitles.${ID}.${name}`, sounds: [{ name: `${ID}:${name}` }] }]));
+}
+// The three neon colours of the tap's handles over iron; glowstone in glass round a dye; black glass on an iron pole.
+function clubBarRecipes() {
+  shaped("drink_tap", ["PCL", "III"], { P: "minecraft:pink_dye", C: "minecraft:cyan_dye", L: "minecraft:lime_dye", I: "minecraft:iron_ingot" }, 1);
+  shaped("neon_sign", ["GLG", "GDG"], { G: "minecraft:glass_pane", L: "minecraft:glowstone_dust", D: "minecraft:magenta_dye" }, 2);
+  shaped("cocktail_table", ["GGG", " I ", " I "], { G: "minecraft:black_stained_glass_pane", I: "minecraft:iron_ingot" }, 2);
+}
+function clubBarLang() {
+  return {
+    "block.aerolarge.drink_tap": "Drink Tap",
+    "item.aerolarge.star_fizz": "Star Fizz",
+    "block.aerolarge.neon_sign": "Neon Sign",
+    "block.aerolarge.cocktail_table": "Cocktail Table",
+    "subtitles.aerolarge.tap_pour": "Soda fizzes from the tap",
+    "subtitles.aerolarge.neon_on": "Neon sign buzzes on",
+    "subtitles.aerolarge.neon_off": "Neon sign clicks off",
+  };
+}
 function parcelScannerLang() {
   return {
     "block.aerolarge.parcel_scanner": "Parcel Scanner",
@@ -7576,6 +7887,7 @@ FITTINGS.push(...parcelScannerFittings());
 FITTINGS.push(...galleyFridgeFittings());
 FITTINGS.push(...waveMachineFittings());
 FITTINGS.push(...fogMachineFittings());
+FITTINGS.push(...clubBarFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7783,6 +8095,7 @@ robotBartenderRecipes();
 dutyFreeKioskRecipes();
 towerInstrumentsRecipes();
 greenhouseRecipes();
+clubBarRecipes();
 
 // The First Flight advancements. The first opens the tab on joining a world, quietly, as vanilla's tabs open: no toast
 // and no line in chat for something nobody did. Each of the rest has one criterion, "done", that only the mod grants,
@@ -8331,6 +8644,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...galleyFridgeLang(),
   ...waveMachineLang(),
   ...fogMachineLang(),
+  ...clubBarLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
