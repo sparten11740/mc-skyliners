@@ -134,7 +134,8 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
 
     /**
      * What the autopilot is doing: waiting for the airliner to be assembled, switched off, or its phase and mode; a
-     * rocket's mode is only whether she comes down on a pin or back where she rose.
+     * rocket's mode is only whether she comes down on a pin or back where she rose, and coming down she is over where
+     * she lands, wherever that is, so it is her phase alone.
      */
     static Component state(@Nullable AutopilotBlockEntity autopilot, @Nullable SableClient.Attitude attitude) {
         if (attitude == null) {
@@ -144,6 +145,10 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             return Component.translatable("screen.aerolarge.autopilot.disengaged");
         }
         Component phase = Component.translatable("message.aerolarge.autopilot.phase." + autopilot.phase().name().toLowerCase(Locale.ROOT));
+        AutopilotBlockEntity.Phase now = autopilot.phase();
+        if (autopilot.craft() == Craft.ROCKET && (now == AutopilotBlockEntity.Phase.DESCENT || now == AutopilotBlockEntity.Phase.LAND)) {
+            return phase;
+        }
         if (autopilot.craft() == Craft.ROCKET) {
             String goal = autopilot.lateral() == AutopilotBlockEntity.Lateral.DESTINATION ? "rocket_pin" : "rocket_back";
             return Component.translatable("screen.aerolarge.autopilot.mode", phase, Component.translatable("screen.aerolarge.autopilot.mode." + goal));

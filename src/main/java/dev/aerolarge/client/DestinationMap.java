@@ -122,13 +122,19 @@ final class DestinationMap extends MapWidget {
         return !SableClient.isAboard(level.getPlayerByUUID(player.id()), blockEntity);
     }
 
-    /** The pin with its circle, the runway picked near it, and the airliner over all, pointing the way it goes. */
+    /**
+     * The pin with its circle, where it has one, the runway picked near it, and the airliner over all, pointing the way
+     * it goes.
+     */
     @Override
     void paint(NativeImage image, MapPainter.View view, Level level, float partialTick) {
         if (pin != null) {
             int pinX = view.pixelX(pin.getX());
             int pinY = view.pixelY(pin.getZ());
-            MapPainter.circle(image, pinX, pinY, radius.getAsInt() / view.scale(), MapPainter.PIN);
+            int around = radius.getAsInt();
+            if (around > 0) {
+                MapPainter.circle(image, pinX, pinY, around / view.scale(), MapPainter.PIN);
+            }
             MapPainter.dot(image, pinX, pinY, MapPainter.PIN);
         }
         BlockEntity blockEntity = autopilot.get();

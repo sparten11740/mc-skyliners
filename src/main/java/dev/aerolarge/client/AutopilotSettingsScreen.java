@@ -306,9 +306,10 @@ public class AutopilotSettingsScreen extends Screen {
         return CONTENT - SPEEDOMETER_WIDTH - SKY_WIDTH - 2 * COLUMN_GAP;
     }
 
-    /** The circle round the pin as chosen, at the speed set, in blocks, for the map to draw. */
+    /** The circle round the pin as chosen, at the speed set, in blocks, for the map to draw; none for a rocket. */
     private int circleRadius() {
-        return (int) Math.round(circle.radius(speed.value(), gravity));
+        AutopilotBlockEntity autopilot = autopilot();
+        return autopilot != null && autopilot.craft() == Craft.ROCKET ? 0 : (int) Math.round(circle.radius(speed.value(), gravity));
     }
 
     @Override
@@ -444,7 +445,7 @@ public class AutopilotSettingsScreen extends Screen {
         return switch (lateral) {
             case HEADING -> heading.value() != AutopilotBlockEntity.bearing(autopilot.targetHeading());
             case ORBIT_LEFT, ORBIT_RIGHT -> circle != autopilot.circle();
-            case DESTINATION -> pinMoved(autopilot) || circle != autopilot.circle() || landAtPin != autopilot.landAtPin();
+            case DESTINATION -> pinMoved(autopilot) || autopilot.craft() != Craft.ROCKET && (circle != autopilot.circle() || landAtPin != autopilot.landAtPin());
         };
     }
 

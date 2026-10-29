@@ -1,5 +1,6 @@
 package dev.aerolarge.airframe;
 
+import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
@@ -28,11 +29,6 @@ final class RocketObservationDeck extends RocketRoom {
      * player's size, its story would otherwise rise up into her nose as a tower of bare skin.
      */
     private static final int TALLEST = 16;
-    /**
-     * How far out from the shaft, on her front-to-back line in front of it, the block of that ceiling is that tells it
-     * is laid: past the walkway round the shaft, in blocks.
-     */
-    private static final int LID_PROBE = 2;
     /** The band of glass's lowest and highest rows over the floor. */
     private static final int BAND_FROM = 1;
     private static final int BAND_TO = 5;
@@ -52,12 +48,12 @@ final class RocketObservationDeck extends RocketRoom {
 
     /**
      * The row a story's ceiling is over its floor, given the row of the floor over it: that row, or for the observation
-     * deck the lower ceiling of its own that it has where its story is taller than {@link #TALLEST}, once laid. Her LED
-     * strips run round under it (see {@link RocketLedStrips}).
+     * deck the lower ceiling of its own that it has, furnished as her room, where its story is taller than
+     * {@link #TALLEST}. Her LED strips run round under it (see {@link RocketLedStrips}).
      */
     static int ceilingOf(RocketLayout layout, int story, int floor, int over) {
         int lid = floor + TALLEST;
-        boolean lidded = story == STORY && lid < over && !layout.isOpen(0, lid, -(RocketLayout.SHAFT + LID_PROBE));
+        boolean lidded = story == STORY && layout.rooms() && lid < over;
         return lidded ? lid : over;
     }
 
@@ -139,7 +135,7 @@ final class RocketObservationDeck extends RocketRoom {
             int y = at.getY();
             int z = at.getZ();
             boolean wall = layout.inFrom(x, y, z, 0) && !inRoom(x, y, z, 0) && layout.isOpen(x, y, z);
-            if (wall && !(y == highest && againstSkin(x, y, z))) {
+            if (wall && !(y == highest && AerolargeConfig.LED_STRIPS.get() && againstSkin(x, y, z))) {
                 layout.set(x, y, z, panel);
             }
         }

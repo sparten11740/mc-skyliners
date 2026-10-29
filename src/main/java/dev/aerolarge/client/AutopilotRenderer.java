@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Lateral;
 import dev.aerolarge.autopilot.AutopilotBlockEntity.Phase;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotBlock;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.PanelArt.Pictures;
@@ -112,7 +113,8 @@ public class AutopilotRenderer implements BlockEntityRenderer<AutopilotBlockEnti
         int lamp = !on ? LAMP_OFF : autopilot.stuck() ? AutopilotScreenRenderer.AMBER : AutopilotScreenRenderer.GREEN;
         ScreenDrawing.disc(shapes, matrix, LAMP_X, TOP_ROW, LAMP_RADIUS, 12, 3 * LAYER, lamp);
         int tint = on ? PICTURE_ON : PICTURE_OFF;
-        boolean circling = autopilot.lateral() == Lateral.ORBIT_LEFT || autopilot.lateral() == Lateral.ORBIT_RIGHT;
+        // A rocket circles nothing, whatever her mode says.
+        boolean circling = autopilot.craft() != Craft.ROCKET && (autopilot.lateral() == Lateral.ORBIT_LEFT || autopilot.lateral() == Lateral.ORBIT_RIGHT);
         Pictures pictures = Pictures.of(autopilot.craft());
         Icon steering = pictures.lateral(autopilot.lateral(), autopilot.circle());
         // Pictures before text: text takes its own buffer, which ends the one the shapes went into.
