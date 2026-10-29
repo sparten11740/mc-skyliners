@@ -9984,6 +9984,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "aerolarge.configuration.nightLights": "Blue Night Lights",
   "aerolarge.configuration.discoLights": "Disco Ball Spots",
   "aerolarge.configuration.cloudlessCabin": "Cloudless Cabin",
+  "aerolarge.configuration.fairOverClouds": "Fair Weather Over the Clouds",
   "aerolarge.configuration.spaceSky": "Space Sky",
   "aerolarge.configuration.shootingStars": "Shooting Stars",
   "aerolarge.configuration.heightGauge": "Height Gauge",

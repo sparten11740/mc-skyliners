@@ -17,6 +17,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue DISCO_LIGHTS;
     public static final ModConfigSpec.BooleanValue FLOODLIGHT_LIGHT;
     public static final ModConfigSpec.BooleanValue CLOUDLESS_CABIN;
+    public static final ModConfigSpec.BooleanValue FAIR_OVER_CLOUDS;
     public static final ModConfigSpec.BooleanValue SPACE_SKY;
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue AURORA;
@@ -87,6 +88,11 @@ public final class AerolargeClientConfig {
                 "With Fast or Fancy graphics the windows never show the clouds behind them anyway; with Fabulous graphics the",
                 "clouds outside the windows go too while the cloud layer passes. Outside the hull the clouds are always drawn.")
             .define("cloudlessCabin", true);
+        FAIR_OVER_CLOUDS = builder
+            .comment("Keep the weather fair over the clouds, as it is over a real storm: as you climb out of the top of the cloud",
+                "layer the rain and the snow fade away and the storm's grey sky clears, and they come back as you come down into",
+                "the clouds again. Off, it rains and snows at every height, as the game has it.")
+            .define("fairOverClouds", true);
         SPACE_SKY = builder
             .comment("Turn the sky to space far over the top of the world, as a rocket climbs: from y 400 it darkens to black by",
                 "y 1,200, the stars come out by day too, the sun burns white, the clouds below fade away and the land fades into a",

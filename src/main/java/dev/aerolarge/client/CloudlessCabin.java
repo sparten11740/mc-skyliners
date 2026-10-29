@@ -54,7 +54,7 @@ public final class CloudlessCabin {
     /** How often whether the camera is inside a hull in the clouds is looked at again, in milliseconds. */
     private static final long LOOK_EVERY = 50;
     /** How deep the cloud layer is, up from the height the world puts it at: four blocks, a third of a block above it. */
-    private static final double CLOUD_DEPTH = 4.5;
+    static final double CLOUD_DEPTH = 4.5;
     /** How far past the cloud layer, up or down, an airliner is still taken to reach into it, for how far it moves between looks. */
     private static final double CLOUD_MARGIN = 2;
     /**

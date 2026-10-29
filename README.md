@@ -84,7 +84,10 @@ anyway; with Fabulous graphics the clouds outside the windows go too while the a
 off with `cloudlessCabin` in the client config.
 
 Rain and snow stay out of her too, and out of a zeppelin or a rocket in flight: falling on one, they land on her roof,
-never in her cabins or her rooms.
+never in her cabins or her rooms. Over the clouds the weather is fair, as it is over a real storm: climbing out of the
+top of the cloud layer, the rain and the snow fade away within a few blocks and the storm's grey sky clears, and coming
+down into the clouds again they come back; below, the weather goes on as it was. Turn that off with `fairOverClouds` in
+the client config.
 
 ### Flight deck
 
@@ -2261,7 +2264,8 @@ pling when there is nothing to do and a deep note for wait.
 
 The settings can be changed in game under Mods → Aerolarge → Config. The client settings (`cameraShake`, `pilotHud`,
 `pilotHudScale`, the tail camera display's `tailCameraFeed`, `tailCameraFps`, `tailCameraRenderDistance` and
-`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`, the
+`tailCameraResolution`, the cabin's blue `nightLights`, the disco ball's coloured `discoLights`, `cloudlessCabin`,
+`fairOverClouds`, the
 rocket's `spaceSky`, `shootingStars` and `aurora`, her lift's `liftMusic` and `heightGauge`, the space helmet's
 `helmetBreathing`, her rooms' `roomAmbience`, and the hot air burners' `burnerSmoke`) are there from the title screen.
 The server settings open only while a world is loaded, from the pause menu's Mods button while playing in single player;
@@ -2338,8 +2342,8 @@ mixins, `mixin/GirderBlockMixin` turns Create's metal girders a quarter turn wit
 own turn does (the gym hall's trusses of an airliner built facing east or west), and `mixin/HotAirBurnerMixin` lets
 `BurnerSmoke` say how much smoke Create Aeronautics' hot air burners puff; `CloudlessCabin` leaves the clouds out of
 the player's view while the camera is inside a hull in the cloud layer; `ShipWeather`, through
-`mixin/LevelRendererMixin`, lets rain and snow fall only onto a ship's roof; `LandAhead` asks for the land ahead of a
-player
+`mixin/LevelRendererMixin` and `mixin/LevelMixin`, lets rain and snow fall only onto a ship's roof and fades the
+weather over the clouds; `LandAhead` asks for the land ahead of a player
 flying aboard, past what they see, a few chunks at a time. The zeppelin's geometry lives in `ZeppelinShape`
 (the Hindenburg's measurements in metres) and is cut into blocks by `ZeppelinLayout` at the blocks a metre its
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
