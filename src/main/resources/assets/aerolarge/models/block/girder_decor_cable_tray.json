@@ -3,7 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "iron": "aerolarge:block/girder_decor_iron",
-    "particle": "aerolarge:block/girder_decor_iron",
+    "particle": "aerolarge:block/girder_decor_cables",
     "tray": "aerolarge:block/girder_decor_tray",
     "cables": "aerolarge:block/girder_decor_cables"
   },

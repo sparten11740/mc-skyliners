@@ -3,7 +3,7 @@
   "render_type": "minecraft:translucent",
   "textures": {
     "iron": "aerolarge:block/girder_decor_iron",
-    "particle": "aerolarge:block/girder_decor_iron",
+    "particle": "aerolarge:block/girder_decor_can",
     "can": "aerolarge:block/girder_decor_can",
     "lens": "aerolarge:block/girder_decor_lens_cyan",
     "beam": "aerolarge:block/girder_decor_beam_cyan"

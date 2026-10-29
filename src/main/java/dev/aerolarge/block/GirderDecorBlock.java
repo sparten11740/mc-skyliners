@@ -2,10 +2,12 @@ package dev.aerolarge.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -52,26 +55,29 @@ public class GirderDecorBlock extends Block {
     /** Which room's decoration it is, kept in its state by name, and whether the two of a pair of it differ. */
     public enum Kind implements StringRepresentable {
         /** The entry's: banners hanging down, each a round embroidered mission patch on navy cloth. */
-        MISSION_PATCHES(true),
+        MISSION_PATCHES(true, SoundType.WOOL),
         /** The cargo bay's: a chain hoist on a trolley riding the girder, its yellow hook on the chain. */
-        CHAIN_HOIST(false),
+        CHAIN_HOIST(false, SoundType.CHAIN),
         /** The mess's: a rack of copper pots and pans on hooks. */
-        POT_RACK(true),
+        POT_RACK(true, SoundType.COPPER),
         /** The bunk room's: warm fairy lights looping along under the girder. */
-        FAIRY_LIGHTS(true),
+        FAIRY_LIGHTS(true, SoundType.GLASS),
         /** The greenhouse's: a wicker basket on four cords, trailing green. */
-        HANGING_BASKET(false),
+        HANGING_BASKET(false, SoundType.AZALEA),
         /** The pool's: bunting, a string of triangular pennants in the pool's colours. */
-        BUNTING(true),
+        BUNTING(true, SoundType.WOOL),
         /** The club's: a stage spotlight clamped under the girder, angled down, its lens glowing pink or cyan. */
-        SPOTLIGHT(true),
+        SPOTLIGHT(true, SoundType.METAL),
         /** The lab's: a ladder of cable tray, bundled coloured cables along its rungs. */
-        CABLE_TRAY(false);
+        CABLE_TRAY(false, SoundType.METAL);
 
         private final boolean twoLooks;
+        /** What it sounds of, broken or bumped: cloth, chain, copper, glass, leaves or steel. */
+        private final SoundType sound;
 
-        Kind(boolean twoLooks) {
+        Kind(boolean twoLooks, SoundType sound) {
             this.twoLooks = twoLooks;
+            this.sound = sound;
         }
 
         /**
@@ -137,6 +143,12 @@ public class GirderDecorBlock extends Block {
             case SPOTLIGHT -> SPOTLIGHT_GLOW;
             default -> 0;
         };
+    }
+
+    /** Each kind sounds as what it is made of: banners and bunting cloth, a hoist chain, pans copper, lights glass. */
+    @Override
+    public SoundType getSoundType(BlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity) {
+        return state.getValue(KIND).sound;
     }
 
     /**

@@ -3,7 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "iron": "aerolarge:block/girder_decor_iron",
-    "particle": "aerolarge:block/girder_decor_iron",
+    "particle": "aerolarge:block/girder_decor_patch_b",
     "patch": "aerolarge:block/girder_decor_patch_b"
   },
   "elements": [

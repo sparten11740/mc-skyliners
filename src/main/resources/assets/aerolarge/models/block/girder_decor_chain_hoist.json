@@ -3,7 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "iron": "aerolarge:block/girder_decor_iron",
-    "particle": "aerolarge:block/girder_decor_iron",
+    "particle": "aerolarge:block/girder_decor_hoist",
     "steel": "aerolarge:block/girder_decor_steel",
     "casing": "aerolarge:block/girder_decor_hoist",
     "hook": "aerolarge:block/girder_decor_yellow",

@@ -2520,27 +2520,27 @@ function girderDecor() {
 
   const fairy = loop("#wire", bulb);
   const bunting = loop("#cord", pennant);
-  const copper = { copper: block("girder_decor_copper"), pan: block("girder_decor_pan") };
-  const lights = { wire: block("girder_decor_wire"), bulbs: block("girder_decor_bulbs") };
-  const pennants = { cord: block("girder_decor_cord"), pennants: block("girder_decor_pennants") };
+  const copper = { copper: block("girder_decor_copper"), pan: block("girder_decor_pan"), particle: block("girder_decor_copper") };
+  const lights = { wire: block("girder_decor_wire"), bulbs: block("girder_decor_bulbs"), particle: block("girder_decor_bulbs") };
+  const pennants = { cord: block("girder_decor_cord"), pennants: block("girder_decor_pennants"), particle: block("girder_decor_pennants") };
   const models = {
-    mission_patches_first: { textures: { patch: block("girder_decor_patch_a") }, elements: banner },
-    mission_patches_second: { textures: { patch: block("girder_decor_patch_b") }, elements: banner },
-    chain_hoist: { textures: { steel: block("girder_decor_steel"), casing: block("girder_decor_hoist"), hook: block("girder_decor_yellow"), chain: "minecraft:block/chain" },
+    mission_patches_first: { textures: { patch: block("girder_decor_patch_a"), particle: block("girder_decor_patch_a") }, elements: banner },
+    mission_patches_second: { textures: { patch: block("girder_decor_patch_b"), particle: block("girder_decor_patch_b") }, elements: banner },
+    chain_hoist: { textures: { steel: block("girder_decor_steel"), casing: block("girder_decor_hoist"), particle: block("girder_decor_hoist"), hook: block("girder_decor_yellow"), chain: "minecraft:block/chain" },
       elements: hoist },
     pot_rack_first: { textures: copper, elements: rack.first },
     pot_rack_second: { textures: copper, elements: rack.second },
     fairy_lights_first: { textures: lights, elements: fairy.first },
     fairy_lights_second: { textures: lights, elements: fairy.second },
-    hanging_basket: { textures: { cord: block("girder_decor_cord"), wicker: block("girder_decor_wicker"), foliage: block("girder_decor_foliage"),
+    hanging_basket: { textures: { cord: block("girder_decor_cord"), wicker: block("girder_decor_wicker"), particle: block("girder_decor_wicker"), foliage: block("girder_decor_foliage"),
       trailing: block("girder_decor_trailing") }, elements: basket },
     bunting_first: { textures: pennants, elements: bunting.first },
     bunting_second: { textures: pennants, elements: bunting.second },
-    spotlight_first: { translucent: true, textures: { can: block("girder_decor_can"), lens: block("girder_decor_lens_pink"), beam: block("girder_decor_beam_pink") },
+    spotlight_first: { translucent: true, textures: { can: block("girder_decor_can"), particle: block("girder_decor_can"), lens: block("girder_decor_lens_pink"), beam: block("girder_decor_beam_pink") },
       elements: spotlight(22.5) },
-    spotlight_second: { translucent: true, textures: { can: block("girder_decor_can"), lens: block("girder_decor_lens_cyan"), beam: block("girder_decor_beam_cyan") },
+    spotlight_second: { translucent: true, textures: { can: block("girder_decor_can"), particle: block("girder_decor_can"), lens: block("girder_decor_lens_cyan"), beam: block("girder_decor_beam_cyan") },
       elements: spotlight(-22.5) },
-    cable_tray: { textures: { tray: block("girder_decor_tray"), cables: block("girder_decor_cables") }, elements: tray },
+    cable_tray: { textures: { tray: block("girder_decor_tray"), cables: block("girder_decor_cables"), particle: block("girder_decor_cables") }, elements: tray },
   };
   for (const [name, { translucent, textures, elements }] of Object.entries(models)) {
     write(`assets/${ID}/models/block/girder_decor_${name}.json`, {
