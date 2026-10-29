@@ -82,6 +82,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N41 | 01:55 | Launch control callouts | "Tower cleared." at 40 blocks up, "Max Q." at y 300, "Main engine cut-off." into the cruise, "Landing burn." into the burn; each once a flight, waiting for quiet; `rocket.callouts`, on | Fun for adults who know real launches (N7); built by an agent on the countdown's voice | Lead, callouts agent |
 | N42 | 02:00 | More furnishing | The cargo bay's baggage containers and crates; two pilot seats in the cockpit; a dimmed starlight ceiling over the observation deck | Seen bare at eye level | Lead |
 | N43 | 02:10 | Black hole poster | A poster skips a shaft face with something standing within two blocks in front of it: the lab's tank put the black hole facing into it; it now hangs on the east face | Jan asked for it specially; it should be seen | Lead |
+| N44 | 02:25 | Observation deck's lookout glasses | Replaced by armchairs facing out of the band | The zeppelin's glass marks land below; aboard her every steep look rests on her floors, the land through the band is beyond its 256 blocks, and a level look zooms into the band's glass; seen in game | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
