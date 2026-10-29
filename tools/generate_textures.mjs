@@ -5629,5 +5629,109 @@ function foodLabTextures() {
     return led ? LEDS[(Math.floor(x / 3) + row) % LEDS.length] : GLOW;
   }, 3);
 }
+// The rocket's rooms' furniture (see rocketRoomFurniture in generate_resources.mjs, which says which patch of each
+// texture each part shows). The shelf unit's birch, its steel plinth, and what each room keeps on it, each texture a
+// sheet of patches; the pallet rack's blue uprights punched for their beams, its orange beams, its pine pallet and its
+// loads.
+function rocketRoomTextures() {
+  const scaled = ([r, g, b], by) => [r * by, g * by, b * by].map((c) => Math.round(Math.max(0, Math.min(255, c))));
+  const BIRCH = [0xe2, 0xd2, 0xaa];
+  texture(blockOutput, "shelf_wood", (x, y) => (y === 0 || y === 15 ? scaled(BIRCH, 0.86) : scaled(BIRCH, (x * 3 + (y >> 2)) % 3 === 0 ? 0.95 : 1)), 3);
+  texture(blockOutput, "shelf_steel", (x, y) => (y === 0 ? [0x5a, 0x60, 0x68] : [0x3a, 0x3f, 0x46]), 2);
+
+  // Boots: a charcoal pair banded orange and a white pair banded blue, their shafts over their feet, a grey toe cap and
+  // a black sole; a helmet's front, its gold visor; and its plain white side.
+  const WHITE = [0xee, 0xf1, 0xf4];
+  texture(blockOutput, "shelf_boots", (x, y) => {
+    const white = x >= 3 && x < 6;
+    if (x < 6 && y >= 9 && y < 13) return y === 10 ? (white ? [0x2a, 0x6c, 0xd0] : [0xf0, 0x7a, 0x1e]) : white ? [0xdc, 0xe0, 0xe4] : [0x34, 0x38, 0x3e];
+    if (x < 6 && y === 13) return [0x9a, 0xa0, 0xa8];
+    if (x < 6 && y === 14) return [0x16, 0x17, 0x19];
+    if (x >= 9 && x <= 12 && y >= 1 && y <= 3) return y === 1 && x === 10 ? [0xff, 0xf2, 0xc0] : [0xe0, 0xa8, 0x2c];
+    if (x >= 8 && y < 5) return x === 8 || y === 4 ? scaled(WHITE, 0.88) : WHITE;
+    return [0x30, 0x33, 0x38];
+  }, 2);
+
+  // Book spines, each column its own cloth with gold bands across it, a terracotta pot and the fronds of a fern.
+  const CLOTH = [[0x7a, 0x1c, 0x22], [0x7a, 0x1c, 0x22], [0x1e, 0x2e, 0x5c], [0x1e, 0x2e, 0x5c], [0x24, 0x5a, 0x34], [0xc8, 0x9a, 0x2a],
+    [0xc8, 0x9a, 0x2a], [0x5c, 0x2a, 0x5e], [0x1c, 0x6e, 0x70], [0x5c, 0x2a, 0x5e], [0x5c, 0x2a, 0x5e], [0xa8, 0x4a, 0x1e], [0xa8, 0x4a, 0x1e],
+    [0x2e, 0x46, 0x5a], [0x4a, 0x50, 0x58], [0x4a, 0x50, 0x58]];
+  texture(blockOutput, "shelf_books", (x, y) => {
+    if (y >= 14 && x < 3) return y === 14 ? [0xb0, 0x58, 0x30] : [0x94, 0x48, 0x26];
+    if (y >= 12 && x >= 4 && x < 6) return (x + y) % 2 === 0 ? [0x3e, 0x8a, 0x3a] : [0x2c, 0x6a, 0x2c];
+    const cloth = CLOTH[x];
+    if (y % 8 === 1 || y % 8 === 4) return [0xd8, 0xb0, 0x48];
+    return y % 8 === 0 ? scaled(cloth, 0.75) : cloth;
+  }, 3);
+
+  // Four jars, four pixels across each: a lid over its glass, tomatoes, honey, pickles and plum jam, each with a white
+  // label; and a tin, silver with a red label.
+  const PRESERVES = [[0xc8, 0x2c, 0x1e], [0xe8, 0xa8, 0x24], [0x6a, 0x8e, 0x2a], [0x6c, 0x1e, 0x4c]];
+  const LIDS = [[0xc8, 0x30, 0x30], [0xd8, 0xdc, 0xe0], [0x2e, 0x6a, 0x2e], [0xd8, 0xb0, 0x48]];
+  texture(blockOutput, "shelf_jars", (x, y) => {
+    if (y >= 8 && y < 11 && x < 2) return y === 9 ? [0xc0, 0x24, 0x24] : [0xc8, 0xcc, 0xd2];
+    if (y >= 8) return [0x30, 0x33, 0x38];
+    const jar = Math.floor(x / 4);
+    if (y === 0) return LIDS[jar];
+    if (y === 2 || y === 3) return x % 4 === 0 ? scaled(PRESERVES[jar], 1.2) : [0xf2, 0xee, 0xe2];
+    return x % 4 === 0 ? scaled(PRESERVES[jar], 1.3) : PRESERVES[jar];
+  }, 3);
+
+  // Towels in four colours, four pixels across each: a roll's spiral end, a folded towel's folds, and a towel's side,
+  // its colour striped.
+  const TOWELS = [[0xe8, 0x70, 0x60], [0x2a, 0xa0, 0xa8], [0xe8, 0xf0, 0xf8], [0xe2, 0xc8, 0x8e]];
+  const STRIPES = [[0xf8, 0xf0, 0xe8], [0xf0, 0xf8, 0xf8], [0x3a, 0x6c, 0xc8], [0xc8, 0x70, 0x40]];
+  texture(blockOutput, "shelf_towels", (x, y) => {
+    const towel = Math.floor(x / 4);
+    if (y < 3) {
+      const ring = Math.round(Math.hypot(x % 4 - 1.5, y - 1)) % 2;
+      return ring === 0 ? TOWELS[towel] : scaled(TOWELS[towel], 0.78);
+    }
+    if (y >= 4 && y < 6) return y === 5 ? scaled(TOWELS[towel], 0.82) : TOWELS[towel];
+    if (y === 12) return x % 4 === 1 ? STRIPES[towel] : TOWELS[towel];
+    return [0x30, 0x33, 0x38];
+  }, 2);
+
+  // A red toolbox, its black latch and handle; a yellow case, its latches; a coil of orange cable and its top; and
+  // three spray cans, blue, orange and green, their caps white.
+  texture(blockOutput, "shelf_tools", (x, y) => {
+    if (y === 0 && x < 3) return [0x1a, 0x1b, 0x1e];
+    if (x < 7 && y >= 2 && y < 6) return y === 3 && (x === 1 || x === 5) ? [0x1a, 0x1b, 0x1e] : y === 2 ? [0xe0, 0x3a, 0x30] : [0xc0, 0x26, 0x22];
+    if (x >= 8 && x < 14 && y >= 1 && y < 6) return y === 2 && (x === 9 || x === 12) ? [0x1a, 0x1b, 0x1e] : [0xf0, 0xc0, 0x24];
+    if (x < 5 && y >= 8 && y < 13) return (x + y) % 2 === 0 ? [0xf0, 0x80, 0x24] : [0xb8, 0x58, 0x18];
+    const can = [[8, 9, [0x2a, 0x5c, 0xc8]], [10, 11, [0xf0, 0x80, 0x24]], [12, 13, [0x3a, 0x9a, 0x3e]]].find(([from, to]) => x >= from && x <= to);
+    if (can && y >= 8 && y < 13) return y === 8 ? [0xe8, 0xec, 0xf0] : can[2];
+    return [0x30, 0x33, 0x38];
+  }, 2);
+
+  // Record sleeves' spines a pixel thick, every colour, a dark gap now and then; and a little black speaker, its grey
+  // cone, and its plain black side.
+  const SLEEVES = [[0xe8, 0x3a, 0x6a], [0xf0, 0xc8, 0x30], [0x2a, 0x9a, 0xd8], [0x18, 0x18, 0x1c], [0x9a, 0x4a, 0xd0], [0xf0, 0x7a, 0x1e],
+    [0x3a, 0xc0, 0x8a], [0xe8, 0xe8, 0xe8], [0xc0, 0x26, 0x30]];
+  texture(blockOutput, "shelf_records", (x, y) => {
+    if (x >= 11 && y >= 8 && y < 13) return Math.hypot(x - 13, y - 10.5) < 1.6 ? [0x6a, 0x6e, 0x76] : [0x14, 0x15, 0x17];
+    if (y >= 14 && x >= 15) return [0x14, 0x15, 0x17];
+    if (y < 6 || y >= 8 && y < 14 && x < 8) return SLEEVES[(x * 5 + Math.floor(y / 8) * 3) % SLEEVES.length];
+    return [0x30, 0x33, 0x38];
+  }, 3);
+
+  // The pallet rack: uprights punched with a slot every few pixels, beams with a darker lip, a pallet of pine boards,
+  // cardboard taped across its middle, ribbed drums and a crate of boards and battens.
+  texture(blockOutput, "rack_upright", (x, y) => (x >= 6 && x <= 9 && y % 4 === 1 ? [0x16, 0x2a, 0x50] : [0x2c, 0x5f, 0xb8]), 3);
+  texture(blockOutput, "rack_beam", (x, y) => (y >= 13 ? [0xb8, 0x58, 0x14] : [0xee, 0x7c, 0x1e]), 3);
+  texture(blockOutput, "rack_pallet", (x, y) => (y % 4 === 3 ? [0x7a, 0x60, 0x3c] : [0xd2, 0xb0, 0x78]), 5);
+  texture(blockOutput, "rack_cardboard", (x, y) => {
+    if (x >= 6 && x <= 9) return [0xe2, 0xc8, 0x92];
+    return x === 0 || y === 0 ? [0xa8, 0x80, 0x4c] : [0xc8, 0x9c, 0x60];
+  }, 4);
+  const drum = (colour) => (x, y) => (y === 0 || y === 15 || y === 4 || y === 11 ? scaled(colour, 1.25) : x % 8 === 0 ? scaled(colour, 0.85) : colour);
+  texture(blockOutput, "rack_drum_blue", drum([0x24, 0x58, 0xa8]), 3);
+  texture(blockOutput, "rack_drum_yellow", drum([0xe0, 0xae, 0x20]), 3);
+  texture(blockOutput, "rack_crate", (x, y) => {
+    if (x <= 1 || x >= 14 || y <= 1 || y >= 14) return [0x7a, 0x5a, 0x32];
+    return y % 4 === 0 ? [0x96, 0x72, 0x42] : [0xb8, 0x90, 0x58];
+  }, 5);
+}
+rocketRoomTextures();
 
 console.log("Textures written to", blockOutput, "and", itemOutput);

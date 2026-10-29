@@ -913,6 +913,8 @@
   "block.aerolarge.irrigation_valve": "Irrigation Valve",
   "subtitles.aerolarge.irrigation_valve": "Irrigation valve squeaks",
   "subtitles.aerolarge.sprinkler_spray": "Sprinklers spray",
+  "block.aerolarge.shelf_unit": "Shelf Unit",
+  "block.aerolarge.pallet_rack": "Pallet Rack",
   "advancements.aerolarge.first_flight.root.title": "First Flight",
   "advancements.aerolarge.first_flight.root.description": "Airliners, from the runway to the jet stream",
   "advancements.aerolarge.first_flight.cleared_for_takeoff.title": "Cleared for Takeoff",

@@ -178,6 +178,7 @@ import dev.aerolarge.block.OverheadBinBlock;
 import dev.aerolarge.block.OverheadBinBlockEntity;
 import dev.aerolarge.block.OverheadWcSignBlock;
 import dev.aerolarge.block.OverheadWcSignBlockEntity;
+import dev.aerolarge.block.PalletRackBlock;
 import dev.aerolarge.block.PaperPlaneBoxBlock;
 import dev.aerolarge.block.ParachuteRackBlock;
 import dev.aerolarge.block.ParkingBrakeBlock;
@@ -218,6 +219,7 @@ import dev.aerolarge.block.SeatbeltSwitchBlockEntity;
 import dev.aerolarge.block.SecretBookshelfBlock;
 import dev.aerolarge.block.SelfDestructButtonBlock;
 import dev.aerolarge.block.SelfDestructButtonBlockEntity;
+import dev.aerolarge.block.ShelfUnitBlock;
 import dev.aerolarge.block.ShellBlock;
 import dev.aerolarge.block.SignalFlareBlock;
 import dev.aerolarge.block.SignalFlareBlockEntity;
@@ -2185,6 +2187,20 @@ public final class AerolargeRegistry {
             () -> MODEL_ZEPPELIN.get().defaultBlockState(), ZEPPELIN_MODEL_MIDDLE, "item.aerolarge." + name + ".tooltip",
             new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
     }
+
+    /**
+     * The furniture of the rocket's rooms (see {@link dev.aerolarge.airframe.RocketRoom}): open shelf units stocked with
+     * each room's things, stood across her rooms as low dividers, and the bays of her cargo bay's pallet racks. Placed
+     * only by the blueprint, so no items, and they give nothing back.
+     */
+    public static final DeferredBlock<ShelfUnitBlock> SHELF_UNIT = BLOCKS.registerBlock(
+        "shelf_unit", ShelfUnitBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.WOOD).noOcclusion().noLootTable()
+            .isValidSpawn(AerolargeRegistry::never)
+    );
+    public static final DeferredBlock<PalletRackBlock> PALLET_RACK = BLOCKS.registerBlock(
+        "pallet_rack", PalletRackBlock::new, metal(MapColor.COLOR_BLUE).noOcclusion().noLootTable()
+    );
 
     // The rocket's rover (see Rover): the door of her bay in her skin, which keeps the bay's block entity working the door,
     // its boom and its winch, the panel that works them, the rover itself, its remote and the rover a remote is paired

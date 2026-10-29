@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "facing=north,kind=boots": {
+      "model": "aerolarge:block/shelf_unit_boots",
+      "y": 0
+    },
+    "facing=north,kind=books": {
+      "model": "aerolarge:block/shelf_unit_books",
+      "y": 0
+    },
+    "facing=north,kind=jars": {
+      "model": "aerolarge:block/shelf_unit_jars",
+      "y": 0
+    },
+    "facing=north,kind=towels": {
+      "model": "aerolarge:block/shelf_unit_towels",
+      "y": 0
+    },
+    "facing=north,kind=tools": {
+      "model": "aerolarge:block/shelf_unit_tools",
+      "y": 0
+    },
+    "facing=north,kind=records": {
+      "model": "aerolarge:block/shelf_unit_records",
+      "y": 0
+    },
+    "facing=east,kind=boots": {
+      "model": "aerolarge:block/shelf_unit_boots",
+      "y": 90
+    },
+    "facing=east,kind=books": {
+      "model": "aerolarge:block/shelf_unit_books",
+      "y": 90
+    },
+    "facing=east,kind=jars": {
+      "model": "aerolarge:block/shelf_unit_jars",
+      "y": 90
+    },
+    "facing=east,kind=towels": {
+      "model": "aerolarge:block/shelf_unit_towels",
+      "y": 90
+    },
+    "facing=east,kind=tools": {
+      "model": "aerolarge:block/shelf_unit_tools",
+      "y": 90
+    },
+    "facing=east,kind=records": {
+      "model": "aerolarge:block/shelf_unit_records",
+      "y": 90
+    },
+    "facing=south,kind=boots": {
+      "model": "aerolarge:block/shelf_unit_boots",
+      "y": 180
+    },
+    "facing=south,kind=books": {
+      "model": "aerolarge:block/shelf_unit_books",
+      "y": 180
+    },
+    "facing=south,kind=jars": {
+      "model": "aerolarge:block/shelf_unit_jars",
+      "y": 180
+    },
+    "facing=south,kind=towels": {
+      "model": "aerolarge:block/shelf_unit_towels",
+      "y": 180
+    },
+    "facing=south,kind=tools": {
+      "model": "aerolarge:block/shelf_unit_tools",
+      "y": 180
+    },
+    "facing=south,kind=records": {
+      "model": "aerolarge:block/shelf_unit_records",
+      "y": 180
+    },
+    "facing=west,kind=boots": {
+      "model": "aerolarge:block/shelf_unit_boots",
+      "y": 270
+    },
+    "facing=west,kind=books": {
+      "model": "aerolarge:block/shelf_unit_books",
+      "y": 270
+    },
+    "facing=west,kind=jars": {
+      "model": "aerolarge:block/shelf_unit_jars",
+      "y": 270
+    },
+    "facing=west,kind=towels": {
+      "model": "aerolarge:block/shelf_unit_towels",
+      "y": 270
+    },
+    "facing=west,kind=tools": {
+      "model": "aerolarge:block/shelf_unit_tools",
+      "y": 270
+    },
+    "facing=west,kind=records": {
+      "model": "aerolarge:block/shelf_unit_records",
+      "y": 270
+    }
+  }
+}

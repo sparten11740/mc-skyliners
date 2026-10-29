@@ -4567,6 +4567,147 @@ function foodLabLang() {
   };
 }
 
+// The rocket's rooms' furniture (see RocketRoom), each drawn facing north. The shelf unit (see ShelfUnitBlock): a steel
+// plinth, birch end panels and two birch shelves under a birch top, open front and back, and what each room keeps on it:
+// the entry's boots in pairs under a pair of white helmets, gold visors to the front; the bunk room's books, tall and
+// short, one leaning, under a row more and a potted fern; the mess's jars of tomatoes, honey, pickles and plum jam with
+// white labels; the pool's rolled towels in a pyramid; the cargo bay's red toolbox and yellow case under a coil of cable
+// and spray cans; and the club's records, their sleeves' spines every colour, under a little speaker. The pallet rack
+// (see PalletRackBlock): blue uprights at its corners, orange beams front and back at its foot under a pine pallet, and
+// its load on the pallet: taped cardboard boxes, a blue drum and a yellow one, two wooden crates one on the other, or
+// nothing. Both are placed only by the blueprint, so they have no items and give nothing back (see rocketRoomFittings).
+function rocketRoomFurniture() {
+  const block = (name) => `${ID}:block/${name}`;
+  // A box of a model, every face showing the texture given: its front (north) face the patch of it given, if any, and its
+  // other faces the patch given for them, or else the front's; turned about an axis if a rotation is given.
+  const part = (from, to, texture, front, sides = front, rotation = undefined) => ({
+    from, to, ...(rotation ? { rotation } : {}),
+    faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => {
+      const uv = face === "north" ? front : sides;
+      return [face, { texture, ...(uv ? { uv } : {}) }];
+    })),
+  });
+  const shelf = [
+    part([0.5, 0, 3.5], [15.5, 1, 12.5], "#steel"),
+    part([0, 0, 3], [1, 16, 13], "#wood"),
+    part([15, 0, 3], [16, 16, 13], "#wood"),
+    part([1, 1, 3.5], [15, 2, 12.5], "#wood"),
+    part([1, 8, 3.5], [15, 9, 12.5], "#wood"),
+    part([1, 15, 3], [15, 16, 13], "#wood"),
+  ];
+  // Something kept on a shelf: across from and to, up from and how tall, deep from and to, and the patches of the kind's
+  // texture its front and its other faces show (see rocketRoomTextures); the lower shelf's top is at 2 and the upper's
+  // at 9.
+  const goods = (x0, x1, y0, height, z0, z1, front, sides = front, rotation = undefined) =>
+    part([x0, y0, z0], [x1, y0 + height, z1], "#goods", front, sides, rotation);
+  const LOW = 2;
+  const HIGH = 9;
+  // The boots' shafts over their feet, a charcoal pair and a white pair; the helmets' fronts, their sides plain white.
+  const boot = (x, z, shaft, foot) => [goods(x, x + 2.5, LOW, 1.5, z, z + 5.5, foot), goods(x, x + 2.5, LOW + 1.5, 3.5, z + 3, z + 5.5, shaft)];
+  const helmet = [8, 0, 13.5, 5];
+  const helmetSide = [14, 0, 16, 2];
+  // A rolled towel lying from front to back, its spiral end to the front, the rest of it its colour's stripes; and a
+  // folded one, its fold to the front.
+  const roll = (x, y, z0, z1, colour) => goods(x, x + 3.5, y, 3, z0, z1, [4 * colour, 0, 4 * colour + 3.5, 3], [4 * colour, 12, 4 * colour + 3.5, 13]);
+  const folded = (y, z0, z1, colour) => goods(10.5, 14.5, y, 1.5, z0, z1, [4 * colour, 4, 4 * colour + 4, 5.5]);
+  const kinds = {
+    boots: { texture: "shelf_boots", parts: [
+      ...boot(2, 4, [0, 9, 2.5, 12.5], [0, 13, 2.5, 14.5]), ...boot(5, 4, [0, 9, 2.5, 12.5], [0, 13, 2.5, 14.5]),
+      ...boot(9, 4.5, [3, 9, 5.5, 12.5], [3, 13, 5.5, 14.5]), ...boot(12, 4.5, [3, 9, 5.5, 12.5], [3, 13, 5.5, 14.5]),
+      goods(1.5, 7, HIGH, 5, 5, 10.5, helmet, helmetSide),
+      goods(9, 14.5, HIGH, 5, 5.5, 11, helmet, helmetSide),
+    ] },
+    books: { texture: "shelf_books", parts: [
+      goods(1.5, 3, LOW, 5.5, 4.5, 11, [0, 0, 1.5, 5.5]), goods(3, 4.5, LOW, 5, 4.5, 11, [2, 0, 3.5, 5]),
+      goods(4.5, 5.5, LOW, 6, 5, 11, [4, 0, 5, 6]), goods(5.5, 7.5, LOW, 4.5, 4.5, 11.5, [5, 0, 7, 4.5]),
+      goods(7.5, 8.5, LOW, 5.5, 5, 11, [8, 0, 9, 5.5]), goods(8.5, 10, LOW, 5, 4.5, 11, [9, 0, 10.5, 5]),
+      goods(10.5, 12, LOW, 5.5, 4.5, 11, [14, 0, 15.5, 5.5], undefined, { angle: -22.5, axis: "z", origin: [10.5, LOW, 8] }),
+      goods(12.5, 14.5, LOW, 3, 4, 11.5, [11, 0, 13, 3]),
+      goods(1.5, 3, HIGH, 5, 5, 11, [3, 8, 4.5, 13]), goods(3, 4, HIGH, 5.5, 5, 11, [6, 8, 7, 13.5]),
+      goods(4, 5.5, HIGH, 4.5, 5, 11, [12, 8, 13.5, 12.5]),
+      goods(10, 13, HIGH, 2.5, 6, 10, [0, 14, 3, 16]), goods(10.5, 12.5, HIGH + 2.5, 3.5, 6.5, 9.5, [4, 12.5, 6, 16]),
+    ] },
+    jars: { texture: "shelf_jars", parts: [
+      goods(1.5, 4.5, LOW, 5, 5, 8, [0, 0, 3, 5]), goods(5, 8, LOW, 4.5, 6, 9, [4, 0, 7, 4.5]),
+      goods(8.5, 11.5, LOW, 5, 5, 8, [8, 0, 11, 5]), goods(12, 14.5, LOW, 4, 6.5, 9, [12, 0, 14.5, 4]),
+      goods(2, 5, HIGH, 4.5, 6, 9, [8, 0, 11, 4.5]), goods(6, 9, HIGH, 5, 5, 8, [12, 0, 15, 5]),
+      goods(10, 12.5, HIGH, 4, 6, 8.5, [4, 0, 6.5, 4]), goods(12.5, 14.5, HIGH, 3, 7, 9, [0, 8, 2, 11]),
+    ] },
+    towels: { texture: "shelf_towels", parts: [
+      roll(1.5, LOW, 4, 12, 0), roll(5, LOW, 4, 12, 1), roll(8.5, LOW, 4, 12, 2), roll(12, LOW, 4, 12, 3),
+      roll(3.25, LOW + 3, 4.5, 11.5, 2), roll(6.75, LOW + 3, 4.5, 11.5, 0), roll(10.25, LOW + 3, 4.5, 11.5, 1),
+      roll(2, HIGH, 4, 12, 3), roll(5.5, HIGH, 4, 12, 1), roll(3.75, HIGH + 3, 4.5, 11.5, 0),
+      folded(HIGH, 5, 11, 2), folded(HIGH + 1.5, 5.5, 10.5, 0),
+    ] },
+    tools: { texture: "shelf_tools", parts: [
+      goods(1.5, 8, LOW, 4, 4.5, 11, [0, 2, 6.5, 6]), goods(3.5, 6, LOW + 4, 0.75, 7, 8.5, [0, 0, 2.5, 0.75]),
+      goods(9, 14.5, LOW, 5, 4, 11.5, [8, 1, 13.5, 6]),
+      goods(1.5, 6.5, HIGH, 2.5, 5, 10, [0, 8, 5, 10.5]), goods(2.5, 5.5, HIGH + 2.5, 1.5, 6, 9, [0, 11, 3, 12.5]),
+      goods(8, 9.5, HIGH, 4, 6, 7.5, [8, 8, 9.5, 12]), goods(10, 11.5, HIGH, 4.5, 6.5, 8, [10, 8, 11.5, 12.5]),
+      goods(12.5, 14, HIGH, 3.5, 6, 7.5, [12, 8, 13.5, 11.5]),
+    ] },
+    records: { texture: "shelf_records", parts: [
+      goods(1.5, 7.5, LOW, 5.5, 4.5, 11.5, [0, 0, 6, 5.5]), goods(7.5, 12.5, LOW, 5.5, 4.5, 11.5, [6, 0, 11, 5.5]),
+      goods(13, 14.5, LOW, 5.25, 5, 11, [11.5, 0, 13, 5.25]),
+      goods(1.5, 9, HIGH, 5.5, 4.5, 11.5, [0, 8, 7.5, 13.5]),
+      goods(10, 14.5, HIGH, 5, 6, 10.5, [11, 8, 15.5, 13], [15, 14, 16, 15]),
+    ] },
+  };
+  const textures = { wood: block("shelf_wood"), steel: block("shelf_steel"), particle: block("shelf_wood") };
+  for (const [kind, { texture, parts }] of Object.entries(kinds)) {
+    write(`assets/${ID}/models/block/shelf_unit_${kind}.json`, {
+      parent: "minecraft:block/block", textures: { ...textures, goods: block(texture) }, elements: [...shelf, ...parts],
+    });
+  }
+  write(`assets/${ID}/blockstates/shelf_unit.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(kinds).map((kind) =>
+      [`facing=${facing},kind=${kind}`, { model: `${ID}:block/shelf_unit_${kind}`, y }]))),
+  });
+  cubes.shelf_unit = null;
+
+  const rack = [
+    ...[[0, 1], [14.5, 1], [0, 13.5], [14.5, 13.5]].map(([x, z]) => part([x, 0, z], [x + 1.5, 16, z + 1.5], "#upright")),
+    part([1.5, 0.5, 1], [14.5, 2.5, 2.5], "#beam"),
+    part([1.5, 0.5, 13.5], [14.5, 2.5, 15], "#beam"),
+    part([1.5, 2.5, 2], [14.5, 4, 14], "#pallet"),
+  ];
+  const loads = {
+    boxes: { textures: { load: block("rack_cardboard") }, parts: [
+      part([2, 4, 3], [8, 10, 9], "#load"), part([8.5, 4, 3], [14, 9, 13], "#load"), part([2, 4, 9.5], [7.5, 9, 13], "#load"),
+      part([3, 10, 4], [8, 14, 8.5], "#load"),
+    ] },
+    drums: { textures: { load: block("rack_drum_blue"), second: block("rack_drum_yellow") }, parts: [
+      part([2.5, 4, 4.5], [7.5, 14, 9.5], "#load"), part([8.5, 4, 6], [13.5, 14, 11], "#second"),
+    ] },
+    crates: { textures: { load: block("rack_crate") }, parts: [part([2, 4, 3], [14, 10, 13], "#load"), part([4, 10, 5], [10.5, 14.5, 11], "#load")] },
+    empty: { textures: {}, parts: [] },
+  };
+  for (const [load, { textures: own, parts }] of Object.entries(loads)) {
+    write(`assets/${ID}/models/block/pallet_rack_${load}.json`, {
+      parent: "minecraft:block/block",
+      textures: { upright: block("rack_upright"), beam: block("rack_beam"), pallet: block("rack_pallet"), particle: block("rack_upright"), ...own },
+      elements: [...rack, ...parts],
+    });
+  }
+  write(`assets/${ID}/blockstates/pallet_rack.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => Object.keys(loads).map((load) =>
+      [`facing=${facing},load=${load}`, { model: `${ID}:block/pallet_rack_${load}`, y }]))),
+  });
+  cubes.pallet_rack = null;
+}
+rocketRoomFurniture();
+// The rocket's rooms' furniture is fitted into her rather than built into her: light like the rest, but no part of
+// her frame, and breakable.
+function rocketRoomFittings() {
+  return ["shelf_unit", "pallet_rack"];
+}
+function rocketRoomLang() {
+  return {
+    "block.aerolarge.shelf_unit": "Shelf Unit",
+    "block.aerolarge.pallet_rack": "Pallet Rack",
+  };
+}
+
 // Room dividers, and the exit signs over the doors between the rooms: fitted into the cabin, so breakable, and no
 // part of the hull (see FITTINGS).
 const ROOM_DIVIDERS = ["cabin_curtain", "cabin_partition", "cabin_arch", "exit_sign"];
@@ -6943,6 +7084,7 @@ FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
 FITTINGS.push(...foodLabFittings());
 FITTINGS.push(...greenhouseFittings());
+FITTINGS.push(...rocketRoomFittings());
 const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(`:${fitting}`)));
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
@@ -7689,6 +7831,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...foodLabLang(),
   ...roomLang(),
   ...greenhouseLang(),
+  ...rocketRoomLang(),
   ...Object.fromEntries(FIRST_FLIGHT.flatMap(([name, , , , title, description]) => [
     [`advancements.${ID}.first_flight.${name}.title`, title],
     [`advancements.${ID}.first_flight.${name}.description`, description],
