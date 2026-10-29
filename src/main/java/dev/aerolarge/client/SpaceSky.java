@@ -303,7 +303,7 @@ public final class SpaceSky {
     /**
      * The colour of the sky by day at a height (see {@link #SKY_HEIGHTS}), from 0 to 1 for each of red, green and blue.
      */
-    private static Vec3 skyAt(double height) {
+    static Vec3 skyAt(double height) {
         for (int key = 1; key < SKY_HEIGHTS.length; key++) {
             if (height <= SKY_HEIGHTS[key]) {
                 double along = Mth.clamp((height - SKY_HEIGHTS[key - 1]) / (SKY_HEIGHTS[key] - SKY_HEIGHTS[key - 1]), 0, 1);

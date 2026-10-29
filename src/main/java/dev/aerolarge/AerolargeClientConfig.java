@@ -21,6 +21,7 @@ public final class AerolargeClientConfig {
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue AURORA;
     public static final ModConfigSpec.BooleanValue LIFT_MUSIC;
+    public static final ModConfigSpec.BooleanValue HEIGHT_GAUGE;
     public static final ModConfigSpec.BooleanValue FLYBY_CAMERA;
     public static final ModConfigSpec.BooleanValue HULL_AMBIENCE;
     public static final ModConfigSpec.BooleanValue GREAT_SHADOW;
@@ -102,6 +103,10 @@ public final class AerolargeClientConfig {
             .comment("Play soft bossa nova in a lift's car while it rides, as lifts do, heard in the car and right by it, as loud as",
                 "the Jukebox/Note Blocks volume sets. Off, the car only hums.")
             .define("liftMusic", true);
+        HEIGHT_GAUGE = builder
+            .comment("While a rocket flies and her lift stands parked, show on its picture boards how high she is: the sky in the colours",
+                "of each height, the edge of space marked with a star, and a little rocket at her height. Off, the boards show her floors.")
+            .define("heightGauge", true);
         FLYBY_CAMERA = builder
             .comment("Among a zeppelin's outside cameras on her passenger screens, the flyby camera, slowly circling the whole ship from",
                 "well out and a little above her. Off, her screens look through her bow and belly cameras only.")

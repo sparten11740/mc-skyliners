@@ -1828,7 +1828,10 @@ going down, and the doors open to let you out. As it rides, lift music plays sof
 electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the
 Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone
 in the doorway or moves with a door open, and no one gets off between floors. While she counts down, flies or lands,
-it stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards.
+it stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards; in place of her floors they show how high she flies, a little
+rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
+line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
+keeps her floors on them).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
@@ -2118,8 +2121,9 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
 on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
-`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing; on the client `LiftSounds` plays
-a riding car's hum, and its music for whoever rides it or stands right by it. `Livery` paints her as it does a zeppelin,
+`LiftDoorRenderer` draws its pane as it slides) and `LiftBoardBlock`s by each landing (`LiftBoardRenderer` drawing them,
+and `HeightGauge` in flight); on the client `LiftSounds` plays a riding car's hum, and its music for whoever rides it or
+stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
 pictures her from `RocketSilhouette`; `OvalWindowModel` bakes her windows' domes. `SpaceSky` draws space round any
 camera far over the top of the world, over the game's own sky, the fog the land fades into taking the planet's colour,

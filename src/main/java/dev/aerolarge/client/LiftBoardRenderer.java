@@ -3,6 +3,7 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.Aerolarge;
+import dev.aerolarge.AerolargeClientConfig;
 import dev.aerolarge.block.LiftBoardBlock;
 import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftMachineBlockEntity;
@@ -11,6 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
@@ -18,7 +20,8 @@ import org.joml.Matrix4f;
  * the ship's floors stacked as she stands, the lowest at the bottom, each a cell in its story's colour with its
  * floor's icon, dimmed but for the floor the car is at, which is lit; the board's own floor framed in white; while the
  * lift is on its way, an arrow blinking by the floor it is going to; and while it stands parked for the ship's flight,
- * an amber bar across its top. Players who cannot read find their floor by its icon and colour.
+ * an amber bar across its top and, in place of the floors, how high she flies (see {@link HeightGauge}). Players who
+ * cannot read find their floor by its icon and colour.
  */
 public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEntity> {
     /** The gap between two floors' cells and the white frame round the board's own, in blocks. */
@@ -60,7 +63,7 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
 
     /**
      * The lift's floors on a face this wide and tall, the board standing at one of them: their cells first, all in the
-     * shapes' buffer, then their icons, each picture taking a buffer of its own.
+     * shapes' buffer, then their icons, each picture taking a buffer of its own; parked, how high she flies instead.
      */
     private static void floors(Matrix4f matrix, VertexConsumer shapes, MultiBufferSource buffers, double width, double height, int here,
                                LiftMachineBlockEntity lift) {
@@ -68,6 +71,16 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
         double cell = LiftBoardBlock.cell(height, landings.size());
         double left = LiftBoardBlock.MARGIN;
         double right = width - LiftBoardBlock.MARGIN;
+        boolean parked = lift.phase() == LiftMachineBlockEntity.Phase.PARKED;
+        if (parked) {
+            ScreenDrawing.rect(shapes, matrix, 0, height - PARKED_BAR, width, height, 4 * LAYER, AMBER);
+        }
+        if (parked && AerolargeClientConfig.HEIGHT_GAUGE.get() && lift.getLevel() != null) {
+            double flying = SableClient.toWorld(lift.getLevel(), Vec3.atCenterOf(lift.getBlockPos())).y;
+            HeightGauge.draw(matrix, shapes, buffers, new HeightGauge.Column(left, LiftBoardBlock.MARGIN, right, height - PARKED_BAR - GAP),
+                lift.getLevel(), flying);
+            return;
+        }
         for (int floor = 0; floor < landings.size(); floor++) {
             double bottom = LiftBoardBlock.MARGIN + floor * cell;
             if (floor == here) {
@@ -75,9 +88,6 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
             }
             int colour = landings.get(floor).colour();
             ScreenDrawing.rect(shapes, matrix, left, bottom + GAP, right, bottom + cell - GAP, 2 * LAYER, floor == lift.at() ? colour : dimmed(colour));
-        }
-        if (lift.phase() == LiftMachineBlockEntity.Phase.PARKED) {
-            ScreenDrawing.rect(shapes, matrix, 0, height - PARKED_BAR, width, height, 4 * LAYER, AMBER);
         }
         for (int floor = 0; floor < landings.size(); floor++) {
             ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/lift/" + landings.get(floor).icon() + ".png");
