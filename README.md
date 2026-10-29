@@ -1910,12 +1910,15 @@ strips do: touch a band to pick that story, or the little rocket beside it to pi
 suns and strips under them. Set for all of her, a change climbs her a story at a time from the entry story up.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
-rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set. There
-it holds its height and leans toward the pin, never more than 10 degrees, as fast across as it can still slow down by
-it; once over the pin and no longer drifting it falls back, never faster than six tenths of gravity, so whoever stands
-aboard keeps their feet, and a landing burn catches it, leaning only a little to stop drifting for the last 20 blocks
-and not at all for the last 3, touching down at a block and a half a second. Down on its fins it lets its engines go at
-once and switches itself off with a bell. Without a pin it comes back down where it rose. Told to land, or switched off
+rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set, white
+cloud and smoke billowing out over the ground from under her as she rises and again as she comes in to land (the server
+config's `rocket.plumes` leaves it out). There it holds its height and leans toward the pin, never more than 10 degrees,
+as fast across as it can still slow down by it; once over the pin and no longer drifting it falls back (or, circling it
+slowly for ten seconds, as a heavily loaded rocket can, all the same), never faster than six tenths of gravity, so
+whoever stands aboard keeps their feet, and a landing burn catches it, leaning only a little to stop drifting for the
+last 20 blocks and not at all for the last 3, touching down at a block and a half a second. Falling back from space, her
+base glows and flames stream up behind it. Down on its fins it lets its engines go at once and switches itself off with
+a bell. Without a pin it comes back down where it rose. Told to land, or switched off
 in the air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
 autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
 
@@ -2130,7 +2133,8 @@ camera far over the top of the world, over the game's own sky, the fog the land 
 and fades the clouds, which `CloudlessCabin` then leaves out; by night it has `Aurora` draw the northern lights along
 the rim, and last of space `ShootingStars` the shooting star of the moment, both going by the game's time alone so every
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
-climbs past it; `SpaceGravity` makes them light up there.
+climbs past it; `SpaceGravity` makes them light up there; `RocketPlumes` sends the smoke under her and the flames from
+her base.
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
 `LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their

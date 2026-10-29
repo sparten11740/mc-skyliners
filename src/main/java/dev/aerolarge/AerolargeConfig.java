@@ -50,6 +50,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
+    public static final ModConfigSpec.BooleanValue ROCKET_PLUMES;
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
@@ -464,6 +465,13 @@ public final class AerolargeConfig {
                 "aboard. Rockets already built keep theirs."
             )
             .define("rover", true);
+        ROCKET_PLUMES = builder
+            .comment(
+                "Whether a rocket's flight shows round her as well as in her engines' own plumes: smoke billowing out over the",
+                "ground from under her as she lifts off and lands, and, falling back from space, her base glowing and a trail of",
+                "flame streaming up behind it."
+            )
+            .define("plumes", true);
         ROCKET_LOW_GRAVITY = builder
             .comment(
                 "Experimental: whether everyone aboard a rocket at the edge of space or over it (y 1,000) feels light, jumping three",
