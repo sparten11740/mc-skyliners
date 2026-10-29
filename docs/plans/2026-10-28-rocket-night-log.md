@@ -28,9 +28,9 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   and the countdown waits for it.
 - **Fixes**: oval windows turning with her placement, her engines' signal chatter, her coming down after circling
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
-  pin, and five code reviews' findings.
+  pin, and six code reviews' findings.
 
-The last version tonight is alpha.180.
+The last version tonight is alpha.181.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -102,6 +102,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N56 | 04:25 | Rooms heard (fourth panel) | Yes, two rooms: the greenhouse (air through the leaves, a trickle, a drip, and now and then a bee buzzing past) and the pool (water lapping in a tiled hall, and now and then a slap), each swelling in as you step into its room, over 150 Hz to stay clear of the lift's hum, client `roomAmbience` on by default; the galley left for another night (a fridge hum would sit on the lift's), the bunks and the deck quiet on purpose, the club and the lab already heard | The sound tells a child which floor they stepped out on, matching the lift board's icons; panel (children's designer, tech lead, audio designer) | Panel, lead |
 | N57 | 04:50 | Fourth code review (of the rooms' sounds) | Fixed: a loop the game let go of (a portal, a resource reload, rejoining) left its room silent for the session; swimmers in the pool heard the greenhouse; the next bee or slap was due by another world's time; around a rocket not yet flown, standing outside her skin heard the room; her rooms are now also heard before her first flight | Independent review agent; each fix heard in game | Review, lead |
 | N58 | 05:15 | Fifth code review (of alpha.175 and alpha.176's fixes) | Fixed: her settings map's ring round the pin, her control head's circle radius and the helmet HUD's figure, none of which she flies; RETURN on her screens while told to land in the air (now her phase alone), and its chat line; Apply lit for a circle she has none of; the deck's lower ceiling told by her rooms being furnished, not a block of it | Independent review agent; the map and the header seen in game | Review, lead |
+| N59 | 05:28 | Sixth code review (of alpha.179 and alpha.180) | Fixed: the four circle tiles taken off a rocket's screen (straight on and the pin alone), anything but the pin pictured as straight on on her control head and helmet HUD; the chat line "and down where she is" taken back out, as settings applied on her way down may steer her elsewhere; the map's readouts moved apart before their bands touch | Independent review agent; her screen seen in game | Review, lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -211,6 +212,8 @@ Commits on main, newest last, with the versions handed out.
   before; not looked at: the helmet HUD, or the control head set to a circle.
 - alpha.180: the autopilot map's pin coordinates kept a line over its own where the two would run into each other, as
   they did on the rocket's narrow map ("Z 92Pin X ..."). Seen on a rocket's screen with a pin set.
+- alpha.181: the sixth review's fixes (N59). Seen in game: a rocket's screen without a pin, straight on and the pin
+  tile alone under her heading dial.
 
 ## Background agents
 
@@ -245,10 +248,10 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - A slip of mine at 03:36: testing the lift-off fire I ran `./gradlew build` on uncommitted code, which rewrote
   alpha.173's jar in `build/libs` with it. Nothing was handed out (the desktop drive was not mounted); I rebuilt
   alpha.173 from its own commit in a scratch worktree and put that jar back, checked by its plume class.
-- The autopilot's settings screen offers a rocket without a pin the airliner's heading dial and circle tiles; she
-  ignores them and comes back down where she rose (her screens now say RETURN, N54). With a pin, the circle tile and
-  the land switch are gone for her (since 04:09); hiding the dial too wants the screen laid out again, so I left it
-  for you.
+- The autopilot's settings screen still shows a rocket without a pin the airliner's heading dial and box; she
+  ignores the heading and comes back down where she rose (her screens say RETURN, N54). Her circle tiles, her circle
+  and land switch at the pin and the ring round it are gone (N58, N59); hiding the dial too wants the screen laid out
+  again, so I left it for you.
 - Over her cockpit's glass, the inside of her nose shows as a stepped dome of bare cover in her livery's colour (red
   in the default), which the design panel called a red tint over the cockpit. A ceiling over the cockpit, as the deck
   has at the bigger scales, would hide it, but would also hide her livery from inside and needs care round what the
