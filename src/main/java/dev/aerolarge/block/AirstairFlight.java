@@ -36,7 +36,7 @@ public final class AirstairFlight {
     public static final int OUT = 92;
     /** The airliner's flight's width, and a zeppelin's, in blocks: the airliner's doorway's. */
     public static final int WIDTH = PlugDoorBlock.COLUMNS;
-    /** How wide a hatch plate is, in blocks, as its picture is: the airliner's; a wider mouth has plates side by side. */
+    /** How wide a hatch plate is, in blocks, as its picture is: the airliner's; a wider mouth has them side by side. */
     private static final int HATCH_WIDTH = PlugDoorBlock.COLUMNS;
     /** The fewest sections the flight is made of; more where the bay is short. */
     public static final int FEWEST_SECTIONS = 3;

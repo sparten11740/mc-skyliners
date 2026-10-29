@@ -17,9 +17,10 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The blocks integral airstairs are walked on once they are down (see {@link AirstairStepBlock}), and the ground they
- * come down to, the same for an airliner's out of its door and a zeppelin's out of her belly: how far down the ground
- * lets them reach, the steps laid under the flight with their guards and a foot below, taken up again, and whether
- * anyone is on them. Each flight says where its steps go ({@link StepAt}), in as many columns as it is wide.
+ * come down to, the same for an airliner's out of its door, a zeppelin's out of her belly and a rocket's out of her
+ * front door: how far down the ground lets them reach, the steps laid under the flight with their guards and a foot
+ * below, taken up again, and whether anyone is on them. Each flight says where its steps go ({@link StepAt}), in as
+ * many columns as it is wide.
  */
 final class AirstairSteps {
     /**

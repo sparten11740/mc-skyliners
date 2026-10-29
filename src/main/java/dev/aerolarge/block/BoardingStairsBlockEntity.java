@@ -32,13 +32,13 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A zeppelin's boarding stairs (see {@link BoardingStairsButtonBlock}): the button at the head of a flight keeps it.
- * A zeppelin built now has the airliner's airstairs there, two blocks wide, hung in her belly (see
- * {@link BoardingAirstairs}). One built before keeps its stairs of blocks: the button keeps the blocks of the flight that
- * hang below her hull, its steps, their rails and the patch of her cover they cut through, each as it stands with the
- * stairs down and with them up. Going up, that flight folds away a row at a time from its foot, and the cover closes
- * over it last; coming down, the cover opens and the steps run down a row at a time to the ground, the first row that
- * would stand in the ground ending them there. Either kind folds away of its own accord as soon as she moves, and
+ * A zeppelin's boarding stairs (see {@link BoardingStairsButtonBlock}): the button at the head of a flight keeps it. A
+ * zeppelin built now has the airliner's airstairs there, two blocks wide, hung in her belly (see
+ * {@link BoardingAirstairs}). One built before keeps its stairs of blocks: the button keeps the blocks of the flight
+ * that hang below her hull, its steps, their rails and the patch of her cover they cut through, each as it stands with
+ * the stairs down and with them up. Going up, that flight folds away a row at a time from its foot, and the cover
+ * closes over it last; coming down, the cover opens and the steps run down a row at a time to the ground, the first row
+ * that would stand in the ground ending them there. Either kind folds away of its own accord as soon as she moves, and
  * comes down again of its own accord once she is down on the ground after flying, or first stands there built; any of
  * her stairs' buttons works them all by hand while she stands still. The button low on the control car, calling them
  * from the ground, keeps no flight of its own.
@@ -83,7 +83,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs,
     }
 
     /**
-     * Hands the button the airstairs it keeps, as the zeppelin is built with them away (see {@link BellyAirstairs}):
+     * Hands the button the airstairs it keeps, as the zeppelin is built with them away (see {@link BoardingAirstairs}):
      * where their head is from it, the ways out and to the right, how far they come down and in how many sections,
      * and their hatch, each block of it from the button. They come down of their own accord once she is found
      * standing on the ground.
