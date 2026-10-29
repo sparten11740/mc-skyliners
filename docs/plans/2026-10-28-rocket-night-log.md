@@ -85,6 +85,7 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N44 | 02:25 | Observation deck's lookout glasses | Replaced by armchairs facing out of the band | The zeppelin's glass marks land below; aboard her every steep look rests on her floors, the land through the band is beyond its 256 blocks, and a level look zooms into the band's glass; seen in game | Lead |
 | N45 | 02:35 | Space helmet | A round white helmet with a big gold visor, worn as its own model like the pilot helmet, a lighter gold tint and no HUD from inside; a crew locker on the entry story and in the bunk room each holds one; breathing in it above the edge of space (client `helmetBreathing`); a recipe matching the pilot helmet's | Fun for children and adults; built by an agent | Lead, helmet agent |
 | N46 | 02:35 | Lift sneak | No sneak is let off by the game; the car notes who sneaked and its machine sets them down outside an open door | The game set them down in the car, shut in on the ground and stuck in flight; seen in game | Lead |
+| N47 | 02:55 | Observation deck at the bigger scales | A ceiling at most 16 rows over its floor, the starlight panels under it; nothing changes at scale 2 | Its story otherwise rose 68 or 110 blocks into her nose as bare skin; seen at scale 3 | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -182,9 +183,9 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - N34: the lab's tank stands partly in front of the back window at scale 2.
 - The shooting stars are a little bolder since alpha.172 (half as wide again, a bigger glow), but still meteor-sized;
   easy to make longer if you would like them showier.
-- At scales 3 and 4 the nine stories keep their player-sized heights, so her observation deck becomes an atrium 68 or
-  110 blocks tall up into her nose, its band of glass at its foot and its starlight ceiling far overhead (seen at
-  scale 4, which built 327,000 blocks in 3 s and every room, the pool a wide lagoon). More stories at the bigger
-  scales, or a taller band, would fill it; not changed tonight.
+- At scales 3 and 4 the nine stories keep their player-sized heights, so her observation deck rose as an atrium 68 or
+  110 blocks tall up into her nose (seen at scale 4, which built 327,000 blocks in 3 s and every room, the pool a wide
+  lagoon). Since 02:55 it has a ceiling 16 rows over its floor at those scales, the space over it up to the cockpit
+  sealed off and the shaft running on through it (N47); more stories at the bigger scales would use that space.
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.

@@ -22,6 +22,11 @@ final class RocketObservationDeck extends RocketRoom {
     private static final double AT_WINDOW = 3.5;
     /** How far round either side of a window the bean bags beside its glass are, in degrees. */
     private static final double BESIDE = 16;
+    /**
+     * How many rows its room is at most from its floor to its ceiling: on a bigger rocket, whose stories stay a
+     * player's size, its story would otherwise rise up into her nose as a tower of bare skin.
+     */
+    private static final int TALLEST = 16;
     /** The band of glass's lowest and highest rows over the floor. */
     private static final int BAND_FROM = 1;
     private static final int BAND_TO = 5;
@@ -42,7 +47,11 @@ final class RocketObservationDeck extends RocketRoom {
     @Override
     public void build() {
         band();
-        starlight();
+        int ceiling = Math.min(top() + 1, floor() + TALLEST);
+        if (ceiling <= top()) {
+            lid(ceiling);
+        }
+        starlight(ceiling - 1);
         int y = floor() + 1;
         double out = wall() - AT_WINDOW;
         for (double round : new double[]{90, 180, 270}) {
@@ -74,11 +83,26 @@ final class RocketObservationDeck extends RocketRoom {
         }
     }
 
-    /** The starlight ceiling: the airliner's starlight panels, dimmed, in every free block of the top row. */
-    private void starlight() {
+    /**
+     * A ceiling over the room at a row, under the rest of her story, as a floor is laid: out to her skin round her lift
+     * shaft, which runs on up through it to her cockpit.
+     */
+    private void lid(int y) {
+        int reach = (int) Math.ceil(wall());
+        BlockState floor = AerolargeRegistry.CABIN_FLOOR.get().defaultBlockState();
+        for (BlockPos at : BlockPos.betweenClosed(-reach, y, -reach, reach, y, reach)) {
+            boolean inShaft = Math.abs(at.getX()) < RocketLayout.SHAFT && Math.abs(at.getZ()) < RocketLayout.SHAFT;
+            if (!inShaft && layout.isOpen(at.getX(), y, at.getZ()) && layout.inside(at.getX(), y, at.getZ())) {
+                layout.set(at.getX(), y, at.getZ(), floor);
+            }
+        }
+    }
+
+    /** The starlight ceiling: the airliner's starlight panels, dimmed, in every free block of a row under the ceiling. */
+    private void starlight(int y) {
         int reach = (int) Math.ceil(wall());
         BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState().setValue(Brightness.PROPERTY, Brightness.DIM);
-        for (BlockPos at : BlockPos.betweenClosed(-reach, top(), -reach, reach, top(), reach)) {
+        for (BlockPos at : BlockPos.betweenClosed(-reach, y, -reach, reach, y, reach)) {
             put(at.getX(), at.getY(), at.getZ(), panel);
         }
     }
