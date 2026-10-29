@@ -1769,6 +1769,9 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         countHeard = counted;
+        if (counted == 1) {
+            announcements.letGo(Announcement.TAKEOFF);
+        }
         rocketSounds.count(level, flight.position(), counted);
         float rising = (float) counted / RocketPilot.COUNTDOWN;
         if (counted >= RocketPilot.COUNTDOWN) {

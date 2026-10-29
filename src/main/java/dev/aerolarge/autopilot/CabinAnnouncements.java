@@ -111,6 +111,16 @@ public final class CabinAnnouncements {
         return waiting != null;
     }
 
+    /**
+     * An announcement still waiting its turn let go unsaid: the take-off announcement, as a rocket's countdown begins
+     * without it, would otherwise be made once she had lifted off.
+     */
+    void letGo(Announcement announcement) {
+        if (waiting == announcement) {
+            waiting = null;
+        }
+    }
+
     /** Each tick: makes the one waiting, once whatever is being said on the flight deck has ended. */
     void tick(BlockEntity autopilot) {
         if (waiting != null && autopilot.getLevel() instanceof ServerLevel level && clear(level.getGameTime(), waiting) && play(level, autopilot, waiting)) {
