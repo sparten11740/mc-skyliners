@@ -5319,7 +5319,6 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const band = (base, rail) => (x, y) => (y <= 1 ? rail : y >= 14 ? shade(base, -16) : base);
   // Hazard stripes running down to the left, yellow and near-black.
   const hazard = (x, y) => ((x + y) % 8 < 4 ? [0xe8, 0xb4, 0x20] : [0x22, 0x22, 0x26]);
-  // Studded rubber: round studs on a dark mat.
   // A club's carpet: deep plum, a lattice of darker diagonals across it and a neon dot where they cross.
   const lattice = (base, line, dot) => (x, y) => {
     const up = (x + y) % 8;
@@ -5328,6 +5327,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (up === 0 || down === 0) return line;
     return hash(x * 7 + 3, y * 11 + 5) < 0.12 ? shade(base, 8) : base;
   };
+  // Studded rubber: round studs on a dark mat.
   const studded = (base) => (x, y) => {
     const u = x % 4 - 1.5;
     const v = y % 4 - 1.5;

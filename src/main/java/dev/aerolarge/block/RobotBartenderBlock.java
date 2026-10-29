@@ -233,5 +233,4 @@ public class RobotBartenderBlock extends BaseEntityBlock {
             ? (tickLevel, pos, tickState, bartender) -> ((RobotBartenderBlockEntity) bartender).clientTick()
             : null;
     }
-
 }

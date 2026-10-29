@@ -4606,14 +4606,14 @@ function foodLabLang() {
 }
 
 // The rocket's rooms' furniture (see RocketRoom), each drawn facing north. The shelf unit (see ShelfUnitBlock): a steel
-// plinth, birch end panels and two birch shelves under a birch top, open front and back, and what each room keeps on it:
-// the entry's boots in pairs under a pair of white helmets, gold visors to the front; the bunk room's books, tall and
-// short, one leaning, under a row more and a potted fern; the mess's jars of tomatoes, honey, pickles and plum jam with
-// white labels; the pool's rolled towels in a pyramid; and the cargo bay's red toolbox and yellow case under a coil of
-// cable and spray cans. The pallet rack
-// (see PalletRackBlock): blue uprights at its corners, orange beams front and back at its foot under a pine pallet, and
-// its load on the pallet: taped cardboard boxes, a blue drum and a yellow one, two wooden crates one on the other, or
-// nothing. Both are placed only by the blueprint, so they have no items and give nothing back (see rocketRoomFittings).
+// plinth, birch end panels and two birch shelves under a birch top, open front and back, and what each room keeps on
+// it: the entry's boots in pairs under a pair of white helmets, gold visors to the front; the bunk room's books, tall
+// and short, one leaning, under a row more and a potted fern; the mess's jars of tomatoes, honey, pickles and plum jam
+// with white labels; the pool's fat rolled towels and a pile of folded ones; and the cargo bay's red toolbox and yellow
+// case under a coil of cable and spray cans. The pallet rack (see PalletRackBlock): blue uprights at its corners,
+// orange beams front and back at its foot under a pine pallet, and its load on the pallet: taped cardboard boxes, a
+// blue drum and a yellow one, two wooden crates one on the other, or nothing. Both are placed only by the blueprint, so
+// they have no items and give nothing back (see rocketRoomFittings).
 function rocketRoomFurniture() {
   const block = (name) => `${ID}:block/${name}`;
   // A box of a model, every face showing the texture given: its front (north) face the patch of it given, if any, and its
