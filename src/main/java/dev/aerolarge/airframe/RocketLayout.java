@@ -272,17 +272,19 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * A block of plain floor on a story's floor row as that story's floor over the ceiling of the story under it; null
-     * for one on any other row, as her deck's own lower ceiling is.
+     * A block of plain floor finished: on a story's floor row, as that story's floor over the ceiling of the story under
+     * it; within a story, as a mezzanine or a lower ceiling of its own is, its room's on both sides; null under her
+     * entry story.
      */
     @Nullable
     private BlockState finishedFloor(int y) {
         int story = floors.indexOf(y);
-        if (story < 0 && y != noseFoot) {
-            return null;
+        if (story >= 0 || y == noseFoot) {
+            int over = story < 0 ? floors.size() : story;
+            return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(over), RocketFinish.ofStory(Math.max(0, over - 1)));
         }
-        int over = story < 0 ? floors.size() : story;
-        return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(over), RocketFinish.ofStory(Math.max(0, over - 1)));
+        RocketFinish within = finishAt(y);
+        return within == null ? null : AerolargeRegistry.ROCKET_FLOOR.get().between(within, within);
     }
 
     /**
