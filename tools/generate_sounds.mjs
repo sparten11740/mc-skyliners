@@ -3254,6 +3254,174 @@ if (speaker) {
   }
 }
 
+// The robot bartender (see RobotBartenderBlock). Its servo as its head turns to a customer: a small motor's whirr,
+// spinning up and settling on its mark with a gear's whine over it, and the tick of it stopping. Its serve (see
+// RobotBartenderRenderer, whose steps it keeps time with): ice rattling in a steel shaker, two knocks a stroke at six
+// strokes a second, the ice's swish between them, for a second and a half; then the pour, a bubbling trickle; and the
+// glass set down on the bar, a soft knock and its ring. Tune them here.
+const BARTENDER = {
+  // The servo's whirr: how long, in seconds; its motor's pitch from and to and where it settles, in hertz; and how far
+  // up its harmonics the gear's whine is.
+  servoSeconds: 0.45,
+  servoFrom: 300,
+  servoTop: 520,
+  servoSettle: 380,
+  gearHarmonic: 9,
+  // The serve: how long it runs, when the rattle starts and stops, the strokes a second, the ice's knocks each stroke
+  // and their pitches from and to, in hertz.
+  serveSeconds: 3,
+  rattleFrom: 0.05,
+  rattleTo: 1.5,
+  strokes: 6,
+  knocks: 6,
+  knockLow: 2400,
+  knockHigh: 4800,
+  // The pour, from and to, in seconds, and its bubbles' pitches from and to, in hertz.
+  pourFrom: 1.8,
+  pourTo: 2.2,
+  bubbleLow: 600,
+  bubbleHigh: 1300,
+  // The glass set down, in seconds, and its knock's and its ring's pitch, in hertz.
+  setDown: 2.62,
+  knockHz: 1800,
+  ringHz: 3300,
+};
+{
+  const bartenderRandom = ownRandom(0x42617274);
+  const servo = new Float64Array(Math.round(BARTENDER.servoSeconds * RATE));
+  let phase = 0;
+  for (let i = 0; i < servo.length; i++) {
+    const t = i / RATE / BARTENDER.servoSeconds;
+    const pitch = t < 0.4
+      ? BARTENDER.servoFrom + (BARTENDER.servoTop - BARTENDER.servoFrom) * Math.sin((Math.PI / 2) * (t / 0.4))
+      : BARTENDER.servoSettle + (BARTENDER.servoTop - BARTENDER.servoSettle) * Math.exp(-(t - 0.4) / 0.15);
+    phase += (2 * Math.PI * pitch) / RATE;
+    let motor = 0;
+    for (let n = 1; n <= 5; n++) motor += Math.sin(n * phase) / n;
+    const gear = 0.2 * Math.sin(BARTENDER.gearHarmonic * phase);
+    const envelope = Math.min(1, t / 0.08) * Math.min(1, (1 - t) / 0.12);
+    servo[i] = envelope * (0.45 * motor + gear + 0.03 * (bartenderRandom() * 2 - 1));
+  }
+  click(servo, BARTENDER.servoSeconds - 0.06, 3000, 0.3, bartenderRandom);
+  writeSound("bartender_servo", servo, 0.45);
+
+  const serve = new Float64Array(Math.round(BARTENDER.serveSeconds * RATE));
+  let low = 0;
+  let band = 0;
+  for (let i = Math.round(BARTENDER.rattleFrom * RATE); i < Math.round(BARTENDER.rattleTo * RATE); i++) {
+    const t = i / RATE;
+    const white = bartenderRandom() * 2 - 1;
+    low += 0.05 * (white - low);
+    band += 0.4 * (white - band);
+    const swing = Math.abs(Math.sin(2 * Math.PI * BARTENDER.strokes * t));
+    const fade = Math.min(1, (t - BARTENDER.rattleFrom) / 0.1, (BARTENDER.rattleTo - t) / 0.1);
+    serve[i] += 0.25 * fade * swing * (band - low);
+  }
+  // Two knocks a stroke, at each end of it, each the ice's few cubes striking the tin one after another.
+  for (let stroke = BARTENDER.rattleFrom; stroke < BARTENDER.rattleTo - 0.05; stroke += 1 / (2 * BARTENDER.strokes)) {
+    for (let knock = 0; knock < BARTENDER.knocks; knock++) {
+      const pitch = BARTENDER.knockLow + bartenderRandom() * (BARTENDER.knockHigh - BARTENDER.knockLow);
+      click(serve, stroke + bartenderRandom() * 0.03, pitch, 0.5 / (1 + knock * 0.4), bartenderRandom);
+    }
+  }
+  let trickle = 0;
+  for (let i = Math.round(BARTENDER.pourFrom * RATE); i < Math.round(BARTENDER.pourTo * RATE); i++) {
+    const t = (i / RATE - BARTENDER.pourFrom) / (BARTENDER.pourTo - BARTENDER.pourFrom);
+    trickle += 0.08 * (bartenderRandom() * 2 - 1 - trickle);
+    serve[i] += 0.5 * Math.sin(Math.PI * t) * trickle;
+  }
+  for (let bubble = BARTENDER.pourFrom; bubble < BARTENDER.pourTo; bubble += 0.02 + bartenderRandom() * 0.03) {
+    const pitch = BARTENDER.bubbleLow + bartenderRandom() * (BARTENDER.bubbleHigh - BARTENDER.bubbleLow);
+    for (let i = 0; i < Math.round(0.03 * RATE) && Math.round(bubble * RATE) + i < serve.length; i++) {
+      const t = i / RATE;
+      serve[Math.round(bubble * RATE) + i] += 0.12 * Math.exp(-t / 0.008) * Math.sin(2 * Math.PI * pitch * (1 + 8 * t) * t);
+    }
+  }
+  click(serve, BARTENDER.setDown, BARTENDER.knockHz, 0.6, bartenderRandom);
+  const ring = new Float64Array(serve.length);
+  bell(ring, BARTENDER.setDown, BARTENDER.ringHz, 0.08);
+  ring.forEach((sample, i) => (serve[i] += 0.12 * sample));
+  writeSound("bartender_shake", serve, 0.7);
+}
+
+// The robot bartender's voice, greeting a customer as its shop opens and answering each sale, a line of three at
+// random each time (see robotBartenderSounds in tools/generate_resources.mjs): a British man's, Kokoro's Fable, so it
+// is never taken for the flight deck's or launch control's, made a robot's without losing a word: a faint hum
+// modulating it, its metal chest's short comb of echoes, a slow flanger's synthetic sheen and a touch of digital
+// grit; and before each greeting its chirp, two quick tones rising. Tune it here.
+const BARTENDER_VOICE = {
+  voice: "bm_fable",
+  pace: 1,
+  // The hum it is modulated by, in hertz, and how deep, as a share of the voice.
+  hum: 55,
+  humDepth: 0.2,
+  filters: [
+    "highpass=f=170:poles=2",
+    "lowpass=f=6800:poles=2",
+    "aecho=0.9:0.7:6|11:0.35|0.2",
+    "flanger=delay=1.5:depth=1.2:regen=30:speed=0.3",
+    "acrusher=bits=11:mode=log:aa=1:mix=0.15",
+    "equalizer=f=2400:t=q:w=1.2:g=3",
+    "acompressor=threshold=-26dB:ratio=3:attack=3:release=90:makeup=8dB",
+  ],
+  // The chirp: its tones, in hertz, each so long and the gap after it, in seconds, and how loud beside the voice's
+  // peak.
+  chirp: [1320, 1760],
+  chirpLength: 0.06,
+  chirpGap: 0.02,
+  chirpLevel: 0.35,
+  // The peak it is written at, as the other voices'.
+  level: 0.85,
+};
+const BARTENDER_LINES = {
+  bartender_greet_1: "What'll it be?",
+  bartender_greet_2: "What can I get you?",
+  bartender_greet_3: "Welcome to the bar!",
+  bartender_serve_1: "One coming right up.",
+  bartender_serve_2: "Shaken, not stirred.",
+  bartender_serve_3: "Excellent choice.",
+};
+/** The longest a line may run, its chirp and all, in seconds: a quick word over the bar. */
+const BARTENDER_LONGEST = 2.5;
+/** The chirp before a greeting, at a peak of one. */
+function bartenderChirp() {
+  const { chirp, chirpLength, chirpGap } = BARTENDER_VOICE;
+  const tone = Math.round(chirpLength * RATE);
+  const step = tone + Math.round(chirpGap * RATE);
+  const samples = new Float64Array(step * chirp.length);
+  chirp.forEach((frequency, n) => {
+    for (let i = 0; i < tone; i++) {
+      samples[n * step + i] = Math.min(1, i / (0.005 * RATE), (tone - i) / (0.005 * RATE)) * Math.sin((2 * Math.PI * frequency * i) / RATE);
+    }
+  });
+  return samples;
+}
+if (speaker) {
+  for (const [name, line] of Object.entries(BARTENDER_LINES)) {
+    const spoken = await speaker.generate(line, { voice: BARTENDER_VOICE.voice, speed: BARTENDER_VOICE.pace });
+    const rate = spoken.sampling_rate;
+    const trimmed = trim(Float64Array.from(spoken.audio), rate);
+    const peak = peakOf(trimmed);
+    const hummed = trimmed.map((sample, i) => (sample / peak) * (1 - BARTENDER_VOICE.humDepth
+      + BARTENDER_VOICE.humDepth * Math.sin((2 * Math.PI * BARTENDER_VOICE.hum * i) / rate)));
+    const said = join(scratch, `${name}.said.wav`);
+    const voiced = join(scratch, `${name}.voiced.wav`);
+    writeWav(said, Array.from(hummed, (sample) => sample * 0.5), rate);
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", said, "-af", BARTENDER_VOICE.filters.join(","), "-ac", "1", "-ar", `${RATE}`, "-c:a", "pcm_s16le", voiced]);
+    const voice = trim(readWav(voiced));
+    if (!name.startsWith("bartender_greet")) {
+      writeVoiced(name, voice, BARTENDER_VOICE, BARTENDER_LONGEST);
+      continue;
+    }
+    const chirp = bartenderChirp();
+    const samples = new Float64Array(chirp.length + voice.length);
+    const level = BARTENDER_VOICE.chirpLevel * peakOf(voice);
+    chirp.forEach((sample, i) => (samples[i] = sample * level));
+    samples.set(voice, chirp.length);
+    writeVoiced(name, samples, BARTENDER_VOICE, BARTENDER_LONGEST);
+  }
+}
+
 // Air traffic control on the flight deck's radio (see AtcRadio), a man's voice, so it is never taken for the flight
 // deck's own, heard through a VHF receiver: each press of the transmit button opens with the squelch's click and a
 // breath of the carrier's hiss; the voice is squeezed into the radio's narrow band, compressed and clipped hard as a

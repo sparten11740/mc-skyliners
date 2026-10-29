@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "aerolarge:block/robot_bartender_white"
+  },
+  "elements": []
+}

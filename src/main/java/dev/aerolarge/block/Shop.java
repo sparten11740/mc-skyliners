@@ -23,10 +23,10 @@ import net.minecraft.world.level.block.Block;
 /**
  * A shop at a block, opened for one shopper: vanilla's trading screen, its goods priced in emeralds, the fares villager
  * passengers pay, and each shown by its picture with its price, so it needs no reading. No villager stands behind it,
- * so nobody can wander off, be sucked out of a door or be left behind by a moving airliner: the block itself sells, as
- * a duty-free counter does (see {@link DutyFreeCounterBlock}). Its goods never run out and it never levels up, so the
- * prices always stay the same. What it sells, its name and its sounds are its {@link Shopfront}; the shop stays open
- * while that block stands and the shopper is in reach of it.
+ * so nobody can wander off, be sucked out of a door or be left behind by a moving airliner: the block itself sells, a
+ * duty-free counter (see {@link DutyFreeCounterBlock}) or a robot bartender (see {@link RobotBartenderBlock}). Its
+ * goods never run out and it never levels up, so the prices always stay the same. What it sells, its name and its
+ * sounds are its {@link Shopfront}; the shop stays open while that block stands and the shopper is in reach of it.
  */
 public final class Shop implements Merchant {
     /** How often a trade can be made before it is sold out: never. */

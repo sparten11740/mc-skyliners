@@ -201,6 +201,8 @@ import dev.aerolarge.block.PoolStepsBlock;
 import dev.aerolarge.block.PropellerBlock;
 import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
+import dev.aerolarge.block.RobotBartenderBlock;
+import dev.aerolarge.block.RobotBartenderBlockEntity;
 import dev.aerolarge.block.RocketFinish;
 import dev.aerolarge.block.RocketFloorBlock;
 import dev.aerolarge.block.RocketLinedCoverBlock;
@@ -303,6 +305,7 @@ import dev.aerolarge.item.ControlTowerBlueprintItem;
 import dev.aerolarge.item.RunwayBlueprintItem;
 import dev.aerolarge.item.LaserPointerItem;
 import dev.aerolarge.item.MailSackItem;
+import dev.aerolarge.item.MocktailItem;
 import dev.aerolarge.item.PaperPlaneItem;
 import dev.aerolarge.item.ParachuteItem;
 import dev.aerolarge.item.PilotCapItem;
@@ -1682,6 +1685,52 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> BAR_COUNTER_ITEM = ITEMS.registerSimpleBlockItem(BAR_COUNTER);
     public static final DeferredItem<BlockItem> BAR_STOOL_ITEM = ITEMS.registerSimpleBlockItem(BAR_STOOL);
     public static final DeferredItem<BlockItem> BACK_BAR_ITEM = ITEMS.registerSimpleBlockItem(BACK_BAR);
+    /** How brightly the robot bartender's pedestal glows round its foot, in light levels: a soft cyan halo, no lamp. */
+    private static final int BARTENDER_GLOW = 3;
+    /**
+     * The robot bartender behind the bar, who sells mocktails, and its sounds: the servo whirr of its head turning to a
+     * customer, its cocktail shaker's rattle, the pour and the glass set down, and its robot voice greeting a customer
+     * and answering a sale.
+     */
+    public static final DeferredBlock<RobotBartenderBlock> ROBOT_BARTENDER = BLOCKS.registerBlock(
+        "robot_bartender", RobotBartenderBlock::new,
+        metal(MapColor.SNOW).noOcclusion().lightLevel(state -> state.getValue(RobotBartenderBlock.HALF) == DoubleBlockHalf.LOWER ? BARTENDER_GLOW : 0)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RobotBartenderBlockEntity>> ROBOT_BARTENDER_ENTITY =
+        BLOCK_ENTITIES.register("robot_bartender", () -> BlockEntityType.Builder.of(RobotBartenderBlockEntity::new, ROBOT_BARTENDER.get()).build(null));
+    public static final DeferredItem<BlockItem> ROBOT_BARTENDER_ITEM = ITEMS.registerSimpleBlockItem(ROBOT_BARTENDER);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BARTENDER_SERVO = sound("bartender_servo");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BARTENDER_SHAKE = sound("bartender_shake");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BARTENDER_GREET = sound("bartender_greet");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BARTENDER_SERVE = sound("bartender_serve");
+    /** How long the mocktails' lifts last, in ticks: Nebula Fizz's Night Vision, Rocket Fuel's and Zero-G Float's. */
+    private static final int NEBULA_FIZZ_TICKS = 60 * 20;
+    private static final int ROCKET_FUEL_TICKS = 30 * 20;
+    private static final int ZERO_G_FLOAT_TICKS = 30 * 20;
+    /** How long Supernova Sunrise's Regeneration lasts, in ticks, and how strong it is (its amplifier: II). */
+    private static final int SUPERNOVA_TICKS = 5 * 20;
+    private static final int SUPERNOVA_STRENGTH = 1;
+    /** A mocktail's nourishment: a sip's, in food points and as a saturation modifier. */
+    private static final int MOCKTAIL_NUTRITION = 2;
+    private static final float MOCKTAIL_SATURATION = 0.2F;
+    /** How many mocktails stack in a slot, as many as the coffees. */
+    private static final int MOCKTAILS_STACK = 16;
+    /**
+     * The robot bartender's mocktails, with no alcohol in them, each in a glass of its own: Nebula Fizz, violet-blue
+     * and sparkling, for Night Vision; Rocket Fuel, fiery orange, for Speed and Jump Boost; Zero-G Float, lime under a
+     * scoop of ice cream, for Slow Falling; Supernova Sunrise, red, orange and yellow in layers, for a few seconds of
+     * Regeneration; and Moon Milk, silvery white with stars in it, which clears away effects as milk does.
+     */
+    public static final DeferredItem<MocktailItem> NEBULA_FIZZ = ITEMS.register("nebula_fizz", () -> new MocktailItem(mocktail(sip()
+        .effect(() -> new MobEffectInstance(MobEffects.NIGHT_VISION, NEBULA_FIZZ_TICKS, 0), 1.0F)), false));
+    public static final DeferredItem<MocktailItem> ROCKET_FUEL = ITEMS.register("rocket_fuel", () -> new MocktailItem(mocktail(sip()
+        .effect(() -> new MobEffectInstance(MobEffects.MOVEMENT_SPEED, ROCKET_FUEL_TICKS, 0), 1.0F)
+        .effect(() -> new MobEffectInstance(MobEffects.JUMP, ROCKET_FUEL_TICKS, 0), 1.0F)), false));
+    public static final DeferredItem<MocktailItem> ZERO_G_FLOAT = ITEMS.register("zero_g_float", () -> new MocktailItem(mocktail(sip()
+        .effect(() -> new MobEffectInstance(MobEffects.SLOW_FALLING, ZERO_G_FLOAT_TICKS, 0), 1.0F)), false));
+    public static final DeferredItem<MocktailItem> SUPERNOVA_SUNRISE = ITEMS.register("supernova_sunrise", () -> new MocktailItem(mocktail(sip()
+        .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, SUPERNOVA_TICKS, SUPERNOVA_STRENGTH), 1.0F)), false));
+    public static final DeferredItem<MocktailItem> MOON_MILK = ITEMS.register("moon_milk", () -> new MocktailItem(mocktail(sip()), true));
     /**
      * The duty-free kiosk's display, a cabinet with a lit glass showcase of perfumes and chocolates on it, and its
      * striped awning on a steel frame, hung on steel rods.
@@ -2295,6 +2344,7 @@ public final class AerolargeRegistry {
             SEATBELT_SIGN_ITEM, LIGHT_STRIP_ITEM, PENDANT_LIGHT_ITEM, LIGHT_CABLE_ITEM, HALO_LIGHT_ITEM, WALL_LIGHT_ITEM, STARLIGHT_PANEL_ITEM, OVERHEAD_BIN_ITEM,
             ECONOMY_SEAT_ITEM, BUSINESS_SEAT_ITEM, SEAT_CONSOLE_ITEM, LOUNGE_TABLE_ITEM, PASSENGER_SCREEN_ITEM, CABIN_CARPET_ITEM, AISLE_CARPET_ITEM,
             GALLEY_ITEM, GALLEY_OVEN_ITEM, GALLEY_STOWAGE_ITEM, GALLEY_WORKTOP_ITEM, BAR_COUNTER_ITEM, BAR_STOOL_ITEM, BACK_BAR_ITEM,
+            ROBOT_BARTENDER_ITEM, NEBULA_FIZZ, ROCKET_FUEL, ZERO_G_FLOAT, SUPERNOVA_SUNRISE, MOON_MILK,
             TROLLEY_ITEM, CHICKEN_MEAL, PASTA_MEAL, PRETZELS, ICE_CREAM, LAB_GROWN_STEAK, AIRLINE_COFFEE, COFFEE_MACHINE_ITEM, ESPRESSO, CAPPUCCINO, MOCHA, BABYCINO,
             PLANTER_ITEM, GARDEN_BED_ITEM, SPRINKLER_ITEM, IRRIGATION_VALVE_ITEM, GROW_LIGHT_ITEM, DUTY_FREE_COUNTER_ITEM, DUTY_FREE_DISPLAY_ITEM, AWNING_ITEM,
             PAPER_PLANE_ITEM, LASER_POINTER, PILOT_CAP, MODEL_AIRLINER_ITEM, MODEL_ZEPPELIN_ITEM, MODEL_ROCKET_ITEM, CABIN_CURTAIN_ITEM, CABIN_PARTITION_ITEM, CABIN_ARCH_ITEM,
@@ -2338,6 +2388,16 @@ public final class AerolargeRegistry {
      */
     private static BlockBehaviour.Properties metal(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).isValidSpawn(AerolargeRegistry::never);
+    }
+
+    /** A mocktail's nourishment, a sip's, drunk whenever it is wanted, the lift it gives added to it. */
+    private static FoodProperties.Builder sip() {
+        return new FoodProperties.Builder().nutrition(MOCKTAIL_NUTRITION).saturationModifier(MOCKTAIL_SATURATION).alwaysEdible();
+    }
+
+    /** A mocktail in its glass, stacked as the coffees are. */
+    private static Item.Properties mocktail(FoodProperties.Builder food) {
+        return new Item.Properties().stacksTo(MOCKTAILS_STACK).food(food.build());
     }
 
     /** A suitcase's hard shell: quick to pick up, small enough to see past, and nothing spawns on it. */

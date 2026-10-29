@@ -10,6 +10,7 @@ import dev.aerolarge.block.EngineCoreBlockEntity;
 import dev.aerolarge.block.LookoutGlassBlockEntity;
 import dev.aerolarge.block.PassengerScreenBlockEntity;
 import dev.aerolarge.block.PropellerBlockEntity;
+import dev.aerolarge.block.RobotBartenderBlockEntity;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.client.AirstairRenderer;
 import dev.aerolarge.client.AnnouncementPanelRenderer;
@@ -79,6 +80,7 @@ import dev.aerolarge.client.PassengerScreenRenderer;
 import dev.aerolarge.client.PilotHud;
 import dev.aerolarge.client.PlugDoorRenderer;
 import dev.aerolarge.client.PropellerRenderer;
+import dev.aerolarge.client.RobotBartenderRenderer;
 import dev.aerolarge.client.RocketRoar;
 import dev.aerolarge.client.RoomAmbience;
 import dev.aerolarge.client.RoverClient;
@@ -274,6 +276,7 @@ public final class AerolargeClient {
         RoverClient.register(modEventBus);
         RubberDuckBlockEntity.clientTicker = DuckHints::tick;
         DiscoBallBlockEntity.clientTicker = DiscoLights::tick;
+        RobotBartenderBlockEntity.clientTicker = RobotBartenderRenderer::look;
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -357,6 +360,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.CRANE_HOOK.get(), CraneHookRenderer::new);

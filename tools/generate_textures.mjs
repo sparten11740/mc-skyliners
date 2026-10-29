@@ -117,6 +117,19 @@ function texture(folder, name, paint, noise = 4, width = SIZE, height = SIZE) {
   writeFileSync(resolve(folder, `${name}.png`), encodePng(pixels));
 }
 const clamp = (value) => Math.max(0, Math.min(255, value));
+/**
+ * An item icon outlined so it reads on any background: what paint gives inside, a line of the outline's colour round
+ * it, and round that what loose gives (steam, sparkles), not outlined, where it gives a colour.
+ */
+function outlinedIcon(name, paint, outline, loose) {
+  texture(itemOutput, name, (x, y) => {
+    const inside = paint(x, y);
+    if (inside) return inside;
+    const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => paint(x + dx, y + dy));
+    if (near) return outline;
+    return loose(x, y) ?? CLEAR;
+  }, 0);
+}
 // The rocket's oval windows' pieces, each with whether it is in the window's lowest row, on the floor, and where its
 // inner face is wall round the oval (not its hole or its lip), for the rooms' finishes to paint that wall in each
 // room's own (see the rooms' finishes, below).
@@ -3395,13 +3408,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   }, 2);
 
   // A drink's icon: what paint gives inside, a dark line round it, steam (not outlined) where steam gives it.
-  const drink = (name, paint, steam) => texture(itemOutput, name, (x, y) => {
-    const inside = paint(x, y);
-    if (inside) return inside;
-    const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => paint(x + dx, y + dy));
-    if (near) return OUTLINE;
-    return steam(x, y) ? STEAM : CLEAR;
-  }, 0);
+  const drink = (name, paint, steam) => outlinedIcon(name, paint, OUTLINE, (x, y) => (steam(x, y) ? STEAM : null));
   // Two thin wisps rising, wavering, over columns a and b, between two rows.
   const wisps = (a, b, from, to) => (x, y) => y >= from && y <= to && (x === a + Math.round(Math.sin(y * 1.3)) || x === b + Math.round(Math.sin(y * 1.3 + 2)));
   drink("espresso", (x, y) => {
@@ -3562,6 +3569,129 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       return x % 4 === 0 ? glass.map((c) => Math.min(255, c + 0x50)) : glass;
     }, 1);
   }
+}
+
+// The robot bartender (see RobotBartenderBlock): its glossy white shell, a faint seam along each panel's top and the
+// panel a touch brighter just under it; its chrome, bright and dark bands down it; the graphite of its joints, ribbed;
+// its visor's black glass, a sheen across it; its eyes, a cyan strip glowing brightest in two eyes; the cyan glow round
+// its foot and on its chest; and what it holds: a glass's pale glass with a highlight down it, the Nebula Fizz it
+// pours, violet with bubbles rising, and its polishing cloth, white with a blue stripe. Its mocktails' icons, each in a
+// glass of its own and outlined dark, so they read on any background: Nebula Fizz, violet over blue and fizzing in a
+// tall highball, sparkles round it; Rocket Fuel, red, orange and amber in a short rocks glass, a flame rising off it;
+// Zero-G Float, lime in a footed float glass under a scoop of vanilla ice cream, a red and white straw in it; Supernova
+// Sunrise, red, orange and yellow in layers in a footed glass, an orange wheel on its rim and a star bursting beside
+// it; and Moon Milk, silvery white with gold stars in it in a round glass, a crescent moon over it.
+{
+  texture(blockOutput, "robot_bartender_white", (x, y) => {
+    if (y === 0) return [0xd4, 0xda, 0xe0];
+    const sheen = Math.max(0, 6 - y) * 2;
+    return [0xea + sheen, 0xee + sheen, 0xf2 + sheen / 2];
+  }, 1);
+  texture(blockOutput, "robot_bartender_chrome", (x) => {
+    const band = x % 6;
+    if (band === 1) return [0xf4, 0xf8, 0xfc];
+    return band === 4 ? [0x8c, 0x94, 0x9e] : [0xc4, 0xcc, 0xd4];
+  }, 2);
+  texture(blockOutput, "robot_bartender_dark", (x, y) => (y % 2 === 0 ? [0x2c, 0x30, 0x36] : [0x3c, 0x42, 0x4a]), 2);
+  texture(blockOutput, "robot_bartender_visor", (x, y) => ((x + y) % 9 <= 1 ? [0x34, 0x40, 0x50] : [0x0a, 0x0e, 0x14]), 1);
+  // Squeezed onto the visor's narrow glow from side to side, so only its columns show.
+  texture(blockOutput, "robot_bartender_eyes", (x) => {
+    if ((x >= 2 && x <= 5) || (x >= 10 && x <= 13)) return [0xd8, 0xfa, 0xff];
+    return x === 1 || x === 6 || x === 9 || x === 14 ? [0x5c, 0xe4, 0xff] : [0x1c, 0x9c, 0xd0];
+  }, 0);
+  texture(blockOutput, "robot_bartender_glow", (x, y) => ((x + y) % 4 === 0 ? [0xc8, 0xf8, 0xff] : [0x50, 0xdc, 0xff]), 0);
+  texture(blockOutput, "robot_bartender_glass", (x) => (x % 4 === 1 ? [0xf4, 0xfc, 0xff] : [0xc4, 0xe2, 0xee]), 1);
+  texture(blockOutput, "robot_bartender_drink", (x, y) => ((x * 5 + y * 3) % 11 === 0 ? [0xec, 0xe4, 0xff] : [0x8a, 0x4a, 0xe8]), 3);
+  texture(blockOutput, "robot_bartender_cloth", (x, y) => (y % 6 === 2 ? [0x3a, 0x6c, 0xc8] : [0xf6, 0xf6, 0xf2]), 2);
+
+  const OUTLINE = [0x1c, 0x1a, 0x26];
+  const RIM = [0xc8, 0xd8, 0xe4];
+  const mix = (from, to, share) => from.map((c, i) => Math.round(c + (to[i] - c) * share));
+  // A little star of four points round a pixel, a burst with its corners too.
+  const star = (x, y, cx, cy) => (x === cx && Math.abs(y - cy) <= 1) || (y === cy && Math.abs(x - cx) <= 1);
+  const burst = (x, y, cx, cy) => {
+    const [dx, dy] = [Math.abs(x - cx), Math.abs(y - cy)];
+    return (dy === 0 && dx <= 2) || (dx === 0 && dy <= 2) || (dx === 1 && dy === 1);
+  };
+
+  const NEBULA_VIOLET = [0xa0, 0x4c, 0xf0];
+  const NEBULA_BLUE = [0x34, 0x4a, 0xe0];
+  const FIZZ = [0xe8, 0xe0, 0xff];
+  const SPARKLE = [0xff, 0xf2, 0xa8];
+  const BUBBLES = new Set(["7,11", "8,8", "6,6", "8,5", "7,9"]);
+  outlinedIcon("nebula_fizz", (x, y) => {
+    if (x < 5 || x > 10 || y < 3 || y > 14) return null;
+    if (x === 5 || x === 10 || y === 14) return RIM;
+    if (y === 3 || BUBBLES.has(`${x},${y}`)) return FIZZ;
+    return mix(NEBULA_VIOLET, NEBULA_BLUE, (y - 4) / 9);
+  }, OUTLINE, (x, y) => (star(x, y, 12, 2) || star(x, y, 2, 5) ? SPARKLE : null));
+
+  const FUEL_RED = [0xd8, 0x2c, 0x18];
+  const FUEL_ORANGE = [0xf6, 0x7c, 0x1a];
+  const FUEL_AMBER = [0xff, 0xbc, 0x34];
+  const FLAME_YELLOW = [0xff, 0xe6, 0x5a];
+  // The flame's rows, each from and to the columns given, yellow inside its edges from the third row down.
+  const FLAME = { 0: [8, 8], 1: [7, 8], 2: [7, 9], 3: [6, 9], 4: [6, 9], 5: [6, 9] };
+  outlinedIcon("rocket_fuel", (x, y) => {
+    if (y >= 7 && y <= 14 && x >= 3 && x <= 12) {
+      if (x === 3 || x === 12 || y >= 13) return RIM;
+      return y >= 11 ? FUEL_RED : y >= 9 ? FUEL_ORANGE : FUEL_AMBER;
+    }
+    const row = FLAME[y];
+    if (!row || x < row[0] || x > row[1]) return null;
+    return y >= 3 && x > row[0] && x < row[1] ? FLAME_YELLOW : FUEL_ORANGE;
+  }, OUTLINE, () => null);
+
+  const LIME = [0x8e, 0xe0, 0x30];
+  const LIME_BUBBLE = [0xc8, 0xf4, 0x80];
+  const SCOOP = [0xfa, 0xf6, 0xe6];
+  const SCOOP_SHADE = [0xe0, 0xd8, 0xc0];
+  const STRAW_RED = [0xe0, 0x30, 0x38];
+  const STRAW = { "12,0": STRAW_RED, "12,1": SCOOP, "11,2": STRAW_RED, "11,3": SCOOP, "11,4": STRAW_RED };
+  // The float glass narrows from four and a half pixels either side of its middle at its rim to two and a half.
+  const floatHalf = (y) => 4.5 - ((y - 6) * 2) / 6;
+  outlinedIcon("zero_g_float", (x, y) => {
+    if (STRAW[`${x},${y}`]) return STRAW[`${x},${y}`];
+    if (y <= 6 && Math.hypot((x - 7.5) / 4, (y - 5.5) / 3) <= 1) return y === 6 || x >= 9 ? SCOOP_SHADE : SCOOP;
+    if (y === 13) return x >= 7 && x <= 8 ? RIM : null;
+    if (y === 14) return x >= 5 && x <= 10 ? RIM : null;
+    if (y < 6 || y > 12 || Math.abs(x - 7.5) > floatHalf(y)) return null;
+    if (Math.abs(x - 7.5) > floatHalf(y) - 1) return RIM;
+    return (x + y) % 5 === 0 ? LIME_BUBBLE : LIME;
+  }, OUTLINE, () => null);
+
+  const SUN_RED = [0xdc, 0x22, 0x34];
+  const SUN_ORANGE = [0xf6, 0x84, 0x22];
+  const SUN_YELLOW = [0xff, 0xd8, 0x3c];
+  const WHEEL_PEEL = [0xf0, 0x90, 0x20];
+  const WHEEL_FLESH = [0xff, 0xd8, 0x90];
+  const BURST = [0xff, 0xf6, 0xc0];
+  outlinedIcon("supernova_sunrise", (x, y) => {
+    const wheel = Math.hypot(x - 11, y - 4);
+    if (wheel <= 2.2) return wheel > 1.2 ? WHEEL_PEEL : WHEEL_FLESH;
+    if (y === 13) return x >= 7 && x <= 8 ? RIM : null;
+    if (y === 14) return x >= 5 && x <= 10 ? RIM : null;
+    if (x < 5 || x > 10 || y < 4 || y > 12) return null;
+    if (x === 5 || x === 10 || y === 12) return RIM;
+    return y >= 9 ? SUN_RED : y >= 7 ? SUN_ORANGE : SUN_YELLOW;
+  }, OUTLINE, (x, y) => (burst(x, y, 2, 3) ? BURST : null));
+
+  const MILK = [0xea, 0xee, 0xf6];
+  const MILK_TOP = [0xfa, 0xfc, 0xff];
+  const STAR_GOLD = [0xf2, 0xd0, 0x5a];
+  const MOON = [0xff, 0xec, 0x9a];
+  const MILK_STARS = new Set(["6,9", "9,11", "9,8", "5,11", "7,12"]);
+  // A round glass, its bowl cut flat across its wide mouth.
+  const inGlass = (x, y) => y >= 7 && y <= 13 && Math.hypot((x - 7.5) / 4.6, (y - 9.8) / 4.2) <= 1;
+  outlinedIcon("moon_milk", (x, y) => {
+    if (Math.hypot(x - 3.5, y - 3) <= 2.5 && Math.hypot(x - 4.8, y - 2.2) > 2.1) return MOON;
+    if (y === 14) return x >= 7 && x <= 8 ? RIM : null;
+    if (y === 15) return x >= 5 && x <= 10 ? RIM : null;
+    if (!inGlass(x, y)) return null;
+    if (!inGlass(x - 1, y) || !inGlass(x + 1, y) || !inGlass(x, y + 1)) return RIM;
+    if (!inGlass(x, y - 1)) return MILK_TOP;
+    return MILK_STARS.has(`${x},${y}`) ? STAR_GOLD : MILK;
+  }, OUTLINE, () => null);
 }
 
 // The duty-free kiosk (see DisplayShelfBlock and AwningBlock). The display's cabinet: the counters' blue under a gold

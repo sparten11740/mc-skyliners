@@ -1926,20 +1926,29 @@ over the floor behind the shaft and hanging in the disco balls' light; then its 
 again, and a beep says when it is ready. Along her left side a bar curves round the window there, its counter parting
 the bar from the floor, stools before it and the back bar's lit shelves of bottles behind it; at the front right is a
 booth, purple and magenta armchairs round a low table; and at the front left, by the bar's end, a coat corner of
-lockers, a Space Helmet in each. Its windows are built at their darkest, so daylight does not wash out the floor's
-colours. The observation deck, her highest story and her chillout lounge, sees all round through its band of smoked
-glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up the
-wall from the band to it, so the room over the band is a starry dome, a planetarium. Its lounge is set out unevenly in
-groups to talk in, armchairs and bean bags facing each other round low tables on round rugs, with plants here and there,
-pairs of bean bags by the glass to watch the land fall away or the stars come out, and a bookcase tucked under the top
-of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine holds her cafeteria, a glass rail
-along its edge and carpeted stairs climbing her right-hand wall up to it from near the lift's door: round the back wall
-a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a lit drinks cabinet, tables with
-bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine with a lit showcase of bright
-packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a snack drops into its flap,
-which lights up green with the packet in it, and using it again takes the snack out into your hand: a cookie, an apple,
-a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a surprise. Cabin lights set
-into the mezzanine's floor glow both ways, over the groups under it and along its edge.
+lockers, a Space Helmet in each. Behind the bar works a Robot Bartender, a chrome and white android two blocks tall on a
+pedestal glowing cyan round its foot, polishing a glass, its head turning with a servo's whirr toward whoever comes near
+and its cyan visor blinking now and then (craftable, and put down it faces you, so it can stand behind any bar). Use it
+and it greets you in its robot voice and opens its shop of mocktails, none with any alcohol in it, each shown in its own
+glass with its price in emeralds: an emerald buys two Nebula Fizzes, violet-blue and sparkling, for a minute of Night
+Vision, two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Slow Falling, or two Moon Milks, silvery
+white with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and
+Jump Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a
+sip of food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of
+ice, pours it into the glass and sets the drink down on the bar. Its windows are built at their darkest, so daylight
+does not wash out the floor's colours. The observation deck, her highest story and her chillout lounge, sees all round
+through its band of smoked glass, under the airliner's starlight panels, dimmed so the stars outside outshine them, all
+over the ceiling and up the wall from the band to it, so the room over the band is a starry dome, a planetarium. Its
+lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
+rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and
+a bookcase tucked under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine
+holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the
+lift's door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a
+lit drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine
+with a lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a
+snack drops into its flap, which lights up green with the packet in it, and using it again takes the snack out into your
+hand: a cookie, an apple, a slice of melon, a pumpkin pie, glow berries, a bottle of honey or dried kelp, which one a
+surprise. Cabin lights set into the mezzanine's floor glow both ways, over the groups under it and along its edge.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
@@ -2275,7 +2284,11 @@ head is at the edge of space or over it (`EdgeOfSpace.reached`). `RoomAmbience` 
 whoever stands in them, telling their story from her control head by the floors and furnishing her autopilot keeps
 (`rocketStories`, `rocketRooms`). `RocketObservationDeck` sets her lounge and her cafeteria about with the room's own
 random sequence (`RocketRoom.scatter`), so each build comes out the same; its `SnackMachineBlock` keeps the step of a
-sale in its block state, its spiral's turn a scheduled tick, so it needs no block entity.
+sale in its block state, its spiral's turn a scheduled tick, so it needs no block entity. Her club's
+`RobotBartenderBlock` opens a `Shop`, as the airliner's `DutyFreeCounterBlock` does, each with a `Shop.Shopfront` of its
+own (its stock, its name and its sounds); its `RobotBartenderBlockEntity` hears of each sale by a block event, and on
+the client `RobotBartenderRenderer` turns its head toward the nearest player and draws it polishing and serving, each
+part a state of the block turned about its joint.
 Last of all `RocketLayout.finishInside` finishes her rooms (`RocketFinish`): her cover a room sees becomes a
 `RocketLinedCoverBlock` (cut to her curve) or a `RocketLiningPanelBlock` (whole), drawn by `ShellModel` with her livery
 outside and the room's lining, untinted, on the faces it sees, as the airliner's cabin is lined (`Lining`), and each

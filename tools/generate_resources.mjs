@@ -1408,6 +1408,7 @@ function rocketSoundsLang() {
   Object.assign(sounds, slideSounds());
   Object.assign(sounds, rubberDuckSounds());
   Object.assign(sounds, coffeeMachineSounds());
+  Object.assign(sounds, robotBartenderSounds());
   Object.assign(sounds, crewLockerSounds());
   Object.assign(sounds, gearSounds());
   Object.assign(sounds, airPocketSounds());
@@ -7193,6 +7194,176 @@ function barLang() {
   };
 }
 
+// The robot bartender (see RobotBartenderBlock), drawn facing north, its right hand to the east, two blocks tall. Its
+// lower block's model is its body: a chrome pedestal on a round foot ringed by a cyan glow, the column up to a graphite
+// collar, white hips, a graphite waist, the white torso with a cyan light on its chest under a shoulder yoke, and the
+// chrome neck. The rest its renderer draws over it, moving, each part a state of the lower block, drawn where it
+// stands unturned and turned about its own joint (see RobotBartenderRenderer, whose joints are where these parts meet):
+// the head, rounded white over a dark visor band, chrome ears and a nub on top, turning about the neck; the visor's
+// glow, a cyan strip a hair in front of the band, left out as it blinks; each arm's upper arm, a white shoulder over a
+// chrome arm hanging to the elbow, swinging from the shoulder, and its forearm, a graphite elbow, a white forearm
+// reaching forward and a graphite hand, bending at the elbow; and what it holds: the glass it polishes in its left
+// hand, thin walls round a hollow on a base, the drink it pours into it, Nebula Fizz under a striped straw, the
+// cocktail shaker in its right, a chrome tin under its cap, and the polishing cloth draped over its right hand. Parts
+// reaching into the block above take their faces' texture from inside its sixteen pixels, a patch of it as big as the
+// face. Its upper block is only room for them, with nothing of its own. The item is the whole bartender at rest, its
+// forearms forward, the glass and the cloth in its hands. Its mocktails are item sprites.
+const BARTENDER_PARTS = ["body", "head", "visor", "left_upper_arm", "left_forearm", "right_upper_arm", "right_forearm", "glass", "drink", "shaker", "cloth"];
+{
+  const block = (name) => `${ID}:block/${name}`;
+  const textures = {
+    white: block("robot_bartender_white"), chrome: block("robot_bartender_chrome"), dark: block("robot_bartender_dark"),
+    visor: block("robot_bartender_visor"), eyes: block("robot_bartender_eyes"), glow: block("robot_bartender_glow"),
+    glass: block("robot_bartender_glass"), drink: block("robot_bartender_drink"), cloth: block("robot_bartender_cloth"),
+    particle: block("robot_bartender_white"),
+  };
+  const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  // A box of it, each face a patch of the texture from its corner as big as the face; glowing, unshaded, where lit.
+  const part = (from, to, texture, glowing = false) => {
+    const [width, height, depth] = [0, 1, 2].map((axis) => Math.min(16, to[axis] - from[axis]));
+    const patches = {
+      north: [0, 0, width, height], south: [0, 0, width, height], east: [0, 0, depth, height], west: [0, 0, depth, height],
+      up: [0, 0, width, depth], down: [0, 0, width, depth],
+    };
+    return {
+      from, to, ...(glowing ? { shade: false } : {}),
+      faces: Object.fromEntries(Object.entries(patches).map(([face, uv]) => [face, { texture, uv, ...(glowing ? lit : {}) }])),
+    };
+  };
+  // A part of its right side mirrored onto its left, across the model's middle.
+  const mirrored = (element) => ({ ...element, from: [16 - element.to[0], element.from[1], element.from[2]], to: [16 - element.from[0], element.to[1], element.to[2]] });
+  const body = [
+    part([3.5, 0, 2.5], [12.5, 1.5, 11.5], "#chrome"),
+    part([2.5, 0, 3.5], [13.5, 1.5, 10.5], "#chrome"),
+    part([4, 1.5, 3.5], [12, 2, 10.5], "#glow", true),
+    part([6.5, 2, 5.5], [9.5, 10, 8.5], "#chrome"),
+    part([6, 10, 5], [10, 11.5, 9], "#dark"),
+    part([5, 11.5, 4.5], [11, 13.5, 9.5], "#white"),
+    part([6, 13.5, 5], [10, 15, 9], "#dark"),
+    part([4.5, 15, 4], [11.5, 21, 10], "#white"),
+    part([5, 15.5, 3.5], [11, 20.5, 4], "#white"),
+    part([7, 18, 3.3], [9, 19, 3.5], "#glow", true),
+    part([4, 20.5, 4.5], [12, 22.5, 9.5], "#white"),
+    part([7, 22.5, 6], [9, 24.5, 8], "#chrome"),
+  ];
+  const head = [
+    part([5, 24.5, 4], [11, 30.5, 10], "#white"),
+    part([5.5, 30.5, 4.5], [10.5, 31.5, 9.5], "#white"),
+    part([4.6, 25.5, 4.6], [11.4, 29.5, 9.4], "#white"),
+    part([5.2, 26.5, 3.6], [10.8, 29, 4], "#visor"),
+    part([4.2, 26.5, 6], [4.6, 28.5, 8], "#chrome"),
+    part([11.4, 26.5, 6], [11.8, 28.5, 8], "#chrome"),
+    part([7.5, 31.5, 6.5], [8.5, 32, 7.5], "#chrome"),
+  ];
+  // The eyes' strip, the whole of its texture squeezed onto its face.
+  const visor = [{ from: [5.7, 27.2, 3.45], to: [10.3, 28.3, 3.6], shade: false, faces: { north: { texture: "#eyes", uv: [0, 0, 16, 16], ...lit } } }];
+  const rightUpperArm = [
+    part([11.4, 20.4, 5.9], [13.6, 22.8, 8.1], "#white"),
+    part([11.8, 16.5, 6.3], [13.2, 20.5, 7.7], "#chrome"),
+  ];
+  const rightForearm = [
+    part([11.6, 15.6, 6.1], [13.4, 17.4, 7.9], "#dark"),
+    part([11.7, 15.8, 1.8], [13.3, 17.2, 6.2], "#white"),
+    part([11.8, 15.7, 0.2], [13.2, 17.3, 1.8], "#dark"),
+  ];
+  // The glass, inside the left hand: a base and four thin walls round its hollow.
+  const glass = [
+    part([4.3, 15.6, 0], [6.3, 15.9, 2], "#glass"),
+    part([4.3, 15.9, 0], [6.3, 18.6, 0.25], "#glass"),
+    part([4.3, 15.9, 1.75], [6.3, 18.6, 2], "#glass"),
+    part([4.3, 15.9, 0.25], [4.55, 18.6, 1.75], "#glass"),
+    part([6.05, 15.9, 0.25], [6.3, 18.6, 1.75], "#glass"),
+  ];
+  const drink = [...glass, part([4.55, 15.9, 0.25], [6.05, 18.1, 1.75], "#drink"), part([5.6, 17.6, 0.9], [5.9, 19.8, 1.2], "#cloth")];
+  const shaker = [
+    part([9.9, 15.2, 0.2], [11.7, 19.2, 2], "#chrome"),
+    part([10.15, 19.2, 0.45], [11.45, 20.3, 1.75], "#chrome"),
+    part([10.5, 20.3, 0.8], [11.1, 20.8, 1.4], "#chrome"),
+  ];
+  const cloth = [part([9.9, 15.4, -0.1], [11.8, 17.7, 2.1], "#cloth"), part([10.2, 14.4, 0.3], [11.5, 15.4, 1.7], "#cloth")];
+  const parts = {
+    body, head, visor, glass, drink, shaker, cloth,
+    left_upper_arm: rightUpperArm.map(mirrored), left_forearm: rightForearm.map(mirrored), right_upper_arm: rightUpperArm, right_forearm: rightForearm,
+  };
+  const model = (name, elements) => write(`assets/${ID}/models/block/${name}.json`, { parent: "minecraft:block/block", ambientocclusion: false, textures, elements });
+  for (const name of BARTENDER_PARTS) {
+    model(`robot_bartender_${name}`, parts[name]);
+  }
+  write(`assets/${ID}/models/block/robot_bartender_upper.json`, { parent: "minecraft:block/block", textures: { particle: textures.particle }, elements: [] });
+  write(`assets/${ID}/blockstates/robot_bartender.json`, {
+    variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => ["lower", "upper"].flatMap((half) => BARTENDER_PARTS.map((name) =>
+      [`facing=${facing},half=${half},part=${name}`, { model: `${ID}:block/robot_bartender_${half === "upper" ? "upper" : name}`, ...(y ? { y } : {}) }])))),
+  });
+  write(`assets/${ID}/models/item/robot_bartender.json`, {
+    parent: "minecraft:block/block",
+    ambientocclusion: false,
+    textures,
+    elements: [...body, ...head, ...visor, ...parts.left_upper_arm, ...parts.left_forearm, ...rightUpperArm, ...rightForearm, ...glass, ...cloth],
+    display: {
+      gui: { rotation: [30, 225, 0], translation: [0, -3, 0], scale: [0.4, 0.4, 0.4] },
+      ground: { rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.15, 0.15, 0.15] },
+      fixed: { rotation: [0, 0, 0], translation: [0, -3, 0], scale: [0.3, 0.3, 0.3] },
+      thirdperson_righthand: { rotation: [75, 45, 0], translation: [0, 1.5, 0], scale: [0.22, 0.22, 0.22] },
+      firstperson_righthand: { rotation: [0, 45, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+      firstperson_lefthand: { rotation: [0, 225, 0], translation: [0, -1, 0], scale: [0.25, 0.25, 0.25] },
+    },
+  });
+  write(`data/${ID}/loot_table/blocks/robot_bartender.json`, {
+    type: "minecraft:block",
+    pools: [{
+      rolls: 1.0,
+      bonus_rolls: 0.0,
+      entries: [{ type: "minecraft:item", name: `${ID}:robot_bartender` }],
+      conditions: [
+        { condition: "minecraft:block_state_property", block: `${ID}:robot_bartender`, properties: { half: "lower" } },
+        { condition: "minecraft:survives_explosion" },
+      ],
+    }],
+    random_sequence: `${ID}:blocks/robot_bartender`,
+  });
+  cubes.robot_bartender = null;
+  for (const drinkName of ["nebula_fizz", "rocket_fuel", "zero_g_float", "supernova_sunrise", "moon_milk"]) {
+    write(`assets/${ID}/models/item/${drinkName}.json`, { parent: "minecraft:item/generated", textures: { layer0: `${ID}:item/${drinkName}` } });
+  }
+}
+// What of the robot bartender is fitted rather than built in: breakable, and no part of the airframe.
+function robotBartenderFittings() {
+  return ["robot_bartender"];
+}
+// The servo whirr of its head turning to a customer, its shaker's rattle, the pour and the glass set down, and its
+// robot voice, greeting a customer and answering a sale, each time one of three lines (see tools/generate_sounds.mjs).
+function robotBartenderSounds() {
+  const LINES = 3;
+  const voiced = (name) => ({ subtitle: `subtitles.${ID}.${name}`, sounds: Array.from({ length: LINES }, (_, i) => ({ name: `${ID}:${name}_${i + 1}` })) });
+  return {
+    bartender_servo: { subtitle: `subtitles.${ID}.bartender_servo`, sounds: [{ name: `${ID}:bartender_servo` }] },
+    bartender_shake: { subtitle: `subtitles.${ID}.bartender_shake`, sounds: [{ name: `${ID}:bartender_shake` }] },
+    bartender_greet: voiced("bartender_greet"),
+    bartender_serve: voiced("bartender_serve"),
+  };
+}
+// Iron round an observer for its eyes and a redstone block for its works, under glass bottles for its trade.
+function robotBartenderRecipes() {
+  shaped("robot_bartender", ["BOB", "IRI", " I "], {
+    B: "minecraft:glass_bottle", O: "minecraft:observer", I: "minecraft:iron_ingot", R: "minecraft:redstone_block",
+  }, 1);
+}
+function robotBartenderLang() {
+  return {
+    "block.aerolarge.robot_bartender": "Robot Bartender",
+    "container.aerolarge.mocktail_bar": "Mocktail Bar",
+    "item.aerolarge.nebula_fizz": "Nebula Fizz",
+    "item.aerolarge.rocket_fuel": "Rocket Fuel",
+    "item.aerolarge.zero_g_float": "Zero-G Float",
+    "item.aerolarge.supernova_sunrise": "Supernova Sunrise",
+    "item.aerolarge.moon_milk": "Moon Milk",
+    "subtitles.aerolarge.bartender_servo": "Robot bartender whirrs",
+    "subtitles.aerolarge.bartender_shake": "Cocktail shaker rattles",
+    "subtitles.aerolarge.bartender_greet": "Robot bartender greets you",
+    "subtitles.aerolarge.bartender_serve": "Robot bartender takes the order",
+  };
+}
+
 // The duty-free kiosk (see DisplayShelfBlock and AwningBlock), drawn facing north. The display's cabinet: the
 // counters' blue with two drawers. Its showcase, against the south side of the block: a white base, back and top, the
 // back lit, glass sides and front, a glass shelf across it, perfumes standing on the base under gold caps and boxes of
@@ -7333,6 +7504,7 @@ FITTINGS.push(...seatConsoleFittings());
 FITTINGS.push(...galleyUnitFittings());
 FITTINGS.push(...planterFittings());
 FITTINGS.push(...barFittings());
+FITTINGS.push(...robotBartenderFittings());
 FITTINGS.push(...dutyFreeKioskFittings());
 FITTINGS.push(...ledStripFittings());
 FITTINGS.push(...spacePosterFittings());
@@ -7549,6 +7721,7 @@ seatConsoleRecipes();
 galleyUnitRecipes();
 planterRecipes();
 barRecipes();
+robotBartenderRecipes();
 dutyFreeKioskRecipes();
 towerInstrumentsRecipes();
 greenhouseRecipes();
@@ -8077,6 +8250,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...galleyUnitLang(),
   ...planterLang(),
   ...barLang(),
+  ...robotBartenderLang(),
   ...dutyFreeKioskLang(),
   ...laserPointerLang(),
   ...towerInstrumentsLang(),

@@ -891,6 +891,50 @@
       }
     ]
   },
+  "bartender_servo": {
+    "subtitle": "subtitles.aerolarge.bartender_servo",
+    "sounds": [
+      {
+        "name": "aerolarge:bartender_servo"
+      }
+    ]
+  },
+  "bartender_shake": {
+    "subtitle": "subtitles.aerolarge.bartender_shake",
+    "sounds": [
+      {
+        "name": "aerolarge:bartender_shake"
+      }
+    ]
+  },
+  "bartender_greet": {
+    "subtitle": "subtitles.aerolarge.bartender_greet",
+    "sounds": [
+      {
+        "name": "aerolarge:bartender_greet_1"
+      },
+      {
+        "name": "aerolarge:bartender_greet_2"
+      },
+      {
+        "name": "aerolarge:bartender_greet_3"
+      }
+    ]
+  },
+  "bartender_serve": {
+    "subtitle": "subtitles.aerolarge.bartender_serve",
+    "sounds": [
+      {
+        "name": "aerolarge:bartender_serve_1"
+      },
+      {
+        "name": "aerolarge:bartender_serve_2"
+      },
+      {
+        "name": "aerolarge:bartender_serve_3"
+      }
+    ]
+  },
   "crew_locker_open": {
     "subtitle": "subtitles.aerolarge.crew_locker_open",
     "sounds": [
