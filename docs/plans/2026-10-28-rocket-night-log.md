@@ -79,6 +79,9 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N38 | 01:25 | Plumes | Cloud and smoke billowing over the ground within 40 blocks of it while her engines fire (lift-off and landing); flames streaming up her sides falling back from over y 500 faster than 20 b/s; `rocket.plumes`, on | Look of a launch; fun over realism (N7) | Lead |
 | N39 | 01:30 | Circling over the spot | After 10 s within 12 blocks of the spot drifting under 3 b/s, she starts down anyway | Heavier now, she circled the spot 6–9 blocks off and never came down (over ten minutes seen); retuning the lean loop blind was riskier | Lead |
 | N40 | 01:40 | Code review | Fixed: low gravity's lease lookup loading chunks; bamboo still growing; poster protection only at its middle; rover fall cover renewable while stowed; rover answers in words only. Left for Jan: the rover's 96/160-block reach is longer than a server with a short view distance tracks | Independent review agent | Review, lead |
+| N41 | 01:55 | Launch control callouts | "Tower cleared." at 40 blocks up, "Max Q." at y 300, "Main engine cut-off." into the cruise, "Landing burn." into the burn; each once a flight, waiting for quiet; `rocket.callouts`, on | Fun for adults who know real launches (N7); built by an agent on the countdown's voice | Lead, callouts agent |
+| N42 | 02:00 | More furnishing | The cargo bay's baggage containers and crates; two pilot seats in the cockpit; a dimmed starlight ceiling over the observation deck | Seen bare at eye level | Lead |
+| N43 | 02:10 | Black hole poster | A poster skips a shaft face with something standing within two blocks in front of it: the lab's tank put the black hole facing into it; it now hangs on the east face | Jan asked for it specially; it should be seen | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -132,6 +135,13 @@ Commits on main, newest last, with the versions handed out.
   blocks; the fall-back flames, seen with the tick frozen at y 600; the circling rocket starting down and landing
   upright; bamboo planted done growing; the rover's answers' notes; the Edge of Space advancement earned; the lab
   reloaded with one tardigrade before and after; the rover reloaded mid-lowering (on the ground, one rover).
+- alpha.171: launch control's callouts (N41); the cargo bay's load, the pilot seats and the starlight ceiling (N42);
+  the black hole poster moved into view (N43). Play-tested: a flight to y 600 heard "Tower cleared." 2.5 s after
+  lift-off, "Max Q.", "Main engine cut-off." and "Landing burn." in order, then the landing announcement, "Touchdown."
+  and the arrival; the containers and five stacks of crates; both pilot seats, one sat in; the starlight ceiling at
+  night; the poster on the shaft's east face at the lab. Also checked on alpha.170's code: quitting in a cruise at
+  y 1,400 and reloading kept her cruising, with every tardigrade, rover and lift car back; a fresh rocket's assembly
+  cost one 98 ms tick; the airliner's autopilot screen unchanged and the rocket's with its space band.
 
 ## Background agents
 
