@@ -1833,8 +1833,8 @@ it, cut to the nose's curve. The Rocket Blueprint builds one just past where it 
 facing you, and operators with `/aerolarge build <pos> <north|east|south|west> rocket`. It is driven by Create
 Propulsion's creative thrusters, which need no fuel: five bells of them in its flat bottom, their plumes trailing as
 they fire, and two rings of four side jets in its skin, near the nose and near the bottom, that hold it upright. Its
-fins are its legs; between them a crew ladder, the pool's chrome ladder up a column beside the door, climbs to a step in
-front of the doorway. Inside, over an engine room, stories stand one above another round a lift shaft of dark, smoky
+fins are its legs; between them her airstairs come down from her front door to the ground (see below).
+Inside, over an engine room, stories stand one above another round a lift shaft of dark, smoky
 glass up the middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the
 front, but on the entry story, where the door is, and on the observation deck, which has a band of glass all round
 instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the front between two
@@ -1842,6 +1842,22 @@ flight displays, two pilot seats behind it (the server config's `rocket.rooms` l
 windows' glass bulges out of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel;
 it dims electrically: use one to darken its glass a step, from clear through light and medium to dark, and once more to
 clear it again, a chime falling as it darkens.
+
+Her front door, four blocks wide and three tall over her entry floor, half a block to her left of her middle, has the
+airliner's integral airstairs (see Airstairs), four blocks wide to match it: open treads with yellow nosings between
+aluminium stringers, a handrail along either side, the top tread level with the sill. Stowed, they lie folded in a bay
+under her entry floor, behind a hatch in her skin below the door, and nothing of them shows. Coming out, the hatch
+drops, the folded flight slides out of its bay, rises to the sill and tips down to its slope, and its sections run out
+down to the ground as its handrails rise, to the hum of their hydraulics and the clunk of their latches; they reach as
+far down as the ground lets them, and are walked up and down like any stairs. A lit amber button with a staircase on
+it, the airstairs' own, stands inside by the door on her right at eye height, and another low on the front of her front
+right fin's tip, to call them down from the ground: pressing either brings the stairs down or folds them away while she
+stands with her autopilot off; while she flies, it only sounds a low note. They come down by themselves as soon as she
+is built, and again once she is down on her fins after flying and her autopilot has switched itself off. Set her
+autopilot to fly and they fold away before she lifts off: her countdown waits until they are all away, as they wait,
+with a chime, until nobody is on them; and they fold away by themselves as soon as she moves. With the server config's
+`rocket.airstairs` off she is built with a crew ladder instead, the pool's chrome ladder up a column beside a doorway
+three blocks wide, climbing to a step in front of it; a rocket built before keeps her ladder.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
 and Lift Glass are in the creative tab after the Halo Light, and can be crafted), where the shaft runs on up into a
@@ -2293,7 +2309,7 @@ flying aboard, past what they see, a few chunks at a time. The zeppelin's geomet
 `ZeppelinSize` gives its hull, the car, decks and engine cars in blocks at every size, the layout keeping only its
 blocks and working the air inside its hull out from the shape as it hands it over, its burners turned down to what a
 small cell holds by `Burners`, and its boarding stairs folded away and brought down by the `BoardingStairsBlockEntity`
-of the `BoardingStairsButtonBlock` at the head of each flight, as `BellyAirstairs`, the airliner's airstairs hung in
+of the `BoardingStairsButtonBlock` at the head of each flight, as `BoardingAirstairs`, the airliner's airstairs hung in
 her belly, which `AirstairRenderer` draws as it does the airliner's; both airframes go up through `AirframeBuild` as a
 `Layout`, kept as packed positions, from an `AirframeBlueprintItem`, whose miniature `BlueprintPreview` draws from its
 souvenir model (`SouvenirModelBlock`), and `PropellerRenderer` draws a zeppelin's propellers behind their
@@ -2346,7 +2362,9 @@ show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mas
 the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
-as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
+as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
+`RocketAirstairs` her airstairs in its place, kept by the `RocketStairsBlockEntity` of the `RocketStairsButtonBlock` by
+her door as `BoardingAirstairs` out of a bay, holding her countdown through `RocketPilot.holdCountdownWhile` till away,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of

@@ -50,6 +50,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue LED_STRIPS;
     public static final ModConfigSpec.BooleanValue ROCKET_POSTERS;
     public static final ModConfigSpec.BooleanValue ROCKET_ROVER;
+    public static final ModConfigSpec.BooleanValue ROCKET_AIRSTAIRS;
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
     public static final ModConfigSpec.BooleanValue ROCKET_PLUMES;
     public static final ModConfigSpec.BooleanValue ROCKET_GROUND_FIRE;
@@ -476,6 +477,14 @@ public final class AerolargeConfig {
                 "aboard. Rockets already built keep theirs."
             )
             .define("rover", true);
+        ROCKET_AIRSTAIRS = builder
+            .comment(
+                "Whether a rocket is built with airstairs at her front door: the airliner's integral airstairs, four blocks wide, coming",
+                "down from her door to the ground and folding away into a bay under her entry floor, by her stairs buttons (one by",
+                "the door inside, one low on her front right fin) or of their own accord before she lifts off. Off, she is built",
+                "with her crew ladder and a three-wide doorway instead. Rockets already built keep theirs."
+            )
+            .define("airstairs", true);
         ROCKET_PLUMES = builder
             .comment(
                 "Whether a rocket's flight shows round her as well as in her engines' own plumes: smoke billowing out over the",

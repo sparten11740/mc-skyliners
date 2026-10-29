@@ -17,6 +17,7 @@ import dev.aerolarge.block.OpenTransponder;
 import dev.aerolarge.autopilot.SetAutopilot;
 import dev.aerolarge.autopilot.RocketPilot;
 import dev.aerolarge.autopilot.SpaceGravity;
+import dev.aerolarge.block.RocketStairsBlockEntity;
 import dev.aerolarge.block.RoverBayBlockEntity;
 import dev.aerolarge.block.SetTransponder;
 import dev.aerolarge.autopilot.UnstickAirliner;
@@ -130,6 +131,7 @@ public final class Aerolarge {
         Blockpilot.register();
         RoverDrivers.register();
         RocketPilot.holdCountdownWhile(RoverBayBlockEntity::holdsCountdown);
+        RocketPilot.holdCountdownWhile(RocketStairsBlockEntity::holdsCountdown);
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 AirframeBuild.tick(level);

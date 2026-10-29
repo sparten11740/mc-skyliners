@@ -87,6 +87,7 @@ public final class RocketLayout implements Layout {
      */
     private static final List<Function<RocketLayout, RocketPiece>> PIECES = List.of(
         RocketLadder::new,
+        RocketAirstairs::new,
         RocketCameraDisplay::new,
         RocketLiverySelector::new,
         RocketLift::new,
@@ -638,20 +639,23 @@ public final class RocketLayout implements Layout {
         }
     }
 
-    /** The front door: an opening in the skin over the entry story's floor, at the front. */
+    /**
+     * The front door: an opening in the skin over the entry story's floor, at the front, three blocks wide round her
+     * axis; her airstairs widen it (see {@link RocketAirstairs}).
+     */
     private void door() {
+        for (int x = -DOOR_HALF; x <= DOOR_HALF; x++) {
+            doorColumn(x);
+        }
+    }
+
+    /** A column of the front door at a block across her: the skin over the entry story's floor cut away, door high. */
+    void doorColumn(int x) {
         if (floors.isEmpty()) {
             return;
         }
         int floor = floors.getFirst();
-        int front = -(int) Math.ceil(radius) - 1;
-        for (int z = front; z < 0; z++) {
-            doorColumn(floor, z);
-        }
-    }
-
-    private void doorColumn(int floor, int z) {
-        for (int x = -DOOR_HALF; x <= DOOR_HALF; x++) {
+        for (int z = -(int) Math.ceil(radius) - 1; z < 0; z++) {
             for (int y = floor + 1; y <= floor + DOOR_ROWS; y++) {
                 doorBlock(x, y, z);
             }

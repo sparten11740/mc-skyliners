@@ -6,9 +6,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 
 /**
- * A flight of integral airstairs, an airliner's out of its door (see {@link AirstairBlockEntity}) or a zeppelin's out
- * of her belly (see {@link BellyAirstairs}), as its renderer draws it and its steps find who laid them (see
- * {@link AirstairStepBlock}).
+ * A flight of integral airstairs, an airliner's out of its door (see {@link AirstairBlockEntity}), a zeppelin's out of
+ * her belly or a rocket's out of her door (see {@link BoardingAirstairs}), as its renderer draws it and its steps find
+ * who laid them (see {@link AirstairStepBlock}).
  */
 public interface Airstairs {
     /**

@@ -211,6 +211,8 @@ import dev.aerolarge.block.RocketFinish;
 import dev.aerolarge.block.RocketFloorBlock;
 import dev.aerolarge.block.RocketLinedCoverBlock;
 import dev.aerolarge.block.RocketLiningPanelBlock;
+import dev.aerolarge.block.RocketStairsBlockEntity;
+import dev.aerolarge.block.RocketStairsButtonBlock;
 import dev.aerolarge.block.RubberDuckBlock;
 import dev.aerolarge.block.RubberDuckBlockEntity;
 import dev.aerolarge.block.RoverBayBlockEntity;
@@ -2169,6 +2171,14 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoardingStairsBlockEntity>> BOARDING_STAIRS_ENTITY =
         BLOCK_ENTITIES.register("boarding_stairs_button", () -> BlockEntityType.Builder.of(BoardingStairsBlockEntity::new, BOARDING_STAIRS_BUTTON.get()).build(null));
+    /** A rocket's stairs' lit push-button, which folds her airstairs away into her or brings them down. */
+    public static final DeferredBlock<RocketStairsButtonBlock> ROCKET_STAIRS_BUTTON = BLOCKS.registerBlock(
+        "rocket_stairs_button",
+        properties -> new RocketStairsButtonBlock(AIRLINER, properties),
+        BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.METAL).pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RocketStairsBlockEntity>> ROCKET_STAIRS_ENTITY =
+        BLOCK_ENTITIES.register("rocket_stairs_button", () -> BlockEntityType.Builder.of(RocketStairsBlockEntity::new, ROCKET_STAIRS_BUTTON.get()).build(null));
     /** Zeppelin Post: the franking machine in a zeppelin's control car, and the mail sack it drops to a village. */
     public static final DeferredBlock<FrankingMachineBlock> FRANKING_MACHINE = BLOCKS.registerBlock(
         "franking_machine", FrankingMachineBlock::new, metal(MapColor.COLOR_RED).noOcclusion()
@@ -2264,6 +2274,7 @@ public final class AerolargeRegistry {
     public static final DeferredItem<BlockItem> DECK_CLAMP_ITEM = ITEMS.registerSimpleBlockItem(DECK_CLAMP);
     public static final DeferredItem<BlockItem> CARRIER_LEVER_ITEM = ITEMS.registerSimpleBlockItem(CARRIER_LEVER);
     public static final DeferredItem<BlockItem> BOARDING_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOARDING_STAIRS_BUTTON);
+    public static final DeferredItem<BlockItem> ROCKET_STAIRS_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_STAIRS_BUTTON);
     public static final DeferredItem<BlockItem> BOOST_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(BOOST_BUTTON);
     public static final DeferredItem<BlockItem> TRIM_WINCH_ITEM = ITEMS.registerSimpleBlockItem(TRIM_WINCH);
     public static final DeferredItem<BlockItem> TRIM_CAR_ITEM = ITEMS.registerSimpleBlockItem(TRIM_CAR);
@@ -2455,7 +2466,7 @@ public final class AerolargeRegistry {
         new TabSection("zeppelin", List.of(ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM, RUDDER_WHEEL_ITEM,
             ELEVATOR_WHEEL_ITEM, ENGINE_TELEGRAPH_ITEM, ENGINE_REPEATER_ITEM, BURNER_LEVER_ITEM, TRIM_WHEEL_ITEM, BUBBLE_LEVEL_ITEM, TRIM_WINCH_ITEM, TRIM_CAR_ITEM,
             TECHNO_DECK_ITEM, SECRET_HATCH_ITEM, SPEAKER_ITEM, DANCE_FLOOR_ITEM, CLUB_WALL_ITEM,
-            DRINK_TAP_ITEM, STAR_FIZZ, NEON_SIGN_ITEM, COCKTAIL_TABLE_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
+            DRINK_TAP_ITEM, STAR_FIZZ, NEON_SIGN_ITEM, COCKTAIL_TABLE_ITEM, LOOKOUT_GLASS_ITEM, SCREEN_STAND_ITEM, BALLAST_VALVE_ITEM, SEARCHLIGHT_ITEM, SEARCHLIGHT_HANDLE_ITEM, FLOODLIGHT_ITEM, SKYWRITING_BOARD_ITEM, FRANKING_MACHINE_ITEM, MAIL_SACK_ITEM, BANNER_CLEAT_ITEM, CRANE_WINCH_ITEM, FLIGHT_DECK_ITEM, FLIGHT_DECK_STRIPE_ITEM, DECK_CLAMP_ITEM, CARRIER_LEVER_ITEM, BOARDING_STAIRS_BUTTON_ITEM, ROCKET_STAIRS_BUTTON_ITEM, BOOST_BUTTON_ITEM, HORN_CORD_ITEM, LIVERY_BOARD_ITEM, LIVERY_SELECTOR_ITEM, FLAG_HALYARD_ITEM, FLAGSTAFF_ITEM,
             SHIPS_PLAQUE_ITEM, CHRISTENING_BOTTLE, PICTURE_BOARD_ITEM, FESTIVE_GARLAND_ITEM, FESTIVE_BOW_ITEM)),
         new TabSection("drops", List.of(
             JUMP_LIGHT_ITEM, PARACHUTE_RACK_ITEM, PARACHUTE, PAPER_PLANE_BOX_ITEM, LANDING_TARGET_ITEM, SIGNAL_FLARE_ITEM, CARGO_CRATE_ITEM, DROP_BAY_ITEM, ROVER_REMOTE

@@ -247,6 +247,21 @@ function litButtonState(name) {
 litButton("airstair_button");
 // A zeppelin's boarding stairs' button (see BoardingStairsButtonBlock), in the airstair button's cap: the same stairs.
 litButton("boarding_stairs_button", "airstair_button");
+// A rocket's stairs button (see RocketStairsButtonBlock), in the airstair button's cap too: the same stairs, four wide.
+litButton("rocket_stairs_button", "airstair_button");
+// A boarding stairs button's glowstone and blackstone button over an iron ingot, the rocket's steel.
+function rocketStairsRecipes() {
+  shaped("rocket_stairs_button", ["G", "B", "I"], { G: "minecraft:glowstone_dust", B: "minecraft:polished_blackstone_button", I: "minecraft:iron_ingot" }, 1);
+}
+function rocketStairsLang() {
+  return {
+    "block.aerolarge.rocket_stairs_button": "Rocket Stairs Button",
+  };
+}
+// Fitted to her skin and her fin rather than built into her, as a zeppelin's stairs button is.
+function rocketStairsFittings() {
+  return ["rocket_stairs_button"];
+}
 // A zeppelin's speed boost button (see BoostButtonBlock): its red cap shows a fast-forward arrow.
 litButton("boost_button");
 // The illuminated button: the call button with glowstone dust over it to light its cap.
@@ -9239,6 +9254,7 @@ const FITTINGS = ["light_strip", "pendant_light", "light_cable", "halo_light", "
   "model_airliner", "model_zeppelin", "model_rocket", "paper_plane_box", "horn_cord", "livery_board", "livery_selector", "flag_halyard", "flagstaff", "lookout_glass", "screen_stand", "ballast_valve", "searchlight", "searchlight_handle", "floodlight", "franking_machine", "mail_sack", "banner_cleat", "crane_winch", "carrier_lever", "skywriting_board", "boarding_stairs_button", "boost_button", "ships_plaque", "picture_board", "engine_repeater", "bubble_level", "duty_free_counter", "springboard", "starlight_panel", "gym_rings", "hide_and_seek_button", ...ROOM_DIVIDERS, "vacuum_toilet"];
 FITTINGS.push(...holdAndTailFittings());
 FITTINGS.push(...airstairFittings());
+FITTINGS.push(...rocketStairsFittings());
 FITTINGS.push(...surfacePanelFittings());
 FITTINGS.push(...slideFittings());
 FITTINGS.push(...rubberDuckFittings());
@@ -9473,6 +9489,7 @@ wcSignRecipes();
 denFurnitureRecipes();
 airstairButtonRecipes();
 doorButtonRecipes();
+rocketStairsRecipes();
 cargoNetRecipes();
 cargoFloorRecipes();
 uldContainerRecipes();
@@ -10007,6 +10024,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...denFurnitureLang(),
   ...airstairButtonLang(),
   ...doorButtonLang(),
+  ...rocketStairsLang(),
   ...cargoNetLang(),
   ...cargoFloorLang(),
   ...uldContainerLang(),

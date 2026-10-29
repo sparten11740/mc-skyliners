@@ -34,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A zeppelin's boarding stairs (see {@link BoardingStairsButtonBlock}): the button at the head of a flight keeps it.
  * A zeppelin built now has the airliner's airstairs there, two blocks wide, hung in her belly (see
- * {@link BellyAirstairs}). One built before keeps its stairs of blocks: the button keeps the blocks of the flight that
+ * {@link BoardingAirstairs}). One built before keeps its stairs of blocks: the button keeps the blocks of the flight that
  * hang below her hull, its steps, their rails and the patch of her cover they cut through, each as it stands with the
  * stairs down and with them up. Going up, that flight folds away a row at a time from its foot, and the cover closes
  * over it last; coming down, the cover opens and the steps run down a row at a time to the ground, the first row that
@@ -43,7 +43,7 @@ import net.minecraft.world.phys.Vec3;
  * her stairs' buttons works them all by hand while she stands still. The button low on the control car, calling them
  * from the ground, keeps no flight of its own.
  */
-public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs {
+public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs, BoardingAirstairs.Keeper {
     private static final Loaded<BoardingStairsBlockEntity> LOADED = new Loaded<>(BoardingStairsBlockEntity.class);
     /** How many ticks a row of the flight takes to fold away or come down. */
     private static final int ROW_TICKS = 3;
@@ -76,7 +76,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs 
     private int stillLooks;
     /** The airliner's airstairs, in a zeppelin built with them; none in one with stairs of blocks. */
     @Nullable
-    private BellyAirstairs belly;
+    private BoardingAirstairs belly;
 
     public BoardingStairsBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.BOARDING_STAIRS_ENTITY.get(), pos, state);
@@ -91,7 +91,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs 
     public void rigAirstairs(BlockPos head, Direction out, Direction right, int rise, int sections, List<AirstairControllerBlockEntity.Step> hatch) {
         folds.clear();
         rows.clear();
-        belly = new BellyAirstairs(this, head, out, right, rise, sections, hatch);
+        belly = new BoardingAirstairs(this, head, out, right, rise, sections, AirstairFlight.WIDTH, hatch, null);
         flown = true;
         setChanged();
     }
@@ -296,7 +296,8 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs 
     }
 
     /** Tells the clients where the airstairs are going, which draw them. */
-    void sync() {
+    @Override
+    public void sync() {
         setChanged();
         if (level != null) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -360,7 +361,7 @@ public class BoardingStairsBlockEntity extends BlockEntity implements Airstairs 
         down = !tag.contains("StairsDown") || tag.getBoolean("StairsDown");
         laid = tag.contains("Laid") ? Math.min(tag.getInt("Laid"), rows.size()) : rows.size();
         flown = tag.getBoolean("Flown");
-        belly = tag.contains("Airstairs") ? BellyAirstairs.load(this, tag.getCompound("Airstairs"), turn, registries) : null;
+        belly = tag.contains("Airstairs") ? BoardingAirstairs.load(this, tag.getCompound("Airstairs"), turn, registries) : null;
     }
 
     @Override
