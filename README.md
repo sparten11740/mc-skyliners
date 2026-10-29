@@ -1946,7 +1946,7 @@ Her flight is heard as well as seen. Once the cabin has heard its take-off annou
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then
 "lift-off!" as her engines light with a crack and a deep whoomp and their roar swells in. It stays on the radio
 through her flight, calling each milestone once, as a real launch is called, each call a transmission of its own
-between two beeps: "Tower cleared." 40 blocks up, "Max Q." as she climbs through y 300 on her way higher, "Main engine
+between two beeps: "Tower cleared." 40 blocks up, "Max Q." 160 blocks up on her way higher, "Main engine
 cut-off." as she reaches her height, and "Landing burn." as her landing burn begins, each waiting for whatever else is
 being said to end first (the server config's `rocket.callouts` leaves them out). The roar follows her thrust,
 louder and higher the harder they push, and carries far across the ground; aboard, it comes through her hull as a deep

@@ -12,13 +12,13 @@ import net.minecraft.sounds.SoundEvent;
  * Launch control calling out the rocket's flight as a space centre's loop calls a real launch, on the radio it counts
  * her down on and in the same voice (see {@link RocketSounds}), each call a transmission of its own, opened and closed
  * by the Quindar tones: "Tower cleared." as she rises {@link #TOWER} blocks clear of the ground; "Max Q." as she climbs
- * through {@link #MAX_Q}; "Main engine cut-off." as she reaches her height and goes from her climb to her cruise; and
- * "Landing burn." as her landing burn starts, falling back. Her touchdown is left to the flight deck, which says
- * "Touchdown." (see {@link RocketSounds}).
+ * {@link #MAX_Q} blocks over the ground; "Main engine cut-off." as she reaches her height and goes from her climb to
+ * her cruise; and "Landing burn." as her landing burn starts, falling back. Her touchdown is left to the flight deck,
+ * which says "Touchdown." (see {@link RocketSounds}).
  *
  * <p>Each is called once a flight, in that order, none once a later one has been passed. None is said over another
- * voice: it waits for her cockpit to fall quiet (see {@link AutopilotBlockEntity#quiet}), as the welcome to space
- * does, and holds the floor while it lasts, so the cabin's landing announcement waits for "Landing burn."; one that has
+ * voice: it waits for her cockpit to fall quiet (see {@link AutopilotBlockEntity#quiet}), as the welcome to space does,
+ * and holds the floor while it lasts, so the cabin's landing announcement waits for "Landing burn."; one that has
  * waited {@link #WAIT_MOST} ticks, its milestone well behind her, is let go unsaid, as is one still waiting as she
  * passes the next. Everyone near her hears it, aboard or watching from the ground, as they hear her count. The server
  * config's {@code rocket.callouts} leaves them out. One for each rocket, worked by her autopilot's block entity;
@@ -28,14 +28,14 @@ final class LaunchCallouts {
     /** How high over the ground she is clear of her launch tower, by her radio altitude under her fins, in blocks. */
     static final double TOWER = 40;
     /**
-     * The height she passes Max Q at, where the air pushes hardest on her, in world blocks, as her height is read (see
-     * {@link EdgeOfSpace#HEIGHT}). A real rocket meets it about a minute up, her speed built up and the air not yet
-     * thin. Hers is y 300, so that from the ground of most worlds (sea level, y 63) it comes a few seconds after
-     * "Tower cleared." and before her height, high over the clouds (y 192), climbing fast, and just under the top of
-     * the world (y 320), past which there is only sky, the air thinning toward space. Set to cruise lower than some 70
-     * blocks over it, she eases off her climb before she gets there, and it is not called.
+     * How high over the ground she passes Max Q, where the air pushes hardest on her, by her radio altitude under her
+     * fins, in blocks. A real rocket meets it about a minute up, her speed built up and the air not yet thin. Hers is
+     * 160 blocks up, so that it comes some five seconds after "Tower cleared." and before her height, over the clouds
+     * from the ground of most worlds (sea level, y 63; the clouds at y 192), climbing fast; reckoned from her fins
+     * rather than her cockpit, it comes the same at every scale. Set to cruise lower than some 70 blocks over it, she
+     * eases off her climb before she gets there, and it is not called.
      */
-    static final double MAX_Q = 300;
+    static final double MAX_Q = 160;
     /** How long a call waits for her cockpit to fall quiet, at most, in ticks: three seconds, then it is let go. */
     private static final int WAIT_MOST = 3 * 20;
     /**
@@ -67,7 +67,6 @@ final class LaunchCallouts {
     private int waited;
     /** Her radio altitude and her height the tick before, to tell her climbing through a milestone's; NaN at first. */
     private double lastRadio = Double.NaN;
-    private double lastHeight = Double.NaN;
 
     /** A new flight begins: no milestone passed yet. */
     void begin() {
@@ -75,7 +74,6 @@ final class LaunchCallouts {
         waiting = null;
         waited = 0;
         lastRadio = Double.NaN;
-        lastHeight = Double.NaN;
     }
 
     /**
@@ -87,7 +85,6 @@ final class LaunchCallouts {
                SableFlight.State flight, double radio) {
         Milestone reached = reached(phase, next, flight, radio);
         lastRadio = radio;
-        lastHeight = flight.position().y;
         if (reached != null && (passed == null || reached.compareTo(passed) > 0)) {
             passed = reached;
             waiting = AerolargeConfig.ROCKET_CALLOUTS.get() ? reached : null;
@@ -108,7 +105,7 @@ final class LaunchCallouts {
     /**
      * The milestone she passes this tick, null for none: her climb going over to her cruise, her fall to her landing
      * burn, rising through {@link #TOWER} over the ground, or, still climbing once clear of the tower, through
-     * {@link #MAX_Q}.
+     * {@link #MAX_Q} over the ground.
      */
     @Nullable
     private Milestone reached(AutopilotBlockEntity.Phase phase, AutopilotBlockEntity.Phase next, SableFlight.State flight, double radio) {
@@ -122,7 +119,7 @@ final class LaunchCallouts {
             return Milestone.TOWER_CLEARED;
         }
         boolean climbing = phase == AutopilotBlockEntity.Phase.CLIMB && next == AutopilotBlockEntity.Phase.CLIMB;
-        boolean throughMaxQ = lastHeight < MAX_Q && flight.position().y >= MAX_Q;
+        boolean throughMaxQ = lastRadio < MAX_Q && radio >= MAX_Q;
         return climbing && throughMaxQ && passed == Milestone.TOWER_CLEARED ? Milestone.MAX_Q : null;
     }
 }
