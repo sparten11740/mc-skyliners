@@ -6661,38 +6661,61 @@ function bulkheadSignLang() {
 // The WC signs (see WcSignBlock and OverheadWcSignBlock). The one over a WC's door: the bulkhead's lightbox, its toilet
 // lit green while the WC is free and red while it is taken. The overhead one, drawn facing north: a slim off-white
 // lightbox three pixels deep, its back against the south side of the block, or hung in the block's middle on two
-// brushed steel rods from the block over it; on its face, inside a pixel of the housing all round, the arrow and the
-// toilet glowing whatever the light around, a quarter of a pixel proud. In the hand, each as it is when its WC is free,
-// the overhead one pointing straight on. Taken down, the overhead sign keeps its arrow, the first left off.
+// brushed steel rods from the block over it, or standing in the block's middle, two pixels higher and its housing
+// textured as it is hanging, on two short posts of the rods' steel where its rods would be, each in a steel foot, a
+// low bar between the feet; on its face, inside a pixel of the housing all round, the arrow and the toilet glowing
+// whatever the light around, a quarter of a pixel proud. In the hand, each as it is when its WC is free, the
+// overhead one pointing straight on. Taken down, the overhead sign keeps its arrow, the first left off.
 const WC_SIGN_ARROWS = ["ahead", "left", "right", "down", "none"];
 {
   const block = (name) => `${ID}:block/${name}`;
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
+  // How the overhead sign is put up, as its HANGING and STANDING say: its models' names, where its lightbox is and
+  // what holds it there.
+  const mounts = {
+    wall: { suffix: "", front: 13, lift: 0, holder: [] },
+    hanging: {
+      suffix: "_hanging", front: 6.5, lift: 0,
+      holder: [solid([2.5, 14, 7.5], [3.5, 16, 8.5], "#rod"), solid([12.5, 14, 7.5], [13.5, 16, 8.5], "#rod")],
+    },
+    standing: {
+      suffix: "_standing", front: 6.5, lift: 2,
+      holder: [
+        solid([2.25, 1, 7.25], [3.75, 4, 8.75], "#rod"),
+        solid([12.25, 1, 7.25], [13.75, 4, 8.75], "#rod"),
+        solid([1, 0, 5.5], [5, 1, 10.5], "#rod"),
+        solid([11, 0, 5.5], [15, 1, 10.5], "#rod"),
+        solid([5, 0, 7.5], [11, 0.5, 8.5], "#rod"),
+      ],
+    },
+  };
   for (const taken of [false, true]) {
     const state = taken ? "_occupied" : "";
     bulkheadLightbox(`wc_sign${state}`, `wc_sign${state}`);
     for (const arrow of WC_SIGN_ARROWS) {
-      for (const hanging of [false, true]) {
-        // The lightbox's front face, and its depth either side of it.
-        const front = hanging ? 6.5 : 13;
+      for (const [mount, { suffix, front, lift, holder }] of Object.entries(mounts)) {
+        // The lightbox's depth behind its front face; raised, its sides show the rows of its housing they show unraised.
         const back = front + 3;
+        const sides = { north: [0, 2, 16, 14], south: [0, 2, 16, 14], east: [16 - back, 2, 16 - front, 14], west: [front, 2, back, 14] };
         const housing = {
-          from: [0, 2, front], to: [16, 14, back],
-          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) =>
-            [face, { texture: "#housing", ...(face === "south" && !hanging ? { cullface: "south" } : {}) }])),
+          from: [0, 2 + lift, front], to: [16, 14 + lift, back],
+          faces: Object.fromEntries(["north", "south", "east", "west", "up", "down"].map((face) => [face, {
+            texture: "#housing",
+            ...(lift && sides[face] ? { uv: sides[face] } : {}),
+            ...(face === "south" && mount === "wall" ? { cullface: "south" } : {}),
+          }])),
         };
         const face = {
-          from: [1, 3, front - 0.25], to: [15, 13, front], shade: false,
+          from: [1, 3 + lift, front - 0.25], to: [15, 13 + lift, front], shade: false,
           faces: { north: { texture: "#face", uv: [1, 3, 15, 13], ...lit } },
         };
-        const rods = hanging ? [solid([2.5, 14, 7.5], [3.5, 16, 8.5], "#rod"), solid([12.5, 14, 7.5], [13.5, 16, 8.5], "#rod")] : [];
-        write(`assets/${ID}/models/block/overhead_wc_sign_${arrow}${state}${hanging ? "_hanging" : ""}.json`, {
+        write(`assets/${ID}/models/block/overhead_wc_sign_${arrow}${state}${suffix}.json`, {
           parent: "minecraft:block/block",
           textures: {
             housing: block("overhead_wc_sign"), face: block(`overhead_wc_sign_${arrow}${state}`), rod: block("bulkhead_sign_bezel"),
             particle: block("overhead_wc_sign"),
           },
-          elements: [housing, face, ...rods],
+          elements: [housing, face, ...holder],
         });
       }
     }
@@ -6701,12 +6724,14 @@ const WC_SIGN_ARROWS = ["ahead", "left", "right", "down", "none"];
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => [false, true].map((taken) =>
       [`facing=${facing},occupied=${taken}`, { model: `${ID}:block/wc_sign${taken ? "_occupied" : ""}`, ...(y ? { y } : {}) }]))),
   });
+  // A sign that hangs hangs, whatever STANDING says.
+  const mountOf = (hanging, standing) => mounts[hanging ? "hanging" : standing ? "standing" : "wall"];
   write(`assets/${ID}/blockstates/overhead_wc_sign.json`, {
     variants: Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) => WC_SIGN_ARROWS.flatMap((arrow) =>
-      [false, true].flatMap((hanging) => [false, true].map((taken) => [
-        `arrow=${arrow},facing=${facing},hanging=${hanging},occupied=${taken}`,
-        { model: `${ID}:block/overhead_wc_sign_${arrow}${taken ? "_occupied" : ""}${hanging ? "_hanging" : ""}`, ...(y ? { y } : {}) },
-      ]))))),
+      [false, true].flatMap((hanging) => [false, true].flatMap((taken) => [false, true].map((standing) => [
+        `arrow=${arrow},facing=${facing},hanging=${hanging},occupied=${taken},standing=${standing}`,
+        { model: `${ID}:block/overhead_wc_sign_${arrow}${taken ? "_occupied" : ""}${mountOf(hanging, standing).suffix}`, ...(y ? { y } : {}) },
+      ])))))),
   });
   write(`assets/${ID}/models/item/wc_sign.json`, { parent: `${ID}:block/wc_sign` });
   keptLooks("overhead_wc_sign", { arrow: WC_SIGN_ARROWS }, (arrow) => `${ID}:block/overhead_wc_sign_${arrow}`, [WC_SIGN_ARROWS[0]]);

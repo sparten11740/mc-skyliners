@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -43,21 +44,33 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * lightbox with a dark face, on which an arrow shows the way to the WC and a toilet beside it glows green while one of
  * the WCs it shows is free, or red, someone sitting on it, while every one of them is taken (see
  * {@link OverheadWcSignBlockEntity}). Pictures only, so it needs no reading. FACING is the way its face looks; HANGING,
- * whether it hangs on two short rods from the block over it rather than standing out from a wall. Use it with an empty
- * hand for the next arrow, sneaking for the one before; taken down, or picked, it keeps its arrow.
+ * whether it hangs on two short rods from the block over it rather than standing out from a wall; STANDING, whether it
+ * stands on the floor instead, a free-standing sign on two short posts over their feet, as its rods would hold it from
+ * below (never both: a sign that hangs hangs, whatever STANDING says). Use it with an empty hand for the next arrow,
+ * sneaking for the one before; taken down, or picked, it keeps its arrow.
  */
 public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final MapCodec<OverheadWcSignBlock> CODEC = simpleCodec(OverheadWcSignBlock::new);
     public static final BooleanProperty HANGING = BooleanProperty.create("hanging");
+    /** Whether the sign stands on the floor; one saved before it could is where HANGING says. */
+    public static final BooleanProperty STANDING = BooleanProperty.create("standing");
     public static final EnumProperty<Arrow> ARROW = EnumProperty.create("arrow", Arrow.class);
     public static final BooleanProperty OCCUPIED = WcSignBlock.OCCUPIED;
     /** The arrow a sign shows when nothing says which: straight on. */
     private static final Arrow DEFAULT = Arrow.AHEAD;
     /** The click of a new arrow going in: an item frame's turn, a little higher, as the bulkhead signs' pictures. */
     private static final float CHANGE_PITCH = 1.3F;
-    /** Facing north: the lightbox against the south side of the block, or hanging in its middle from rods to its top. */
+    /**
+     * Facing north: the lightbox against the south side of the block, or hanging in its middle from rods to its top, or
+     * standing in its middle, two pixels higher, on its posts and their feet.
+     */
     private static final Map<Direction, VoxelShape> ON_WALL = TurnedShapes.of(Block.box(0, 2, 13, 16, 14, 16));
     private static final Map<Direction, VoxelShape> HUNG = TurnedShapes.of(Block.box(0, 2, 6.5, 16, 16, 9.5));
+    private static final Map<Direction, VoxelShape> ON_FLOOR = TurnedShapes.of(Shapes.or(
+        Block.box(0, 4, 6.5, 16, 16, 9.5),
+        Block.box(2.25, 1, 7.25, 3.75, 4, 8.75), Block.box(12.25, 1, 7.25, 13.75, 4, 8.75),
+        Block.box(1, 0, 5.5, 5, 1, 10.5), Block.box(11, 0, 5.5, 15, 1, 10.5), Block.box(5, 0, 7.5, 11, 0.5, 8.5)
+    ));
 
     /** Which way the arrow points, seen from in front; in the order using it goes through them, as its item's looks. */
     public enum Arrow implements StringRepresentable {
@@ -83,7 +96,7 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
     public OverheadWcSignBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HANGING, false)
-            .setValue(ARROW, DEFAULT).setValue(OCCUPIED, false));
+            .setValue(STANDING, false).setValue(ARROW, DEFAULT).setValue(OCCUPIED, false));
     }
 
     @Override
@@ -93,23 +106,24 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HANGING, ARROW, OCCUPIED);
+        builder.add(FACING, HANGING, STANDING, ARROW, OCCUPIED);
     }
 
     /**
-     * Against the side of a block it stands out from it, facing away; under one it hangs from it, facing whoever puts
-     * it up (see {@link Mounting}); not on a floor, where it would stand out from nothing. Its arrow is the one it was
-     * taken down or picked with.
+     * Against the side of a block it stands out from it, facing away; under one it hangs from it, and on the floor it
+     * stands on its posts, facing whoever puts it up (see {@link Mounting}). Its arrow is the one it was taken down or
+     * picked with.
      */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction toward = Mounting.support(context, EnumSet.of(Mount.CEILING, Mount.WALL));
+        Direction toward = Mounting.support(context, EnumSet.allOf(Mount.class));
         if (toward == null) {
             return null;
         }
-        boolean hanging = toward == Direction.UP;
-        Direction facing = hanging ? context.getHorizontalDirection().getOpposite() : toward.getOpposite();
-        return defaultBlockState().setValue(FACING, facing).setValue(HANGING, hanging);
+        Mount mount = Mount.against(toward);
+        Direction facing = mount == Mount.WALL ? toward.getOpposite() : context.getHorizontalDirection().getOpposite();
+        return defaultBlockState().setValue(FACING, facing)
+            .setValue(HANGING, mount == Mount.CEILING).setValue(STANDING, mount == Mount.FLOOR);
     }
 
     /** Put up by hand, it shows the WCs whose signs are round it. */
@@ -123,7 +137,8 @@ public class OverheadWcSignBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return (state.getValue(HANGING) ? HUNG : ON_WALL).get(state.getValue(FACING));
+        Map<Direction, VoxelShape> shapes = state.getValue(HANGING) ? HUNG : state.getValue(STANDING) ? ON_FLOOR : ON_WALL;
+        return shapes.get(state.getValue(FACING));
     }
 
     /** Whatever is in hand is used as it would be anywhere, a block put against the sign; only an empty hand turns it. */

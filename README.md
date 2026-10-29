@@ -745,7 +745,8 @@ across, from two rows under it up to its own, as behind a door under it). An Ove
 in an airliner's cabin that shows the way to the WCs: a slim off-white lightbox with a dark face, a white arrow on it
 (straight on, left, right, down the stairs, or none) beside the same toilet, lit green while one of the WCs it shows
 is free and red, someone sitting on it, while all of them are taken. Against the side of a block it stands out from
-it; against the underside of one it hangs from it on two short rods. Put up by hand, it shows every WC whose sign is
+it; against the underside of one it hangs from it on two short rods; on the floor it stands on two short posts, a
+free-standing sign facing you. Put up by hand, it shows every WC whose sign is
 within 16 blocks of it (8 up or down); use it with an empty hand for the next arrow, sneaking for the one before (one
 put up before any WC sign round it looks for them again then). Taken down, or picked, it keeps its arrow, which its item
 shows. Both can be
