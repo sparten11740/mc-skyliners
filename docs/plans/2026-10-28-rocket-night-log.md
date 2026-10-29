@@ -30,7 +30,7 @@ What the rocket has now that she did not have at 22:55, each with its server or 
   over the spot, the lift music restarting every tick aboard, a rocket's autopilot no longer speaking of circling the
   pin, and five code reviews' findings.
 
-The last version tonight is alpha.179.
+The last version tonight is alpha.180.
 
 The versions handed out are under "Work done"; what wants your eye first is under "For Jan to look at".
 
@@ -209,6 +209,8 @@ Commits on main, newest last, with the versions handed out.
 - alpha.179: the fifth review's fixes (N58). Play-tested on a scale-3 rocket: her map with a pin and no ring, and her
   screen reading DESCENT once Land was pressed in her climb; her control head after landing, its heading row drawn as
   before; not looked at: the helmet HUD, or the control head set to a circle.
+- alpha.180: the autopilot map's pin coordinates kept a line over its own where the two would run into each other, as
+  they did on the rocket's narrow map ("Z 92Pin X ..."). Seen on a rocket's screen with a pin set.
 
 ## Background agents
 
@@ -257,8 +259,6 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
 - After that F3+T, a minute later, the dev client crashed in the game's own font code drawing a recipe toast ("Image
   is not allocated", `crash-2026-10-29_04.48.55-client.txt`), no Aerolarge code in it: a bitmap font freed by the
   resource reload. The world had saved; I note it in case it ever shows without F3+T.
-- Her settings map's two coordinate lines at its foot (hers and the pin's) run into each other once a pin is set
-  ("Z 92Pin X ..."); not new tonight, and the airliner's map is the same width.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
