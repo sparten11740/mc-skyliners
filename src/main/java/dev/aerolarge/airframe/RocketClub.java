@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BarCounterBlock;
+import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.SpeakerBlock;
 import dev.aerolarge.block.TechnoDeckBlock;
 import dev.aerolarge.block.TechnoDeckBlockEntity;
@@ -45,6 +46,18 @@ final class RocketClub extends RocketRoom {
         }
         bar(y);
         deck(new BlockPos(0, y, (int) Math.round(DECK_OUT)));
+        darken();
+    }
+
+    /** Its windows at their darkest, so that daylight does not wash out the dance floor's colours. */
+    private void darken() {
+        int reach = layout.reach();
+        for (BlockPos at : BlockPos.betweenClosed(-reach, floor() + 1, -reach, reach, top(), reach)) {
+            BlockState state = layout.stateAt(at.getX(), at.getY(), at.getZ());
+            if (state.is(AerolargeRegistry.OVAL_WINDOW.get())) {
+                layout.set(at.getX(), at.getY(), at.getZ(), state.setValue(OvalWindowBlock.DIM, OvalWindowBlock.DARKEST));
+            }
+        }
     }
 
     /** The dance floor's tiles in place of every block of the room's floor. */

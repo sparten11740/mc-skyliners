@@ -22,7 +22,7 @@ final class RocketBunks extends RocketRoom {
     /** How far round from her front the lockers are, in degrees: either side of the way out and of the back window. */
     private static final double[] LOCKERS = {22, 338, 158, 202};
     /** The blankets' colours, taken in turn. */
-    private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.GRAY, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
+    private static final DyeColor[] BLANKETS = {DyeColor.BLUE, DyeColor.PURPLE, DyeColor.CYAN, DyeColor.LIGHT_BLUE};
 
     private int blankets;
 
@@ -39,6 +39,7 @@ final class RocketBunks extends RocketRoom {
                 double round = diagonal + side * PAIR_APART;
                 bunkBed(across(out, round), y, along(out, round), inward(round));
             }
+            pendant(across(out, diagonal), along(out, diagonal), SOUL_LANTERN);
         }
         for (double round : LOCKERS) {
             crewLocker(across(out, round), y, along(out, round), inward(round));

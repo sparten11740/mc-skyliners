@@ -42,7 +42,7 @@ final class RocketMess extends RocketRoom {
         }
     }
 
-    /** A table, an armchair either side of it round the room, facing it. */
+    /** A table, an armchair either side of it round the room, facing it, and a lamp hanging over it. */
     private void table(int x, int y, int z, double round) {
         if (!put(x, y, z, AerolargeRegistry.LOUNGE_TABLE.get().defaultBlockState())) {
             return;
@@ -50,6 +50,7 @@ final class RocketMess extends RocketRoom {
         Direction on = clockwise(round);
         seat(x + on.getStepX(), y, z + on.getStepZ(), on.getOpposite(), DyeColor.BLUE);
         seat(x - on.getStepX(), y, z - on.getStepZ(), on, DyeColor.BLUE);
+        pendant(x, z, LANTERN);
     }
 
     /** A run of galley units round the back wall between two angles, an oven in its middle, a coffee machine on it. */

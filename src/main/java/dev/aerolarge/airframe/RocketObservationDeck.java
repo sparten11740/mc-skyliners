@@ -13,7 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * smoked glass all the way round her at eye height, so the whole horizon is seen from it; out to her sides and her back
  * an armchair facing out of it, a bean bag either side of it to lie back in and watch the land fall away or the stars
  * come out, and between them a pair of bean bags at each diagonal, facing out too; and overhead, as the airliner's
- * lounge has, a starlight ceiling of the airliner's starlight panels, dimmed so the stars outside outshine it.
+ * lounge has, the airliner's starlight panels, dimmed so the stars outside outshine them, all over the ceiling and up
+ * the wall from the band to it, so the room over the band is a starry dome.
  */
 final class RocketObservationDeck extends RocketRoom {
     /** Her observation deck's story, from the entry story up. */
@@ -27,6 +28,8 @@ final class RocketObservationDeck extends RocketRoom {
      * player's size, its story would otherwise rise up into her nose as a tower of bare skin.
      */
     private static final int TALLEST = 16;
+    /** How far in from her surface a block against her skin's inside lies at most, in blocks. */
+    private static final double AGAINST_SKIN = 2;
     /** The band of glass's lowest and highest rows over the floor. */
     private static final int BAND_FROM = 1;
     private static final int BAND_TO = 5;
@@ -52,21 +55,22 @@ final class RocketObservationDeck extends RocketRoom {
             lid(ceiling);
         }
         starlight(ceiling - 1);
+        starryWall(ceiling - 1);
         int y = floor() + 1;
         double out = wall() - AT_WINDOW;
         for (double round : new double[]{90, 180, 270}) {
             Direction facing = inward(round).getOpposite();
-            seat(across(out, round), y, along(out, round), facing, DyeColor.GRAY);
+            seat(across(out, round), y, along(out, round), facing, DyeColor.ORANGE);
             for (int side = -1; side <= 1; side += 2) {
                 double at = round + side * BESIDE;
-                put(across(out, at), y, along(out, at), beanBag(facing, DyeColor.GRAY));
+                put(across(out, at), y, along(out, at), beanBag(facing, DyeColor.YELLOW));
             }
         }
         double lounge = wall() - LOUNGE_IN;
         for (double round = 45; round < 360; round += 90) {
             for (int side = -1; side <= 1; side += 2) {
                 double at = round + side * LOUNGE_APART / 2;
-                put(across(lounge, at), y, along(lounge, at), beanBag(inward(at).getOpposite(), DyeColor.BLACK));
+                put(across(lounge, at), y, along(lounge, at), beanBag(inward(at).getOpposite(), DyeColor.LIGHT_BLUE));
             }
         }
     }
@@ -98,12 +102,27 @@ final class RocketObservationDeck extends RocketRoom {
         }
     }
 
-    /** The starlight ceiling: the airliner's starlight panels, dimmed, in every free block of a row under the ceiling. */
+    /** The starlight ceiling: the airliner's starlight panels, dimmed, in every free block of the row under it. */
     private void starlight(int y) {
         int reach = (int) Math.ceil(wall());
         BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState().setValue(Brightness.PROPERTY, Brightness.DIM);
         for (BlockPos at : BlockPos.betweenClosed(-reach, y, -reach, reach, y, reach)) {
             put(at.getX(), at.getY(), at.getZ(), panel);
+        }
+    }
+
+    /**
+     * The starlight panels up the wall too, over the band of glass to the ceiling, in every open block against her
+     * skin, so that the whole room over the band is a starry dome, a planetarium.
+     */
+    private void starryWall(int highest) {
+        int reach = (int) Math.ceil(wall()) + 1;
+        BlockState panel = AerolargeRegistry.STARLIGHT_PANEL.get().defaultBlockState().setValue(Brightness.PROPERTY, Brightness.DIM);
+        for (BlockPos at : BlockPos.betweenClosed(-reach, floor() + BAND_TO + 1, -reach, reach, highest, reach)) {
+            boolean againstSkin = layout.inside(at.getX(), at.getY(), at.getZ()) && !layout.inFrom(at.getX(), at.getY(), at.getZ(), AGAINST_SKIN);
+            if (againstSkin && layout.isOpen(at.getX(), at.getY(), at.getZ())) {
+                layout.set(at.getX(), at.getY(), at.getZ(), panel);
+            }
         }
     }
 

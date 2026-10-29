@@ -23,6 +23,8 @@ final class RocketCargoHold extends RocketRoom {
     /** How far round from her front the containers and the crates' stacks stand, in degrees: none toward her back. */
     private static final double[] CONTAINERS = {42, 318};
     private static final double[] CRATES = {56, 64, 124, 236, 296, 304};
+    /** How far out from her axis the lamps hanging at the four diagonals round her shaft are, in blocks. */
+    private static final double LAMPS_OUT = 5.5;
     /** How many crates a stack is. */
     private static final int STACKED = 2;
 
@@ -37,6 +39,9 @@ final class RocketCargoHold extends RocketRoom {
         for (int k = 0; k < CONTAINERS.length; k++) {
             double round = CONTAINERS[k];
             container(new BlockPos(across(out, round), y, along(out, round)), inward(round), k);
+        }
+        for (double round = 45; round < 360; round += 90) {
+            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
         }
         double crates = wall() - CRATES_IN;
         for (double round : CRATES) {

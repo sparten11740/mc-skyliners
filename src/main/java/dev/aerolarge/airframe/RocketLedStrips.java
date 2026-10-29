@@ -24,17 +24,26 @@ import net.minecraft.world.level.block.state.BlockState;
  * door that sets them and the console in her cockpit that sets any story or all of them. Two rings of strip go round
  * every story along the inside of her skin, one lying on the floor and one fixed under the ceiling, in every open block
  * that the skin stands beside, out of the way of the oval windows and of whatever else stands there; each strip touches
- * the floor or the ceiling face to face, so it is assembled with her. Each story is set as its room asks: snow white at
- * two thirds by default, the greenhouse a full pink grow light, the techno club pulsing pink and ocean blue to its
- * beat, the observation deck a dim ocean blue for the stars. Laid last, so they fill in round every room's fittings.
+ * the floor or the ceiling face to face, so it is assembled with her. Each story is set as its room asks, most in
+ * the colour of its button on the lift's board, so a child who presses a colour steps out into it: the entry snow
+ * white at two thirds; the cargo bay sunshine yellow; the galley and mess a warm full tangerine; the bunk room a dim
+ * grape, breathing like a night light; the greenhouse a full pink grow light; the pool sky blue, breathing like
+ * water; the techno club pulsing pink and ocean blue to its beat; the lab mint; the observation deck a dim ocean blue
+ * for the stars. Laid last, so they fill in round every room's fittings.
  */
 final class RocketLedStrips implements RocketPiece {
     /** The stories whose rooms set their strips their own way, counted from the entry story up. */
+    private static final int CARGO_BAY = 1;
+    private static final int MESS = 2;
+    private static final int BUNKS = 3;
     private static final int GREENHOUSE = 4;
+    private static final int POOL = 5;
     private static final int TECHNO_CLUB = 6;
+    private static final int LAB = 7;
     private static final int OBSERVATION_DECK = 8;
-    /** A dim strip, a third bright, as the observation deck's are, so the stars outshine them. */
+    /** A dim strip, a third bright, as the observation deck's are, so the stars outshine them; and two thirds bright. */
     private static final int DIM = 1;
+    private static final int TWO_THIRDS = 2;
     /**
      * Where each story's panel stands, from her axis and the story's floor: at eye height, beside the lift's doorway on
      * its west side as she is laid out (the lift's picture board has the east side), its back on the shaft's glass.
@@ -83,6 +92,11 @@ final class RocketLedStrips implements RocketPiece {
     /** What a story's strips are laid set to, as its room asks. */
     private static LedSetting setting(int story) {
         return switch (story) {
+            case CARGO_BAY -> new LedSetting(LedColour.SUNSHINE, TWO_THIRDS, LedMode.STEADY);
+            case MESS -> new LedSetting(LedColour.TANGERINE, LedStripBlock.BRIGHTEST, LedMode.STEADY);
+            case BUNKS -> new LedSetting(LedColour.GRAPE, DIM, LedMode.BREATHE);
+            case POOL -> new LedSetting(LedColour.SKY, TWO_THIRDS, LedMode.BREATHE);
+            case LAB -> new LedSetting(LedColour.MINT, TWO_THIRDS, LedMode.STEADY);
             case GREENHOUSE -> new LedSetting(LedColour.PINK, LedStripBlock.BRIGHTEST, LedMode.STEADY);
             case TECHNO_CLUB -> new LedSetting(LedColour.PINK, LedStripBlock.BRIGHTEST, LedMode.CLUB);
             case OBSERVATION_DECK -> new LedSetting(LedColour.OCEAN, DIM, LedMode.STEADY);

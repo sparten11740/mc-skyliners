@@ -10,6 +10,9 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChainBlock;
+import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -38,6 +41,12 @@ abstract class RocketRoom implements RocketPiece {
     private static final double WINDOW_CLEAR = 4;
     /** How far either side of her front-to-back line the way out from the lift's door is kept clear, in blocks. */
     private static final int WAY_OUT_HALF = 1;
+    /** How many rows over the floor a pendant lamp hangs, on its chain down from the ceiling: well over a head. */
+    private static final int LAMP_UP = 5;
+    /** A lantern and a soul lantern hanging from a chain, and a link of the chain. */
+    protected static final BlockState LANTERN = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
+    protected static final BlockState SOUL_LANTERN = Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
+    private static final BlockState CHAIN = Blocks.CHAIN.defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
 
     protected final RocketLayout layout;
     private final int story;
@@ -113,6 +122,24 @@ abstract class RocketRoom implements RocketPiece {
         }
         layout.set(x, y, z, state);
         return true;
+    }
+
+    /**
+     * A pendant lamp at a spot of the floor plan: the lamp given hanging {@link #LAMP_UP} rows over the floor from a
+     * chain down from the ceiling, where every block of them is free, breaking up a tall room's bare height with a
+     * line and a pool of warm light.
+     */
+    protected void pendant(int x, int z, BlockState lamp) {
+        int lowest = floor() + LAMP_UP;
+        for (int y = lowest; y <= top(); y++) {
+            if (!free(x, y, z)) {
+                return;
+            }
+        }
+        layout.set(x, lowest, z, lamp);
+        for (int y = lowest + 1; y <= top(); y++) {
+            layout.set(x, y, z, CHAIN);
+        }
     }
 
     /** An armchair facing the way given, its back over it, where both are free. */

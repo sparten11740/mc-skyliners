@@ -1847,27 +1847,29 @@ column of sky in the colours of each height, from the sea at its foot to her cei
 where space begins, stars twinkling over it once she is up there (the client config's `heightGauge` keeps her floors on
 them).
 
-Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
-round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
-the skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather
-leave her in flight, crew lockers along both sides, a Space Helmet waiting in each (see Souvenirs), and armchairs at
-the back to wait for the lift in. The cargo bay
-over it holds a pair of baggage containers by the way in from the lift and care-package crates stacked two high by
-its side windows, ready to be packed and dropped, its back left to the rover (below). The galley and
-mess has galley units curving round the back either side of its window, an oven in each run and a coffee machine,
-and four tables with an armchair either side, two of them by the side windows. The bunk room has bunk beds two high at
-each of the four diagonals, their reading lights on, and a crew locker for each, a Space Helmet in it too. The
-greenhouse has raised moss beds in
-a ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in them, a cherry tree at two diagonals
-and an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its
-ceiling, its bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep
-curving round the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its
-edge, with rubber ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the
-window. The techno club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals,
-four disco balls, the DJ deck behind the shaft playing the whole room, and a bar curving round her left side with
-stools. The observation deck, her highest story, sees all round through its band of smoked glass: an armchair
-looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out, under the
-airliner's starlight ceiling, dimmed so the stars outside outshine it.
+Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture round
+the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along the
+skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather leave
+her in flight, crew lockers along both sides, a Space Helmet waiting in each (see Souvenirs), red armchairs at the back
+to wait for the lift in, and lanterns hanging on chains at the four diagonals round the shaft. The cargo bay over it
+holds a pair of baggage containers by the way in from the lift and care-package crates stacked two high by its side
+windows, ready to be packed and dropped, lanterns hanging round the shaft as in the entry, its back left to the rover
+(below). The galley and mess has galley units curving round the back either side of its window, an oven in each run and
+a coffee machine, and four tables with an armchair either side and a lantern hanging over each, two of them by the side
+windows. The bunk room has bunk beds two high at each of the four diagonals, their reading lights on, a soul lantern
+hanging over each pair, and a crew locker for each, a Space Helmet in it too. The greenhouse has raised moss beds in a
+ring broken by a path out to each window, ferns, flowers, azaleas and bamboo in them, a cherry tree at two diagonals and
+an azalea at the others, and glow berry vines hanging from the ceiling; the pool's channel hangs into its ceiling, its
+bottom glass, so swimmers are seen overhead from under the trees. The swimming pool is a channel two deep curving round
+the shaft by way of her back, lined with glass mosaic lit from under the water line, coped round its edge, with rubber
+ducks afloat on it, deck tiles all round and bean bags on the deck at the front looking out of the window. The techno
+club has the dance floor's black glass tiles all over its floor, speaker stacks at the diagonals, four disco balls, the
+DJ deck behind the shaft playing the whole room, and a bar curving round her left side with stools; its windows are
+built at their darkest, so daylight does not wash out the floor's colours. The observation deck, her highest story, sees
+all round through its band of smoked glass: an orange armchair looking out to each side and the back, yellow bean bags
+beside each and light blue pairs at the diagonals, all facing out, under the airliner's starlight panels, dimmed so the
+stars outside outshine them, all over the ceiling and up the wall from the band to it, so the room over the band is a
+starry dome, a planetarium.
 
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
@@ -1923,11 +1925,14 @@ and round the ceiling the other; and club, pulsing on the techno club's 128 beat
 colour taking turns. What is set is framed in white, and each touch sounds: a swatch chimes a note of a scale rising
 along the colours, a sun clicks higher the brighter it is, a mode blips. Nothing flashes faster than three times a
 second. The strips give more light the brighter they are, and cast a soft glow up the wall from the floor and down it
-from the ceiling. Most stories start snow white at two thirds; the greenhouse is a full pink grow light, the techno club
-pulses pink and ocean blue, and the observation deck is a dim ocean blue for the stars. Against the glass on the
-cockpit's left stands the LED console, her silhouette along its top laid on her side, each story a band glowing as its
-strips do: touch a band to pick that story, or the little rocket beside it to pick them all, then use the same swatches,
-suns and strips under them. Set for all of her, a change climbs her a story at a time from the entry story up.
+from the ceiling. Each story starts in its own mood, most in the colour of its button on the lift's board, so a child
+who presses a colour steps out into it: the entry snow white at two thirds, the cargo bay sunshine yellow, the galley
+and mess a warm full tangerine, the bunk room a dim grape breathing like a night light, the greenhouse a full pink grow
+light, the pool sky blue breathing like water, the techno club pulsing pink and ocean blue, the lab mint and the
+observation deck a dim ocean blue for the stars. Against the glass on the cockpit's left stands the LED console, her
+silhouette along its top laid on her side, each story a band glowing as its strips do: touch a band to pick that story,
+or the little rocket beside it to pick them all, then use the same swatches, suns and strips under them. Set for all of
+her, a change climbs her a story at a time from the entry story up.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly. It counts down ten seconds, a note each second
 rising toward lift-off and a bell as the engines light, then lifts off straight up and climbs to the height set, white

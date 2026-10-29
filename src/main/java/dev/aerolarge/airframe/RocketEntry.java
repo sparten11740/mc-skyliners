@@ -18,6 +18,8 @@ final class RocketEntry extends RocketRoom {
     private static final double RACKS = 24;
     /** The runs of lockers along her sides, from and to how far round from her front, in degrees. */
     private static final double[][] LOCKERS = {{48, 72}, {288, 312}};
+    /** How far out from her axis the lamps hanging at the four diagonals round her shaft are, in blocks. */
+    private static final double LAMPS_OUT = 5.5;
     /** How far round from her front the armchairs at her back are, in degrees. */
     private static final double[] SEATS = {140, 150, 210, 220};
 
@@ -37,7 +39,10 @@ final class RocketEntry extends RocketRoom {
             run(y, out, lockers[0], lockers[1]).forEach(at -> crewLocker(at.getX(), y, at.getZ(), inward(roundOf(at.getX(), at.getZ()))));
         }
         for (double round : SEATS) {
-            seat(across(out, round), y, along(out, round), inward(round), DyeColor.GRAY);
+            seat(across(out, round), y, along(out, round), inward(round), DyeColor.RED);
+        }
+        for (double round = 45; round < 360; round += 90) {
+            pendant(across(LAMPS_OUT, round), along(LAMPS_OUT, round), LANTERN);
         }
     }
 }
