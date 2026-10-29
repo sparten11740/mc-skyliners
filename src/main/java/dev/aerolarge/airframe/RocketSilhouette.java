@@ -35,7 +35,15 @@ public final class RocketSilhouette {
         return RocketShape.finInner(height, RocketShape.BASE) * RocketShape.DIAGONAL;
     }
 
-    /** How tall one built at a scale stands, in rows. */
+    /**
+     * The scale one was built at, from how many rows over her fins' feet her control head stands, in her cockpit one
+     * row over the nose's foot.
+     */
+    public static double scaleOf(int headOverFeet) {
+        return (headOverFeet - 1) / RocketShape.NOSE_BASE;
+    }
+
+        /** How tall one built at a scale stands, in rows. */
     public static int rows(double scale) {
         return RocketLayout.heightRows(scale);
     }

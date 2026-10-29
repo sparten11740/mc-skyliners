@@ -23,24 +23,31 @@ final class RocketPlumes {
     /** How high over the ground her foot may be for her lit engines to raise smoke from it, in blocks. */
     private static final double SMOKE_UNDER = 40;
     /**
-     * How many puffs of smoke a tick, how fast they roll out over the ground, in blocks a tick, and how far out from
-     * under her they start, in blocks.
+     * How many puffs roll out over the ground a tick, each a packet of its own to give it its way out, one in so many
+     * of them smoke that lingers and the rest white cloud; how far out from under her foot they start and how high over
+     * the ground, in blocks; how fast they roll out, at least and at most, and rise, in blocks a tick.
      */
-    private static final int PUFFS = 12;
-    private static final double ROLL_OUT = 0.6;
-    private static final double SMOKE_FROM = 2;
-    /** How fast the puffs rise as they roll out, in blocks a tick, and one in how many is smoke that lingers, not cloud. */
-    private static final double RISE = 0.08;
+    private static final int PUFFS = 6;
     private static final int LINGERING = 3;
+    private static final double SMOKE_FROM = 2;
+    private static final double SMOKE_OVER = 0.5;
+    private static final double SLOWEST_ROLL = 0.3;
+    private static final double FASTEST_ROLL = 0.9;
+    private static final double RISE = 0.08;
     /** How high she must be and how fast falling for her base to glow, in world blocks and blocks a second. */
     private static final double GLOW_FROM = 500;
     private static final double GLOW_FALL = 20;
     /**
-     * How many flames a tick stream up from round her base, and how far outside her skin they start, in metres: they
-     * stand in the air where they start as she falls, so they must be clear of her to be seen streaming up her sides.
+     * Where flames stream up from round her base: at so many spots round her each tick, so many at each, and so many
+     * sparks of lava among them; how far outside her skin they start, in metres, and how far round each spot they
+     * spread, in blocks. They stand in the air where they start as she falls, so they must be clear of her to be seen
+     * streaming up her sides.
      */
-    private static final int FLAMES = 24;
+    private static final int FLAME_SPOTS = 6;
+    private static final int FLAMES_A_SPOT = 4;
+    private static final int SPARKS = 2;
     private static final double FLAMES_CLEAR = 1;
+    private static final double FLAME_SPREAD = 0.6;
     /** How far off those who see the particles may be, in blocks: the length of her and more, so all aboard do. */
     private static final double SEEN_WITHIN = 256;
 
@@ -61,38 +68,53 @@ final class RocketPlumes {
             smoke(level, foot);
         }
         if (flight.position().y > GLOW_FROM && flight.velocity().y < -GLOW_FALL) {
-            flames(level, foot);
+            flames(level, foot, footBelow);
         }
     }
 
-    /** Puffs of white cloud billowing out every way over the ground under her foot, and smoke that lingers after them. */
+    /** Puffs of white cloud rolling out every way over the ground under her foot, and smoke lingering after them. */
     private static void smoke(ServerLevel level, Vec3 foot) {
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(foot.x), Mth.floor(foot.z));
         for (int puff = 0; puff < PUFFS; puff++) {
             double way = level.getRandom().nextDouble() * Mth.TWO_PI;
-            double x = Math.cos(way);
-            double z = Math.sin(way);
-            double speed = ROLL_OUT * (0.5 + level.getRandom().nextDouble());
-            ParticleOptions kind = puff % LINGERING == 0 ? ParticleTypes.CAMPFIRE_COSY_SMOKE : ParticleTypes.CLOUD;
-            send(level, kind, foot.x + x * SMOKE_FROM, ground + 0.5, foot.z + z * SMOKE_FROM, x * speed, RISE, z * speed);
+            double speed = Mth.lerp(level.getRandom().nextDouble(), SLOWEST_ROLL, FASTEST_ROLL);
+            Vec3 out = new Vec3(Math.cos(way), 0, Math.sin(way));
+            Vec3 at = new Vec3(foot.x, ground + SMOKE_OVER, foot.z).add(out.scale(SMOKE_FROM));
+            roll(level, puff % LINGERING == 0 ? ParticleTypes.CAMPFIRE_COSY_SMOKE : ParticleTypes.CLOUD, at, out.scale(speed).add(0, RISE, 0));
         }
     }
 
-    /** Flames round her foot, just outside her skin, left standing in the air as she falls, streaming up her sides. */
-    private static void flames(ServerLevel level, Vec3 foot) {
-        for (int flame = 0; flame < FLAMES; flame++) {
+    /**
+     * Flames round her foot, just outside her skin, left standing in the air as she falls, streaming up her sides, and
+     * sparks among them; her radius from how far her foot is under her control head, which is as she was built.
+     */
+    private static void flames(ServerLevel level, Vec3 foot, int footBelow) {
+        double out = (RocketSilhouette.body(RocketSilhouette.height() / 2) + FLAMES_CLEAR) * RocketSilhouette.scaleOf(footBelow);
+        for (int spot = 0; spot < FLAME_SPOTS + SPARKS; spot++) {
             double way = level.getRandom().nextDouble() * Mth.TWO_PI;
-            double out = (RocketSilhouette.body(RocketSilhouette.height() / 2) + FLAMES_CLEAR) * AerolargeConfig.SCALE.get();
-            ParticleOptions kind = flame % 3 == 0 ? ParticleTypes.LAVA : ParticleTypes.FLAME;
-            send(level, kind, foot.x + Math.cos(way) * out, foot.y, foot.z + Math.sin(way) * out, 0, 0, 0);
+            Vec3 at = new Vec3(foot.x + Math.cos(way) * out, foot.y, foot.z + Math.sin(way) * out);
+            boolean spark = spot >= FLAME_SPOTS;
+            send(level, spark ? ParticleTypes.LAVA : ParticleTypes.FLAME, at, spark ? 1 : FLAMES_A_SPOT, FLAME_SPREAD, 0);
         }
     }
 
-    /** One particle, moving as given in blocks a tick, sent to everyone near enough, however far that is. */
-    private static void send(ServerLevel level, ParticleOptions kind, double x, double y, double z, double dx, double dy, double dz) {
+    /** One particle moving a way, in blocks a tick, sent to everyone near enough, however far that is. */
+    private static void roll(ServerLevel level, ParticleOptions kind, Vec3 at, Vec3 motion) {
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(x, y, z) < SEEN_WITHIN * SEEN_WITHIN) {
-                level.sendParticles(player, kind, true, x, y, z, 0, dx, dy, dz, 1);
+            if (player.distanceToSqr(at) < SEEN_WITHIN * SEEN_WITHIN) {
+                level.sendParticles(player, kind, true, at.x, at.y, at.z, 0, motion.x, motion.y, motion.z, 1);
+            }
+        }
+    }
+
+    /**
+     * So many particles about a spot, spread round it so far, in blocks, and moving at so much, in blocks a tick, every
+     * way: one packet to everyone near enough, however far that is.
+     */
+    private static void send(ServerLevel level, ParticleOptions kind, Vec3 at, int count, double spread, double speed) {
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(at) < SEEN_WITHIN * SEEN_WITHIN) {
+                level.sendParticles(player, kind, true, at.x, at.y, at.z, count, spread, spread / 4, spread, speed);
             }
         }
     }
