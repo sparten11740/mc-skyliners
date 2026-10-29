@@ -1815,9 +1815,9 @@ middle, a doorway into the shaft on each and a big oval window out to each side 
 entry story, where the door is, and on the observation deck, which has a band of glass all round instead), and the
 cockpit sits in the glass of the nose, the autopilot's control head facing the front between two flight displays, two
 pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The windows' glass bulges out
-of the skin in a dome, the sun glinting off it, and
-sits inside in a recess lined with steel; it dims electrically: use one to darken its glass a step, from clear through
-light and medium to dark, and once more to clear it again, a chime falling as it darkens.
+of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel; it dims electrically: use
+one to darken its glass a step, from clear through light and medium to dark, and once more to clear it again, a chime
+falling as it darkens.
 
 A lift rides the glass shaft from the entry story to the cockpit, where the shaft runs on up into a glass booth with the
 lift's machine on its roof (the server config's `rocket.lift` leaves it out). By each landing's sliding doors, and on
@@ -1828,12 +1828,12 @@ floor and the car comes, its doors slide open with a soft rush, you step in, and
 there, easing off and in, at up to six blocks a second, while its motor hums; one chime as it comes in going up, two
 going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa nova on an
 electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes in; the
-Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone
-in the doorway or moves with a door open, and no one gets off between floors. While she counts down, flies or lands,
-it stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards; in place of her floors they show how high she flies, a little
-rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
-line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
-keeps her floors on them).
+Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on anyone in
+the doorway or moves with a door open, and no one gets off between floors. While she counts down, flies or lands, it
+stands at a floor with its doors open and takes no rides, and an amber bar lies across its boards; in place of her
+floors they show how high she flies, a little rocket climbing a column of sky in the colours of each height, from the
+sea at its foot to her ceiling, past a dashed line with a star where space begins, stars twinkling over it once she is
+up there (the client config's `heightGauge` keeps her floors on them).
 
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
@@ -1854,6 +1854,7 @@ four disco balls, the DJ deck behind the shaft playing the whole room, and a bar
 stools. The observation deck, her highest story, sees all round through its band of smoked glass: an armchair
 looking out to each side and the back, bean bags beside each and pairs at the diagonals, all facing out, under the
 airliner's starlight ceiling, dimmed so the stars outside outshine it.
+
 Round the outside of the lift shaft hang four space posters, bright, flat pictures in thin steel frames, with no words
 on them: on the entry story, Earthrise, the Earth half-lit over the Moon's grey horizon and the rocket standing there
 in front of it; in the bunk room, the fourth story, the solar system, half the sun and its planets in a row, Saturn in
@@ -1923,9 +1924,9 @@ slowly for ten seconds, as a heavily loaded rocket can, all the same), never fas
 whoever stands aboard keeps their feet, and a landing burn catches it, leaning only a little to stop drifting for the
 last 20 blocks and not at all for the last 3, touching down at a block and a half a second. Falling back from space, her
 base glows and flames stream up behind it. Down on its fins it lets its engines go at once and switches itself off with
-a bell. Without a pin it comes back down where it rose. Told to land, or switched off
-in the air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
-autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
+a bell. Without a pin it comes back down where it rose. Told to land, or switched off in the air, it falls back where it
+is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model
+Rocket, standing on its fins, is in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then
@@ -1939,8 +1940,8 @@ rumble wherever you stand. Her side jets puff as they hold her upright. Landing,
 thunk and a hiss of their dampers, the flight deck's voice says "Touchdown.", and her engines cut off, falling away
 with a pop, her hot bells ticking as they cool.
 
-She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may
-not go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
+She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may not
+go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
 are as they are lower down, only longer. Her settings screen's sky reaches as high, numbered more sparsely so the
 numbers keep apart, and from y 1,000, the edge of space, black space stands over it with its stars, along a thin blue
 glow of air, so you can see where space begins.
@@ -1963,29 +1964,29 @@ over it, with a soft rising glide and a puff of sparkles at their feet: a jump r
 seconds, and a fall of seven blocks does not hurt. Their weight comes back, with the glide falling, the moment they
 leave her, and as she comes back down, once they next stand on something.
 
-Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six
-wheels on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on
-a mast and an amber beacon (the server config's `rocket.rover` leaves it out of a rocket built from then on; a rocket
-too small for it, as at scale 1, has none and keeps her back window). The panel on the back of the lift shaft's glass,
-facing the door, has three picture buttons: the rover over an arrow pointing down sends it to the ground, an arrow
-pointing up over the rover calls it home, and a remote hands you a Rover Remote paired with it. Its lamp is green with
-the rover in its cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red
-for a moment, with a low note, when the door will not open: it only opens while she stands still on her fins with her
-autopilot off. Then it folds down outward into a platform, a light curtain glowing red across the doorway so nobody
-walks out, and a yellow boom slides out over it; the rover rolls out onto the platform, is hooked to the boom's
-trolley, lifted, run out past the platform's end and lowered on the winch's cable to the ground, the winch ratcheting.
-Use the remote to drive it (with the rover in its cradle, it sends it down first and takes you to it as it sets off):
-your view goes to a camera behind and over it, your movement keys drive and steer it, jump sounds its horn, the mouse
-swings the camera round it, and sneaking gives you your own view back, as does being hurt. Meanwhile your own body
-stays where you stood and takes no fall damage, and a red warning triangle shows while a monster is near it. The rover
-whirs over the gravel as it drives, its beacon blinking, climbs a block as a horse does and goes no further than 96
-blocks from her (less on a server whose view or simulation distance is short, so it never drives out of sight): as it nears the edge the signal bars in the corner drop, an amber arrow points back to her and a soft
-tone sounds. Sneak and use the remote, or press the panel's arrow up, and it drives back under the boom's tip by
-itself, reversing up the platform once hoisted, and the door shuts behind it; stuck on the way, it is hoisted from
-where it stands. It comes home by itself, too, once nobody is near enough to drive it, and when her autopilot is
-switched on, her countdown waiting for it to be back in its bay with the door shut, its beep heard in her cockpit while
-it waits. A remote works its rover from up to 160 blocks off, and is paired with a rover by using it on the rover or on
-its bay's panel, its antenna's tip turning from red to green.
+Over her entry story is her cargo bay, and in it, on its cradle facing a door in her back, stands her rover: six wheels
+on rocker-bogie legs, a white body in a band of gold foil under a dark blue solar deck, a twin-lensed camera on a mast
+and an amber beacon (the server config's `rocket.rover` leaves it out of a rocket built from then on; a rocket too small
+for it, as at scale 1, has none and keeps her back window). The panel on the back of the lift shaft's glass, facing the
+door, has three picture buttons: the rover over an arrow pointing down sends it to the ground, an arrow pointing up over
+the rover calls it home, and a remote hands you a Rover Remote paired with it. Its lamp is green with the rover in its
+cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red for a moment, with a
+low note, when the door will not open: it only opens while she stands still on her fins with her autopilot off. Then it
+folds down outward into a platform, a light curtain glowing red across the doorway so nobody walks out, and a yellow
+boom slides out over it; the rover rolls out onto the platform, is hooked to the boom's trolley, lifted, run out past
+the platform's end and lowered on the winch's cable to the ground, the winch ratcheting. Use the remote to drive it
+(with the rover in its cradle, it sends it down first and takes you to it as it sets off): your view goes to a camera
+behind and over it, your movement keys drive and steer it, jump sounds its horn, the mouse swings the camera round it,
+and sneaking gives you your own view back, as does being hurt. Meanwhile your own body stays where you stood and takes
+no fall damage, and a red warning triangle shows while a monster is near it. The rover whirs over the gravel as it
+drives, its beacon blinking, climbs a block as a horse does and goes no further than 96 blocks from her (less on a
+server whose view or simulation distance is short, so it never drives out of sight): as it nears the edge the signal
+bars in the corner drop, an amber arrow points back to her and a soft tone sounds. Sneak and use the remote, or press
+the panel's arrow up, and it drives back under the boom's tip by itself, reversing up the platform once hoisted, and the
+door shuts behind it; stuck on the way, it is hoisted from where it stands. It comes home by itself, too, once nobody is
+near enough to drive it, and when her autopilot is switched on, her countdown waiting for it to be back in its bay with
+the door shut, its beep heard in her cockpit while it waits. A remote works its rover from up to 160 blocks off, and is
+paired with a rover by using it on the rover or on its bay's panel, its antenna's tip turning from red to green.
 
 ### Settings
 
