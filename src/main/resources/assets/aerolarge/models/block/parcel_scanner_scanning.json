@@ -232,6 +232,138 @@
     },
     {
       "from": [
+        -1.25,
+        15,
+        6.9
+      ],
+      "to": [
+        -0.25,
+        27,
+        7
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        -1.25,
+        15,
+        9
+      ],
+      "to": [
+        -0.25,
+        27,
+        9.1
+      ],
+      "shade": false,
+      "faces": {
+        "south": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        -1.6,
+        15,
+        7.5
+      ],
+      "to": [
+        -1.5,
+        27,
+        8.5
+      ],
+      "shade": false,
+      "faces": {
+        "west": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        16.25,
+        15,
+        6.9
+      ],
+      "to": [
+        17.25,
+        27,
+        7
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        16.25,
+        15,
+        9
+      ],
+      "to": [
+        17.25,
+        27,
+        9.1
+      ],
+      "shade": false,
+      "faces": {
+        "south": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        17.5,
+        15,
+        7.5
+      ],
+      "to": [
+        17.6,
+        27,
+        8.5
+      ],
+      "shade": false,
+      "faces": {
+        "east": {
+          "texture": "#lamp",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
         0,
         16,
         7.9

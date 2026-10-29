@@ -23,10 +23,11 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * The cargo bay's parcel scanner: a graphite cabinet as high as a table, a conveyor belt for its top and a gantry over
  * the belt, its screen on the front showing a crate. Set a care-package crate on the belt, or use the scanner, and it
- * scans whatever is on it (SCAN): a red curtain of laser light fills the gantry with a rising whirr while a line sweeps
- * down the crate on its screen; then, if a crate is on it with something packed in it, a bright double beep and a green
- * tick under a green lamp, ready to drop, or else a low buzz and a red cross under a red lamp. A few seconds later it
- * is ready again. FACING is the way its screen faces, the belt running across in front of whoever reads it.
+ * scans whatever is on it (SCAN): its lamps down the gantry's posts turn red and a red curtain of laser light fills the
+ * gantry with a rising whirr while a line sweeps down the crate on its screen; then, if a crate is on it with something
+ * packed in it, a bright double beep, a green tick and green lamps, ready to drop, or else a low buzz, a red cross and
+ * red lamps blinking. A few seconds later it is ready again. FACING is the way its screen faces, the belt running
+ * across in front of whoever reads it.
  */
 public class ParcelScannerBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<ParcelScannerBlock> CODEC = simpleCodec(ParcelScannerBlock::new);

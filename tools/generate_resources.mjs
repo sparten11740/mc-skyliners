@@ -4755,13 +4755,20 @@ function airlockPanelLang() {
 
 // The cargo bay's parcel scanner (see ParcelScannerBlock), drawn facing north: a graphite cabinet as high as a table,
 // its screen on its front, a conveyor belt for its top and a hazard-striped gantry over the belt, its posts just outside
-// the block either side so a crate on the belt stands between them; the lamp under the gantry's bar and the screen glow
-// whatever the light around. One model for each step of a scan, its screen's picture and its lamp's colour showing it;
-// while it scans, a curtain of red laser light hangs from the bar to the belt.
+// the block either side so a crate on the belt stands between them; the screen and the lamps glow whatever the light
+// around: one under the gantry's bar and a strip down each post, front, back and outside, which still shows with a crate
+// standing on the belt and hiding the bar's. One model for each step of a scan, its screen's picture and its lamps'
+// colour showing it; while it scans, a curtain of red laser light hangs from the bar to the belt.
 function parcelScanner() {
   const lit = { neoforge_data: { block_light: 15, sky_light: 15 } };
   const block = (name) => `${ID}:block/${name}`;
   const glowing = (faces) => Object.fromEntries(faces.map((face) => [face, { texture: "#lamp", ...lit }]));
+  // A post's lamp strips, either side of it from across to across: on its front and its back, and on its outside.
+  const strips = (x0, x1, outside, outsideX) => [
+    { from: [x0, 15, 6.9], to: [x1, 27, 7], shade: false, faces: glowing(["north"]) },
+    { from: [x0, 15, 9], to: [x1, 27, 9.1], shade: false, faces: glowing(["south"]) },
+    { from: [outsideX, 15, 7.5], to: [outsideX + 0.1, 27, 8.5], shade: false, faces: glowing([outside]) },
+  ];
   const belt = solid([0, 13, 0], [16, 16, 16], "#roller");
   belt.faces.up = { texture: "#belt" };
   for (const scan of ["ready", "scanning", "packed", "empty"]) {
@@ -4773,6 +4780,8 @@ function parcelScanner() {
       solid([16, 13, 7], [17.5, 30, 9], "#gantry"),
       solid([-1.5, 28, 6.5], [17.5, 30, 9.5], "#gantry"),
       { from: [0, 27.75, 7], to: [16, 28, 9], shade: false, faces: glowing(["down", "north", "south"]) },
+      ...strips(-1.25, -0.25, "west", -1.6),
+      ...strips(16.25, 17.25, "east", 17.5),
     ];
     if (scan === "scanning") {
       elements.push({ from: [0, 16, 7.9], to: [16, 27.75, 8.1], shade: false, faces: { north: { texture: "#laser", ...lit }, south: { texture: "#laser", ...lit } } });
