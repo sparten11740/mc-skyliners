@@ -152,7 +152,9 @@ Commits on main, newest last, with the versions handed out.
   stopping as it came off; a scale-4 rocket (327,000 blocks, every room).
   Since, on alpha.172's code: the LED panel's modes and swatches (chase in cherry runs round the floor), the club's DJ
   deck playing aboard, the pool's water and ducks kept through flights, the Rocket Blueprint building one, the rover's
-  monster warning (the red triangle blinking while a zombie stood by the driver's body).
+  monster warning (the red triangle blinking while a zombie stood by the driver's body); the cockpit's camera display at
+  y 1,400 (the orbit camera showing her against space and the planet's rim); a rocket built with `rocket.rooms` off
+  (bare stories, no tardigrade, the lift and 756 LED strips still there).
 
 ## Background agents
 
