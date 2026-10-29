@@ -1987,8 +1987,8 @@ its steak is whole and its cap hisses open in a puff of steam and the steak come
 as filling as a cooked one and in the creative tab too; then the bars on its panel light green one by one as a new
 steak grows up the rod, a stage a minute, with a pop of bubbles at each stage and a chime once it is whole again. Used
 before that, it only gurgles. On her right is the wet bench: a sink to wash at, cabinets with jars on some, and in the
-one nearest the tank a stack of moss to feed the tardigrade with. A bigger rocket's bays are wider, with rows back to
-back further in: in the food lab racks, now and then an algae column, another bioreactor, a cabinet or a gap; on the
+one nearest the tank sixteen moss carpets to feed the tardigrade with. A bigger rocket's bays are wider, with rows back
+to back further in: in the food lab racks, now and then an algae column, another bioreactor, a cabinet or a gap; on the
 wet bench lab benches, jars, sample racks, scan screens, a microscope or a centrifuge on them, and stools pushed out
 before some. A rocket too small for a tank has the counters and the bays alone.
 

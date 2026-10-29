@@ -38,7 +38,7 @@ import net.minecraft.world.phys.Vec3;
 final class RocketLab extends RocketRoom {
     /** Her lab's story, from the entry story up. */
     static final int STORY = 7;
-    /** How much moss the wet bench's first cabinet holds, to feed the tardigrade with: a stack of carpets. */
+    /** How much moss the wet bench's first cabinet holds, to feed the tardigrade with: sixteen carpets of it. */
     private static final int FEED = 16;
 
     RocketLab(RocketLayout layout) {
