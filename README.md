@@ -1836,7 +1836,9 @@ keeps her floors on them).
 Each story is furnished as a room of its own (the server config's `rocket.rooms` leaves them bare), its furniture
 round the shaft, clear of a walkway round it, of the way out to the front, of the windows' fronts and of a ring along
 the skin. The entry story has a parachute rack either side of the way in from the door, for anyone who would rather
-leave her in flight, crew lockers along both sides and armchairs at the back to wait for the lift in. The galley and
+leave her in flight, crew lockers along both sides and armchairs at the back to wait for the lift in. The cargo bay
+over it holds a pair of baggage containers by the way in from the lift and care-package crates stacked two high by
+its side windows, ready to be packed and dropped, its back left to the rover (below). The galley and
 mess has galley units curving round the back either side of its window, an oven in each run and a coffee machine,
 and four tables with an armchair either side, two of them by the side windows. The bunk room has bunk beds two high at
 each of the four diagonals, their reading lights on, and a crew locker for each. The greenhouse has raised moss beds in
@@ -2118,7 +2120,8 @@ it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it lo
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
-her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` to `RocketObservationDeck`); its
+her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
+`RocketObservationDeck`); its
 control head is wired to its engine bells' and side jets' relays as it is built, it is assembled as a zeppelin is, and
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
