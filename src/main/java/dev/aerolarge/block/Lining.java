@@ -125,11 +125,15 @@ public final class Lining {
     /**
      * Which faces of a block's shape are lined, as bits by the face's place in {@link ShellGeometry#faces}: a whole
      * panel's as it keeps them; a lined shell's behind its cut (its sides that face away from the cut) or on it (the
-     * cut and the sides facing its way, and those along it where it ends); none for anything else.
+     * cut and the sides facing its way, and those along it where it ends); the rocket's lined cover's behind its cut;
+     * none for anything else.
      */
     public static int faces(BlockState state) {
         if (state.getBlock() instanceof LinedShellBlock) {
             return faces(ShellBlock.shape(state), state.getValue(LinedShellBlock.LINED));
+        }
+        if (state.getBlock() instanceof RocketLinedCoverBlock) {
+            return faces(ShellBlock.shape(state), LinedShellBlock.Side.BACK);
         }
         if (!keepsSides(state)) {
             return 0;
