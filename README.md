@@ -1833,7 +1833,7 @@ it dims electrically: use one to darken its glass a step, from clear through lig
 clear it again, a chime falling as it darkens.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
-and Lift Glass are in the creative tab beside the Halo Light, and can be crafted), where the shaft runs on up into a
+and Lift Glass are in the creative tab after the Wall Washer, and can be crafted), where the shaft runs on up into a
 glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
 `rocket.lift` leaves it out). By each landing's sliding doors, and on the shaft's back wall inside the car, a picture
 board, its back brushed steel where it shows through the shaft's glass, lists her floors as she stands, the lowest at

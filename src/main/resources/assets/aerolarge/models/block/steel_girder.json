@@ -32,10 +32,12 @@
           "texture": "#steel"
         },
         "up": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "up"
         },
         "down": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "down"
         }
       }
     },
@@ -64,10 +66,12 @@
           "texture": "#steel"
         },
         "up": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "up"
         },
         "down": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "down"
         }
       }
     },
@@ -96,10 +100,12 @@
           "texture": "#steel"
         },
         "up": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "up"
         },
         "down": {
-          "texture": "#end"
+          "texture": "#end",
+          "cullface": "down"
         }
       }
     }

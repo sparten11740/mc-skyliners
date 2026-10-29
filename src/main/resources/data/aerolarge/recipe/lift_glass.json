@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "pattern": [
-    "GGG",
-    "GDG",
-    "GGG"
+    " G ",
+    "GTG",
+    " G "
   ],
   "key": {
     "G": {
       "item": "minecraft:glass"
     },
-    "D": {
-      "item": "minecraft:gray_dye"
+    "T": {
+      "item": "minecraft:tinted_glass"
     }
   },
   "result": {
     "id": "aerolarge:lift_glass",
-    "count": 8
+    "count": 4
   }
 }
