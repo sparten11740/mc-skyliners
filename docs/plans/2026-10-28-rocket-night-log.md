@@ -115,6 +115,11 @@ are marked **Jan**. Anything Jan should look at first is under "For Jan to look 
 | N69 | 07:25 | Wall washers (**Jan**: "Wandstrahler, die an der Wand hochstrahlen") | Eight per story but the deck, over head height between the windows, a drawn fan of light up the wall, warm, blue in the bunk room, pink in the club | The game's light cannot wash a wall, so the fan is drawn; each also lights the room | Lead |
 | N70 | 07:30 | The agents' rooms merged | The lab's food lab (bioreactor, hydroponic rack, algae column, centrifuge, microscope view), the lounge's cafeteria mezzanine and snack machine, the greenhouse's kitchen garden (garden beds, sprinklers, grow lights, irrigation valve); alpha.183 | Seen in game: each room, the valve's spray, the snack machine's sale | Lead |
 | N71 | 08:10 | The six other rooms merged | Sections and clutter in the entry (kit-up room, lounge), cargo bay (pallet racks, workbench), mess (pass, communal table), bunk room (bookshelf walls, reading nook), pool (loungers, towels) and club (booth, back bar, coat corner); gadgets: airlock panel, parcel scanner, galley fridge, wave machine, fog machine; their lanterns made halo lights in the merge; alpha.184 | Seen in game: every room both ways; each gadget used, its sounds heard (the fog itself not caught in a picture) | Lead |
+| N72 | 08:30 | Catch-up diff-check (**Jan** asked whether every change had been through it; not all had) | Five review agents over the 37 commits since the morning's plan, one per area; fixed: finished floors breakable again; the lined cover weighing as fabric, with a third of its block states; a small rocket's cockpit floor; weight back only once "Artificial gravity enabled." is said, landings looked for every tick; a broken sprinkler's water gone with it; gadgets picking up a tick lost at assembly (`LostTicks`); the axe tag the merge had cut short; the wave machine churning the whole channel; then a review of those fixes | Seen in game: weight back 85 ticks after the line starts; the waves ended 144 ticks after the press across an assembly (200 when kept), so assembly does drop scheduled ticks; a scale-1 cockpit floor; a floor out of the unbreakable tag | Reviews, lead |
+| N73 | 08:50 | A player mid-jump aboard | Anyone inside her hull counts as aboard, riding her or not: Sable lets go of a player in the air until they land | Holding jump through the low-gravity window flipped weight back mid-air (falling glide, then light again); after the fix it held until the line | Lead |
+| N74 | 08:20 | The club (**Jan**: "why is there books on the dance floor?", a bar with bottles, taps and a bartender to buy from) | Record shelves gone; a straight bar across the window at her left with two drink taps; a robot bartender, two blocks tall, his back to the window (past the window-front rule: behind the counter nothing else fits), selling five mocktails for emeralds; three tiers of lit bottles; six neon signs, two high tables; the dance floor's tiles only round the shaft, a plum carpet past them; the beat's lights on the tiles only | A robot, not a villager: a block, so nobody wanders off or is left behind, and fitting a spacecraft (Arthur in *Passengers*). The curved counter came out jagged at scale 2 | Lead, two agents |
+| N75 | 09:28 | The pool's towels | Fat rolls with spiral ends and a pile of folded ones | From a few steps the thin rolls read as a bookcase | Lead |
+| N76 | 09:35 | The lift (**Jan**: darker tinted glass, metal beams up its four corners, a few girders in places) | Lift Glass, smoky blue-grey with a glint, for the shaft and the cockpit booth; Steel Girder, a riveted gunmetal I-beam, up the corners, and under every room's ceiling but the observation deck's, out along the four ways to her skin | Seen in the mess | Lead |
 | N29 | 00:25 | Engine and jet chatter | Hold her engines' total signal until the thrust wanted moves 0.75 of a step (as the zeppelin's); leave the jets as they were | Measured in a cruise at y 1,400: thruster changes sent 208/s before (one run), 145–165/s after (three runs); holding the jets too did not change them less often | Lead |
 
 ## Work done
@@ -226,6 +231,8 @@ Commits on main, newest last, with the versions handed out.
   they did on the rocket's narrow map ("Z 92Pin X ..."). Seen on a rocket's screen with a pin set.
 - alpha.181: the sixth review's fixes (N59). Seen in game: a rocket's screen without a pin, straight on and the pin
   tile alone under her heading dial.
+- alpha.185 (29 October, 09:30): the catch-up review's fixes (N72, N73), the club (N74), the towels (N75). Copied to the
+  desktop at 09:31 in place of alpha.157, once the game there had closed.
 
 ## Background agents
 
@@ -275,8 +282,9 @@ bumps, commits cherry-picked onto main by the lead and play-tested there):
   game's own font code drawing a recipe toast ("Image is not allocated", `crash-2026-10-29_04.48.55-client.txt`), no
   Aerolarge code in it: a bitmap font freed by the reload. The world had saved; I note it in case it ever shows
   without F3+T.
-- Jan's desktop keeps `lowGravity = false` in `/Volumes/Desktop/config/aerolarge-server.toml` (a changed default never
-  changes a saved value): set it to true there once the share is mounted and the game there is closed.
+- Jan's desktop config had no `lowGravity` line yet (its jar was alpha.157), so alpha.185 writes the new default, on.
+- Open from the reviews, left small: a drink the bartender set down vanishes if a second sale comes within five
+  seconds; a dropped item hovers over a cocktail table's top; every neon sign item shows the martini glass.
 - Not verified tonight: anything with a second player (multiplayer).
 - The side jets pulse at signal 2 for a few ticks every half second or so in a cruise (N29); a deadband did not stop
   it, so it is the tilt hold's own rhythm. Each pulse costs a few thruster updates; frame and tick times were fine.
