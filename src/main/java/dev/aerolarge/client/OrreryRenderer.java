@@ -42,8 +42,13 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
         if (level == null) {
             return;
         }
-        OrreryDome dome = OrreryDome.of(orrery, level);
+        // The dome as last found tells whether the camera is out of it, without looking it over again for that.
         Vector3f eye = Sight.eye(pose.last());
+        OrreryDome known = OrreryDome.known(orrery);
+        if (known != null && !known.holds(eye)) {
+            return;
+        }
+        OrreryDome dome = OrreryDome.of(orrery, level);
         if (!dome.holds(eye)) {
             return;
         }
