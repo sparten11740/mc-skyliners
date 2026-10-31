@@ -10,6 +10,8 @@ import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Button;
 import dev.aerolarge.block.TouchPanel;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -24,15 +26,15 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * Draws the autopilot screen over the whole of its face, from the block that holds it. On the left a moving map,
- * the way the airliner is heading always up: the track it has flown, the circle it is flying round or the heading it
- * is turning to, a ring at half the map's reach, north marked, and the airliner in the middle of the lower part. Over
- * the map the autopilot's mode and targets; under it, how the airliner is flying now. On the right the buttons, the
- * ones for what the autopilot is doing lit. The screen is a touch panel of two tiles that light up as every panel's do
- * (see {@link TouchPanelArt}): with the crosshair on the map, which a touch zooms, its glass brightens; anywhere else,
- * where a touch opens the settings, the line over the map and every button brighten together. The airliner's place and
- * heading come from its pose as the client draws it, so the map turns as smoothly as the airliner does. It is only
- * drawn with the camera in front of it.
+ * Draws the autopilot screen over the whole of its face, from the block that holds it. On the left a moving map, the
+ * way the airliner is heading always up: the track it has flown, the circle it is flying round or the heading it is
+ * turning to, a ring at half the map's reach, north marked, and the airliner in the middle of the lower part. Over the
+ * map the autopilot's mode and targets; under it, how the airliner is flying now. On the right the buttons, the ones
+ * for what the autopilot is doing lit; a rocket's has only those for what she flies to, her height and her climb. The
+ * screen is a touch panel of two tiles that light up as every panel's do (see {@link TouchPanelArt}): with the
+ * crosshair on the map, which a touch zooms, its glass brightens; anywhere else, where a touch opens the settings, the
+ * line over the map and every button brighten together. The airliner's place and heading come from its pose as the
+ * client draws it, so the map turns as smoothly as the airliner does. It is only drawn with the camera in front of it.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
     /**
@@ -46,6 +48,8 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     private static final float TEXT = 1 / 170F;
     /** How wide the edge round each button is, in blocks. */
     private static final double BUTTON_EDGE_WIDTH = 0.012;
+    /** How many rows of buttons a rocket's screen has, each taller than the airliner's: on and off, height, climb. */
+    private static final int ROCKET_ROWS = 3;
 
     /** The screen's colours, which the panels of its settings screen ({@link AutopilotSettingsScreen}, {@link PanelArt}) share. */
     static final int CASING = 0xFF15171B;
@@ -99,21 +103,41 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.MAP), GLASS, map, LAYER);
         TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.HEADER), GLASS, settings, LAYER);
         MovingMap.draw(fill, matrix, AutopilotScreenBlockEntity.MAP, screen.track(), screen.range(), autopilot, here, heading, 2 * LAYER);
-        for (Button button : Button.values()) {
-            MovingMap.box(fill, matrix, button.box, LAYER, BUTTON_EDGE);
-            TouchPanelArt.tile(fill, matrix, tile(button.box).inset(BUTTON_EDGE_WIDTH), lit(button, autopilot) ? BUTTON_LIT : BUTTON, settings,
-                2 * LAYER);
+        List<Shown> buttons = buttons(autopilot);
+        for (Shown shown : buttons) {
+            MovingMap.box(fill, matrix, shown.box(), LAYER, BUTTON_EDGE);
+            TouchPanelArt.tile(fill, matrix, tile(shown.box()).inset(BUTTON_EDGE_WIDTH), lit(shown.button(), autopilot) ? BUTTON_LIT : BUTTON,
+                settings, 2 * LAYER);
         }
         // Text last: it takes its own buffer, which ends the one the shapes went into.
         header(font, pose, buffers, autopilot, attitude);
         readout(font, pose, buffers, attitude, here, screen.range());
-        for (Button button : Button.values()) {
+        for (Shown shown : buttons) {
+            Button button = shown.button();
             Component label = button == Button.ENGAGE
                 ? Component.translatable(button.label(), Component.translatable(engaged(autopilot) ? "screen.aerolarge.autopilot.on" : "screen.aerolarge.autopilot.off"))
                 : Component.translatable(button.label());
-            text(font, pose, buffers, label, (button.box.x0() + button.box.x1()) / 2, (button.box.y0() + button.box.y1()) / 2, WHITE, ScreenDrawing.Align.CENTRE);
+            Box box = shown.box();
+            text(font, pose, buffers, label, (box.x0() + box.x1()) / 2, (box.y0() + box.y1()) / 2, WHITE, ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
+    }
+
+    /** A button as the screen shows it, where it is drawn. */
+    private record Shown(Button button, Box box) {
+    }
+
+    /**
+     * The buttons the screen shows for the autopilot it works, and where: every one for an airliner or a zeppelin; for
+     * a rocket only on and off, her height and her climb, on taller rows, as she flies no heading or circle of her own.
+     */
+    private static List<Shown> buttons(@Nullable AutopilotBlockEntity autopilot) {
+        if (autopilot == null || autopilot.craft() != Craft.ROCKET) {
+            return Arrays.stream(Button.values()).map(button -> new Shown(button, button.box)).toList();
+        }
+        return List.of(new Shown(Button.ENGAGE, Button.box(0, -1, ROCKET_ROWS)),
+            new Shown(Button.ALTITUDE_DOWN, Button.box(1, 0, ROCKET_ROWS)), new Shown(Button.ALTITUDE_UP, Button.box(1, 1, ROCKET_ROWS)),
+            new Shown(Button.SPEED_DOWN, Button.box(2, 0, ROCKET_ROWS)), new Shown(Button.SPEED_UP, Button.box(2, 1, ROCKET_ROWS)));
     }
 
     /** A rectangle on the screen as a touch panel's tile, to be drawn as one (see {@link TouchPanelArt}). */

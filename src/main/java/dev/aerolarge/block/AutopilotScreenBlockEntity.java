@@ -73,13 +73,21 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
         public final Box box;
 
         Button(int row, int column) {
+            this.box = box(row, column, ROWS);
+        }
+
+        /**
+         * Where a button goes in a column of so many rows down the screen's right: at a row from the top, in the left
+         * or right column, or spanning both for -1.
+         */
+        public static Box box(int row, int column, int rows) {
             double right = WIDTH - MARGIN;
             double columnWidth = (right - LEFT - GAP) / 2;
-            double rowHeight = (HEIGHT - 2 * MARGIN - (ROWS - 1) * GAP) / ROWS;
+            double rowHeight = (HEIGHT - 2 * MARGIN - (rows - 1) * GAP) / rows;
             double top = HEIGHT - MARGIN - row * (rowHeight + GAP);
             double x0 = column <= 0 ? LEFT : LEFT + columnWidth + GAP;
             double x1 = column == 0 ? LEFT + columnWidth : right;
-            this.box = new Box(x0, top - rowHeight, x1, top);
+            return new Box(x0, top - rowHeight, x1, top);
         }
 
         /** The key of the button's label in the lang file. */

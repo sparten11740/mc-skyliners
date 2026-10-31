@@ -2,6 +2,7 @@ package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import javax.annotation.Nullable;
 import net.minecraft.world.phys.Vec3;
@@ -57,17 +58,8 @@ final class MovingMap {
             line(fill, matrix, map, last[0], last[1], cx, cy, 0.008, z + LAYER, AutopilotScreenRenderer.TRACK);
         }
 
-        // Where the autopilot is taking it: the circle it flies round, or a line along the heading it is turning to.
         if (AutopilotScreenRenderer.engaged(autopilot) && autopilot.phase() != AutopilotBlockEntity.Phase.TAKEOFF) {
-            if (autopilot.lateral() == AutopilotBlockEntity.Lateral.HEADING) {
-                double[] end = view.direction(autopilot.targetHeading() + 180, (map.y1() - map.y0()) * 1.5);
-                line(fill, matrix, map, cx, cy, end[0], end[1], 0.01, z + 2 * LAYER, AutopilotScreenRenderer.TARGET);
-            } else {
-                double[] middle = view.toScreen(autopilot.orbitX(), autopilot.orbitZ());
-                circle(fill, matrix, map, middle[0], middle[1], autopilot.orbitRadius() * scale, 0.01, z + 2 * LAYER, AutopilotScreenRenderer.TARGET);
-                box(fill, matrix, new Box(middle[0] - 0.015, middle[1] - 0.015, middle[0] + 0.015, middle[1] + 0.015), z + 2 * LAYER,
-                    map.contains(middle[0], middle[1]) ? AutopilotScreenRenderer.TARGET : 0);
-            }
+            target(fill, matrix, map, view, autopilot, z + 2 * LAYER);
         }
 
         // The airliner, nose up.
@@ -76,6 +68,22 @@ final class MovingMap {
         ScreenDrawing.vertex(fill, matrix, cx - 0.04, cy - 0.04, top, AutopilotScreenRenderer.WHITE);
         ScreenDrawing.vertex(fill, matrix, cx, cy - 0.015, top, AutopilotScreenRenderer.WHITE);
         ScreenDrawing.vertex(fill, matrix, cx + 0.04, cy - 0.04, top, AutopilotScreenRenderer.WHITE);
+    }
+
+    /**
+     * Where the autopilot is taking the airliner: the circle it flies round, or a line along the heading it is turning
+     * to. A rocket flies no heading: without a pin she comes back down where she rose, so she has no line.
+     */
+    private static void target(VertexConsumer fill, Matrix4f matrix, Box map, MapView view, AutopilotBlockEntity autopilot, float z) {
+        if (autopilot.lateral() != AutopilotBlockEntity.Lateral.HEADING) {
+            double[] middle = view.toScreen(autopilot.orbitX(), autopilot.orbitZ());
+            circle(fill, matrix, map, middle[0], middle[1], autopilot.orbitRadius() * view.scale(), 0.01, z, AutopilotScreenRenderer.TARGET);
+            box(fill, matrix, new Box(middle[0] - 0.015, middle[1] - 0.015, middle[0] + 0.015, middle[1] + 0.015), z,
+                map.contains(middle[0], middle[1]) ? AutopilotScreenRenderer.TARGET : 0);
+        } else if (autopilot.craft() != Craft.ROCKET) {
+            double[] end = view.direction(autopilot.targetHeading() + 180, (map.y1() - map.y0()) * 1.5);
+            line(fill, matrix, map, view.cx(), view.cy(), end[0], end[1], 0.01, z, AutopilotScreenRenderer.TARGET);
+        }
     }
 
     /** World places turned onto the map, the airliner's heading up. */

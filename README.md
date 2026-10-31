@@ -2183,7 +2183,8 @@ Her cockpit is a flight deck laid out to the room her nose has at her scale, so 
 everything from the seat. Out of the lift an aisle runs straight forward to the autopilot's control head, facing the
 front, with the commander's seat on its left and the pilot's on its right, the airliner's pilot seats, each with its
 sidestick at the outboard hand. Ahead of them, past a row of legroom, a flight display stands dead ahead of each seat,
-and between the two the airliner's autopilot screen, its moving map drawing where she has been (touch the map to zoom,
+and between the two the airliner's autopilot screen, its moving map drawing where she has been and the circle round her
+pin, with only her own buttons beside it, lit while she flies: on and off, height and climb (touch the map to zoom,
 anywhere else to open the autopilot's settings); the panel's dark casing runs on from them to the glass as a
 glareshield. The commander has the LED console at the left hand and the pilot the livery selector, with the large camera
 display over it, at the right (see below), both standing on the floor facing in. Where there is room, two jump seats
