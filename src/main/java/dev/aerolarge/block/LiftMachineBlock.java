@@ -34,6 +34,15 @@ public class LiftMachineBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
+    /** Taken down for good, it takes the car's floor away with it, which would otherwise stay in the shaft for ever. */
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.is(newState.getBlock()) && !moved && level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof LiftMachineBlockEntity lift) {
+            lift.takeUpFloors(server);
+        }
+        super.onRemove(state, level, pos, newState, moved);
+    }
+
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new LiftMachineBlockEntity(pos, state);

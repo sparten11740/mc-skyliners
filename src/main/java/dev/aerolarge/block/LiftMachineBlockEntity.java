@@ -27,6 +27,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,8 +39,12 @@ import net.minecraft.world.phys.Vec3;
  * between the landings. A landing's call button (see {@link LiftCallButtonBlock}) calls the car: it comes if it is
  * elsewhere and its doors slide open; whoever steps in picks their floor on the board inside (see
  * {@link LiftBoardBlock}), the doors close, and the car takes them there, where a chime sounds, the doors open and they
- * step out. The car moves only with every
- * door shut and no one in a doorway, and lets no one off between floors.
+ * step out. The car moves only with every door shut and no one in a doorway, and lets no one off between floors.
+ *
+ * <p>Standing at a landing, the car has a floor laid under it in the shaft's opening (see {@link LiftFloorBlock}), so
+ * whoever is in it stands and walks about freely and walks out when they like. As it sets off, everyone standing in it
+ * is taken aboard and held for the ride, and the floor taken away; as it comes in, the floor is laid at the new landing
+ * and its riders are let go where they stand.
  *
  * <p>While the ship is not steady (her autopilot counting down, climbing, coming down or landing; a rocket holding her
  * height, as in space, is steady), the lift stands at a floor with its doors open and takes no rides, whoever is in it
@@ -61,12 +66,13 @@ public class LiftMachineBlockEntity extends BlockEntity {
     /** How long the car may be missing before a new one is set in the shaft, in ticks: its own chunk may load late. */
     private static final int CAR_MISSING = 40;
     /**
-     * How close to the shaft's middle a player stands to be taken aboard the car, across and up, in blocks: anywhere in
-     * the car, or already in the open doorway, so no one steps out over the gap at the car's edge first.
+     * How close to the shaft's middle a player stands to be taken aboard the car as it sets off, across and up, in
+     * blocks: anywhere on its floor, out to its very edge, so no one is left standing on the floor taken away.
      */
-    private static final double ABOARD_ACROSS = 1.4;
+    private static final double ABOARD_ACROSS = 1.6;
     private static final double ABOARD_UP = 2.0;
-    private static final double ABOARD_DOORWAY = 0.6;
+    /** How far out from the shaft's middle the car's floor reaches each way, in blocks: the opening in its glass. */
+    private static final int CAR_HALF = 1;
     /** The chimes' pitch: one rising tone as the car comes in going up, two falling going down. */
     private static final float CHIME_PITCH = 1.0F;
 
@@ -152,6 +158,8 @@ public class LiftMachineBlockEntity extends BlockEntity {
     private int sliding = -1;
     private int slid;
     private boolean doorsLookedOver;
+    /** Whether the car's floor has been laid where it stands since the machine was loaded, for one saved standing. */
+    private boolean floorLaid;
 
     public LiftMachineBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.LIFT_MACHINE_ENTITY.get(), pos, state);
@@ -265,12 +273,13 @@ public class LiftMachineBlockEntity extends BlockEntity {
         if (phase == Phase.IDLE) {
             target = to;
             if (at == from) {
-                enter(Phase.OPENING);
+                enter(someoneInCar(level) ? Phase.CLOSING : Phase.OPENING);
             } else {
+                LiftCar running = car(level);
+                depart(level, running);
                 goingUp = landings.get(from).depth() < landings.get(at).depth();
                 at = from;
                 enter(Phase.FETCHING);
-                LiftCar running = car(level);
                 if (running != null) {
                     running.ride(level, landings.get(from).depth());
                 }
@@ -295,11 +304,14 @@ public class LiftMachineBlockEntity extends BlockEntity {
         if (running == null) {
             return;
         }
+        if (!lift.floorLaid) {
+            lift.floorLaid = true;
+            lift.layFloorIfStanding(level);
+        }
         lift.ticks++;
         lift.doorsSlid(level);
         lift.step(level, running);
-        Vec3 letOff = lift.doorsOpen() ? lift.exitAt(level, lift.at) : null;
-        running.hold(level, pos, letOff);
+        running.hold(level, pos, lift.exitAt(level, lift.at));
     }
 
     /** One tick of the lift's work in its phase. */
@@ -321,8 +333,6 @@ public class LiftMachineBlockEntity extends BlockEntity {
                 }
             }
             case PARKED -> {
-                letSneakersOff(level, running);
-                takeAboard(level, running);
                 if (resting) {
                     target = -1;
                     enter(Phase.BOARDING);
@@ -331,22 +341,17 @@ public class LiftMachineBlockEntity extends BlockEntity {
         }
     }
 
-    /**
-     * Its doors sliding open: once they are, its riders step out; while they slide, whoever steps into the doorway is
-     * taken aboard already, the doorway being clear of them from the start.
-     */
+    /** Its doors sliding open, and once they are, standing open. */
     private void opening(ServerLevel level, LiftCar running) {
-        if (ticks < DOOR_TICKS) {
-            if (!running.isVehicle()) {
-                takeAboard(level, running);
-            }
-            return;
+        if (ticks >= DOOR_TICKS) {
+            enter(Phase.BOARDING);
         }
-        letOff(level, running);
-        enter(Phase.BOARDING);
     }
 
-    /** On its way: once the car stands at its floor, a chime, and the doors open there. */
+    /**
+     * On its way: once the car stands at its floor, a chime, its floor laid there and its riders let go where they
+     * stand, and the doors open.
+     */
     private void arriving(ServerLevel level, LiftCar running) {
         if (!running.arrived()) {
             return;
@@ -355,24 +360,25 @@ public class LiftMachineBlockEntity extends BlockEntity {
             at = target;
             target = -1;
         }
+        layFloor(level, at);
+        letOff(level, running);
         sound(level, goingUp ? AerolargeRegistry.LIFT_CHIME_UP.get() : AerolargeRegistry.LIFT_CHIME_DOWN.get(), CHIME_PITCH);
         enter(Phase.OPENING);
         changed();
     }
 
     /**
-     * Standing open: whoever steps in is taken aboard and whoever sneaks in it is set down outside; once it has stood
-     * long enough, with a floor picked or no one aboard, and no one in the way, the doors close. With another landing
-     * calling, it stands open only a moment empty, and no longer than it would empty for a rider who has picked no
-     * floor: it goes to answer the call, taking them along.
+     * Standing open, whoever is in it free to walk about and out: once it has stood long enough, with a floor picked or
+     * no one in it, and no one in the way, the doors close. With another landing calling, it stands open only a moment
+     * empty, and no longer than it would empty for someone in it who has picked no floor: it goes to answer the call,
+     * taking them along.
      */
     private void boarding(ServerLevel level, LiftCar running) {
-        letSneakersOff(level, running);
-        takeAboard(level, running);
         boolean picked = target >= 0 && target != at;
         boolean waited = !calls.isEmpty();
-        int stays = waited && !running.isVehicle() ? Math.min(lasts, PICKED_TICKS) : lasts;
-        if (ticks < stays || !picked && running.isVehicle() && !waited || doorwayTaken(level)) {
+        boolean someone = someoneInCar(level);
+        int stays = waited && !someone ? Math.min(lasts, PICKED_TICKS) : lasts;
+        if (ticks < stays || !picked && someone && !waited || doorwayTaken(level)) {
             return;
         }
         enter(Phase.CLOSING);
@@ -380,9 +386,10 @@ public class LiftMachineBlockEntity extends BlockEntity {
         sound(level, AerolargeRegistry.LIFT_DOOR_SOUND.get(), 1.0F);
     }
 
-    /** The doors shut: off with its riders to their floor, or standing shut. */
+    /** The doors shut: off with whoever is in it to their floor, or standing shut. */
     private void closed(ServerLevel level, LiftCar running) {
-        if (target >= 0 && target != at && running.isVehicle()) {
+        if (target >= 0 && target != at && someoneInCar(level)) {
+            depart(level, running);
             goingUp = landings.get(target).depth() < landings.get(at).depth();
             enter(Phase.RIDING);
             running.ride(level, landings.get(target).depth());
@@ -404,58 +411,102 @@ public class LiftMachineBlockEntity extends BlockEntity {
         changed();
     }
 
-    /** Opens the doors at the floor it has come to, letting its riders out there. */
+    /** Lets its riders go where they stand in the car, on the floor laid at the landing it has come to. */
     private void letOff(ServerLevel level, LiftCar running) {
         for (Entity rider : List.copyOf(running.getPassengers())) {
-            setDown(level, running, rider);
-        }
-    }
-
-    /** While its doors stand open at a floor, whoever sneaks in the car is set down outside them. */
-    private void letSneakersOff(ServerLevel level, LiftCar running) {
-        for (Entity rider : List.copyOf(running.getPassengers())) {
-            if (running.askedOff(rider)) {
-                setDown(level, running, rider);
-            }
+            Vec3 stands = SableFlight.toWorld(level, running.standingSpot(rider));
+            running.release(rider, stands);
+            setDown(running, rider, stands);
         }
     }
 
     /**
-     * A rider off the car and outside the door of the floor it is at. A player is told they are off the car before
-     * they are moved, or their game would ride on a moment and put them back in the car.
+     * A rider off the car, put where given in the world. A player is told they are off the car before they are moved,
+     * or their game would ride on a moment and put them back in the car.
      */
-    private void setDown(ServerLevel level, LiftCar running, Entity rider) {
-        Vec3 exit = exitAt(level, at);
-        running.release(rider);
+    private static void setDown(LiftCar running, Entity rider, Vec3 to) {
         if (rider instanceof ServerPlayer player) {
             player.connection.send(new ClientboundSetPassengersPacket(running));
-            player.connection.teleport(exit.x, exit.y, exit.z, player.getYRot(), player.getXRot());
+            player.connection.teleport(to.x, to.y, to.z, player.getYRot(), player.getXRot());
         } else {
-            rider.teleportTo(exit.x, exit.y, exit.z);
+            rider.teleportTo(to.x, to.y, to.z);
         }
     }
 
-    /** Takes aboard every player standing in the car, so no one steps into the open shaft. */
-    private void takeAboard(ServerLevel level, LiftCar running) {
-        Vec3 middle = running.position();
+    /**
+     * The car setting off from where it stands: everyone standing in it taken aboard to be held for the ride, and its
+     * floor there taken away.
+     */
+    private void depart(ServerLevel level, @Nullable LiftCar running) {
+        if (running != null) {
+            for (ServerPlayer player : inCar(level)) {
+                if (running.getPassengers().size() < LiftCar.RIDERS) {
+                    player.startRiding(running, true);
+                }
+            }
+        }
+        takeUpFloor(level, at);
+    }
+
+    /** Whether anyone stands in the car where it is now. */
+    private boolean someoneInCar(ServerLevel level) {
+        return !inCar(level).isEmpty();
+    }
+
+    /** The players standing in the car, on its floor at the landing it is at, spectators left out. */
+    private List<ServerPlayer> inCar(ServerLevel level) {
+        Vec3 floor = Vec3.atBottomCenterOf(worldPosition.below(landings.get(at).depth()));
+        List<ServerPlayer> found = new ArrayList<>();
         for (ServerPlayer player : level.players()) {
-            if (player.getVehicle() == running || player.isSpectator() || running.getPassengers().size() >= LiftCar.RIDERS) {
-                continue;
+            Vec3 off = SableFlight.toPlot(level, worldPosition, player.position(), false).subtract(floor);
+            boolean onFloor = Math.abs(off.x) < ABOARD_ACROSS && Math.abs(off.z) < ABOARD_ACROSS && off.y > -0.5 && off.y < ABOARD_UP;
+            if (onFloor && !player.isSpectator() && player.getVehicle() == null) {
+                found.add(player);
             }
-            Vec3 seen = SableFlight.toPlot(level, worldPosition, player.position(), false);
-            Vec3 off = seen.subtract(middle);
-            boolean inCar = Math.abs(off.x) < ABOARD_ACROSS && Math.abs(off.z) < ABOARD_ACROSS;
-            if ((inCar || inDoorway(seen)) && off.y > -0.5 && off.y < ABOARD_UP) {
-                player.startRiding(running, true);
+        }
+        return found;
+    }
+
+    /** Lays the car's floor where it stands, if it stands at a landing now. */
+    private void layFloorIfStanding(ServerLevel level) {
+        if (phase != Phase.FETCHING && phase != Phase.RIDING && at < landings.size()) {
+            layFloor(level, at);
+        }
+    }
+
+    /** Lays the car's floor at a landing, in the open blocks of the shaft's opening under it. */
+    private void layFloor(ServerLevel level, int landing) {
+        for (BlockPos cell : floorCells(landing)) {
+            if (level.getBlockState(cell).isAir()) {
+                level.setBlock(cell, AerolargeRegistry.LIFT_FLOOR.get().defaultBlockState(), Block.UPDATE_ALL);
             }
         }
     }
 
-    /** Whether a point among the ship's blocks is in the open doorway of the floor the car is at. */
-    private boolean inDoorway(Vec3 seen) {
-        Vec3 door = Vec3.atBottomCenterOf(worldPosition.offset(landings.get(at).door()));
-        Vec3 off = seen.subtract(door);
-        return Math.abs(off.x) < ABOARD_DOORWAY && Math.abs(off.z) < ABOARD_DOORWAY;
+    /** Takes the car's floor away at a landing, as it sets off from there. */
+    private void takeUpFloor(ServerLevel level, int landing) {
+        for (BlockPos cell : floorCells(landing)) {
+            if (level.getBlockState(cell).is(AerolargeRegistry.LIFT_FLOOR.get())) {
+                level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+    }
+
+    /** Takes the car's floor away at every landing, as the machine is taken down. */
+    public void takeUpFloors(ServerLevel level) {
+        for (int landing = 0; landing < landings.size(); landing++) {
+            takeUpFloor(level, landing);
+        }
+    }
+
+    /** The blocks the car's floor fills at a landing: the shaft's opening in the row under the car's feet. */
+    private List<BlockPos> floorCells(int landing) {
+        BlockPos middle = worldPosition.below(landings.get(landing).depth() + 1);
+        List<BlockPos> cells = new ArrayList<>();
+        for (BlockPos cell : BlockPos.betweenClosed(middle.offset(-CAR_HALF, 0, -CAR_HALF), middle.offset(CAR_HALF, 0, CAR_HALF))) {
+            cells.add(cell.immutable());
+        }
+        return cells;
     }
 
     /** Whether someone stands in the doorway of the floor it is at, where the doors would close on them. */
@@ -485,11 +536,6 @@ public class LiftMachineBlockEntity extends BlockEntity {
         }
         AutopilotBlockEntity.Phase flying = head.phase();
         return flying == AutopilotBlockEntity.Phase.OFF || head.craft() == Craft.ROCKET && flying == AutopilotBlockEntity.Phase.CRUISE;
-    }
-
-    /** Whether its doors stand open at the floor it is at, so riders may step out. */
-    private boolean doorsOpen() {
-        return phase == Phase.BOARDING || phase == Phase.PARKED;
     }
 
     /** Opens or shuts a landing's doors, both of its blocks. */
@@ -556,7 +602,10 @@ public class LiftMachineBlockEntity extends BlockEntity {
         changed();
     }
 
-    /** Its car, or a new one standing at the floor it was at, once the old one has been missing a while. */
+    /**
+     * Its car, or a new one standing at the floor it was at, once the old one has been missing a while; a ride cut short
+     * so ends there, the car's floor laid under it again.
+     */
     @Nullable
     private LiftCar carOrNew(ServerLevel level) {
         LiftCar found = car(level);
@@ -574,6 +623,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
         car = fresh.getUUID();
         missing = 0;
         if (phase == Phase.FETCHING || phase == Phase.RIDING) {
+            layFloor(level, at);
             enter(Phase.OPENING);
         }
         setChanged();

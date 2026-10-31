@@ -4557,12 +4557,16 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
 // The rocket's lift (see LiftMachineBlockEntity). Its machine: a steel housing over the shaft. Its landing doors: a
 // pane of smoked glass in a steel frame across the middle of the doorway, a block wide and two tall; open, it has slid
 // aside into the shaft's wall by the doorway, so it is drawn reaching into the next block. Its picture boards: the slim
-// screen of the camera display and the livery selector, a block wide and two tall, its renderer drawing the floors.
-// Only the blueprints place them, and they give back nothing.
+// screen of the camera display and the livery selector, a block wide and two tall, its renderer drawing the floors. The
+// floor laid under its car at a landing is not drawn, so its model has nothing in it but the glass's crumbs for its
+// particles. Only the blueprints and the lift place them, and they give back nothing.
 {
   write(`assets/${ID}/models/block/lift_machine.json`, { parent: "minecraft:block/cube_all", textures: { all: `${ID}:block/lift_machine` } });
   write(`assets/${ID}/blockstates/lift_machine.json`, { variants: { "": { model: `${ID}:block/lift_machine` } } });
   cubes.lift_machine = null;
+  write(`assets/${ID}/models/block/lift_floor.json`, { textures: { particle: `${ID}:block/lift_glass` } });
+  write(`assets/${ID}/blockstates/lift_floor.json`, { variants: { "": { model: `${ID}:block/lift_floor` } } });
+  cubes.lift_floor = null;
   const variants = {};
   for (const half of ["lower", "upper"]) {
     for (const open of [false, true]) {
@@ -9401,6 +9405,8 @@ FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
 FITTINGS.push(...domeFittings());
+// The floor a lift lays under its car is fitted into the shaft, not part of her frame.
+FITTINGS.push("lift_floor");
 FITTINGS.push(...foodLabFittings());
 FITTINGS.push(...greenhouseFittings());
 FITTINGS.push(...rocketRoomFittings());
@@ -9685,6 +9691,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "block.aerolarge.cabin_window_shell": "Curved Cabin Window",
   "block.aerolarge.oval_window": "Oval Window",
   "block.aerolarge.lift_machine": "Lift Machine",
+  "block.aerolarge.lift_floor": "Lift Car Floor",
   "block.aerolarge.lift_call_button": "Lift Call Button",
   "block.aerolarge.lift_door": "Lift Door",
   "block.aerolarge.lift_board": "Lift Board",

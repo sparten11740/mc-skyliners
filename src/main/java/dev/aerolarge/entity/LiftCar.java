@@ -2,9 +2,6 @@ package dev.aerolarge.entity;
 
 import dev.aerolarge.block.LiftMachineBlockEntity;
 import dev.aerolarge.compat.SableFlight;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -32,8 +29,11 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * sides know, so the server sends no moves for it: it eases off, runs at the lift's speed and eases in (see
  * {@link #travelled}).
  *
- * <p>Its machine holds it every tick; left without its machine, as when the ship is taken away, it lets its riders
- * off where they are and goes. No one gets off it between floors: only its machine sets riders down, at an open door.
+ * <p>It carries riders only on a ride: standing at a floor, it has a floor laid under it and whoever is in it stands
+ * and walks about freely (see {@link LiftMachineBlockEntity}). Its machine takes everyone in it aboard as it sets off
+ * and lets them go where they stand as it comes in. Its machine holds it every tick; left without its machine, as when
+ * the ship is taken away, it lets its riders off at the landing it last stood at and goes. No one gets off it between
+ * floors.
  */
 public class LiftCar extends Entity {
     /**
@@ -64,16 +64,15 @@ public class LiftCar extends Entity {
 
     /** The game tick its machine last held it. */
     private long heldAt;
-    /** Where its riders get off, among the ship's blocks, while its machine lets them; null while it may not. */
+    /**
+     * Where its riders are set down, in the world, should they leave it other than at a floor (the car losing its
+     * machine, a rider leaving the game): outside the door of the landing it last stood at. Null until first held.
+     */
     @Nullable
     private Vec3 letOffAt;
-    /** Whether its machine is setting a rider down now, which no sneaking stops. */
-    private boolean releasing;
-    /**
-     * The riders who sneaked to get off since its machine last held it, for the machine to set down outside the door if
-     * it stands open: the game forgets a rider's sneak in the tick it is refused.
-     */
-    private final Set<UUID> askedOff = new HashSet<>();
+    /** Where its machine is setting a rider down now, in the world, or null while it sets no one down. */
+    @Nullable
+    private Vec3 releasingTo;
 
     public LiftCar(EntityType<? extends LiftCar> type, Level level) {
         super(type, level);
@@ -94,21 +93,12 @@ public class LiftCar extends Entity {
         return entityData.get(MACHINE);
     }
 
-    /**
-     * Held by its machine this tick: where the machine is, and, when a new ride sets off, how far under it the floor
-     * stands now and will at its end.
-     */
+    /** Held by its machine this tick: where the machine is, and where riders lost off a ride are set down. */
     public void hold(ServerLevel level, BlockPos machine, @Nullable Vec3 letOff) {
         entityData.set(MACHINE, machine);
         heldAt = level.getGameTime();
         letOffAt = letOff;
-        askedOff.clear();
         follow();
-    }
-
-    /** Whether a rider sneaked to get off since its machine last held it. */
-    public boolean askedOff(Entity rider) {
-        return askedOff.contains(rider.getUUID());
     }
 
     /** Sets a ride off from where the car stands now to so far under its machine, in blocks, from this tick on. */
@@ -202,13 +192,29 @@ public class LiftCar extends Entity {
      */
     @Override
     public Vec3 getPassengerRidingPosition(Entity passenger) {
-        int place = Math.max(0, getPassengers().indexOf(passenger));
+        return standingSpot(passenger).add(passenger.getVehicleAttachmentPoint(this));
+    }
+
+    /** Where a rider's feet stand on the car's floor, in its quarter of it, among the ship's blocks. */
+    public Vec3 standingSpot(Entity rider) {
+        int place = Math.max(0, getPassengers().indexOf(rider));
         Direction doors = doorsSide();
         Direction side = doors.getClockWise();
         double across = (place & 1) == 0 ? -RIDER_OUT : RIDER_OUT;
         double along = (place & 2) == 0 ? RIDER_OUT : -RIDER_OUT;
-        Vec3 spot = Vec3.atLowerCornerOf(side.getNormal()).scale(across).add(Vec3.atLowerCornerOf(doors.getNormal()).scale(along));
-        return position().add(spot).add(passenger.getVehicleAttachmentPoint(this));
+        return position().add(Vec3.atLowerCornerOf(side.getNormal()).scale(across)).add(Vec3.atLowerCornerOf(doors.getNormal()).scale(along));
+    }
+
+    /**
+     * A rider stands still as the car carries them: the game would take every move of the ship under them for steps and
+     * swing their legs the whole ride.
+     */
+    @Override
+    protected void positionRider(Entity passenger, MoveFunction callback) {
+        super.positionRider(passenger, callback);
+        if (passenger instanceof LivingEntity living) {
+            living.walkAnimation.setSpeed(0);
+        }
     }
 
     /** The side of the shaft its doors are on, as its machine's landings have them; north without them. */
@@ -222,6 +228,9 @@ public class LiftCar extends Entity {
 
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
+        if (releasingTo != null) {
+            return releasingTo;
+        }
         return letOffAt != null ? letOffAt : position();
     }
 
@@ -235,31 +244,24 @@ public class LiftCar extends Entity {
         return getPassengers().size() < RIDERS;
     }
 
-    /** Whether its riders may get off now: its machine has its door open at a floor. */
-    public boolean lettingOff() {
-        return letOffAt != null;
-    }
-
     /**
-     * A rider set down by its machine, which then puts them outside the door: the only way off but for the rider
+     * A rider set down by its machine where given in the world, as the car comes in: the only way off but for the rider
      * going, dying or being teleported.
      */
-    public void release(Entity rider) {
-        releasing = true;
+    public void release(Entity rider, Vec3 to) {
+        releasingTo = to;
         rider.stopRiding();
-        releasing = false;
+        releasingTo = null;
     }
 
     /**
-     * No one gets off by sneaking, between floors or at one: at a floor whose door is open, its machine sets a sneaking
-     * rider down outside the door itself (see {@link LiftMachineBlockEntity}), as it does its riders as the car comes
-     * in. Left to the game, a rider would be set down in the car, where the doors would shut on them.
+     * No one gets off a ride by sneaking: its machine lets its riders go as the car comes in at their floor. Left to
+     * the game, a rider would drop down the shaft between floors.
      */
     public static void onMount(EntityMountEvent event) {
-        if (event.isDismounting() && event.getEntityBeingMounted() instanceof LiftCar car && car.isAlive() && !car.releasing
+        if (event.isDismounting() && event.getEntityBeingMounted() instanceof LiftCar car && car.isAlive() && car.releasingTo == null
             && !event.getLevel().isClientSide && event.getEntityMounting().isAlive() && event.getEntityMounting().isShiftKeyDown()) {
             event.setCanceled(true);
-            car.askedOff.add(event.getEntityMounting().getUUID());
         }
     }
 

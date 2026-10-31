@@ -143,6 +143,7 @@ import dev.aerolarge.block.BioreactorBlock;
 import dev.aerolarge.block.LabGrowerBlock;
 import dev.aerolarge.block.LabPartitionBlock;
 import dev.aerolarge.block.LabPipeBlock;
+import dev.aerolarge.block.LiftFloorBlock;
 import dev.aerolarge.block.OrreryBlock;
 import dev.aerolarge.block.OrreryBlockEntity;
 import dev.aerolarge.block.SampleCentrifugeBlock;
@@ -714,6 +715,15 @@ public final class AerolargeRegistry {
      * its sounds (see {@link LiftMachineBlockEntity}).
      */
     public static final DeferredBlock<LiftMachineBlock> LIFT_MACHINE = BLOCKS.registerBlock("lift_machine", LiftMachineBlock::new, metal(MapColor.METAL));
+    /**
+     * The floor laid under a lift's car where it stands at a landing, for its riders to walk on: not drawn, not to be
+     * picked out or broken, laid and taken away only by the lift.
+     */
+    public static final DeferredBlock<LiftFloorBlock> LIFT_FLOOR = BLOCKS.registerBlock(
+        "lift_floor", LiftFloorBlock::new, BlockBehaviour.Properties.of().strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()
+            .isValidSpawn(AerolargeRegistry::never).isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+            .pushReaction(PushReaction.BLOCK)
+    );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiftMachineBlockEntity>> LIFT_MACHINE_ENTITY =
         BLOCK_ENTITIES.register("lift_machine", () -> BlockEntityType.Builder.of(LiftMachineBlockEntity::new, LIFT_MACHINE.get()).build(null));
     public static final DeferredBlock<LiftDoorBlock> LIFT_DOOR = BLOCKS.registerBlock("lift_door", LiftDoorBlock::new, glass());

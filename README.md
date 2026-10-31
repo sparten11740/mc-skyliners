@@ -1897,8 +1897,9 @@ it comes
 in going up, two going down, and the doors open to let you out. As it rides, lift music plays softly in the car, a bossa
 nova on an electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes
 in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on
-anyone in the doorway or moves with a door open, and no one gets off between floors; while its doors stand open at a
-floor, sneak to step out of it. While she counts down, climbs, comes down or lands, it stands at a floor with its doors
+anyone in the doorway or moves with a door open, and no one gets off between floors. At a floor you walk about in the
+car as you like and step out once its doors open: it holds its riders still only as it rides, each in a corner of it.
+While she counts down, climbs, comes down or lands, it stands at a floor with its doors
 open and takes no rides (once she holds her height, as in space, it runs again), and an amber bar lies across its
 boards; in place of her floors they show how high she flies, a little
 rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
@@ -2438,7 +2439,8 @@ control head is wired to its engine bells' and side jets' relays as it is built,
 `RocketPilot` flies it, its thrust from the mass Sable weighs and a trim it learns, its tilt held on its side jets; a
 `Craft` of its own gives its screens its pictures (`PanelArt.Pictures`). `RocketLift` lays her lift: a
 `LiftMachineBlockEntity` runs it, its `LiftCar` living among her blocks (in `#sable:retain_in_sub_level`) and placed
-on its shaft by a clock both sides share, its `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
+on its shaft by a clock both sides share, with an unseen `LiftFloorBlock` floor laid under it where it stands, its
+`LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
 `LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
 inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,
 the floor looked at lit, and `HeightGauge` in flight); on the client `LiftSounds` plays a riding car's hum, and its
