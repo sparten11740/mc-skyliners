@@ -931,6 +931,15 @@ public class Rover extends Entity {
         return false;
     }
 
+    /**
+     * Solid, to bump into or climb onto as a boat is, in its cradle and out on the ground; not on the winch's cable on
+     * its way down or up, so it never shoves anyone aside as it swings past.
+     */
+    @Override
+    public boolean canBeCollidedWith() {
+        return state() == State.STOWED || state() == State.OUT;
+    }
+
     @Override
     public boolean hurt(DamageSource source, float amount) {
         return false;
