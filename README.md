@@ -1858,7 +1858,9 @@ aluminium stringers, a handrail along either side, the top tread level with the 
 under her entry floor, behind a hatch in her skin below the door, and nothing of them shows. Coming out, the hatch
 drops, the folded flight slides out of its bay, rises to the sill and tips down to its slope, and its sections run out
 down to the ground as its handrails rise, to the hum of their hydraulics and the clunk of their latches; they reach as
-far down as the ground lets them, and are walked up and down like any stairs. A lit amber button with a staircase on
+far down as the ground lets them, down to ground a few blocks lower than her fins where she stands on uneven ground
+(where their bay has room for so long a flight), and are walked up and down like any stairs. A lit amber button with a
+staircase on
 it, the airstairs' own, stands inside by the door on her right at eye height, and another low on the front of her front
 right fin's tip, to call them down from the ground: pressing either brings the stairs down or folds them away while she
 stands with her autopilot off; while she flies, it only sounds a low note. They come down by themselves as soon as she

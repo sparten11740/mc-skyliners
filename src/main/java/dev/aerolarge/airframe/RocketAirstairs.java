@@ -43,6 +43,11 @@ final class RocketAirstairs implements RocketPiece {
     private static final int CALL_BUTTON_UP = 1;
     /** How many rows in from the doorway's outermost the leaves may stand at most, looking for skin either side. */
     private static final int LEAVES_DEEPEST = 2;
+    /**
+     * How many rows below her fins' feet the flight is built to reach on, where the folded flight still fits her bay:
+     * standing on uneven ground, the ground under her door lower than her fins, the stairs still come down to it.
+     */
+    private static final int LOWER_GROUND = 6;
 
     private final RocketLayout layout;
 
@@ -74,8 +79,10 @@ final class RocketAirstairs implements RocketPiece {
         doors(doorway);
         int mouthRow = floor - 1;
         int mouth = mouth(mouthRow, front);
-        int rise = floor + 1;
-        int fitting = AirstairFlight.sectionsFor(rise, bayRoom(mouthRow, front + mouth));
+        int bay = bayRoom(mouthRow, front + mouth);
+        int reaching = AirstairFlight.sectionsFor(floor + 1 + LOWER_GROUND, bay);
+        int rise = reaching > 0 ? floor + 1 + LOWER_GROUND : floor + 1;
+        int fitting = reaching > 0 ? reaching : AirstairFlight.sectionsFor(rise, bay);
         int sections = fitting > 0 ? fitting : AirstairFlight.MOST_SECTIONS;
         List<AirstairControllerBlockEntity.Step> hatch = hatch(mouthRow, button);
         float inset = hatchInset(front);
