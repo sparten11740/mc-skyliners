@@ -2257,8 +2257,8 @@ Each hangs on a slim rod from its own flat brass arm over the sun, so from under
 hide a planet; faint gold tracks show where each goes, and round it all hangs a brass hoop ticked every thirty degrees
 on four hairline cables. It is as big as the ring and the dome leave room for at her scale: under scale 1.5 or so
 only the planetarium is drawn, and at scale 1, where the ceiling closes over the cockpit, neither. The server config's
-`rocket.dome` leaves her nose padded inside and bare. Four warm
-halo lights hang on their cables from the ring of ceiling at the cockpit's diagonals, so it is lit at night.
+`rocket.dome` leaves her nose padded inside and bare. Six flush light panels set into the ring of ceiling light the
+cockpit at night, with nothing hanging across the view out of the glass or up into the dome.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
 map no circle or landing switch and on it no circle round the pin, as she circles nothing and always comes down on the
