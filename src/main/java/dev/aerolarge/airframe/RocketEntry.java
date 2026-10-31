@@ -115,7 +115,8 @@ final class RocketEntry extends RocketRoom {
 
     /**
      * The mudroom bench across the kit-up room, its sitter facing the boot shelves, centred on the room's reach; and a
-     * suitcase dropped by it or by the lockers, wherever the first of a few spots is free.
+     * suitcase dropped by it or by the lockers, wherever the first of a few spots is free and not in front of a locker's
+     * door, which it would keep shut.
      */
     private void bench(RocketQuarter quarter, int y, int arm, RandomSource random) {
         int length = RocketQuarter.roomy(arm) ? 3 : 2;
@@ -132,17 +133,29 @@ final class RocketEntry extends RocketRoom {
                 way -> layout.stateAt(at.getX() + way.getStepX(), y, at.getZ() + way.getStepZ())));
         }
         int inner = RocketQuarter.INNER;
-        int[][] spots = {{inner, inner}, {inner + 1, inner}, {inner, inner + 1}, {first + length, BENCH_ALONG + 1}};
+        int[][] spots = {{inner, inner}, {inner + 1, inner}, {inner, inner + 1}, {first + length, BENCH_ALONG + 1}, {first + length, BENCH_ALONG},
+            {inner + 2, inner}, {inner, inner + 2}};
         int start = random.nextInt(spots.length);
         BlockState suitcase = AerolargeRegistry.SUITCASE.get().defaultBlockState()
             .setValue(SuitcaseBlock.FACING, Direction.from2DDataValue(random.nextInt(4)))
             .setValue(SuitcaseBlock.COLOR, CASES[random.nextInt(CASES.length)]);
         for (int spot = 0; spot < spots.length; spot++) {
             int[] at = spots[(start + spot) % spots.length];
-            if (standing(quarter.x(at[0]), y, quarter.z(at[1]), suitcase)) {
+            if (!beforeLocker(quarter.x(at[0]), y, quarter.z(at[1])) && standing(quarter.x(at[0]), y, quarter.z(at[1]), suitcase)) {
                 return;
             }
         }
+    }
+
+    /** Whether a spot of the floor plan is just in front of a crew locker's door, beside it and faced by it. */
+    private boolean beforeLocker(int x, int y, int z) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockState beside = layout.stateAt(x + side.getStepX(), y, z + side.getStepZ());
+            if (beside.is(AerolargeRegistry.CREW_LOCKER.get()) && beside.getValue(CrewLockerBlock.FACING) == side.getOpposite()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
