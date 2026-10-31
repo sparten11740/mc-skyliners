@@ -1898,8 +1898,9 @@ in going up, two going down, and the doors open to let you out. As it rides, lif
 nova on an electric piano over a plucked bass and a shaker, heard in the car and right by it and fading away as it comes
 in; the Jukebox/Note Blocks volume sets how loud, and the client config's `liftMusic` turns it off. It never closes on
 anyone in the doorway or moves with a door open, and no one gets off between floors; while its doors stand open at a
-floor, sneak to step out of it. While she counts down, flies or lands, it stands at a floor with its doors open and
-takes no rides, and an amber bar lies across its boards; in place of her floors they show how high she flies, a little
+floor, sneak to step out of it. While she counts down, climbs, comes down or lands, it stands at a floor with its doors
+open and takes no rides (once she holds her height, as in space, it runs again), and an amber bar lies across its
+boards; in place of her floors they show how high she flies, a little
 rocket climbing a column of sky in the colours of each height, from the sea at its foot to her ceiling, past a dashed
 line with a star where space begins, stars twinkling over it once she is up there (the client config's `heightGauge`
 keeps her floors on them).

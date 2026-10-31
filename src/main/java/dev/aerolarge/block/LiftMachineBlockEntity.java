@@ -2,6 +2,7 @@ package dev.aerolarge.block;
 
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.compat.SableFlight;
 import dev.aerolarge.entity.LiftCar;
 import java.util.ArrayList;
@@ -40,9 +41,9 @@ import net.minecraft.world.phys.Vec3;
  * step out. The car moves only with every
  * door shut and no one in a doorway, and lets no one off between floors.
  *
- * <p>While the ship is not resting on the ground (her autopilot counting down, climbing, flying or landing), the lift
- * stands at a floor with its doors open and takes no rides, whoever is in it free to step out; it runs again once she
- * stands still.
+ * <p>While the ship is not steady (her autopilot counting down, climbing, coming down or landing; a rocket holding her
+ * height, as in space, is steady), the lift stands at a floor with its doors open and takes no rides, whoever is in it
+ * free to step out; it runs again once she is steady.
  *
  * <p>Its landings, set as the ship is built (see {@link #configure}), each hold how far under the machine the car's
  * floor stands there, where the landing's door is and where riders step out, as offsets from the machine turned as she
@@ -470,13 +471,20 @@ public class LiftMachineBlockEntity extends BlockEntity {
         return false;
     }
 
-    /** Whether the ship stands resting on the ground, her autopilot off: the lift runs only then. */
+    /**
+     * Whether the ship is steady enough for the lift to run: standing on the ground, her autopilot off, or a rocket
+     * holding her height on her way across, as in space; not through her climb, nor her way down and landing.
+     */
     private boolean shipResting(ServerLevel level) {
         if (autopilot == null) {
             return true;
         }
         BlockEntity found = level.getBlockEntity(worldPosition.offset(autopilot));
-        return !(found instanceof AutopilotBlockEntity head) || head.phase() == AutopilotBlockEntity.Phase.OFF;
+        if (!(found instanceof AutopilotBlockEntity head)) {
+            return true;
+        }
+        AutopilotBlockEntity.Phase flying = head.phase();
+        return flying == AutopilotBlockEntity.Phase.OFF || head.craft() == Craft.ROCKET && flying == AutopilotBlockEntity.Phase.CRUISE;
     }
 
     /** Whether its doors stand open at the floor it is at, so riders may step out. */
