@@ -182,8 +182,8 @@ final class RocketObservationDeck extends RocketRoom {
         hasMezzanine = flight.isPresent();
         if (hasMezzanine) {
             outer = flight.getAsInt();
-            mezzanine();
             stairs();
+            mezzanine();
         }
         starlight(ceiling - 1);
         starryWall(ceiling - 1);
@@ -234,9 +234,19 @@ final class RocketObservationDeck extends RocketRoom {
         return floor() + MEZZANINE_UP;
     }
 
-    /** How far behind her axis a tread of the stairs is, counted from their foot: the top one by the mezzanine. */
+    /**
+     * How far behind her axis a tread of the stairs is, counted from their foot: the top one in the mezzanine's front
+     * edge, level with its floor. So the floor before their foot is as far ahead of her axis as the landing at their
+     * top is behind it, and her round skin, which leaves room for the landing beside her wall, leaves room before both
+     * treads at their foot too.
+     */
     private static int treadZ(int step) {
-        return MEZZANINE_FRONT - 1 - (MEZZANINE_UP - step);
+        return MEZZANINE_FRONT - (MEZZANINE_UP - step);
+    }
+
+    /** How far behind her axis the landing at the stairs' top is: on the mezzanine, just past their top tread. */
+    private static int landingZ() {
+        return treadZ(MEZZANINE_UP) + 1;
     }
 
     /** The band of smoked glass: every block of her skin in its rows, cover or oval window, turned to glass. */
@@ -268,17 +278,21 @@ final class RocketObservationDeck extends RocketRoom {
 
     /**
      * Where the stairs' outer treads go: the column furthest out, against her skin on her right, in which they and
-     * their inner treads beside them fit, with the floor open before the inner tread at their foot (her skin may stand
-     * before the outer one, as she curves in); none where they fit nowhere, and then the room has no mezzanine.
+     * their inner treads beside them fit, with the floor open before both treads at their foot, so either side of the
+     * flight is walked straight onto from the deck; none where they fit nowhere, and then the room has no mezzanine.
      */
     private OptionalInt flightColumn() {
         for (int column = (int) Math.ceil(wall()); column - 1 > RocketLayout.SHAFT + 1; column--) {
-            boolean foot = columnOpen(column - 1, floor() + 1, floor() + HEADROOM, treadZ(1) - 1);
-            if (foot && flightFits(column - 1) && flightFits(column)) {
+            if (footOpen(column - 1) && footOpen(column) && flightFits(column - 1) && flightFits(column)) {
                 return OptionalInt.of(column);
             }
         }
         return OptionalInt.empty();
+    }
+
+    /** Whether the floor before a column's first tread is open air inside her, up through its headroom. */
+    private boolean footOpen(int x) {
+        return columnOpen(x, floor() + 1, floor() + HEADROOM, treadZ(1) - 1);
     }
 
     /**
@@ -291,7 +305,7 @@ final class RocketObservationDeck extends RocketRoom {
                 return false;
             }
         }
-        return columnOpen(x, mezzanineFloor(), mezzanineFloor() + HEADROOM, MEZZANINE_FRONT);
+        return columnOpen(x, mezzanineFloor(), mezzanineFloor() + HEADROOM, landingZ());
     }
 
     /** Whether a column of blocks is open air inside her from one row to another. */
@@ -304,7 +318,10 @@ final class RocketObservationDeck extends RocketRoom {
         return true;
     }
 
-    /** The mezzanine's floor: the light cabin floor a lid is laid in, out to her skin behind its front edge. */
+    /**
+     * The mezzanine's floor: the light cabin floor a lid is laid in, out to her skin behind its front edge, but where
+     * the stairs' top treads already stand in that edge.
+     */
     private void mezzanine() {
         int y = mezzanineFloor();
         int reach = (int) Math.ceil(wall()) + 1;
@@ -319,10 +336,11 @@ final class RocketObservationDeck extends RocketRoom {
 
     /**
      * The stairs up to the mezzanine: two treads wide against her right-hand wall, climbing toward her back from the
-     * deck's floor a row a tread, so the top one is level with the mezzanine's floor and steps off onto it, each over
-     * the turned-over step that is its underside but the first, which stands on the floor. Their headroom is kept
-     * clear, and so are the landing on the mezzanine at their top, the floor before their foot and a lane to it from
-     * the way out from the lift's door.
+     * deck's floor a row a tread, so the top one, in the mezzanine's front edge, is level with its floor and steps off
+     * onto it, ahead onto the landing or aside onto the row along its rail; each over the turned-over step that is its
+     * underside but the first, which stands on the floor. Laid before the mezzanine's floor, whose edge they take.
+     * Their headroom is kept clear, and so are the landing at their top, the floor before both treads at their foot
+     * and a lane to it from the way out from the lift's door.
      */
     private void stairs() {
         BlockState tread = AerolargeRegistry.CABIN_STAIRS.get().defaultBlockState().setValue(CabinStairsBlock.FACING, Direction.SOUTH);
@@ -334,8 +352,8 @@ final class RocketObservationDeck extends RocketRoom {
         for (int x = LANE_FROM; x <= outer; x++) {
             keepOver(x, floor(), treadZ(1) - 1);
         }
-        keepOver(outer - 1, mezzanineFloor(), MEZZANINE_FRONT);
-        keepOver(outer, mezzanineFloor(), MEZZANINE_FRONT);
+        keepOver(outer - 1, mezzanineFloor(), landingZ());
+        keepOver(outer, mezzanineFloor(), landingZ());
     }
 
     /** A tread of the stairs in a column, the turned-over step under it, and its headroom kept clear. */

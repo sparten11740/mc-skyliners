@@ -2054,7 +2054,8 @@ over the ceiling and up the wall from the band to it, so the room over the band 
 lounge is set out unevenly in groups to talk in, armchairs and bean bags facing each other round low tables on round
 rugs, with plants here and there, pairs of bean bags by the glass to watch the land fall away or the stars come out, and
 a bookcase tucked under the top of the stairs. Over its back third, from behind the shaft out to her skin, a mezzanine
-holds her cafeteria, a glass rail along its edge and carpeted stairs climbing her right-hand wall up to it from near the
+holds her cafeteria, a glass rail along its edge and carpeted stairs two treads wide, both open to walk onto from the
+floor, climbing her right-hand wall up to it from near the
 lift's door: round the back wall a counter of galley units with the coffee machine, a cake and a pot of flowers on it, a
 lit drinks cabinet, tables with bar stools or armchairs, plants, and the Snack Machine, a tall midnight-blue machine
 with a lit showcase of bright packets. Use it and its spiral turns with a whirr, its lamp blinking amber; with a clunk a
