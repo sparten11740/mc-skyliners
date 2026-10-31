@@ -21,8 +21,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * tiles. Its walls are glass mosaic lit from under the water line, and its bottom is clear glass: the channel hangs
  * into the greenhouse's ceiling under it, and from among the leaves there swimmers are seen overhead. Rubber ducks
  * float round it. The deck at her front, between the channel's two ends, is the sunbathers': on her right, loungers
- * looking out of the front window with a side table between them; on her left, a towel shelf by the way in from the
- * lift and the wave machine beside it, to set the channel churning (see {@link dev.aerolarge.block.WaveMachineBlock});
+ * looking out of the front window with a side table between them; on her left, the wave machine by the way in from the
+ * lift, to set the channel churning (see {@link dev.aerolarge.block.WaveMachineBlock}), and a towel shelf beyond it;
  * and bamboo in planters, the pool's palms, at the channel's ends.
  */
 final class RocketPool extends RocketRoom {
@@ -70,7 +70,7 @@ final class RocketPool extends RocketRoom {
         int corner = corner();
         loungers(RocketQuarter.FRONT_RIGHT, floor + 1, corner, random);
         towels(RocketQuarter.FRONT_LEFT, floor + 1);
-        standing(RocketQuarter.FRONT_LEFT.x(RocketQuarter.INNER - 1), floor + 1, RocketQuarter.FRONT_LEFT.z(RocketQuarter.INNER),
+        standing(RocketQuarter.FRONT_LEFT.x(RocketQuarter.INNER - 2), floor + 1, RocketQuarter.FRONT_LEFT.z(RocketQuarter.INNER),
             AerolargeRegistry.WAVE_MACHINE.get().defaultBlockState());
         for (RocketQuarter quarter : new RocketQuarter[]{RocketQuarter.FRONT_RIGHT, RocketQuarter.FRONT_LEFT}) {
             palm(quarter, floor + 1, corner);
@@ -157,10 +157,13 @@ final class RocketPool extends RocketRoom {
         }
     }
 
-    /** A shelf of rolled towels beside the way in from the lift, facing it, two long. */
+    /**
+     * A shelf of rolled towels beside the way in from the lift, facing it, two long, a step on from the wave machine,
+     * which stands first beside the way in where whoever comes out of the lift sees and reaches it.
+     */
     private void towels(RocketQuarter quarter, int y) {
         BlockState shelf = ShelfUnitBlock.stocked(AerolargeRegistry.SHELF_UNIT.get(), ShelfUnitBlock.Kind.TOWELS, quarter.side().getOpposite());
-        for (int along = RocketQuarter.INNER; along <= RocketQuarter.INNER + 1; along++) {
+        for (int along = RocketQuarter.INNER + 1; along <= RocketQuarter.INNER + 2; along++) {
             standing(quarter.x(RocketQuarter.INNER - 2), y, quarter.z(along), shelf);
         }
     }

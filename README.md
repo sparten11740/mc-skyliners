@@ -2005,8 +2005,9 @@ curving round the shaft by way of her back, lined with glass mosaic lit from und
 with rubber ducks afloat on it and deck tiles all round. The deck at the front, between the channel's ends, is the
 sunbathers': bean bag loungers on her right looking out of the front window, a side table between the first two and one
 turned toward the water, a shelf of rolled towels on her left by the way in from the lift, and bamboo in planters, the
-pool's palms, by the channel's ends, and in a big rocket an orange lounger out at the deck's corner. Beside the towels
-stands the Wave Machine, a white post with a big blue button, a wave drawn on it: press it and the pumps start with a
+pool's palms, by the channel's ends, and in a big rocket an orange lounger out at the deck's corner. In front of the
+towels, first beside the way in from the lift, stands the Wave Machine, a white post with a big blue button, a wave
+drawn on it: press it and the pumps start with a
 rising whine, the button sinks and glows, its wave rolling, and for ten seconds the whole channel churns with splashes
 and bubbles to the sound of waves washing. Both are heard as you stand in them: the air through the greenhouse's leaves
 over a trickle of irrigation, a bee now and then buzzing past, and the pool's water lapping in its tiled hall, now and
