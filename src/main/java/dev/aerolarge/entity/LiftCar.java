@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * in {@code #sable:retain_in_sub_level}), so Sable carries it and its riders as she flies and tilts, and it moves only
  * along the shaft. Where it is on the shaft follows from a ride's start and end and the tick it set off, which both
  * sides know, so the server sends no moves for it: it eases off, runs at the lift's speed and eases in (see
- * {@link #travelled}).
+ * {@link #travelled}); a client times the ride by the car's own ticks (see {@link #riding}).
  *
  * <p>It carries riders only on a ride: standing at a floor, it has a floor laid under it and whoever is in it stands
  * and walks about freely (see {@link LiftMachineBlockEntity}). Its machine takes everyone in it aboard as it sets off
@@ -64,6 +64,13 @@ public class LiftCar extends Entity {
 
     /** The game tick its machine last held it. */
     private long heldAt;
+    /**
+     * On a client: its own ticks, counted one a tick as it ticks, and, by them, when the ride now under way set off.
+     * The client's clock is set back to the server's every second, where it has run ahead; timed by it, the car would
+     * jump back a little each time, a story at its full speed.
+     */
+    private long ownTicks;
+    private long rideStartedAt;
     /**
      * Where its riders are set down, in the world, should they leave it other than at a floor (the car losing its
      * machine, a rider leaving the game): outside the door of the landing it last stood at. Null until first held.
@@ -119,15 +126,32 @@ public class LiftCar extends Entity {
     /** Whether the ride has come to its end: the car stands still at a floor. */
     public boolean arrived() {
         double distance = Math.abs(entityData.get(TO) - entityData.get(FROM));
-        return level().getGameTime() - entityData.get(START) >= duration(distance);
+        return riding(0) >= duration(distance);
     }
 
     /** How far under its machine's bottom its floor stands this tick and partial tick, in blocks. */
     public double depth(float partialTick) {
         double from = entityData.get(FROM);
         double to = entityData.get(TO);
-        double ticks = level().getGameTime() - entityData.get(START) + partialTick;
-        return from + Math.signum(to - from) * travelled(Math.abs(to - from), ticks);
+        return from + Math.signum(to - from) * travelled(Math.abs(to - from), riding(partialTick));
+    }
+
+    /**
+     * How long the ride has been under way at this partial tick, in ticks: by the game's clock on the server, and on a
+     * client by the car's own count of its ticks, which runs on smoothly whatever the server sets the clock to.
+     */
+    private double riding(float partialTick) {
+        long ticks = level().isClientSide ? ownTicks - rideStartedAt : level().getGameTime() - entityData.get(START);
+        return ticks + partialTick;
+    }
+
+    /** A new ride's start from the server, on a client, timed from there on by the car's own ticks. */
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (key == START && level().isClientSide) {
+            rideStartedAt = ownTicks - (level().getGameTime() - entityData.get(START));
+        }
     }
 
     /** Whether it is going up or down this tick: 1 down, -1 up, 0 standing. */
@@ -168,6 +192,9 @@ public class LiftCar extends Entity {
     @Override
     public void tick() {
         super.tick();
+        if (level().isClientSide) {
+            ownTicks++;
+        }
         follow();
         if (level().isClientSide) {
             clientTicker.accept(this);
