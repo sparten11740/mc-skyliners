@@ -28,11 +28,11 @@ import org.joml.Vector3f;
 /**
  * Draws integral airstairs from their controller, wherever they are between stowed and down (see
  * {@link AirstairFlight}): an airliner's or a rocket's hatch below its door, and the flight with its treads, stringers
- * and handrails, with a rocket's bridge plate and the machinery working her flight (its dark steel rails and ram
- * barrels, yellow carriage and lugs, and chrome rods), as the controller's clock says between the last tick and this
- * one. Drawn in the stairs' own frame (see {@link Airstairs}), the served door's, a zeppelin's lower deck's at the head
- * of her boarding stairs or a rocket's front door's, so they come out the right way whichever way the airframe was
- * built, and aboard one assembled wherever it stands. Each part is lit by the light where it is.
+ * and handrails, with the machinery working it (its dark steel rails and ram barrels, yellow carriage and lugs, and
+ * chrome rods) and a rocket's bridge plate, as the controller's clock says between the last tick and this one. Drawn
+ * in the stairs' own frame (see {@link Airstairs}), the served door's, a zeppelin's lower deck's at the head of her
+ * boarding stairs or a rocket's front door's, so they come out the right way whichever way the airframe was built, and
+ * aboard one assembled wherever it stands. Each part is lit by the light where it is.
  */
 public class AirstairRenderer<T extends BlockEntity & Airstairs> implements BlockEntityRenderer<T> {
     /** How far off the stairs are still drawn, in blocks: they are big enough to see from across the apron. */

@@ -166,8 +166,7 @@ final class BoardingAirstairs {
         if (bay == null) {
             return new AirstairFlight.Motion(lerped, length, rise, sections, width, 0, 1, hatchOpen, true);
         }
-        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false, sillGap(),
-            true);
+        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false, sillGap());
     }
 
     /**

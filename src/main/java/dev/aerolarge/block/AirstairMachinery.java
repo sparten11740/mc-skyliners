@@ -6,14 +6,15 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * The machinery that works a rocket's airstairs out of the bay under her entry floor and back (see
- * {@link AirstairFlight}), drawn with them so that nothing moves them by unseen hands. Her bay is the top row of her
- * engine room, open to it, so it shows from inside her as well as through the mouth:
+ * The machinery that works integral airstairs out of their bay and back (see {@link AirstairFlight}), drawn with them
+ * so that nothing moves them by unseen hands. It shows through the bay's mouth as they come out, and from inside a
+ * rocket as well, whose bay is the top row of her engine room, open to it. A door's flight, an airliner's or a
+ * rocket's, has all of it:
  * <ul>
- * <li>two steel rails along the bay's foot, hung from her floor, out to her skin at the mouth, each with an extension
+ * <li>two steel rails along the bay's foot, hung from the floor, out to the skin at the mouth, each with an extension
  * nested in it;</li>
  * <li>a yellow carriage running on them under the head of the folded flight, rolling it out of the bay and pulling the
- * extensions out of the rails as it rolls on past her skin, where it stops while the flight swings;</li>
+ * extensions out of the rails as it rolls on past the skin, where it stops while the flight swings;</li>
  * <li>a hinge tube across the head of the stringers, which the flight swings on;</li>
  * <li>a three-stage lift ram either side, from the carriage up to the hinge tube, lying low under the folded flight,
  * which stands up and runs out to lift the flight's head to the sill;</li>
@@ -22,10 +23,13 @@ import org.joml.Vector3f;
  * <li>a cable drum either side on the hinge tube, its cable running down under the treads to the bottom section's
  * foot, paying out as the sections run out and winding them back in.</li>
  * </ul>
- * Each part follows the flight's steps (see {@link AirstairFlight#SLIDE}, {@link AirstairFlight#SWING},
+ * A zeppelin's flight, hung in her belly right over its hatch, slides nowhere and swings straight down on its hinge,
+ * so it has only the hinge tube with its drums and cables.
+ *
+ * <p>Each part follows the flight's steps (see {@link AirstairFlight#SLIDE}, {@link AirstairFlight#SWING},
  * {@link AirstairFlight#EXTEND}), so it goes back the same way as the flight folds away, and none of it is drawn once
  * the hatch is shut on it. Everything is measured in blocks, in the door's frame, as the flight is: x across to the
- * right seen from outside, y up from the sill, z out with her outer face at z 1, the bay's mouth the row from y -2 to
+ * right seen from outside, y up from the sill, z out with the outer face at z 1, the bay's mouth the row from y -2 to
  * -1.
  */
 final class AirstairMachinery {
@@ -42,7 +46,7 @@ final class AirstairMachinery {
     private static final float EXTENSION_INSET = PX / 4;
     private static final float EXTENSION_LENGTH = 1.25F;
     /**
-     * The hangers holding the rails from her floor, outside the flight's sides so it slides between them: how far
+     * The hangers holding the rails from the floor, outside the flight's sides so it slides between them: how far
      * apart they are along the bay, how far out from the flight's sides, clear of its handrails lying on its
      * stringers, how wide and how thick, and how far behind the mouth the last of them stands.
      */
@@ -112,25 +116,28 @@ final class AirstairMachinery {
      */
     static void draw(AirstairFlight.Motion motion, Matrix4f nest, float slid, float footOffset, int treads, Sink sink) {
         int width = motion.width();
+        hinge(nest, width, sink);
+        for (float middle : new float[]{width / 2F - CABLE_SPREAD, width / 2F + CABLE_SPREAD}) {
+            cable(nest, middle, footOffset, treads, sink);
+        }
+        if (motion.belly()) {
+            return;
+        }
         float railEnd = 1 - motion.hatchInset();
         float deepEnd = 1 - motion.mouth() - AirstairFlight.bayLength(motion.rise(), motion.sections());
         float carriage = 1 + slid + AirstairFlight.PIVOT_U - CARRIAGE_BACK;
         rails(width, deepEnd, railEnd, motion.mouth(), sink);
         carriage(width, carriage, railEnd, sink);
-        hinge(nest, width, sink);
         Vector3f hinge = nest.transformPosition(new Vector3f(0, AirstairFlight.PIVOT_Y, AirstairFlight.PIVOT_U));
         for (float middle : new float[]{LIFT_RAM_IN, width - LIFT_RAM_IN}) {
             ram(new Vector3f(middle, RAM_FOOT_Y, carriage), new Vector3f(middle, hinge.y, hinge.z), LIFT_STAGE, LIFT_SIZES, sink);
         }
         tiltRam(nest, width, carriage, sink);
-        for (float middle : new float[]{width / 2F - CABLE_SPREAD, width / 2F + CABLE_SPREAD}) {
-            cable(nest, middle, footOffset, treads, sink);
-        }
     }
 
     /**
-     * The two rails along the bay's foot, from its end out to her skin's surface at the mouth, and the hangers holding
-     * them from her floor, inside the bay, behind the mouth.
+     * The two rails along the bay's foot, from its end out to the skin's surface at the mouth, and the hangers holding
+     * them from the floor, inside the bay, behind the mouth.
      */
     private static void rails(int width, float deepEnd, float railEnd, int mouth, Sink sink) {
         Matrix4f door = new Matrix4f();
@@ -145,7 +152,7 @@ final class AirstairMachinery {
     }
 
     /**
-     * A hanger beside the bay, a strap from her floor down past the flight's side to under the rail, across from
+     * A hanger beside the bay, a strap from the floor down past the flight's side to under the rail, across from
      * {@code from} to {@code to}, its foot reaching in to {@code foot} under the rail, at a place along the bay.
      */
     private static void hanger(Matrix4f door, float from, float to, float foot, float along, Sink sink) {

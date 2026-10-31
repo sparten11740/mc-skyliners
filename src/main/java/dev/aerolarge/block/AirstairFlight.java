@@ -22,9 +22,9 @@ import org.joml.Vector3f;
  * Everything is measured in blocks, in the door's own frame as {@code PlugDoorRenderer} draws it: x across the
  * doorway to the right as seen from outside, y up from the sill, z out, the hull's outer face at z 1.
  *
- * <p>A rocket's flight also draws the machinery that works it (see {@link AirstairMachinery}), as her bay lies open
- * to her engine room, and a bridge plate: her skin at her sill is cut to her curve, so her floor's edge can stand
- * back from the door's face, and a plate hinged under the top tread swings up as the handrails rise to lie level
+ * <p>The flight is drawn with the machinery that works it (see {@link AirstairMachinery}), so nothing moves it by
+ * unseen hands. A rocket's also has a bridge plate: her skin at her sill is cut to her curve, so her floor's edge can
+ * stand back from the door's face, and a plate hinged under the top tread swings up as the handrails rise to lie level
  * with the sill across the gap ({@link Motion#sillGap}).
  *
  * <p>A zeppelin's boarding stairs are the same flight hung in her belly ({@link Motion#belly}), their sill the lower
@@ -98,8 +98,8 @@ public final class AirstairFlight {
     }
 
     /**
-     * The parts the flight is drawn from, each with its own look; a rocket's machinery (see {@link AirstairMachinery})
-     * adds its dark steel, its yellow carriage and its chrome rods.
+     * The parts the flight is drawn from, each with its own look; its machinery (see {@link AirstairMachinery}) adds
+     * its dark steel, its yellow carriage and its chrome rods.
      */
     public enum Part {
         TREAD, NOSING, STRINGER, RAIL, POST, HATCH, TRACK, CARRIAGE, ROD
@@ -116,15 +116,14 @@ public final class AirstairFlight {
      * they reach down ({@code length}), how many they are built to reach ({@code rise}), in how many sections and how
      * many blocks wide; how far in from the door's face the hull's skin over the bay's mouth lies, and how deep the
      * mouth is; whether the hatch is off the mouth; whether they hang in a zeppelin's belly rather than in a door; how
-     * far the floor's edge at the door stands back from its face, in blocks, the gap the bridge plate spans; and
-     * whether the machinery working them is drawn, as a rocket's is.
+     * far the floor's edge at the door stands back from its face, in blocks, the gap the bridge plate spans.
      */
     public record Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
-                         boolean belly, float sillGap, boolean machinery) {
-        /** Airstairs whose top tread meets their sill, their machinery not drawn: an airliner's or a zeppelin's. */
+                         boolean belly, float sillGap) {
+        /** Airstairs whose top tread meets their sill: an airliner's or a zeppelin's. */
         public Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
                       boolean belly) {
-            this(ticks, length, rise, sections, width, hatchInset, mouth, hatchOpen, belly, 0, false);
+            this(ticks, length, rise, sections, width, hatchInset, mouth, hatchOpen, belly, 0);
         }
     }
 
@@ -158,8 +157,8 @@ public final class AirstairFlight {
     }
 
     /**
-     * Draws the hatch and the flight as they are at the moment, with a rocket's bridge plate and the machinery working
-     * her flight.
+     * Draws the hatch and the flight as they are at the moment, with the machinery working it and a rocket's bridge
+     * plate.
      */
     public static void draw(Motion motion, Sink sink) {
         float t = motion.ticks();
@@ -186,9 +185,7 @@ public final class AirstairFlight {
         if (!motion.belly() && motion.sillGap() >= LIP_LEAST) {
             lip(nest, Math.min(motion.sillGap(), LIP_LONGEST), motion.width(), up, sink);
         }
-        if (motion.machinery()) {
-            AirstairMachinery.draw(motion, nest, pose.slid(), offset, treads, sink);
-        }
+        AirstairMachinery.draw(motion, nest, pose.slid(), offset, treads, sink);
     }
 
     /**

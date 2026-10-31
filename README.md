@@ -1238,9 +1238,11 @@ treads running straight out from the door down to the ground, each a dark non-sl
 slim aluminium stringers, with a handrail along either side on thin posts, the top tread level with the sill. Stowed,
 they lie folded under the cabin floor in a bay behind a hatch in the hull below the door, and nothing of them shows.
 The Airstair Controller set into the hull just aft of the door brings them out: the door opens, the hatch drops, the
-folded flight slides out of its bay, rises to the sill and tips down to its slope, its lower sections run out down to
-the ground and the handrails rise, to the hum of their hydraulics and the clunk of their latches, in under five
-seconds. They reach as far down as the ground lets them, so on uneven ground, or over something in the way, they end
+folded flight rolls out of its bay on a yellow carriage along two steel rails, a telescopic ram either side lifts its
+head to the sill on a hinge tube and a third, in the middle, tips it down to its slope, its lower sections run out
+down to the ground on two cables paying out from drums on the hinge and the handrails rise, to the hum of their
+hydraulics and the clunk of their latches, in under five seconds. They reach as far down as the ground lets them, so on
+uneven ground, or over something in the way, they end
 where it meets them, and they are walked up and down like any stairs; the airliner never comes to rest on them, so
 let down onto the ground they do not tilt it. An assembled airliner rides higher on its
 suspension than the stairs' steps reach, so there they also lay an unseen plate at the foot of the flight, half way
@@ -1497,8 +1499,9 @@ climbs from the control car up its neck to a corridor running aft to the decks. 
 airstairs, two blocks wide: two flights, one either side of the middle, coming down forward from the lower deck
 through stairwells in its floor, open treads with yellow nosings between aluminium stringers and a handrail along each
 side, walked like any stairs. They fold away as soon as she moves, with the airliner's airstairs' motor and latch: the
-handrails go down, the lower sections run in, the flight swings up flat under the deck's floor, and her cover and the
-floor close over it. Once she is down on the ground again after flying, or as soon as she is built, they come down of
+handrails go down, the lower sections run in on cables winding onto drums on the flight's hinge tube, the flight
+swings up flat on it under the deck's floor, and her cover and the floor close over it. Once she is down on the ground
+again after flying, or as soon as she is built, they come down of
 their own accord, as far as the ground lets them; going away, they wait with a chime until nobody is on them. A lit
 amber button with a staircase on it, the airstairs' own, stands at the head of each flight on the lower deck, and
 another low on the outside of the control car's port side, to call them down from the ground: pressing any of them
@@ -2385,7 +2388,8 @@ behind each running engine, a picture on strips turned to the camera; `PlugDoorR
 swinging and open, from their `PlugDoorBlockEntity`, as the relief `PlugDoorMesh` cuts the panel and its lining into,
 only the quads of it that face the camera; `CockpitDoorRenderer` draws the cockpit door's panel the same way, swinging
 about its hinge, from its `CockpitDoorBlockEntity`; `AirstairRenderer` draws the airstairs coming out and going away, as
-`AirstairFlight` builds and moves them, from their `AirstairBlockEntity`, `AirstairSteps` laying the steps they are
+`AirstairFlight` builds and moves them and `AirstairMachinery` the machinery working them, from their
+`AirstairBlockEntity`, `AirstairSteps` laying the steps they are
 walked on; `SlideRenderer` draws an evacuation slide
 inflating and deflating, as `EvacuationSlide` lays it out for the ground and builds it, from its
 `SlideControlBlockEntity`, and `SlideRide` carries whoever slides down it; `LaserTurretRenderer` draws the laser path
@@ -2470,8 +2474,7 @@ it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it lo
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
 `RocketAirstairs` her airstairs in its place, kept by the `RocketStairsBlockEntity` of the `RocketStairsButtonBlock` by
-her door as `BoardingAirstairs` out of a bay, `AirstairMachinery` drawing the machinery that works them,
-holding her countdown through `RocketPilot.holdCountdownWhile` till away,
+her door as `BoardingAirstairs` out of a bay, holding her countdown through `RocketPilot.holdCountdownWhile` till away,
 with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `AirlockPanelBlock` works and
 `RocketStairsRenderer` draws with the stairs,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
