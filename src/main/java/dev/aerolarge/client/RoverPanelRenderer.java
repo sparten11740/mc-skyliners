@@ -19,8 +19,8 @@ import org.joml.Matrix4f;
  * Draws the rover panel's screen (see {@link RoverPanelBlock}) over its face: the lamp across its top in the colour of
  * how the bay stands, blinking while the door or the winch works, and its three picture buttons under it, each in a
  * colour of its own with its picture in white: blue to send the rover down, green to call it home, violet for a remote.
- * The buttons light up as every touch panel's do (see {@link TouchPanelArt}): the one the crosshair rests on in a bold
- * white frame, and one that can do nothing now, the rover being out or in or the bay busy, dimmed. Players who cannot
+ * The buttons light up as every touch panel's do (see {@link TouchPanelArt}): the one the crosshair rests on
+ * brightened, and one that can do nothing now, the rover being out or in or the bay busy, dimmed. Players who cannot
  * read go by the pictures and colours.
  */
 public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEntity> {

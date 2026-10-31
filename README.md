@@ -1901,7 +1901,7 @@ else's ride, it comes once that is done), and its doors slide open with a soft r
 wall facing you a picture board, its back brushed steel where it shows through the shaft's glass, shows her floors as
 square buttons two to a row, the lowest at the bottom: each an icon on its story's colour (a doorway for the entry, then
 a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the
-floor you are on framed in green, the car's lit, and the one you look at lit up brighter in a bold white frame. The car
+floor you are on glowing softly green round its edge, the car's lit, and the one you look at brightened. The car
 waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
 moment it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as
 it comes
@@ -2276,7 +2276,7 @@ and an amber beacon (the server config's `rocket.rover` leaves it out of a rocke
 for it, as at scale 1, has none and keeps her back window). The panel on the back of the lift shaft's glass, facing the
 door, is a little screen of three picture buttons: the rover over an arrow pointing down, on blue, sends it to the
 ground, an arrow pointing up over the rover, on green, calls it home, and a remote, on violet, hands you a Rover Remote
-paired with it. The one you look at lights up in a bold white frame, as on the lift's picture board, and the one that
+paired with it. The one you look at brightens, as on the lift's picture board, and the one that
 can do nothing just then, the rover being in or out, is dimmed. Its lamp is green with the rover in its
 cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red for a moment, with a
 low note, when the door will not open: it only opens while she stands still on her fins with her autopilot off. Then it
@@ -2468,8 +2468,8 @@ on its shaft by a clock both sides share, with an unseen `LiftFloorBlock` floor 
 `LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
 inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,
 the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels,
-`TouchPanelBlock`s laying out their tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which lights the tile
-looked at and frames the one picked alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
+`TouchPanelBlock`s laying out their tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the
+tile looked at and makes the one picked glow alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`

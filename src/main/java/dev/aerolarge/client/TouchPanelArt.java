@@ -14,25 +14,32 @@ import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import org.joml.Matrix4f;
 
 /**
- * How every touch panel draws its tiles (see {@link TouchPanel}), so they all answer a player the same way: the tile
- * under the crosshair lights up, a bold white frame round it and its colour lightened toward white; the tile that is
- * picked now (the floor you are on, the livery worn, the camera shown) has a green frame; a tile that can do nothing
- * now, or is not the current one, is dimmed. The game's own outline is left off a touch panel's blocks, the tile
+ * How every touch panel draws its tiles (see {@link TouchPanel}), so they all answer a player the same way, with no
+ * frames: the tile under the crosshair brightens and stands out a hair larger; the tile that is picked now (the floor
+ * you are on, the livery worn, the camera shown) glows softly green round its edge; a tile that can do nothing now, or
+ * is not the current one, is dimmed. The game's own outline is left off a touch panel's blocks, the tile
  * looked at lighting up in its place. Each panel lays out its own tiles and chooses their colours and pictures.
  */
 public final class TouchPanelArt {
-    /** How thick the bright frame round the tile looked at is, and how far its colour is lightened toward white. */
-    public static final double LOOKED_FRAME = 0.03;
-    private static final double LOOKED_LIGHTER = 0.3;
-    /** How thick the green frame round the tile picked now is. */
-    public static final double SELECTED_FRAME = 0.02;
+    /**
+     * The tile looked at: how far its colour is brightened toward white, as a share, and how far out it stands on every
+     * side, in the face's units.
+     */
+    private static final double LOOKED_LIGHTER = 0.25;
+    private static final double LOOKED_GROW = 0.008;
+    /**
+     * The glow round the tile picked now: how far out it reaches, in the face's units, and how strong it is at the
+     * tile's edge (0 to 255), fading smoothly to nothing at its reach.
+     */
+    private static final double GLOW_REACH = 0.05;
+    private static final int GLOW_ALPHA = 0xC0;
     /** How much of its colour a dimmed tile keeps. */
     private static final double DIMMED = 0.4;
-    /** Lifts a tile's cell off its frame. */
+    /** Lifts a tile's cell off its glow. */
     private static final float LAYER = 0.001F;
     private static final int WHITE = 0xFFF2F6FB;
-    /** The frame round the tile picked now: a bright green, the colour of what is on, standing out on any casing. */
-    private static final int PICKED = 0xFF3FE070;
+    /** The glow round the tile picked now: a bright green, the colour of what is on, standing out on any casing. */
+    private static final int PICKED = 0x3FE070;
 
     /**
      * How a tile stands: looked at under the crosshair; picked now; and lit, in its full colour, or dimmed as one that
@@ -49,19 +56,45 @@ public final class TouchPanelArt {
     }
 
     /**
-     * A tile's cell in its colour, and round it the frame its look asks for: the bright frame while looked at, else the
-     * green one while picked. The frame is drawn at the layer given, the cell just over it.
+     * A tile's cell in its colour as its look shows it, standing out a hair while looked at, and, while picked, the
+     * green glow round it. The glow is drawn at the layer given, the cell just over it.
      */
     public static void tile(VertexConsumer shapes, Matrix4f matrix, TouchPanel.Tile tile, int colour, Look look, float z) {
-        double frame = look.looked() ? LOOKED_FRAME : look.selected() ? SELECTED_FRAME : 0;
-        if (frame > 0) {
-            ScreenDrawing.rect(shapes, matrix, tile.left() - frame, tile.bottom() - frame, tile.right() + frame, tile.top() + frame, z,
-                look.looked() ? WHITE : PICKED);
+        if (look.selected()) {
+            glow(shapes, matrix, tile, z);
         }
-        ScreenDrawing.rect(shapes, matrix, tile.left(), tile.bottom(), tile.right(), tile.top(), z + LAYER, colour(colour, look));
+        TouchPanel.Tile cell = look.looked() ? tile.inset(-LOOKED_GROW) : tile;
+        ScreenDrawing.rect(shapes, matrix, cell.left(), cell.bottom(), cell.right(), cell.top(), z + LAYER, colour(colour, look));
     }
 
-    /** A tile's colour as its look shows it: lightened while looked at, its own while lit, dimmed otherwise. */
+    /**
+     * The soft green glow round a tile picked now: a band along each side, as strong as {@link #GLOW_ALPHA} at the
+     * tile's edge and fading smoothly to nothing at its reach, the bands meeting on the diagonals at the corners.
+     */
+    public static void glow(VertexConsumer shapes, Matrix4f matrix, TouchPanel.Tile tile, float z) {
+        TouchPanel.Tile out = tile.inset(-GLOW_REACH);
+        int edge = GLOW_ALPHA << 24 | PICKED;
+        int faded = PICKED;
+        band(shapes, matrix, z, tile.left(), tile.top(), edge, tile.right(), tile.top(), edge, out.right(), out.top(), faded, out.left(), out.top(),
+            faded);
+        band(shapes, matrix, z, out.left(), out.bottom(), faded, out.right(), out.bottom(), faded, tile.right(), tile.bottom(), edge, tile.left(),
+            tile.bottom(), edge);
+        band(shapes, matrix, z, out.left(), out.bottom(), faded, tile.left(), tile.bottom(), edge, tile.left(), tile.top(), edge, out.left(),
+            out.top(), faded);
+        band(shapes, matrix, z, tile.right(), tile.bottom(), edge, out.right(), out.bottom(), faded, out.right(), out.top(), faded, tile.right(),
+            tile.top(), edge);
+    }
+
+    /** A quad from four corners going round, each in its own colour, blended smoothly between them. */
+    private static void band(VertexConsumer shapes, Matrix4f matrix, float z, double x0, double y0, int c0, double x1, double y1, int c1, double x2,
+                             double y2, int c2, double x3, double y3, int c3) {
+        ScreenDrawing.vertex(shapes, matrix, x0, y0, z, c0);
+        ScreenDrawing.vertex(shapes, matrix, x1, y1, z, c1);
+        ScreenDrawing.vertex(shapes, matrix, x2, y2, z, c2);
+        ScreenDrawing.vertex(shapes, matrix, x3, y3, z, c3);
+    }
+
+    /** A tile's colour as its look shows it: brightened while looked at, its own while lit, dimmed otherwise. */
     public static int colour(int colour, Look look) {
         if (look.looked()) {
             return mix(colour, WHITE, LOOKED_LIGHTER);

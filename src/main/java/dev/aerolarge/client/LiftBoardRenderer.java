@@ -23,9 +23,9 @@ import org.joml.Matrix4f;
  * on its way, an arrow blinking on the floor it is going to; and while it stands parked for the ship's flight,
  * an amber bar across its top and, in place of the floors, how high she flies (see {@link HeightGauge}). Players who
  * cannot read find their floor by its icon and colour. Its floors light up as every touch panel's tiles do (see
- * {@link TouchPanelArt}): the board's own floor framed in green as the one picked, and what the crosshair rests on in a
- * bold white frame, on the board inside the car the floor they would pick, on one outside the doors, as older ships
- * have, its own floor, the lift it calls there.
+ * {@link TouchPanelArt}): the board's own floor glowing green as the one picked, and what the crosshair rests on
+ * brightened, on the board inside the car the floor they would pick, on one outside the doors, as older ships have,
+ * its own floor, the lift it calls there.
  */
 public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEntity> {
     /** The gap between two floors' cells, in blocks. */
