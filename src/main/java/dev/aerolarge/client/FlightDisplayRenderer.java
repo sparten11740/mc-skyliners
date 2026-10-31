@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.aerolarge.Aerolarge;
-import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.autopilot.RocketControls;
@@ -180,7 +179,7 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
         ScreenDrawing.picture(buffers, matrix, CONTROL_PICTURES.get("flame"), -CONTROLS_APART, CONTROLS_Y, CONTROL, TEXT_LIFT, flame(controls, now, swing));
         stability(pose, buffers, controls, now, swing);
         boolean straightUp = controls.mode() == RocketControls.Mode.ARC
-            && (rocket.lateral() != AutopilotBlockEntity.Lateral.DESTINATION || !AerolargeConfig.ROCKET_ARC_ASCENT.get());
+            && !RocketControls.arcFlown(rocket.lateral() == AutopilotBlockEntity.Lateral.DESTINATION);
         int colour = MODE_COLOURS[controls.mode().ordinal()];
         ScreenDrawing.picture(buffers, matrix, CONTROL_PICTURES.get(controls.mode().getSerializedName()), CONTROLS_APART, CONTROLS_Y, CONTROL,
             TEXT_LIFT, straightUp ? dimmed(colour) : colour);

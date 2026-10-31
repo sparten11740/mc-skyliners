@@ -72,8 +72,12 @@ public final class RocketPilot {
      */
     private static final double MOST_LEAN = 10;
     private static final double LEAN_GAIN = 0.8;
-    /** How steeply it plans to lean back to slow across, in degrees: less than its most, to keep some in hand. */
+    /**
+     * How steeply it plans to lean back to slow across, in degrees: less than its most, to keep some in hand; and,
+     * flying across in a mode that leans less than that at most, the share of its most it plans to brake at instead.
+     */
     private static final double BRAKING_LEAN = 6;
+    private static final double BRAKING_LEAN_SHARE = 0.8;
     /**
      * Over where it is going: how near it counts as there, in blocks, and how slowly it drifts across there at most, in
      * blocks a second, before it starts down; and how fast across it lets itself drift at most on the way down.
@@ -184,6 +188,11 @@ public final class RocketPilot {
      * a second, and its front and right along the ground.
      */
     private record Attitude(double front, double right, double frontRate, double rightRate, Vec3 frontWay, Vec3 rightWay) {
+        /** The way it leans, a level vector in the world as long as its tilt in degrees. */
+        Vec3 leant() {
+            return frontWay.scale(front).add(rightWay.scale(right));
+        }
+
         /** How far it tilts from straight up, in degrees. */
         double tilt() {
             return Math.hypot(front, right);
@@ -323,7 +332,7 @@ public final class RocketPilot {
         Vec3 toGo = new Vec3(goal.x - state.position().x, 0, goal.z - state.position().z);
         double highest = Math.max(orders.altitude(), state.position().y - radio + CLEAR * 2);
         Attitude attitude = attitude(state);
-        if (controls.watch(level, origin, phase, radio, across(state), attitude.tilt(), attitude.growing(), orders.toPin())) {
+        if (controls.watch(level, origin, phase, radio, across(state), attitude.tilt(), attitude.growing(), attitude.leant(), orders.toPin())) {
             puffAll(level, origin);
         }
         RocketControls.Limits limits = controls.limits(orders.toPin(), radio, now);
@@ -331,7 +340,7 @@ public final class RocketPilot {
         lastClimb = climb;
         boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && controls.calm(now, attitude.tilt());
         thrust(level, origin, state, mass, climb, slowing(phase, state, climb, mass), learning);
-        jets(level, origin, attitude, leanWanted(phase, state, toGo, radio, limits));
+        jets(level, origin, attitude, lean(phase, state, toGo, radio, limits, now));
         // Down on its fins and no longer falling, it lets its engines go at once: held up even a little, it would skate
         // across the ground on them.
         boolean resting = phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING && state.velocity().y > -STILL;
@@ -384,9 +393,9 @@ public final class RocketPilot {
         return braking(state, mass) * Mth.clamp(state.velocity().y / climb, 0, 1);
     }
 
-    /** How fast it moves across, in blocks a second. */
-    private static double across(SableFlight.State state) {
-        return Math.hypot(state.velocity().x, state.velocity().z);
+    /** How fast it crosses the ground, in blocks a second; none while it is not flying. */
+    static double across(@Nullable SableFlight.State state) {
+        return state == null ? 0 : Math.hypot(state.velocity().x, state.velocity().z);
     }
 
     /**
@@ -438,9 +447,9 @@ public final class RocketPilot {
      * The lean it wants, as a tilt of its axis across, in degrees toward the world's x and z: none climbing (but in a
      * gravity turn, see {@link RocketControls.Mode#ARC}, leaning as it cruises, as far as its controls let it
      * climbing), nor in the last of the way down; across, toward the speed across it wants, toward where it goes and as
-     * fast as it can still slow from by there, leaning back at {@link #BRAKING_LEAN}, as far and as fast as its
-     * controls let it; coming down, toward a drift no faster than {@link #SETTLING_ACROSS}, holding it over where it
-     * goes.
+     * fast as it can still slow from by there, leaning back at {@link #BRAKING_LEAN} (less in a mode that leans less),
+     * as far and as fast as its controls let it; coming down, toward a drift no faster than {@link #SETTLING_ACROSS},
+     * holding it over where it goes.
      */
     private static Vec3 leanWanted(AutopilotBlockEntity.Phase phase, SableFlight.State state, Vec3 toGo, double radio, RocketControls.Limits limits) {
         boolean turning = phase == AutopilotBlockEntity.Phase.CLIMB && limits.climbingLean() > 0;
@@ -455,13 +464,27 @@ public final class RocketPilot {
             default -> phase == AutopilotBlockEntity.Phase.LAND && radio < UPRIGHT ? LAST_LEAN : MOST_LEAN;
         };
         double distance = toGo.length();
-        double slowing = state.gravity() * Math.tan(Math.toRadians(BRAKING_LEAN));
-        double fastest = phase == AutopilotBlockEntity.Phase.CRUISE || turning ? limits.across() : SETTLING_ACROSS;
+        boolean crossing = phase == AutopilotBlockEntity.Phase.CRUISE || turning;
+        double braking = crossing ? Math.min(BRAKING_LEAN, BRAKING_LEAN_SHARE * most) : BRAKING_LEAN;
+        double slowing = state.gravity() * Math.tan(Math.toRadians(braking));
+        double fastest = crossing ? limits.across() : SETTLING_ACROSS;
         double speed = Math.min(fastest, Math.sqrt(2 * slowing * distance));
         Vec3 wanted = distance < 1e-3 ? Vec3.ZERO : toGo.scale(speed / distance);
         Vec3 off = wanted.subtract(state.velocity().x, 0, state.velocity().z).scale(LEAN_GAIN);
         double lean = off.length();
         return lean > most ? off.scale(most / lean) : off;
+    }
+
+    /**
+     * The lean it holds to this tick: the one it wants, as its stability has it; with its stability switched off,
+     * upright until it has come upright, then ever further over once its jets have let it go (see
+     * {@link RocketControls#runaway}).
+     */
+    private Vec3 lean(AutopilotBlockEntity.Phase phase, SableFlight.State state, Vec3 toGo, double radio, RocketControls.Limits limits, long now) {
+        if (controls.adrift()) {
+            return controls.runaway(now);
+        }
+        return controls.levelling() ? Vec3.ZERO : leanWanted(phase, state, toGo, radio, limits);
     }
 
     /**
@@ -519,19 +542,11 @@ public final class RocketPilot {
     /**
      * The side jets against its tilt off the lean it wants and how fast it tilts; the jets near the nose push its top
      * the way it should go and those near the bottom push its bottom the other way, so it turns about its middle
-     * without being pushed across. With its stability off they hold it no more: they push it further over the further
-     * it tilts, and the gusts nudge it about (see {@link RocketControls#DRIFT_GAIN}).
+     * without being pushed across.
      */
     private void jets(ServerLevel level, BlockPos origin, Attitude attitude, Vec3 lean) {
-        double pushFront;
-        double pushRight;
-        if (controls.unstable()) {
-            pushFront = RocketControls.DRIFT_GAIN * attitude.front() + controls.gustFront();
-            pushRight = RocketControls.DRIFT_GAIN * attitude.right() + controls.gustRight();
-        } else {
-            pushFront = TILT_GAIN * (lean.dot(attitude.frontWay()) - attitude.front()) - TILT_DAMPING * attitude.frontRate();
-            pushRight = TILT_GAIN * (lean.dot(attitude.rightWay()) - attitude.right()) - TILT_DAMPING * attitude.rightRate();
-        }
+        double pushFront = TILT_GAIN * (lean.dot(attitude.frontWay()) - attitude.front()) - TILT_DAMPING * attitude.frontRate();
+        double pushRight = TILT_GAIN * (lean.dot(attitude.rightWay()) - attitude.right()) - TILT_DAMPING * attitude.rightRate();
         int frontSignal = signal(pushFront);
         int sideSignal = signal(pushRight);
         pair(level, origin, top.ahead(), top.back(), pushFront);

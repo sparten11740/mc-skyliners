@@ -2295,13 +2295,17 @@ flame and two chevrons on it, glowing green when it is ready: pressed, it kicks 
 crack and a deep whump, launch control calling "Boost!", her plume half as thick again round a blue-white core, her roar
 at full and the view aboard
 shaking. Climbing, she climbs twice as fast; cruising, she goes half as fast again across and leans a little further,
-still stopping over her pin. Then its cap glows red and it rests twenty seconds, a ring of four lamps round its foot
+still stopping over her pin; the boost ends early as she starts down. Then its cap glows red and it rests twenty
+seconds, a ring of four lamps round its foot
 lighting green one by one, and beeps as it is ready again. Pressed when it cannot boost (counting down, coming down,
 resting, or with everyone aboard floating at the edge of space), it blinks red with a low note. At the commander's hand,
 under a yellow-and-black striped cover beside a picture of a rocket with her side jets puffing, is the stability switch,
-the dangerous one. Flip the cover up, then the switch, while she cruises at least 100 blocks over the ground, and her
-side jets stop holding her upright: its lamp flashes red, an alarm sounds, quicker the further she leans, and she starts
-to tip over like a broom balanced on its end, gusts nudging her, drifting across as she tips. Flip the switch back in
+the dangerous one. Flip the cover up, then the switch, while she cruises at least 100 blocks over the ground, neither
+boosting nor crossing faster than 35 blocks a second, and its lamp flashes red and an alarm sounds, quicker the further
+she leans; her side jets bring her upright, then stop holding
+her: she starts to tip over like a broom balanced on its end, swaying as she goes, quicker and quicker, drifting across
+as she tips. Flip the
+switch back in
 time (or sneak to snap the cover shut) and you have saved her. Leave it, and it snaps back on by itself before she tips
 too far, the cover springing shut with a clack, every side jet puffing and a high note, and stays locked on for ten
 seconds, its lamp amber; it comes back on by itself, too, after twenty seconds, under 100 blocks over the ground, as she

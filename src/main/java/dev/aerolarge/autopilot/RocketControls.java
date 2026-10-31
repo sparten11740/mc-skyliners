@@ -13,6 +13,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The hands-on controls on a rocket's centre console, round her control head (see
@@ -23,9 +24,9 @@ import net.minecraft.util.StringRepresentable;
  * <ul>
  * <li>Boost: for {@link #BOOST_TICKS} her engines are let climb twice as fast and lean further toward where she goes,
  * faster across, with the thrust she has spare over a usual climb; then the button rests {@link #REST_TICKS}.</li>
- * <li>Stability off: her side jets stop holding her upright and push her a little further over the further she tilts, a
- * broom balancing on its flame, gusts nudging her about; her engines still hold her height, and their thrust along her
- * tilted axis drifts her across. Switched back on in time, she is saved; else it comes back on by itself before she
+ * <li>Stability off: her side jets bring her upright, then let her go: she leans further and further over, quicker as
+ * she goes, a broom balancing on its flame, swaying as she goes; her engines still hold her height, and their thrust
+ * along her tilted axis drifts her across. Switched back on in time, she is saved; else it comes back on by itself before she
  * tilts too far (reckoned ahead, see {@link #mustSnap}), after {@link #OFF_LONGEST}, low over the ground, out of cruise
  * or drifting too fast, and stays locked on for {@link #LOCKOUT}.</li>
  * <li>Flight mode: straight up and across as ever (VERTICAL), a gravity turn leaning toward her pin as she climbs
@@ -133,27 +134,27 @@ public final class RocketControls {
     public static final double SNAP_TILT = 15;
     private static final double CEILING_TILT = 20;
     /**
-     * How hard her side jets slow her tilting at full signal, in degrees a second each second, for the reckoning: kept
-     * low, so it errs early. Not yet measured in flight.
+     * How hard her side jets slow her tilting at full signal, in degrees a second each second, for the reckoning: a
+     * little under the four or so they were measured to in flight, so it errs early.
      */
-    private static final double JETS_STOP = 2;
+    private static final double JETS_STOP = 3.5;
     /** How long her jets take to answer once stability is back, in ticks, reckoned ahead with the rest. */
     private static final int ANSWER_TICKS = 2;
     /**
-     * With stability off, how hard her side jets push her further over for each degree she tilts, in steps of signal:
-     * a broom balancing on its flame. If her jets turn her about 0.17 degrees a second each second for each step, as
-     * her pilot's tilt law suggests, a tilt grows e-fold every three seconds, from half a degree to fifteen in about
-     * ten. Not yet measured in flight.
+     * How nearly upright she must have come, in degrees, once stability is switched off, before her jets let her go:
+     * until then they bring her upright, so the danger always starts from level, not from the lean she flew at.
      */
-    static final double DRIFT_GAIN = 0.7;
+    private static final double LET_GO_TILT = 2;
     /**
-     * The gusts nudging her about with stability off: the most signal they push with, two slow swells of their own
-     * across each way, so long each, in ticks, and how often at most their push changes, in ticks.
+     * Once her jets have let her go, how long the lean she is let fall to takes to grow e-fold, in ticks: from
+     * {@link #LET_GO_TILT} to the {@link #SNAP_TILT} it snaps back at in about eleven seconds as she follows it (so it
+     * was measured in flight), quicker and quicker, a broom balancing on its flame; and how far the way she falls sways
+     * round, in degrees either way, two slow swells of their own, so long each, in ticks.
      */
-    private static final double GUST = 3;
-    private static final int GUST_QUICK = 7 * 20;
-    private static final int GUST_SLOW = 11 * 20;
-    private static final int GUST_EVERY = 5;
+    private static final double RUNAWAY_EFOLD = 4 * 20;
+    private static final double SWAY = 35;
+    private static final int SWAY_QUICK = 7 * 20;
+    private static final int SWAY_SLOW = 11 * 20;
     /**
      * Stability off comes back on by itself after so long, in ticks; under so high over the ground, in blocks; and
      * drifting across faster than so fast, in blocks a second.
@@ -161,6 +162,11 @@ public final class RocketControls {
     private static final int OFF_LONGEST = 20 * 20;
     private static final double OFF_LOWEST = 100;
     private static final double OFF_FASTEST = 40;
+    /**
+     * The fastest she may be crossing for stability to be switched off, in blocks a second: well under
+     * {@link #OFF_FASTEST}, so she drifts a while before her speed brings it back on.
+     */
+    private static final double SWITCH_FASTEST = 35;
     /**
      * How high over the ground she must still be in her landing burn for the abort handle to call it off, in blocks.
      */
@@ -213,6 +219,8 @@ public final class RocketControls {
     private long restUntil = NEVER;
     /** Whether her stability is off, since when, and until when it is locked on after it snapped back, in game time. */
     private boolean unstable;
+    /** Whether, her stability off, she has come upright and her jets have let her go (see {@link #LET_GO_TILT}). */
+    private boolean adrift;
     private long unstableSince = NEVER;
     private long lockedUntil = NEVER;
     /** When a boost or stability off was last under way, for her trim (see {@link #CALM}), in game time. */
@@ -220,10 +228,13 @@ public final class RocketControls {
     /** Her phase as last seen, and since when, for {@link #PHASE_SETTLE}. */
     private AutopilotBlockEntity.Phase phase = AutopilotBlockEntity.Phase.OFF;
     private long phaseSince = NEVER;
-    /** The gusts' swells' starting points, as shares of a turn, and their push as last set, in signal, each way. */
-    private final double[] gustPhases = new double[4];
-    private double gustFront;
-    private double gustRight;
+    /**
+     * When her jets let her go, in game time; the way she leant as they did, a level unit vector in the world; and her
+     * sway's two swells' starting points, as shares of a turn.
+     */
+    private long letGoAt = NEVER;
+    private Vec3 letGoWay = new Vec3(1, 0, 0);
+    private final double[] swayPhases = new double[2];
     /** When the stability alarm next sounds, in game time. */
     private long nextAlarm = NEVER;
     /** Whether, flying ARC, she leans far enough that her lift parks (see {@link #LIFT_TILT}). */
@@ -261,6 +272,16 @@ public final class RocketControls {
         return unstable;
     }
 
+    /** Whether, her stability off, her jets have let her go, she having come upright first; only on the server. */
+    boolean adrift() {
+        return unstable && adrift;
+    }
+
+    /** Whether, her stability just switched off, her jets are still bringing her upright before they let her go. */
+    boolean levelling() {
+        return unstable && !adrift;
+    }
+
     /** Whether her stability is locked on after it snapped back, at a game time. */
     public boolean lockedOut(long now) {
         return now < lockedUntil;
@@ -282,13 +303,15 @@ public final class RocketControls {
         return now - stirred >= CALM && tilt < LEARN_TILT;
     }
 
-    /** The gusts' push across her front and to her right this tick, in signal, with stability off; none with it on. */
-    double gustFront() {
-        return unstable ? gustFront : 0;
-    }
-
-    double gustRight() {
-        return unstable ? gustRight : 0;
+    /**
+     * The lean her pilot holds her to once her jets have let her go, a level vector in the world, in degrees: the way
+     * she leant as they let her go, swaying round, ever further over (see {@link #RUNAWAY_EFOLD}), never past the tilt
+     * never passed.
+     */
+    Vec3 runaway(long time) {
+        double far = Math.min(CEILING_TILT, LET_GO_TILT * Math.exp((time - letGoAt) / RUNAWAY_EFOLD));
+        double sway = Math.toRadians(SWAY / 2 * (swell(time, SWAY_QUICK, swayPhases[0]) + swell(time, SWAY_SLOW, swayPhases[1])));
+        return letGoWay.yRot((float) sway).scale(far);
     }
 
     /** Whether something the clients are shown has changed since this was last asked, so they are to be sent it. */
@@ -312,26 +335,42 @@ public final class RocketControls {
         return new Limits(mode.climb * (boosted ? BOOST_CLIMB : 1), climbingLean, cruiseLean, mode.across + (boosted ? BOOST_ACROSS : 0), mode.fall);
     }
 
-    /** The mode she flies by, flying to a pin or not: ARC only toward a pin and with arcAscent on, VERTICAL else. */
+    /**
+     * The mode she flies by, flying to a pin or not: ARC only as it may be flown (see {@link #arcFlown}), else
+     * VERTICAL.
+     */
     private Mode flies(boolean toPin) {
-        return flying == Mode.ARC && (!toPin || !AerolargeConfig.ROCKET_ARC_ASCENT.get()) ? Mode.VERTICAL : flying;
+        return flying == Mode.ARC && !arcFlown(toPin) ? Mode.VERTICAL : flying;
+    }
+
+    /**
+     * Whether the arc is flown with the knob turned to it, on the clients as on the server: only toward a pin, and with
+     * the server config's arcAscent on; else she flies it straight up.
+     */
+    public static boolean arcFlown(boolean toPin) {
+        return toPin && AerolargeConfig.ROCKET_ARC_ASCENT.get();
     }
 
     /**
      * Each tick her pilot flies, before it sets her jets, with her tilt in degrees and how fast it grows, in degrees a
-     * second: notes her phase, and out of her descent takes up the mode the knob was turned to; boosting or with
-     * stability off, notes she was pushed about; with stability off, sounds the alarm, sets the gusts and, once it
+     * second, and the way she leans as a level vector in the world, in degrees: notes her phase, and out of her descent
+     * takes up the mode the knob was turned to, a boost ending as she comes down; boosting or with stability off, notes
+     * she was pushed about; with stability off, sounds the alarm, lets her go once she has come upright and, once it
      * must, snaps it back on (see {@link #mustSnap}). Whether it snapped back this tick.
      */
     boolean watch(ServerLevel level, BlockPos origin, AutopilotBlockEntity.Phase now, double radio, double across, double tilt, double growing,
-                  boolean toPin) {
+                  Vec3 leant, boolean toPin) {
         long time = level.getGameTime();
         if (now != phase) {
             phase = now;
             phaseSince = time;
         }
-        if (now != AutopilotBlockEntity.Phase.DESCENT && now != AutopilotBlockEntity.Phase.LAND) {
+        boolean comingDown = now == AutopilotBlockEntity.Phase.DESCENT || now == AutopilotBlockEntity.Phase.LAND;
+        if (!comingDown) {
             flying = chosen;
+        } else if (boosting(time)) {
+            boostUntil = time;
+            changed = true;
         }
         leaning = flies(toPin) == Mode.ARC && (leaning ? tilt > LIFT_TILT_BACK : tilt > LIFT_TILT);
         if (boosting(time) || unstable) {
@@ -340,25 +379,34 @@ public final class RocketControls {
         if (!unstable) {
             return false;
         }
+        if (!adrift && tilt <= LET_GO_TILT) {
+            letGo(level, leant, time);
+        }
         if (mustSnap(now, radio, across, tilt, growing, time)) {
             snap(level, origin, time);
             return true;
         }
         alarm(level, origin, tilt, time);
-        gusts(time);
         return false;
     }
 
+    /** Her jets let her go, to fall the way she leans now, or any way while she stands straight up. */
+    private void letGo(ServerLevel level, Vec3 leant, long time) {
+        adrift = true;
+        letGoAt = time;
+        letGoWay = leant.lengthSqr() > 1e-4 ? leant.normalize() : new Vec3(1, 0, 0).yRot(level.getRandom().nextFloat() * Mth.TWO_PI);
+    }
+
     /**
-     * Whether stability, off, must come back on by itself now: before she tilts too far, as far as she will have tilted
-     * once her jets have stopped her, reckoned ahead from how fast she tilts (and two ticks for them to answer), or at
-     * the tilt never passed; after {@link #OFF_LONGEST}; under {@link #OFF_LOWEST} over the ground; out of cruise; or
-     * drifting across faster than {@link #OFF_FASTEST}.
+     * Whether stability, off, must come back on by itself now: once her jets have let her go, before she tilts too far,
+     * as far as she will have tilted once they have stopped her, reckoned ahead from how fast she tilts (and two ticks
+     * for them to answer); at the tilt never passed; after {@link #OFF_LONGEST}; under {@link #OFF_LOWEST} over the
+     * ground; out of cruise; or drifting across faster than {@link #OFF_FASTEST}.
      */
     private boolean mustSnap(AutopilotBlockEntity.Phase now, double radio, double across, double tilt, double growing, long time) {
         double rate = Math.max(0, growing);
         double reckoned = tilt + rate * rate / (2 * JETS_STOP) + rate * ANSWER_TICKS / 20.0;
-        boolean tooFar = reckoned >= SNAP_TILT || tilt >= CEILING_TILT;
+        boolean tooFar = adrift && reckoned >= SNAP_TILT || tilt >= CEILING_TILT;
         return tooFar || time - unstableSince >= OFF_LONGEST || radio < OFF_LOWEST || now != AutopilotBlockEntity.Phase.CRUISE || across > OFF_FASTEST;
     }
 
@@ -378,15 +426,6 @@ public final class RocketControls {
         double over = Mth.clamp(tilt / SNAP_TILT, 0, 1);
         nextAlarm = time + Math.round(Mth.lerp(over, ALARM_SLOWEST, ALARM_QUICKEST));
         level.playSound(null, origin, AerolargeRegistry.ROCKET_STABILITY_ALARM.get(), SoundSource.BLOCKS, ALARM_VOLUME, 1.0F);
-    }
-
-    /** The gusts' push each way, two slow swells each, changed only every {@link #GUST_EVERY} ticks. */
-    private void gusts(long time) {
-        if (time % GUST_EVERY != 0) {
-            return;
-        }
-        gustFront = GUST / 2 * (swell(time, GUST_QUICK, gustPhases[0]) + swell(time, GUST_SLOW, gustPhases[1]));
-        gustRight = GUST / 2 * (swell(time, GUST_QUICK, gustPhases[2]) + swell(time, GUST_SLOW, gustPhases[3]));
     }
 
     private static double swell(long time, int length, double phase) {
@@ -438,7 +477,7 @@ public final class RocketControls {
      * on, off if it may be (see {@link #stabilityRefusal}), with a click and the alarm from now on; else the refusal's
      * low note and why. Whether it switched.
      */
-    boolean stability(ServerLevel level, BlockPos at, ServerPlayer player, AutopilotBlockEntity.Phase now, double radio) {
+    boolean stability(ServerLevel level, BlockPos at, ServerPlayer player, AutopilotBlockEntity.Phase now, double radio, double across) {
         long time = level.getGameTime();
         if (unstable) {
             unstable = false;
@@ -448,19 +487,19 @@ public final class RocketControls {
             player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.stability_on"), true);
             return true;
         }
-        String refused = stabilityRefusal(now, radio, time);
+        String refused = stabilityRefusal(now, radio, across, time);
         if (refused != null) {
             return refuse(level, at, player, refused);
         }
         unstable = true;
+        adrift = false;
         unstableSince = time;
         nextAlarm = time;
         stirred = time;
         changed = true;
-        for (int i = 0; i < gustPhases.length; i++) {
-            gustPhases[i] = level.getRandom().nextDouble();
+        for (int i = 0; i < swayPhases.length; i++) {
+            swayPhases[i] = level.getRandom().nextDouble();
         }
-        gusts(time - Math.floorMod(time, GUST_EVERY));
         level.playSound(null, at, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, CLICK_VOLUME, SWITCH_OFF_PITCH);
         player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.stability_off"), true);
         return true;
@@ -469,10 +508,11 @@ public final class RocketControls {
     /**
      * Why stability may not be switched off now, as the last part of its message's key, or null if it may: switched
      * off in the server config; locked on after it snapped back; not cruising, or cruising so lately the phase has
-     * hardly changed; or under {@link #OFF_LOWEST} over the ground.
+     * hardly changed; under {@link #OFF_LOWEST} over the ground; boosting, or crossing faster than
+     * {@link #SWITCH_FASTEST}, as it would only snap back on at once.
      */
     @Nullable
-    private String stabilityRefusal(AutopilotBlockEntity.Phase now, double radio, long time) {
+    private String stabilityRefusal(AutopilotBlockEntity.Phase now, double radio, double across, long time) {
         if (!AerolargeConfig.ROCKET_STABILITY_SWITCH.get()) {
             return "switched_off";
         }
@@ -480,7 +520,10 @@ public final class RocketControls {
             return "stability_locked";
         }
         boolean settled = now == AutopilotBlockEntity.Phase.CRUISE && now == phase && time - phaseSince >= PHASE_SETTLE;
-        return !settled || radio < OFF_LOWEST ? "stability_not_now" : null;
+        if (!settled || radio < OFF_LOWEST) {
+            return "stability_not_now";
+        }
+        return boosting(time) || across > SWITCH_FASTEST ? "stability_unsteady" : null;
     }
 
     /**

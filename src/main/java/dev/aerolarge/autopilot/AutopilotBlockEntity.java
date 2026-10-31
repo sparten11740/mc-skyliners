@@ -818,7 +818,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         SableFlight.State state = SableFlight.read(this, nose());
         boolean taken = switch (control) {
             case BOOST -> rocket.controls().boost(server, worldPosition, player, phase, rocket.counted(), gravity.light());
-            case STABILITY -> rocket.controls().stability(server, worldPosition, player, phase, rocket.radio());
+            case STABILITY -> rocket.controls().stability(server, worldPosition, player, phase, rocket.radio(), RocketPilot.across(state));
             case MODE -> rocket.controls().turn(server, worldPosition, player, phase);
             case ABORT -> rocketAbort(server, player, state);
             case KEY -> rocketKey(server, player, state);

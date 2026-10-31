@@ -2059,6 +2059,7 @@ function rocketControlLang() {
     "message.aerolarge.rocket_controls.stability_on": "Stability on: you saved her!",
     "message.aerolarge.rocket_controls.stability_locked": "Stability is locked on for a moment",
     "message.aerolarge.rocket_controls.stability_not_now": "Not now: only cruising, high over the ground",
+    "message.aerolarge.rocket_controls.stability_unsteady": "Not now: wait until she is not boosting or rushing across",
     "message.aerolarge.rocket_controls.arc_switched_off": "The arc is switched off on this server: she flies straight up",
     "message.aerolarge.rocket_controls.mode_vertical": "Flight mode: straight up",
     "message.aerolarge.rocket_controls.mode_arc": "Flight mode: arc, leaning toward the pin as she climbs",
