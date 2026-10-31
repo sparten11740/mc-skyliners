@@ -35,9 +35,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * bay's block entity (see {@link RoverBayBlockEntity}), which works the door, the boom over it and the winch, and is
  * drawn by the client with all of them. FACING is the way out of her.
  *
- * <p>OPEN is whether the doorway is clear, from the moment the door starts to open until it is shut again. Then a
- * light curtain across its sill, as high as a fence, keeps anyone from walking out onto the platform, which is no
- * floor for them: only the rover, carried along by its bay, goes through. Shut, each part is a quarter of its block
+ * <p>OPEN is whether the doorway is clear, from the moment the door starts to open until it is shut again: nothing then
+ * stands in it, the rover rolling out through it carried along by its bay, and anyone who walks out after it falls,
+ * the platform being drawn and no floor for them. Shut, each part is a quarter of its block
  * just inside the skin's cut through the block's middle, so the door sits flush with the skin beside it. Only the
  * blueprint places it, so it has no item and drops nothing.
  */
@@ -59,16 +59,6 @@ public class RoverHatchBlock extends BaseEntityBlock {
         Direction.SOUTH, Block.box(0, 0, 4, 16, 16, 8),
         Direction.EAST, Block.box(4, 0, 0, 8, 16, 16),
         Direction.WEST, Block.box(8, 0, 0, 12, 16, 16)
-    );
-    /**
-     * The light curtain across the open doorway's sill, by the way out: a fence's height, just outside the door's
-     * hinge, which nobody jumps over.
-     */
-    private static final Map<Direction, VoxelShape> CURTAIN = Map.of(
-        Direction.NORTH, Block.box(0, 0, 4, 16, 24, 8),
-        Direction.SOUTH, Block.box(0, 0, 8, 16, 24, 12),
-        Direction.EAST, Block.box(8, 0, 0, 12, 24, 16),
-        Direction.WEST, Block.box(4, 0, 0, 8, 24, 16)
     );
 
     public RoverHatchBlock(Properties properties) {
@@ -111,10 +101,7 @@ public class RoverHatchBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (!state.getValue(OPEN)) {
-            return SHUT.get(state.getValue(FACING));
-        }
-        return state.getValue(ROW) == 0 ? CURTAIN.get(state.getValue(FACING)) : Shapes.empty();
+        return state.getValue(OPEN) ? Shapes.empty() : SHUT.get(state.getValue(FACING));
     }
 
     @Override

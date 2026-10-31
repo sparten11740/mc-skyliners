@@ -2254,8 +2254,9 @@ paired with it. The one you look at lights up in a bold white frame, as on the l
 can do nothing just then, the rover being in or out, is dimmed. Its lamp is green with the rover in its
 cradle and the door shut, amber while the door or the winch works, blue with the rover out, and red for a moment, with a
 low note, when the door will not open: it only opens while she stands still on her fins with her autopilot off. Then it
-folds down outward into a platform, a light curtain glowing red across the doorway so nobody walks out, and a yellow
-boom slides out over it; the rover rolls out onto the platform, is hooked to the boom's trolley, lifted, run out past
+folds down outward into a platform, nothing across the doorway (walk out after the rover and you fall), and a boom
+striped yellow and black slides out over it; the rover rolls out onto the platform, is hooked to the boom's trolley,
+lifted, run out past
 the platform's end and lowered on the winch's cable to the ground, the winch ratcheting. Use the remote to drive it
 (with the rover in its cradle, it sends it down first and takes you to it as it sets off): your view goes to a camera
 behind and over it, your movement keys drive and steer it, jump sounds its horn, the mouse swings the camera round it,

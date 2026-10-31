@@ -20,9 +20,9 @@ import org.joml.Quaternionf;
  * The rocket's rover bay (see {@link RoverBayBlockEntity}), drawn from the middle of its door's sill out of plain
  * coloured boxes: the door, in her livery outside, folding down outward on its hinge into a platform whose deck, its
  * inner face, is grey ribbed plate edged in yellow and black hazard stripes, held by two stay chains from the
- * doorway's top corners; the rover's cradle inside, its rails, stop bar and glowing charging pad; the light curtain
- * glowing red across the open doorway's sill; the yellow boom sliding out of its housing on the wall over the doorway
- * as the door opens; and, while the rover is not on its hook, the boom's
+ * doorway's top corners; the rover's cradle inside, its rails, stop bar and glowing charging pad; the boom, banded in
+ * yellow and black hazard stripes, sliding out of its housing on the wall over the doorway as the door opens, its
+ * stripes going with it; and, while the rover is not on its hook, the boom's
  * trolley with the hook wound up under it, waiting over the platform or at the boom's tip. Laid out as the bay's route
  * is (see {@link RoverRoute}): out of her along +z, up along +y, from the hinge.
  */
@@ -47,22 +47,11 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
     private static final int CHAIN = 0xFF3A3D42;
     private static final double CHAINS_FROM = 2;
     /**
-     * The light curtain: its posts' half width and height, the heights of its beams over the sill and their half
-     * thickness, how far out of the hinge they stand, in blocks, and their red glow.
-     */
-    private static final float POST_HALF = 0.05F;
-    private static final float POST_HEIGHT = 1.5F;
-    private static final float[] BEAMS = {0.45F, 0.9F, 1.35F};
-    private static final float BEAM_HALF = 0.015F;
-    private static final float CURTAIN_OUT = 0.12F;
-    private static final int CURTAIN = 0xFFFF4A30;
-    private static final int POST = 0xFF2A2C30;
-    /**
-     * The boom's half width, in blocks, and its yellow; its housing's half width and how far it reaches over and under
-     * the boom, in blocks, and its grey.
+     * The boom's half width, and how long each of its hazard stripes is along it, in blocks; its housing's half width
+     * and how far it reaches over and under the boom, in blocks, and its grey.
      */
     private static final float BOOM_HALF = 0.15F;
-    private static final int BOOM = 0xFFE0A820;
+    private static final double BOOM_STRIPE = 0.3;
     private static final float HOUSING_HALF = 0.45F;
     private static final float HOUSING_MARGIN = 0.1F;
     private static final int HOUSING = 0xFF5A5E66;
@@ -106,9 +95,6 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
         pose.mulPose(Axis.YP.rotationDegrees(-bay.facing().toYRot()));
         door(pose, consumer, light, open, skin(bay));
         cradle(pose.last(), consumer, light);
-        if (open > 0) {
-            curtain(pose.last(), consumer);
-        }
         double tip = RoverRoute.boomTip(open);
         boom(pose.last(), consumer, light, tip);
         if (bay.trolley() != RoverBayBlockEntity.Trolley.WITH_ROVER) {
@@ -179,26 +165,20 @@ public class RoverBayRenderer implements BlockEntityRenderer<RoverBayBlockEntity
             PAD_HEIGHT + PLATE, middle + PAD_HALF_LENGTH - CHARGE_HALF);
     }
 
-    /** The light curtain across the open doorway's sill: two posts at its jambs and three red beams between them. */
-    private static void curtain(PoseStack.Pose at, VertexConsumer consumer) {
-        int light = LightTexture.FULL_BRIGHT;
-        for (float side : new float[]{-HALF_WIDTH, HALF_WIDTH}) {
-            FlatQuads.box(consumer, at, light, POST, side - POST_HALF, 0, CURTAIN_OUT - POST_HALF, side + POST_HALF, POST_HEIGHT, CURTAIN_OUT + POST_HALF);
-        }
-        for (float height : BEAMS) {
-            FlatQuads.box(consumer, at, light, CURTAIN, -HALF_WIDTH, height - BEAM_HALF, CURTAIN_OUT - BEAM_HALF, HALF_WIDTH, height + BEAM_HALF,
-                CURTAIN_OUT + BEAM_HALF);
-        }
-    }
-
-    /** The boom out of its housing over the doorway, so far out from the hinge. */
+    /**
+     * The boom out of its housing over the doorway, so far out from the hinge, in yellow and black stripes counted back
+     * from its tip, so they slide out with it.
+     */
     private static void boom(PoseStack.Pose at, VertexConsumer consumer, int light, double tip) {
         float bottom = (float) RoverRoute.BOOM_BOTTOM;
         float top = (float) RoverRoute.BOOM_TOP;
         FlatQuads.box(consumer, at, light, HOUSING, -HOUSING_HALF, bottom - HOUSING_MARGIN, (float) RoverRoute.BOOM_ROOT, HOUSING_HALF,
             top + HOUSING_MARGIN, (float) RoverRoute.BOOM_IN);
-        if (tip > RoverRoute.BOOM_IN) {
-            FlatQuads.box(consumer, at, light, BOOM, -BOOM_HALF, bottom, (float) RoverRoute.BOOM_IN, BOOM_HALF, top, (float) tip);
+        int stripe = 0;
+        for (double end = tip; end > RoverRoute.BOOM_IN; end -= BOOM_STRIPE) {
+            float start = (float) Math.max(RoverRoute.BOOM_IN, end - BOOM_STRIPE);
+            int colour = stripe++ % 2 == 0 ? HAZARD_YELLOW : HAZARD_BLACK;
+            FlatQuads.box(consumer, at, light, colour, -BOOM_HALF, bottom, start, BOOM_HALF, top, (float) end);
         }
     }
 
