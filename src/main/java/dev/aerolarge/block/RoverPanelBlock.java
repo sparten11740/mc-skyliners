@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
 import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,7 +38,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * shut, amber while the door or the winch works, blue with the rover out, red for a moment when the door will not
  * open, she not standing still on her fins. FACING is the way its face looks, its back to the wall.
  */
-public class RoverPanelBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class RoverPanelBlock extends HorizontalDirectionalBlock implements EntityBlock, TouchPanelBlock {
     private static final MapCodec<RoverPanelBlock> CODEC = simpleCodec(RoverPanelBlock::new);
 
     /** How the bay stands, as its lamp shows it. */
@@ -63,6 +62,12 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock implements Entit
     /** How far in from the face's edges the buttons are, and how much of its height the lamp takes at the top. */
     private static final double MARGIN = 1 / 16.0;
     private static final double LAMP = 0.25;
+    /** Where the lamp's bottom edge is on the face, over the buttons, in blocks up from its foot. */
+    private static final double LAMP_FOOT = 1 - MARGIN - LAMP * (1 - 2 * MARGIN);
+    /** The lamp across the top of the face, and its buttons side by side under it, in their order (see {@link TouchPanel}). */
+    public static final TouchPanel.Tile LAMP_TILE = new TouchPanel.Tile(MARGIN, LAMP_FOOT, 1 - MARGIN, 1 - MARGIN);
+    public static final TouchPanel.Layout BUTTONS = TouchPanel.Layout.row(Button.values().length,
+        new TouchPanel.Tile(MARGIN, MARGIN, 1 - MARGIN, LAMP_FOOT));
     /** How bright its lamp glows, as block light, by how the bay stands. */
     private static final Map<Status, Integer> GLOW = Map.of(Status.READY, 4, Status.BUSY, 6, Status.OUT, 5, Status.REFUSED, 7);
     private static final Map<Direction, VoxelShape> SHAPES = Map.of(
@@ -105,11 +110,11 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock implements Entit
     /** A button pressed, on the server: worked by the bay the panel is wired to, which says what it does. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        Direction facing = state.getValue(FACING);
-        Button button = hit.getDirection() == facing ? button(facing, hit.getLocation().subtract(Vec3.atCenterOf(pos))) : null;
-        if (button == null) {
+        int tile = tileAt(level, state, pos, hit, player.getLookAngle());
+        if (tile < 0) {
             return InteractionResult.PASS;
         }
+        Button button = Button.values()[tile];
         if (player instanceof ServerPlayer server) {
             RoverBayBlockEntity bay = RoverBayBlockEntity.wiredTo(level, pos);
             if (bay != null) {
@@ -135,36 +140,9 @@ public class RoverPanelBlock extends HorizontalDirectionalBlock implements Entit
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /**
-     * Where a button is on the panel's face, as its renderer draws it and a touch finds it: across from its left edge
-     * and up from its foot as seen from the front, in blocks.
-     */
-    public record Area(double left, double bottom, double right, double top) {
-    }
-
-    /** Where a button is on the face. */
-    public static Area area(Button button) {
-        double width = (1 - 2 * MARGIN) / Button.values().length;
-        double left = MARGIN + width * button.ordinal();
-        return new Area(left, MARGIN, left + width, 1 - MARGIN - LAMP * (1 - 2 * MARGIN));
-    }
-
-    /** Where the lamp is on the face, over the buttons. */
-    public static Area lamp() {
-        return new Area(MARGIN, 1 - MARGIN - LAMP * (1 - 2 * MARGIN), 1 - MARGIN, 1 - MARGIN);
-    }
-
-    /**
-     * The button at a place on the panel's face, from the middle of its block; null on its lamp or at its edge. Seen
-     * from the front, the viewer's right is the panel's counterclockwise side.
-     */
-    @Nullable
-    public static Button button(Direction facing, Vec3 touch) {
-        Direction right = facing.getCounterClockWise();
-        double across = (touch.x * right.getStepX() + touch.z * right.getStepZ() + 0.5 - MARGIN) / (1 - 2 * MARGIN);
-        double down = (0.5 - touch.y - MARGIN) / (1 - 2 * MARGIN);
-        Button[] buttons = Button.values();
-        int column = (int) Math.floor(across * buttons.length);
-        return down >= LAMP && down <= 1 && column >= 0 && column < buttons.length ? buttons[column] : null;
+    /** The button a hit on the panel's face lands on, by its place in {@link Button}; -1 on its lamp, edge or back. */
+    @Override
+    public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
+        return BUTTONS.at(TouchPanel.touched(state.getValue(FACING), pos, hit));
     }
 }

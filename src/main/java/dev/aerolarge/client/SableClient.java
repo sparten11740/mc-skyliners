@@ -96,6 +96,14 @@ public final class SableClient {
     }
 
     /**
+     * A direction in the world turned into the frame of the airliner a block is part of, as it is drawn now: a look
+     * turned for something among its blocks, as the server turns it; the direction itself for a block in the world.
+     */
+    static Vec3 turnToPlot(BlockPos pos, Vec3 direction) {
+        return SABLE ? Access.turnToPlot(pos, direction) : direction;
+    }
+
+    /**
      * The light to draw something at a position among an airliner's blocks with: the light there, its sky light
      * dimmed the way Sable dims it for an assembled airliner under cover, as it does for the block entities it draws.
      */
@@ -282,6 +290,11 @@ public final class SableClient {
 
         static Vec3 toWorld(Level level, Vec3 position) {
             return Sable.HELPER.projectOutOfSubLevel(level, position);
+        }
+
+        static Vec3 turnToPlot(BlockPos pos, Vec3 direction) {
+            ClientSubLevel airliner = Sable.HELPER.getContainingClient(pos);
+            return airliner == null ? direction : airliner.logicalPose().transformNormalInverse(direction);
         }
 
         static int light(BlockPos pos, int light) {

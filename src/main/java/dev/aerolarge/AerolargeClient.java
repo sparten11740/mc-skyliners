@@ -109,6 +109,7 @@ import dev.aerolarge.client.SprinklerRenderer;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
+import dev.aerolarge.client.TouchPanelArt;
 import dev.aerolarge.client.TardigradeModel;
 import dev.aerolarge.client.TardigradeRenderer;
 import dev.aerolarge.client.TechnoRoom;
@@ -166,8 +167,7 @@ public final class AerolargeClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(CameraShake::tick);
         NeoForge.EVENT_BUS.addListener(CockpitDisplayRenderer::hideOutline);
-        NeoForge.EVENT_BUS.addListener(LiftBoardRenderer::hideOutline);
-        NeoForge.EVENT_BUS.addListener(RoverPanelRenderer::hideOutline);
+        NeoForge.EVENT_BUS.addListener(TouchPanelArt::hideOutline);
         NeoForge.EVENT_BUS.addListener(LightningFlash::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::tick);
         NeoForge.EVENT_BUS.addListener(LaserBolts::stage);

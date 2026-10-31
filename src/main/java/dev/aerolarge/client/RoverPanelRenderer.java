@@ -6,38 +6,28 @@ import com.mojang.math.Axis;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.RoverPanelBlock;
 import dev.aerolarge.block.RoverPanelBlockEntity;
+import dev.aerolarge.block.TouchPanel;
+import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import org.joml.Matrix4f;
 
 /**
  * Draws the rover panel's screen (see {@link RoverPanelBlock}) over its face: the lamp across its top in the colour of
  * how the bay stands, blinking while the door or the winch works, and its three picture buttons under it, each in a
  * colour of its own with its picture in white: blue to send the rover down, green to call it home, violet for a remote.
- * A button that can do nothing now, the rover being out or in or the bay busy, is dimmed; the one the player's
- * crosshair rests on lights up, a bold white frame round it and its colour lightened, as on the lift's picture board,
- * and the game's own outline round the block is left off it. Players who cannot read go by the pictures and colours.
+ * The buttons light up as every touch panel's do (see {@link TouchPanelArt}): the one the crosshair rests on in a bold
+ * white frame, and one that can do nothing now, the rover being out or in or the bay busy, dimmed. Players who cannot
+ * read go by the pictures and colours.
  */
 public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEntity> {
     /** The face, from the middle of the block toward the way it looks, lifted just off the panel's front. */
     private static final float FACE = -0.5F + RoverPanelBlock.THICKNESS / 16F + 0.002F;
-    /** The gap round each button and the lamp, and the bright frame round the button looked at, in blocks. */
+    /** The gap round each button and the lamp, in blocks. */
     private static final double GAP = 0.02;
-    private static final double LOOKED_FRAME = 0.03;
-    /** How far the button looked at is lightened toward white, and how much of its colour a dimmed one keeps. */
-    private static final double LOOKED_LIGHTER = 0.3;
-    private static final double DIMMED = 0.35;
     /** How far out each way from its middle a button's picture reaches, as a share of the button's width. */
     private static final double PICTURE = 0.4;
     /** How often the lamp blinks while the bay works, in ticks a blink. */
@@ -67,39 +57,21 @@ public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEn
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(shapes, matrix, 0, 0, 1, 1, 0, CASING);
         boolean blinkedOff = status == RoverPanelBlock.Status.BUSY && panel.getLevel().getGameTime() / BLINK % 2 == 1;
-        RoverPanelBlock.Area lamp = RoverPanelBlock.lamp();
-        ScreenDrawing.rect(shapes, matrix, lamp.left() + GAP, lamp.bottom() + GAP, lamp.right() - GAP, lamp.top() - GAP, LAYER,
-            blinkedOff ? dimmed(LAMPS.get(status)) : LAMPS.get(status));
-        RoverPanelBlock.Button looked = lookedAt(panel);
-        for (RoverPanelBlock.Button button : RoverPanelBlock.Button.values()) {
-            button(shapes, matrix, RoverPanelBlock.area(button), colour(button, status, looked), button == looked);
+        TouchPanelArt.tile(shapes, matrix, RoverPanelBlock.LAMP_TILE.inset(GAP), LAMPS.get(status), new TouchPanelArt.Look(false, false, !blinkedOff),
+            LAYER);
+        int looked = TouchPanelArt.lookedAt(panel);
+        RoverPanelBlock.Button[] buttons = RoverPanelBlock.Button.values();
+        for (int button = 0; button < buttons.length; button++) {
+            TouchPanelArt.tile(shapes, matrix, RoverPanelBlock.BUTTONS.get(button).inset(GAP), COLOURS.get(buttons[button]),
+                TouchPanelArt.Look.of(button, looked, -1, works(buttons[button], status)), LAYER);
         }
-        for (RoverPanelBlock.Button button : RoverPanelBlock.Button.values()) {
-            RoverPanelBlock.Area area = RoverPanelBlock.area(button);
+        for (int button = 0; button < buttons.length; button++) {
+            TouchPanel.Tile tile = RoverPanelBlock.BUTTONS.get(button);
             ResourceLocation picture = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID,
-                "textures/gui/rover/" + button.name().toLowerCase(java.util.Locale.ROOT) + ".png");
-            ScreenDrawing.picture(buffers, matrix, picture, (area.left() + area.right()) / 2, (area.bottom() + area.top()) / 2,
-                (area.right() - area.left()) * PICTURE, 4 * LAYER, WHITE);
+                "textures/gui/rover/" + buttons[button].name().toLowerCase(Locale.ROOT) + ".png");
+            ScreenDrawing.picture(buffers, matrix, picture, tile.middleX(), tile.middleY(), tile.width() * PICTURE, 4 * LAYER, WHITE);
         }
         pose.popPose();
-    }
-
-    /** A button's cell, and round it a bold white frame while it is looked at. */
-    private static void button(VertexConsumer shapes, Matrix4f matrix, RoverPanelBlock.Area area, int colour, boolean looked) {
-        if (looked) {
-            ScreenDrawing.rect(shapes, matrix, area.left() + GAP - LOOKED_FRAME, area.bottom() + GAP - LOOKED_FRAME, area.right() - GAP + LOOKED_FRAME,
-                area.top() - GAP + LOOKED_FRAME, 2 * LAYER, WHITE);
-        }
-        ScreenDrawing.rect(shapes, matrix, area.left() + GAP, area.bottom() + GAP, area.right() - GAP, area.top() - GAP, 3 * LAYER, colour);
-    }
-
-    /** A button's colour: lightened while looked at, dimmed while it can do nothing, its own otherwise. */
-    private static int colour(RoverPanelBlock.Button button, RoverPanelBlock.Status status, @Nullable RoverPanelBlock.Button looked) {
-        int colour = COLOURS.get(button);
-        if (button == looked) {
-            return lightened(colour);
-        }
-        return works(button, status) ? colour : dimmed(colour);
     }
 
     /** Whether a button does anything as the bay stands: sending the rover down with it home, calling it home with it out. */
@@ -109,39 +81,5 @@ public class RoverPanelRenderer implements BlockEntityRenderer<RoverPanelBlockEn
             case HOME -> status == RoverPanelBlock.Status.OUT;
             case REMOTE -> true;
         };
-    }
-
-    /** The button the player's crosshair rests on, on this panel's face; null for none. */
-    @Nullable
-    private static RoverPanelBlock.Button lookedAt(RoverPanelBlockEntity panel) {
-        Level level = panel.getLevel();
-        if (level == null || !(Minecraft.getInstance().hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK
-            || !hit.getBlockPos().equals(panel.getBlockPos())) {
-            return null;
-        }
-        Direction facing = panel.getBlockState().getValue(RoverPanelBlock.FACING);
-        return hit.getDirection() == facing ? RoverPanelBlock.button(facing, hit.getLocation().subtract(Vec3.atCenterOf(hit.getBlockPos()))) : null;
-    }
-
-    /** No outline round a rover panel's block: the button looked at lights up on the panel instead. */
-    public static void hideOutline(RenderHighlightEvent.Block event) {
-        Level level = Minecraft.getInstance().level;
-        if (level != null && level.getBlockState(event.getTarget().getBlockPos()).getBlock() instanceof RoverPanelBlock) {
-            event.setCanceled(true);
-        }
-    }
-
-    private static int lightened(int argb) {
-        return 0xFF000000 | mix(argb >> 16 & 0xFF, 255, LOOKED_LIGHTER) << 16 | mix(argb >> 8 & 0xFF, 255, LOOKED_LIGHTER) << 8
-            | mix(argb & 0xFF, 255, LOOKED_LIGHTER);
-    }
-
-    private static int dimmed(int argb) {
-        return 0xFF000000 | mix(0, argb >> 16 & 0xFF, DIMMED) << 16 | mix(0, argb >> 8 & 0xFF, DIMMED) << 8 | mix(0, argb & 0xFF, DIMMED);
-    }
-
-    /** A channel so far from one value toward another. */
-    private static int mix(int from, int to, double share) {
-        return (int) Math.round(from + (to - from) * share);
     }
 }

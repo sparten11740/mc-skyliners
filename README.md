@@ -1901,7 +1901,7 @@ else's ride, it comes once that is done), and its doors slide open with a soft r
 wall facing you a picture board, its back brushed steel where it shows through the shaft's glass, shows her floors as
 square buttons two to a row, the lowest at the bottom: each an icon on its story's colour (a doorway for the entry, then
 a crate, a fork and knife, a bed, a sprout, waves, a note, a flask, a telescope, and her nose for the cockpit), the
-floor you are on framed in white, the car's lit, and the one you look at lit up brighter in a bold white frame. The car
+floor you are on framed in green, the car's lit, and the one you look at lit up brighter in a bold white frame. The car
 waits with its doors open until you touch a floor (with nobody aboard it closes after eight seconds); then after a
 moment it closes and glides there, easing off and in, at up to six blocks a second, while its motor hums; one chime as
 it comes
@@ -2467,7 +2467,9 @@ on its shaft by a clock both sides share, with an unseen `LiftFloorBlock` floor 
 `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
 `LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
 inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,
-the floor looked at lit, and `HeightGauge` in flight); on the client `LiftSounds` plays a riding car's hum, and its
+the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels,
+`TouchPanelBlock`s laying out their tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which lights the tile
+looked at and frames the one picked alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
