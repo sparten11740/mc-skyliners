@@ -2346,7 +2346,7 @@ off; and the flight mode's picture, dimmed while she flies the arc straight up. 
 the attitude indicator marks how far she may tip before it snaps back on, and a white dot inside it how far she tips,
 and which way: keep the dot inside the ring. Her lift parks while she boosts, with her stability off, or leaning far
 over in the arc, and her lift's height gauge trails a long flame under its little rocket while she boosts. The boost,
-the stability switch and the arc are still experimental, and switched on by the server
+the stability switch and the arc can each be switched off in the server
 config's `rocket.boost`, `rocket.stabilitySwitch` and `rocket.arcAscent`; switched off, their controls only sound their
 low refusal note.
 
