@@ -20,7 +20,43 @@ const CONSOLE_HEIGHT = 6;
 function write(path, value) {
   const file = resolve(ROOT, path);
   mkdirSync(dirname(file), { recursive: true });
+  if (path.includes("/models/") && value && Array.isArray(value.elements)) unfight(value.elements);
   writeFileSync(file, (typeof value === "string" ? value : JSON.stringify(value, null, 2)) + "\n");
+}
+
+// Two faces of a model's boxes that lie in one plane, look the same way and overlap flicker through each other where
+// nothing covers them ("z-fighting"): the later box, as a rule the detail laid over the other, is stood out on that
+// side by PROUD, a twentieth of a pixel, so its face is drawn in front. Turned boxes are left as they are.
+const PROUD = 0.05;
+const FACE_AXES = { west: [0, -1], east: [0, 1], down: [1, -1], up: [1, 1], north: [2, -1], south: [2, 1] };
+function unfight(elements) {
+  const square = elements.filter((element) => !(element.rotation && element.rotation.angle) && element.faces);
+  for (let later = 1; later < square.length; later++) {
+    for (let earlier = 0; earlier < later; earlier++) {
+      standOut(square[earlier], square[later], square);
+    }
+  }
+}
+// Stands a later box's faces out where they lie in the plane of an earlier box's like faces and overlap them, seen.
+function standOut(earlier, later, all) {
+  for (const [face, [axis, sign]] of Object.entries(FACE_AXES)) {
+    if (!earlier.faces[face] || !later.faces[face]) continue;
+    const plane = sign > 0 ? later.to[axis] : later.from[axis];
+    const theirs = sign > 0 ? earlier.to[axis] : earlier.from[axis];
+    if (Math.abs(plane - theirs) > 1e-6) continue;
+    const across = [0, 1, 2].filter((other) => other !== axis);
+    const overlap = across.map((other) => [Math.max(earlier.from[other], later.from[other]), Math.min(earlier.to[other], later.to[other])]);
+    if (overlap.some(([from, to]) => to - from < 0.01) || hidden(all, axis, sign, plane, across, overlap)) continue;
+    if (sign > 0) later.to[axis] = plane + PROUD;
+    else later.from[axis] = plane - PROUD;
+  }
+}
+// Whether a box fills the space just outside a face over all of a stretch of it, hiding it there.
+function hidden(all, axis, sign, plane, across, overlap) {
+  return all.some((box) => {
+    const outside = sign > 0 ? box.from[axis] <= plane + 1e-6 && box.to[axis] > plane + 0.01 : box.to[axis] >= plane - 1e-6 && box.from[axis] < plane - 0.01;
+    return outside && across.every((other, i) => box.from[other] <= overlap[i][0] + 1e-6 && box.to[other] >= overlap[i][1] - 1e-6);
+  });
 }
 
 const cubes = {
@@ -3276,11 +3312,12 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     part([13, 12.5, 12.5], [15, 13.25, 13.25], "#chrome"),
     lamp(lit),
   ];
-  const foot = [
+  // The foot's half: under an upper bunk's guard its blanket does not hang down the open side, where the guard is.
+  const foot = (guarded) => [
     part([1, 0, 1], [16, 3, 16], "#frame"),
     part([1, 3, 1.5], [16, 7, 15.5], "#mattress"),
     part([1, 7, 1.25], [16, 7.75, 15.75], "#blanket", true),
-    part([1, 4, 1], [16, 7.75, 1.5], "#blanket", true),
+    ...(guarded ? [] : [part([1, 4, 1], [16, 7.75, 1.5], "#blanket", true)]),
     part([0, 0, 1], [1, 10, 16], "#frame"),
   ];
   // A part reaching out of its block, textured as one inside it would be (see patched), tinted if the blanket's colour.
@@ -3289,10 +3326,13 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     if (tinted) Object.values(element.faces).forEach((face) => { face.tintindex = 0; });
     return element;
   };
+  // How far the posts and the guards stand proud of the bed's parts they wrap round, in pixels, so no two faces lie
+  // in one plane, flickering through each other.
+  const PROUD = 0.05;
   // A bunk bed's corner posts at a head's end (to the east) or a foot's (to the west), from so far up to so far.
   const posts = (atHead, from, to) => {
-    const [x0, x1] = atHead ? [14.5, 16] : [0, 1.5];
-    return [tall([x0, from, 0], [x1, to, 1.5], "#frame"), tall([x0, from, 14.5], [x1, to, 16], "#frame")];
+    const [x0, x1] = atHead ? [14.5 - PROUD, 16 + PROUD] : [-PROUD, 1.5 + PROUD];
+    return [tall([x0, from, -PROUD], [x1, to, 1.5 + PROUD], "#frame"), tall([x0, from, 14.5 - PROUD], [x1, to, 16 + PROUD], "#frame")];
   };
   // An upper bunk's guards along a half, from so far along to so far: its padded rail up over the head's own, on the
   // open side and the back, each under a top bar; and at the head, the headboard raised as high.
@@ -3302,7 +3342,7 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
     const along = [];
     for (const [z0, z1, bar0, bar1] of [[0.5, 1.5, 0.25, 1.75], [14.5, 15.5, 14.25, 15.75]]) {
       const from = atHead && z0 < 1 ? 12 : 4;
-      along.push(tall([x0, from, z0], [x1, GUARD_TOP - 1, z1], "#rail", true), tall([x0, GUARD_TOP - 1, bar0], [x1, GUARD_TOP, bar1], "#frame"));
+      along.push(tall([x0, from, z0 - PROUD], [x1, GUARD_TOP - 1, z1 + PROUD], "#rail", true), tall([x0, GUARD_TOP - 1, bar0], [x1, GUARD_TOP, bar1], "#frame"));
     }
     return atHead ? [...along, tall([15, 14, 1.5], [16, GUARD_TOP, 14.5], "#frame")] : along;
   };
@@ -3321,7 +3361,7 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
       });
     }
     write(`assets/${ID}/models/block/bunk_foot${tierSuffix(tier)}.json`, {
-      parent: "minecraft:block/block", textures: textures(false), elements: [...foot, ...extra(false)],
+      parent: "minecraft:block/block", textures: textures(false), elements: [...foot(tier === "upper"), ...extra(false)],
     });
   }
   write(`assets/${ID}/blockstates/bunk.json`, {
@@ -3336,7 +3376,7 @@ write(`data/${ID}/loot_table/blocks/cargo_crate.json`, {
   write(`assets/${ID}/models/item/bunk.json`, {
     parent: "minecraft:block/block",
     textures: textures(false),
-    elements: [...shifted(head(false), 8), ...shifted(foot, -8)],
+    elements: [...shifted(head(false), 8), ...shifted(foot(false), -8)],
     display: {
       gui: { rotation: [30, 225, 0], translation: [0, 0, 0], scale: [0.45, 0.45, 0.45] },
       ground: { rotation: [0, 0, 0], translation: [0, 3, 0], scale: [0.2, 0.2, 0.2] },
@@ -5621,7 +5661,12 @@ function roomLang() {
     .map((face) => [face, { texture: face === "up" || face === "down" ? "#end" : "#post" }])) });
   const bedTextures = { board: planks, post: "minecraft:block/stripped_spruce_log", end: "minecraft:block/stripped_spruce_log_top", particle: planks };
   write(`assets/${ID}/models/block/garden_bed_board.json`, { parent: "minecraft:block/block", textures: bedTextures, elements: [solid([0, 0, 0], [16, 16, 2], "#board")] });
-  write(`assets/${ID}/models/block/garden_bed_post.json`, { parent: "minecraft:block/block", textures: bedTextures, elements: [post([0, 0, 0], [3, 17, 3])] });
+  // The corner post stands proud of the boards it meets by a twentieth of a pixel, so its sides and theirs never lie in
+  // one plane, flickering through each other.
+  const PROUD = 0.05;
+  write(`assets/${ID}/models/block/garden_bed_post.json`, {
+    parent: "minecraft:block/block", textures: bedTextures, elements: [post([-PROUD, 0, -PROUD], [3 + PROUD, 17, 3 + PROUD])],
+  });
   const corners = [["north", "west", 0], ["north", "east", 90], ["south", "east", 180], ["south", "west", 270]];
   write(`assets/${ID}/blockstates/garden_bed.json`, {
     multipart: [
