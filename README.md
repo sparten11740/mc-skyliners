@@ -479,7 +479,8 @@ sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A
 while it flies to a pin (see below). While the autopilot is off the controls only thud, and the on/off key opens the
 settings, where it is engaged; while it flies, the on/off key switches it off, and whenever it lets go, switched off or
 landed, its disconnect warning sounds, three quick rising tones played twice. A touch it cannot take thuds too: while
-it comes in to land, so nothing touched by accident calls the landing off, and while it rolls out after landing.
+it rolls out after landing, and while it comes in to land any touch but its altitude, so nothing touched by accident
+calls the landing off; a new height does call it off, as Apply does in its settings (see below).
 
 The control head's own small display shows what the autopilot is set to, in the same pictures and colours, turned to
 face whoever looks at it: a lamp (green while it flies the airliner, amber while it is stuck, dark while it is off),
@@ -530,7 +531,7 @@ near the pin is quite clear, it picks the strip with the fewest things under its
 there is nowhere at all, it says so once and keeps flying over the pin, looking again as more land comes into view.
 Not lined up with the strip as it comes to flare, it goes around and tries again. Applying the settings on the way
 there starts it afresh: with Land at the Pin still lit it looks again and comes back round; switched off, it circles
-the pin instead. Once it turns onto final it takes no new settings, as when it lands ahead (see below).
+the pin instead. Once it turns onto final only a new height calls the landing off, as when it lands ahead (see below).
 
 Where a runway laid down from its blueprint (see Runways) lies in the circle round the pin, it has nothing to look for:
 as soon as it has measured itself it lands on that runway, from whichever end it comes to with less turning, touching
@@ -570,8 +571,10 @@ the way down, starting from a tenth above the rotation speed (`rotateSpeed`): fu
 no new settings. Down, it idles the engines, lowers the nose and brakes to a stop, steering along the heading
 with the nose wheel; then it pulls the thrust levers to idle, centres the tiller, sets the parking brake and
 switches itself off. It lowers the gear as it starts down, and on a landing at the pin as it turns onto final. It lands
-on whatever lies below, so line it up over open, level ground first. While it comes down it takes no new settings,
-so nothing pressed by accident calls the landing off: Apply stays dark and the flight deck's controls thud. Disengage
+on whatever lies below, so line it up over open, level ground first. While it comes down a new height, set on the
+control head's altitude dial or applied in its settings, calls the landing off: it goes around, climbing back to that
+height with a rising note, and flies on as set; any other touch on the control head thuds, so nothing pressed by
+accident calls the landing off. Disengage
 still switches it off, handing the airliner back to the thrust levers; engaged again in the air, it flies on from
 there.
 
@@ -2230,7 +2233,8 @@ heading: the rocket on its pad, its way up and back down beside it. Told to land
 air, it falls back where it is and lands there. Switched off, it sounds a low note, the way down, and even as it comes
 down already it gives up where it was going and settles straight down where it is, switching itself off on its fins with
 the bell: only its engines hold it up, and it has no controls to hand over to, so its autopilot never lets go of it in
-the air. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket,
+the air. A new height set while it comes down calls the landing off instead: it climbs back to that height with a
+rising note and holds there, over where it is, until told to land or given a pin to fly to. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket,
 standing on its fins, is in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the

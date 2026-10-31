@@ -187,6 +187,11 @@ public final class RocketPilot {
     /** Where it rose from, to come back down to without a pin. */
     @Nullable
     private Vec3 rose;
+    /**
+     * Whether it holds its height where it is rather than coming down: once its landing has been called off, until it
+     * is told to land again or given a pin to fly to.
+     */
+    private boolean holding;
     /** Its tilt the tick before, across its front and to its right, in degrees, to tell how fast it tilts. */
     private double lastFront;
     private double lastRight;
@@ -294,19 +299,20 @@ public final class RocketPilot {
         if (settled >= SETTLED_TICKS) {
             return AutopilotBlockEntity.Phase.OFF;
         }
-        return next(phase, highest, state, radio, mass, toGo);
+        return next(phase, highest, state, radio, mass, holding && !orders.toPin() ? null : toGo);
     }
 
     /**
      * The phase it goes on in: up through the climb to the height set, across holding it until over where it is going
-     * and hardly drifting, then down, braking once it must.
+     * and hardly drifting, then down, braking once it must; holding its height where it is, with nowhere to go (null),
+     * once its landing has been called off.
      */
     private AutopilotBlockEntity.Phase next(AutopilotBlockEntity.Phase phase, double highest, SableFlight.State state, double radio, double mass,
-                                            Vec3 toGo) {
+                                            @Nullable Vec3 toGo) {
         return switch (phase) {
             case TAKEOFF -> radio > CLEAR ? AutopilotBlockEntity.Phase.CLIMB : phase;
             case CLIMB -> coastsTo(state) >= highest ? AutopilotBlockEntity.Phase.CRUISE : phase;
-            case CRUISE -> arrived(state, toGo) ? AutopilotBlockEntity.Phase.DESCENT : phase;
+            case CRUISE -> toGo != null && arrived(state, toGo) ? AutopilotBlockEntity.Phase.DESCENT : phase;
             case DESCENT -> radio <= brakingHeight(state, mass) ? AutopilotBlockEntity.Phase.LAND : phase;
             default -> phase;
         };
@@ -532,12 +538,27 @@ public final class RocketPilot {
     /** Told to land, or switched off in the air: it comes down where it is now, rather than where it was going. */
     void landHere(SableFlight.State state) {
         rose = state.position();
+        holding = false;
+    }
+
+    /**
+     * Its landing called off: it holds its height where it climbs back to, rather than coming down, until told to
+     * land again or given a pin.
+     */
+    void holdHere() {
+        holding = true;
+    }
+
+    /** Whether it holds its height where it is, its landing called off, until told to land or given a pin. */
+    boolean holding() {
+        return holding;
     }
 
     /** Landed, or the flight given up: the next flight begins with a countdown again. */
     void stop(ServerLevel level, BlockPos origin) {
         rest(level, origin);
         rose = null;
+        holding = false;
         counted = 0;
         settled = 0;
         circled = 0;

@@ -1230,6 +1230,12 @@ public class AutopilotBlockEntity extends BlockEntity {
             return;
         }
         Settings touched = touched(button, along, flying(), state.heading());
+        if (landingNow() && button != Button.ALTITUDE) {
+            // Landing, only a new height calls the landing off: any other touch, as like as not by accident, thuds.
+            thud();
+            player.displayClientMessage(Component.translatable("message.aerolarge.autopilot.coming_in"), true);
+            return;
+        }
         if (refusal() != null) {
             thud();
         } else if (button == Button.SPEED || button == Button.ALTITUDE) {
@@ -1346,9 +1352,9 @@ public class AutopilotBlockEntity extends BlockEntity {
      * Sets the autopilot from its settings screen: flies the settings, engaging it first if it is off (to take off, or
      * to fly on from where it is in the air), lands, or switches it off. Each setting is held to what the autopilot
      * flies, and only one that differs from what it flies now is taken, so settings sent back as they were neither
-     * round a target off nor start an orbit's circle afresh. Coming in to land, and once down, it takes none (see
-     * {@link #refusal}), but it is always switched off, landing or not: a rocket in the air comes down first. Says what
-     * it does, or why it cannot.
+     * round a target off nor start an orbit's circle afresh. Set while it lands, they call the landing off and it climbs
+     * back to the height set (see {@link #goAround}); rolling out it takes none (see {@link #refusal}). It is always
+     * switched off, landing or not: a rocket in the air comes down first. Says what it does, or why it cannot.
      */
     public Component set(SetAutopilot.Action action, Settings settings) {
         SableFlight.State state = SableFlight.read(this, nose());
@@ -1380,6 +1386,10 @@ public class AutopilotBlockEntity extends BlockEntity {
         Component refused = refusal();
         if (refused != null) {
             return refused;
+        }
+        boolean goingAround = landingNow();
+        if (goingAround) {
+            goAround(level);
         }
         boolean engaging = phase == Phase.OFF;
         if (engaging && !pilotWired()) {
@@ -1430,7 +1440,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             startOrbit(state, settings.lateral());
         }
         changed();
-        String said = !engaging ? "set" : phase == Phase.TAKEOFF ? "engaged" : "holding";
+        String said = goingAround ? "go_around" : !engaging ? "set" : phase == Phase.TAKEOFF ? "engaged" : "holding";
         return Component.translatable("message.aerolarge.autopilot." + said, Math.round(targetAltitude), Math.round(targetSpeed), modeSaid());
     }
 
@@ -1439,6 +1449,9 @@ public class AutopilotBlockEntity extends BlockEntity {
      * rocket comes down on the pin, or without one back where she rose, whatever the mode.
      */
     private Component modeSaid() {
+        if (craft == Craft.ROCKET && lateral != Lateral.DESTINATION && rocket.holding()) {
+            return Component.translatable("message.aerolarge.autopilot.mode.rocket_hold");
+        }
         if (craft == Craft.ROCKET) {
             return Component.translatable(lateral == Lateral.DESTINATION ? "message.aerolarge.autopilot.mode.rocket_pin" : "message.aerolarge.autopilot.mode.rocket_back");
         }
@@ -1452,20 +1465,36 @@ public class AutopilotBlockEntity extends BlockEntity {
     }
 
     /**
-     * Why the autopilot will not fly new settings now, or null if it will: coming in to land, so that nothing pressed
-     * by accident, as young pilots press everything, calls the landing off and climbs away again (switched off, it
-     * stops landing); or rolling out after landing. The flight deck's controls thud instead of sounding a setting it
-     * would refuse.
+     * Why the autopilot will not fly new settings now, or null if it will: rolling out after landing. The flight deck's
+     * controls thud instead of sounding a setting it would refuse.
      */
     @Nullable
     private Component refusal() {
         if (phase == Phase.ROLLOUT) {
             return Component.translatable("message.aerolarge.autopilot.rolling_out");
         }
-        if (comingIn()) {
-            return Component.translatable("message.aerolarge.autopilot.coming_in");
-        }
         return null;
+    }
+
+    /** Whether it is landing: coming in to land, or a rocket falling back to land. */
+    private boolean landingNow() {
+        return comingIn() || craft == Craft.ROCKET && phase == Phase.DESCENT;
+    }
+
+    /**
+     * Its landing called off by new settings set while it lands, a go-around: it climbs back to the height set, the
+     * cabin's landing announcement still waiting left unsaid, with a rising note for those who cannot read the
+     * message; a rocket then holds her height where she is, rather than coming straight back down, until told to land
+     * or given a pin.
+     */
+    private void goAround(Level level) {
+        announcements.letGo(Announcement.LANDING);
+        sinkCommand = Double.NaN;
+        phase = Phase.CLIMB;
+        if (craft == Craft.ROCKET) {
+            rocket.holdHere();
+        }
+        level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, NOTE_HIGH);
     }
 
     /**

@@ -426,9 +426,9 @@ public class AutopilotSettingsScreen extends Screen {
         engage.visible = !on;
         engage.active = (assembled || assembles) && pinned && !assembling;
         apply.visible = on;
-        // Coming in to land, and once down braking to a stop, it takes no new settings; otherwise only something set
-        // anew is worth applying.
-        apply.active = phase != Phase.ROLLOUT && pinned && autopilot != null && !autopilot.comingIn() && setAnew(autopilot);
+        // Braking to a stop once down it takes no new settings; coming in to land, applying calls the landing off and
+        // it climbs back to the height set, so Apply stays lit; otherwise only something set anew is worth applying.
+        apply.active = phase != Phase.ROLLOUT && pinned && autopilot != null && (autopilot.comingIn() || setAnew(autopilot));
         disengage.visible = on;
         // Only in the air, and not while it comes in to land already.
         boolean flying = phase == Phase.CLIMB || phase == Phase.DESCENT || phase == Phase.CRUISE;
