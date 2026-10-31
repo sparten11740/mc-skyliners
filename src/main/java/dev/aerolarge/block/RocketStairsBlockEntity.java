@@ -109,8 +109,10 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
     }
 
     /**
-     * Her airlock panel used, on the server: while she stands, her stairs out or not, its cycle opens the doors, or
-     * they shut; flying, only a low note.
+     * Her airlock panel used, on the server: while she stands, its cycle opens the doors, or they shut; with her stairs
+     * away, they come down first and the doors open as they set out, so the doors do not open over the drop to the
+     * ground. Where the stairs cannot come down, the doors still open after the stairs' low note, so nobody is shut in.
+     * Flying, only a low note.
      */
     void workDoors(ServerLevel level, BlockPos panel) {
         if (doors == null) {
@@ -119,6 +121,13 @@ public class RocketStairsBlockEntity extends BlockEntity implements Airstairs, B
         if (flying(level, worldPosition)) {
             refuse(level, panel);
             return;
+        }
+        if (doors.shut() && stairs != null && stairs.stowed()) {
+            flown = false;
+            go(level, true);
+            if (stairs.down()) {
+                return;
+            }
         }
         doors.cycle(level, panel);
     }
