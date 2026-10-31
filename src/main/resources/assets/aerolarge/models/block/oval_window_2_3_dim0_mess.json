@@ -1,16 +1,36 @@
 {
-  "loader": "aerolarge:oval_window",
-  "render_type": "minecraft:translucent",
-  "column": 2,
-  "row": 3,
-  "inside_tint": -1,
+  "loader": "neoforge:composite",
   "textures": {
-    "glass": "aerolarge:block/oval_window_2_3_dim0",
-    "frame": "aerolarge:block/oval_window_2_3_frame",
-    "inside": "aerolarge:block/oval_window_2_3_inside_mess",
-    "lip": "aerolarge:block/oval_window_2_3_lip",
-    "reveal": "aerolarge:block/oval_window_reveal",
-    "edge": "aerolarge:block/zeppelin_skin",
-    "particle": "aerolarge:block/oval_window_2_3_dim0"
+    "particle": "aerolarge:block/oval_window_glass_dim0"
+  },
+  "children": {
+    "glass": {
+      "loader": "aerolarge:oval_window",
+      "part": "glass",
+      "render_type": "minecraft:translucent",
+      "column": 2,
+      "row": 3,
+      "textures": {
+        "glass": "aerolarge:block/oval_window_glass_dim0",
+        "particle": "aerolarge:block/oval_window_glass_dim0"
+      }
+    },
+    "frame": {
+      "loader": "aerolarge:oval_window",
+      "part": "frame",
+      "render_type": "minecraft:cutout_mipped",
+      "column": 2,
+      "row": 3,
+      "inside_tint": -1,
+      "textures": {
+        "frame": "aerolarge:block/oval_window_2_3_frame",
+        "inside": "aerolarge:block/oval_window_2_3_inside_mess",
+        "rim": "aerolarge:block/oval_window_rim",
+        "lip": "aerolarge:block/oval_window_lip",
+        "reveal": "aerolarge:block/oval_window_reveal",
+        "edge": "aerolarge:block/zeppelin_skin",
+        "particle": "aerolarge:block/oval_window_glass_dim0"
+      }
+    }
   }
 }

@@ -3874,19 +3874,24 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     if (y === DOOR - 2 || x === DOOR - 2 || x === DOOR / 2 - 2) return DOOR_SHADOW;
     return undoped(x % SIZE, y % SIZE);
   }, 3, DOOR, DOOR);
-  // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall, one texture for each block of it
-  // from the top left as seen from outside, at each step of its dimming: an oval of glass in a dark gasket and a
-  // polished steel rim, set in the cover's weave. The glass is a dome (see OvalWindowModel, whose oval this is): clear
-  // in its middle to look out of, it catches more of the sky toward its edge, where it turns away, and a soft
-  // highlight sits high on its upper left, as on a bubble. Its glass is a neutral smoked grey, as the cockpit's is, and
-  // dimmed it alone darkens a step at a time to near-black, its frame left as it is. Inside, the weave runs round an
-  // oval hole the dome is seen through, and the reveal between them is the rim's steel, darkening as it goes in.
+  // The rocket's oval window (see OvalWindowBlock), three blocks wide and four tall. Its glass is a dome (see
+  // OvalWindowModel, whose oval this is), drawn from one texture over the whole window at each step of its dimming, at
+  // twice a block's pixels: clear in its middle to look out of, it catches more of the sky toward its edge, where it
+  // turns away, and a soft highlight sits high on its upper left, as on a bubble. Its glass is a neutral smoked grey,
+  // as the cockpit's is, and dimmed it alone darkens a step at a time to near-black. Its steel collar outside, with the
+  // dark gasket the glass sits in, and the steel lip round the hole inside are the model's own rings, smooth round the
+  // oval: the cover's weave round it outside and the wall round its hole inside, one texture for each block of it from
+  // the top left as seen from outside, are cut away under them, and the reveal lining the hole between them is the
+  // collar's steel, darkening as it goes in.
   const OVAL_COLUMNS = 3;
   const OVAL_ROWS = 4;
   const OVAL_WIDE = 21;
   const OVAL_TALL = 29;
   const OVAL_RIM = [0xa4, 0xac, 0xb6];
+  const OVAL_RIM_LIT = [0xdc, 0xe2, 0xe8];
   const OVAL_DIMS = [[0xb8, 0xc4, 0xcc, 0x38], [0x50, 0x57, 0x5e, 0x88], [0x24, 0x28, 0x2c, 0xc0], [0x0c, 0x0e, 0x10, 0xe8]];
+  // How many of the glass texture's pixels a window pixel is across: enough for the highlight's edge to read smooth.
+  const GLASS_SCALE = 4;
   // The sky the glass catches toward its edge, and how much of it at the very edge.
   const OVAL_SKY = [0xdc, 0xec, 0xf8];
   const OVAL_SKY_EDGE = 0.55;
@@ -3895,15 +3900,20 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const DOME_BULGE = 6;
   const DOME_PROFILE = 0.6;
   // The highlight: the sun's glint off the dome, from high on the left in front of it, where the dome faces halfway
-  // between the sun and whoever looks at it, bright at its heart and fainter round it.
+  // between the sun and whoever looks at it, bright at its heart and fainter round it, each fading in over a soft edge
+  // (how squarely the dome faces there, from the edge's outside to its inside).
   const SUN = [-0.5, -0.62, 0.6];
   const GLINT = 0.985;
   const GLINT_HALO = 0.955;
+  const GLINT_SOFT = 0.006;
   const HIGHLIGHT = [0xf4, 0xfa, 0xff];
-  // Where the hole inside and the reveal round it begin, in pixels outside the oval's edge, the rim's outer edge, and
-  // how wide the steel lip round the hole is, which the reveal's lining runs into.
-  const OVAL_HOLE = 2.4;
-  const HOLE_LIP = 1.5;
+  const HALO_ALPHA = 0x88;
+  const GLINT_ALPHA = 0xd8;
+  // How far outside the oval's edge, in pixels, the weave outside and the wall inside begin: halfway across the
+  // collar outside and the lip inside, which OvalWindowModel draws out to RIM and HOLE + LIP, so every pixel cut away
+  // lies under them and every one left stands clear of the glass and the hole.
+  const FRAME_CUT = 1.3;
+  const INSIDE_CUT = 2.05;
   const middleX = (OVAL_COLUMNS * SIZE) / 2;
   const middleY = (OVAL_ROWS * SIZE) / 2;
   // How far a pixel lies outside the oval's edge, in pixels, negative inside: the oval's equation over its slope.
@@ -3914,12 +3924,6 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const slope = 2 * Math.hypot(dx / OVAL_WIDE ** 2, dy / OVAL_TALL ** 2);
     return level / Math.max(slope, 1e-6);
   };
-  // Whether all of a pixel lies inside the reveal's lining, which the window's model draws round the oval grown by
-  // OVAL_HOLE each way: all four of its corners do. Only such pixels are left clear in the hole, the lip covering the
-  // rest of its edge, so none looks past the lining into the wall, where the skin's sides against the window, painted
-  // in her livery, and the sky beyond would show.
-  const insideLining = (x, y) => [[0, 0], [1, 0], [0, 1], [1, 1]].every(([cx, cy]) =>
-    ((x + cx - middleX) / (OVAL_WIDE + OVAL_HOLE)) ** 2 + ((y + cy - middleY) / (OVAL_TALL + OVAL_HOLE)) ** 2 < 1);
   const mix = (a, b, share) => a.map((c, i) => Math.round(c + (b[i] - c) * share));
   const halfway = (() => {
     const sun = Math.hypot(...SUN);
@@ -3927,7 +3931,7 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const length = Math.hypot(...h);
     return h.map((c) => c / length);
   })();
-  // How squarely the dome at a pixel faces halfway between the sun and the eye: 1 where the glint is brightest.
+  // How squarely the dome at a point faces halfway between the sun and the eye: 1 where the glint is brightest.
   const glint = (dx, dy) => {
     const within = Math.max(1 - (dx / OVAL_WIDE) ** 2 - (dy / OVAL_TALL) ** 2, 0.05);
     const slope = DOME_BULGE * DOME_PROFILE * within ** (DOME_PROFILE - 1);
@@ -3935,38 +3939,42 @@ blueprint("runway_blueprint", false, runwayFromAbove);
     const length = Math.hypot(...normal);
     return normal.reduce((sum, c, i) => sum + (c / length) * halfway[i], 0);
   };
+  // The glass at a point of the window, in its pixels from its top left as seen from outside; past the oval's edge,
+  // where the model draws none, as at the edge, so nothing else bleeds into it.
   const domeGlass = (x, y, tint) => {
-    const across = (x + 0.5 - middleX) / OVAL_WIDE;
-    const down = (y + 0.5 - middleY) / OVAL_TALL;
-    const facing = glint(x + 0.5 - middleX, y + 0.5 - middleY);
-    if (facing > GLINT_HALO) return [...HIGHLIGHT, facing > GLINT ? 0xd8 : 0x88];
+    const across = (x - middleX) / OVAL_WIDE;
+    const down = (y - middleY) / OVAL_TALL;
     const edge = Math.min(1, across ** 2 + down ** 2) ** 2;
     const [r, g, b, a] = tint;
-    return [...mix([r, g, b], OVAL_SKY, edge * OVAL_SKY_EDGE), Math.round(a + (0xe0 - a) * edge * OVAL_SKY_EDGE)];
+    const glass = [...mix([r, g, b], OVAL_SKY, edge * OVAL_SKY_EDGE), a + (0xe0 - a) * edge * OVAL_SKY_EDGE];
+    const facing = glint(x - middleX, y - middleY);
+    const halo = Math.min(1, Math.max(0, (facing - GLINT_HALO) / GLINT_SOFT + 0.5));
+    const heart = Math.min(1, Math.max(0, (facing - GLINT) / GLINT_SOFT + 0.5));
+    const alpha = glass[3] + (HALO_ALPHA - glass[3]) * halo + (GLINT_ALPHA - HALO_ALPHA) * heart;
+    const lit = Math.max(halo, heart);
+    return [...mix(glass.slice(0, 3), HIGHLIGHT, lit), Math.round(Math.max(glass[3], alpha))];
   };
-  const ovalWindow = (x, y, tint) => {
-    const out = outsideOval(x, y);
-    if (out > OVAL_HOLE) return fabric(x % SIZE, y % SIZE);
-    if (out > 1.0) return OVAL_RIM;
-    if (out > -0.4) return FRAME_DARK;
-    return domeGlass(x, y, tint);
-  };
+  OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `oval_window_glass_dim${dim}`,
+    (x, y) => domeGlass((x + 0.5) / GLASS_SCALE, (y + 0.5) / GLASS_SCALE, tint), 0, OVAL_COLUMNS * SIZE * GLASS_SCALE, OVAL_ROWS * SIZE * GLASS_SCALE));
   for (let column = 0; column < OVAL_COLUMNS; column++) {
     for (let row = 0; row < OVAL_ROWS; row++) {
-      OVAL_DIMS.forEach((tint, dim) => texture(blockOutput, `oval_window_${column}_${row}_dim${dim}`,
-        (x, y) => ovalWindow(column * SIZE + x, row * SIZE + y, tint), 3));
       // The weave round the oval, outside and in, is the cover's undoped weave for the livery's tint to colour, as the
-      // cover's own; the steel lip round the hole inside is a layer of its own, which the tint leaves steel.
+      // cover's own.
       const out = (x, y) => outsideOval(column * SIZE + x, row * SIZE + y);
-      texture(blockOutput, `oval_window_${column}_${row}_frame`, (x, y) => (out(x, y) > OVAL_HOLE ? undoped(x, y) : CLEAR), 3);
-      texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => (out(x, y) > OVAL_HOLE + HOLE_LIP ? undoped(x, y) : CLEAR), 3);
-      OVAL_WALLS.push({ column, row, lowest: row === OVAL_ROWS - 1, wall: (x, y) => out(x, y) > OVAL_HOLE + HOLE_LIP });
-      texture(blockOutput, `oval_window_${column}_${row}_lip`, (x, y) => {
-        const o = out(x, y);
-        return !insideLining(column * SIZE + x, row * SIZE + y) && o <= OVAL_HOLE + HOLE_LIP ? OVAL_RIM : CLEAR;
-      }, 3);
+      texture(blockOutput, `oval_window_${column}_${row}_frame`, (x, y) => (out(x, y) > FRAME_CUT ? undoped(x, y) : CLEAR), 3);
+      texture(blockOutput, `oval_window_${column}_${row}_inside`, (x, y) => (out(x, y) > INSIDE_CUT ? undoped(x, y) : CLEAR), 3);
+      OVAL_WALLS.push({ column, row, lowest: row === OVAL_ROWS - 1, wall: (x, y) => out(x, y) > INSIDE_CUT });
     }
   }
+  // The collar from its inner edge down (the dark rubber gasket the glass sits in, then polished steel catching the
+  // light and dulling toward the skin), the lip round the hole inside from the reveal out, and the reveal from the
+  // inner face in, each the same all the way round.
+  texture(blockOutput, "oval_window_rim", (x, y) => {
+    if (y < 3) return FRAME_DARK;
+    if (y === 3) return mix(FRAME_DARK, OVAL_RIM, 0.5);
+    return mix(OVAL_RIM_LIT, OVAL_RIM, Math.abs(y - 6) / 9);
+  }, 2);
+  texture(blockOutput, "oval_window_lip", (x, y) => mix(OVAL_RIM, OVAL_RIM_LIT, y / (SIZE - 1) * 0.6), 2);
   texture(blockOutput, "oval_window_reveal", (x, y) => mix(OVAL_RIM, FRAME_DARK, (y / (SIZE - 1)) * 0.6), 2);
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
   // LiveryBoardBlock lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with

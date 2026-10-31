@@ -4548,37 +4548,46 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
   cubes.cabin_window_shell = null;
 }
 // The rocket's oval window (see OvalWindowBlock): each block of it at each step of its dimming, the inner half of its
-// block, its glass a dome over the oval in a recess lined with steel, baked by the mod's own "oval_window" loader (see
-// OvalWindowModel), its frame and its edges the cover's undoped weave, tinted in the ship's livery as the cover is,
-// and inside the wall round the oval the weave too or, in a room finished its own way, that room's wall. Modelled
-// looking north, turned for the other ways. It gives back glass.
+// block, its glass a dome over the oval in a steel collar and a recess lined with steel, baked by the mod's own
+// "oval_window" loader (see OvalWindowModel), its frame and its edges the cover's undoped weave, tinted in the ship's
+// livery as the cover is, and inside the wall round the oval the weave too or, in a room finished its own way, that
+// room's wall. Every block takes its share of the glass from one texture over the whole window. Each model is NeoForge's
+// composite of two parts: the glass, drawn translucent, and the rest cut out, so the clear hole in the inner face, cut
+// out, never hides the steel behind it as a translucent face would wherever it is drawn first. Modelled looking north,
+// turned for the other ways. It gives back glass.
 {
   const variants = {};
   const edge = `${ID}:block/zeppelin_skin`;
+  // A window block's model: its glass and the rest, from its textures, the wall round its oval inside tinted or not.
+  const ovalWindowModel = (column, row, { glass, ...rest }, insideTint) => ({
+    loader: "neoforge:composite",
+    textures: { particle: glass },
+    children: {
+      glass: { loader: `${ID}:oval_window`, part: "glass", render_type: "minecraft:translucent", column, row, textures: { glass, particle: glass } },
+      frame: {
+        loader: `${ID}:oval_window`, part: "frame", render_type: "minecraft:cutout_mipped", column, row, ...(insideTint === undefined ? {} : { inside_tint: insideTint }),
+        textures: { ...rest, particle: glass },
+      },
+    },
+  });
   for (let column = 0; column < 3; column++) {
     for (let row = 0; row < 4; row++) {
       for (let dim = 0; dim < 4; dim++) {
         const name = `oval_window_${column}_${row}_dim${dim}`;
-        const glass = `${ID}:block/${name}`;
-        write(`assets/${ID}/models/block/${name}.json`, {
-          loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row,
-          textures: {
-            glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside`,
-            lip: `${ID}:block/oval_window_${column}_${row}_lip`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass,
-          },
-        });
+        const glass = `${ID}:block/oval_window_glass_dim${dim}`;
+        write(`assets/${ID}/models/block/${name}.json`, ovalWindowModel(column, row, {
+          glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside`,
+          rim: `${ID}:block/oval_window_rim`, lip: `${ID}:block/oval_window_lip`, reveal: `${ID}:block/oval_window_reveal`, edge,
+        }));
         for (const [facing, y] of Object.entries(yRot)) {
           variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=cover`] = { model: `${ID}:block/${name}`, y };
         }
         // In a room finished its own way, the wall round the oval inside is that room's, untinted.
         for (const finish of WINDOW_FINISHES) {
-          write(`assets/${ID}/models/block/${name}_${finish}.json`, {
-            loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row, inside_tint: -1,
-            textures: {
-              glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside_${finish}`,
-              lip: `${ID}:block/oval_window_${column}_${row}_lip`, reveal: `${ID}:block/oval_window_reveal`, edge, particle: glass,
-            },
-          });
+          write(`assets/${ID}/models/block/${name}_${finish}.json`, ovalWindowModel(column, row, {
+            glass, frame: `${ID}:block/oval_window_${column}_${row}_frame`, inside: `${ID}:block/oval_window_${column}_${row}_inside_${finish}`,
+            rim: `${ID}:block/oval_window_rim`, lip: `${ID}:block/oval_window_lip`, reveal: `${ID}:block/oval_window_reveal`, edge,
+          }, -1));
           for (const [facing, y] of Object.entries(yRot)) {
             variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=${finish}`] = { model: `${ID}:block/${name}_${finish}`, y };
           }

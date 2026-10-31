@@ -1847,8 +1847,9 @@ glass up the middle, a doorway into the shaft on each and a big oval window out 
 front, but on the entry story, where the door is, and on the observation deck, which has a band of glass all round
 instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the front between two
 flight displays, two pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The
-windows' glass bulges out of the skin in a dome, the sun glinting off it, and sits inside in a recess lined with steel;
-it dims electrically: use one to darken its glass a step, from clear through light and medium to dark, and once more to
+windows' glass bulges out of the skin in a dome, the sun glinting off it, seated in a smooth steel collar with a dark
+rubber gasket, and sits inside in a recess lined with steel behind a steel lip; it dims electrically, all its glass at
+once: use one to darken its glass a step, from clear through light and medium to dark, and once more to
 clear it again, a chime falling as it darkens.
 
 Her front door, three blocks wide and three tall over her entry floor, across the flat of her front, has the

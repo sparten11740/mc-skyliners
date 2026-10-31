@@ -5,6 +5,7 @@ import com.mojang.math.Transformation;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.client.ModelQuads.Corner;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.renderer.FaceInfo;
@@ -23,21 +24,28 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, its glass a
- * thin dome bulging out of the skin over the whole oval, each piece drawing its share of it, baked once as the models
- * load. Outside, the dome rises from the skin's cut, steepest at its foot as a bubble's; inside, the same glass is seen
- * as a bowl at the back of an oval recess, lined round with the rim's steel, through a hole in the inner face with a
- * steel lip. The cover's weave round the oval, outside and in, and its edges are tinted as the cover is, in the ship's
- * livery (see {@code ZeppelinPaint}); the glass, its rim and the steel are not. Its JSON names the loader, the piece
- * and the textures of its glass (its piece of the oval as seen from outside, its weave hidden under the frame), of the
- * frame over it, of the inner face with its hole, of the lip round the hole, of the recess's lining and of its edges:
- * {@code {"loader": "aerolarge:oval_window", "column": 0, "row": 0, "textures": {"glass": ..., "frame": ..., "inside":
- * ..., "lip": ..., "reveal": ..., "edge": ..., "particle": ...}}}.
+ * The model of a piece of the rocket's oval window ({@link OvalWindowBlock}): the inner half of its block, baked once
+ * as the models load, each piece drawing its share of the whole window. Outside, the glass is a thin dome bulging out
+ * of the skin over the whole oval, steepest at its foot as a bubble's, seated in a steel collar that slopes down from
+ * it to the skin, the dark gasket at its inner edge; inside, the same glass is seen as a bowl at the back of an oval
+ * recess lined round with the collar's steel, through a hole in the inner face with a steel lip round it. The dome,
+ * the collar, the lining and the lip are smooth rings of faces round the oval, never a texture's pixels, so the
+ * window's outline is clean near and far. The cover's weave round the oval, outside and in, and its edges are tinted
+ * as the cover is, in the ship's livery (see {@code ZeppelinPaint}); the glass and the steel are not. Its JSON names
+ * the loader, the piece and the textures: the glass over the whole window as seen from outside, the frame over the
+ * piece (the weave, cut away under the collar), its inner face (cut away under the lip), the collar's steel, the lip's,
+ * the recess's lining and the edges: {@code {"loader": "aerolarge:oval_window", "part": "frame", "column": 0, "row": 0,
+ * "textures": {"glass": ..., "frame": ..., "inside": ..., "rim": ..., "lip": ..., "reveal": ..., "edge": ...,
+ * "particle": ...}}}. Its part is {@code "glass"}, the dome alone, which needs only the glass's texture, or
+ * {@code "frame"}, all the rest: a window block's model is NeoForge's composite of the two, the glass drawn translucent
+ * and the rest cut out, so the clear hole in the inner face never hides the steel behind it, as a translucent face
+ * drawn before what lies behind it would.
  *
- * <p>It is drawn looking north, then turned the way its block state says. Its flat faces on the block's sides are lit
- * as a block's sides are and culled against what stands against them; the dome, the bowl and the lining each get the
- * shade for the way they really face at each corner, as the cabin archway's curve does (see {@link CabinArchModel}),
- * so the glass brightens and darkens smoothly round its bulge. Outside the oval the dome lies flat on the skin's cut.
+ * <p>It is drawn looking north, then turned the way its block state says. Its inner face is lit as a block's side is
+ * and culled against what stands against it; the window's outer edges are always drawn, so no crack opens where the
+ * round skin beside it is cut deeper than the window. The rings each get the shade for the way they really face at
+ * each corner, as the cabin archway's curve does (see {@link CabinArchModel}), so the glass and the steel brighten and
+ * darken smoothly round the oval. A ring's face is drawn by the piece its middle lies in.
  */
 public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "oval_window");
@@ -46,209 +54,284 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
     private static final float BLOCK = 16;
     /** How far in from its outer side the skin's cut runs through the block, in pixels: the piece lies behind it. */
     private static final float SKIN = BLOCK / 2;
-    /**
-     * The oval's half width and half height over the whole window, in pixels of its pieces' textures, and how far
-     * outside its edge the hole in the inner face and the recess's lining are, as tools/generate_textures.mjs draws
-     * them.
-     */
+    /** The whole window's width and height, in pixels. */
+    private static final float WIDE = OvalWindowBlock.COLUMNS * BLOCK;
+    private static final float TALL = OvalWindowBlock.ROWS * BLOCK;
+    /** The oval's half width and half height, in pixels, as tools/generate_textures.mjs draws its glass. */
     private static final float OVAL_WIDE = 21;
     private static final float OVAL_TALL = 29;
-    private static final float HOLE = 2.4F;
     /**
-     * How far the dome bulges out of the skin at its middle, in pixels, and how its height falls toward its foot: as
+     * The collar: how far out from the oval's edge it reaches, how far its inner edge, where the glass sits, stands out
+     * of the skin, and how far its outer edge stands off the weave it lies on, in pixels.
+     */
+    private static final float RIM = 2.6F;
+    private static final float COLLAR = 0.8F;
+    private static final float COLLAR_FOOT = 0.1F;
+    /** How far out from the oval's edge the recess's lining runs, and how wide the lip round the hole is, in pixels. */
+    private static final float HOLE = 1.2F;
+    private static final float LIP = 1.7F;
+    /**
+     * How far the dome bulges out of the collar at its middle, in pixels, and how its height falls toward its foot: as
      * this power of the share of the way still to go to its edge, steep at the foot for below 1, as a bubble's.
      */
     private static final float BULGE = 6;
     private static final float PROFILE = 0.6F;
     /** The least share of the way to the edge its slope is worked out at, so it stays finite at the very foot. */
     private static final float STEEPEST = 0.05F;
-    /** How many pixels across and up each of the dome's faces is. */
-    private static final int CELL = 4;
-    /** How many faces the recess's lining has all the way round the window. */
-    private static final int LINING = 96;
-    /** The piece's sides other than its glass's, drawn in the edge's texture. */
-    private static final List<Direction> EDGES = List.of(Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN);
+    /** How far out the dome's rings lie, as shares of the way from its middle to its edge: closer toward its foot. */
+    private static final float[] RINGS = {0, 0.35F, 0.6F, 0.78F, 0.9F, 0.96F, 0.99F, 1};
+    /** How many faces every ring has all the way round the window. */
+    private static final int ROUND = 48;
+    /** Where the lining's texture is darkest, from which on the collar's back and its gasket inside are drawn. */
+    private static final float DARKEST = 0.9F;
     /** How many corners a quad has. */
     private static final int QUAD = 4;
     /** The tint index of the faces painted as the cover is. */
     private static final int COVER_TINT = 0;
-    /** How far in front of the faces they lie on the frame over the glass and the lip inside stand, in pixels. */
+    /** How far in front of the faces they lie on the frame over the skin and the lip inside stand, in pixels. */
     private static final float OVER = 0.02F;
 
     /** The piece drawn: its column from the left as seen from outside and its row from the top. */
     private final int column;
     private final int row;
+    /** Whether this is the piece's glass, rather than all the rest of it. */
+    private final boolean glassPart;
     /**
      * The tint of the wall round its oval inside, from {@code "inside_tint"}: the cover's, painted by her livery, or
      * none for a room's own wall.
      */
     private final int insideTint;
 
-    private OvalWindowModel(int column, int row, int insideTint) {
+    /**
+     * A point of the window: how far right of its middle and below it, as seen from outside, and how deep into the
+     * block, in pixels.
+     */
+    private record Point(float right, float down, float depth) {
+    }
+
+    private OvalWindowModel(int column, int row, boolean glassPart, int insideTint) {
         this.column = column;
         this.row = row;
+        this.glassPart = glassPart;
         this.insideTint = insideTint;
     }
 
     private static OvalWindowModel read(JsonObject json) {
         return new OvalWindowModel(GsonHelper.getAsInt(json, "column"), GsonHelper.getAsInt(json, "row"),
-            GsonHelper.getAsInt(json, "inside_tint", COVER_TINT));
+            "glass".equals(GsonHelper.getAsString(json, "part")), GsonHelper.getAsInt(json, "inside_tint", COVER_TINT));
     }
 
     @Override
     protected void addQuads(IGeometryBakingContext owner, IModelBuilder<?> modelBuilder, ModelBaker baker,
                             Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform) {
-        TextureAtlasSprite glass = spriteGetter.apply(owner.getMaterial("glass"));
         Transformation turn = modelTransform.getRotation().blockCenterToCorner();
-        for (int across = 0; across < BLOCK; across += CELL) {
-            for (int up = 0; up < BLOCK; up += CELL) {
-                domeFace(modelBuilder, glass, across, up, turn);
+        if (glassPart) {
+            TextureAtlasSprite glass = spriteGetter.apply(owner.getMaterial("glass"));
+            for (int step = 0; step < ROUND; step++) {
+                for (int band = 0; band + 1 < RINGS.length; band++) {
+                    domeFace(modelBuilder, glass, band, step, turn);
+                }
             }
+            return;
         }
-        for (int face = 0; face < LINING; face++) {
-            liningFace(modelBuilder, spriteGetter.apply(owner.getMaterial("reveal")), face, turn);
+        TextureAtlasSprite rim = spriteGetter.apply(owner.getMaterial("rim"));
+        TextureAtlasSprite lip = spriteGetter.apply(owner.getMaterial("lip"));
+        TextureAtlasSprite reveal = spriteGetter.apply(owner.getMaterial("reveal"));
+        for (int step = 0; step < ROUND; step++) {
+            collarFace(modelBuilder, rim, step, turn);
+            recessFaces(modelBuilder, reveal, lip, step, turn);
         }
-        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), SKIN - OVER, Direction.NORTH, COVER_TINT, turn);
-        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("lip")), BLOCK + OVER, Direction.SOUTH, ModelQuads.NO_TINT, turn);
-        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, turn);
+        flat(modelBuilder, spriteGetter.apply(owner.getMaterial("frame")), turn);
+        side(modelBuilder, Direction.SOUTH, spriteGetter.apply(owner.getMaterial("inside")), insideTint, true, turn);
         TextureAtlasSprite edge = spriteGetter.apply(owner.getMaterial("edge"));
-        for (Direction side : EDGES) {
-            side(modelBuilder, side, edge, COVER_TINT, turn);
+        for (Direction side : outerEdges()) {
+            side(modelBuilder, side, edge, COVER_TINT, false, turn);
         }
     }
 
     /**
-     * A flat face across the whole piece at a depth into the block looking north, in pixels, facing out or in: the
-     * frame over the glass outside, or the lip over the inner face; tinted as given.
+     * A face of the dome between two of its rings, seen from outside, and the same face seen from inside, as the bowl
+     * at the back of the recess; its texture is the glass over the whole window as seen from outside.
      */
-    private static void flat(IModelBuilder<?> builder, TextureAtlasSprite sprite, float depth, Direction facing, int tint, Transformation turn) {
-        float z = depth / BLOCK;
-        Vector3f[] corners = facing == Direction.NORTH
-            ? new Vector3f[]{new Vector3f(1, 1, z), new Vector3f(1, 0, z), new Vector3f(0, 0, z), new Vector3f(0, 1, z)}
-            : new Vector3f[]{new Vector3f(0, 1, z), new Vector3f(0, 0, z), new Vector3f(1, 0, z), new Vector3f(1, 1, z)};
-        Corner[] quad = new Corner[QUAD];
-        for (int k = 0; k < QUAD; k++) {
-            quad[k] = turned(corners[k], facing.step(), 1 - corners[k].x(), 1 - corners[k].y(), turn);
-        }
-        builder.addUnculledFace(ModelQuads.bake(quad, sprite, nearest(quad), true, tint));
-    }
-
-    /**
-     * A face of the dome, from its corner nearest the block's west side and its bottom, in pixels, seen from outside;
-     * and, where it is inside the hole in the inner face, the same face seen from inside, as the back of the recess.
-     */
-    private void domeFace(IModelBuilder<?> builder, TextureAtlasSprite glass, int across, int up, Transformation turn) {
-        int right = across + CELL;
-        int top = up + CELL;
-        Corner[] outside = {dome(right, top, turn), dome(right, up, turn), dome(across, up, turn), dome(across, top, turn)};
-        builder.addUnculledFace(ModelQuads.bake(outside, glass, nearest(outside), true));
-        if (!reachesHole(across, up)) {
+    private void domeFace(IModelBuilder<?> builder, TextureAtlasSprite glass, int band, int step, Transformation turn) {
+        double from = angle(step);
+        double to = angle(step + 1);
+        Point[] points = {domePoint(RINGS[band], from), domePoint(RINGS[band + 1], from), domePoint(RINGS[band + 1], to),
+            domePoint(RINGS[band], to)};
+        if (!mine(points)) {
             return;
         }
-        Corner[] inside = new Corner[QUAD];
+        Vector3f[] out = {domeNormal(RINGS[band], from), domeNormal(RINGS[band + 1], from), domeNormal(RINGS[band + 1], to),
+            domeNormal(RINGS[band], to)};
+        float[][] uv = new float[QUAD][];
+        Vector3f[] in = new Vector3f[QUAD];
         for (int k = 0; k < QUAD; k++) {
-            Corner corner = outside[QUAD - 1 - k];
-            inside[k] = new Corner(corner.at(), new Vector3f(corner.normal()).negate(), corner.u(), corner.v());
+            uv[k] = new float[]{(WIDE / 2 + points[k].right()) / WIDE, (TALL / 2 + points[k].down()) / TALL};
+            in[k] = new Vector3f(out[k]).negate();
         }
-        builder.addUnculledFace(ModelQuads.bake(inside, glass, nearest(inside), true));
+        face(builder, glass, points, out, uv, turn);
+        face(builder, glass, points, in, uv, turn);
     }
 
-    /**
-     * A corner of the dome at a point across and up the piece looking north, in pixels: as far out of the skin as the
-     * dome bulges there, facing the way it does, its texture as seen from outside.
-     */
-    private Corner dome(float across, float up, Transformation turn) {
-        float right = fromMiddleRight(across);
-        float down = fromMiddleDown(up);
-        float within = 1 - square(right / OVAL_WIDE) - square(down / OVAL_TALL);
-        Vector3f facing = new Vector3f(0, 0, -1);
-        if (within > 0) {
-            float slope = BULGE * PROFILE * (float) Math.pow(Math.max(within, STEEPEST), PROFILE - 1);
-            facing.set(-2 * slope * right / square(OVAL_WIDE), -2 * slope * down / square(OVAL_TALL), -1).normalize();
-        }
-        float out = within > 0 ? BULGE * (float) Math.pow(within, PROFILE) : 0;
-        Vector3f at = new Vector3f(across, up, SKIN - out).div(BLOCK);
-        return turned(at, facing, 1 - at.x(), 1 - at.y(), turn);
+    /** A point of the dome, so far out from its middle as a share of the way to its edge and so far round. */
+    private static Point domePoint(float out, double angle) {
+        float height = BULGE * (float) Math.pow(1 - out * out, PROFILE);
+        return new Point(OVAL_WIDE * out * (float) Math.cos(angle), OVAL_TALL * out * (float) Math.sin(angle), SKIN - COLLAR - height);
     }
 
-    /**
-     * Whether any of the dome's face from a corner across and up the piece looking north, in pixels, lies inside the
-     * hole in the inner face: its point nearest the window's middle does. Where the hole's edge only cuts across a side
-     * of the face, all its corners outside, the face is still seen from inside, or the recess would be open there to
-     * the sky and the skin's sides.
-     */
-    private boolean reachesHole(int across, int up) {
-        float right = nearestToMiddle(fromMiddleRight(across), fromMiddleRight(across + CELL));
-        float down = nearestToMiddle(fromMiddleDown(up), fromMiddleDown(up + CELL));
-        return square(right / (OVAL_WIDE + HOLE)) + square(down / (OVAL_TALL + HOLE)) < 1;
+    /** The way the dome faces outward at a point of it, looking north. */
+    private static Vector3f domeNormal(float out, double angle) {
+        float within = Math.max(1 - out * out, STEEPEST);
+        float slope = BULGE * PROFILE * (float) Math.pow(within, PROFILE - 1);
+        float right = OVAL_WIDE * out * (float) Math.cos(angle);
+        float down = OVAL_TALL * out * (float) Math.sin(angle);
+        return new Vector3f(-2 * slope * right / square(OVAL_WIDE), -2 * slope * down / square(OVAL_TALL), -1).normalize();
     }
 
-    /** How far from the window's middle the nearest point between two distances either side of it or on one side is. */
-    private static float nearestToMiddle(float from, float to) {
-        return from * to <= 0 ? 0 : Math.min(Math.abs(from), Math.abs(to));
-    }
-
-    /** How far right of the window's middle, as seen from outside, a point across the piece is, in pixels. */
-    private float fromMiddleRight(float across) {
-        return column * BLOCK + BLOCK - across - OvalWindowBlock.COLUMNS * BLOCK / 2;
-    }
-
-    /** How far below the window's middle a point up the piece is, in pixels. */
-    private float fromMiddleDown(float up) {
-        return row * BLOCK + BLOCK - up - OvalWindowBlock.ROWS * BLOCK / 2;
-    }
-
-    /**
-     * A face of the recess's lining round the hole, from the inner face to the skin's cut, facing in toward the
-     * window's middle; drawn by the piece its middle is in, the steel lit as it faces.
-     */
-    private void liningFace(IModelBuilder<?> builder, TextureAtlasSprite reveal, int face, Transformation turn) {
-        double from = 2 * Math.PI * face / LINING;
-        double to = 2 * Math.PI * (face + 1) / LINING;
-        double middle = (from + to) / 2;
-        float wide = OVAL_WIDE + HOLE;
-        float tall = OVAL_TALL + HOLE;
-        float middleX = OvalWindowBlock.COLUMNS * BLOCK / 2 + wide * (float) Math.cos(middle);
-        float middleY = OvalWindowBlock.ROWS * BLOCK / 2 + tall * (float) Math.sin(middle);
-        if ((int) Math.floor(middleX / BLOCK) != column || (int) Math.floor(middleY / BLOCK) != row) {
+    /** A face of the collar, from the gasket at the glass's foot down to its outer edge on the weave. */
+    private void collarFace(IModelBuilder<?> builder, TextureAtlasSprite rim, int step, Transformation turn) {
+        double from = angle(step);
+        double to = angle(step + 1);
+        float foot = SKIN - OVER - COLLAR_FOOT;
+        Point[] points = {round(0, from, SKIN - COLLAR), round(RIM, from, foot), round(RIM, to, foot), round(0, to, SKIN - COLLAR)};
+        if (!mine(points)) {
             return;
         }
-        Vector3f facing = new Vector3f((float) Math.cos(middle) / wide, (float) Math.sin(middle) / tall, 0).normalize();
-        Vector3f first = lining(from, wide, tall);
-        Vector3f second = lining(to, wide, tall);
-        Vector3f[] corners = {
-            new Vector3f(first.x(), first.y(), BLOCK), new Vector3f(second.x(), second.y(), BLOCK),
-            new Vector3f(second.x(), second.y(), SKIN), new Vector3f(first.x(), first.y(), SKIN)};
-        float[][] uv = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-        Vector3f made = new Vector3f(corners[1]).sub(corners[0]).cross(new Vector3f(corners[2]).sub(corners[0]));
+        float fall = (foot - (SKIN - COLLAR)) / RIM;
+        Vector3f[] normals = new Vector3f[QUAD];
+        for (int k = 0; k < QUAD; k++) {
+            Vector3f out = outward(k == 0 || k == 1 ? from : to, k == 0 || k == 3 ? 0 : RIM);
+            normals[k] = out.mul(fall).add(0, 0, -1).normalize();
+        }
+        face(builder, rim, points, normals, new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+    }
+
+    /**
+     * The recess's faces at one step round it, seen from inside: the gasket's back round the bowl's rim, the collar's
+     * back between it and the lining, the lining from there to the inner face, and the lip round the hole there.
+     */
+    private void recessFaces(IModelBuilder<?> builder, TextureAtlasSprite reveal, TextureAtlasSprite lip, int step, Transformation turn) {
+        double from = angle(step);
+        double to = angle(step + 1);
+        float[][] dark = {{0, DARKEST}, {0, 1}, {1, 1}, {1, DARKEST}};
+        Point[] gasket = {round(0, from, SKIN - COLLAR), round(0, from, SKIN), round(0, to, SKIN), round(0, to, SKIN - COLLAR)};
+        ringFace(builder, reveal, gasket, inward(from, 0), inward(to, 0), dark, turn);
+        Point[] back = {round(0, from, SKIN), round(HOLE, from, SKIN), round(HOLE, to, SKIN), round(0, to, SKIN)};
+        ringFace(builder, reveal, back, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), dark, turn);
+        Point[] lining = {round(HOLE, from, BLOCK), round(HOLE, from, SKIN), round(HOLE, to, SKIN), round(HOLE, to, BLOCK)};
+        ringFace(builder, reveal, lining, inward(from, HOLE), inward(to, HOLE), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+        Point[] lipFace = {round(HOLE, from, BLOCK + OVER), round(HOLE + LIP, from, BLOCK + OVER), round(HOLE + LIP, to, BLOCK + OVER),
+            round(HOLE, to, BLOCK + OVER)};
+        ringFace(builder, lip, lipFace, new Vector3f(0, 0, 1), new Vector3f(0, 0, 1), new float[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}}, turn);
+    }
+
+    /** A face of a ring, if this piece draws it: its first two corners face as at its start, the rest as at its end. */
+    private void ringFace(IModelBuilder<?> builder, TextureAtlasSprite sprite, Point[] points, Vector3f atFrom, Vector3f atTo, float[][] uv,
+                          Transformation turn) {
+        if (mine(points)) {
+            face(builder, sprite, points, new Vector3f[]{atFrom, atFrom, atTo, atTo}, uv, turn);
+        }
+    }
+
+    /** How far round the window a step of its rings is, in radians. */
+    private static double angle(int step) {
+        return 2 * Math.PI * step / ROUND;
+    }
+
+    /** A point round the oval grown by so many pixels each way, so far round, at a depth into the block. */
+    private static Point round(float grown, double angle, float depth) {
+        return new Point((OVAL_WIDE + grown) * (float) Math.cos(angle), (OVAL_TALL + grown) * (float) Math.sin(angle), depth);
+    }
+
+    /** The way out from the window's middle across its face at a point round the oval grown so far, looking north. */
+    private static Vector3f outward(double angle, float grown) {
+        return new Vector3f(-(float) Math.cos(angle) / (OVAL_WIDE + grown), -(float) Math.sin(angle) / (OVAL_TALL + grown), 0).normalize();
+    }
+
+    /** The way in toward the window's middle from a wall of the recess round the oval grown so far, so far round. */
+    private static Vector3f inward(double angle, float grown) {
+        return outward(angle, grown).negate();
+    }
+
+    /** Whether a face is this piece's to draw: its middle lies in this piece's block. */
+    private boolean mine(Point[] points) {
+        float right = 0;
+        float down = 0;
+        for (Point point : points) {
+            right += point.right() / points.length;
+            down += point.down() / points.length;
+        }
+        return (int) Math.floor((WIDE / 2 + right) / BLOCK) == column && (int) Math.floor((TALL / 2 + down) / BLOCK) == row;
+    }
+
+    /**
+     * A face of the window from its corners, the way it faces at each and where on its texture each is, turned to face
+     * the way its corners say and shaded at each corner for the way it faces there.
+     */
+    private void face(IModelBuilder<?> builder, TextureAtlasSprite sprite, Point[] points, Vector3f[] normals, float[][] uv, Transformation turn) {
+        Vector3f[] at = new Vector3f[QUAD];
+        Vector3f facing = new Vector3f();
+        for (int k = 0; k < QUAD; k++) {
+            at[k] = inPiece(points[k]);
+            facing.add(normals[k]);
+        }
+        Vector3f made = new Vector3f(at[1]).sub(at[0]).cross(new Vector3f(at[2]).sub(at[0]));
         boolean reversed = made.dot(facing) < 0;
         Corner[] quad = new Corner[QUAD];
         for (int k = 0; k < QUAD; k++) {
             int corner = reversed ? QUAD - 1 - k : k;
-            quad[k] = turned(corners[corner].div(BLOCK), facing, uv[corner][0], uv[corner][1], turn);
+            quad[k] = turned(at[corner], normals[corner], uv[corner][0], uv[corner][1], turn);
         }
-        builder.addUnculledFace(ModelQuads.bake(quad, reveal, nearest(quad), true));
+        builder.addUnculledFace(ModelQuads.bake(quad, sprite, nearest(quad), true));
     }
 
-    /** A point round the lining at an angle round the window's middle: across and up the piece looking north. */
-    private Vector3f lining(double angle, float wide, float tall) {
-        float right = wide * (float) Math.cos(angle);
-        float down = tall * (float) Math.sin(angle);
-        float across = column * BLOCK + BLOCK - OvalWindowBlock.COLUMNS * BLOCK / 2 - right;
-        float up = row * BLOCK + BLOCK - OvalWindowBlock.ROWS * BLOCK / 2 - down;
-        return new Vector3f(across, up, 0);
+    /** Where a point of the window lies in this piece's block looking north, as a share of the block. */
+    private Vector3f inPiece(Point point) {
+        float across = column * BLOCK + BLOCK - WIDE / 2 - point.right();
+        float up = row * BLOCK + BLOCK - TALL / 2 - point.down();
+        return new Vector3f(across, up, point.depth()).div(BLOCK);
+    }
+
+    /** The frame: the cover's weave over the skin round the oval, across the whole piece just in front of the skin. */
+    private static void flat(IModelBuilder<?> builder, TextureAtlasSprite sprite, Transformation turn) {
+        float z = (SKIN - OVER) / BLOCK;
+        Vector3f[] corners = {new Vector3f(1, 1, z), new Vector3f(1, 0, z), new Vector3f(0, 0, z), new Vector3f(0, 1, z)};
+        Corner[] quad = new Corner[QUAD];
+        for (int k = 0; k < QUAD; k++) {
+            quad[k] = turned(corners[k], Direction.NORTH.step(), 1 - corners[k].x(), 1 - corners[k].y(), turn);
+        }
+        builder.addUnculledFace(ModelQuads.bake(quad, sprite, nearest(quad), true, COVER_TINT));
+    }
+
+    /** The sides of this piece on the window's outer edge, looking north: none between two of its pieces. */
+    private List<Direction> outerEdges() {
+        List<Direction> edges = new ArrayList<>();
+        if (column == 0) {
+            edges.add(Direction.EAST);
+        }
+        if (column == OvalWindowBlock.COLUMNS - 1) {
+            edges.add(Direction.WEST);
+        }
+        if (row == 0) {
+            edges.add(Direction.UP);
+        }
+        if (row == OvalWindowBlock.ROWS - 1) {
+            edges.add(Direction.DOWN);
+        }
+        return edges;
     }
 
     /**
-     * One of the piece's flat sides, lit as a block's side is, culled against what stands against it and tinted as
-     * given: its inner face, with the hole the dome is seen through, mirrored so the oval reads whole from inside, and
-     * its edges round it.
+     * One of the piece's flat sides, lit as a block's side is and tinted as given: its inner face, with the hole the
+     * dome is seen through, mirrored so the oval reads whole from inside, culled against what stands against it; or an
+     * edge of the window, always drawn, out from the inner face to the frame's own depth, so no hairline opens between
+     * them.
      */
-    private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, int tint, Transformation turn) {
+    private static void side(IModelBuilder<?> builder, Direction side, TextureAtlasSprite sprite, int tint, boolean culled, Transformation turn) {
         float[] bounds = new float[Direction.values().length];
         bounds[FaceInfo.Constants.MIN_X] = 0;
         bounds[FaceInfo.Constants.MIN_Y] = 0;
-        bounds[FaceInfo.Constants.MIN_Z] = SKIN / BLOCK;
+        bounds[FaceInfo.Constants.MIN_Z] = (culled ? SKIN : SKIN - OVER) / BLOCK;
         bounds[FaceInfo.Constants.MAX_X] = 1;
         bounds[FaceInfo.Constants.MAX_Y] = 1;
         bounds[FaceInfo.Constants.MAX_Z] = 1;
@@ -262,7 +345,11 @@ public final class OvalWindowModel extends SimpleUnbakedGeometry<OvalWindowModel
             quad[k] = turned(at, facing, uv[0], uv[1], turn);
         }
         Direction turnedSide = Direction.rotate(turn.getMatrix(), side);
-        builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false, tint));
+        if (culled) {
+            builder.addCulledFace(turnedSide, ModelQuads.bake(quad, sprite, turnedSide, false, tint));
+        } else {
+            builder.addUnculledFace(ModelQuads.bake(quad, sprite, turnedSide, false, tint));
+        }
     }
 
     /** The texture over a point of a flat side: the inner face as the glass seen from outside, the edges as a box's. */
