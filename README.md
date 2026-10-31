@@ -1879,11 +1879,14 @@ Her front door, three blocks wide and three tall over her entry floor, across th
 airliner's integral airstairs (see Airstairs), three blocks wide to match it: open treads with yellow nosings between
 aluminium stringers, a handrail along either side, the top tread level with the sill. Stowed, they lie folded in a bay
 under her entry floor, behind a hatch in her skin below the door, and nothing of them shows. Coming out, the hatch
-drops, the folded flight slides out of its bay, rises to the sill and tips down to its slope, and its sections run out
-down to the ground as its handrails rise, to the hum of their hydraulics and the clunk of their latches; they reach as
-far down as the ground lets them, down to ground a few blocks lower than her fins where she stands on uneven ground
-(where their bay has room for so long a flight), and are walked up and down like any stairs. A lit amber button with a
-staircase on
+drops and the folded flight rolls out of its bay on a yellow carriage running along two steel rails, which pulls an
+extension out of each past her skin; a telescopic ram either side lifts the flight's head to the sill on a hinge tube
+and a third, in the middle, tips it down to its slope; its sections run out down to the ground on two cables paying
+out from drums on the hinge, its handrails rise and, where her curve sets her floor's edge back from the door, a
+bridge plate swings up from under the top tread to lie level with it, to the hum of their hydraulics and the clunk of
+their latches, and going away all of it runs back the same way; they reach as far down as the ground lets them, down
+to ground a few blocks lower than her fins where she stands on uneven ground (where their bay has room for so long a
+flight), and are walked up and down like any stairs. A lit amber button with a staircase on
 it, the airstairs' own, stands inside by the door on her right at eye height, and another low on the front of her front
 right fin's tip, to call them down from the ground: pressing either brings the stairs down or folds them away while she
 stands with her autopilot off; while she flies, it only sounds a low note. They come down by themselves as soon as she
@@ -2467,7 +2470,8 @@ it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it lo
 The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
 `RocketAirstairs` her airstairs in its place, kept by the `RocketStairsBlockEntity` of the `RocketStairsButtonBlock` by
-her door as `BoardingAirstairs` out of a bay, holding her countdown through `RocketPilot.holdCountdownWhile` till away,
+her door as `BoardingAirstairs` out of a bay, `AirstairMachinery` drawing the machinery that works them,
+holding her countdown through `RocketPilot.holdCountdownWhile` till away,
 with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `AirlockPanelBlock` works and
 `RocketStairsRenderer` draws with the stairs,
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`

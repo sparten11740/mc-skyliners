@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 
 /**
  * The integral airstairs' build and motion, as the renderer draws them and the airliner leaves room for them. A
- * straight flight of open treads at 45 degrees, as wide as its doorway (the airliner's two blocks, a rocket's four),
+ * straight flight of open treads at 45 degrees, as wide as its doorway (the airliner's two blocks, a rocket's three),
  * running straight out from the door: two half-block treads a block, the top one level with the sill, each a non-slip
  * plate with a yellow nosing, between slim aluminium stringers, with a handrail along each side on thin posts. It is
  * made of a few telescoping sections, nested in the top one, and stows under the cabin floor in a bay behind a hatch in
@@ -21,6 +21,11 @@ import org.joml.Vector3f;
  * </ol>
  * Everything is measured in blocks, in the door's own frame as {@code PlugDoorRenderer} draws it: x across the
  * doorway to the right as seen from outside, y up from the sill, z out, the hull's outer face at z 1.
+ *
+ * <p>A rocket's flight also draws the machinery that works it (see {@link AirstairMachinery}), as her bay lies open
+ * to her engine room, and a bridge plate: her skin at her sill is cut to her curve, so her floor's edge can stand
+ * back from the door's face, and a plate hinged under the top tread swings up as the handrails rise to lie level
+ * with the sill across the gap ({@link Motion#sillGap}).
  *
  * <p>A zeppelin's boarding stairs are the same flight hung in her belly ({@link Motion#belly}), their sill the lower
  * deck's floor at the head of the stairs and z out along the way they come down: stowed, the folded flight lies level
@@ -43,7 +48,7 @@ public final class AirstairFlight {
     /** The most it may be made of, however short the bay. */
     public static final int MOST_SECTIONS = 8;
 
-    private static final float PX = 1 / 16F;
+    static final float PX = 1 / 16F;
     /** A stringer's width, and how much narrower each nested section is on either side. */
     private static final float STRINGER_WIDTH = 2 * PX;
     private static final float NEST_INSET = PX;
@@ -56,9 +61,18 @@ public final class AirstairFlight {
     /** The top platform's beams, under the top tread: as deep as the stringers' upright cut. */
     private static final float BEAM_DEPTH = 9 * PX;
     /** A tread's plate, and the nosing along its front: its depth and how thick it is. */
-    private static final float TREAD_THICKNESS = PX;
+    static final float TREAD_THICKNESS = PX;
     private static final float NOSING_DEPTH = 2 * PX;
     private static final float NOSING_THICKNESS = 1.5F * PX;
+    /**
+     * The bridge plate: the longest it is, as long as the top tread it folds under; the narrowest gap it is drawn
+     * for; how far in from the flight's sides its ends stop, so they never lie in the stringers' faces; and the line
+     * it swings about, under the top tread's back edge, low enough that folded it clears the tread's nosing.
+     */
+    private static final float LIP_LONGEST = 0.5F;
+    private static final float LIP_LEAST = PX / 4;
+    private static final float LIP_SIDE = PX / 8;
+    private static final float LIP_HINGE_Y = -(TREAD_THICKNESS + NOSING_THICKNESS) / 2 - PX / 32;
     /** The handrail: how high it stands over the stringers' tops once up, its tube, and its posts. */
     private static final float RAIL_HEIGHT = 14 * PX;
     private static final float RAIL_SIZE = 2 * PX;
@@ -66,8 +80,8 @@ public final class AirstairFlight {
     /** Where the platform's post stands, out from the hull's face. */
     private static final float PLATFORM_POST = 3 * PX;
     /** The bay's mouth is the row under the sill: y -2 to -1. The folded flight passes it with this much to spare. */
-    private static final float MOUTH_TOP = -1;
-    private static final float MOUTH_BOTTOM = -2;
+    static final float MOUTH_TOP = -1;
+    static final float MOUTH_BOTTOM = -2;
     private static final float CLEARANCE = 0.06F;
     /** The hatch's plate. */
     private static final float HATCH_THICKNESS = PX;
@@ -75,17 +89,20 @@ public final class AirstairFlight {
      * Where the flight swings about, out from the hull's face and up from the sill: the foot of the platform's beams,
      * at the head of the stringers.
      */
-    private static final float PIVOT_U = 0.5F;
-    private static final float PIVOT_Y = STRINGER_TOP - BEAM_DEPTH;
+    static final float PIVOT_U = 0.5F;
+    static final float PIVOT_Y = STRINGER_TOP - BEAM_DEPTH;
     /** The tilt between level, as it slides out of the bay, and the slope. */
-    private static final float SLOPE = (float) Math.PI / 4;
+    static final float SLOPE = (float) Math.PI / 4;
 
     private AirstairFlight() {
     }
 
-    /** The parts the flight is drawn from, each with its own look. */
+    /**
+     * The parts the flight is drawn from, each with its own look; a rocket's machinery (see {@link AirstairMachinery})
+     * adds its dark steel, its yellow carriage and its chrome rods.
+     */
     public enum Part {
-        TREAD, NOSING, STRINGER, RAIL, POST, HATCH
+        TREAD, NOSING, STRINGER, RAIL, POST, HATCH, TRACK, CARRIAGE, ROD
     }
 
     /** Where the drawn boxes go. Each box spans {@code from} to {@code to} in the frame {@code pose} gives. */
@@ -98,10 +115,17 @@ public final class AirstairFlight {
      * The airstairs at a moment: how far through coming out ({@code ticks}, 0 stowed to {@link #OUT}), how many blocks
      * they reach down ({@code length}), how many they are built to reach ({@code rise}), in how many sections and how
      * many blocks wide; how far in from the door's face the hull's skin over the bay's mouth lies, and how deep the
-     * mouth is; whether the hatch is off the mouth; and whether they hang in a zeppelin's belly rather than in a door.
+     * mouth is; whether the hatch is off the mouth; whether they hang in a zeppelin's belly rather than in a door; how
+     * far the floor's edge at the door stands back from its face, in blocks, the gap the bridge plate spans; and
+     * whether the machinery working them is drawn, as a rocket's is.
      */
     public record Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
-                         boolean belly) {
+                         boolean belly, float sillGap, boolean machinery) {
+        /** Airstairs whose top tread meets their sill, their machinery not drawn: an airliner's or a zeppelin's. */
+        public Motion(float ticks, int length, int rise, int sections, int width, float hatchInset, int mouth, boolean hatchOpen,
+                      boolean belly) {
+            this(ticks, length, rise, sections, width, hatchInset, mouth, hatchOpen, belly, 0, false);
+        }
     }
 
     /**
@@ -133,7 +157,10 @@ public final class AirstairFlight {
         return 0;
     }
 
-    /** Draws the hatch and the flight as they are at the moment. */
+    /**
+     * Draws the hatch and the flight as they are at the moment, with a rocket's bridge plate and the machinery working
+     * her flight.
+     */
     public static void draw(Motion motion, Sink sink) {
         float t = motion.ticks();
         if (motion.hatchOpen() && !motion.belly()) {
@@ -146,14 +173,41 @@ public final class AirstairFlight {
         Pose pose = pose(motion, t);
         float run = clamp((t - SWING) / (EXTEND - SWING));
         float extension = Math.max(0, 2 * motion.length() - treads) * ease(run);
-        float rails = RAIL_HEIGHT * ease(clamp((t - EXTEND) / (OUT - EXTEND)));
+        float up = ease(clamp((t - EXTEND) / (OUT - EXTEND)));
         Matrix4f nest = pose.matrix();
         // Each section runs out of the one above as far as it can, the next one with it, until the bottom one is down.
         float coverEnd = 0;
+        float offset = 0;
         for (int section = 0; section < motion.sections(); section++) {
-            float offset = Math.min(extension, section * (treads - 1F));
-            section(nest, section, offset, treads, motion.width(), coverEnd, rails, sink);
+            offset = Math.min(extension, section * (treads - 1F));
+            section(nest, section, offset, treads, motion.width(), coverEnd, RAIL_HEIGHT * up, sink);
             coverEnd = offset + treads;
+        }
+        if (!motion.belly() && motion.sillGap() >= LIP_LEAST) {
+            lip(nest, Math.min(motion.sillGap(), LIP_LONGEST), motion.width(), up, sink);
+        }
+        if (motion.machinery()) {
+            AirstairMachinery.draw(motion, nest, pose.slid(), offset, treads, sink);
+        }
+    }
+
+    /**
+     * The bridge plate across the gap between the top tread and the floor's edge this far back from the door's face,
+     * hinged under the top tread's back edge: folded under the tread until the handrails rise, then swung down and up
+     * into the gap with them, so it lies level with the sill and the tread, a yellow edge along the sill. Opened this
+     * far (0 folded, 1 down), and split at each block's edge as the treads are.
+     */
+    private static void lip(Matrix4f nest, float gap, int width, float open, Sink sink) {
+        Matrix4f pose = new Matrix4f(nest)
+            .translate(0, LIP_HINGE_Y, 0)
+            .rotateX((float) -Math.PI * (1 - open))
+            .translate(0, -LIP_HINGE_Y, 0);
+        float edge = Math.min(NOSING_DEPTH, gap / 2);
+        for (int block = 0; block < width; block++) {
+            float left = Math.max(LIP_SIDE, block);
+            float right = Math.min(width - LIP_SIDE, block + 1);
+            sink.box(pose, new Vector3f(left, -TREAD_THICKNESS, edge - gap), new Vector3f(right, 0, 0), Part.TREAD);
+            sink.box(pose, new Vector3f(left, -TREAD_THICKNESS, -gap), new Vector3f(right, 0, edge - gap), Part.NOSING);
         }
     }
 
@@ -173,8 +227,11 @@ public final class AirstairFlight {
         }
     }
 
-    /** Where the folded flight is: slid, raised and tilted, by its pose's three amounts. */
-    private record Pose(float tilt, float out, float up) {
+    /**
+     * Where the folded flight is: slid, raised and tilted, by its pose's three amounts; and how far out it has slid
+     * alone, before the swing draws it back in, which the machinery's carriage follows.
+     */
+    private record Pose(float tilt, float out, float up, float slid) {
         Matrix4f matrix() {
             return new Matrix4f()
                 .translate(0, up, 1 + out)
@@ -200,7 +257,8 @@ public final class AirstairFlight {
         float swing = clamp((t - swingFrom) / (SWING - swingFrom));
         float lift = ease(clamp(swing / 0.6F));
         float tilt = ease(clamp((swing - 0.3F) / 0.7F));
-        return new Pose(SLOPE * (1 - tilt), clear * (1 - tilt) + stowed * (1 - slide), lowered * (1 - lift));
+        float slid = clear + stowed * (1 - slide);
+        return new Pose(SLOPE * (1 - tilt), slid - clear * tilt, lowered * (1 - lift), slid);
     }
 
     /**
@@ -329,7 +387,7 @@ public final class AirstairFlight {
         private static Bounds measure(int rise, int sections) {
             float[] reach = {Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE};
             Vector3f corner = new Vector3f();
-            Matrix4f nest = new Pose(SLOPE, 0, 0).matrix();
+            Matrix4f nest = new Pose(SLOPE, 0, 0, 0).matrix();
             int treads = sectionTreads(rise, sections);
             Sink measure = (pose, from, to, part) -> {
                 for (int i = 0; i < 8; i++) {

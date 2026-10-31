@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Boarding stairs as integral airstairs (see {@link AirstairFlight}), kept by a stairs button: a zeppelin's, the
@@ -165,7 +166,29 @@ final class BoardingAirstairs {
         if (bay == null) {
             return new AirstairFlight.Motion(lerped, length, rise, sections, width, 0, 1, hatchOpen, true);
         }
-        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false);
+        return new AirstairFlight.Motion(lerped, length, rise, sections, width, bay.hatchInset(), bay.mouth(), hatchOpen, false, sillGap(),
+            true);
+    }
+
+    /**
+     * How far the floor's edge at the head of the stairs stands back from the door's face, in blocks, for the bridge
+     * plate to span: her skin at her sill is cut to her curve, and where the cut leaves the outer part of the block
+     * open, the top tread would stand off her floor. Read from the sill's shape in the door's middle column, as the
+     * client has it; none where nothing stands there to bridge to.
+     */
+    private float sillGap() {
+        Level level = button.getLevel();
+        if (level == null) {
+            return 0;
+        }
+        BlockPos sill = button.getBlockPos().offset(head).relative(right, width / 2).below();
+        VoxelShape shape = level.getBlockState(sill).getShape(level, sill);
+        if (shape.isEmpty()) {
+            return 0;
+        }
+        Direction.Axis axis = out.getAxis();
+        double reach = out.getAxisDirection() == Direction.AxisDirection.POSITIVE ? shape.max(axis) : 1 - shape.min(axis);
+        return (float) (1 - reach);
     }
 
     /** Whether a block is one of the steps laid under the flight. */
