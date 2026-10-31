@@ -1,29 +1,37 @@
 package dev.aerolarge.block;
 
 import dev.aerolarge.airframe.CameraSpot;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
 /**
  * The buttons along the bottom left of the camera screens (see {@link CameraScreen}), one for each of its airframe's
  * outside cameras in a row, each a little airliner or zeppelin seen from the side with a dot where its camera is; the
- * one the display shows is lit. Touching one shows its camera. Laid out on the display's face, in blocks from its
- * bottom left corner: the server finds the button touched by the same layout its renderer draws them by.
+ * one the display shows is the one picked. Touching one shows its camera. They are a touch panel's tiles (see {@link
+ * TouchPanel}) on the display's face, in blocks from its bottom left corner, the cameras in their airframe's order: the
+ * server finds the button touched by the same layout its renderer draws them by, and the one looked at lights up as
+ * every touch panel's tiles do.
  */
 public final class CameraButtons {
     /** From the face's bottom left corner to the first button's, in blocks: past the bezel, and a margin inside it. */
-    public static final double INSET = 0.08;
-    /** Each button's size, in blocks, and the gap between two. */
-    public static final double WIDTH = 0.2;
-    public static final double HEIGHT = 0.09;
-    public static final double GAP = 0.02;
+    private static final double INSET = 0.08;
+    /** Each button's size, in blocks, and the gap between two, which a touch on picks no camera. */
+    private static final double WIDTH = 0.2;
+    private static final double HEIGHT = 0.09;
+    private static final double GAP = 0.02;
 
     private CameraButtons() {
     }
 
-    /** A camera's button's left edge, in blocks from the face's left edge, in the row of its airframe's cameras. */
-    public static double left(CameraSpot camera) {
-        return INSET + camera.alongside().indexOf(camera) * (WIDTH + GAP);
+    /** The buttons of an airframe with so many cameras, side by side from the left, the first camera's first. */
+    public static TouchPanel.Layout layout(int cameras) {
+        List<TouchPanel.Tile> buttons = new ArrayList<>();
+        for (int camera = 0; camera < cameras; camera++) {
+            double left = INSET + camera * (WIDTH + GAP);
+            buttons.add(new TouchPanel.Tile(left, INSET, left + WIDTH, INSET + HEIGHT));
+        }
+        return new TouchPanel.Layout(buttons);
     }
 
     /**
@@ -32,15 +40,7 @@ public final class CameraButtons {
      */
     @Nullable
     public static <T extends CameraSpot> T at(List<T> cameras, double across, double up) {
-        if (up < INSET || up > INSET + HEIGHT) {
-            return null;
-        }
-        for (T camera : cameras) {
-            double left = left(camera);
-            if (across >= left && across <= left + WIDTH) {
-                return camera;
-            }
-        }
-        return null;
+        int button = layout(cameras.size()).at(across, up);
+        return button < 0 ? null : cameras.get(button);
     }
 }

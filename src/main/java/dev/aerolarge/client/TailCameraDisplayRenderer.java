@@ -8,6 +8,7 @@ import dev.aerolarge.block.CameraButtons;
 import dev.aerolarge.block.CameraScreen;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
+import dev.aerolarge.block.TouchPanel;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -37,8 +38,10 @@ import org.joml.Matrix4f;
  * bars over a dark band, its airliner or zeppelin seen from behind in the middle, and a word under them on why: it is
  * not assembled, or no picture is coming. Either way, along the bottom left, the buttons that pick among its airframe's
  * cameras (see {@link CameraButtons}): each the airframe seen from its right side, nose to the right, with a dot where
- * its camera is, the one shown lit. The camera panel of the airliner's curved row of screens draws its face the same
- * way (see {@link #drawFace}).
+ * its camera is. They light up as every touch panel's tiles do (see {@link TouchPanelArt}): the one shown picked and
+ * lit, the others dimmed, and the one the crosshair rests on brightened. The camera panel of the airliner's curved row
+ * of screens draws its face the same way (see {@link #drawFace}), and the keys on its slope that pick the camera with
+ * the same button (see {@link #cameraButton}).
  */
 public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCameraDisplayBlockEntity> {
     /** The bezel round the picture, in blocks. */
@@ -68,9 +71,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final double CAMERA_LENS_LENGTH = 0.02;
     private static final double CAMERA_LENS_NARROW = 0.008;
     private static final double CAMERA_LENS_WIDE = 0.016;
-    /** The camera buttons: the airframe's margin inside each, and the rim round the lit one, in blocks. */
+    /** The camera buttons: the airframe's margin inside each, in blocks. */
     private static final double BUTTON_PAD = 0.008;
-    private static final double BUTTON_RIM = 0.006;
     /**
      * A camera's mark on its button: the radius of the big dot where it is, as a share of the button's height, and of
      * the dark ring round it that sets it off the airframe, as a share of the dot's.
@@ -97,6 +99,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     /** Lifts each layer off the one below it, and the text off them all. */
     private static final float LAYER = 0.001F;
     private static final float TEXT_LIFT = 0.004F;
+    /** How far over a camera button's tile its airframe is drawn: clear of the layers the tile itself is drawn in. */
+    private static final float BUTTON_ART = 3 * LAYER;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 220F;
     private static final String KEY = "screen.aerolarge.tail_camera_display.";
@@ -107,7 +111,8 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
     private static final int LABEL_BACKING = 0x90000000;
     private static final int RECORDING = 0xFFE03030;
     private static final int WHITE = 0xFFF2F6FB;
-    private static final int BUTTON_LIT = 0xE0000000;
+    /** A camera's button, in the flight deck's keys' blue-grey, and its airframe while neither shown nor looked at. */
+    private static final int BUTTON = AutopilotScreenRenderer.BUTTON;
     private static final int AIRFRAME_DIM = 0xFF8A949E;
     /** The test card's bars, left to right: grey, yellow, cyan, green, magenta, red and blue. */
     private static final int[] COLOUR_BARS = {0xFFC0C0C0, 0xFFC0C000, 0xFF00C0C0, 0xFF00C000, 0xFFC000C0, 0xFFC00000, 0xFF0000C0};
@@ -151,17 +156,17 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         BlockState state = screen.getBlockState();
         pose.pushPose();
         WideScreenFace.onto(pose, state);
-        drawFace(screen, pose, buffers, WideScreenFace.width(state), WideScreenFace.height(state), true);
+        drawFace(screen, pose, buffers, WideScreenFace.width(state), WideScreenFace.height(state), true, TouchPanelArt.lookedAt(screen));
         pose.popPose();
     }
 
     /**
      * Draws a camera screen's face, this wide and tall, from the pose's origin at its bottom left corner, facing out
      * along its z: the picture or the test card inside the bezel, and, where they are on the screen, the camera
-     * buttons along the bottom left.
+     * buttons along the bottom left, the player looking at one of them (by its place in the row, -1 for none).
      */
     static <T extends BlockEntity & CameraScreen> void drawFace(T screen, PoseStack pose, MultiBufferSource buffers, double width, double height,
-                                                                boolean buttons) {
+                                                                boolean buttons, int looked) {
         ResourceLocation picture = TailCameraFeed.show(screen);
         Matrix4f matrix = pose.last().pose();
         ScreenDrawing.rect(ScreenDrawing.shapes(buffers), matrix, 0, 0, width, height, 0, CASING);
@@ -173,7 +178,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
             double labelX = cameraLabel(shapes, matrix, height, font.width(label) * TEXT, screen.camera().colour(), screen.getLevel());
             if (buttons) {
-                cameraButtons(shapes, matrix, screen.camera());
+                cameraButtons(shapes, matrix, screen.camera(), looked);
             }
             ScreenDrawing.text(font, pose, buffers, label, labelX, height - BEZEL - LABEL_MARGIN - LABEL_HEIGHT / 2, TEXT_LIFT, TEXT, WHITE,
                 ScreenDrawing.Align.LEFT);
@@ -181,7 +186,7 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
             VertexConsumer shapes = ScreenDrawing.shapes(buffers);
             testCard(shapes, matrix, width, height, screen.camera().craft());
             if (buttons) {
-                cameraButtons(shapes, matrix, screen.camera());
+                cameraButtons(shapes, matrix, screen.camera(), looked);
             }
             // The picture and the text last: each takes its own buffer, which ends the one the shapes went into.
             boolean standby = SableClient.ride(screen) == null;
@@ -247,41 +252,44 @@ public class TailCameraDisplayRenderer implements BlockEntityRenderer<TailCamera
         return name;
     }
 
-    /** The camera buttons along the bottom left, one for each of the shown camera's airframe's cameras, its own lit. */
-    private static void cameraButtons(VertexConsumer shapes, Matrix4f matrix, CameraSpot shown) {
-        for (CameraSpot camera : shown.alongside()) {
-            double left = CameraButtons.left(camera);
-            cameraButton(shapes, matrix, camera, camera == shown, left, CameraButtons.INSET, left + CameraButtons.WIDTH,
-                CameraButtons.INSET + CameraButtons.HEIGHT, 0);
+    /**
+     * The camera buttons along the bottom left, one for each of the shown camera's airframe's cameras (see {@link
+     * CameraButtons}): the one shown picked and lit, the others dimmed, and the one looked at (by its place, -1 for
+     * none) brightened, over the picture.
+     */
+    private static void cameraButtons(VertexConsumer shapes, Matrix4f matrix, CameraSpot shown, int looked) {
+        List<CameraSpot> cameras = shown.alongside();
+        TouchPanel.Layout buttons = CameraButtons.layout(cameras.size());
+        int picked = cameras.indexOf(shown);
+        for (int button = 0; button < cameras.size(); button++) {
+            cameraButton(shapes, matrix, cameras.get(button), buttons.get(button), TouchPanelArt.Look.of(button, looked, picked, button == picked),
+                2 * LAYER);
         }
     }
 
     /**
-     * A camera's button in a box: its airliner or zeppelin seen from the right side on a dark backing, with a big dot
-     * in the camera's colour where it is (see {@link #markUp}), kept inside the box; lit, the airframe white and a
-     * white rim round it all. Drawn this far off the face, clear of whatever the box is already drawn on.
+     * A camera's button on its tile, drawn as every touch panel's tiles are (see {@link TouchPanelArt}) at the layer
+     * given: on it its airliner or zeppelin seen from the right side, white while lit or looked at and grey otherwise,
+     * with a big dot in the camera's colour where it is (see {@link #markUp}), kept inside the tile.
      */
-    static void cameraButton(VertexConsumer shapes, Matrix4f matrix, CameraSpot camera, boolean lit, double x0, double y0, double x1, double y1,
-                             float lift) {
-        if (lit) {
-            ScreenDrawing.rect(shapes, matrix, x0 - BUTTON_RIM, y0 - BUTTON_RIM, x1 + BUTTON_RIM, y1 + BUTTON_RIM, lift + 2 * LAYER, WHITE);
-        }
-        ScreenDrawing.rect(shapes, matrix, x0, y0, x1, y1, lift + 3 * LAYER, lit ? BUTTON_LIT : LABEL_BACKING);
+    static void cameraButton(VertexConsumer shapes, Matrix4f matrix, CameraSpot camera, TouchPanel.Tile tile, TouchPanelArt.Look look, float z) {
+        TouchPanelArt.tile(shapes, matrix, tile, BUTTON, look, z);
+        float art = z + BUTTON_ART;
         Outline outline = OUTLINES.get(camera.craft());
-        SideView view = SideView.in(outline, x0, y0, x1, y1);
-        int colour = lit ? WHITE : AIRFRAME_DIM;
+        SideView view = SideView.in(outline, tile.left(), tile.bottom(), tile.right(), tile.top());
+        int colour = look.lit() || look.looked() ? WHITE : AIRFRAME_DIM;
         for (double[][] quad : outline.quads()) {
             // Back to front: the nose to the right turns the quads over, and they keep facing the viewer this way.
             for (int corner = quad.length - 1; corner >= 0; corner--) {
-                ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), lift + 4 * LAYER, colour);
+                ScreenDrawing.vertex(shapes, matrix, view.x(quad[corner][0]), view.y(quad[corner][1]), art, colour);
             }
         }
-        double dot = (y1 - y0) * CAMERA_DOT;
+        double dot = tile.height() * CAMERA_DOT;
         double ring = dot * DOT_RING;
-        double x = Math.max(x0 + ring, Math.min(x1 - ring, view.x(camera.back())));
-        double y = Math.max(y0 + ring, Math.min(y1 - ring, view.y(markUp(camera))));
-        ScreenDrawing.disc(shapes, matrix, x, y, ring, DOT_PIECES, lift + 5 * LAYER, DOT_RING_COLOUR);
-        ScreenDrawing.disc(shapes, matrix, x, y, dot, DOT_PIECES, lift + 6 * LAYER, camera.colour());
+        double x = Math.max(tile.left() + ring, Math.min(tile.right() - ring, view.x(camera.back())));
+        double y = Math.max(tile.bottom() + ring, Math.min(tile.top() - ring, view.y(markUp(camera))));
+        ScreenDrawing.disc(shapes, matrix, x, y, ring, DOT_PIECES, art + LAYER, DOT_RING_COLOUR);
+        ScreenDrawing.disc(shapes, matrix, x, y, dot, DOT_PIECES, art + 2 * LAYER, camera.colour());
     }
 
     /**

@@ -13,23 +13,31 @@ import javax.annotation.Nullable;
 /**
  * The touch keys of the flight deck's curved row of screens (see {@link CockpitDisplayBlockEntity}): the tiles of the
  * middle screen's systems page, and the keys of the sloped touch panel under the screens. Where each is and what it
- * works, in blocks from the bottom left corner of the screen's face, or of the slope as the pilots see it (its front
- * edge along the bottom), so the server finds the key touched by the same layout the renderer draws.
+ * works, a touch panel's layout (see {@link TouchPanel}) in blocks from the bottom left corner of the screen's face, or
+ * of the slope as the pilots see it (its front edge along the bottom), so the server finds the key touched by the same
+ * layout the renderer draws, and the key under the pointer lights up as every touch panel's tiles do. The gaps between
+ * keys are no key at all.
  */
 public final class CockpitKeys {
     /** The margin round the keys and the gap between two, in blocks. */
     private static final double MARGIN = 0.05;
     private static final double GAP = 0.04;
-    /** The systems page's tiles: across, and down. */
+    /** How many of the systems page's tiles stand side by side in a row: three, in two rows. */
     private static final int TILE_COLUMNS = 3;
-    private static final int TILE_ROWS = 2;
     /**
      * The systems page's tiles, top row first, left to right: the everyday switches along the top, where a pilot's
      * look rests, and the ones with something to them, the jump lights, the laser and the drop, below.
      */
-    private static final Function[] TILES = {
-        Function.CABIN_LIGHTS, Function.SEATBELTS, Function.SHADES, Function.JUMP_LIGHTS, Function.LASER, Function.DROP
-    };
+    private static final List<Function> TILES = List.of(
+        Function.CABIN_LIGHTS, Function.SEATBELTS, Function.SHADES, Function.JUMP_LIGHTS, Function.LASER, Function.DROP);
+    /**
+     * The cameras' keys, one for each outside camera, two by two, top row first: wide and low, the shape of the
+     * airliner seen from its side that each key shows, which a row of four across the slope would shrink to a sliver.
+     */
+    private static final List<Function> CAMERAS = List.of(Function.TAIL_CAMERA, Function.WING_CAMERA, Function.NOSE_CAMERA, Function.FRONT_CAMERA);
+    private static final int CAMERA_COLUMNS = 2;
+    /** The parking brake and the landing gear, side by side. */
+    private static final List<Function> BRAKE_AND_GEAR = List.of(Function.BRAKE, Function.GEAR);
     /**
      * The autopilot's desk, in blocks: the on/off key's width, the speedometer's and the sky's, the steering taking the
      * rest between them; the row of turns along the bottom of the steering, how tall it is, and the gap between it and
@@ -118,8 +126,32 @@ public final class CockpitKeys {
         }
     }
 
-    /** A key: what it works, and where it is. */
-    public record Key(Function function, Box box) {
+    /** A key: what it works, and its tile on the panel's face. */
+    public record Key(Function function, TouchPanel.Tile tile) {
+        /** Its tile as a box, which its drawings and the reckoning of where along it a touch lands are fitted to. */
+        public Box box() {
+            return new Box(tile.left(), tile.bottom(), tile.right(), tile.top());
+        }
+    }
+
+    /** A panel's keys in order, and their tiles as a touch panel's layout, by which a touch finds its key. */
+    public record Keys(List<Key> list, TouchPanel.Layout layout) {
+        public static final Keys NONE = of(List.of());
+
+        public Keys {
+            list = List.copyOf(list);
+        }
+
+        public static Keys of(List<Key> keys) {
+            return new Keys(keys, new TouchPanel.Layout(keys.stream().map(Key::tile).toList()));
+        }
+
+        /** The key at a place on the face; null for none. */
+        @Nullable
+        public Key at(double across, double up) {
+            int key = layout.at(across, up);
+            return key < 0 ? null : list.get(key);
+        }
     }
 
     /**
@@ -266,51 +298,37 @@ public final class CockpitKeys {
      * The systems page's tiles on a face this wide and tall, three across and two down; a tile only for a control the
      * panel is linked to, its place left empty otherwise.
      */
-    public static List<Key> systems(double width, double height, Set<Link> linked) {
-        double tileWidth = (width - 2 * MARGIN - (TILE_COLUMNS - 1) * GAP) / TILE_COLUMNS;
-        double tileHeight = (height - 2 * MARGIN - (TILE_ROWS - 1) * GAP) / TILE_ROWS;
-        List<Key> keys = new ArrayList<>();
-        for (int i = 0; i < TILES.length; i++) {
-            if (!linked.contains(TILES[i].link)) {
-                continue;
-            }
-            double x0 = MARGIN + i % TILE_COLUMNS * (tileWidth + GAP);
-            double y1 = height - MARGIN - i / TILE_COLUMNS * (tileHeight + GAP);
-            keys.add(new Key(TILES[i], new Box(x0, y1 - tileHeight, x0 + tileWidth, y1)));
-        }
-        return keys;
+    public static Keys systems(double width, double height, Set<Link> linked) {
+        List<Key> tiles = grid(TILES, TILE_COLUMNS, new TouchPanel.Tile(MARGIN, MARGIN, width - MARGIN, height - MARGIN));
+        return Keys.of(tiles.stream().filter(tile -> linked.contains(tile.function().link)).toList());
     }
 
     /**
      * A sloped panel's keys, on a slope this long from its front edge up to the screen over it, between these two
      * places across it (inside its mitred ends).
      */
-    public static List<Key> desk(Desk desk, double left, double right, double length) {
-        double width = right - left;
+    public static Keys desk(Desk desk, double left, double right, double length) {
+        TouchPanel.Tile area = new TouchPanel.Tile(left + MARGIN, MARGIN, right - MARGIN, length - MARGIN);
         return switch (desk) {
-            case NONE -> List.of();
-            case TILLER -> List.of(new Key(Function.TILLER, new Box(left + MARGIN, MARGIN, right - MARGIN, length - MARGIN)));
-            case GROUND -> List.of(
-                new Key(Function.BRAKE, new Box(left + MARGIN, MARGIN, left + width / 2 - GAP / 2, length - MARGIN)),
-                new Key(Function.GEAR, new Box(left + width / 2 + GAP / 2, MARGIN, right - MARGIN, length - MARGIN)));
-            case AUTOPILOT -> autopilot(left, width, length);
-            case CAMERA -> cameras(left, width, length);
+            case NONE -> Keys.NONE;
+            case TILLER -> Keys.of(grid(List.of(Function.TILLER), 1, area));
+            case GROUND -> Keys.of(grid(BRAKE_AND_GEAR, BRAKE_AND_GEAR.size(), area));
+            case AUTOPILOT -> Keys.of(autopilot(left, right - left, length));
+            case CAMERA -> Keys.of(grid(CAMERAS, CAMERA_COLUMNS, area));
         };
     }
 
     /**
-     * The cameras' keys, one for each outside camera, two by two, top row first: wide and low, the shape of the
-     * airliner seen from its side that each key shows, which a row of four across the slope would shrink to a sliver.
+     * Keys for these, in order, in rows of so many over an area of the face, the top row first and each from the left,
+     * a gap between two: the tiles of a touch panel's grid over the area grown by half a gap, each shrunk by as much.
      */
-    private static List<Key> cameras(double left, double width, double length) {
-        Function[] cameras = {Function.TAIL_CAMERA, Function.WING_CAMERA, Function.NOSE_CAMERA, Function.FRONT_CAMERA};
-        double keyWidth = (width - 2 * MARGIN - GAP) / 2;
-        double keyHeight = (length - 2 * MARGIN - GAP) / 2;
+    private static List<Key> grid(List<Function> functions, int columns, TouchPanel.Tile area) {
+        double half = GAP / 2;
+        TouchPanel.Tile grown = new TouchPanel.Tile(area.left() - half, area.bottom() - half, area.right() + half, area.top() + half);
+        TouchPanel.Layout cells = TouchPanel.Layout.grid(functions.size(), columns, grown, true);
         List<Key> keys = new ArrayList<>();
-        for (int i = 0; i < cameras.length; i++) {
-            double x0 = left + MARGIN + i % 2 * (keyWidth + GAP);
-            double y1 = length - MARGIN - i / 2 * (keyHeight + GAP);
-            keys.add(new Key(cameras[i], new Box(x0, y1 - keyHeight, x0 + keyWidth, y1)));
+        for (int key = 0; key < functions.size(); key++) {
+            keys.add(new Key(functions.get(key), cells.get(key).inset(half)));
         }
         return keys;
     }
@@ -328,19 +346,15 @@ public final class CockpitKeys {
         double sky = SKY_WIDTH * shrink;
         double x = left + MARGIN;
         List<Key> keys = new ArrayList<>();
-        keys.add(new Key(Function.ENGAGE, new Box(x, y0, x + engage, y1)));
+        keys.add(new Key(Function.ENGAGE, new TouchPanel.Tile(x, y0, x + engage, y1)));
         x += engage + GAP;
-        keys.add(new Key(Function.SPEED, new Box(x, y0, x + speedometer, y1)));
+        keys.add(new Key(Function.SPEED, new TouchPanel.Tile(x, y0, x + speedometer, y1)));
         x += speedometer + GAP;
         double steering = left + width - MARGIN - sky - GAP - x;
-        keys.add(new Key(Function.HEADING, new Box(x, y0 + TURN_ROW + TURN_GUTTER, x + steering, y1)));
-        double turnWidth = (steering - (TURNS.size() - 1) * GAP) / TURNS.size();
-        for (int i = 0; i < TURNS.size(); i++) {
-            double x0 = x + i * (turnWidth + GAP);
-            keys.add(new Key(TURNS.get(i), new Box(x0, y0, x0 + turnWidth, y0 + TURN_ROW)));
-        }
+        keys.add(new Key(Function.HEADING, new TouchPanel.Tile(x, y0 + TURN_ROW + TURN_GUTTER, x + steering, y1)));
+        keys.addAll(grid(TURNS, TURNS.size(), new TouchPanel.Tile(x, y0, x + steering, y0 + TURN_ROW)));
         x += steering + GAP;
-        keys.add(new Key(Function.ALTITUDE, new Box(x, y0, x + sky, y1)));
+        keys.add(new Key(Function.ALTITUDE, new TouchPanel.Tile(x, y0, x + sky, y1)));
         return keys;
     }
 
@@ -358,16 +372,5 @@ public final class CockpitKeys {
             case TILLER -> Taxi.on(key.box()).steer(across, up);
             default -> 0;
         };
-    }
-
-    /** The key at a place, among keys; null for none. */
-    @Nullable
-    public static Key at(List<Key> keys, double across, double up) {
-        for (Key key : keys) {
-            if (key.box().contains(across, up)) {
-                return key;
-            }
-        }
-        return null;
     }
 }

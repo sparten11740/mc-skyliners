@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.CockpitDisplayBlockEntity.Link;
+import dev.aerolarge.block.CockpitKeys;
 import dev.aerolarge.block.CockpitKeys.Function;
 import dev.aerolarge.block.CockpitKeys.Key;
 import dev.aerolarge.block.CockpitKeys.Taxi;
@@ -23,7 +24,8 @@ import org.joml.Matrix4f;
  * grass, the airliner's white nose at the bottom with its nose wheel's black tyre turned the way it is set, and five
  * yellow taxi lines fanning out from the wheel, a hard curl and a gentle bend either way and straight on between them.
  * The line set is bright and solid, the others faint and dashed; touched, a line is set at once. Pointed at, a line
- * brightens before it is touched. While the airliner taxis, white dashes run along the line it follows at its speed,
+ * brightens before it is touched, and the tarmac with it, as every touch panel's tiles do (see {@link TouchPanelArt}).
+ * While the airliner taxis, white dashes run along the line it follows at its speed,
  * and with the wheel turned the faint straight line pulses, so it is not left turned by mistake. A green dot at the
  * foot of the straight line shows the wheel is straight. Nothing here is the autopilot's cyan or magenta: this is the
  * ground.
@@ -32,10 +34,11 @@ final class TillerArt {
     /** Each layer lifted off the one below, in blocks. */
     private static final float LAYER = 0.002F;
     /**
-     * The layers it is drawn in, one over the other: the key's face; the grass; the faint lines; the line set; the
-     * line pointed at; the dashes running along it; the nose; the tyre and the dot at the straight line's foot.
+     * The layers it is drawn in, one over the other: the key's tile, the tarmac, as every touch panel's is (see {@link
+     * TouchPanelArt}); the grass; the faint lines; the line set; the line pointed at; the dashes running along it; the
+     * nose; the tyre and the dot at the straight line's foot.
      */
-    private static final float FACE = 2 * LAYER;
+    private static final float TARMAC_LAYER = LAYER;
     private static final float GRASS_LAYER = 3 * LAYER;
     private static final float FAINT = 4 * LAYER;
     private static final float SET = 5 * LAYER;
@@ -43,8 +46,7 @@ final class TillerArt {
     private static final float DASHES = 7 * LAYER;
     private static final float NOSE_LAYER = 8 * LAYER;
     private static final float TYRE_LAYER = 9 * LAYER;
-    /** The key's rim, and the grass along either end of it, in blocks. */
-    private static final double RIM = 0.012;
+    /** The grass along either end of the key, in blocks. */
     private static final double GRASS_WIDTH = 0.05;
     /**
      * The taxi lines, in blocks: how wide the one set, a faint one and the faint straight line are; and the faint ones'
@@ -85,7 +87,6 @@ final class TillerArt {
     /** Segments a round end is drawn with. */
     private static final int ROUND = 16;
 
-    private static final int EDGE = AutopilotScreenRenderer.BUTTON_EDGE;
     private static final int TARMAC = 0xFF2B2F35;
     private static final int GRASS = 0xFF3F7D3A;
     private static final int YELLOW = 0xFFF2C830;
@@ -102,21 +103,22 @@ final class TillerArt {
     /** The tiller's key on the slope, from its front left corner. */
     static void draw(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, Matrix4f matrix, float partialTick,
                      @Nullable CockpitDisplayRenderer.Pointer pointer) {
-        Key key = display.slopeKeys().stream().filter(each -> each.function() == Function.TILLER).findFirst().orElse(null);
+        CockpitKeys.Keys keys = display.slopeKeys();
+        Key key = keys.list().stream().filter(each -> each.function() == Function.TILLER).findFirst().orElse(null);
         if (key == null) {
             return;
         }
         Box box = key.box();
         Taxi taxi = Taxi.on(box);
         int steer = steer(display, level);
-        Integer pointed = pointer != null && pointer.onSlope() && box.contains(pointer.across(), pointer.up()) ? taxi.steer(pointer.across(), pointer.up()) : null;
+        boolean looked = key.equals(CockpitDisplayRenderer.Pointer.key(pointer, true, keys));
+        Integer pointed = looked ? taxi.steer(pointer.across(), pointer.up()) : null;
         SableClient.Attitude attitude = SableClient.attitude(display, display.facing().getOpposite(), partialTick);
         double speed = attitude == null ? 0 : attitude.airspeed();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-        ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x1(), box.y1(), LAYER, EDGE);
-        ScreenDrawing.rect(shapes, matrix, box.x0() + RIM, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, FACE, TARMAC);
-        ScreenDrawing.rect(shapes, matrix, box.x0() + RIM, box.y0() + RIM, box.x0() + RIM + GRASS_WIDTH, box.y1() - RIM, GRASS_LAYER, GRASS);
-        ScreenDrawing.rect(shapes, matrix, box.x1() - RIM - GRASS_WIDTH, box.y0() + RIM, box.x1() - RIM, box.y1() - RIM, GRASS_LAYER, GRASS);
+        TouchPanelArt.tile(shapes, matrix, key.tile(), TARMAC, new TouchPanelArt.Look(looked, false, true), TARMAC_LAYER);
+        ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x0() + GRASS_WIDTH, box.y1(), GRASS_LAYER, GRASS);
+        ScreenDrawing.rect(shapes, matrix, box.x1() - GRASS_WIDTH, box.y0(), box.x1(), box.y1(), GRASS_LAYER, GRASS);
         boolean rolling = Math.abs(speed) > ROLLING && Math.abs(speed) < TAXI_FASTEST;
         for (int each : TillerBlock.STEER.getPossibleValues()) {
             faint(shapes, matrix, taxi, each, steer, rolling);
@@ -198,7 +200,7 @@ final class TillerArt {
     private static void nose(VertexConsumer shapes, Matrix4f matrix, Taxi taxi, Box box) {
         double tipY = box.y0() + NOSE_TIP;
         double roundY = tipY - NOSE_HALF;
-        ScreenDrawing.rect(shapes, matrix, taxi.x() - NOSE_HALF, box.y0() + RIM, taxi.x() + NOSE_HALF, roundY, NOSE_LAYER, NOSE);
+        ScreenDrawing.rect(shapes, matrix, taxi.x() - NOSE_HALF, box.y0(), taxi.x() + NOSE_HALF, roundY, NOSE_LAYER, NOSE);
         for (int k = 0; k < ROUND; k++) {
             double a0 = Math.PI * k / ROUND;
             double a1 = Math.PI * (k + 1) / ROUND;

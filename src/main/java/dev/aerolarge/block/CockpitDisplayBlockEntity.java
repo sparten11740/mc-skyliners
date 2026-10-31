@@ -5,6 +5,7 @@ import dev.aerolarge.airframe.OutsideCamera;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.CockpitKeys.Function;
 import dev.aerolarge.block.CockpitKeys.Key;
+import dev.aerolarge.block.CockpitKeys.Keys;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumMap;
@@ -178,10 +179,10 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         return level != null && at != null && level.getBlockEntity(at) instanceof AutopilotBlockEntity found ? found : null;
     }
 
-    /** The systems page's tiles on the screen, for drawing them; none unless it shows that page. */
-    public List<Key> screenKeys() {
+    /** The systems page's tiles on the screen, for touching and drawing them; none unless it shows that page. */
+    public Keys screenKeys() {
         boolean systems = panel != null && shows() == CockpitDisplayBlock.Shows.SYSTEMS;
-        return systems ? CockpitKeys.systems(panel.width(), panel.height(), links.keySet()) : List.of();
+        return systems ? CockpitKeys.systems(panel.width(), panel.height(), links.keySet()) : Keys.NONE;
     }
 
     /** Whether the cameras' buttons are on the slope under the screen, rather than along the bottom of its picture. */
@@ -189,9 +190,9 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
         return desk == Desk.CAMERA;
     }
 
-    /** The keys on the slope under the screen, between its mitred ends, for drawing them. */
-    public List<Key> slopeKeys() {
-        return panel == null ? List.of() : CockpitKeys.desk(desk, panel.leftCut(), panel.width() - panel.rightCut(), panel.slope());
+    /** The keys on the slope under the screen, between its mitred ends, for touching and drawing them. */
+    public Keys slopeKeys() {
+        return panel == null ? Keys.NONE : CockpitKeys.desk(desk, panel.leftCut(), panel.width() - panel.rightCut(), panel.slope());
     }
 
     @Override
@@ -386,12 +387,12 @@ public class CockpitDisplayBlockEntity extends BlockEntity implements CameraScre
             return false;
         }
         if (touch.onSlope()) {
-            return work(level, CockpitKeys.at(slopeKeys(), touch.across(), touch.up()), touch, player);
+            return work(level, slopeKeys().at(touch.across(), touch.up()), touch, player);
         }
         return switch (shows()) {
             case CAMERA -> !cameraKeysOnSlope() && look(CameraButtons.at(List.of(OutsideCamera.values()), touch.across(), touch.up()));
             case MAP -> zoom();
-            case SYSTEMS -> work(level, CockpitKeys.at(screenKeys(), touch.across(), touch.up()), touch, player);
+            case SYSTEMS -> work(level, screenKeys().at(touch.across(), touch.up()), touch, player);
             case FLIGHT -> false;
         };
     }

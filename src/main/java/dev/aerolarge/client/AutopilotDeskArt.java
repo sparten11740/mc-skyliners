@@ -17,9 +17,10 @@ import dev.aerolarge.block.CockpitKeys.Sky;
 import dev.aerolarge.client.PanelArt.Icon;
 import dev.aerolarge.client.PanelArt.Pictures;
 import java.util.EnumMap;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -39,17 +40,20 @@ import org.joml.Matrix4f;
  * the nose, over the row of turns, like road signs, the one flown lit. And the sky seen from the side over the ground,
  * the airliner in green at the height set and faintly at the height now, a dotted climb or descent between them.
  * Pointed at, the speedometer, the fan and the sky show a ghost of what a touch there would set, before it is touched.
- * Small windows give the numbers, for those who read them. The settings screen draws its controls the same way, with
- * the same scales (see {@link AutopilotSettingsScreen}).
+ * Small windows give the numbers, for those who read them. Each control is a touch panel's tile (see {@link
+ * TouchPanelArt}): the one pointed at brightens, the on/off key while the autopilot flies and the turn flown are
+ * picked, and the rest are dimmed while the autopilot is off, when touching them sets nothing. The settings screen
+ * draws its controls the same way, with the same scales (see {@link AutopilotSettingsScreen}).
  */
 final class AutopilotDeskArt {
     /** Each layer lifted off the one below, in blocks. */
     private static final float LAYER = 0.002F;
     /**
-     * The layers a control is drawn in, one over the other: its key's face; the glass of its dial, fan or sky; its
-     * scale; its marks; the lines over them; a number's window; the bugs; their ghosts; the pictures; the numbers.
+     * The layers a control is drawn in, one over the other: its key's tile, as every touch panel's is (see {@link
+     * TouchPanelArt}); the glass of its dial, fan or sky; its scale; its marks; the lines over them; a number's window;
+     * the bugs; their ghosts; the pictures; the numbers.
      */
-    private static final float FACE = 2 * LAYER;
+    private static final float KEY_LAYER = LAYER;
     private static final float GLASS_LAYER = 3 * LAYER;
     private static final float SCALE = 4 * LAYER;
     private static final float MARKS = 5 * LAYER;
@@ -59,13 +63,14 @@ final class AutopilotDeskArt {
     private static final float GHOSTS = 10 * LAYER;
     private static final float PICTURES = 11 * LAYER;
     private static final float NUMBERS = 14 * LAYER;
-    /** A key's rim, and a lit key's, in blocks. */
-    private static final double RIM = 0.012;
-    private static final double LIT_RIM = 0.02;
     /** How much of its colour a lit key's face takes on. */
     private static final float LIT_TINT = 0.25F;
-    /** How long the on/off key takes to pulse once while the autopilot is off, in milliseconds. */
+    /**
+     * How long the on/off key takes to pulse once while the autopilot is off, in milliseconds, and how much of the
+     * green its face takes on at the height of a pulse.
+     */
     private static final float PULSE_PERIOD = 1400;
+    private static final float PULSE_TINT = 0.35F;
     /** Segments a full circle is drawn with, and pieces a curved path is. */
     private static final int ROUND = 48;
     private static final int PATH_PIECES = 12;
@@ -178,7 +183,6 @@ final class AutopilotDeskArt {
     private static final double DOT_WIDTH = 0.006;
 
     private static final int KEY = AutopilotScreenRenderer.BUTTON;
-    private static final int EDGE = AutopilotScreenRenderer.BUTTON_EDGE;
     private static final int GLASS = AutopilotScreenRenderer.GLASS;
     private static final int WHITE = AutopilotScreenRenderer.WHITE;
     private static final int GREY = AutopilotScreenRenderer.GREY;
@@ -211,17 +215,28 @@ final class AutopilotDeskArt {
     private static final Icon AIRLINER = Pictures.AIRLINER.fromAbove();
     private static final Icon AIRLINER_SIDE = Pictures.AIRLINER.fromTheSide();
     private static final Icon PIN = Icon.of("autopilot/destination");
+    /** The controls a touch sets by where on them it lands: the speedometer, the steering fan and the sky. */
+    private static final Set<Function> SET_ALONG = EnumSet.of(Function.SPEED, Function.HEADING, Function.ALTITUDE);
 
-    /** The desk's controls, by what they work. */
-    private record Desk(Map<Function, Box> boxes) {
-        static Desk of(List<Key> keys) {
-            Map<Function, Box> boxes = new EnumMap<>(Function.class);
-            keys.forEach(key -> boxes.put(key.function(), key.box()));
-            return new Desk(boxes);
+    /** The desk's controls, by what they work, and the one the pointer rests on, if it rests on one. */
+    private record Desk(Map<Function, Key> keys, @Nullable Function looked) {
+        static Desk of(CockpitKeys.Keys keys, @Nullable CockpitDisplayRenderer.Pointer pointer) {
+            Map<Function, Key> controls = new EnumMap<>(Function.class);
+            keys.list().forEach(key -> controls.put(key.function(), key));
+            Key looked = CockpitDisplayRenderer.Pointer.key(pointer, true, keys);
+            return new Desk(controls, looked == null ? null : looked.function());
         }
 
         Box at(Function function) {
-            return boxes.get(function);
+            return keys.get(function).box();
+        }
+
+        /**
+         * A control's key on its tile, as every touch panel's are (see {@link TouchPanelArt}), in a colour: brightened
+         * while the pointer rests on it, picked while what it sets is on, and dimmed while touching it does nothing.
+         */
+        void key(VertexConsumer shapes, Matrix4f matrix, Function function, int colour, boolean picked, boolean works) {
+            TouchPanelArt.tile(shapes, matrix, keys.get(function).tile(), colour, new TouchPanelArt.Look(function == looked, picked, works), KEY_LAYER);
         }
 
         /**
@@ -229,9 +244,9 @@ final class AutopilotDeskArt {
          * and until then has no keys at all.
          */
         boolean complete() {
-            boolean controls = boxes.containsKey(Function.ENGAGE) && boxes.containsKey(Function.SPEED) && boxes.containsKey(Function.HEADING)
-                && boxes.containsKey(Function.ALTITUDE);
-            return controls && boxes.keySet().containsAll(CockpitKeys.TURNS);
+            boolean controls = keys.containsKey(Function.ENGAGE) && keys.containsKey(Function.SPEED) && keys.containsKey(Function.HEADING)
+                && keys.containsKey(Function.ALTITUDE);
+            return controls && keys.keySet().containsAll(CockpitKeys.TURNS);
         }
     }
 
@@ -283,6 +298,14 @@ final class AutopilotDeskArt {
         boolean flies(Function turn) {
             return on && turn.button != null && turn.button.flies(lateral, circle);
         }
+
+        /**
+         * Whether a touch on the speedometer, the steering or the sky sets anything: only while the autopilot flies
+         * an airliner that is assembled (see {@link AutopilotBlockEntity#press}); otherwise it thuds.
+         */
+        boolean settable() {
+            return on && assembled();
+        }
     }
 
     /**
@@ -293,22 +316,17 @@ final class AutopilotDeskArt {
     private record Ghost(Function function, double value) {
         @Nullable
         static Ghost at(Desk desk, Flight flight, @Nullable CockpitDisplayRenderer.Pointer pointer) {
-            if (pointer == null || !pointer.onSlope() || !flight.on() || !flight.assembled()) {
+            Function looked = desk.looked();
+            if (pointer == null || !flight.settable() || !SET_ALONG.contains(looked)) {
                 return null;
             }
-            for (Function function : new Function[]{Function.SPEED, Function.HEADING, Function.ALTITUDE}) {
-                Box box = desk.at(function);
-                if (box.contains(pointer.across(), pointer.up())) {
-                    return new Ghost(function, value(function, box, flight, pointer));
-                }
-            }
-            return null;
+            return new Ghost(looked, value(desk.keys().get(looked), flight, pointer));
         }
 
         /** What a touch at the pointer on a control would set, by the same reckoning as the server's. */
-        private static double value(Function function, Box box, Flight flight, CockpitDisplayRenderer.Pointer pointer) {
-            double along = CockpitKeys.along(new Key(function, box), pointer.across(), pointer.up());
-            return switch (function) {
+        private static double value(Key key, Flight flight, CockpitDisplayRenderer.Pointer pointer) {
+            double along = CockpitKeys.along(key, pointer.across(), pointer.up());
+            return switch (key.function()) {
                 case SPEED -> AutopilotBlockEntity.touchedSpeed(along);
                 case ALTITUDE -> AutopilotBlockEntity.touchedAltitude(along, flight.runway(), flight.highest());
                 default -> AutopilotBlockEntity.touchedBearing((int) Math.round(flight.bearingNow()), along);
@@ -346,7 +364,7 @@ final class AutopilotDeskArt {
      */
     static void draw(CockpitDisplayBlockEntity display, Level level, MultiBufferSource buffers, PoseStack pose, float partialTick,
                      @Nullable CockpitDisplayRenderer.Pointer pointer) {
-        Desk desk = Desk.of(display.slopeKeys());
+        Desk desk = Desk.of(display.slopeKeys(), pointer);
         if (!desk.complete()) {
             return;
         }
@@ -354,21 +372,31 @@ final class AutopilotDeskArt {
         Ghost ghost = Ghost.at(desk, flight, pointer);
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-        engageKey(shapes, matrix, desk.at(Function.ENGAGE), flight.on());
+        keys(shapes, matrix, desk, flight);
         speedometer(shapes, matrix, desk.at(Function.SPEED), flight, ghost);
         fan(shapes, matrix, desk.at(Function.HEADING), flight, ghost);
-        for (Function turn : CockpitKeys.TURNS) {
-            turnKey(shapes, matrix, desk.at(turn), turn, flight.flies(turn));
-        }
         sky(shapes, matrix, desk.at(Function.ALTITUDE), flight);
         pictures(buffers, matrix, desk, flight, ghost);
         numbers(pose, buffers, desk, flight, ghost);
     }
 
-    /** The on/off key: its rim green and its face lit while the autopilot flies; off, its rim pulses green. */
-    private static void engageKey(VertexConsumer shapes, Matrix4f matrix, Box box, boolean on) {
-        int rim = on ? GREEN : PanelArt.blend(EDGE, GREEN, PanelArt.pulse(PULSE_PERIOD));
-        tile(shapes, matrix, box, rim, on ? PanelArt.blend(KEY, GREEN, LIT_TINT) : KEY, on ? LIT_RIM : RIM);
+    /**
+     * Every control's key on its tile: the on/off key green and picked while the autopilot flies, its green pulsing
+     * while it is off; the speedometer, the steering and the sky plain; the turns along the bottom of the steering lit
+     * cyan for straight on and magenta for a circle while flown, and picked. All but the on/off key are dimmed while a
+     * touch on them sets nothing.
+     */
+    private static void keys(VertexConsumer shapes, Matrix4f matrix, Desk desk, Flight flight) {
+        float green = flight.on() ? LIT_TINT : PULSE_TINT * PanelArt.pulse(PULSE_PERIOD);
+        desk.key(shapes, matrix, Function.ENGAGE, PanelArt.blend(KEY, GREEN, green), flight.on(), true);
+        for (Function control : SET_ALONG) {
+            desk.key(shapes, matrix, control, KEY, false, flight.settable());
+        }
+        for (Function turn : CockpitKeys.TURNS) {
+            int colour = turn == Function.STRAIGHT ? CYAN : MAGENTA;
+            boolean flown = flight.flies(turn);
+            desk.key(shapes, matrix, turn, flown ? PanelArt.blend(GLASS, colour, LIT_TINT) : GLASS, flown, flight.settable());
+        }
     }
 
     /**
@@ -377,7 +405,6 @@ final class AutopilotDeskArt {
      * set, and a ghost of one where it is pointed at.
      */
     private static void speedometer(VertexConsumer shapes, Matrix4f matrix, Box box, Flight flight, @Nullable Ghost ghost) {
-        tile(shapes, matrix, box, EDGE, KEY, RIM);
         Dial dial = Dial.on(box);
         ScreenDrawing.disc(shapes, matrix, dial.x(), dial.y(), dial.radius() * DIAL_GLASS, ROUND, GLASS_LAYER, GLASS);
         double band = dial.radius() * (1 - BAND / 2);
@@ -409,7 +436,6 @@ final class AutopilotDeskArt {
      * fan.
      */
     private static void fan(VertexConsumer shapes, Matrix4f matrix, Box box, Flight flight, @Nullable Ghost ghost) {
-        tile(shapes, matrix, box, EDGE, KEY, RIM);
         Fan fan = Fan.on(box);
         halfDisc(shapes, matrix, fan, GLASS);
         boolean steering = flight.flies(Function.STRAIGHT);
@@ -440,20 +466,11 @@ final class AutopilotDeskArt {
     }
 
     /**
-     * One of the turns along the bottom of the steering: lit cyan for straight on, magenta for a circle, while flown.
-     */
-    private static void turnKey(VertexConsumer shapes, Matrix4f matrix, Box box, Function turn, boolean flown) {
-        int colour = turn == Function.STRAIGHT ? CYAN : MAGENTA;
-        tile(shapes, matrix, box, flown ? colour : EDGE, flown ? PanelArt.blend(GLASS, colour, LIT_TINT) : GLASS, flown ? LIT_RIM : RIM);
-    }
-
-    /**
      * The sky from the side: darkening upward over the brown earth and its grass, a tick every so many blocks of height
      * up its side; the height set as a green dotted level across it, and, while the airliner is far from it, a dotted
      * line from the height now to it, an arrowhead the way it goes.
      */
     private static void sky(VertexConsumer shapes, Matrix4f matrix, Box box, Flight flight) {
-        tile(shapes, matrix, box, EDGE, KEY, RIM);
         Sky sky = Sky.on(box);
         gradient(shapes, matrix, sky.x0(), sky.ground(), sky.x1(), sky.top(), GLASS_LAYER, SKY_LOW, SKY_HIGH);
         ScreenDrawing.rect(shapes, matrix, sky.x0(), box.y0() + (sky.ground() - box.y0()) / 3, sky.x1(), sky.ground(), GLASS_LAYER, EARTH);
@@ -594,12 +611,6 @@ final class AutopilotDeskArt {
     private static void text(Font font, PoseStack pose, MultiBufferSource buffers, String text, double x, double y, float size, int colour,
                              ScreenDrawing.Align align) {
         ScreenDrawing.text(font, pose, buffers, Component.literal(text), x, y, NUMBERS, size, colour, align);
-    }
-
-    /** A key's tile: its rim, so wide, and inside it its face. */
-    private static void tile(VertexConsumer shapes, Matrix4f matrix, Box box, int rim, int face, double rimWidth) {
-        ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x1(), box.y1(), LAYER, rim);
-        ScreenDrawing.rect(shapes, matrix, box.x0() + rimWidth, box.y0() + rimWidth, box.x1() - rimWidth, box.y1() - rimWidth, FACE, face);
     }
 
     /** A window for a number: a frame and its dark glass. */

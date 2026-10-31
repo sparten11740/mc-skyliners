@@ -4,14 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import dev.aerolarge.airframe.OutsideCamera;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.CameraButtons;
 import dev.aerolarge.block.CockpitDisplayBlock;
 import dev.aerolarge.block.CockpitDisplayBlockEntity;
 import dev.aerolarge.block.CockpitKeys;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -36,8 +34,10 @@ import org.joml.Vector3f;
  * the airliner flies under it; the systems page's tiles; or an outside camera's live picture with its buttons, as on
  * the camera display (see {@link TailCameraDisplayRenderer}). The screen and the slope are each only drawn with the
  * camera in front of them; the casing shows from every side. Where the player looks at the screen or the slope from
- * within reach, a little pointer follows the look, and the key under it is outlined in white, so whoever is about to
- * touch it sees what the touch will work.
+ * within reach, a little pointer follows the look, and the key under it lights up as every touch panel's tiles do (see
+ * {@link TouchPanelArt}), so whoever is about to touch it sees what the touch will work. The panel runs through its
+ * blocks at a slant, so the block the crosshair rests on cannot say where on it the look falls: the look is carried on
+ * to the screen's face and the slope instead, as the server carries it when the panel is touched.
  */
 public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDisplayBlockEntity> {
     /** The casing round the glass, in blocks. */
@@ -58,10 +58,9 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
     private static final float LINE = 0.16F;
     /** How far round the holding block the panel can reach, for whether it is in view, in blocks. */
     private static final double REACH = 4;
-    /** The pointer: its dot's radius and its dark ring's, and the outline round the key under it, in blocks. */
+    /** The pointer: its dot's radius and its dark ring's, in blocks. */
     private static final double POINTER = 0.022;
     private static final double POINTER_RING = 0.034;
-    private static final double OUTLINE = 0.012;
     private static final int POINTER_DARK = 0xFF05080D;
     private static final int POINTER_LIGHT = 0xFFFFFFFF;
 
@@ -69,6 +68,22 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
 
     /** Where the player's look meets the panel, within reach: on its screen or its slope, in blocks from its corner. */
     record Pointer(boolean onSlope, double across, double up) {
+        /**
+         * The key a pointer rests on among the keys of the slope or the screen, as touching there would work it; null
+         * for no pointer, or one on the other.
+         */
+        @Nullable
+        static CockpitKeys.Key key(@Nullable Pointer pointer, boolean onSlope, CockpitKeys.Keys keys) {
+            return pointer == null || pointer.onSlope() != onSlope ? null : keys.at(pointer.across(), pointer.up());
+        }
+
+        /**
+         * The camera button along the bottom of the screen's picture a pointer rests on: its place in the row (see
+         * {@link CameraButtons}); -1 for none.
+         */
+        static int cameraButton(@Nullable Pointer pointer, int cameras) {
+            return pointer == null || pointer.onSlope() ? -1 : CameraButtons.layout(cameras).at(pointer.across(), pointer.up());
+        }
     }
 
     /** Records the airliner's track for the map as long as the panel is near, seen or not. */
@@ -97,13 +112,13 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         pose.mulPose(Axis.YP.rotation((float) -Math.atan2(panel.rightZ() - panel.leftZ(), panel.rightX() - panel.leftX())));
         CockpitCasing.draw(buffers, pose.last(), width, panel, light);
         Vector3f eye = Sight.eye(pose.last());
+        Pointer pointer = pointer(pose.last(), panel);
         if (eye.z > 0) {
             pose.pushPose();
             pose.translate(0, panel.bottom(), 0);
-            face(display, level, pose, buffers, width, panel.height(), partialTick);
+            face(display, level, pose, buffers, width, panel.height(), partialTick, pointer);
             pose.popPose();
         }
-        Pointer pointer = pointer(pose.last(), panel);
         // The slope faces up and out at 45 degrees, through its front edge.
         if (panel.desk() > 0 && eye.y - (panel.bottom() - panel.desk()) + eye.z - panel.desk() > 0) {
             pose.pushPose();
@@ -115,12 +130,12 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
             } else if (display.desk() == CockpitDisplayBlockEntity.Desk.TILLER) {
                 TillerArt.draw(display, level, buffers, pose.last().pose(), partialTick, pointer);
             } else {
-                CockpitKeysArt.slope(display, level, buffers, pose.last().pose());
+                CockpitKeysArt.slope(display, level, buffers, pose.last().pose(), pointer);
             }
             pose.popPose();
         }
         if (pointer != null) {
-            pointer(display, pose, buffers, panel, pointer);
+            pointer(pose, buffers, panel, pointer);
         }
         pose.popPose();
     }
@@ -165,9 +180,8 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         return across >= 0 && across <= width && up >= 0 && up <= height;
     }
 
-    /** The pointer where the look meets the panel, over everything, and the outline round the key under it. */
-    private static void pointer(CockpitDisplayBlockEntity display, PoseStack pose, MultiBufferSource buffers, CockpitDisplayBlockEntity.Panel panel,
-                                Pointer pointer) {
+    /** The pointer where the look meets the panel, a white dot ringed in black, over everything. */
+    private static void pointer(PoseStack pose, MultiBufferSource buffers, CockpitDisplayBlockEntity.Panel panel, Pointer pointer) {
         pose.pushPose();
         if (pointer.onSlope()) {
             pose.translate(0, panel.bottom() - panel.desk(), panel.desk());
@@ -177,44 +191,23 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         }
         Matrix4f matrix = pose.last().pose();
         VertexConsumer shapes = ScreenDrawing.shapes(buffers);
-        Box key = keyAt(display, panel, pointer);
-        if (key != null) {
-            float z = 12 * LAYER;
-            ScreenDrawing.rect(shapes, matrix, key.x0() - OUTLINE, key.y0() - OUTLINE, key.x1() + OUTLINE, key.y0(), z, POINTER_LIGHT);
-            ScreenDrawing.rect(shapes, matrix, key.x0() - OUTLINE, key.y1(), key.x1() + OUTLINE, key.y1() + OUTLINE, z, POINTER_LIGHT);
-            ScreenDrawing.rect(shapes, matrix, key.x0() - OUTLINE, key.y0(), key.x0(), key.y1(), z, POINTER_LIGHT);
-            ScreenDrawing.rect(shapes, matrix, key.x1(), key.y0(), key.x1() + OUTLINE, key.y1(), z, POINTER_LIGHT);
-        }
         // Over everything a key shows, the autopilot's numbers and ghosts too (see AutopilotDeskArt).
         ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER_RING, 12, 15 * LAYER, POINTER_DARK);
         ScreenDrawing.disc(shapes, matrix, pointer.across(), pointer.up(), POINTER, 12, 16 * LAYER, POINTER_LIGHT);
         pose.popPose();
     }
 
-    /** The key under the pointer: a key on the slope, a systems tile, or a camera's button; null for none. */
-    @Nullable
-    private static Box keyAt(CockpitDisplayBlockEntity display, CockpitDisplayBlockEntity.Panel panel, Pointer pointer) {
-        if (!pointer.onSlope() && display.shows() == CockpitDisplayBlock.Shows.CAMERA && !display.cameraKeysOnSlope()) {
-            OutsideCamera camera = CameraButtons.at(List.of(OutsideCamera.values()), pointer.across(), pointer.up());
-            double left = camera == null ? 0 : CameraButtons.left(camera);
-            return camera == null ? null : new Box(left, CameraButtons.INSET, left + CameraButtons.WIDTH, CameraButtons.INSET + CameraButtons.HEIGHT);
-        }
-        for (CockpitKeys.Key key : pointer.onSlope() ? display.slopeKeys() : display.screenKeys()) {
-            if (key.box().contains(pointer.across(), pointer.up())) {
-                return key.box();
-            }
-        }
-        return null;
-    }
-
-    /** What the screen shows, on its face inside the bezel, from its bottom left corner. */
+    /**
+     * What the screen shows, on its face inside the bezel, from its bottom left corner, the pointer lighting up the key
+     * it rests on there.
+     */
     private static void face(CockpitDisplayBlockEntity display, Level level, PoseStack pose, MultiBufferSource buffers, float width, float height,
-                             float partialTick) {
+                             float partialTick, @Nullable Pointer pointer) {
         switch (display.shows()) {
             case FLIGHT -> flight(display, level, pose, buffers, width, height, attitude(display, partialTick));
             case MAP -> map(display, level, pose, buffers, width, height, attitude(display, partialTick));
-            case CAMERA -> camera(display, pose, buffers, width, height);
-            case SYSTEMS -> systems(display, level, pose, buffers, width, height);
+            case CAMERA -> camera(display, pose, buffers, width, height, pointer);
+            case SYSTEMS -> systems(display, level, pose, buffers, width, height, pointer);
         }
     }
 
@@ -274,20 +267,27 @@ public class CockpitDisplayRenderer implements BlockEntityRenderer<CockpitDispla
         ScreenDrawing.text(font, pose, buffers, right, width - BEZEL - TEXT_INSET, y, TEXT_LIFT, size, rightColour, ScreenDrawing.Align.RIGHT);
     }
 
-    /** The systems page: the glass, and its tiles over it. */
-    private static void systems(CockpitDisplayBlockEntity display, Level level, PoseStack pose, MultiBufferSource buffers, float width, float height) {
+    /** The systems page: the glass, and its tiles over it, the one under the pointer lit up. */
+    private static void systems(CockpitDisplayBlockEntity display, Level level, PoseStack pose, MultiBufferSource buffers, float width, float height,
+                                @Nullable Pointer pointer) {
         ScreenDrawing.rect(ScreenDrawing.shapes(buffers), pose.last().pose(), BEZEL, BEZEL, width - BEZEL, height - BEZEL, LAYER, GLASS);
         pose.pushPose();
         pose.translate(0, 0, LAYER);
-        CockpitKeysArt.tiles(display, level, buffers, pose.last().pose());
+        CockpitKeysArt.tiles(display, level, buffers, pose.last().pose(), pointer);
         pose.popPose();
     }
 
-    /** An outside camera's live picture or test card, and its buttons, over the whole face. */
-    private static void camera(CockpitDisplayBlockEntity display, PoseStack pose, MultiBufferSource buffers, float width, float height) {
+    /**
+     * An outside camera's live picture or test card over the whole face, and its buttons along the bottom unless they
+     * are on the slope, the one under the pointer lit up.
+     */
+    private static void camera(CockpitDisplayBlockEntity display, PoseStack pose, MultiBufferSource buffers, float width, float height,
+                               @Nullable Pointer pointer) {
         pose.pushPose();
         pose.translate(0, 0, LAYER);
-        TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height, !display.cameraKeysOnSlope());
+        boolean buttons = !display.cameraKeysOnSlope();
+        int looked = buttons ? Pointer.cameraButton(pointer, display.camera().alongside().size()) : -1;
+        TailCameraDisplayRenderer.drawFace(display, pose, buffers, width, height, buttons, looked);
         pose.popPose();
     }
 

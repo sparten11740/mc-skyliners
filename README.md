@@ -155,8 +155,8 @@ the outside camera, each pilot's own flight display straight ahead of them. Each
 for, two blocks where it can (where the nose is too narrow for the outer pair, the inner pair shows the map and the
 camera, and the tiller's keys go under the camera). Behind them the instrument panel carries on round to the hull as
 plain casing, its own screens left off. The systems screen holds a tile for each of six switches, three across and two
-down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour, its rim
-broadens in it and the light along its bottom glows in it, as on an airliner's push button: the cabin lights' dimmer
+down, each a picture of what its switch does, as it is now; while it is on its face takes on its colour and the light
+along its bottom glows in it, as on an airliner's push button, ringed in a soft green glow: the cabin lights' dimmer
 (a light bulb with long rays, lit pale yellow; with short ones in amber dimmed; dim blue under a crescent moon at
 night), the seatbelt signs (someone in a seat with an amber belt buckled across their lap, lit amber), the jump lights
 (a skydiver beside the jump light, its red and green halves both dark while it is off, red or green), the window
@@ -172,13 +172,15 @@ gentle bend either way and straight on between them. The line set is bright and 
 touch a line to steer that way at once (a ratchet's click, a deeper clunk back to straight ahead, a dull thud on the
 line already set), and pointing at one brightens it first. While the airliner rolls, white dashes run along the line
 it follows, and with the wheel turned the straight line pulses so it is not left turned by mistake; a green dot at its
-foot shows the wheel is straight. Either pilot can taxi; under the map the parking brake, a wheel gripped red while it
-is set, and the landing gear (see Landing gear); under the systems screen the autopilot's buttons (see Autopilot); and
+foot shows the wheel is straight. Either pilot can taxi; under the map the parking brake, a wheel gripped red and its
+key in a soft green glow while it is set, and the landing gear (see Landing gear); under the systems screen the
+autopilot's buttons (see Autopilot); and
 under the camera's screen the cameras' buttons (see below). The desk runs round under the screens as one moulded
 console in a blue-grey a step lighter than the screens, its sloped top brushed between a steel trim along its front
 lip and its top edge, and past the outer screens it carries on without a screen out to the hull. Looking at the
 screens or the slope from within reach, a little white dot follows your look, and the tile, key or camera button under
-it is outlined in white, so you see what a touch will work before you touch it. The flight displays show attitude,
+it brightens and grows a little, as on every touch panel aboard, so you see what a touch will work before you touch
+it. The flight displays show attitude,
 airspeed, altitude, vertical speed and heading once the airliner is assembled; until then STBY and ASSEMBLE TO FLY
 under the green airliner of the autopilot's on/off key, the key that has the Physics Assembler assemble the airliner
 and takes off. The moving map shows what the autopilot is doing over it and how the airliner flies under it, the way
@@ -190,8 +192,9 @@ the clouds beyond, with CAM TAIL and a blinking recording light in the corner. W
 camera panel, a tail camera display, a wide screen three blocks across, hangs from the crown just ahead of the seats
 instead, tilted 45 degrees down toward them. Four buttons on the slope under the camera's screen pick the camera
 (along the bottom left of its picture where the tiller takes that slope, and on the older tail camera display), each a
-little airliner seen from the side with a big dot where its camera is, in a colour of its own, the one shown lit white
-with a white rim: sky blue on the fin, looking ahead and down; green on the right wing, looking out along the wing
+little airliner seen from the side with a big dot where its camera is, in a colour of its own, the one shown lit in a
+soft green glow and the others dimmed: sky blue on the fin, looking ahead and down; green on the right wing, looking
+out along the wing
 toward you; orange under the nose by the nose gear; and pink in front of the nose, level with the pilots' eyes and
 looking fifteen degrees down at the runway coming up to meet the airliner. The camera on the picture's label takes the
 same colour. Use one to switch; everyone sees the camera picked, and the screen keeps it. The picture is drawn small,
@@ -467,7 +470,8 @@ rim where it is set to fly and a magenta path from the nose curving round to it,
 dial where you want to go and it flies that way, straight on (in steps of 5 degrees; touch it again further round to
 turn more than a quarter). Under the dial, like road signs, the ways to fly: a tight circle left, a gentle circle
 left, straight on, a gentle circle right and a tight circle right, each the path flown from a little airliner's nose,
-the one flown lit (cyan straight on, magenta round a circle). Straight on flies on the way the airliner is going. A
+the one flown lit (cyan straight on, magenta round a circle) with a soft green glow round it. Straight on flies on the
+way the airliner is going. A
 tight circle is flown as steeply as the autopilot banks round a circle, 20 degrees; a gentle one at half that, about
 twice as wide, but no wider than 2500 blocks where the tight one leaves room. How big that is follows from the speed
 set: a radius of about 625 blocks at the cruising speed, more the faster (set faster or slower while circling,
@@ -477,7 +481,8 @@ the sky where you want the airliner to fly (from 40 blocks above the runway to 3
 of 10). Pointed at, the speedometer, the dial and the sky show a ghost of what a touch there would set, with its
 number, before you touch; and small windows give the speed, heading and height set. A touch on the speedometer or the
 sky sounds a note, higher the faster or higher it sets; a way to fly whooshes. A pin lamp in the dial's corner lights
-while it flies to a pin (see below). While the autopilot is off the controls only thud, and the on/off key opens the
+while it flies to a pin (see below). While the autopilot is off the controls are dimmed and only thud, and the on/off
+key opens the
 settings, where it is engaged; while it flies, the on/off key switches it off, and whenever it lets go, switched off or
 landed, its disconnect warning sounds, three quick rising tones played twice. A touch it cannot take thuds too: while
 it rolls out after landing, and while it comes in to land any touch but its altitude, so nothing touched by accident
@@ -1798,8 +1803,9 @@ Over the Livery Selector, at eye height on the same wall, hangs a camera display
 one, but four blocks wide and two tall, showing her outside cameras live: the flyby camera at first, circling the whole
 ship, so whoever repaints her watches the new paint sweep over her, painters' cradles and all. Three buttons along its
 bottom left pick the camera, each a little zeppelin seen from the side with a big dot where its camera is: sky blue
-over her for the flyby camera, orange at the bow and green under the control car. The one shown is lit white with a
-white rim, its name is on the picture's label beside a camera in its colour, and everyone sees the camera picked. The
+over her for the flyby camera, orange at the bow and green under the control car. The one shown is lit in a soft green
+glow and the others dimmed, the one you look at brightens and grows a little, as on every touch panel aboard, its name
+is on the picture's label beside a camera in its colour, and everyone sees the camera picked. The
 flyby camera's picture reaches past the far end of the ship, so none of her is lost in the fog, but beyond your own
 render distance the land is not drawn. Until she first flies the display shows its test card, a zeppelin seen from
 behind, and ASSEMBLE TO FLY, then the green zeppelin. The client's `tailCameraFeed`, `tailCameraFps` and
@@ -2350,7 +2356,8 @@ keeps where each panel stands and what it is linked to, and `CockpitKeys` where 
 autopilot's speedometer, steering dial and sky and of the tiller's taxi lines that a touch is read by), whose keys use
 the switches standing out of sight in the avionics bay as a player would, and `CockpitDisplayRenderer`,
 `CockpitKeysArt`, `AutopilotDeskArt` (the autopilot's controls) and `TillerArt` (the tiller's taxi lines) draw it, with
-the pointer that follows the look, as `AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity` flies
+the pointer that follows the look, the key under it and the one picked lit through `TouchPanelArt` as on every touch
+panel, as `AutopilotRenderer` draws the control head's display; `AutopilotBlockEntity` flies
 (not sending the clients the control jets' relays, which nothing there reads, nor the wing blocks `ControlSurfaces`
 turns over), assembling its airliner when engaged on one not yet assembled through `PhysicsAssembler`, which works the
 assembler as a Create deployer does, reading the airliner from Sable through `SableFlight`, which also keeps the cabin's
@@ -2381,7 +2388,8 @@ over, stopping those thrown clear where it blew up (`ThrownClear` on their clien
 and `SelfDestructWarning` show it on screen; `GearBayRenderer` draws a landing gear leg swinging up or down, and its
 doors, from the `GearBayBlockEntity` at its top, which takes the leg's blocks away going up and puts them back coming
 down, worked by the `GearLeverBlockEntity`; `TailCameraFeed` draws the outside cameras' pictures, each a `CameraSpot`
-of its airframe, for the flight deck's camera displays and the larger one `ZeppelinCameraDisplay` hangs in a zeppelin's
+of its airframe, for the flight deck's camera displays (`TailCameraDisplayBlock`, a touch panel whose buttons
+`CameraButtons` lays out) and the larger one `ZeppelinCameraDisplay` hangs in a zeppelin's
 control car, through Veil's perspective renderer (Veil comes inside Sable's jar), and `NightLights` the cabin's blue
 light at night and `DiscoLights` the spots of a disco ball turning as `DiscoBallRenderer` draws it through Veil's light
 renderer, by way of `VeilLights`, which also keeps Veil's light framebuffer's depth in the window's format once a mod
