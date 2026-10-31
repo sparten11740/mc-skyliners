@@ -5706,11 +5706,16 @@ function domeSkyTexture() {
     const length = Math.hypot(dx, dy);
     const GAP = 2.5 * DETAIL;
     for (let s = GAP; s <= length - GAP; s += 0.3) {
-      for (let thick = 0; thick < DETAIL * DETAIL; thick++) {
-        const x = ((Math.floor(x0 + (dx * s) / length) + (thick % DETAIL)) % WIDTH + WIDTH) % WIDTH;
-        const y = Math.floor(y0 + (dy * s) / length) + Math.floor(thick / DETAIL);
-        if (y >= 0 && y < HEIGHT) lines[y * WIDTH + x] = 1;
-      }
+      lineDot(Math.floor(x0 + (dx * s) / length), Math.floor(y0 + (dy * s) / length));
+    }
+  }
+
+  // A dot of a gold line, as many pixels across as the detail, from its top left corner.
+  function lineDot(left, top) {
+    for (let dot = 0; dot < DETAIL * DETAIL; dot++) {
+      const x = ((left + (dot % DETAIL)) % WIDTH + WIDTH) % WIDTH;
+      const y = top + Math.floor(dot / DETAIL);
+      if (y >= 0 && y < HEIGHT) lines[y * WIDTH + x] = 1;
     }
   }
 
@@ -5718,15 +5723,16 @@ function domeSkyTexture() {
   const orion = FIGURES[0];
   const [nebulaX, nebulaY] = place(orion.centre, ...orion.nebula);
   const NEBULA_SIZE = 7 * DETAIL;
-  for (let dy = -NEBULA_SIZE; dy <= NEBULA_SIZE; dy++) {
-    for (let dx = -2 * NEBULA_SIZE; dx <= 2 * NEBULA_SIZE; dx++) {
-      const r = Math.hypot(dx / 1.3, dy) / NEBULA_SIZE;
-      const x = ((Math.round(nebulaX) + dx) % WIDTH + WIDTH) % WIDTH;
-      const y = Math.round(nebulaY) + dy;
-      if (r >= 1 || y < 0 || y >= HEIGHT) continue;
-      const strength = NEBULA_STRENGTH * (1 - r) ** 2 * (0.6 + 0.6 * cloudNoise([x / (9 * DETAIL), y / (9 * DETAIL), 1.5], 1, 3));
-      sky[y][x] = sky[y][x].map((c, i) => c + NEBULA[i] * strength);
-    }
+  const nebulaWide = 4 * NEBULA_SIZE + 1;
+  for (let at = 0; at < nebulaWide * (2 * NEBULA_SIZE + 1); at++) {
+    const dx = (at % nebulaWide) - 2 * NEBULA_SIZE;
+    const dy = Math.floor(at / nebulaWide) - NEBULA_SIZE;
+    const r = Math.hypot(dx / 1.3, dy) / NEBULA_SIZE;
+    const x = ((Math.round(nebulaX) + dx) % WIDTH + WIDTH) % WIDTH;
+    const y = Math.round(nebulaY) + dy;
+    if (r >= 1 || y < 0 || y >= HEIGHT) continue;
+    const strength = NEBULA_STRENGTH * (1 - r) ** 2 * (0.6 + 0.6 * cloudNoise([x / (9 * DETAIL), y / (9 * DETAIL), 1.5], 1, 3));
+    sky[y][x] = sky[y][x].map((c, i) => c + NEBULA[i] * strength);
   }
 
   // The stars, scattered evenly over the dome (as much in each row's length as in any other's) and crowded along the
