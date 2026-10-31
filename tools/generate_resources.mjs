@@ -6878,10 +6878,12 @@ const ROOM_DIVIDER_LANG = {
 // is open; the first pixel out is the moulding's bead, flush with the wall's faces; the next its groove, set back half
 // a pixel into both; then white panelling out to BAND; then the bulkhead's own cream panels. That finds the blocks
 // the curve passes through, checked against CabinArchBlock.Part. The jamb, straight, is the pixels of each kind in it
-// merged into boxes, showing a face only where a box meets the open archway or something set back further. The arch's
-// pieces, and in the hand a narrow archway whole as one goes up put down by hand, are drawn round by the mod's own
-// "cabin_arch" loader, from the same rings round the same curve (see CabinArchModel), so the arch's underside and its
-// moulding follow the circle instead of stepping round it a pixel at a time.
+// merged into boxes, showing a face where a box meets the open archway or something set back further, and on every
+// side of the block it reaches, culled against whatever stands there, so a jamb standing free is closed (the jamb or
+// springer over or under it hides that face, see CabinArchBlock.skipRendering). The arch's pieces, and in the hand a
+// narrow archway whole as one goes up put down by hand, are drawn round by the mod's own "cabin_arch" loader, from the
+// same rings round the same curve (see CabinArchModel), so the arch's underside and its moulding follow the circle
+// instead of stepping round it a pixel at a time.
 {
   // How far out from the opening's edge the white reaches, in pixels: CabinArchBlock.BAND.
   const BAND = 6;
@@ -6953,10 +6955,10 @@ const ROOM_DIVIDER_LANG = {
       west: face(texture, [z0, 16 - y1, z1, 16 - y0], inset === 0 && "west"),
       east: face(texture, [16 - z1, 16 - y1, 16 - z0, 16 - y0], inset === 0 && "east"),
     };
-    if (exposed(span, u0, v0, box, "out")) faces.north = face(texture, [16 - x1, 16 - y1, 16 - x0, 16 - y0], z0 === 0 && "north");
-    if (exposed(span, u0, v0, box, "in")) faces.south = face(texture, [x0, 16 - y1, x1, 16 - y0], z1 === 16 && "south");
-    if (exposed(span, u0, v0, box, "up")) faces.up = face(texture, [x0, z0, x1, z1], y1 === 16 && "up");
-    if (exposed(span, u0, v0, box, "down")) faces.down = face(texture, [x0, 16 - z1, x1, 16 - z0], y0 === 0 && "down");
+    if (z0 === 0 || exposed(span, u0, v0, box, "out")) faces.north = face(texture, [16 - x1, 16 - y1, 16 - x0, 16 - y0], z0 === 0 && "north");
+    if (z1 === 16 || exposed(span, u0, v0, box, "in")) faces.south = face(texture, [x0, 16 - y1, x1, 16 - y0], z1 === 16 && "south");
+    if (y1 === 16 || exposed(span, u0, v0, box, "up")) faces.up = face(texture, [x0, z0, x1, z1], y1 === 16 && "up");
+    if (y0 === 0 || exposed(span, u0, v0, box, "down")) faces.down = face(texture, [x0, 16 - z1, x1, 16 - z0], y0 === 0 && "down");
     return { from: [x0, y0, z0], to: [x1, y1, z1], faces };
   });
   const textures = {

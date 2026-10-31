@@ -729,7 +729,8 @@ A Cabin Arch puts up a whole archway like the airliner's: a round white arch ove
 wide, on white jambs three blocks tall either side of it, smooth white panelling round the opening with a moulding
 along its edge, a bead and a groove behind it, the arch, its moulding and the panelling's edge all running smoothly
 round the curve as the cockpit door's arch does, without a step, set into cream panels like the partition's and the
-same from either side. It goes up across the way you face, the foot of its left-hand jamb where you put it and the
+same from either side, and standing free it is closed in the same cream panelling over its top and down its outer sides.
+It goes up across the way you face, the foot of its left-hand jamb where you put it and the
 rest to your right and up, five blocks wide and five tall; sneak to put up a wide one, over an opening five blocks
 wide, seven blocks wide and six tall with partition panels in its top corners. It only goes up where there is room
 for all of it and nobody stands in its way. Breaking any piece of it takes the whole archway down, panels and all,

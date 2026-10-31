@@ -96,7 +96,10 @@ final class ArchwayFaces {
     private final Stretch stretch;
     /** How far out the outermost ring is drawn before it is clipped to the stretch: beyond all of it, in pixels. */
     private final double far;
-    /** Whether the stretch's edges are drawn too, where the wall ends there: for an archway standing alone. */
+    /**
+     * Whether the stretch's edges are drawn too, wherever the wall reaches them: for the archway in the hand, standing
+     * alone, and for each piece, whose model culls them against whatever stands beside it.
+     */
     private final boolean rim;
     private final List<Face> faces = new ArrayList<>();
 
@@ -142,7 +145,7 @@ final class ArchwayFaces {
 
     /**
      * The faces of a stretch of the wall of an archway reaching so many blocks either side of its middle; with its rim,
-     * the stretch's edges where the wall is solid, for an archway standing alone.
+     * the stretch's edges where the wall is solid (see {@link #rim}).
      */
     static List<Face> of(int span, Stretch stretch, boolean rim) {
         ArchwayFaces archway = new ArchwayFaces(span, stretch, rim);

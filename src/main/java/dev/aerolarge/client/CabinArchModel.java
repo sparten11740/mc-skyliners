@@ -41,10 +41,13 @@ import org.joml.Vector4f;
  * straight, are drawn as boxes in their own model (see tools/generate_resources.mjs).
  *
  * <p>The faces along the wall are drawn and lit as a block's sides are, each texture laid over them as over a whole
- * side of the block, and those on the wall's faces are culled against whatever stands against them. The faces round the
- * curve have no side to take their shade from: each corner gets the shade for the way it really faces, so they
- * brighten and darken smoothly round the arch, without corner darkening, as the hull's cut faces do (see
- * {@link ShellModel}). In the hand each face is one flat colour of its texture, lit by the way it faces.
+ * side of the block. So is the wall's edge where it reaches a side of the block, its rim, which shows on an archway
+ * standing free, over its top and down its outer sides. The faces lying on a side of the block, the wall's faces and
+ * its rim, are culled against whatever stands on that side, and the next piece of the same archway hides its rim there
+ * altogether (see {@link CabinArchBlock}). The faces round the curve have no side to take their shade from: each corner
+ * gets the shade for the way it really faces, so they brighten and darken smoothly round the arch, without corner
+ * darkening, as the hull's cut faces do (see {@link ShellModel}). In the hand each face is one flat colour of its
+ * texture, lit by the way it faces.
  */
 public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> {
     public static final ResourceLocation LOADER = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "cabin_arch");
@@ -58,6 +61,8 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
     private static final float SWATCH = 4.5F / 16;
     /** How many corners a quad has. */
     private static final int QUAD = 4;
+    /** How near a corner has to come to a side of the block to lie on it, as a fraction of the block. */
+    private static final float ON_SIDE = 1e-4F;
 
     /** The piece drawn; null for the whole archway in the hand. */
     @Nullable
@@ -100,19 +105,36 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
 
     /**
      * The piece, drawn facing north (out from the archway's middle to the north, the wall's faces east and west, as its
-     * block state's models are), then turned the way its block state says.
+     * block state's models are), then turned the way its block state says, with its rim on every side of the block the
+     * wall reaches.
      */
     private void piece(IModelBuilder<?> builder, Map<Ring, TextureAtlasSprite> sprites, Transformation turn) {
         Stretch stretch = new Stretch(BLOCK * part.out() - BLOCK / 2, BLOCK * (part.over() - 1), BLOCK, BLOCK);
-        for (Face face : ArchwayFaces.of(span, stretch, false)) {
+        for (Face face : ArchwayFaces.of(span, stretch, true)) {
             Direction facing = facing(face);
             List<Corner> corners = new ArrayList<>();
             for (int i = 0; i < face.corners().size(); i++) {
                 corners.add(corner(face.corners().get(i), face.normals().get(i), facing, turn));
             }
-            boolean onWallFace = face.alongWall() && face.ring().inset == 0;
-            add(builder, corners, sprites.get(face.ring()), !face.alongWall(), onWallFace);
+            boolean onSide = onSide(corners);
+            add(builder, corners, sprites.get(face.ring()), !face.alongWall() && !onSide, onSide);
         }
+    }
+
+    /**
+     * Whether a face lies flat on the side of the block it looks toward: one of the wall's faces, or its rim where the
+     * wall reaches the block's edge.
+     */
+    private static boolean onSide(List<Corner> corners) {
+        Direction side = facing(corners);
+        float edge = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : 0;
+        for (Corner corner : corners) {
+            Vector3f at = corner.at();
+            if (Math.abs(side.getAxis().choose(at.x(), at.y(), at.z()) - edge) > ON_SIDE) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -159,7 +181,7 @@ public final class CabinArchModel extends SimpleUnbakedGeometry<CabinArchModel> 
 
     /**
      * Adds a face's quads, fanned out from its first corner, a triangle being a quad with its last corner doubled.
-     * Along the wall it is lit as a block's side is, culled against what stands on the side it faces if it lies on the
+     * A flat face is lit as a block's side is, culled against what stands on the side it faces if it lies on the
      * block's side; round the curve each corner is shaded for the way it faces.
      */
     private static void add(IModelBuilder<?> builder, List<Corner> corners, TextureAtlasSprite sprite, boolean round, boolean culled) {

@@ -43,7 +43,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * middle out to the side the piece is on; the middle column's look the same either way. Its model draws the curve
  * round and smooth (the client's CabinArchModel), while its outline and what bumps into it step round the curve a
  * pixel at a time. It sits in the cabin, between rooms already open to each other through the archway under it, so it
- * keeps no light out, and the curved faces inside its block are lit as the cabin round it is.
+ * keeps no light out, and the curved faces inside its block are lit as the cabin round it is. Where its wall reaches a
+ * side of its block, its model closes it there, so an archway standing free is closed over its top and down its outer
+ * sides; only against the next piece of its own archway, which carries the wall on, is that edge left out (see
+ * {@link #skipRendering}).
  *
  * <p>Put down by hand, a whole archway goes up at once, like the airliner's at its default scale (see
  * {@link #getStateForPlacement}); WHOLE marks its pieces, which stand and fall together, and taken down it gives back
@@ -440,5 +443,44 @@ public class CabinArchBlock extends HorizontalDirectionalBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(PART)).get(state.getValue(FACING));
+    }
+
+    /**
+     * A piece's faces on a side of its block are left out against the next piece of its own archway, which carries its
+     * wall on there edge to edge, so nothing of either shows between them. Against anything else they are culled as any
+     * block's are, only where what stands there covers them; the piece itself keeps nothing beside it from being drawn.
+     */
+    @Override
+    protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
+        return carriesWallOn(state, adjacent, direction) || super.skipRendering(state, adjacent, direction);
+    }
+
+    /**
+     * Whether the block that way from a piece is the next piece of the same archway, carrying its wall on in the same
+     * plane round the same curve: an archway of the same size along the same line, its middle (so many columns back
+     * from each piece toward it) and its springing line (so many rows down) in the same place. A jamb's column runs on
+     * into the jamb or the springer over it, facing the same way, whatever the archway's size.
+     */
+    private boolean carriesWallOn(BlockState state, BlockState adjacent, Direction direction) {
+        if (!adjacent.is(this)) {
+            return false;
+        }
+        Part part = state.getValue(PART);
+        Part other = adjacent.getValue(PART);
+        Direction side = state.getValue(FACING);
+        Direction otherSide = adjacent.getValue(FACING);
+        if (part == Part.JAMB || other == Part.JAMB) {
+            boolean up = direction == Direction.UP;
+            return side == otherSide && direction.getAxis().isVertical() && columnRunsOn(up ? part : other, up ? other : part);
+        }
+        int middleX = direction.getStepX() + side.getStepX() * part.out - otherSide.getStepX() * other.out;
+        int middleZ = direction.getStepZ() + side.getStepZ() * part.out - otherSide.getStepZ() * other.out;
+        int springing = direction.getStepY() + part.over - other.over;
+        return side.getAxis() == otherSide.getAxis() && part.span == other.span && middleX == 0 && middleZ == 0 && springing == 0;
+    }
+
+    /** Whether a jamb's column runs on from one piece into the piece over it: a jamb under a jamb or the springer. */
+    private static boolean columnRunsOn(Part under, Part over) {
+        return under == Part.JAMB && (over == Part.JAMB || over.springer());
     }
 }
