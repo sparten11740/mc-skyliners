@@ -3555,12 +3555,14 @@ const LAUNCH_WORDS = {
 const LAUNCH_LONGEST = 0.8;
 const LIFTOFF_LONGEST = 1.2;
 // Her flight's milestones, launch control calling each as she passes it (see LaunchCallouts), each a transmission of
-// its own, opened and closed by the Quindar pair as the whole count is.
+// its own, opened and closed by the Quindar pair as the whole count is; and its call as her boost button kicks her
+// engines up (see the autopilot's rocketControl).
 const LAUNCH_MILESTONES = {
   launch_tower_cleared: "Tower cleared.",
   launch_max_q: "Max Q.",
   launch_main_engine_cutoff: "Main engine cut-off.",
   launch_landing_burn: "Landing burn.",
+  launch_boost: "Boost!",
 };
 /** The longest a milestone's transmission may run, both its Quindar tones and all, in seconds (see LaunchCallouts). */
 const MILESTONE_LONGEST = 2.5;

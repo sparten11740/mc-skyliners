@@ -2292,7 +2292,8 @@ She has hands-on controls of her own, on a centre console round her control head
 and lamps, so nobody needs to read them (the server config's `rocket.cockpitControls` leaves them out of a rocket built
 from then on; a small rocket has those that fit). Before the head stands the boost button, a big mushroom cap with a
 flame and two chevrons on it, glowing green when it is ready: pressed, it kicks her engines up for eight seconds with a
-crack and a deep whump, her plume half as thick again round a blue-white core, her roar at full and the view aboard
+crack and a deep whump, launch control calling "Boost!", her plume half as thick again round a blue-white core, her roar
+at full and the view aboard
 shaking. Climbing, she climbs twice as fast; cruising, she goes half as fast again across and leans a little further,
 still stopping over her pin. Then its cap glows red and it rests twenty seconds, a ring of four lamps round its foot
 lighting green one by one, and beeps as it is ready again. Pressed when it cannot boost (counting down, coming down,

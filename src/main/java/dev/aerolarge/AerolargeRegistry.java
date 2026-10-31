@@ -781,6 +781,8 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_MAX_Q = sound("launch_max_q");
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_MAIN_ENGINE_CUTOFF = sound("launch_main_engine_cutoff");
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_LANDING_BURN = sound("launch_landing_burn");
+    /** Launch control calling her boost as her boost button kicks her engines up. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_BOOST = sound("launch_boost");
     /** The flight deck's voice as she settles on her fins. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_TOUCHDOWN = sound("callout_touchdown");
     /**

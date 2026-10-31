@@ -497,6 +497,11 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How loud its rocket's abort handle's ratchet and her launch key's click in its lock are. */
     private static final float RATCHET_VOLUME = 0.9F;
     private static final float KEY_VOLUME = 0.9F;
+    /**
+     * How long launch control's "Boost!" is given to play if its sound cannot be read, in ticks:
+     * tools/generate_sounds.mjs keeps it shorter (its MILESTONE_LONGEST).
+     */
+    private static final int BOOST_CALL_LONGEST = 50;
     private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
     /** How far a control jet's signal may wander, in steps of the 15, before the jet is set to it (see {@link #steady}). */
     private static final int JET_STEADY = 1;
@@ -801,7 +806,8 @@ public class AutopilotBlockEntity extends BlockEntity {
      * RocketControls}): the boost button, the stability switch and the flight mode knob are worked by her controls
      * themselves; the abort handle calls off her landing or stops her where she is (see {@link #rocketAbort}), and the
      * launch key launches her or scrubs her countdown (see {@link #rocketKey}). Each answers the player with a sound
-     * and a word in their hotbar. Whether it was taken; not on any other airframe, which only thuds.
+     * and a word in their hotbar; a boost, launch control calls too (see {@link #callBoost}). Whether it was taken; not
+     * on any other airframe, which only thuds.
      */
     public boolean rocketControl(RocketControls.Control control, ServerPlayer player) {
         if (!(level instanceof ServerLevel server) || craft != Craft.ROCKET) {
@@ -817,10 +823,25 @@ public class AutopilotBlockEntity extends BlockEntity {
             case ABORT -> rocketAbort(server, player, state);
             case KEY -> rocketKey(server, player, state);
         };
+        if (taken && control == RocketControls.Control.BOOST) {
+            callBoost(server, state);
+        }
         if (rocket.controls().takeChanged()) {
             changed();
         }
         return taken;
+    }
+
+    /**
+     * Launch control calls "Boost!" over its radio as her boost begins, as its milestones are (see
+     * {@link LaunchCallouts}): only into a quiet cockpit, holding the floor while it lasts, and not with the server
+     * config's {@code rocket.callouts} off.
+     */
+    private void callBoost(ServerLevel level, @Nullable SableFlight.State state) {
+        if (state != null && quiet() && AerolargeConfig.ROCKET_CALLOUTS.get()) {
+            holdFloor(VoiceLength.ticks(AerolargeRegistry.LAUNCH_BOOST, BOOST_CALL_LONGEST));
+            RocketSounds.overTheRadio(level, state.position(), AerolargeRegistry.LAUNCH_BOOST);
+        }
     }
 
     /**

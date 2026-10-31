@@ -656,6 +656,15 @@
       }
     ]
   },
+  "launch_boost": {
+    "subtitle": "subtitles.aerolarge.launch_boost",
+    "sounds": [
+      {
+        "name": "aerolarge:launch_boost",
+        "attenuation_distance": 1024
+      }
+    ]
+  },
   "pa_chime": {
     "subtitle": "subtitles.aerolarge.pa_chime",
     "sounds": [

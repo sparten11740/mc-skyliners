@@ -1421,6 +1421,7 @@ const LAUNCH_SUBTITLES = {
   launch_max_q: "Launch control: Max Q",
   launch_main_engine_cutoff: "Launch control: Main engine cut-off",
   launch_landing_burn: "Launch control: Landing burn",
+  launch_boost: "Launch control: Boost!",
 };
 function rocketSounds() {
   // How far each of her engines' sounds that carries farther than the game's own 16 blocks is heard.

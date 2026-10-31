@@ -140,6 +140,7 @@
   "subtitles.aerolarge.launch_max_q": "Launch control: Max Q",
   "subtitles.aerolarge.launch_main_engine_cutoff": "Launch control: Main engine cut-off",
   "subtitles.aerolarge.launch_landing_burn": "Launch control: Landing burn",
+  "subtitles.aerolarge.launch_boost": "Launch control: Boost!",
   "message.aerolarge.autopilot.engaged": "Autopilot engaged: take-off, then climbing to altitude %s at %s b/s, %s.",
   "message.aerolarge.autopilot.off": "Autopilot off: the thrust levers, tiller and parking brake have the airliner again.",
   "message.aerolarge.autopilot.off_zeppelin": "Autopilot off: the wheels, telegraphs and burner lever in the control car have the zeppelin now.",
