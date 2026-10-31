@@ -2324,7 +2324,8 @@ her jets hold her, amber while her stability is locked on, red and wobbling with
 off; and the flight mode's picture, dimmed while she flies the arc straight up. With her stability off, a red ring on
 the attitude indicator marks how far she may tip before it snaps back on, and a white dot inside it how far she tips,
 and which way: keep the dot inside the ring. Her lift parks while she boosts, with her stability off, or leaning far
-over in the arc. The boost, the stability switch and the arc are still experimental, and switched on by the server
+over in the arc, and her lift's height gauge trails a long flame under its little rocket while she boosts. The boost,
+the stability switch and the arc are still experimental, and switched on by the server
 config's `rocket.boost`, `rocket.stabilitySwitch` and `rocket.arcAscent`; switched off, their controls only sound their
 low refusal note.
 
@@ -2617,7 +2618,7 @@ each a `RocketControlBlock` (`RocketBoostButtonBlock`, `RocketStabilitySwitchBlo
 few ticks from what the autopilot shows (`RocketControls.Panel`); `RocketControls`, which `RocketPilot` owns, keeps her
 flight mode (saved), boost and stability (neither saved), hands the pilot the limits it flies by each tick and snaps her
 stability back on before she tips too far, and the autopilot's update carries them to the clients, where
-`FlightDisplayRenderer`, `RocketRoar` and `RocketExhaust` show them.
+`FlightDisplayRenderer`, `RocketRoar`, `RocketExhaust` and `HeightGauge` show them.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the

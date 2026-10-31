@@ -16,7 +16,8 @@ import org.joml.Matrix4f;
  * {@link LiftBoardRenderer}): a column from the sea at its foot to her ceiling at its top, each height in the colour
  * the sky is there by day (see {@link SpaceSky#skyAt}), the planet a band of sea and land at its foot, a dashed white
  * line with a star where space begins, stars twinkling over the line once she is past it, and a little rocket at her
- * height. Players who cannot read see how high she is and how far she has to go to space.
+ * height, a long flame flickering under it while she boosts (see the autopilot's RocketControls). Players who cannot
+ * read see how high she is and how far she has to go to space.
  */
 final class HeightGauge {
     /** How many bands of colour the sky is drawn in, from the sea to her ceiling. */
@@ -37,6 +38,19 @@ final class HeightGauge {
     private static final int STARS = 9;
     private static final double STAR_DOT = 0.035;
     private static final int TWINKLE = 8;
+    /**
+     * Boosting, the little rocket's flame: how far under the rocket's middle it starts, how long and how wide it is, as
+     * shares of the rocket's half size, its yellow core's share of it, how far longer and shorter it flickers, as a share
+     * of its length, and how long a flicker takes, in ticks.
+     */
+    private static final double FLAME_FROM = 0.7;
+    private static final double FLAME_LONG = 1.8;
+    private static final double FLAME_WIDE = 0.4;
+    private static final double FLAME_CORE = 0.5;
+    private static final double FLICKER = 0.15;
+    private static final int FLICKER_TICKS = 6;
+    private static final int FLAME_ORANGE = 0xFFFF8A1A;
+    private static final int FLAME_YELLOW = 0xFFFFE070;
     /** Lifts each layer off the board's own. */
     private static final float LAYER = 0.001F;
     private static final int SEA = 0xFF2E6B99;
@@ -65,8 +79,10 @@ final class HeightGauge {
     private HeightGauge() {
     }
 
-    /** The gauge in a column, for a rocket so high in the world: every shape first, then its pictures. */
-    static void draw(Matrix4f matrix, VertexConsumer shapes, MultiBufferSource buffers, Column column, Level level, double height) {
+    /**
+     * The gauge in a column, for a rocket so high in the world, boosting or not: every shape first, then its pictures.
+     */
+    static void draw(Matrix4f matrix, VertexConsumer shapes, MultiBufferSource buffers, Column column, Level level, double height, boolean boosting) {
         double sea = level.getSeaLevel();
         double ceiling = Math.max(sea + 1, AerolargeConfig.ROCKET_CEILING.get());
         sky(matrix, shapes, column, sea, ceiling);
@@ -79,11 +95,25 @@ final class HeightGauge {
         if (height >= EdgeOfSpace.HEIGHT) {
             stars(matrix, shapes, column, edge, level.getGameTime());
         }
-        ScreenDrawing.picture(buffers, matrix, STAR_ICON, column.right() - column.width() * STAR, edge + column.width() * STAR, column.width() * STAR,
-            4 * LAYER, WHITE);
         double half = column.width() * ROCKET;
         double rocketY = Mth.clamp(column.at(height, sea, ceiling), column.bottom() + column.height() * PLANET + half, column.top() - half);
-        ScreenDrawing.picture(buffers, matrix, ROCKET_ICON, (column.left() + column.right()) / 2, rocketY, half, 5 * LAYER, WHITE);
+        double middle = (column.left() + column.right()) / 2;
+        if (boosting) {
+            flame(matrix, shapes, middle, rocketY - half * FLAME_FROM, half, level.getGameTime());
+        }
+        ScreenDrawing.picture(buffers, matrix, STAR_ICON, column.right() - column.width() * STAR, edge + column.width() * STAR, column.width() * STAR,
+            4 * LAYER, WHITE);
+        ScreenDrawing.picture(buffers, matrix, ROCKET_ICON, middle, rocketY, half, 5 * LAYER, WHITE);
+    }
+
+    /**
+     * The little rocket's flame while she boosts, down from its top under the rocket, flickering longer and shorter.
+     */
+    private static void flame(Matrix4f matrix, VertexConsumer shapes, double middle, double top, double half, long now) {
+        double length = half * FLAME_LONG * (1 + FLICKER * Math.sin(Mth.TWO_PI * now / FLICKER_TICKS));
+        double wide = half * FLAME_WIDE;
+        ScreenDrawing.rect(shapes, matrix, middle - wide, top - length, middle + wide, top, 3 * LAYER, FLAME_ORANGE);
+        ScreenDrawing.rect(shapes, matrix, middle - wide * FLAME_CORE, top - length * FLAME_CORE, middle + wide * FLAME_CORE, top, 4 * LAYER, FLAME_YELLOW);
     }
 
     /** The sky in bands from the sea to her ceiling, each the colour of its height, and the planet at its foot. */

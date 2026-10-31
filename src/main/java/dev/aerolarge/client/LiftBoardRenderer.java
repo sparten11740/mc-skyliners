@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.aerolarge.Aerolarge;
 import dev.aerolarge.AerolargeClientConfig;
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
 import dev.aerolarge.block.LiftBoardBlock;
 import dev.aerolarge.block.LiftBoardBlockEntity;
 import dev.aerolarge.block.LiftMachineBlockEntity;
@@ -82,8 +84,10 @@ public class LiftBoardRenderer implements BlockEntityRenderer<LiftBoardBlockEnti
         }
         if (parked && AerolargeClientConfig.HEIGHT_GAUGE.get() && lift.getLevel() != null) {
             double flying = SableClient.toWorld(lift.getLevel(), Vec3.atCenterOf(lift.getBlockPos())).y;
+            AutopilotBlockEntity rocket = AutopilotBlockEntity.framedBy(lift.getLevel(), lift.getBlockPos(), Craft.ROCKET);
+            boolean boosting = rocket != null && rocket.rocketControls().boosting(lift.getLevel().getGameTime());
             HeightGauge.draw(matrix, shapes, buffers, new HeightGauge.Column(left, LiftBoardBlock.MARGIN, right, height - PARKED_BAR - GAP),
-                lift.getLevel(), flying);
+                lift.getLevel(), flying, boosting);
             return;
         }
         TouchPanel.Layout buttons = LiftBoardBlock.buttons(landings.size(), width, height);
