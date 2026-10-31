@@ -1910,7 +1910,8 @@ over a steel kick plate on diamond-plate tread under corrugated sheet; the mess 
 herringbone parquet under cream plaster; the bunk room quilted blue on teal carpet under a night ceiling of faint stars;
 the greenhouse whitewashed brick over terracotta; the pool blue mosaic; the club black acoustic foam under a black
 ceiling pricked with pink; the lab sage-green tiles over white on flecked vinyl; the observation deck walnut panelling,
-a brass line along its top, on dark parquet; and the cockpit, up into her nose, dark grey padding. Her livery paints her
+a brass line along its top, on dark parquet; the cockpit dark grey padding; and the dome over it a night sky. Her
+livery paints her
 only outside. Round every room but the observation deck, eight wall washers over head height throw fans of light up the
 wall, warm white, a cool blue in the bunk room and pink in the club. They and her halo lights are one light, the Halo
 Light in the creative tab, which takes its shape from where it is put: under a ceiling or a light cable it hangs as a
@@ -2171,6 +2172,13 @@ silhouette along its top laid on her side, each story a band glowing as its stri
 or the little rocket beside it to pick them all, then use the same swatches, suns and strips under them. Set for all of
 her, a change climbs her a story at a time from the entry story up.
 
+Over the cockpit her nose is a dome, lined as a night sky full of stars over the ring of ceiling on the glass, and
+from its tip hangs a brass orrery: a long brass rod down to a glowing sun, turning slowly, and round it the six planets
+on their brass arms, each in its own colours, circling it, the nearer the faster: grey Mercury, pale Venus, the blue
+and green Earth with its little moon going round it, red Mars, banded Jupiter, the biggest, and golden Saturn in its
+tilted ring. A soft light round the sun lights them, and it is as big as her dome leaves room for at her scale: look
+up from the cockpit to see it. The server config's `rocket.dome` leaves her nose padded inside and bare.
+
 To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
 map no circle or landing switch and on it no circle round the pin, as she circles nothing and always comes down on the
 pin. It counts down ten seconds, a note each second rising toward lift-off and a bell as the engines light, then lifts
@@ -2411,7 +2419,8 @@ with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `Air
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
-them, and `RocketPilotSeats` the cockpit's seats); its rooms' own furniture is `ShelfUnitBlock` and `PalletRackBlock`,
+them, `RocketPilotSeats` the cockpit's seats, and `RocketDome` the dome over it, its `OrreryBlock`'s
+`OrreryBlockEntity` drawn by `OrreryRenderer`); its rooms' own furniture is `ShelfUnitBlock` and `PalletRackBlock`,
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
 and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client and keep them

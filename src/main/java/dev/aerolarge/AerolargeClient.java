@@ -72,6 +72,7 @@ import dev.aerolarge.client.LookoutView;
 import dev.aerolarge.client.MistyWindows;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
+import dev.aerolarge.client.OrreryRenderer;
 import dev.aerolarge.client.OvalWindowModel;
 import dev.aerolarge.client.PaperPlaneRenderer;
 import dev.aerolarge.client.ParachuteControls;
@@ -374,6 +375,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.RUBBER_DUCK_ENTITY.get(), RubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.ORRERY_ENTITY.get(), context -> new OrreryRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);

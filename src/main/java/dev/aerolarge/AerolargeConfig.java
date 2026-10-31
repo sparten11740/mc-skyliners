@@ -56,6 +56,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_GROUND_FIRE;
     public static final ModConfigSpec.BooleanValue ROCKET_LAUNCH_BLAST;
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
+    public static final ModConfigSpec.BooleanValue ROCKET_DOME;
     public static final ModConfigSpec.BooleanValue ROCKET_CALLOUTS;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
@@ -521,6 +522,13 @@ public final class AerolargeConfig {
                 "empty. Rockets already built keep theirs."
             )
             .define("lab", true);
+        ROCKET_DOME = builder
+            .comment(
+                "Whether a rocket is built with her dome: the inside of her nose over the cockpit a night sky full of stars, and",
+                "a brass orrery hanging from its tip, a glowing sun with its six planets circling it on their arms. Off, as with",
+                "`rooms` off, her nose is padded inside as her cockpit is and left bare. Rockets already built keep theirs."
+            )
+            .define("dome", true);
         ROCKET_CALLOUTS = builder
             .comment(
                 "Whether launch control, which counts a rocket down, also calls out her flight's milestones on its radio as she passes",

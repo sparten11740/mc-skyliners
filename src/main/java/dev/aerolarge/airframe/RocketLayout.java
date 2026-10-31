@@ -97,6 +97,7 @@ public final class RocketLayout implements Layout {
         RocketLiverySelector::new,
         RocketLift::new,
         RocketPilotSeats::new,
+        RocketDome::new,
         RocketEntry::new,
         RocketMess::new,
         RocketBunks::new,
@@ -148,6 +149,8 @@ public final class RocketLayout implements Layout {
     /** Where the autopilot's control head stands in the cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
+    /** How her nose is finished inside over the ring of ceiling on the cockpit's glass: padded, or as the dome. */
+    private RocketFinish nose = RocketFinish.COCKPIT;
 
     /** The body's surface in blocks, as its skin is cut by it: the axis runs through the middle of block 0 each way. */
     private final SurfaceCut.Surface surface = new SurfaceCut.Surface() {
@@ -300,7 +303,8 @@ public final class RocketLayout implements Layout {
             return AerolargeRegistry.ROCKET_FLOOR.get().between(RocketFinish.ofStory(story), RocketFinish.ofStory(Math.max(0, story - 1)));
         }
         RocketFinish within = finishAt(y);
-        return within == null ? null : AerolargeRegistry.ROCKET_FLOOR.get().between(within, within);
+        RocketFinish under = finishAt(y - 1);
+        return within == null || under == null ? null : AerolargeRegistry.ROCKET_FLOOR.get().between(within, under);
     }
 
     /**
@@ -313,7 +317,7 @@ public final class RocketLayout implements Layout {
             return null;
         }
         if (y >= noseFoot) {
-            return RocketFinish.COCKPIT;
+            return y >= domeFloor() ? nose : RocketFinish.COCKPIT;
         }
         int story = 0;
         while (story + 1 < floors.size() && floors.get(story + 1) <= y) {
@@ -415,6 +419,21 @@ public final class RocketLayout implements Layout {
     /** The row of the cockpit's floor, at the nose's foot. */
     int cockpitFloor() {
         return noseFoot;
+    }
+
+    /** The row of the ring of ceiling on the cockpit's glass: the foot of the dome in her nose over it. */
+    int domeFloor() {
+        return noseFoot + COCKPIT_GLASS + 1;
+    }
+
+    /** The highest row of her body, the tip of her nose. */
+    int height() {
+        return height;
+    }
+
+    /** Has her nose finished inside over the ring of ceiling on the cockpit's glass as its dome is, not padded. */
+    void finishNose(RocketFinish finish) {
+        nose = finish;
     }
 
     /** Where the autopilot's control head stands in the cockpit; null where the cockpit has none. */
@@ -792,7 +811,7 @@ public final class RocketLayout implements Layout {
      * stays open over the middle of the cockpit. Laid as floor, it is finished as the cockpit's ceiling.
      */
     private void soffit() {
-        int y = noseFoot + COCKPIT_GLASS + 1;
+        int y = domeFloor();
         int out = (int) Math.ceil(radius);
         int side = 2 * out + 1;
         for (int i = 0; i < side * side; i++) {

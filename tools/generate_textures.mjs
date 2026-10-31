@@ -5409,6 +5409,16 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   const plaster = (base) => () => base;
   // Perforated metal: holes in a grid.
   const perforated = (base) => (x, y) => (x % 3 === 1 && y % 3 === 1 ? shade(base, -40) : base);
+  // The dome's night sky: deep blue, stars of every brightness, a few of them warm or cool, and the faint glow of the
+  // galaxy's band drifting across.
+  const starry = (base) => (x, y) => {
+    const star = hash(x * 13 + 7, y * 17 + 3);
+    if (star < 0.01) return [255, 255, 255];
+    if (star < 0.025) return [200, 214, 255];
+    if (star < 0.032) return [255, 214, 170];
+    if (star < 0.06) return shade(base, 40);
+    return Math.abs(((x + y * 2) % 16) - 8) < 2 ? shade(base, 10) : base;
+  };
   // Walnut panelling: boards running up with a fine brass line across at the top.
   const walnutPanel = (base, seam) => (x, y) => (y === 1 ? [0xc8, 0xa0, 0x4a] : boards(base, seam, 4)(x, y));
 
@@ -5455,10 +5465,18 @@ blueprint("runway_blueprint", false, runwayFromAbove);
       wall: padded(hex(0x4a4e56), hex(0x24262a)), dado: band(hex(0x24262a), hex(0x5a5e66)), ledge: plaster(hex(0x3a3e46)),
       ceiling: padded(hex(0x3e424a), hex(0x1c1e22)), floor: studded(hex(0x2a2c30)),
     },
+    dome: {
+      wall: starry(hex(0x0e1636)), dado: starry(hex(0x0b1230)), ledge: starry(hex(0x0e1636)), ceiling: starry(hex(0x0c1434)),
+      floor: studded(hex(0x2a2c30)),
+    },
   };
   for (const [finish, parts] of Object.entries(FINISHES)) {
     for (const [part, paint] of Object.entries(parts)) {
       texture(blockOutput, `rocket_${part}_${finish}`, paint, 3);
+    }
+    // No window is set in the dome.
+    if (finish === "dome") {
+      continue;
     }
     // The wall round each oval window's oval inside, in the room's own wall, the hole and the lip left clear; its
     // lowest row, on the floor, the dado along the wall's foot, as the wall beside it is.
@@ -5470,6 +5488,52 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 }
 
 foodLabTextures();
+
+orreryTextures();
+
+// The rocket's orrery (see OrreryRenderer): its brass, for the mount's model too, and its sheet of sixteen-pixel
+// patches: the brass, the sun, white-hot at its middle and orange at its rim with hot spots, and each planet's surface,
+// cratered grey Mercury, cream Venus in soft swirls, the Earth's blue seas, green and brown land, white clouds and
+// poles, rusty Mars with its polar cap, Jupiter's bands and great red spot, and Saturn's pale gold bands; under them
+// the moon's cratered grey and Saturn's ring, gold and tan bands round a clear middle.
+function orreryTextures() {
+  const PATCH = 16;
+  const hash = (x, y) => (((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000 / 1000;
+  const blend = (from, to, t) => from.map((c, i) => Math.round(c + (to[i] - c) * Math.max(0, Math.min(1, t))));
+  const middle = (x, y) => Math.hypot(x - 7.5, y - 7.5);
+  const BRASS = [200, 154, 72];
+  const brass = (x, y) => (x + y < 9 ? blend(BRASS, [244, 214, 140], 0.6) : x + y > 24 ? blend(BRASS, [120, 84, 30], 0.5) : BRASS);
+  const cratered = (base, seed) => (x, y) => (hash(x * 5 + seed, y * 7 + seed) < 0.12 ? blend(base, [40, 40, 44], 0.35) : base);
+  const PATCHES = [
+    brass,
+    (x, y) => (hash(x * 3, y * 11) < 0.08 ? [255, 255, 220] : blend([255, 250, 200], [255, 150, 40], middle(x, y) / 9)),
+    cratered([150, 146, 142], 11),
+    (x, y) => blend([238, 222, 168], [214, 188, 128], (Math.sin(y * 0.8 + x * 0.3) + 1) / 2),
+    (x, y) => {
+      if (y < 2 || y > 13) return [240, 246, 250];
+      const land = Math.sin(x * 0.7) + Math.sin(y * 0.9 + x * 0.2) + Math.sin((x + y) * 0.45);
+      if (hash(x * 9, y * 13) < 0.06) return [244, 248, 252];
+      return land > 0.4 ? (land > 1.6 ? [134, 108, 62] : [62, 140, 64]) : [36, 92, 196];
+    },
+    (x, y) => (y < 2 ? [236, 230, 224] : hash(x * 7, y * 3) < 0.2 ? [140, 52, 30] : [196, 86, 46]),
+    (x, y) => {
+      if (Math.hypot((x - 10) / 2, y - 10) < 1.3) return [190, 70, 50];
+      return [[214, 186, 142], [238, 222, 192], [170, 120, 80], [226, 204, 166]][Math.floor(y / 2) % 4];
+    },
+    (x, y) => [[232, 208, 146], [214, 184, 120], [240, 222, 170]][Math.floor(y / 3) % 3],
+    cratered([186, 186, 184], 23),
+    (x, y) => {
+      const out = middle(x, y);
+      if (out < 4.5 || out > 7.8) return [0, 0, 0, 0];
+      return out < 5.6 ? [214, 186, 128] : out < 6.4 ? [180, 150, 100] : [232, 212, 160];
+    },
+  ];
+  texture(blockOutput, "orrery", (x, y) => {
+    const paint = PATCHES[Math.floor(y / PATCH) * 8 + Math.floor(x / PATCH)];
+    return paint ? paint(x % PATCH, y % PATCH) : [0, 0, 0, 0];
+  }, 5, PATCH * 8, PATCH * 2);
+  texture(blockOutput, "orrery_brass", brass, 4);
+}
 
 // The lab's food lab (see foodLabModels in generate_resources.mjs). The bioreactor's broth, pink and glowing, bubbles
 // rising through it a pixel a frame, a streak of the glass down one edge; the clear glass of its headspace; the steak,

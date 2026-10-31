@@ -56,9 +56,14 @@ public class OvalWindowBlock extends TransparentBlock {
     public enum Wall implements StringRepresentable {
         COVER, ENTRY, CARGO, MESS, BUNKS, GREENHOUSE, POOL, CLUB, LAB, LOUNGE, COCKPIT;
 
-        /** The wall of a room finished its own way. */
+        /** The wall of a room finished its own way; the cover's for a finish no window is set in, as the dome's. */
         public static Wall of(RocketFinish finish) {
-            return valueOf(finish.name());
+            for (Wall wall : values()) {
+                if (wall.name().equals(finish.name())) {
+                    return wall;
+                }
+            }
+            return COVER;
         }
 
         @Override

@@ -29,6 +29,9 @@
     },
     "finish=cockpit": {
       "model": "aerolarge:block/rocket_lining_panel_cockpit"
+    },
+    "finish=dome": {
+      "model": "aerolarge:block/rocket_lining_panel_dome"
     }
   }
 }

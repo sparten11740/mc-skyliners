@@ -451,8 +451,10 @@ function hullLiningLang() {
 // livery and, on the faces the room sees, that room's lining untinted: its wall, the dado along the wall's foot, the
 // ledges and the ceiling's edge as the wall turns, the wall again round her windows. One model for each finish, the
 // blockstate picking it by the block's finish. Her floors, finished on top as their room and underneath as the
-// ceiling of the room under them: one model for each pair. The cover gives back fabric, the floor a cabin floor.
-const ROCKET_FINISHES = ["entry", "cargo", "mess", "bunks", "greenhouse", "pool", "club", "lab", "lounge", "cockpit"];
+// ceiling of the room under them: one model for each pair. The cover gives back fabric, the floor a cabin floor. The
+// dome's night sky lines her nose over the cockpit, where no window is, so her windows take every finish but that.
+const ROCKET_FINISHES = ["entry", "cargo", "mess", "bunks", "greenhouse", "pool", "club", "lab", "lounge", "cockpit", "dome"];
+const WINDOW_FINISHES = ROCKET_FINISHES.filter((finish) => finish !== "dome");
 {
   const skin = { skin: `${ID}:block/zeppelin_skin`, particle: `${ID}:block/zeppelin_skin` };
   const lining = (finish) => {
@@ -4529,7 +4531,7 @@ const WINDOW_JOINS = [["", false, false], ["_bottom", true, false], ["_top", fal
           variants[`column=${column},dim=${dim},facing=${facing},row=${row},wall=cover`] = { model: `${ID}:block/${name}`, y };
         }
         // In a room finished its own way, the wall round the oval inside is that room's, untinted.
-        for (const finish of ROCKET_FINISHES) {
+        for (const finish of WINDOW_FINISHES) {
           write(`assets/${ID}/models/block/${name}_${finish}.json`, {
             loader: `${ID}:oval_window`, render_type: "minecraft:translucent", column, row, inside_tint: -1,
             textures: {
@@ -5552,6 +5554,26 @@ foodLabModels();
 // the rest, but no part of her frame, and breakable.
 function labFittings() {
   return ["lab_instrument", "habitat_floor"];
+}
+// The rocket's dome (see RocketDome): the orrery's mount, a brass rose against her skin at the tip of her nose, a boss
+// under it for the rod; the rest of the orrery, its rod, its sun and its planets, is drawn by its block entity from a
+// sheet of its own (see OrreryRenderer). Placed only by the blueprint, so it has no item and gives nothing back.
+{
+  const brass = "#brass";
+  write(`assets/${ID}/models/block/orrery.json`, {
+    parent: "minecraft:block/block",
+    textures: { brass: `${ID}:block/orrery_brass`, particle: `${ID}:block/orrery_brass` },
+    elements: [solid([5, 15, 5], [11, 16, 11], brass), solid([6.5, 14, 6.5], [9.5, 15, 9.5], brass)],
+  });
+  write(`assets/${ID}/blockstates/orrery.json`, { variants: { "": { model: `${ID}:block/orrery` } } });
+  cubes.orrery = null;
+}
+// The orrery is fitted into the rocket rather than built into her: light like the rest, but no part of her frame.
+function domeFittings() {
+  return ["orrery"];
+}
+function domeLang() {
+  return { "block.aerolarge.orrery": "Orrery" };
 }
 // Her tardigrade's purr, soft and low now and then, the bloop as it curls up into its tun, its snore asleep, its slurp
 // sucking in what is thrown into its tank and its burp after, and its jump through the spore drive and its return.
@@ -9378,6 +9400,7 @@ FITTINGS.push(...spacePosterFittings());
 FITTINGS.push(...shaftDecorFittings());
 FITTINGS.push(...snackMachineFittings());
 FITTINGS.push(...labFittings());
+FITTINGS.push(...domeFittings());
 FITTINGS.push(...foodLabFittings());
 FITTINGS.push(...greenhouseFittings());
 FITTINGS.push(...rocketRoomFittings());
@@ -10144,6 +10167,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...snackMachineLang(),
   ...roverLang(),
   ...labLang(),
+  ...domeLang(),
   ...foodLabLang(),
   ...roomLang(),
   ...greenhouseLang(),

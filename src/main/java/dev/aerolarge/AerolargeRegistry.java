@@ -143,6 +143,8 @@ import dev.aerolarge.block.BioreactorBlock;
 import dev.aerolarge.block.LabGrowerBlock;
 import dev.aerolarge.block.LabPartitionBlock;
 import dev.aerolarge.block.LabPipeBlock;
+import dev.aerolarge.block.OrreryBlock;
+import dev.aerolarge.block.OrreryBlockEntity;
 import dev.aerolarge.block.SampleCentrifugeBlock;
 import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.IrrigationValveBlock;
@@ -1950,6 +1952,15 @@ public final class AerolargeRegistry {
     public static final DeferredBlock<LabInstrumentBlock> LAB_INSTRUMENT = BLOCKS.registerBlock(
         "lab_instrument", LabInstrumentBlock::new, metal(MapColor.SNOW).noOcclusion().noLootTable().lightLevel(LabInstrumentBlock::light)
     );
+    /**
+     * The brass orrery hanging from the tip of the rocket's nose over her cockpit, its sun and planets drawn by its
+     * block entity. Placed only by the blueprint, so no item, and it gives nothing back.
+     */
+    public static final DeferredBlock<OrreryBlock> ORRERY = BLOCKS.registerBlock(
+        "orrery", OrreryBlock::new, metal(MapColor.GOLD).noCollission().noOcclusion().noLootTable().pushReaction(PushReaction.DESTROY)
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OrreryBlockEntity>> ORRERY_ENTITY =
+        BLOCK_ENTITIES.register("orrery", () -> BlockEntityType.Builder.of(OrreryBlockEntity::new, ORRERY.get()).build(null));
     public static final DeferredBlock<HabitatFloorBlock> HABITAT_FLOOR = BLOCKS.registerBlock(
         "habitat_floor", HabitatFloorBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.1F).sound(SoundType.MOSS_CARPET).noOcclusion().noLootTable()

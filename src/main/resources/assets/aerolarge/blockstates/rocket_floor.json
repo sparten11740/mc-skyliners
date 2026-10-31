@@ -30,6 +30,9 @@
     "ceiling=cockpit,floor=entry": {
       "model": "aerolarge:block/rocket_floor_entry_cockpit"
     },
+    "ceiling=dome,floor=entry": {
+      "model": "aerolarge:block/rocket_floor_entry_dome"
+    },
     "ceiling=entry,floor=cargo": {
       "model": "aerolarge:block/rocket_floor_cargo_entry"
     },
@@ -59,6 +62,9 @@
     },
     "ceiling=cockpit,floor=cargo": {
       "model": "aerolarge:block/rocket_floor_cargo_cockpit"
+    },
+    "ceiling=dome,floor=cargo": {
+      "model": "aerolarge:block/rocket_floor_cargo_dome"
     },
     "ceiling=entry,floor=mess": {
       "model": "aerolarge:block/rocket_floor_mess_entry"
@@ -90,6 +96,9 @@
     "ceiling=cockpit,floor=mess": {
       "model": "aerolarge:block/rocket_floor_mess_cockpit"
     },
+    "ceiling=dome,floor=mess": {
+      "model": "aerolarge:block/rocket_floor_mess_dome"
+    },
     "ceiling=entry,floor=bunks": {
       "model": "aerolarge:block/rocket_floor_bunks_entry"
     },
@@ -119,6 +128,9 @@
     },
     "ceiling=cockpit,floor=bunks": {
       "model": "aerolarge:block/rocket_floor_bunks_cockpit"
+    },
+    "ceiling=dome,floor=bunks": {
+      "model": "aerolarge:block/rocket_floor_bunks_dome"
     },
     "ceiling=entry,floor=greenhouse": {
       "model": "aerolarge:block/rocket_floor_greenhouse_entry"
@@ -150,6 +162,9 @@
     "ceiling=cockpit,floor=greenhouse": {
       "model": "aerolarge:block/rocket_floor_greenhouse_cockpit"
     },
+    "ceiling=dome,floor=greenhouse": {
+      "model": "aerolarge:block/rocket_floor_greenhouse_dome"
+    },
     "ceiling=entry,floor=pool": {
       "model": "aerolarge:block/rocket_floor_pool_entry"
     },
@@ -179,6 +194,9 @@
     },
     "ceiling=cockpit,floor=pool": {
       "model": "aerolarge:block/rocket_floor_pool_cockpit"
+    },
+    "ceiling=dome,floor=pool": {
+      "model": "aerolarge:block/rocket_floor_pool_dome"
     },
     "ceiling=entry,floor=club": {
       "model": "aerolarge:block/rocket_floor_club_entry"
@@ -210,6 +228,9 @@
     "ceiling=cockpit,floor=club": {
       "model": "aerolarge:block/rocket_floor_club_cockpit"
     },
+    "ceiling=dome,floor=club": {
+      "model": "aerolarge:block/rocket_floor_club_dome"
+    },
     "ceiling=entry,floor=lab": {
       "model": "aerolarge:block/rocket_floor_lab_entry"
     },
@@ -239,6 +260,9 @@
     },
     "ceiling=cockpit,floor=lab": {
       "model": "aerolarge:block/rocket_floor_lab_cockpit"
+    },
+    "ceiling=dome,floor=lab": {
+      "model": "aerolarge:block/rocket_floor_lab_dome"
     },
     "ceiling=entry,floor=lounge": {
       "model": "aerolarge:block/rocket_floor_lounge_entry"
@@ -270,6 +294,9 @@
     "ceiling=cockpit,floor=lounge": {
       "model": "aerolarge:block/rocket_floor_lounge_cockpit"
     },
+    "ceiling=dome,floor=lounge": {
+      "model": "aerolarge:block/rocket_floor_lounge_dome"
+    },
     "ceiling=entry,floor=cockpit": {
       "model": "aerolarge:block/rocket_floor_cockpit_entry"
     },
@@ -299,6 +326,42 @@
     },
     "ceiling=cockpit,floor=cockpit": {
       "model": "aerolarge:block/rocket_floor_cockpit_cockpit"
+    },
+    "ceiling=dome,floor=cockpit": {
+      "model": "aerolarge:block/rocket_floor_cockpit_dome"
+    },
+    "ceiling=entry,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_entry"
+    },
+    "ceiling=cargo,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_cargo"
+    },
+    "ceiling=mess,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_mess"
+    },
+    "ceiling=bunks,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_bunks"
+    },
+    "ceiling=greenhouse,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_greenhouse"
+    },
+    "ceiling=pool,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_pool"
+    },
+    "ceiling=club,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_club"
+    },
+    "ceiling=lab,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_lab"
+    },
+    "ceiling=lounge,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_lounge"
+    },
+    "ceiling=cockpit,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_cockpit"
+    },
+    "ceiling=dome,floor=dome": {
+      "model": "aerolarge:block/rocket_floor_dome_dome"
     }
   }
 }
