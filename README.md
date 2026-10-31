@@ -2167,7 +2167,9 @@ brush's sound, dripping ahead of its edge in runs, a few long and most short, ea
 does; it is a tint, so no block of her changes, and her windows' frames take it too.
 
 Round every story run two rings of LED strip along the inside of her skin, one along the floor and one under the
-ceiling, stopping short of her windows (the server config's `rocket.ledStrips` leaves them out, and their panels and
+ceiling, stopping short of her windows; on the observation deck, glass all round, one runs along the foot of its band
+of glass and the other round the edge of its starry ceiling, where the starry wall meets it (the server config's
+`rocket.ledStrips` leaves them out, and their panels and
 console with them). The slim panel on the other side of each story's lift doors from its call button sets its strips,
 and every control on it is a picture: a swatch for each of ten colours (cherry, tangerine, sunshine, lime, mint, sky,
 ocean, grape, pink and snow); a sun for each brightness, a dark ring struck through for off, then bigger and with more

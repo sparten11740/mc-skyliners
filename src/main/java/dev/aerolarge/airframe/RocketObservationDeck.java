@@ -1,6 +1,5 @@
 package dev.aerolarge.airframe;
 
-import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.BeanBagBlock;
 import dev.aerolarge.block.Brightness;
@@ -161,14 +160,31 @@ final class RocketObservationDeck extends RocketRoom {
     }
 
     /**
+     * Whether a story is the observation deck furnished as her room: its band of glass in place of its windows, its
+     * starry dome over it.
+     */
+    static boolean furnished(RocketLayout layout, int story) {
+        return story == STORY && layout.rooms();
+    }
+
+    /**
      * The row a story's ceiling is over its floor, given the row of the floor over it: that row, or for the observation
      * deck the lower ceiling of its own that it has, furnished as her room, where its story is taller than
-     * {@link #TALLEST}. Her LED strips run round under it (see {@link RocketLedStrips}).
+     * {@link #TALLEST}. Her LED strips run round the room under it (see {@link #underCeiling}).
      */
     static int ceilingOf(RocketLayout layout, int story, int floor, int over) {
         int lid = floor + TALLEST;
-        boolean lidded = story == STORY && layout.rooms() && lid < over;
+        boolean lidded = furnished(layout, story) && lid < over;
         return lidded ? lid : over;
+    }
+
+    /**
+     * The row a story's ring of LED strip under its ceiling runs in (see {@link RocketLedStrips}), given its ceiling's
+     * row: the row under it; but on the observation deck furnished as her room, whose starlight ceiling fills that row
+     * out to her skin, the row under the starlight, the room's highest, where the starry wall meets the starry ceiling.
+     */
+    static int underCeiling(RocketLayout layout, int story, int ceiling) {
+        return furnished(layout, story) ? ceiling - 2 : ceiling - 1;
     }
 
     @Override
@@ -386,8 +402,8 @@ final class RocketObservationDeck extends RocketRoom {
     /**
      * The starlight panels up the wall too, over the band of glass to the ceiling, in every open block from her skin in
      * to the ceiling's panels, so that the whole room over the band is a starry dome, a planetarium; but for the
-     * cafeteria's own rows over the mezzanine, the stairs' headroom, and the blocks against her skin in the row under
-     * the ceiling, where her LED strips run round under it (see {@link RocketLedStrips}).
+     * cafeteria's own rows over the mezzanine and the stairs' headroom. Her LED strips run round its top, under the
+     * starlight ceiling (see {@link #underCeiling}), and along the foot of the band of glass under it.
      */
     private void starryWall(int highest) {
         int reach = (int) Math.ceil(wall()) + 1;
@@ -397,15 +413,13 @@ final class RocketObservationDeck extends RocketRoom {
             int y = at.getY();
             int z = at.getZ();
             boolean wall = layout.inFrom(x, y, z, 0) && !inRoom(x, y, z, 0) && layout.isOpen(x, y, z) && !kept.contains(at) && !inCafe(x, y, z);
-            if (wall && !(y == highest && AerolargeConfig.LED_STRIPS.get() && againstSkin(x, y, z))) {
+            if (wall) {
                 layout.set(x, y, z, panel);
             }
         }
     }
 
-    /**
-     * Whether the cover of her skin stands beside a block, further out from her axis, as an LED strip runs along it.
-     */
+    /** Whether the cover of her skin stands beside a block, further out from her axis: a place along her wall. */
     private boolean againstSkin(int x, int y, int z) {
         for (Direction side : Direction.Plane.HORIZONTAL) {
             boolean outward = side.getStepX() * x + side.getStepZ() * z > 0;

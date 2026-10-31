@@ -23,13 +23,15 @@ import net.minecraft.world.level.block.state.BlockState;
  * The LED strips round each of the rocket's stories (see {@link LedStripBlock}), with the panel by each story's lift
  * door that sets them and the console in her cockpit that sets any story or all of them. Two rings of strip go round
  * every story along the inside of her skin, one lying on the floor and one fixed under the ceiling, in every open block
- * that the skin stands beside, out of the way of the oval windows and of whatever else stands there; each strip touches
- * the floor or the ceiling face to face, so it is assembled with her. Each story is set as its room asks, most in
- * the colour of its button on the lift's board, so a child who presses a colour steps out into it: the entry snow
- * white at two thirds; the cargo bay sunshine yellow; the galley and mess a warm full tangerine; the bunk room a dim
- * grape, breathing like a night light; the greenhouse a full pink grow light; the pool sky blue, breathing like
- * water; the techno club pulsing pink and ocean blue to its beat; the lab mint; the observation deck a dim ocean blue
- * for the stars. Laid last, so they fill in round every room's fittings.
+ * that the skin stands beside, out of the way of the oval windows and of whatever else stands there; on the observation
+ * deck, glass all round under a starry dome, one along the foot of its band of glass and one round the edge of its
+ * starlight ceiling, along the top of its starry wall. Each strip touches the floor or the ceiling face to face, so it
+ * is assembled with her. Each story is set as its room asks, most in the colour of its button on the lift's board, so
+ * a child who presses a colour steps out into it: the entry snow white at two thirds; the cargo bay sunshine yellow;
+ * the galley and mess a warm full tangerine; the bunk room a dim grape, breathing like a night light; the greenhouse a
+ * full pink grow light; the pool sky blue, breathing like water; the techno club pulsing pink and ocean blue to its
+ * beat; the lab mint; the observation deck a dim ocean blue for the stars. Laid last, so they fill in round every
+ * room's fittings.
  */
 final class RocketLedStrips implements RocketPiece {
     /** The stories whose rooms set their strips their own way, counted from the entry story up. */
@@ -66,6 +68,14 @@ final class RocketLedStrips implements RocketPiece {
         this.layout = layout;
     }
 
+    /**
+     * Where a story's two rings of strip run: the row of its floor, which the one lies on, the row the one under its
+     * ceiling runs in, and whether they keep out of the way of its oval windows, as on every story but the observation
+     * deck, whose band of glass takes their place.
+     */
+    private record Rings(int floor, int under, boolean windows) {
+    }
+
     @Override
     public boolean wanted() {
         return AerolargeConfig.LED_STRIPS.get();
@@ -80,7 +90,8 @@ final class RocketLedStrips implements RocketPiece {
             int floor = floors.get(story);
             int over = story + 1 < floors.size() ? floors.get(story + 1) : layout.cockpitFloor();
             int ceiling = RocketObservationDeck.ceilingOf(layout, story, floor, over);
-            BlockPos panel = story(floor, ceiling, setting(story));
+            int under = RocketObservationDeck.underCeiling(layout, story, ceiling);
+            BlockPos panel = story(new Rings(floor, under, !RocketObservationDeck.furnished(layout, story)), setting(story));
             if (panel != null) {
                 panels.add(panel);
                 spans.add(floor);
@@ -106,20 +117,22 @@ final class RocketLedStrips implements RocketPiece {
     }
 
     /**
-     * A story's two rings of strip and its panel, which is told where they run; where the panel stands, or null where
-     * its place is taken, and then the story has no strips either, with nothing to set them.
+     * A story's two rings of strip and its panel, which is told where they run: the box round them, from the ring on
+     * the floor up to the one under the ceiling, whose two rows are the only ones it looks along; where the panel
+     * stands, or null where its place is taken, and then the story has no strips either, with nothing to set them.
      */
     @Nullable
-    private BlockPos story(int floor, int ceiling, LedSetting setting) {
+    private BlockPos story(Rings rings, LedSetting setting) {
+        int floor = rings.floor();
         BlockPos panel = new BlockPos(PANEL_X, floor + PANEL_UP, PANEL_Z);
         if (!layout.isOpen(panel.getX(), panel.getY(), panel.getZ())) {
             return null;
         }
         List<BlockPos> strips = new ArrayList<>();
-        ring(floor, floor + 1, false, setting.brightness(), strips);
-        ring(floor, ceiling - 1, true, setting.brightness(), strips);
+        ring(rings, floor + 1, false, setting.brightness(), strips);
+        ring(rings, rings.under(), true, setting.brightness(), strips);
         BlockPos low = new BlockPos(panel.getX(), floor + 1, panel.getZ());
-        BlockPos high = new BlockPos(panel.getX(), ceiling - 1, panel.getZ());
+        BlockPos high = new BlockPos(panel.getX(), rings.under(), panel.getZ());
         for (BlockPos strip : strips) {
             low = BlockPos.min(low, strip);
             high = BlockPos.max(high, strip);
@@ -136,13 +149,13 @@ final class RocketLedStrips implements RocketPiece {
     }
 
     /** A ring of strip round a story at a row, on its floor or under its ceiling, each strip added to the list. */
-    private void ring(int floor, int y, boolean ceiling, int brightness, List<BlockPos> strips) {
+    private void ring(Rings rings, int y, boolean ceiling, int brightness, List<BlockPos> strips) {
         int out = layout.reach();
         int across = 2 * out + 1;
         for (int block = 0; block < across * across; block++) {
             int x = block / across - out;
             int z = block % across - out;
-            BlockState strip = strip(floor, x, y, z, ceiling, brightness);
+            BlockState strip = strip(rings, x, y, z, ceiling, brightness);
             if (strip != null) {
                 layout.set(x, y, z, strip);
                 strips.add(new BlockPos(x, y, z));
@@ -151,13 +164,14 @@ final class RocketLedStrips implements RocketPiece {
     }
 
     /**
-     * The strip at a block, running along each side of it the cover of her skin stands on, further out from her axis;
-     * null for none: where something stands, in front of a window, where no floor or ceiling holds it, or where the
-     * skin stands beside it on no side.
+     * The strip at a block, running along each side of it that what strips run along stands on, further out from her
+     * axis (see {@link #wallAt}); null for none: where something stands, in front of a window, where no floor or
+     * ceiling holds it, or where nothing it runs along stands beside it on any side.
      */
     @Nullable
-    private BlockState strip(int floor, int x, int y, int z, boolean ceiling, int brightness) {
-        boolean window = y - floor >= WINDOW_FROM && y - floor < WINDOW_FROM + OvalWindowBlock.ROWS
+    private BlockState strip(Rings rings, int x, int y, int z, boolean ceiling, int brightness) {
+        int up = y - rings.floor();
+        boolean window = rings.windows() && up >= WINDOW_FROM && up < WINDOW_FROM + OvalWindowBlock.ROWS
             && (Math.abs(x) <= WINDOW_HALF || Math.abs(z) <= WINDOW_HALF);
         int held = ceiling ? y + 1 : y - 1;
         if (window || !layout.isOpen(x, y, z) || layout.isOpen(x, held, z)) {
@@ -167,16 +181,21 @@ final class RocketLedStrips implements RocketPiece {
             .setValue(LedStripBlock.BRIGHTNESS, brightness);
         boolean any = false;
         for (Direction side : Direction.Plane.HORIZONTAL) {
-            boolean skin = side.getStepX() * x + side.getStepZ() * z > 0 && skinAt(x + side.getStepX(), y, z + side.getStepZ());
-            strip = strip.setValue(LedStripBlock.WALLS.get(side), skin);
-            any |= skin;
+            boolean wall = side.getStepX() * x + side.getStepZ() * z > 0 && wallAt(x + side.getStepX(), y, z + side.getStepZ());
+            strip = strip.setValue(LedStripBlock.WALLS.get(side), wall);
+            any |= wall;
         }
         return any ? strip : null;
     }
 
-    /** Whether the cover of her skin stands at a block: not a window, glass or anything fitted. */
-    private boolean skinAt(int x, int y, int z) {
-        return layout.stateAt(x, y, z).is(AerolargeRegistry.ZEPPELIN_COVER.get());
+    /**
+     * Whether what a strip runs along stands at a block: the cover of her skin, or on the observation deck its band of
+     * glass and the starry wall over it; not an oval window, nor anything fitted.
+     */
+    private boolean wallAt(int x, int y, int z) {
+        BlockState wall = layout.stateAt(x, y, z);
+        return wall.is(AerolargeRegistry.ZEPPELIN_COVER.get()) || wall.is(AerolargeRegistry.SMOKED_GLASS.get())
+            || wall.is(AerolargeRegistry.STARLIGHT_PANEL.get());
     }
 
     /**
