@@ -2184,7 +2184,8 @@ ocean, grape, pink and snow); a sun for each brightness, a dark ring struck thro
 rays for a third, two thirds and full; and a little strip for each way of lighting, doing what it does: steady;
 breathing, brightening and dimming in steps over four seconds; chasing, bands of colour running round the floor one way
 and round the ceiling the other; and club, pulsing on the techno club's 128 beats a minute, its colour and a partner
-colour taking turns. What is set is framed in white, and each touch sounds: a swatch chimes a note of a scale rising
+colour taking turns. What is set glows softly green round its edge, the control you look at brightens, and each
+touch sounds: a swatch chimes a note of a scale rising
 along the colours, a sun clicks higher the brighter it is, a mode blips. Nothing flashes faster than three times a
 second. The strips give more light the brighter they are, and cast a soft glow up the wall from the floor and down it
 from the ceiling. Each story starts in its own mood, most in the colour of its button on the lift's board, so a child
@@ -2193,7 +2194,8 @@ and mess a warm full tangerine, the bunk room a dim grape breathing like a night
 light, the pool sky blue breathing like water, the techno club pulsing pink and ocean blue, the lab mint and the
 observation deck a dim ocean blue for the stars. Against the glass on the cockpit's left stands the LED console, her
 silhouette along its top laid on her side, each story a band glowing as its strips do: touch a band to pick that story,
-or the little rocket beside it to pick them all, then use the same swatches, suns and strips under them. Set for all of
+or the little rocket beside it to pick them all, what is picked glowing softly green, then use the same swatches,
+suns and strips under them. Set for all of
 her, a change climbs her a story at a time from the entry story up.
 
 Over the cockpit her nose is a dome, lined as a night sky full of stars over the ring of ceiling on the glass, and
@@ -2510,9 +2512,10 @@ loop of string or a pot rack across two blocks as one), and her shaft's lift gla
 shaft (`RocketLayout.shaftWall`).
 `RocketLedStrips` lays her LED strips (`LedStripBlock`) round each story, the `LedPanelBlock` by each lift door, whose
 `LedPanelBlockEntity` keeps its story's `LedSetting` and sets its strips' brightness, and the cockpit's
-`LedConsoleBlock`, their controls laid out by `LedControls`; on the client `LedLights` tints the strips and times their
+`LedConsoleBlock`, both touch panels, their tiles laid out by `LedControls`; on the client `LedLights` tints the strips
+and times their
 modes, and `LedPanelRenderer` (over the strips found by `LedRing`) and `LedConsoleRenderer` draw them through
-`LedControlsArt`.
+`LedControlsArt`, which lights their tiles through `TouchPanelArt`.
 `RocketPosters`, a piece of its own, hangs her space posters on her lift shaft, a `SpacePosterBlock` for each block of
 a picture, the pictures drawn by `tools/generate_textures.mjs`; `SpacePosterItem` puts one up by hand.
 `RocketShaftDecor`, laid after it, dresses the shaft's outside for each room, a `ShaftDecorBlock` for each block of a

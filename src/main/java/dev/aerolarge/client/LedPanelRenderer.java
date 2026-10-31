@@ -23,11 +23,11 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * Draws a story's LED panel (see {@link dev.aerolarge.block.LedPanelBlock}) over its face (see {@link LedControlsArt}),
- * and over its story's strips what their mesh cannot show: the soft glow each lit strip casts up its wall from the
- * floor, or down it from the ceiling, added onto the wall at full brightness wherever the wall is flat; and, for an
- * animated mode, the strips themselves brightening over their dimmer mesh as the mode has them now (see
- * {@link LedLights#intensity}), timed by the game clock. Drawn whenever any of the story's box is in view, and nothing
- * of the strips for a story switched off.
+ * the control the crosshair rests on lit up as on every touch panel (see {@link TouchPanelArt}), and over its story's
+ * strips what their mesh cannot show: the soft glow each lit strip casts up its wall from the floor, or down it from
+ * the ceiling, added onto the wall at full brightness wherever the wall is flat; and, for an animated mode, the strips
+ * themselves brightening over their dimmer mesh as the mode has them now (see {@link LedLights#intensity}), timed by
+ * the game clock. Drawn whenever any of the story's box is in view, and nothing of the strips for a story switched off.
  */
 public class LedPanelRenderer implements BlockEntityRenderer<LedPanelBlockEntity> {
     /** The glow up a wall, bright at the strip and fading to nothing, which each glow's colour tints. */
@@ -54,7 +54,7 @@ public class LedPanelRenderer implements BlockEntityRenderer<LedPanelBlockEntity
         LedSetting setting = panel.setting();
         pose.pushPose();
         WideScreenFace.onto(pose, panel.getBlockState());
-        LedControlsArt.panel(pose.last().pose(), ScreenDrawing.shapes(buffers), setting, ticks);
+        LedControlsArt.panel(pose.last().pose(), ScreenDrawing.shapes(buffers), setting, TouchPanelArt.lookedAt(panel), ticks);
         pose.popPose();
         BoundingBox box = panel.box();
         if (box == null || setting.brightness() <= 0) {

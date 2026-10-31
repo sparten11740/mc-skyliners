@@ -47,9 +47,13 @@ public class LedConsoleBlockEntity extends BlockEntity {
         setChanged();
     }
 
-    /** Each story's floor and ceiling in turn, rows up from her foot; none for a console set by hand. */
-    public int[] spans() {
-        return spans.clone();
+    /**
+     * Its face's tiles (see {@link LedControls#console}), the same for a touch on the server and for the tile lit under
+     * a client's crosshair: its stories' bands laid along her silhouette by their floors and ceilings, none for a
+     * console set by hand.
+     */
+    public TouchPanel.Layout layout() {
+        return LedControls.console(spans, stories());
     }
 
     /** How many stories it sets. */

@@ -1,7 +1,6 @@
 package dev.aerolarge.client;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.LedColour;
 import dev.aerolarge.block.LedConsoleBlockEntity;
 import dev.aerolarge.block.LedControls;
@@ -9,6 +8,7 @@ import dev.aerolarge.block.LedMode;
 import dev.aerolarge.block.LedPanelBlockEntity;
 import dev.aerolarge.block.LedSetting;
 import dev.aerolarge.block.LedStripBlock;
+import dev.aerolarge.block.TouchPanel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -16,27 +16,26 @@ import javax.annotation.Nullable;
 import org.joml.Matrix4f;
 
 /**
- * The faces of the rocket's LED panels and of her cockpit's console, drawn where {@link LedControls} lays out their
- * controls, all pictures: dark glass in a black casing; the ten colours' swatches; a sun for each brightness, a dark
- * ring struck through for off and brighter with more rays up to full; a little strip for each mode doing what it does,
- * lit steadily, breathing, chasing along or pulsing in bars; each in the colour it sets, and what is set framed in
- * white. On the console, along the top, her silhouette laid on her side, her foot at the left, each story a band
- * glowing as its strips do, the story picked framed in white, and beside it the whole-rocket button, a little rocket
- * standing up with every story's band lit. Everything is in blocks on the face, at full brightness.
+ * The faces of the rocket's LED panels and of her cockpit's console, drawn on the tiles {@link LedControls} lays out,
+ * all pictures: dark glass in a black casing; the ten colours' swatches; a sun for each brightness, a dark ring struck
+ * through for off and brighter with more rays up to full; a little strip for each mode doing what it does, lit
+ * steadily, breathing, chasing along or pulsing in bars; each in the colour it sets. On the console, along the top, her
+ * silhouette laid on her side, her foot at the left, each story a band glowing as its strips do, and beside it the
+ * whole-rocket button, a little rocket standing up with every story's band lit. Every tile lights up as every touch
+ * panel's does (see {@link TouchPanelArt}): the one the crosshair rests on as looked at, and what is set now as picked:
+ * the colour, the brightness and the mode (on the console those every story picked agrees on), and on the console the
+ * story picked, or every story and the whole-rocket button. Everything is in blocks on the face, at full brightness.
  */
 final class LedControlsArt {
     private static final int CASING = 0xFF15171C;
     private static final int GLASS = 0xFF090A0D;
     private static final int TILE = 0xFF1F232A;
-    private static final int TILE_PICKED = 0xFF343A45;
-    private static final int RIM = 0xFFF4F8FF;
     private static final int DARK_ICON = 0xFF5B616C;
     private static final int HULL = 0xFF8F96A1;
     private static final int HULL_SHADE = 0xFF5E646E;
     private static final int SMOKED = 0xFF101216;
-    /** The casing round the glass, and the white frame round what is set, in blocks on the face. */
+    /** The casing round the glass, in blocks on the face. */
     private static final double CASING_WIDTH = 0.025;
-    private static final double RIM_WIDTH = 0.018;
     /** Lifts each layer off the one below it. */
     private static final float LAYER = 0.001F;
     /** The suns: how big the off ring is, the hole in it and its stroke, and how far out the rays reach, as shares. */
@@ -65,17 +64,21 @@ final class LedControlsArt {
     private LedControlsArt() {
     }
 
-    /** A story's panel's face, a block square, its controls set as the story is. */
-    static void panel(Matrix4f matrix, VertexConsumer shapes, LedSetting setting, double ticks) {
+    /**
+     * A story's panel's face, a block square, its controls set as the story is, the player looking at one of them (or
+     * none, -1).
+     */
+    static void panel(Matrix4f matrix, VertexConsumer shapes, LedSetting setting, int looked, double ticks) {
         background(matrix, shapes, 1);
-        controls(matrix, shapes, LedControls.Face.PANEL, List.of(setting), ticks);
+        controls(matrix, shapes, LedControls.Face.PANEL, List.of(setting), looked, ticks);
     }
 
     /**
-     * The console's face, two rows wide to one tall: her silhouette with each story's band, the whole-rocket button,
-     * and the controls, set as the story picked is, or framing only what every story agrees on while all are picked.
+     * The console's face, two rows wide to one tall, the player looking at one of its tiles (or none, -1): her
+     * silhouette with each story's band, the whole-rocket button, and the controls, set as the story picked is, or
+     * marking only what every story agrees on while all are picked.
      */
-    static void console(Matrix4f matrix, VertexConsumer shapes, LedConsoleBlockEntity console, double ticks) {
+    static void console(Matrix4f matrix, VertexConsumer shapes, LedConsoleBlockEntity console, int looked, double ticks) {
         background(matrix, shapes, LedControls.Face.CONSOLE.width());
         List<LedSetting> settings = new ArrayList<>();
         for (int story = 0; story < console.stories(); story++) {
@@ -84,9 +87,9 @@ final class LedControlsArt {
         }
         int picked = console.selected();
         boolean whole = picked < 0 || picked >= settings.size();
-        silhouette(matrix, shapes, console.spans(), settings, whole ? LedConsoleBlockEntity.WHOLE_ROCKET : picked, ticks);
-        wholeRocket(matrix, shapes, settings, whole, ticks);
-        controls(matrix, shapes, LedControls.Face.CONSOLE, whole ? settings : List.of(settings.get(picked)), ticks);
+        silhouette(matrix, shapes, console.layout(), settings, whole ? LedConsoleBlockEntity.WHOLE_ROCKET : picked, looked, ticks);
+        wholeRocket(matrix, shapes, settings, look(LedControls.WHOLE_ROCKET_TILE, looked, whole), ticks);
+        controls(matrix, shapes, LedControls.Face.CONSOLE, whole ? settings : List.of(settings.get(picked)), looked, ticks);
     }
 
     /** The casing and the dark glass inside it, over a face so wide and a row tall. */
@@ -96,23 +99,41 @@ final class LedControlsArt {
     }
 
     /**
-     * The swatches, the suns and the modes' strips, in the colour of the first of the stories they set, framing what
-     * all of those stories are set to.
+     * The swatches, the suns and the modes' strips, in the colour of the first of the stories they set, what all of
+     * those stories are set to picked.
      */
-    private static void controls(Matrix4f matrix, VertexConsumer shapes, LedControls.Face face, List<LedSetting> set, double ticks) {
+    private static void controls(Matrix4f matrix, VertexConsumer shapes, LedControls.Face face, List<LedSetting> set, int looked, double ticks) {
+        TouchPanel.Layout tiles = face.controls();
         LedSetting shown = set.isEmpty() ? LedSetting.PLAIN : set.getFirst();
         LedColour colour = agreed(set, LedSetting::colour);
         Integer brightness = agreed(set, LedSetting::brightness);
         LedMode mode = agreed(set, LedSetting::mode);
         for (LedColour swatch : LedColour.values()) {
-            swatch(matrix, shapes, face.swatch(swatch), swatch, swatch == colour);
+            int tile = LedControls.swatch(swatch);
+            TouchPanelArt.tile(shapes, matrix, button(tiles, tile), 0xFF000000 | swatch.rgb(), look(tile, looked, swatch == colour), 2 * LAYER);
         }
         for (int glow = 0; glow <= LedStripBlock.BRIGHTEST; glow++) {
-            sun(matrix, shapes, face.glow(glow), shown.colour(), glow, brightness != null && brightness == glow);
+            int tile = LedControls.glow(glow);
+            sun(matrix, shapes, button(tiles, tile), shown.colour(), glow, look(tile, looked, brightness != null && brightness == glow));
         }
         for (LedMode way : LedMode.values()) {
-            mode(matrix, shapes, face.mode(way), new LedSetting(shown.colour(), LedStripBlock.BRIGHTEST, way), way == mode, ticks);
+            int tile = LedControls.mode(way);
+            mode(matrix, shapes, button(tiles, tile), new LedSetting(shown.colour(), LedStripBlock.BRIGHTEST, way), look(tile, looked, way == mode),
+                ticks);
         }
+    }
+
+    /** Where a control's button is drawn: its tile, less the half gap round it. */
+    private static TouchPanel.Tile button(TouchPanel.Layout tiles, int tile) {
+        return tiles.get(tile).inset(LedControls.INSET);
+    }
+
+    /**
+     * A tile's look, the player looking at one tile (or none, -1): always lit, as every control can always be touched,
+     * and picked while what it sets is set.
+     */
+    private static TouchPanelArt.Look look(int tile, int looked, boolean picked) {
+        return new TouchPanelArt.Look(tile == looked, picked, true);
     }
 
     /** What every one of the settings has alike; null where they differ, or there are none. */
@@ -127,32 +148,18 @@ final class LedControlsArt {
         return first;
     }
 
-    private static void swatch(Matrix4f matrix, VertexConsumer shapes, Box box, LedColour colour, boolean picked) {
-        if (picked) {
-            rim(matrix, shapes, box);
-        }
-        rect(matrix, shapes, box, 3, 0xFF000000 | colour.rgb());
-    }
-
-    /** A button's tile, framed in white if what it sets is set. */
-    private static void tile(Matrix4f matrix, VertexConsumer shapes, Box box, boolean picked) {
-        if (picked) {
-            rim(matrix, shapes, box);
-        }
-        rect(matrix, shapes, box, 3, picked ? TILE_PICKED : TILE);
-    }
-
     /**
-     * A brightness's sun: a dark ring struck through for off; lit, the brighter the bigger and the more rays it has.
+     * A brightness's sun on its button: a dark ring struck through for off; lit, the brighter the bigger and the more
+     * rays it has.
      */
-    private static void sun(Matrix4f matrix, VertexConsumer shapes, Box box, LedColour colour, int brightness, boolean picked) {
-        tile(matrix, shapes, box, picked);
-        double x = (box.x0() + box.x1()) / 2;
-        double y = (box.y0() + box.y1()) / 2;
-        double size = Math.min(box.x1() - box.x0(), box.y1() - box.y0());
+    private static void sun(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Tile button, LedColour colour, int brightness, TouchPanelArt.Look look) {
+        TouchPanelArt.tile(shapes, matrix, button, TILE, look, 2 * LAYER);
+        double x = button.middleX();
+        double y = button.middleY();
+        double size = button.side();
         if (brightness <= 0) {
             ScreenDrawing.disc(shapes, matrix, x, y, RING * size, ROUND, 4 * LAYER, DARK_ICON);
-            ScreenDrawing.disc(shapes, matrix, x, y, RING_HOLE * size, ROUND, 5 * LAYER, picked ? TILE_PICKED : TILE);
+            ScreenDrawing.disc(shapes, matrix, x, y, RING_HOLE * size, ROUND, 5 * LAYER, TouchPanelArt.colour(TILE, look));
             double reach = RING * size;
             ScreenDrawing.line(shapes, matrix, x - reach, y - reach, x + reach, y + reach, 6 * LAYER, (float) (STROKE * size), DARK_ICON);
             return;
@@ -168,14 +175,14 @@ final class LedControlsArt {
         ScreenDrawing.disc(shapes, matrix, x, y, (RAY_FROM - RAY_STEP + 0.03 * brightness) * size, ROUND, 4 * LAYER, lit);
     }
 
-    /** A mode's little strip, doing now what the mode does, in the colour it sets. */
-    private static void mode(Matrix4f matrix, VertexConsumer shapes, Box box, LedSetting setting, boolean picked, double ticks) {
-        tile(matrix, shapes, box, picked);
-        double x = (box.x0() + box.x1()) / 2;
-        double y = (box.y0() + box.y1()) / 2;
-        double width = box.x1() - box.x0();
-        double tall = box.y1() - box.y0();
-        double size = Math.min(width, tall);
+    /** A mode's little strip on its button, doing now what the mode does, in the colour it sets. */
+    private static void mode(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Tile button, LedSetting setting, TouchPanelArt.Look look, double ticks) {
+        TouchPanelArt.tile(shapes, matrix, button, TILE, look, 2 * LAYER);
+        double x = button.middleX();
+        double y = button.middleY();
+        double width = button.width();
+        double tall = button.height();
+        double size = button.side();
         float z = 4 * LAYER;
         switch (setting.mode()) {
             case STEADY -> ScreenDrawing.rect(shapes, matrix, x - 0.36 * width, y - 0.08 * tall, x + 0.36 * width, y + 0.08 * tall, z,
@@ -218,13 +225,14 @@ final class LedControlsArt {
 
     /**
      * Her silhouette laid on her side, her foot at the left: fins and body in steel, her nose stepped as her blocks
-     * are, her cockpit's smoked glass, and each story a band glowing as its strips do, the one picked, or all of them,
-     * framed in white.
+     * are, her cockpit's smoked glass, and each story a band across her body glowing as its strips do, a touch anywhere
+     * over her height at it picking it; the one picked, or all of them, picked.
      */
-    private static void silhouette(Matrix4f matrix, VertexConsumer shapes, int[] spans, List<LedSetting> settings, int picked, double ticks) {
-        Box picture = LedControls.PICTURE;
-        double middle = (picture.y0() + picture.y1()) / 2;
-        double tall = picture.y1() - picture.y0();
+    private static void silhouette(Matrix4f matrix, VertexConsumer shapes, TouchPanel.Layout tiles, List<LedSetting> settings, int picked, int looked,
+                                   double ticks) {
+        TouchPanel.Tile picture = LedControls.PICTURE;
+        double middle = picture.middleY();
+        double tall = picture.height();
         double body = BODY_HALF * tall;
         for (int step = 0; step < FIN_STEPS.length - 1; step++) {
             double reach = FIN_HALF * tall - (FIN_HALF * tall - body) * step / (FIN_STEPS.length - 1);
@@ -239,35 +247,30 @@ final class LedControlsArt {
         }
         ScreenDrawing.rect(shapes, matrix, along(LedControls.STORIES_TO), middle - body * 0.8, along(NOSE_FROM), middle + body * 0.8, 4 * LAYER, SMOKED);
         for (int story = 0; story < settings.size(); story++) {
-            Box band = LedControls.band(spans, story);
-            ScreenDrawing.rect(shapes, matrix, band.x0() + BAND_GAP, middle - BAND_HALF * tall, band.x1() - BAND_GAP, middle + BAND_HALF * tall, 4 * LAYER,
-                LedLights.looks(settings.get(story), ticks, story, false));
+            int tile = LedControls.story(story);
+            TouchPanel.Tile band = tiles.get(tile);
+            TouchPanel.Tile lit = new TouchPanel.Tile(band.left() + BAND_GAP, middle - BAND_HALF * tall, band.right() - BAND_GAP, middle + BAND_HALF * tall);
+            TouchPanelArt.tile(shapes, matrix, lit, LedLights.looks(settings.get(story), ticks, story, false),
+                look(tile, looked, picked == LedConsoleBlockEntity.WHOLE_ROCKET || picked == story), 5 * LAYER);
         }
-        if (settings.isEmpty()) {
-            return;
-        }
-        Box first = LedControls.band(spans, picked < 0 ? 0 : picked);
-        Box last = LedControls.band(spans, picked < 0 ? settings.size() - 1 : picked);
-        outline(matrix, shapes, first.x0(), middle - body - RIM_WIDTH, last.x1(), middle + body + RIM_WIDTH, 5 * LAYER);
     }
 
     /** How far across the face a share of the silhouette's length from her foot is. */
     private static double along(double share) {
-        Box picture = LedControls.PICTURE;
-        return picture.x0() + share * (picture.x1() - picture.x0());
+        return LedControls.PICTURE.left() + share * LedControls.PICTURE.width();
     }
 
     /** The whole-rocket button: a little rocket standing up, a band for each story up her, each glowing as it does. */
-    private static void wholeRocket(Matrix4f matrix, VertexConsumer shapes, List<LedSetting> settings, boolean picked, double ticks) {
-        Box box = LedControls.WHOLE_ROCKET;
-        tile(matrix, shapes, box, picked);
-        double x = (box.x0() + box.x1()) / 2;
-        double width = box.x1() - box.x0();
-        double tall = box.y1() - box.y0();
+    private static void wholeRocket(Matrix4f matrix, VertexConsumer shapes, List<LedSetting> settings, TouchPanelArt.Look look, double ticks) {
+        TouchPanel.Tile box = LedControls.WHOLE_ROCKET;
+        TouchPanelArt.tile(shapes, matrix, box, TILE, look, 2 * LAYER);
+        double x = box.middleX();
+        double width = box.width();
+        double tall = box.height();
         double half = 0.15 * width;
-        double foot = box.y0() + 0.18 * tall;
-        double top = box.y0() + 0.7 * tall;
-        ScreenDrawing.rect(shapes, matrix, x - 0.36 * width, box.y0() + 0.08 * tall, x + 0.36 * width, box.y0() + 0.3 * tall, 4 * LAYER, HULL_SHADE);
+        double foot = box.bottom() + 0.18 * tall;
+        double top = box.bottom() + 0.7 * tall;
+        ScreenDrawing.rect(shapes, matrix, x - 0.36 * width, box.bottom() + 0.08 * tall, x + 0.36 * width, box.bottom() + 0.3 * tall, 4 * LAYER, HULL_SHADE);
         ScreenDrawing.rect(shapes, matrix, x - half, foot, x + half, top, 5 * LAYER, HULL);
         for (int step = 0; step < NOSE_STEPS; step++) {
             double share = (step + 1.0) / (NOSE_STEPS + 1);
@@ -280,22 +283,5 @@ final class LedControlsArt {
             ScreenDrawing.rect(shapes, matrix, x - 0.7 * half, low + BAND_GAP, x + 0.7 * half, low + band - BAND_GAP, 6 * LAYER,
                 LedLights.looks(settings.get(story), ticks, story, false));
         }
-    }
-
-    /** A white frame round a button, just outside it, under it. */
-    private static void rim(Matrix4f matrix, VertexConsumer shapes, Box box) {
-        ScreenDrawing.rect(shapes, matrix, box.x0() - RIM_WIDTH, box.y0() - RIM_WIDTH, box.x1() + RIM_WIDTH, box.y1() + RIM_WIDTH, 2 * LAYER, RIM);
-    }
-
-    /** A white frame's four sides round a span of the face, just inside it. */
-    private static void outline(Matrix4f matrix, VertexConsumer shapes, double x0, double y0, double x1, double y1, float z) {
-        ScreenDrawing.rect(shapes, matrix, x0, y0, x1, y0 + RIM_WIDTH, z, RIM);
-        ScreenDrawing.rect(shapes, matrix, x0, y1 - RIM_WIDTH, x1, y1, z, RIM);
-        ScreenDrawing.rect(shapes, matrix, x0, y0, x0 + RIM_WIDTH, y1, z, RIM);
-        ScreenDrawing.rect(shapes, matrix, x1 - RIM_WIDTH, y0, x1, y1, z, RIM);
-    }
-
-    private static void rect(Matrix4f matrix, VertexConsumer shapes, Box box, int layer, int colour) {
-        ScreenDrawing.rect(shapes, matrix, box.x0(), box.y0(), box.x1(), box.y1(), layer * LAYER, colour);
     }
 }
