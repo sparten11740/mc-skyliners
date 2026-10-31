@@ -5641,7 +5641,8 @@ function roomLang() {
 // the outside of beds standing together (see GardenBedBlock), the soil dry or wet, a board on each side no bed joins
 // and a post at each corner where two such sides meet; the grow lights hung over them, a slim dark bar with a strip of
 // LEDs underneath glowing magenta (see GrowLightBlock); the sprinklers in them, a brass head on a copper riser in a box
-// of boards over gravel, the head popped up on a taller riser with its arm out while it sprays (see SprinklerBlock); and
+// of boards over gravel, the head popped up on a taller riser while it sprays, its arm drawn turning with the jet (see
+// SprinklerBlock and SprinklerRenderer); and
 // the irrigation valve, a copper standpipe on its flange, a tap at its front over a sight glass, dark, or lit blue while
 // the water is on, and on top a red hand wheel, turned an eighth while it is (see IrrigationValveBlock). All are fitted,
 // so breakable, and each gives itself back.
@@ -5709,7 +5710,6 @@ function roomLang() {
   ];
   for (const spraying of [false, true]) {
     const riser = spraying ? 19 : 12;
-    const arm = { origin: [8, riser + 1, 8], axis: "y", angle: 22.5 };
     write(`assets/${ID}/models/block/sprinkler${spraying ? "_spraying" : ""}.json`, {
       parent: "minecraft:block/block",
       textures: { board: planks, bed: "minecraft:block/gravel", riser: "minecraft:block/cut_copper", head: brass, particle: planks },
@@ -5717,7 +5717,6 @@ function roomLang() {
         ...box,
         solid([7, 1, 7], [9, riser, 9], "#riser"),
         solid([6, riser, 6], [10, riser + 2, 10], "#head"),
-        ...(spraying ? [solid([10, riser + 1, 7.5], [13, riser + 1.75, 8.5], "#head", arm), solid([12.5, riser + 0.5, 7], [13.5, riser + 2.25, 9], "#head", arm)] : []),
       ],
     });
   }

@@ -42,9 +42,16 @@ public class SprinklerBlockEntity extends BlockEntity {
      * over the nozzle it arcs at most, in blocks; how far round it sweeps each tick, in radians, a turn in four
      * seconds; and how many drops it throws a tick.
      */
-    private static final double NOZZLE = 1.3;
     private static final double THROW = 3.5;
     private static final double ARC = 1.1;
+    /**
+     * The popped-up head's middle over its block, the reach of its arm out to the nozzle's tip, in blocks, and how
+     * steeply the jet leaves the nozzle, in radians: as steeply as its arc rises at its start, so the arm points the
+     * way the water goes.
+     */
+    public static final double HEAD = 1.25;
+    public static final double NOZZLE_REACH = 0.38;
+    public static final double LAUNCH = Math.atan(4 * ARC / THROW);
     private static final double SWEEP = 2 * Math.PI / 80;
     private static final int DROPS = 3;
     /** How fast the spit at the nozzle flies out along the jet, in blocks a tick. */
@@ -148,18 +155,27 @@ public class SprinklerBlockEntity extends BlockEntity {
             return;
         }
         RandomSource random = level.getRandom();
-        double angle = level.getGameTime() * SWEEP + (pos.getX() + 2 * pos.getZ()) * OUT_OF_STEP;
+        double angle = jetAngle(pos, level.getGameTime());
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        double x = pos.getX() + 0.5;
-        double y = pos.getY() + NOZZLE;
-        double z = pos.getZ() + 0.5;
+        double tip = NOZZLE_REACH * Math.cos(LAUNCH);
+        double x = pos.getX() + 0.5 + cos * tip;
+        double y = pos.getY() + HEAD + NOZZLE_REACH * Math.sin(LAUNCH);
+        double z = pos.getZ() + 0.5 + sin * tip;
         for (int i = 0; i < DROPS; i++) {
             double out = THROW * random.nextDouble();
             double rise = 4 * ARC * (out / THROW) * (1 - out / THROW);
             level.addParticle(ParticleTypes.FALLING_WATER, x + cos * out, y + rise, z + sin * out, 0, 0, 0);
         }
         level.addParticle(ParticleTypes.SPLASH, x, y, z, cos * SPIT, 0, sin * SPIT);
+    }
+
+    /**
+     * Which way a sprinkler's jet points at a game time, in radians round from east toward south: sweeping round, each
+     * sprinkler out of step with the next. Its renderer turns the nozzle by it too.
+     */
+    public static double jetAngle(BlockPos pos, double time) {
+        return time * SWEEP + (pos.getX() + 2 * pos.getZ()) * OUT_OF_STEP;
     }
 
     @Override

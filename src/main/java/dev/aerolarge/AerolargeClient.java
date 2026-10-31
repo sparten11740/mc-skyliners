@@ -105,6 +105,7 @@ import dev.aerolarge.client.SleighBells;
 import dev.aerolarge.client.SlideRenderer;
 import dev.aerolarge.client.SpaceSky;
 import dev.aerolarge.client.SporeParticle;
+import dev.aerolarge.client.SprinklerRenderer;
 import dev.aerolarge.client.TabBanners;
 import dev.aerolarge.client.TailCameraDisplayRenderer;
 import dev.aerolarge.client.TailCameraFeed;
@@ -381,6 +382,7 @@ public final class AerolargeClient {
         event.registerBlockEntityRenderer(AerolargeRegistry.GIANT_RUBBER_DUCK_ENTITY.get(), GiantRubberDuckRenderer::new);
         event.registerBlockEntityRenderer(AerolargeRegistry.DISCO_BALL_ENTITY.get(), context -> new DiscoBallRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ORRERY_ENTITY.get(), context -> new OrreryRenderer());
+        event.registerBlockEntityRenderer(AerolargeRegistry.SPRINKLER_ENTITY.get(), context -> new SprinklerRenderer());
         event.registerBlockEntityRenderer(AerolargeRegistry.ROBOT_BARTENDER_ENTITY.get(), RobotBartenderRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.BASKETBALL.get(), BasketballRenderer::new);
         event.registerEntityRenderer(AerolargeRegistry.FALLING_CRATE.get(), FallingCrateRenderer::new);
