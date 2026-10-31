@@ -2177,7 +2177,8 @@ from its tip hangs a brass orrery: a long brass rod down to a glowing sun, turni
 on their brass arms, each in its own colours, circling it, the nearer the faster: grey Mercury, pale Venus, the blue
 and green Earth with its little moon going round it, red Mars, banded Jupiter, the biggest, and golden Saturn in its
 tilted ring. A soft light round the sun lights them, and it is as big as her dome leaves room for at her scale: look
-up from the cockpit to see it. The server config's `rocket.dome` leaves her nose padded inside and bare.
+up from the cockpit to see it. The server config's `rocket.dome` leaves her nose padded inside and bare. Four warm
+halo lights hang on their cables from the ring of ceiling at the cockpit's diagonals, so it is lit at night.
 
 To fly it, set a pin on the autopilot's map (or just a height) and fly: its screen has no circle tiles, and beside the
 map no circle or landing switch and on it no circle round the pin, as she circles nothing and always comes down on the
@@ -2419,8 +2420,9 @@ with the `AirlockDoors` across the doorway's `AirlockDoorBlock`s, which her `Air
 `RocketCameraDisplay` the cockpit's camera display, which looks through the `RocketCamera`s, `RocketLiverySelector`
 her livery selector, and a `RocketRoom` for each furnished story, from `RocketEntry` and `RocketCargoHold` to
 `RocketObservationDeck`, a room's corners each a `RocketQuarter`, so one plan of a corner is laid mirrored in any of
-them, `RocketPilotSeats` the cockpit's seats, and `RocketDome` the dome over it, its `OrreryBlock`'s
-`OrreryBlockEntity` drawn by `OrreryRenderer`); its rooms' own furniture is `ShelfUnitBlock` and `PalletRackBlock`,
+them, `RocketPilotSeats` the cockpit's seats, `RocketCockpitLights` the lights over them, and `RocketDome` the dome
+over it, its `OrreryBlock`'s `OrreryBlockEntity` drawn by `OrreryRenderer`); its rooms' own furniture is
+`ShelfUnitBlock` and `PalletRackBlock`,
 and their gadgets are blocks worked on the server in block states and scheduled ticks (`AirlockPanelBlock`,
 `ParcelScannerBlock`, which reads the crate on its belt, `GalleyFridgeBlock`, its `GalleyFridgeBlockEntity` a container,
 and `WaveMachineBlock` and `FogMachineBlock`, whose block entities draw their waves and fog on the client and keep them

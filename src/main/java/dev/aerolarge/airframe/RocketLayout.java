@@ -98,6 +98,7 @@ public final class RocketLayout implements Layout {
         RocketLift::new,
         RocketPilotSeats::new,
         RocketDome::new,
+        RocketCockpitLights::new,
         RocketEntry::new,
         RocketMess::new,
         RocketBunks::new,
