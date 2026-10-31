@@ -1347,14 +1347,19 @@ public class AutopilotBlockEntity extends BlockEntity {
      * to fly on from where it is in the air), lands, or switches it off. Each setting is held to what the autopilot
      * flies, and only one that differs from what it flies now is taken, so settings sent back as they were neither
      * round a target off nor start an orbit's circle afresh. Coming in to land, and once down, it takes none (see
-     * {@link #refusal}). Says what it does, or why it cannot.
+     * {@link #refusal}), but it is always switched off, landing or not: a rocket in the air comes down first. Says what
+     * it does, or why it cannot.
      */
     public Component set(SetAutopilot.Action action, Settings settings) {
         SableFlight.State state = SableFlight.read(this, nose());
         if (action == SetAutopilot.Action.OFF && craft == Craft.ROCKET && state != null && level != null && phase != Phase.OFF
             && radioAltitude(level, state) > AIRBORNE) {
-            // A rocket's engines are all that hold it up: switched off in the air, it comes down where it is first.
-            return land(level, state);
+            // A rocket's engines are all that hold it up, and it has no controls to be handed to: switched off in the
+            // air, coming down already or not, it comes down where it is first and switches off on its fins. The sky's
+            // lowest note says so to those who cannot read the message: down first.
+            rocketComesDown(state);
+            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, NOTE_LOW);
+            return Component.translatable("message.aerolarge.autopilot.off_once_down_rocket");
         }
         if (action == SetAutopilot.Action.OFF) {
             if (phase != Phase.OFF) {
@@ -1556,12 +1561,17 @@ public class AutopilotBlockEntity extends BlockEntity {
 
     /**
      * A rocket told to land, or switched off in the air: it falls back where it is now, catching itself on a landing
-     * burn and settling there on its fins (see {@link RocketPilot}).
+     * burn and settling there on its fins (see {@link RocketPilot}). Coming down already, falling back or in its
+     * landing burn, it only gives up where it was going for where it is, its phase and the cabin's landing
+     * announcement left as they were: set back to falling in its burn, it would fall faster again and launch control
+     * would call the burn twice.
      */
     private Component rocketComesDown(SableFlight.State state) {
-        announcements.announce(Announcement.LANDING, this);
+        if (phase != Phase.DESCENT && phase != Phase.LAND) {
+            announcements.announce(Announcement.LANDING, this);
+            phase = Phase.DESCENT;
+        }
         rocket.landHere(state);
-        phase = Phase.DESCENT;
         lateral = Lateral.HEADING;
         landAtPin = false;
         changed();
@@ -2564,11 +2574,18 @@ public class AutopilotBlockEntity extends BlockEntity {
         }
     }
 
-    /** Switches off: the jets go quiet, and the engines, the nose wheel and the brakes follow their controls again. */
+    /**
+     * Switches off: the jets go quiet, and the engines, the nose wheel and the brakes follow their controls again.
+     * Switched off coming in to land, it lets go of the landing as well: the runway near the pin, the sink it eased
+     * into, which a landing asked for afresh would otherwise start from, and a landing announcement still waiting its
+     * turn, which may no longer fit what the pilot does.
+     */
     private void disengage() {
         phase = Phase.OFF;
         awaitingClearance = false;
         pinLanding.abandon();
+        sinkCommand = Double.NaN;
+        announcements.letGo(Announcement.LANDING);
         changed();
         if (!(level instanceof ServerLevel serverLevel)) {
             return;

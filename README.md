@@ -2222,8 +2222,11 @@ drifting for the last 20 blocks and not at all for the last 3, touching down at 
 back from space, her base glows and flames stream up behind it. Down on its fins it lets its engines go at once and
 switches itself off with a bell. Without a pin it comes back down where it rose, as its screen shows in place of a
 heading: the rocket on its pad, its way up and back down beside it. Told to land, or switched off in the
-air, it falls back where it is and lands there. Like the zeppelin, a rocket stays loaded wherever it is once its
-autopilot has flown it. A Model Rocket, standing on its fins, is in the creative tab.
+air, it falls back where it is and lands there. Switched off, it sounds a low note, the way down, and even as it comes
+down already it gives up where it was going and settles straight down where it is, switching itself off on its fins with
+the bell: only its engines hold it up, and it has no controls to hand over to, so its autopilot never lets go of it in
+the air. Like the zeppelin, a rocket stays loaded wherever it is once its autopilot has flown it. A Model Rocket,
+standing on its fins, is in the creative tab.
 
 Her flight is heard as well as seen. Once the cabin has heard its take-off announcement, launch control comes on the
 radio with a beep and counts her down in a voice of its own, "ten" to "one" over the cockpit's rising notes, then

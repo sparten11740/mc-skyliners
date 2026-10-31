@@ -10084,6 +10084,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   "message.aerolarge.autopilot.assembling_rocket": "Assembling the rocket: the countdown begins as soon as it is ready.",
   "message.aerolarge.autopilot.no_engines": "This rocket has no engines to fly it with: build it again with Create Propulsion installed.",
   "message.aerolarge.autopilot.coming_down_rocket": "Coming down here, catching ourselves on the engines",
+  "message.aerolarge.autopilot.off_once_down_rocket": "Autopilot off once the rocket is down: only her engines hold her up, so she comes down here first and switches off on her fins.",
   "message.aerolarge.autopilot.no_burners": "This zeppelin has no burners to lift it: build it again with Create Aeronautics installed.",
   "message.aerolarge.autopilot.too_heavy": "The zeppelin is too heavy for its burners to lift, and stays on the ground.",
   "commands.aerolarge.build_zeppelin": "Building a zeppelin of %s blocks, %s of them over blocks that were in the way",
