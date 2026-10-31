@@ -2859,6 +2859,41 @@ function fogMachineSounds() {
 }
 fogMachineSounds();
 
+// The DJ deck (see TechnoDeckBlock), with a random sequence of its own so the sounds round it are unchanged: a record
+// scratched under the DJ's hand, a quick "wikka-wikka". On the record a sung "ahh", a buzzing voice through the two
+// formants of the vowel; the hand rocks it forward and back over a quarter of a second of it, twice and then twice as
+// fast, and it is heard at the speed it moves, its pitch rising and falling with the hand and dying at each turn.
+function djDeckSounds() {
+  const own = ownRandom(0x444a5363);
+  const VOICE = 160;
+  const record = new Float64Array(Math.round(0.4 * RATE));
+  let phase = 0;
+  for (let i = 0; i < record.length; i++) {
+    phase = (phase + VOICE / RATE) % 1;
+    record[i] = 2 * phase - 1 + 0.15 * (own() * 2 - 1);
+  }
+  const open = resonance(record, 750, 4);
+  const front = resonance(record, 1200, 5);
+  const sung = open.map((s, i) => s + 0.7 * front[i]);
+  const SECONDS = 0.85;
+  const SLOW = 4.2;
+  const FAST = 7;
+  const TURN = 0.48;
+  const DEPTH = 0.25;
+  const samples = new Float64Array(Math.round(SECONDS * RATE));
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / RATE;
+    const strokes = t < TURN ? SLOW * t : SLOW * TURN + FAST * (t - TURN);
+    const at = (0.02 + DEPTH * 0.5 * (1 - Math.cos(2 * Math.PI * strokes))) * RATE;
+    const k = Math.min(Math.floor(at), sung.length - 2);
+    const read = sung[k] + (sung[k + 1] - sung[k]) * (at - k);
+    const speed = Math.abs(Math.sin(2 * Math.PI * strokes)) ** 0.7;
+    samples[i] = read * speed * Math.min(1, (SECONDS - t) / 0.05);
+  }
+  writeSound("dj_scratch", samples, 0.8);
+}
+djDeckSounds();
+
 // The club's bar (see DrinkTapBlock and NeonSignBlock), each sound with a random sequence of its own so the sounds
 // round it are unchanged. The tap's pour, about as long as a pull pours (DrinkTapBlock.POUR_TICKS): the clack of its
 // handle, the stream running into the drip tray, a wash of noise with a bubbling gurgle in it, bubbles chirping as they

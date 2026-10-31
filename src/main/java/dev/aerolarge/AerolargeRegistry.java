@@ -2105,6 +2105,8 @@ public final class AerolargeRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F).sound(SoundType.WOOL));
     /** The secret techno room's track, a minute of build and drop, looped while anyone is in the room. */
     public static final DeferredHolder<SoundEvent, SoundEvent> TECHNO_TRACK = sound("techno_track");
+    /** The DJ deck's record scratched back and forth, as it is used. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> DJ_SCRATCH = sound("dj_scratch");
     /**
      * The club's bar: the drink tap on its counter, its three neon handles glowing, and the sparkling soda it pours,
      * Star Fizz, a bottle of it for an empty glass bottle, and its fizzy pour; the neon signs on its walls, and their

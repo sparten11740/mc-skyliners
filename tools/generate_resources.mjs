@@ -1216,6 +1216,7 @@ function zeppelinControlsLang() {
     "subtitles.aerolarge.water_ballast": "Water ballast pours",
     "subtitles.aerolarge.up_ship_call": "Up ship!",
     "subtitles.aerolarge.techno_track": "Techno pounds",
+    "subtitles.aerolarge.dj_scratch": "DJ scratches a record",
     "block.aerolarge.horn_cord": "Horn Cord",
     "block.aerolarge.livery_board": "Livery Board",
     "block.aerolarge.livery_selector": "Livery Selector",
@@ -1547,6 +1548,8 @@ for (const kind of ["exhaust", "cloud", "dust"]) {
   };
   // The secret techno room's track: a minute long, so streamed as music is rather than loaded whole.
   sounds.techno_track = { subtitle: `subtitles.${ID}.techno_track`, sounds: [{ name: `${ID}:techno_track`, stream: true }] };
+  // The DJ deck's record scratched (see tools/generate_sounds.mjs).
+  sounds.dj_scratch = { subtitle: `subtitles.${ID}.dj_scratch`, sounds: [{ name: `${ID}:dj_scratch` }] };
   write(`assets/${ID}/sounds.json`, sounds);
   write(`assets/${ID}/particles/contrail.json`, { textures: [`${ID}:contrail`] });
   // A flare's smoke is the same soft puff, tinted.

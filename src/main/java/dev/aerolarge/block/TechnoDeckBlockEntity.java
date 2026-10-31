@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A techno deck's block entity: the room it plays, its two corners as offsets from the deck, set as the zeppelin is
  * built. Kept track of on the clients, where the music starts for whoever walks into the room and its lights go with
- * the beat (see the client's {@code TechnoRoom}).
+ * the beat (see the client's {@code TechnoRoom}), and when its record was last scratched, for the lights to flash.
  */
 public class TechnoDeckBlockEntity extends BlockEntity {
     private static final Loaded<TechnoDeckBlockEntity> LOADED = new Loaded<>(TechnoDeckBlockEntity.class, true);
@@ -26,6 +26,8 @@ public class TechnoDeckBlockEntity extends BlockEntity {
     private BlockPos from;
     @Nullable
     private BlockPos to;
+    /** The game tick its record was last scratched (see {@link TechnoDeckBlock}); never, as it is loaded. */
+    private long scratchedAt = Long.MIN_VALUE;
 
     public TechnoDeckBlockEntity(BlockPos pos, BlockState state) {
         super(AerolargeRegistry.TECHNO_DECK_ENTITY.get(), pos, state);
@@ -73,6 +75,20 @@ public class TechnoDeckBlockEntity extends BlockEntity {
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
         LOADED.remove(this);
+    }
+
+    /** The game tick its record was last scratched; never, as it is loaded. */
+    public long scratchedAt() {
+        return scratchedAt;
+    }
+
+    @Override
+    public boolean triggerEvent(int id, int param) {
+        if (id != TechnoDeckBlock.SCRATCHED || level == null) {
+            return super.triggerEvent(id, param);
+        }
+        scratchedAt = level.getGameTime();
+        return true;
     }
 
     @Override

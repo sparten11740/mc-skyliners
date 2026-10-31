@@ -42,6 +42,10 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
     /** How long the ceiling flashes on each beat after the drop, in ticks, and for how many beats. */
     private static final float FLASH_TICKS = 2;
     private static final int FLASH_BEATS = 16;
+    /** How long the ceiling flashes after the record is scratched, in ticks, as long as the scratch lasts. */
+    private static final float SCRATCH_FLASH_TICKS = 17;
+    /** How often the ceiling flickers through the scratch, in ticks a flicker: with each stroke of the hand. */
+    private static final float SCRATCH_FLICKER = 3;
     /** The beams: how many, how far up from the deck they start, how wide they are and how fast they sweep. */
     private static final int BEAMS = 3;
     private static final float BEAM_HEIGHT = 1.2F;
@@ -79,6 +83,18 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
             beams(consumer, last, from, to, at);
             flash(consumer, last, from, to, at, beat);
         }
+        scratchFlash(consumer, last, from, to, deck, partialTick);
+    }
+
+    /** The ceiling flickering in the floor's colours while the record is scratched, with each stroke of the hand. */
+    private static void scratchFlash(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, TechnoDeckBlockEntity deck,
+                                     float partialTick) {
+        float ago = deck.getLevel() == null ? Float.MAX_VALUE : deck.getLevel().getGameTime() - deck.scratchedAt() + partialTick;
+        if (ago < 0 || ago > SCRATCH_FLASH_TICKS || (int) (ago / SCRATCH_FLICKER) % 2 == 1) {
+            return;
+        }
+        int colour = PALETTE[(int) (ago / SCRATCH_FLICKER / 2) % PALETTE.length];
+        ceiling(consumer, pose, from, to, colour);
     }
 
     /** Which of the room's tiles are dance floor: looked at again every so often, as tiles can be broken or laid. */
@@ -191,8 +207,13 @@ public class TechnoRoomRenderer implements BlockEntityRenderer<TechnoDeckBlockEn
         if (beat >= TechnoRoom.DROP_TICK / TechnoRoom.BEAT_TICKS + FLASH_BEATS || into > FLASH_TICKS) {
             return;
         }
+        ceiling(consumer, pose, from, to, FLASH);
+    }
+
+    /** The whole ceiling lit in one colour, just under it. */
+    private static void ceiling(VertexConsumer consumer, PoseStack.Pose pose, BlockPos from, BlockPos to, int colour) {
         float y = to.getY() + 1 - LIFT;
-        FlatQuads.quad(consumer, pose, LightTexture.FULL_BRIGHT, FLASH, 0, 1, 0, from.getX(), y, from.getZ(), to.getX() + 1, y, from.getZ(),
+        FlatQuads.quad(consumer, pose, LightTexture.FULL_BRIGHT, colour, 0, 1, 0, from.getX(), y, from.getZ(), to.getX() + 1, y, from.getZ(),
             to.getX() + 1, y, to.getZ() + 1, from.getX(), y, to.getZ() + 1);
     }
 

@@ -1704,7 +1704,9 @@ minute-long track starts, 128 beats a minute, played from the room as the zeppel
 tiles at a time, pink and blue changing on the beat; the build quickens, the bass drops out, half a beat of silence, and
 then the drop: a huge sub-bass boom, the camera shaking with it, the ceiling flashing white on the beat, beams of
 coloured light sweeping the room and every tile flashing its own colour each half beat. It loops for as long as you stay
-and fades away as you climb out. On a half-size zeppelin the room is a little shorter, 11 blocks long inside rather than
+and fades away as you climb out. Use the DJ Deck and its record is scratched back and forth, a "wikka-wikka" everyone
+in the room hears, the ceiling flickering through the floor's colours with each stroke. On a half-size zeppelin the
+room is a little shorter, 11 blocks long inside rather than
 15, to fit between the rings there. The server config's `technoRoom` leaves it out of zeppelins built from then on.
 
 Another rope climbs into a balloon. At a cell just forward of the middle, one of the biggest, a gap in the gangway's
@@ -2014,7 +2016,8 @@ over a trickle of irrigation, a bee now and then buzzing past, and the pool's wa
 then slapping against its side (the client setting `roomAmbience` keeps them quiet). The techno club has the dance
 floor's black glass tiles round the shaft, lit two by two in pink and blue to the beat while its music plays, and past
 them out to her skin a plum club carpet dotted with pink; speaker stacks at the diagonals, four disco balls and the DJ
-deck behind the shaft playing the whole room. Beside the deck sits the Fog Machine, a black flight case, its little
+deck behind the shaft playing the whole room (use it to scratch its record, as in the zeppelin's). Beside the deck
+sits the Fog Machine, a black flight case, its little
 light green: press it and it hisses and pumps a stream of thick fog out of its glowing nozzle for five seconds, the fog
 rolling out over the floor behind the shaft and hanging in the disco balls' light; then its light turns amber while it
 heats up again, and a beep says when it is ready. Along her left side a straight bar stands across the window there: its

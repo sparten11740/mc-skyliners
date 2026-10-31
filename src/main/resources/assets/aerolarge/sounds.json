@@ -1701,5 +1701,13 @@
         "stream": true
       }
     ]
+  },
+  "dj_scratch": {
+    "subtitle": "subtitles.aerolarge.dj_scratch",
+    "sounds": [
+      {
+        "name": "aerolarge:dj_scratch"
+      }
+    ]
   }
 }
