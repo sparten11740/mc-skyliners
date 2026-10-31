@@ -2445,6 +2445,60 @@ function softened(samples) {
   gearRing(touchdown, 0.003, 240, 0.12);
   gearRing(touchdown, 0.003, 590, 0.08);
   writeSound("rocket_touchdown", touchdown, 0.9);
+
+  // A boost (see the client's RocketRoar and the autopilot's RocketControls), with a random sequence of its own so the
+  // sounds above are unchanged: her engines kicking up over the loop roaring on under it, as her ignition is built. A
+  // crack and a deep whump sweeping up from 28 to 68 hertz, and her roar surging in over a quarter of a second, its
+  // low-pass flung open past the loop's and its crackle two and a half times as thick, easing back into the loop over
+  // two seconds. Written to the loop's scale, and heard aboard through her hull as the rest are.
+  const boostRandom = ownRandom(0x4b69636b);
+  const kickLength = 2.6;
+  const kickSwell = (t) => gearRamp(t, 0, 0.25) * Math.exp(-Math.max(0, t - 0.5) / 0.7) * Math.min(1, (kickLength - t) / 0.3);
+  const kicking = rocketRoar(kickLength, boostRandom, (t) => 300 + (1.4 * ROCKET.rumbleCutoff - 300) * gearRamp(t, 0, 0.4),
+    (t) => 2.5 * ROCKET.crackles * gearRamp(t, 0.05, 0.3));
+  const kick = mix(kicking, kickSwell, (t) => 1.3 * kickSwell(t), (t) => 1.6 * kickSwell(t));
+  let kickPhase = 0;
+  for (let i = 0; i < kick.length; i++) {
+    const t = i / RATE;
+    kickPhase += (2 * Math.PI * (28 + 40 * gearRamp(t, 0, 0.3))) / RATE;
+    const whump = Math.min(1, t / 0.015) * Math.exp(-t / 0.35) * (Math.sin(kickPhase) + 0.4 * Math.sin(2 * kickPhase));
+    const crack = t < 0.01 ? 3 * (boostRandom() * 2 - 1) * Math.exp(-t / 0.003) : 0;
+    kick[i] += 3 * whump + crack;
+  }
+  const kicked = softened(kick);
+  writeSound("rocket_boost", kicked, peakOf(kicked) * scale);
+  const kickedAboard = hull(kicked);
+  writeSound("rocket_boost_aboard", kickedAboard, peakOf(kickedAboard) * aboardScale);
+}
+
+// The rocket's centre console (see the autopilot's RocketControls), pure tones, so no sound above shifts. The boost
+// button ready again: two bright beeps rising a fifth, each gliding up a little. Her countdown scrubbed: three reedy
+// notes falling, as the autopilot's disconnect rises. The alarm while her stability is off: a hard two-tone warble,
+// four quick turns between 960 and 720 hertz through a small horn, short enough to sound again and again, quicker the
+// further she tilts.
+{
+  const tone = (samples, start, length, frequency, glide, reed) => {
+    let phase = 0;
+    for (let i = Math.round(start * RATE); i < Math.round((start + length) * RATE) && i < samples.length; i++) {
+      const t = i / RATE - start;
+      phase += (2 * Math.PI * frequency * (1 + (glide * t) / length)) / RATE;
+      const envelope = Math.min(1, t * 400) * Math.min(1, (length - t) * 150);
+      samples[i] += envelope * (Math.sin(phase) + reed * Math.sin(3 * phase) + (reed / 2) * Math.sin(5 * phase));
+    }
+  };
+  const ready = new Float64Array(Math.round(0.42 * RATE));
+  tone(ready, 0, 0.13, 880, 0.06, 0.1);
+  tone(ready, 0.15, 0.2, 1318.5, 0.06, 0.1);
+  writeSound("rocket_boost_ready", ready, 0.6);
+  const scrub = new Float64Array(Math.round(0.75 * RATE));
+  [1174.7, 880, 587.3].forEach((frequency, k) => tone(scrub, k * 0.2, 0.18, frequency, -0.03, 0.3));
+  writeSound("rocket_scrub", scrub, 0.6);
+  const alarm = new Float64Array(Math.round(0.5 * RATE));
+  for (let turn = 0; turn < 8; turn++) {
+    tone(alarm, turn * 0.0625, 0.0625, turn % 2 === 0 ? 960 : 720, 0, 0.6);
+  }
+  const horn = resonance(alarm, 1800, 2.5);
+  writeSound("rocket_stability_alarm", alarm.map((sample, i) => Math.tanh(1.4 * (sample + 1.2 * horn[i]))), 0.7);
 }
 
 // A rocket's lift-off heard close by, with a random sequence of its own so the sounds above are unchanged (the

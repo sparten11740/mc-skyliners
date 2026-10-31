@@ -3,13 +3,18 @@ package dev.aerolarge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.aerolarge.Aerolarge;
+import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import dev.aerolarge.autopilot.Craft;
+import dev.aerolarge.autopilot.RocketControls;
 import dev.aerolarge.block.FlightDisplayBlock;
 import dev.aerolarge.block.FlightDisplayBlockEntity;
 import dev.aerolarge.client.PanelArt.Pictures;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,6 +23,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -30,6 +37,14 @@ import org.joml.Matrix4f;
  * come from the airliner's pose as the client draws it, so the display moves as smoothly as the airliner does. On an
  * airliner or zeppelin that is not assembled it shows a standby screen. It is only drawn with the camera in front of
  * it.
+ *
+ * <p>On a rocket, a row of pictures along its top shows her centre console's controls (see {@link RocketControls}),
+ * for whoever cannot read: a flame for the boost, dim while it waits, pulsing while she boosts and ringed by four
+ * segments lighting one by one while it rests; a rocket for her stability, green and steady while her jets hold her
+ * upright, amber while it stays locked on, red and wobbling with a warning triangle beside it while it is off; and the
+ * picture of her flight mode, dim while she flies it straight up instead. While her stability is off, a red ring on the
+ * attitude indicator marks how far she may tilt before it snaps back on, and a dot inside it how far she tilts, and
+ * which way: keep the dot inside the ring.
  */
 public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayBlockEntity> {
     /** The screen's half width and half height on the block face, in blocks. */
@@ -52,6 +67,13 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
      * has the Physics Assembler assemble the airliner and takes off. A zeppelin's display shows the zeppelin's own.
      */
     static final ResourceLocation ASSEMBLE = Pictures.AIRLINER.cruise().texture();
+    /**
+     * A rocket's controls' pictures, white to be tinted, by name (see tools/generate_textures.mjs): her lift's own
+     * rocket and arrow straight up, and the rest of their own.
+     */
+    private static final Map<String, ResourceLocation> CONTROL_PICTURES = Map.of(
+        "flame", picture("rocket_controls/flame"), "rocket", picture("lift/rocket"), "warning", picture("rocket_controls/warning"),
+        "vertical", picture("lift/up"), "arc", picture("rocket_controls/arc"), "gentle", picture("rocket_controls/gentle"));
     /** Lifts the drawing just off the block face so it does not flicker against it, and the text off the drawing. */
     private static final float SURFACE = 0.502F;
     private static final float TEXT_LIFT = 0.005F;
@@ -65,6 +87,45 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     private static final int WHITE = 0xFFF2F2F2;
     private static final int YELLOW = 0xFFF2CF30;
     private static final int GREEN = 0xFF46E070;
+    /**
+     * A rocket's controls' pictures along the top: how high their middles are, how far apart, and how far out each
+     * reaches, in blocks; how far the warning triangle stands right of the rocket, and the ring of the boost's rest
+     * round the flame, how far out and how thick, in blocks.
+     */
+    private static final float CONTROLS_Y = 0.30F;
+    private static final float CONTROLS_APART = 0.13F;
+    private static final float CONTROL = 0.04F;
+    private static final float WARNING_RIGHT = 0.065F;
+    private static final float REST_RING = 0.052F;
+    private static final float REST_RING_THICK = 0.008F;
+    /**
+     * How fast the boosting flame pulses and the unstable rocket wobbles, in turns a second, and how far it wobbles, in
+     * degrees; and how many ticks their swings are counted over, a whole number of turns of each, so that a world's
+     * long-running game time never blurs them.
+     */
+    private static final float PULSE_TURNS = 3;
+    private static final float WOBBLE_TURNS = 1.5F;
+    private static final float WOBBLE_DEGREES = 12;
+    private static final int SWING_TICKS = 1200;
+    /** How often the warning triangle blinks, in ticks lit and as many dark. */
+    private static final int WARNING_BLINK = 6;
+    /**
+     * The tilt ring with stability off: how thick, in blocks, how many pieces round, and the dot's radius, in blocks.
+     */
+    private static final float TILT_RING_THICK = 0.006F;
+    private static final int TILT_RING_PIECES = 32;
+    private static final float TILT_DOT = 0.012F;
+    /** How far a dimmed picture is darkened, as a share of its colour kept. */
+    private static final float DIMMED = 0.35F;
+    private static final int FLAME_IDLE = 0xFF8A5A2E;
+    private static final int FLAME_LIT = 0xFFFF9A2A;
+    private static final int FLAME_HOT = 0xFFFFEE90;
+    private static final int FLAME_RESTING = 0xFFC03424;
+    private static final int RED = 0xFFE83030;
+    private static final int AMBER = 0xFFF0A830;
+    private static final int UNLIT = 0xFF30343A;
+    /** Each flight mode's colour, as its picture on the knob has it: VERTICAL blue, ARC orange, GENTLE green. */
+    private static final int[] MODE_COLOURS = {0xFF4C9AFF, FLAME_LIT, GREEN};
 
     /** Only with the camera in front of the screen, which is drawn from the front only, and as far off as ever. */
     @Override
@@ -77,22 +138,124 @@ public class FlightDisplayRenderer implements BlockEntityRenderer<FlightDisplayB
     public void render(FlightDisplayBlockEntity display, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         Direction screen = display.getBlockState().getValue(FlightDisplayBlock.FACING);
         SableClient.Attitude attitude = SableClient.attitude(display, screen.getOpposite(), partialTick);
+        Level level = display.getLevel();
+        AutopilotBlockEntity autopilot = level != null ? AutopilotBlockEntity.nearest(level, display.getBlockPos()) : null;
 
         pose.pushPose();
         // Onto the screen face, x to the viewer's right and y up.
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-screen.toYRot()));
         pose.translate(0, 0, SURFACE);
-        long staticSeed = display.getLevel() == null ? 0 : display.getBlockPos().asLong() + display.getLevel().getGameTime();
-        draw(pose, buffers, attitude, staticSeed, standby(display));
+        long staticSeed = level == null ? 0 : display.getBlockPos().asLong() + level.getGameTime();
+        draw(pose, buffers, attitude, staticSeed, standby(autopilot));
+        if (attitude != null && autopilot != null && autopilot.craft() == Craft.ROCKET && level != null) {
+            long now = level.getGameTime();
+            rocketControls(pose, buffers, autopilot, attitude, now, now % SWING_TICKS + partialTick);
+        }
         pose.popPose();
     }
 
     /** The standby screen's picture of what to press: the one on the nearby autopilot's on/off key, if there is one. */
-    private static ResourceLocation standby(FlightDisplayBlockEntity display) {
-        Level level = display.getLevel();
-        AutopilotBlockEntity autopilot = level != null ? AutopilotBlockEntity.nearest(level, display.getBlockPos()) : null;
+    private static ResourceLocation standby(@Nullable AutopilotBlockEntity autopilot) {
         return autopilot != null ? Pictures.of(autopilot.craft()).cruise().texture() : ASSEMBLE;
+    }
+
+    /**
+     * A rocket's console controls along the top of her display, at a game time, their swings at so many ticks into
+     * their round (see {@link #SWING_TICKS}): the flame of her boost, the rocket of her stability and the picture of
+     * her flight mode; with her stability off, the tilt ring on the attitude indicator. Every shape first, in one
+     * buffer, then the pictures, each taking its own.
+     */
+    private static void rocketControls(PoseStack pose, MultiBufferSource buffers, AutopilotBlockEntity rocket, SableClient.Attitude attitude, long now,
+                                       float swing) {
+        Matrix4f matrix = pose.last().pose();
+        RocketControls controls = rocket.rocketControls();
+        VertexConsumer fill = ScreenDrawing.shapes(buffers);
+        if (controls.cooling(now)) {
+            restRing(fill, matrix, controls.rested(now));
+        }
+        if (controls.unstable()) {
+            tiltRing(fill, matrix, attitude);
+        }
+        ScreenDrawing.picture(buffers, matrix, CONTROL_PICTURES.get("flame"), -CONTROLS_APART, CONTROLS_Y, CONTROL, TEXT_LIFT, flame(controls, now, swing));
+        stability(pose, buffers, controls, now, swing);
+        boolean straightUp = controls.mode() == RocketControls.Mode.ARC
+            && (rocket.lateral() != AutopilotBlockEntity.Lateral.DESTINATION || !AerolargeConfig.ROCKET_ARC_ASCENT.get());
+        int colour = MODE_COLOURS[controls.mode().ordinal()];
+        ScreenDrawing.picture(buffers, matrix, CONTROL_PICTURES.get(controls.mode().getSerializedName()), CONTROLS_APART, CONTROLS_Y, CONTROL,
+            TEXT_LIFT, straightUp ? dimmed(colour) : colour);
+    }
+
+    /**
+     * The boost's flame's colour: pulsing from orange to white-hot while she boosts, red while it rests, dim waiting.
+     */
+    private static int flame(RocketControls controls, long now, float swing) {
+        if (controls.boosting(now)) {
+            float pulse = (Mth.sin(swing / 20 * Mth.TWO_PI * PULSE_TURNS) + 1) / 2;
+            return FastColor.ARGB32.lerp(pulse, FLAME_LIT, FLAME_HOT);
+        }
+        return controls.cooling(now) ? FLAME_RESTING : FLAME_IDLE;
+    }
+
+    /** The ring round the flame while the boost rests: four sides, lit green one by one, clockwise from the top. */
+    private static void restRing(VertexConsumer fill, Matrix4f matrix, double rested) {
+        float x = -CONTROLS_APART;
+        float r = REST_RING;
+        float[][] sides = {{x - r, CONTROLS_Y + r, x + r, CONTROLS_Y + r}, {x + r, CONTROLS_Y + r, x + r, CONTROLS_Y - r},
+            {x + r, CONTROLS_Y - r, x - r, CONTROLS_Y - r}, {x - r, CONTROLS_Y - r, x - r, CONTROLS_Y + r}};
+        for (int side = 0; side < sides.length; side++) {
+            int colour = rested >= (side + 1.0) / sides.length ? GREEN : UNLIT;
+            float[] at = sides[side];
+            ScreenDrawing.line(fill, matrix, at[0], at[1], at[2], at[3], TEXT_LIFT / 2, REST_RING_THICK, colour);
+        }
+    }
+
+    /**
+     * Her stability's rocket: green and steady holding her, amber locked on, red and wobbling while off, with a warning
+     * triangle blinking beside it.
+     */
+    private static void stability(PoseStack pose, MultiBufferSource buffers, RocketControls controls, long now, float swing) {
+        boolean off = controls.unstable();
+        int colour = off ? RED : controls.lockedOut(now) ? AMBER : GREEN;
+        pose.pushPose();
+        pose.translate(0, CONTROLS_Y, 0);
+        if (off) {
+            pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(swing / 20 * Mth.TWO_PI * WOBBLE_TURNS) * WOBBLE_DEGREES));
+        }
+        ScreenDrawing.picture(buffers, pose.last().pose(), CONTROL_PICTURES.get("rocket"), 0, 0, CONTROL, TEXT_LIFT, colour);
+        pose.popPose();
+        if (off && now / WARNING_BLINK % 2 == 0) {
+            ScreenDrawing.picture(buffers, pose.last().pose(), CONTROL_PICTURES.get("warning"), WARNING_RIGHT, CONTROLS_Y - CONTROL / 2, CONTROL / 2,
+                TEXT_LIFT, YELLOW);
+        }
+    }
+
+    /**
+     * The tilt ring with her stability off: a red ring round the attitude indicator's middle, as far out as she may
+     * tilt before it snaps back on, and a white dot inside it, as far out as she tilts, the way she tilts: ahead up,
+     * right to the right.
+     */
+    private static void tiltRing(VertexConsumer fill, Matrix4f matrix, SableClient.Attitude attitude) {
+        float radius = (float) (RocketControls.SNAP_TILT * PER_DEGREE);
+        for (int piece = 0; piece < TILT_RING_PIECES; piece++) {
+            double a = Mth.TWO_PI * piece / TILT_RING_PIECES;
+            double b = Mth.TWO_PI * (piece + 1) / TILT_RING_PIECES;
+            ScreenDrawing.line(fill, matrix, Math.sin(a) * radius, ADI_RAISE + Math.cos(a) * radius, Math.sin(b) * radius, ADI_RAISE + Math.cos(b) * radius,
+                TEXT_LIFT, TILT_RING_THICK, RED);
+        }
+        double x = Mth.clamp(attitude.roll() * PER_DEGREE, -ADI, ADI);
+        double y = ADI_RAISE + Mth.clamp(-attitude.pitch() * PER_DEGREE, -ADI, ADI);
+        ScreenDrawing.disc(fill, matrix, x, y, TILT_DOT, TILT_RING_PIECES / 2, TEXT_LIFT, WHITE);
+    }
+
+    /** One of the gui pictures, by its path under textures/gui without its extension. */
+    private static ResourceLocation picture(String path) {
+        return ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/" + path + ".png");
+    }
+
+    /** A colour darkened, for a picture of what does not apply now. */
+    private static int dimmed(int colour) {
+        return FastColor.ARGB32.lerp(1 - DIMMED, colour, 0xFF000000);
     }
 
     /**

@@ -118,6 +118,14 @@ public final class SpaceGravity {
         }
     }
 
+    /**
+     * Whether everyone aboard is light now: she has reached space this climb and her artificial gravity is not yet
+     * announced (a sudden boost then would throw them about her).
+     */
+    boolean light() {
+        return reachedAt != null && reachedAt != Long.MIN_VALUE && !announced;
+    }
+
     /** Every few ticks, everyone aboard is light, their lease renewed for a while. */
     private static void lightenAboard(AutopilotBlockEntity autopilot, long now) {
         if (now % EVERY != 0) {

@@ -2288,6 +2288,45 @@ rumble wherever you stand. Her side jets puff as they hold her upright. Landing,
 thunk and a hiss of their dampers, the flight deck's voice says "Touchdown.", and her engines cut off, falling away
 with a pop, her hot bells ticking as they cool.
 
+She has hands-on controls of her own, on a centre console round her control head, five modules each with its own picture
+and lamps, so nobody needs to read them (the server config's `rocket.cockpitControls` leaves them out of a rocket built
+from then on; a small rocket has those that fit). Before the head stands the boost button, a big mushroom cap with a
+flame and two chevrons on it, glowing green when it is ready: pressed, it kicks her engines up for eight seconds with a
+crack and a deep whump, her plume half as thick again round a blue-white core, her roar at full and the view aboard
+shaking. Climbing, she climbs twice as fast; cruising, she goes half as fast again across and leans a little further,
+still stopping over her pin. Then its cap glows red and it rests twenty seconds, a ring of four lamps round its foot
+lighting green one by one, and beeps as it is ready again. Pressed when it cannot boost (counting down, coming down,
+resting, or with everyone aboard floating at the edge of space), it blinks red with a low note. At the commander's hand,
+under a yellow-and-black striped cover beside a picture of a rocket with her side jets puffing, is the stability switch,
+the dangerous one. Flip the cover up, then the switch, while she cruises at least 100 blocks over the ground, and her
+side jets stop holding her upright: its lamp flashes red, an alarm sounds, quicker the further she leans, and she starts
+to tip over like a broom balanced on its end, gusts nudging her, drifting across as she tips. Flip the switch back in
+time (or sneak to snap the cover shut) and you have saved her. Leave it, and it snaps back on by itself before she tips
+too far, the cover springing shut with a clack, every side jet puffing and a high note, and stays locked on for ten
+seconds, its lamp amber; it comes back on by itself, too, after twenty seconds, under 100 blocks over the ground, as she
+stops cruising or drifting too fast. At the pilot's hand the flight mode knob turns between three pictures (back the
+other way sneaking): a blue arrow straight up, as she has always flown; an orange arc, a gravity turn leaning her toward
+her pin as she climbs, faster across and leaning further as she cruises (without a pin she flies it straight up); and a
+green snail, climbing and crossing slowly and gently and falling back at half the speed. Each has its own note; turned
+while she comes down, it is taken up next flight, with a low note. Before the commander, the striped abort handle over a
+red U-turn arrow, which glows while it would do something: coming down (in her landing burn, only while still 15 blocks
+up), it calls the landing off where she is, and she climbs back to her height and holds it there; climbing or cruising,
+it stops her where she is and holds the height she coasts up to, until she is given a pin or told to land; during the
+countdown it scrubs the launch. Before the pilot, the launch key with its amber tag, a rocket on it: turned on the
+ground with her autopilot off, it launches her as her screen was last set, her height and her pin, assembling her first
+if she stands as blocks; turned back during the countdown it scrubs it, with falling notes; once she is up it is stuck,
+and drops back off as she lands.
+
+Her flight displays show the controls in a row of pictures over the attitude indicator: the boost's flame, dim while it
+waits, pulsing while she boosts and ringed by four segments lighting one by one while it rests; a rocket, green while
+her jets hold her, amber while her stability is locked on, red and wobbling with a blinking warning triangle while it is
+off; and the flight mode's picture, dimmed while she flies the arc straight up. With her stability off, a red ring on
+the attitude indicator marks how far she may tip before it snaps back on, and a white dot inside it how far she tips,
+and which way: keep the dot inside the ring. Her lift parks while she boosts, with her stability off, or leaning far
+over in the arc. The boost, the stability switch and the arc are still experimental, and switched on by the server
+config's `rocket.boost`, `rocket.stabilitySwitch` and `rocket.arcAscent`; switched off, their controls only sound their
+low refusal note.
+
 She can go to space. Her autopilot climbs her far past the top of the world, where the airliner and the zeppelin may not
 go and there is only sky, up to y 1,400 (the server config's `rocket.ceiling`); the climb, the hold and the fall back
 are as they are lower down, only longer. Her settings screen's sky reaches as high, numbered more sparsely so the
@@ -2570,6 +2609,14 @@ from which `RocketRoar` plays their roar, ignition, cut-off and her touchdown, h
 shockwave's boom, and shakes the view aboard as they light and on the ground near her; `LaunchCallouts` has launch
 control call her milestones on the same radio, waiting its turn on the flight deck's
 `Airtime`.
+`RocketCockpitControls`, a piece laid after her seats, sets her centre console's controls round her control head,
+each a `RocketControlBlock` (`RocketBoostButtonBlock`, `RocketStabilitySwitchBlock`, `RocketModeKnobBlock`,
+`RocketAbortHandleBlock` and `RocketLaunchKeyBlock`) linked to the head through a `Fitting`, whose
+`RocketControlBlockEntity` asks her autopilot to work it (`AutopilotBlockEntity.rocketControl`) and sets its lamps every
+few ticks from what the autopilot shows (`RocketControls.Panel`); `RocketControls`, which `RocketPilot` owns, keeps her
+flight mode (saved), boost and stability (neither saved), hands the pilot the limits it flies by each tick and snaps her
+stability back on before she tips too far, and the autopilot's update carries them to the clients, where
+`FlightDisplayRenderer`, `RocketRoar` and `RocketExhaust` show them.
 Her rover is a `Rover` entity and its bay a `RocketRoverBay` piece: the `RoverBayBlockEntity` on its door's sill
 (`RoverHatchBlock`) holds it, works the door and the winch along `RoverRoute` and holds her countdown through
 `RocketPilot.holdCountdownWhile`; the client's `RoverDriving` drives it from its `RoverRemoteItem` through the

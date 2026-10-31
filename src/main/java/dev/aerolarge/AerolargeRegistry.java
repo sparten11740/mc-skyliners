@@ -211,10 +211,16 @@ import dev.aerolarge.block.PropellerBlockEntity;
 import dev.aerolarge.block.RadioBlockEntity;
 import dev.aerolarge.block.RobotBartenderBlock;
 import dev.aerolarge.block.RobotBartenderBlockEntity;
+import dev.aerolarge.block.RocketAbortHandleBlock;
+import dev.aerolarge.block.RocketBoostButtonBlock;
+import dev.aerolarge.block.RocketControlBlockEntity;
 import dev.aerolarge.block.RocketFinish;
 import dev.aerolarge.block.RocketFloorBlock;
+import dev.aerolarge.block.RocketLaunchKeyBlock;
 import dev.aerolarge.block.RocketLinedCoverBlock;
 import dev.aerolarge.block.RocketLiningPanelBlock;
+import dev.aerolarge.block.RocketModeKnobBlock;
+import dev.aerolarge.block.RocketStabilitySwitchBlock;
 import dev.aerolarge.block.RocketStairsBlockEntity;
 import dev.aerolarge.block.RocketStairsButtonBlock;
 import dev.aerolarge.block.RubberDuckBlock;
@@ -777,6 +783,16 @@ public final class AerolargeRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_LANDING_BURN = sound("launch_landing_burn");
     /** The flight deck's voice as she settles on her fins. */
     public static final DeferredHolder<SoundEvent, SoundEvent> CALLOUT_TOUCHDOWN = sound("callout_touchdown");
+    /**
+     * Her centre console's controls (see dev.aerolarge.autopilot.RocketControls): her engines kicking up into a boost,
+     * and as it is heard aboard; the boost button's rising beep as it is ready again; the falling notes of her
+     * countdown scrubbed; and the alarm while her stability is off.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_BOOST = sound("rocket_boost");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_BOOST_ABOARD = sound("rocket_boost_aboard");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_BOOST_READY = sound("rocket_boost_ready");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_SCRUB = sound("rocket_scrub");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROCKET_STABILITY_ALARM = sound("rocket_stability_alarm");
     public static final DeferredBlock<CockpitGlassBlock> COCKPIT_GLASS = BLOCKS.registerBlock(
         "cockpit_glass", properties -> new CockpitGlassBlock(properties, AerolargeRegistry.COCKPIT_WINDOW), glass()
     );
@@ -2222,6 +2238,35 @@ public final class AerolargeRegistry {
     );
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RocketStairsBlockEntity>> ROCKET_STAIRS_ENTITY =
         BLOCK_ENTITIES.register("rocket_stairs_button", () -> BlockEntityType.Builder.of(RocketStairsBlockEntity::new, ROCKET_STAIRS_BUTTON.get()).build(null));
+    /**
+     * The hands-on controls on a rocket's centre console round her control head, each a module of the console, its
+     * lamps glowing as they show what it does: the boost button, the stability switch, the flight mode knob, the abort
+     * handle and the launch key; and what each works, her autopilot.
+     */
+    public static final DeferredBlock<RocketBoostButtonBlock> ROCKET_BOOST_BUTTON = BLOCKS.registerBlock(
+        "rocket_boost_button", RocketBoostButtonBlock::new, metal(MapColor.COLOR_ORANGE).noOcclusion().lightLevel(RocketBoostButtonBlock::light)
+    );
+    public static final DeferredBlock<RocketStabilitySwitchBlock> ROCKET_STABILITY_SWITCH = BLOCKS.registerBlock(
+        "rocket_stability_switch", RocketStabilitySwitchBlock::new,
+        metal(MapColor.COLOR_YELLOW).noOcclusion().lightLevel(RocketStabilitySwitchBlock::light)
+    );
+    public static final DeferredBlock<RocketModeKnobBlock> ROCKET_MODE_KNOB = BLOCKS.registerBlock(
+        "rocket_mode_knob", RocketModeKnobBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredBlock<RocketAbortHandleBlock> ROCKET_ABORT_HANDLE = BLOCKS.registerBlock(
+        "rocket_abort_handle", RocketAbortHandleBlock::new, metal(MapColor.COLOR_YELLOW).noOcclusion()
+    );
+    public static final DeferredBlock<RocketLaunchKeyBlock> ROCKET_LAUNCH_KEY = BLOCKS.registerBlock(
+        "rocket_launch_key", RocketLaunchKeyBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion()
+    );
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RocketControlBlockEntity>> ROCKET_CONTROL_ENTITY =
+        BLOCK_ENTITIES.register("rocket_control", () -> BlockEntityType.Builder.of(RocketControlBlockEntity::new, ROCKET_BOOST_BUTTON.get(),
+            ROCKET_STABILITY_SWITCH.get(), ROCKET_MODE_KNOB.get(), ROCKET_ABORT_HANDLE.get(), ROCKET_LAUNCH_KEY.get()).build(null));
+    public static final DeferredItem<BlockItem> ROCKET_BOOST_BUTTON_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_BOOST_BUTTON);
+    public static final DeferredItem<BlockItem> ROCKET_STABILITY_SWITCH_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_STABILITY_SWITCH);
+    public static final DeferredItem<BlockItem> ROCKET_MODE_KNOB_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_MODE_KNOB);
+    public static final DeferredItem<BlockItem> ROCKET_ABORT_HANDLE_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_ABORT_HANDLE);
+    public static final DeferredItem<BlockItem> ROCKET_LAUNCH_KEY_ITEM = ITEMS.registerSimpleBlockItem(ROCKET_LAUNCH_KEY);
     /** Zeppelin Post: the franking machine in a zeppelin's control car, and the mail sack it drops to a village. */
     public static final DeferredBlock<FrankingMachineBlock> FRANKING_MACHINE = BLOCKS.registerBlock(
         "franking_machine", FrankingMachineBlock::new, metal(MapColor.COLOR_RED).noOcclusion()
@@ -2497,7 +2542,8 @@ public final class AerolargeRegistry {
             ZEPPELIN_FABRIC_ITEM, ZEPPELIN_GIRDER_ITEM, ZEPPELIN_CATWALK_ITEM, PROPELLER_ITEM
         )),
         new TabSection("rocket", List.of(
-            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM
+            STEEL_GIRDER_ITEM, LIFT_GLASS_ITEM, ROCKET_BOOST_BUTTON_ITEM, ROCKET_STABILITY_SWITCH_ITEM, ROCKET_MODE_KNOB_ITEM, ROCKET_ABORT_HANDLE_ITEM,
+            ROCKET_LAUNCH_KEY_ITEM
         )),
         new TabSection("flight_deck", List.of(
             AUTOPILOT_ITEM, PILOT_SEAT_ITEM, THRUST_LEVER_ITEM, INSTRUMENT_PANEL_ITEM, FLIGHT_DISPLAY_ITEM, TAIL_CAMERA_DISPLAY_ITEM, FLIGHT_MAP_ITEM,

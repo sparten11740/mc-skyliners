@@ -1399,6 +1399,11 @@ const ROCKET_SUBTITLES = {
   rocket_cutoff_aboard: "Rocket engines cut off",
   rocket_jet_puff: "Side jet puffs",
   rocket_touchdown: "Rocket lands on her fins",
+  rocket_boost: "Rocket engines boost",
+  rocket_boost_aboard: "Rocket engines boost",
+  rocket_boost_ready: "Boost button beeps ready",
+  rocket_scrub: "Launch scrubbed",
+  rocket_stability_alarm: "Stability alarm sounds",
 };
 const LAUNCH_SUBTITLES = {
   launch_10: "Launch control: Ten",
@@ -1421,7 +1426,7 @@ function rocketSounds() {
   // How far each of her engines' sounds that carries farther than the game's own 16 blocks is heard.
   const heard = {
     rocket_roar: ROCKET_HEARD, rocket_ignition: ROCKET_HEARD, rocket_cutoff: ROCKET_HEARD, rocket_touchdown: ROCKET_HEARD,
-    rocket_roar_near: ROCKET_NEAR_HEARD,
+    rocket_boost: ROCKET_HEARD, rocket_roar_near: ROCKET_NEAR_HEARD,
   };
   const sounds = Object.fromEntries(Object.keys(ROCKET_SUBTITLES).map((name) => [name, {
     subtitle: `subtitles.${ID}.${name}`,
@@ -1875,6 +1880,198 @@ function selfDestructLang() {
     "message.aerolarge.self_destruct.not_assembled": "Nothing happens: the self-destruct only works aboard an airliner built from its blueprint",
     "message.aerolarge.self_destruct.off": "The self-destruct is switched off on this server",
     "message.aerolarge.self_destruct.parachute": "Boom! Your parachute opens by itself: steer it the way you walk",
+  };
+}
+// The rocket's centre console's controls, by their block names.
+const ROCKET_CONTROLS = ["rocket_boost_button", "rocket_stability_switch", "rocket_mode_knob", "rocket_abort_handle", "rocket_launch_key"];
+// The hands-on controls on a rocket's centre console (see RocketControlBlock and its kinds), each a module of the
+// console drawn with the pilots at its north side, whose panel reads the right way up for them, its viewer's left at
+// its east side; their lamps glow whatever the light round them. The boost button: a chrome pedestal standing out of
+// its module, a ring of four lamp segments round its foot, and its big cap, a mushroom over it, the lamp it is, its top
+// pictured with a flame over two chevrons pointing up, glowing as it shows (dark, ready, boosting, resting); the ring's
+// segments light green one by one as it rests, clockwise from the far side as the pilots see it, all green once it is
+// ready again, and orange while it boosts. The stability switch: a toggle on the left, leaning back on and forward off,
+// a lamp in front of it, the rocket pictured on the right, and the striped cover shut over the toggle or flipped up
+// behind it. The flight mode knob: a black knob on a chrome skirt among its three modes' pictures, the bar on its top
+// pointing to the mode's, glowing in its colour (red refused). The abort handle: a striped T-handle on a stalk over the
+// U-turn arrow, which glows while it is ready, pulled up a moment as it is pulled. The launch key: a key in its lock,
+// turned a quarter on, its amber tag lying beside it and a lamp beyond, amber off and green on.
+{
+  const lit = (element) => ({ ...element, faces: Object.fromEntries(Object.entries(element.faces).map(([face, value]) =>
+    [face, { ...value, neoforge_data: { block_light: 15, sky_light: 15 } }])) });
+  const facingOf = (variants) => Object.fromEntries(Object.entries(yRot).flatMap(([facing, y]) =>
+    variants.map(([key, model]) => [`facing=${facing}${key ? `,${key}` : ""}`, { model: `${ID}:block/${model}`, y }])));
+  const plain = { plate: `${ID}:block/panel_side`, chrome: `${ID}:block/pilot_seat_trim`, black: `${ID}:block/thrust_lever_handle` };
+
+  // The boost button: its looks, and the cap and the segments lit for each.
+  const BOOST_LOOKS = ["dark", "ready", "boosting", "cooling_0", "cooling_1", "cooling_2", "cooling_3", "refused"];
+  const capOf = (look) => (look.startsWith("cooling") || look === "refused" ? "resting" : look);
+  const segmentsLit = (look) => (look === "ready" || look === "boosting" ? 4 : look.startsWith("cooling") ? Number(look.slice(-1)) : 0);
+  const SEGMENTS = [[[5.5, 6, 10.5], [10.5, 7, 12.5]], [[3.5, 6, 5.5], [5.5, 7, 10.5]], [[5.5, 6, 3.5], [10.5, 7, 5.5]], [[10.5, 6, 5.5], [12.5, 7, 10.5]]];
+  for (const look of BOOST_LOOKS) {
+    const cap = capOf(look);
+    const textures = {
+      ...plain, cap_top: `${ID}:block/rocket_boost_cap_${cap}`, cap_side: `${ID}:block/rocket_boost_cap_side_${cap}`,
+      segment: `${ID}:block/${look === "boosting" ? "rocket_lamp_orange" : "jump_light_green"}`, segment_off: `${ID}:block/jump_light_off`,
+    };
+    const capBox = {
+      from: [3, 12.5, 3], to: [13, 17, 13],
+      faces: {
+        up: { texture: "#cap_top", rotation: 180 }, down: { texture: "#cap_side" },
+        north: { texture: "#cap_side" }, south: { texture: "#cap_side" }, east: { texture: "#cap_side" }, west: { texture: "#cap_side" },
+      },
+    };
+    const segments = SEGMENTS.map(([from, to], k) => (k < segmentsLit(look) ? lit(solid(from, to, "#segment")) : solid(from, to, "#segment_off")));
+    consoleModule(`rocket_boost_button_${look}`, textures, "#plate", true, [
+      solid([6, CONSOLE_HEIGHT, 6], [10, 12.5, 10], "#chrome"),
+      ...segments,
+      cap === "dark" ? capBox : lit(capBox),
+    ]);
+  }
+  write(`assets/${ID}/blockstates/rocket_boost_button.json`, { variants: facingOf(BOOST_LOOKS.map((look) => [`look=${look}`, `rocket_boost_button_${look}`])) });
+  write(`assets/${ID}/models/item/rocket_boost_button.json`, { parent: `${ID}:block/rocket_boost_button_dark` });
+
+  // The stability switch.
+  const STABILITY_LAMPS = { holding: "jump_light_green", off: "rocket_lamp_flashing", locked: "laser_amber", refused: "jump_light_red" };
+  for (const open of [false, true]) {
+    for (const [lamp, lens] of Object.entries(STABILITY_LAMPS)) {
+      const rotation = { origin: [11.5, 6.5, 8], axis: "x", angle: lamp === "off" ? 22.5 : -22.5 };
+      const cover = open ? solid([9, CONSOLE_HEIGHT, 11.5], [14, 13, 12.5], "#cover") : solid([9, CONSOLE_HEIGHT, 5], [14, 13, 11], "#cover");
+      consoleModule(`rocket_stability_switch_${open ? "open" : "shut"}_${lamp}`, {
+        ...plain, top: `${ID}:block/rocket_stability_top`, knob: `${ID}:block/thrust_lever_knob`, cover: `${ID}:block/rocket_hazard_stripes`,
+        lamp: `${ID}:block/${lens}`,
+      }, "#top", true, [
+        solid([10, CONSOLE_HEIGHT, 6.5], [13, 7, 9.5], "#black"),
+        solid([11, 6.5, 7.5], [12, 11.5, 8.5], "#chrome", rotation),
+        solid([10.75, 11, 7.25], [12.25, 12.5, 8.75], "#knob", rotation),
+        lit(solid([10, CONSOLE_HEIGHT, 2], [13, 7, 4], "#lamp")),
+        cover,
+      ]);
+    }
+  }
+  write(`assets/${ID}/blockstates/rocket_stability_switch.json`, {
+    variants: facingOf(Object.keys(STABILITY_LAMPS).flatMap((lamp) => [false, true].map((open) =>
+      [`lamp=${lamp},open=${open}`, `rocket_stability_switch_${open ? "open" : "shut"}_${lamp}`]))),
+  });
+  write(`assets/${ID}/models/item/rocket_stability_switch.json`, { parent: `${ID}:block/rocket_stability_switch_shut_holding` });
+
+  // The flight mode knob: the bar on its top pointing to each mode's picture, in each mode's colour.
+  const MODES = {
+    vertical: [[8, 10, 7.25], [11, 10.5, 8.75], "rocket_lamp_blue"],
+    arc: [[7.25, 10, 8], [8.75, 10.5, 11], "rocket_lamp_orange"],
+    gentle: [[5, 10, 7.25], [8, 10.5, 8.75], "jump_light_green"],
+  };
+  for (const [mode, [from, to, colour]] of Object.entries(MODES)) {
+    for (const refused of [false, true]) {
+      consoleModule(`rocket_mode_knob_${mode}${refused ? "_refused" : ""}`, {
+        ...plain, top: `${ID}:block/rocket_mode_top`, pointer: `${ID}:block/${refused ? "jump_light_red" : colour}`,
+      }, "#top", true, [
+        solid([4.5, CONSOLE_HEIGHT, 4.5], [11.5, 7, 11.5], "#chrome"),
+        solid([5.5, 7, 5.5], [10.5, 10, 10.5], "#black"),
+        lit(solid(from, to, "#pointer")),
+      ]);
+    }
+  }
+  write(`assets/${ID}/blockstates/rocket_mode_knob.json`, {
+    variants: facingOf(Object.keys(MODES).flatMap((mode) => [false, true].map((refused) =>
+      [`mode=${mode},refused=${refused}`, `rocket_mode_knob_${mode}${refused ? "_refused" : ""}`]))),
+  });
+  write(`assets/${ID}/models/item/rocket_mode_knob.json`, { parent: `${ID}:block/rocket_mode_knob_vertical` });
+
+  // The abort handle: the arrow lit over the module's top while it is ready.
+  const arrowLit = {
+    from: [0.5, CONSOLE_HEIGHT, 0.5], to: [15.5, CONSOLE_HEIGHT + 0.2, 15.5],
+    faces: { up: { texture: "#arrow", rotation: 180, neoforge_data: { block_light: 15, sky_light: 15 } } },
+  };
+  for (const ready of [false, true]) {
+    for (const pulled of [false, true]) {
+      const rise = pulled ? 3 : 0;
+      consoleModule(`rocket_abort_handle_${ready ? "lit" : "dark"}_${pulled ? "out" : "in"}`, {
+        ...plain, top: `${ID}:block/rocket_abort_top_dark`, arrow: `${ID}:block/rocket_abort_top_lit`, handle: `${ID}:block/rocket_hazard_stripes`,
+      }, "#top", true, [
+        ...(ready ? [arrowLit] : []),
+        solid([7, CONSOLE_HEIGHT, 7], [9, 8 + rise, 9], "#black"),
+        solid([3.5, 8 + rise, 6.5], [12.5, 10 + rise, 9.5], "#handle"),
+      ]);
+    }
+  }
+  write(`assets/${ID}/blockstates/rocket_abort_handle.json`, {
+    variants: facingOf([false, true].flatMap((pulled) => [false, true].map((ready) =>
+      [`pulled=${pulled},ready=${ready}`, `rocket_abort_handle_${ready ? "lit" : "dark"}_${pulled ? "out" : "in"}`]))),
+  });
+  write(`assets/${ID}/models/item/rocket_abort_handle.json`, { parent: `${ID}:block/rocket_abort_handle_dark_in` });
+
+  // The launch key, off and turned a quarter on.
+  for (const turned of [false, true]) {
+    const tag = {
+      from: [9.5, CONSOLE_HEIGHT, 2], to: [15, CONSOLE_HEIGHT + 0.5, 8],
+      faces: { up: { texture: "#tag", uv: [0, 0, 16, 16], rotation: 180 }, north: { texture: "#tag" }, south: { texture: "#tag" },
+        east: { texture: "#tag" }, west: { texture: "#tag" } },
+    };
+    consoleModule(`rocket_launch_key_${turned ? "on" : "off"}`, {
+      ...plain, tag: `${ID}:block/rocket_key_tag`, lamp: `${ID}:block/${turned ? "jump_light_green" : "laser_amber"}`,
+    }, "#plate", true, [
+      solid([5.5, CONSOLE_HEIGHT, 5.5], [10.5, 6.5, 10.5], "#chrome"),
+      solid([6.5, 6.5, 6.5], [9.5, 7.5, 9.5], "#black"),
+      solid([7.5, 7.5, 7.5], [8.5, 8, 8.5], "#chrome"),
+      turned ? solid([7.5, 8, 6.5], [8.5, 11, 9.5], "#chrome") : solid([6.5, 8, 7.5], [9.5, 11, 8.5], "#chrome"),
+      tag,
+      lit(solid([2, CONSOLE_HEIGHT, 2.5], [4.5, 7, 5], "#lamp")),
+    ]);
+  }
+  write(`assets/${ID}/blockstates/rocket_launch_key.json`, {
+    variants: facingOf([false, true].map((turned) => [`turned=${turned}`, `rocket_launch_key_${turned ? "on" : "off"}`])),
+  });
+  write(`assets/${ID}/models/item/rocket_launch_key.json`, { parent: `${ID}:block/rocket_launch_key_off` });
+
+  for (const name of ROCKET_CONTROLS) {
+    dropsItself(name);
+    cubes[name] = null;
+  }
+}
+// The modules of the rocket's centre console, each on a plate of the airframe: the boost button an orange-dyed stone
+// button, the stability switch a lever between yellow and black dye, the flight mode knob a comparator, the abort
+// handle a tripwire hook between yellow and black dye, and the launch key a tripwire hook with a gold nugget for its
+// key.
+function rocketControlRecipes() {
+  const P = `${ID}:airframe_panel`;
+  shaped("rocket_boost_button", ["O", "B", "P"], { O: "minecraft:orange_dye", B: "minecraft:stone_button", P }, 1);
+  shaped("rocket_stability_switch", ["YLK", " P "], { Y: "minecraft:yellow_dye", L: "minecraft:lever", K: "minecraft:black_dye", P }, 1);
+  shaped("rocket_mode_knob", ["C", "P"], { C: "minecraft:comparator", P }, 1);
+  shaped("rocket_abort_handle", ["YTK", " P "], { Y: "minecraft:yellow_dye", T: "minecraft:tripwire_hook", K: "minecraft:black_dye", P }, 1);
+  shaped("rocket_launch_key", ["G", "T", "P"], { G: "minecraft:gold_nugget", T: "minecraft:tripwire_hook", P }, 1);
+}
+function rocketControlLang() {
+  return {
+    "block.aerolarge.rocket_boost_button": "Boost Button",
+    "block.aerolarge.rocket_stability_switch": "Stability Switch",
+    "block.aerolarge.rocket_mode_knob": "Flight Mode Knob",
+    "block.aerolarge.rocket_abort_handle": "Abort Handle",
+    "block.aerolarge.rocket_launch_key": "Launch Key",
+    "message.aerolarge.rocket_controls.boost": "Boost! Engines kicked up",
+    "message.aerolarge.rocket_controls.switched_off": "This control is switched off on this server",
+    "message.aerolarge.rocket_controls.boost_resting": "The boost is resting: wait for the green light",
+    "message.aerolarge.rocket_controls.boost_not_now": "No boost now: only climbing or cruising",
+    "message.aerolarge.rocket_controls.boost_light": "No boost now: everyone aboard is floating",
+    "message.aerolarge.rocket_controls.stability_cover": "Cover up: flip the switch to turn stability off. Danger!",
+    "message.aerolarge.rocket_controls.stability_off": "Stability off! She is tipping over: flip the switch back before she tips too far",
+    "message.aerolarge.rocket_controls.stability_on": "Stability on: you saved her!",
+    "message.aerolarge.rocket_controls.stability_locked": "Stability is locked on for a moment",
+    "message.aerolarge.rocket_controls.stability_not_now": "Not now: only cruising, high over the ground",
+    "message.aerolarge.rocket_controls.arc_switched_off": "The arc is switched off on this server: she flies straight up",
+    "message.aerolarge.rocket_controls.mode_vertical": "Flight mode: straight up",
+    "message.aerolarge.rocket_controls.mode_arc": "Flight mode: arc, leaning toward the pin as she climbs",
+    "message.aerolarge.rocket_controls.mode_gentle": "Flight mode: gentle and slow",
+    "message.aerolarge.rocket_controls.mode_vertical_later": "Straight up next flight",
+    "message.aerolarge.rocket_controls.mode_arc_later": "Arc next flight",
+    "message.aerolarge.rocket_controls.mode_gentle_later": "Gentle next flight",
+    "message.aerolarge.rocket_controls.not_rocket": "This control only works on a rocket",
+    "message.aerolarge.rocket_controls.no_autopilot": "Nothing happens: there is no rocket's control head near",
+    "message.aerolarge.rocket_controls.abort_nothing": "Nothing to abort",
+    "message.aerolarge.rocket_controls.abort_go_around": "Landing aborted: climbing back to %s and holding",
+    "message.aerolarge.rocket_controls.abort_hold": "Aborted: holding here at %s",
+    "message.aerolarge.rocket_controls.key_stuck": "The key is stuck while she flies",
+    "message.aerolarge.rocket_controls.scrubbed": "Launch scrubbed",
   };
 }
 
@@ -9479,8 +9676,9 @@ const structure = airliner.filter((b) => !FITTINGS.some((fitting) => b.endsWith(
 write("data/sable/tags/block/super_light.json", tag(airliner));
 // What counts as the inside of an airliner for the spawn guard: everything but the gear, which stands on open ground,
 // and the buttons, the airstairs' (the call button on the gear and the one on the skin outside by the top of the stairs
-// among them) and the doors'; but the self-destruct button, on the flight deck's wall like its other controls, is in.
-const outsideButton = (b) => b.endsWith("_button") && !b.endsWith(":self_destruct_button");
+// among them) and the doors'; but the self-destruct button, on the flight deck's wall like its other controls, and the
+// rocket's boost button, on her centre console, are in.
+const outsideButton = (b) => b.endsWith("_button") && !b.endsWith(":self_destruct_button") && !b.endsWith(":rocket_boost_button");
 write(`data/${ID}/tags/block/airframe.json`, tag(structure.filter((b) => !b.includes("landing_gear") && !outsideButton(b))));
 // What cannot be broken, except by a player sneaking with a wrench or in creative mode: the airliner's frame and
 // controls, its own blocks and the other mods' it is built with, but not the cabin floor, where the building goes, nor
@@ -9660,6 +9858,7 @@ crewLockerRecipes();
 gearRecipes();
 laserRecipes();
 selfDestructRecipes();
+rocketControlRecipes();
 slideRecipes();
 cabinSeatRecipes();
 cabinCarpetRecipes();
@@ -10217,6 +10416,7 @@ write(`assets/${ID}/lang/en_us.json`, {
   ...airPocketLang(),
   ...laserLang(),
   ...selfDestructLang(),
+  ...rocketControlLang(),
   ...hullLiningLang(),
   ...rocketFinishLang(),
   ...cabinSeatLang(),

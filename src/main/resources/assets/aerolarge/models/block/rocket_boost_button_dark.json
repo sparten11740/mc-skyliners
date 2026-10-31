@@ -1,0 +1,243 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "casing": "aerolarge:block/flight_console",
+    "particle": "aerolarge:block/flight_console",
+    "plate": "aerolarge:block/panel_side",
+    "chrome": "aerolarge:block/pilot_seat_trim",
+    "black": "aerolarge:block/thrust_lever_handle",
+    "cap_top": "aerolarge:block/rocket_boost_cap_dark",
+    "cap_side": "aerolarge:block/rocket_boost_cap_side_dark",
+    "segment": "aerolarge:block/jump_light_green",
+    "segment_off": "aerolarge:block/jump_light_off"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing"
+        },
+        "south": {
+          "texture": "#casing"
+        },
+        "east": {
+          "texture": "#casing"
+        },
+        "west": {
+          "texture": "#casing"
+        },
+        "up": {
+          "texture": "#plate",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#casing",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        6,
+        6
+      ],
+      "to": [
+        10,
+        12.5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome"
+        },
+        "south": {
+          "texture": "#chrome"
+        },
+        "east": {
+          "texture": "#chrome"
+        },
+        "west": {
+          "texture": "#chrome"
+        },
+        "up": {
+          "texture": "#chrome"
+        },
+        "down": {
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        6,
+        10.5
+      ],
+      "to": [
+        10.5,
+        7,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#segment_off"
+        },
+        "south": {
+          "texture": "#segment_off"
+        },
+        "east": {
+          "texture": "#segment_off"
+        },
+        "west": {
+          "texture": "#segment_off"
+        },
+        "up": {
+          "texture": "#segment_off"
+        },
+        "down": {
+          "texture": "#segment_off"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        6,
+        5.5
+      ],
+      "to": [
+        5.5,
+        7,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#segment_off"
+        },
+        "south": {
+          "texture": "#segment_off"
+        },
+        "east": {
+          "texture": "#segment_off"
+        },
+        "west": {
+          "texture": "#segment_off"
+        },
+        "up": {
+          "texture": "#segment_off"
+        },
+        "down": {
+          "texture": "#segment_off"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        6,
+        3.5
+      ],
+      "to": [
+        10.5,
+        7,
+        5.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#segment_off"
+        },
+        "south": {
+          "texture": "#segment_off"
+        },
+        "east": {
+          "texture": "#segment_off"
+        },
+        "west": {
+          "texture": "#segment_off"
+        },
+        "up": {
+          "texture": "#segment_off"
+        },
+        "down": {
+          "texture": "#segment_off"
+        }
+      }
+    },
+    {
+      "from": [
+        10.5,
+        6,
+        5.5
+      ],
+      "to": [
+        12.5,
+        7,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#segment_off"
+        },
+        "south": {
+          "texture": "#segment_off"
+        },
+        "east": {
+          "texture": "#segment_off"
+        },
+        "west": {
+          "texture": "#segment_off"
+        },
+        "up": {
+          "texture": "#segment_off"
+        },
+        "down": {
+          "texture": "#segment_off"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        12.5,
+        3
+      ],
+      "to": [
+        13,
+        17,
+        13
+      ],
+      "faces": {
+        "up": {
+          "texture": "#cap_top",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#cap_side"
+        },
+        "north": {
+          "texture": "#cap_side"
+        },
+        "south": {
+          "texture": "#cap_side"
+        },
+        "east": {
+          "texture": "#cap_side"
+        },
+        "west": {
+          "texture": "#cap_side"
+        }
+      }
+    }
+  ]
+}

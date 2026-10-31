@@ -524,7 +524,9 @@ public class LiftMachineBlockEntity extends BlockEntity {
 
     /**
      * Whether the ship is steady enough for the lift to run: standing on the ground, her autopilot off, or a rocket
-     * holding her height on her way across, as in space; not through her climb, nor her way down and landing.
+     * holding her height on her way across, as in space; not through her climb, nor her way down and landing, nor while
+     * her console's controls unsteady her: a boost, her stability off, or her arc leaning her far over (see
+     * {@link AutopilotBlockEntity#rocketSteady}).
      */
     private boolean shipResting(ServerLevel level) {
         if (autopilot == null) {
@@ -535,7 +537,7 @@ public class LiftMachineBlockEntity extends BlockEntity {
             return true;
         }
         AutopilotBlockEntity.Phase flying = head.phase();
-        return flying == AutopilotBlockEntity.Phase.OFF || head.craft() == Craft.ROCKET && flying == AutopilotBlockEntity.Phase.CRUISE;
+        return flying == AutopilotBlockEntity.Phase.OFF || head.craft() == Craft.ROCKET && flying == AutopilotBlockEntity.Phase.CRUISE && head.rocketSteady();
     }
 
     /** Opens or shuts a landing's doors, both of its blocks. */

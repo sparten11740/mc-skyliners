@@ -1,6 +1,7 @@
 package dev.aerolarge.autopilot;
 
 import dev.aerolarge.AerolargeConfig;
+import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.block.Relays;
 import dev.aerolarge.block.Turning;
 import dev.aerolarge.compat.SableFlight;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.Vec3;
@@ -31,17 +33,18 @@ import net.minecraft.world.phys.Vec3;
  * the weight it carries (Sable weighs it) and a trim it learns for how hard its engines push, spread over every engine
  * by a relay each; braking, it adds the slowing it plans on as it goes, rather than waiting to fall behind. It never
  * falls faster than {@link #FASTEST_FALL} of gravity, so whoever stands aboard stays on the floor. Its tilt is held by
- * its side jets, against how fast it tilts, toward straight up and the lean it wants: at most {@link #MOST_LEAN}
- * degrees, toward the speed across it wants, which is as fast as it can still slow from by where it is going.
+ * its side jets, against how fast it tilts, toward straight up and the lean it wants, toward the speed across it
+ * wants, which is as fast as it can still slow from by where it is going.
+ *
+ * <p>How fast it climbs, leans and goes across, and falls back, follow the controls on its centre console (see
+ * {@link RocketControls}): its flight mode, a boost, and its stability, which switched off leaves its side jets
+ * pushing it over rather than holding it upright, until it is switched back on or snaps back on by itself.
  */
 public final class RocketPilot {
     /** How long the countdown before lift-off lasts, in ticks. */
     static final int COUNTDOWN = 200;
     /** How high over the ground it rises straight up, leaning nowhere, in blocks: clear of anything round it. */
     private static final double CLEAR = 30;
-    /** How fast it climbs at most and falls at most before its landing burn, in blocks a second. */
-    private static final double CLIMB = 30;
-    private static final double FALL = 40;
     /** How fast it touches down, in blocks a second, and how close over the ground it counts as down, in blocks. */
     private static final double TOUCHDOWN = 1.5;
     private static final double DOWN = 1;
@@ -63,15 +66,14 @@ public final class RocketPilot {
     private static final double TRIM_RATE = 0.05;
     private static final double LEARNING_ERROR = 3;
     private static final double MOST_TRIM = 2;
-    /** How far it leans at most, in degrees, and how far it leans for each block a second across it wants changed. */
-    static final double MOST_LEAN = 10;
-    private static final double LEAN_GAIN = 0.8;
     /**
-     * How steeply it plans to lean back to slow across, in degrees: less than its most, to keep some in hand; and how
-     * fast across it goes at most, in blocks a second.
+     * How far it leans at most coming down, in degrees, whatever its flight mode, and how far it leans for each block a
+     * second across it wants changed.
      */
+    private static final double MOST_LEAN = 10;
+    private static final double LEAN_GAIN = 0.8;
+    /** How steeply it plans to lean back to slow across, in degrees: less than its most, to keep some in hand. */
     private static final double BRAKING_LEAN = 6;
-    private static final double ACROSS = 30;
     /**
      * Over where it is going: how near it counts as there, in blocks, and how slowly it drifts across there at most, in
      * blocks a second, before it starts down; and how fast across it lets itself drift at most on the way down.
@@ -110,6 +112,8 @@ public final class RocketPilot {
     private static final double SIGNAL_HOLD = 0.75;
     /** How much one creative thruster pushes at the configured setting 99 and full signal, in Sable's units. */
     private static final double THRUSTER_PUSH = 10_000;
+    /** How loud each side jet puffs as its stability snaps back on, every one of them at once, as a share of full. */
+    private static final float SNAP_PUFF_VOLUME = 0.5F;
     /**
      * What holds her countdown before it begins, each asked every tick it waits with her level and her autopilot's
      * place: her rover out of its bay, for one. Held, she waits on the ground, her engines quiet, launch control silent.
@@ -175,6 +179,23 @@ public final class RocketPilot {
     record Orders(AutopilotBlockEntity.Phase phase, double altitude, boolean toPin, double pinX, double pinZ) {
     }
 
+    /**
+     * Its attitude this tick: its tilt across its front and to its right, in degrees, how fast each changes, in degrees
+     * a second, and its front and right along the ground.
+     */
+    private record Attitude(double front, double right, double frontRate, double rightRate, Vec3 frontWay, Vec3 rightWay) {
+        /** How far it tilts from straight up, in degrees. */
+        double tilt() {
+            return Math.hypot(front, right);
+        }
+
+        /** How fast its tilt grows, in degrees a second; less than none as it rights itself. */
+        double growing() {
+            double tilt = tilt();
+            return tilt < 1e-3 ? Math.hypot(frontRate, rightRate) : (front * frontRate + right * rightRate) / tilt;
+        }
+    }
+
     private List<List<BlockPos>> bells = List.of();
     private Jets top = Jets.NONE;
     private Jets bottom = Jets.NONE;
@@ -204,6 +225,10 @@ public final class RocketPilot {
     /** The signal its engines were last set to together. */
     private int lastTotal;
     private double lastClimb;
+    /** How high over the ground it was as it last flew, in blocks. */
+    private double lastRadio;
+    /** What the controls on its centre console are set to, and the limits it flies by for them. */
+    private final RocketControls controls = new RocketControls();
 
     /** Holds her countdown before it begins for as long as something says so (see {@link #HOLDS}). */
     public static void holdCountdownWhile(BiPredicate<ServerLevel, BlockPos> hold) {
@@ -258,6 +283,16 @@ public final class RocketPilot {
         return counted;
     }
 
+    /** The controls on its centre console, on the clients as on the server. */
+    RocketControls controls() {
+        return controls;
+    }
+
+    /** How high over the ground it was as it last flew, in blocks. */
+    double radio() {
+        return lastRadio;
+    }
+
     /** Begins a new flight from the ground: the countdown from the top, nothing learnt of this flight yet. */
     void begin(SableFlight.State state) {
         counted = 0;
@@ -276,19 +311,27 @@ public final class RocketPilot {
         if (rose == null) {
             begin(state);
         }
+        lastRadio = radio;
         AutopilotBlockEntity.Phase phase = orders.phase();
         if (phase == AutopilotBlockEntity.Phase.TAKEOFF && counted < COUNTDOWN) {
             counted++;
             rest(level, origin);
             return phase;
         }
+        long now = level.getGameTime();
         Vec3 goal = orders.toPin() ? new Vec3(orders.pinX(), 0, orders.pinZ()) : rose;
         Vec3 toGo = new Vec3(goal.x - state.position().x, 0, goal.z - state.position().z);
         double highest = Math.max(orders.altitude(), state.position().y - radio + CLEAR * 2);
-        double climb = climbWanted(phase, highest, state, radio, mass);
+        Attitude attitude = attitude(state);
+        if (controls.watch(level, origin, phase, radio, across(state), attitude.tilt(), attitude.growing(), orders.toPin())) {
+            puffAll(level, origin);
+        }
+        RocketControls.Limits limits = controls.limits(orders.toPin(), radio, now);
+        double climb = climbWanted(phase, highest, state, radio, mass, limits);
         lastClimb = climb;
-        thrust(level, origin, state, mass, climb, slowing(phase, state, climb, mass), phase == AutopilotBlockEntity.Phase.CRUISE,
-            leanWanted(phase, state, toGo, radio));
+        boolean learning = phase == AutopilotBlockEntity.Phase.CRUISE && controls.calm(now, attitude.tilt());
+        thrust(level, origin, state, mass, climb, slowing(phase, state, climb, mass), learning);
+        jets(level, origin, attitude, leanWanted(phase, state, toGo, radio, limits));
         // Down on its fins and no longer falling, it lets its engines go at once: held up even a little, it would skate
         // across the ground on them.
         boolean resting = phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING && state.velocity().y > -STILL;
@@ -350,22 +393,23 @@ public final class RocketPilot {
      * How high it would coast up to were its engines eased back now: slowed by as much of gravity as it ever falls by,
      * the rest of its weight still held up by them.
      */
-    private static double coastsTo(SableFlight.State state) {
+    static double coastsTo(SableFlight.State state) {
         double climb = Math.max(0, state.velocity().y);
         return state.position().y + climb * climb / (2 * FASTEST_FALL * Math.max(1, state.gravity()));
     }
 
     /**
-     * How fast it wants to climb, in blocks a second: up at its climbing speed, easing off so it coasts no higher than
-     * the height it goes to; across, closing on that height; falling back at its falling speed; and in its landing
-     * burn, as fast as it can still stop by the ground, down to its touchdown speed.
+     * How fast it wants to climb, in blocks a second: up at its climbing speed as its controls have it, easing off so
+     * it coasts no higher than the height it goes to; across, closing on that height; falling back at its falling
+     * speed; and in its landing burn, as fast as it can still stop by the ground, down to its touchdown speed.
      */
-    private double climbWanted(AutopilotBlockEntity.Phase phase, double highest, SableFlight.State state, double radio, double mass) {
+    private double climbWanted(AutopilotBlockEntity.Phase phase, double highest, SableFlight.State state, double radio, double mass,
+                               RocketControls.Limits limits) {
         double below = highest - state.position().y;
         return switch (phase) {
-            case TAKEOFF, CLIMB -> Math.min(CLIMB, Math.sqrt(2 * state.gravity() * Math.max(0, below)) + 1);
+            case TAKEOFF, CLIMB -> Math.min(limits.climb(), Math.sqrt(2 * state.gravity() * Math.max(0, below)) + 1);
             case CRUISE -> Mth.clamp(HOLD_GAIN * below, -HOLD_CLIMB, HOLD_CLIMB);
-            case DESCENT -> -FALL;
+            case DESCENT -> -limits.fall();
             default -> -Math.max(TOUCHDOWN, Math.sqrt(2 * braking(state, mass) * Math.max(0, radio - DOWN)));
         };
     }
@@ -391,21 +435,28 @@ public final class RocketPilot {
     }
 
     /**
-     * The lean it wants, as a tilt of its axis across, in degrees toward the world's x and z: none climbing, nor in the
-     * last of the way down; across, toward the speed across it wants, toward where it goes and as fast as it can still
-     * slow from by there, leaning back at {@link #BRAKING_LEAN}; coming down, toward a drift no faster than
-     * {@link #SETTLING_ACROSS}, holding it over where it goes.
+     * The lean it wants, as a tilt of its axis across, in degrees toward the world's x and z: none climbing (but in a
+     * gravity turn, see {@link RocketControls.Mode#ARC}, leaning as it cruises, as far as its controls let it
+     * climbing), nor in the last of the way down; across, toward the speed across it wants, toward where it goes and as
+     * fast as it can still slow from by there, leaning back at {@link #BRAKING_LEAN}, as far and as fast as its
+     * controls let it; coming down, toward a drift no faster than {@link #SETTLING_ACROSS}, holding it over where it
+     * goes.
      */
-    private static Vec3 leanWanted(AutopilotBlockEntity.Phase phase, SableFlight.State state, Vec3 toGo, double radio) {
-        boolean upright = phase == AutopilotBlockEntity.Phase.TAKEOFF || phase == AutopilotBlockEntity.Phase.CLIMB
+    private static Vec3 leanWanted(AutopilotBlockEntity.Phase phase, SableFlight.State state, Vec3 toGo, double radio, RocketControls.Limits limits) {
+        boolean turning = phase == AutopilotBlockEntity.Phase.CLIMB && limits.climbingLean() > 0;
+        boolean upright = phase == AutopilotBlockEntity.Phase.TAKEOFF || phase == AutopilotBlockEntity.Phase.CLIMB && !turning
             || phase == AutopilotBlockEntity.Phase.LAND && radio < TOUCHING;
         if (upright) {
             return Vec3.ZERO;
         }
-        double most = phase == AutopilotBlockEntity.Phase.LAND && radio < UPRIGHT ? LAST_LEAN : MOST_LEAN;
+        double most = switch (phase) {
+            case CLIMB -> limits.climbingLean();
+            case CRUISE -> limits.cruiseLean();
+            default -> phase == AutopilotBlockEntity.Phase.LAND && radio < UPRIGHT ? LAST_LEAN : MOST_LEAN;
+        };
         double distance = toGo.length();
         double slowing = state.gravity() * Math.tan(Math.toRadians(BRAKING_LEAN));
-        double fastest = phase == AutopilotBlockEntity.Phase.CRUISE ? ACROSS : SETTLING_ACROSS;
+        double fastest = phase == AutopilotBlockEntity.Phase.CRUISE || turning ? limits.across() : SETTLING_ACROSS;
         double speed = Math.min(fastest, Math.sqrt(2 * slowing * distance));
         Vec3 wanted = distance < 1e-3 ? Vec3.ZERO : toGo.scale(speed / distance);
         Vec3 off = wanted.subtract(state.velocity().x, 0, state.velocity().z).scale(LEAN_GAIN);
@@ -414,13 +465,12 @@ public final class RocketPilot {
     }
 
     /**
-     * Sets its engines for the climb it wants and its side jets for the lean it wants: the thrust that holds up its
-     * weight, slows it as much more as it plans to be slowed (in blocks a second each second), and closes on the climb,
-     * through its trim, never so little it falls faster than it may, spread over every engine; the jets against its
-     * tilt off the lean and how fast it tilts. Its trim is learnt only cruising, as it holds its height.
+     * Sets its engines for the climb it wants: the thrust that holds up its weight, slows it as much more as it plans
+     * to be slowed (in blocks a second each second), and closes on the climb, through its trim, never so little it
+     * falls faster than it may, spread over every engine. Its trim is learnt only cruising, as it holds its height, and
+     * only once its controls have left it calm a while (see {@link RocketControls#calm}).
      */
-    private void thrust(ServerLevel level, BlockPos origin, SableFlight.State state, double mass, double climb, double slowing, boolean learning,
-                        Vec3 lean) {
+    private void thrust(ServerLevel level, BlockPos origin, SableFlight.State state, double mass, double climb, double slowing, boolean learning) {
         double error = climb - state.velocity().y;
         double tilt = Math.max(0.5, state.up().y);
         double wanted = mass * (state.gravity() + slowing + CLIMB_GAIN * error) / tilt;
@@ -432,7 +482,6 @@ public final class RocketPilot {
             trim = Mth.clamp(trim + TRIM_RATE / 20 * error / (Math.abs(climb) + 1), 1 / MOST_TRIM, MOST_TRIM);
         }
         engines(level, origin, push / Math.max(1, mostThrust()));
-        jets(level, origin, state, lean);
     }
 
     /** Every engine at the share of full thrust given, the signals spread so their sum gives it as nearly as it can. */
@@ -452,22 +501,37 @@ public final class RocketPilot {
     }
 
     /**
-     * The side jets against its tilt off the lean it wants: its tilt across its front and to its right, from where
-     * its axis points, and how fast that changes; the jets near the nose push its top the way it should go and those
-     * near the bottom push its bottom the other way, so it turns about its middle without being pushed across.
+     * Its attitude this tick, from where its axis points: its tilt across its front and to its right, and how fast
+     * each changes since the tick before, which it notes for the next, stability on or off.
      */
-    private void jets(ServerLevel level, BlockPos origin, SableFlight.State state, Vec3 lean) {
+    private Attitude attitude(SableFlight.State state) {
         Vec3 axis = state.up();
         Vec3 front = flat(state.nose());
         Vec3 right = flat(state.right());
         double tiltFront = Math.toDegrees(Math.asin(Mth.clamp(axis.dot(front), -1, 1)));
         double tiltRight = Math.toDegrees(Math.asin(Mth.clamp(axis.dot(right), -1, 1)));
-        double wantFront = lean.dot(front);
-        double wantRight = lean.dot(right);
-        double pushFront = TILT_GAIN * (wantFront - tiltFront) - TILT_DAMPING * (tiltFront - lastFront) * 20;
-        double pushRight = TILT_GAIN * (wantRight - tiltRight) - TILT_DAMPING * (tiltRight - lastRight) * 20;
+        Attitude attitude = new Attitude(tiltFront, tiltRight, (tiltFront - lastFront) * 20, (tiltRight - lastRight) * 20, front, right);
         lastFront = tiltFront;
         lastRight = tiltRight;
+        return attitude;
+    }
+
+    /**
+     * The side jets against its tilt off the lean it wants and how fast it tilts; the jets near the nose push its top
+     * the way it should go and those near the bottom push its bottom the other way, so it turns about its middle
+     * without being pushed across. With its stability off they hold it no more: they push it further over the further
+     * it tilts, and the gusts nudge it about (see {@link RocketControls#DRIFT_GAIN}).
+     */
+    private void jets(ServerLevel level, BlockPos origin, Attitude attitude, Vec3 lean) {
+        double pushFront;
+        double pushRight;
+        if (controls.unstable()) {
+            pushFront = RocketControls.DRIFT_GAIN * attitude.front() + controls.gustFront();
+            pushRight = RocketControls.DRIFT_GAIN * attitude.right() + controls.gustRight();
+        } else {
+            pushFront = TILT_GAIN * (lean.dot(attitude.frontWay()) - attitude.front()) - TILT_DAMPING * attitude.frontRate();
+            pushRight = TILT_GAIN * (lean.dot(attitude.rightWay()) - attitude.right()) - TILT_DAMPING * attitude.rightRate();
+        }
         int frontSignal = signal(pushFront);
         int sideSignal = signal(pushRight);
         pair(level, origin, top.ahead(), top.back(), pushFront);
@@ -516,6 +580,15 @@ public final class RocketPilot {
         }
     }
 
+    /** Every side jet puffs at once, as its stability snaps back on and they catch it. */
+    private void puffAll(ServerLevel level, BlockPos origin) {
+        for (BlockPos jet : jetRelays()) {
+            if (jet != null) {
+                level.playSound(null, origin.offset(jet), AerolargeRegistry.ROCKET_JET_PUFF.get(), SoundSource.BLOCKS, SNAP_PUFF_VOLUME, 1.0F);
+            }
+        }
+    }
+
     /**
      * At rest on the ground or switched off: every engine and jet let go, and its report says so, as her sounds follow
      * it (see {@link RocketSounds}). Its relays are never sent to the clients: nothing there reads them, and each sent
@@ -557,6 +630,7 @@ public final class RocketPilot {
     /** Landed, or the flight given up: the next flight begins with a countdown again. */
     void stop(ServerLevel level, BlockPos origin) {
         rest(level, origin);
+        controls.stop();
         rose = null;
         holding = false;
         counted = 0;
@@ -577,6 +651,7 @@ public final class RocketPilot {
         tag.put("BottomJets", bottom.save());
         tag.putDouble("Trim", trim);
         tag.putInt("Counted", counted);
+        controls.save(tag);
         if (rose != null) {
             tag.putDouble("RoseX", rose.x);
             tag.putDouble("RoseY", rose.y);
@@ -593,6 +668,7 @@ public final class RocketPilot {
         configure(loaded, Jets.load(tag.getCompound("TopJets"), turn), Jets.load(tag.getCompound("BottomJets"), turn));
         trim = tag.contains("Trim") ? Mth.clamp(tag.getDouble("Trim"), 1 / MOST_TRIM, MOST_TRIM) : 1;
         counted = tag.getInt("Counted");
+        controls.load(tag);
         rose = tag.contains("RoseX") ? new Vec3(tag.getDouble("RoseX"), tag.getDouble("RoseY"), tag.getDouble("RoseZ")) : null;
     }
 }

@@ -53,6 +53,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -493,6 +494,9 @@ public class AutopilotBlockEntity extends BlockEntity {
     private static final float NOTE_VOLUME = 0.5F;
     private static final float WHOOSH_VOLUME = 0.5F;
     private static final float THUD_VOLUME = 0.8F;
+    /** How loud its rocket's abort handle's ratchet and her launch key's click in its lock are. */
+    private static final float RATCHET_VOLUME = 0.9F;
+    private static final float KEY_VOLUME = 0.9F;
     private static final Channel[] ENGINES = {Channel.ENGINE_1, Channel.ENGINE_2, Channel.ENGINE_3, Channel.ENGINE_4};
     /** How far a control jet's signal may wander, in steps of the 15, before the jet is set to it (see {@link #steady}). */
     private static final int JET_STEADY = 1;
@@ -762,6 +766,140 @@ public class AutopilotBlockEntity extends BlockEntity {
     /** How hard its rocket's engines fire, on the clients as on the server, whose roar follows it: a share of full. */
     public float rocketThrust() {
         return rocketSounds.thrust();
+    }
+
+    /**
+     * The controls on its rocket's centre console as they are set, on the clients as on the server, whose displays,
+     * roar and plume show them (see {@link RocketControls}).
+     */
+    public RocketControls rocketControls() {
+        return rocket.controls();
+    }
+
+    /**
+     * What its rocket's centre console's controls show, as each reads it every few ticks (see
+     * {@link RocketControls.Panel}); nothing for any other airframe.
+     */
+    public RocketControls.Panel rocketPanel() {
+        if (craft != Craft.ROCKET || level == null) {
+            return RocketControls.Panel.NONE;
+        }
+        boolean abortable = phase != Phase.OFF && RocketControls.abortable(phase, rocket.radio());
+        return rocket.controls().panel(level.getGameTime(), phase, rocket.counted(), gravity.light(), abortable, phase != Phase.OFF);
+    }
+
+    /**
+     * Whether nothing on its rocket's console unsteadies her, so her lift may run while she cruises (see
+     * {@link RocketControls#steady}); always for any other airframe.
+     */
+    public boolean rocketSteady() {
+        return craft != Craft.ROCKET || level == null || rocket.controls().steady(level.getGameTime());
+    }
+
+    /**
+     * One of the controls on its rocket's centre console worked by a player, on the server (see {@link
+     * RocketControls}): the boost button, the stability switch and the flight mode knob are worked by her controls
+     * themselves; the abort handle calls off her landing or stops her where she is (see {@link #rocketAbort}), and the
+     * launch key launches her or scrubs her countdown (see {@link #rocketKey}). Each answers the player with a sound
+     * and a word in their hotbar. Whether it was taken; not on any other airframe, which only thuds.
+     */
+    public boolean rocketControl(RocketControls.Control control, ServerPlayer player) {
+        if (!(level instanceof ServerLevel server) || craft != Craft.ROCKET) {
+            thud();
+            player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.not_rocket"), true);
+            return false;
+        }
+        SableFlight.State state = SableFlight.read(this, nose());
+        boolean taken = switch (control) {
+            case BOOST -> rocket.controls().boost(server, worldPosition, player, phase, rocket.counted(), gravity.light());
+            case STABILITY -> rocket.controls().stability(server, worldPosition, player, phase, rocket.radio());
+            case MODE -> rocket.controls().turn(server, worldPosition, player, phase);
+            case ABORT -> rocketAbort(server, player, state);
+            case KEY -> rocketKey(server, player, state);
+        };
+        if (rocket.controls().takeChanged()) {
+            changed();
+        }
+        return taken;
+    }
+
+    /**
+     * Its rocket's abort handle pulled, with a ratchet's clatter: counting down, her countdown is scrubbed; coming down
+     * (in her landing burn only while still {@link RocketControls#ABORT_LOWEST} up), her landing is called off where
+     * she is, and she climbs back to her height set and holds it there (see {@link #goAround}); climbing or cruising,
+     * she stops where she is and holds the height she coasts up to, until given a pin or told to land; otherwise a
+     * thud. Whether it did anything.
+     */
+    private boolean rocketAbort(ServerLevel level, ServerPlayer player, @Nullable SableFlight.State state) {
+        if (state == null || phase == Phase.OFF || !RocketControls.abortable(phase, rocket.radio())) {
+            thud();
+            player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.abort_nothing"), true);
+            return false;
+        }
+        if (phase == Phase.TAKEOFF && rocket.counted() < RocketPilot.COUNTDOWN) {
+            return scrub(level, player);
+        }
+        level.playSound(null, worldPosition, SoundEvents.CROSSBOW_LOADING_MIDDLE.value(), SoundSource.BLOCKS, RATCHET_VOLUME, 1.0F);
+        boolean landing = phase == Phase.DESCENT || phase == Phase.LAND;
+        // Where she is, rather than where she was going: no pin, and back over here should she drift.
+        rocket.landHere(state);
+        lateral = Lateral.HEADING;
+        landAtPin = false;
+        if (landing) {
+            goAround(level);
+        } else {
+            rocket.holdHere();
+            double floor = lowestAltitude(runwayAltitude);
+            targetAltitude = Mth.clamp(RocketPilot.coastsTo(state), floor, Math.max(floor, ceiling(level)));
+            level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, NOTE_VOLUME, NOTE_HIGH);
+        }
+        changed();
+        String said = landing ? "message.aerolarge.rocket_controls.abort_go_around" : "message.aerolarge.rocket_controls.abort_hold";
+        player.displayClientMessage(Component.translatable(said, Math.round(targetAltitude)), true);
+        return true;
+    }
+
+    /**
+     * Its rocket's launch key turned, with the click of a key in its lock: counting down (or waiting to), her countdown
+     * is scrubbed; on the ground with the autopilot off, she flies what it was last set to (see {@link #keyed}),
+     * assembled first if she stands as blocks, the usual holds on her countdown holding it as ever; up and flying, it
+     * is stuck, and only thuds. Whether it did anything.
+     */
+    private boolean rocketKey(ServerLevel level, ServerPlayer player, @Nullable SableFlight.State state) {
+        if (phase == Phase.TAKEOFF && rocket.counted() < RocketPilot.COUNTDOWN) {
+            return scrub(level, player);
+        }
+        boolean grounded = state == null || radioAltitude(level, state) <= AIRBORNE;
+        if (phase != Phase.OFF || !grounded) {
+            thud();
+            player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.key_stuck"), true);
+            return false;
+        }
+        level.playSound(null, worldPosition, SoundEvents.VAULT_INSERT_ITEM, SoundSource.BLOCKS, KEY_VOLUME, 1.0F);
+        Settings settings = keyed(level, state);
+        Component assembling = assembleToFly(player, settings);
+        player.displayClientMessage(assembling != null ? assembling : set(SetAutopilot.Action.FLY, settings), true);
+        return phase != Phase.OFF || assembling();
+    }
+
+    /** Its rocket's countdown scrubbed: switched off, with falling notes rather than the autopilot's own chime. */
+    private boolean scrub(ServerLevel level, ServerPlayer player) {
+        disengage(AerolargeRegistry.ROCKET_SCRUB.get());
+        player.displayClientMessage(Component.translatable("message.aerolarge.rocket_controls.scrubbed"), true);
+        return true;
+    }
+
+    /**
+     * What its rocket's launch key flies: what its autopilot was last set to, her height and her pin, from where she
+     * stands; what engaging would fly where no height was set, or the one set is under the lowest she may hold here.
+     */
+    private Settings keyed(Level level, @Nullable SableFlight.State state) {
+        Plan plan = plan(level, state);
+        Settings fresh = offered(plan);
+        boolean pinned = lateral == Lateral.DESTINATION;
+        int altitude = targetAltitude >= lowestAltitude(plan.runway()) ? (int) Math.round(targetAltitude) : fresh.altitude();
+        return new Settings(fresh.speed(), altitude, fresh.heading(), pinned ? Lateral.DESTINATION : Lateral.HEADING, circle,
+            pinned ? BlockPos.containing(orbitX, 0, orbitZ) : fresh.destination(), false);
     }
 
     /** What it flies, on the clients as on the server, whose pictures its screens show. */
@@ -1817,8 +1955,10 @@ public class AutopilotBlockEntity extends BlockEntity {
                 changed();
             }
         }
-        // Her side jets' puffs and "Touchdown.", and her engines' thrust shown to the clients, who play her roar by it.
-        if (rocketSounds.tick(level, worldPosition, rocket, phase, this)) {
+        // Her side jets' puffs and "Touchdown.", and her engines' thrust and her controls shown to the clients, who
+        // play her roar and draw her plume and displays by them.
+        boolean shown = rocketSounds.tick(level, worldPosition, rocket, phase, this);
+        if (rocket.controls().takeChanged() || shown) {
             changed();
         }
         watchArrival(flight, radio + flight.apex() - flight.position().y > AIRBORNE);
@@ -2610,6 +2750,11 @@ public class AutopilotBlockEntity extends BlockEntity {
      * turn, which may no longer fit what the pilot does.
      */
     private void disengage() {
+        disengage(AerolargeRegistry.AUTOPILOT_OFF.get());
+    }
+
+    /** Switches off as {@link #disengage()} does, with a sound of its own rather than the autopilot's chime. */
+    private void disengage(SoundEvent heard) {
         phase = Phase.OFF;
         awaitingClearance = false;
         pinLanding.abandon();
@@ -2629,7 +2774,7 @@ public class AutopilotBlockEntity extends BlockEntity {
             rocket.stop(serverLevel, worldPosition);
         }
         resyncControls(serverLevel);
-        serverLevel.playSound(null, worldPosition, AerolargeRegistry.AUTOPILOT_OFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        serverLevel.playSound(null, worldPosition, heard, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /** The engines, the nose wheel and the brakes follow their controls again. */
@@ -2856,6 +3001,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         // Only ever in the update sent to clients: the server finds it afresh each tick.
         stuck = tag.getBoolean("Stuck");
         rocketSounds.loadShown(tag);
+        rocket.controls().loadShown(tag);
         loadFrame(tag);
     }
 
@@ -2926,6 +3072,7 @@ public class AutopilotBlockEntity extends BlockEntity {
         Turning.save(tag, getBlockState());
         surfaces.saveShown(tag);
         rocketSounds.saveShown(tag);
+        rocket.controls().saveShown(tag);
         return tag;
     }
 

@@ -59,6 +59,10 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
     public static final ModConfigSpec.BooleanValue ROCKET_DOME;
     public static final ModConfigSpec.BooleanValue ROCKET_CALLOUTS;
+    public static final ModConfigSpec.BooleanValue ROCKET_COCKPIT_CONTROLS;
+    public static final ModConfigSpec.BooleanValue ROCKET_BOOST;
+    public static final ModConfigSpec.BooleanValue ROCKET_STABILITY_SWITCH;
+    public static final ModConfigSpec.BooleanValue ROCKET_ARC_ASCENT;
     public static final ModConfigSpec.BooleanValue SHIPS_COLOURS;
     public static final ModConfigSpec.BooleanValue CHRISTENING;
     public static final ModConfigSpec.BooleanValue FLANK_SCREEN;
@@ -545,6 +549,34 @@ public final class AerolargeConfig {
                 "counts her down."
             )
             .define("callouts", true);
+        ROCKET_COCKPIT_CONTROLS = builder
+            .comment(
+                "Whether a rocket is built with hands-on controls on a centre console round her control head: a boost button, a",
+                "stability switch under a striped cover, a flight mode knob, an abort handle and a launch key. Off, they are left out",
+                "of rockets built from then on; rockets already built keep theirs."
+            )
+            .define("cockpitControls", true);
+        ROCKET_BOOST = builder
+            .comment(
+                "Experimental: whether a rocket's boost button kicks up her engines for eight seconds, climbing twice as fast or",
+                "racing across faster and leaning further, then rests twenty seconds before it boosts again. Off, the button only",
+                "sounds its low refusal note."
+            )
+            .define("boost", false);
+        ROCKET_STABILITY_SWITCH = builder
+            .comment(
+                "Experimental: whether a rocket's stability switch, cruising well over the ground, turns off the side jets that",
+                "hold her upright, so she starts to tip over and drift until it is switched back on, or snaps back on by itself",
+                "before she tips too far. Off, the switch only sounds its low refusal note."
+            )
+            .define("stabilitySwitch", false);
+        ROCKET_ARC_ASCENT = builder
+            .comment(
+                "Experimental: whether a rocket's flight mode knob offers the arc, a gravity turn leaning her toward her pin as",
+                "she climbs and cruising across faster and leaning further. Off, the knob still turns to it, sounding its low",
+                "refusal note, and she flies it straight up as ever."
+            )
+            .define("arcAscent", false);
         builder.pop();
 
         SPEC = builder.build();

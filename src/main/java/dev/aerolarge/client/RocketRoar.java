@@ -32,7 +32,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * under whoever stands near; her lift-off's shockwave booms and jolts them as it reaches them (see {@link #shockwave}
  * and the autopilot's RocketLaunchBlast). Aboard her, all of it comes through her hull instead, muffled and quieter,
  * round the listener wherever they stand in her, and her engines lighting shakes their view (see
- * {@link CameraShake}).
+ * {@link CameraShake}). Boosting (see the autopilot's RocketControls), her engines kick up with a roar of their own,
+ * her loop goes to full and a little higher, and her boost shakes the view of those aboard for as long as it lasts;
+ * as it ends, its boosters cut out.
  */
 public final class RocketRoar {
     /** What each rocket's engines were last heard doing, until her autopilot goes away. */
@@ -95,6 +97,14 @@ public final class RocketRoar {
     private static final float NEAR_BOOM = 1.0F;
     /** How long after one cut-off before another is heard, in ticks, so that her bouncing on her fins makes none. */
     private static final int AGAIN = 60;
+    /**
+     * Boosting: how much higher her roar is, in pitch, how loud the boost's kick and its cut-out are, as shares of
+     * full, and how hard it shakes the view of those aboard, as a share of the roughest clear air.
+     */
+    private static final float BOOST_PITCH = 0.1F;
+    private static final float BOOST_VOLUME = 1.0F;
+    private static final float BOOST_CUTOUT_VOLUME = 0.8F;
+    private static final float BOOST_SHAKE = 0.6F;
     /** Her thrust before her engines are first heard. */
     private static final float UNHEARD = -1;
     /** Long before any game time: never. */
@@ -165,6 +175,8 @@ public final class RocketRoar {
         /** When her engines last lit at lift-off, and the game time before which no cut-off is heard again. */
         private long litAt = NEVER;
         private long quietUntil = NEVER;
+        /** Whether she was boosting last tick. */
+        private boolean boosted;
 
         /** Each tick of hers: her ignition or her cut-off as her engines light or stop, and her roar kept up. */
         void tick(Minecraft minecraft, AutopilotBlockEntity rocket, long now) {
@@ -181,12 +193,14 @@ public final class RocketRoar {
                 stopping(minecraft, rocket, inside, now);
             }
             heard = thrust;
+            boolean boosting = thrust > 0 && rocket.rocketControls().boosting(now);
+            boost(minecraft, rocket, boosting, inside, now);
             // Lighting, the loop waits a moment, then rises in under the ignition as that falls away; stopping, it dies
             // away into the cut-off, falling in pitch.
             boolean stopped = thrust <= 0;
             float share = Mth.clamp(thrust, 0, 1);
-            float volume = stopped || now - litAt < IGNITION_LEAD ? 0 : Mth.lerp(share, LEAST_VOLUME, MOST_VOLUME);
-            float pitch = stopped ? CUT_PITCH : Mth.lerp(share, LEAST_PITCH, MOST_PITCH);
+            float volume = stopped || now - litAt < IGNITION_LEAD ? 0 : boosting ? MOST_VOLUME : Mth.lerp(share, LEAST_VOLUME, MOST_VOLUME);
+            float pitch = stopped ? CUT_PITCH : Mth.lerp(share, LEAST_PITCH, MOST_PITCH) + (boosting ? BOOST_PITCH : 0);
             float step = stopped ? 1F / CUTOFF_FADE : now - litAt < IGNITION_LEAD + IGNITION_RISE ? 1F / IGNITION_RISE : FADE;
             float pitchStep = stopped ? (MOST_PITCH - CUT_PITCH) / CUTOFF_FADE : PITCH_RATE;
             Vec3 exhaust = SableClient.toWorld(minecraft.level, exhaust(rocket));
@@ -199,6 +213,23 @@ public final class RocketRoar {
             if (!inside && !stopped) {
                 shakeGround(minecraft, exhaust, low);
             }
+        }
+
+        /**
+         * A boost beginning, its kick heard and, aboard, its shake felt for as long as it lasts; or ending, its
+         * boosters cutting out.
+         */
+        private void boost(Minecraft minecraft, AutopilotBlockEntity rocket, boolean boosting, boolean inside, long now) {
+            if (boosting && !boosted) {
+                once(minecraft, rocket, AerolargeRegistry.ROCKET_BOOST, AerolargeRegistry.ROCKET_BOOST_ABOARD, BOOST_VOLUME, inside);
+                if (inside) {
+                    CameraShake.turbulence(BOOST_SHAKE, rocket.rocketControls().boostLeft(now));
+                }
+            }
+            if (boosted && !boosting) {
+                once(minecraft, rocket, AerolargeRegistry.BOOSTER_CUTOUT, AerolargeRegistry.BOOSTER_CUTOUT, BOOST_CUTOUT_VOLUME, inside);
+            }
+            boosted = boosting;
         }
 
         /** How low over the ground her exhaust is, for her roar's thunder close by: 1 near it, 0 high over it. */

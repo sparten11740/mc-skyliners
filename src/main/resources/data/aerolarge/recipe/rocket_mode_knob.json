@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "C",
+    "P"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "P": {
+      "item": "aerolarge:airframe_panel"
+    }
+  },
+  "result": {
+    "id": "aerolarge:rocket_mode_knob",
+    "count": 1
+  }
+}

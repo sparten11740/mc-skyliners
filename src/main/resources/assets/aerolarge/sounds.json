@@ -480,6 +480,47 @@
       }
     ]
   },
+  "rocket_boost": {
+    "subtitle": "subtitles.aerolarge.rocket_boost",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_boost",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "rocket_boost_aboard": {
+    "subtitle": "subtitles.aerolarge.rocket_boost_aboard",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_boost_aboard"
+      }
+    ]
+  },
+  "rocket_boost_ready": {
+    "subtitle": "subtitles.aerolarge.rocket_boost_ready",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_boost_ready"
+      }
+    ]
+  },
+  "rocket_scrub": {
+    "subtitle": "subtitles.aerolarge.rocket_scrub",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_scrub"
+      }
+    ]
+  },
+  "rocket_stability_alarm": {
+    "subtitle": "subtitles.aerolarge.rocket_stability_alarm",
+    "sounds": [
+      {
+        "name": "aerolarge:rocket_stability_alarm"
+      }
+    ]
+  },
   "launch_10": {
     "subtitle": "subtitles.aerolarge.launch_10",
     "sounds": [
