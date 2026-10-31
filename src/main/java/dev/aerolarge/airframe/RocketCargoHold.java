@@ -139,7 +139,8 @@ final class RocketCargoHold extends RocketRoom {
 
     /**
      * The workbench corner: shelves of tool cases two high round its corner, facing in, and in the middle of the corner
-     * a crafting table, a stool to sit at it and a grindstone beside it.
+     * a crafting table, a stool to sit at it and a grindstone beside it, at the first spot round the table that is
+     * free: out toward her back, in toward her front, or beside the stool where her skin and the shelves come too close.
      */
     private void workbench(RocketQuarter quarter, int y, int corner) {
         List<BlockPos> run = run(y, wall() - CRATES_IN, TOOLS_FROM, TOOLS_TO);
@@ -150,8 +151,14 @@ final class RocketCargoHold extends RocketRoom {
         int middle = RocketQuarter.middle(corner);
         put(quarter.x(middle), y, quarter.z(middle), Blocks.CRAFTING_TABLE.defaultBlockState());
         put(quarter.x(middle - 1), y, quarter.z(middle), AerolargeRegistry.BAR_STOOL.get().defaultBlockState());
-        put(quarter.x(middle), y, quarter.z(middle + 1), Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE, AttachFace.FLOOR)
-            .setValue(GrindstoneBlock.FACING, quarter.side()));
+        BlockState grindstone = Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE, AttachFace.FLOOR)
+            .setValue(GrindstoneBlock.FACING, quarter.side());
+        int[][] spots = {{middle, middle + 1}, {middle, middle - 1}, {middle - 1, middle + 1}, {middle - 1, middle - 1}};
+        for (int[] spot : spots) {
+            if (put(quarter.x(spot[0]), y, quarter.z(spot[1]), grindstone)) {
+                return;
+            }
+        }
     }
 
     /**
