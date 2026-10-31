@@ -107,17 +107,19 @@ public class BunkBlock extends HorizontalDirectionalBlock {
     private static final VoxelShape FOOT_POSTS = Shapes.or(Block.box(0, 0, 0, 1.5, 16, 1.5), Block.box(0, 0, 14.5, 1.5, 16, 16));
     /**
      * An upper bunk's guards as they stop anyone, too high to step over, as a fence's: along its open side and its back
-     * all its length, and across its head end; its foot end is left open, the way in from its ladder.
+     * all its length, and across its head end; its foot end is left open, the way in from its ladder. Along the foot
+     * half they are only a sliver at the bunk's outer faces, and its corner posts there stop no one, so the way in is
+     * nearly the bunk's whole width and a player climbing the ladder off its middle still gets in.
      */
     private static final VoxelShape HEAD_GUARDS = Shapes.or(Block.box(0, 0, 0, 16, 24, 1.75), Block.box(0, 0, 14.25, 16, 24, 16),
         Block.box(15, 0, 0, 16, 24, 16));
-    private static final VoxelShape FOOT_GUARDS = Shapes.or(Block.box(0, 0, 0, 16, 24, 1.75), Block.box(0, 0, 14.25, 16, 24, 16));
+    private static final VoxelShape FOOT_GUARDS = Shapes.or(Block.box(0, 0, 0, 16, 24, 0.5), Block.box(0, 0, 15.5, 16, 24, 16));
     private static final Map<Direction, VoxelShape> HEAD_SHAPES = TurnedShapes.of(HEAD);
     private static final Map<Direction, VoxelShape> FOOT_SHAPES = TurnedShapes.of(FOOT);
     private static final Map<Direction, VoxelShape> POSTED_HEAD_SHAPES = TurnedShapes.of(Shapes.or(HEAD, HEAD_POSTS));
     private static final Map<Direction, VoxelShape> POSTED_FOOT_SHAPES = TurnedShapes.of(Shapes.or(FOOT, FOOT_POSTS));
     private static final Map<Direction, VoxelShape> GUARDED_HEAD_SHAPES = TurnedShapes.of(Shapes.or(HEAD, HEAD_POSTS, HEAD_GUARDS));
-    private static final Map<Direction, VoxelShape> GUARDED_FOOT_SHAPES = TurnedShapes.of(Shapes.or(FOOT, FOOT_POSTS, FOOT_GUARDS));
+    private static final Map<Direction, VoxelShape> GUARDED_FOOT_SHAPES = TurnedShapes.of(Shapes.or(FOOT, FOOT_GUARDS));
 
     public BunkBlock(Properties properties) {
         super(properties);
