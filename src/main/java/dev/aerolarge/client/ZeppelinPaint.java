@@ -19,6 +19,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,7 +33,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * blocks send them, into a list the threads that mesh the world's sections read as it stands; and as a repaint sweeps
  * over a ship, along a zeppelin from its nose to its tail and down a rocket from her nose to her foot, it has the
  * sections the new paint has reached since the tick before meshed again, so the paint moves over it a slice at a time,
- * and the rest is never meshed again for it. Over a zeppelin's livery go what its features paint on it (see
+ * and the rest is never meshed again for it; down a rocket the new paint runs on ahead of its edge in drips. Over a zeppelin's livery go what its features paint on it (see
  * {@link PaintOverlay}), the ship's colours on its fins among them, each meshed again where it is as it comes and goes.
  */
 public final class ZeppelinPaint {
@@ -69,7 +70,7 @@ public final class ZeppelinPaint {
             double round = (Math.toDegrees(Math.atan2(right, ahead)) + FULL_TURN) % FULL_TURN;
             int band = Livery.RocketSpot.band(pos.getY() - min.getY(), stories);
             int cockpit = Livery.RocketSpot.band(stories[stories.length - 1], stories);
-            Livery under = down < reached ? livery : before;
+            Livery under = down < reached + drip(pos, reached) ? livery : before;
             return under.rocketColour(new Livery.RocketSpot(height, round, band, cockpit, window, pos.asLong()), fin);
         }
 
@@ -82,6 +83,26 @@ public final class ZeppelinPaint {
 
     /** A whole turn round a rocket, in degrees. */
     private static final double FULL_TURN = 360;
+    /**
+     * The new paint's runs down a rocket ahead of its edge: how far the longest runs ahead, in blocks; how much of its
+     * length a run always keeps; and how fast its spurts come, in radians a block the edge comes down. A run never
+     * draws back up faster than the edge comes down, so no block once painted goes back to the old paint.
+     */
+    private static final double DRIP_LONGEST = 5;
+    private static final double DRIP_STEADY = 0.7;
+    private static final double DRIP_SPURTS = 0.5;
+
+    /**
+     * How far the new paint has run ahead of its edge down a column of a rocket's blocks, in blocks, as the edge has
+     * come down so far: a few columns' runs long, most short, each running on in spurts of its own.
+     */
+    private static double drip(BlockPos pos, double reached) {
+        long seed = Mth.getSeed(pos.getX(), 0, pos.getZ());
+        double length = (seed >>> 20 & 0xFFFF) / (double) 0xFFFF;
+        double phase = (seed >>> 40 & 0xFFFF) / (double) 0xFFFF * Mth.TWO_PI;
+        double run = DRIP_LONGEST * length * length * length;
+        return run * (DRIP_STEADY + (1 - DRIP_STEADY) * Math.sin(reached * DRIP_SPURTS + phase));
+    }
 
     /** What the features paint over a zeppelin's livery, one line each: taking a feature out is taking out its line. */
     private static final List<PaintOverlay.Source> OVERLAYS = List.of(
@@ -224,7 +245,8 @@ public final class ZeppelinPaint {
             return;
         }
         double from = before.livery() == after.livery() ? Math.min(before.reached(), sweep) : 0;
-        double to = Math.min(after.reached(), sweep);
+        double ahead = after.craft() == Craft.ROCKET ? DRIP_LONGEST : 0;
+        double to = Math.min(after.reached() + ahead, sweep);
         if (to > from) {
             remesh(after, from, to);
         }

@@ -2154,7 +2154,8 @@ pictures of her laid on her side in her six liveries: the comic-book moon rocket
 black roll stripes, silver with a red nose and fins, the airliner's white with a blue cheatline up each side and blue
 fins, polar red with white fins, and midnight blue with gold stars all over her (as she is built). The one she wears
 is framed in gold. Use a picture and the new paint runs down her from her nose to her foot over a minute, with a
-brush's sound; it is a tint, so no block of her changes, and her windows' frames take it too.
+brush's sound, dripping ahead of its edge in runs, a few long and most short, each running on in spurts as wet paint
+does; it is a tint, so no block of her changes, and her windows' frames take it too.
 
 Round every story run two rings of LED strip along the inside of her skin, one along the floor and one under the
 ceiling, stopping short of her windows (the server config's `rocket.ledStrips` leaves them out, and their panels and
