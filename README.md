@@ -2192,7 +2192,10 @@ up round her as she rises and again as she comes in to land, and fire and embers
 while she is close over it (the server config's `rocket.plumes` leaves them out). Close over the ground her engines set
 it alight, fire catching
 on it round under her and burning on after her, unless fire may not spread in the world (the doFireTick game rule;
-`rocket.groundFire` leaves it out). As her engines light on the ground their blast slams into it and a shockwave races
+`rocket.groundFire` leaves it out), and they scorch the grassy ground round under her, grass, mycelium, podzol, moss
+and paths burnt to bare earth, coarse close under her engines, and the plants and snow on it burnt away, so a pad of
+scorched earth is left where she stood (`rocket.scorch` leaves it out). As her engines light on the ground their blast
+slams into it and a shockwave races
 out from under her, a ring of dust rolling over the ground: it throws whoever and whatever stands near back off their
 feet, once each and never so high that landing hurts, booms and jolts the view as it passes, and booms on later and
 quieter farther off
@@ -2454,7 +2457,8 @@ the rim, and last of space `ShootingStars` the shooting star of the moment, both
 client sees the same; `EdgeOfSpace` holds the height space begins at, and welcomes everyone aboard to space as she
 climbs past it; `SpaceGravity` makes them light up there until it announces her artificial gravity; `RocketPlumes` sends
 the clouds and the fire under her and the flames from her base; `RocketGroundFire` sets the ground
-under her alight, and `RocketLaunchBlast` sends her lift-off's shockwave out over it, telling each player it reaches
+under her alight, `RocketScorch` burns it bare, and `RocketLaunchBlast` sends her lift-off's shockwave out over it,
+telling each player it reaches
 with a `LaunchShock`; each client draws her exhaust plume itself, from how hard her engines fire (`RocketExhaust`).
 Her crew lockers are stocked by `RocketRoom.crewLocker`, through a `Fitting`, with a `SpaceHelmetItem` each, drawn on
 the head by its own model as the `PilotHelmetItem` is; on the client `HelmetVisor` lays either helmet's visor over the

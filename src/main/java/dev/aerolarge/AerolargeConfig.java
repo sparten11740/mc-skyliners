@@ -54,6 +54,7 @@ public final class AerolargeConfig {
     public static final ModConfigSpec.BooleanValue ROCKET_LOW_GRAVITY;
     public static final ModConfigSpec.BooleanValue ROCKET_PLUMES;
     public static final ModConfigSpec.BooleanValue ROCKET_GROUND_FIRE;
+    public static final ModConfigSpec.BooleanValue ROCKET_SCORCH;
     public static final ModConfigSpec.BooleanValue ROCKET_LAUNCH_BLAST;
     public static final ModConfigSpec.BooleanValue ROCKET_LAB;
     public static final ModConfigSpec.BooleanValue ROCKET_DOME;
@@ -500,6 +501,13 @@ public final class AerolargeConfig {
                 "whatever burns near it with it. Only while the doFireTick game rule lets fire spread."
             )
             .define("groundFire", true);
+        ROCKET_SCORCH = builder
+            .comment(
+                "Whether a rocket's engines scorch the grassy ground under her while they blaze close over it, as she lifts off",
+                "and lands: grass, mycelium, podzol, moss and paths burnt to bare earth round under her, coarse close under her",
+                "engines, and the plants and snow on them burnt away, so a pad of scorched earth is left where she stood."
+            )
+            .define("scorch", true);
         ROCKET_LAUNCH_BLAST = builder
             .comment(
                 "Whether a rocket's engines lighting on the ground send a shockwave out over it: a ring of dust racing out from",
