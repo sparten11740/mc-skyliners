@@ -7,10 +7,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 /**
  * Keeps the rain and snow out of ships (Sable's assembled airframes, see {@link SableClient#shelters}), and the weather
@@ -22,14 +24,19 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Over the clouds the weather is fair, as it is over a real storm: as the camera climbs out of the top of the cloud
  * layer the rain and the snow fade away, the storm's grey sky clearing and their patter falling silent, and as it comes
- * down into the clouds again they come back; never with the {@code fairOverClouds} setting off. Its calls come from
- * {@code mixin.LevelRendererMixin} and {@code mixin.LevelMixin}.
+ * down into the clouds again they come back. Its lightning keeps to the land under the clouds too: the game sends a
+ * bolt, its flash and its thunder to every player near it across, however high, so in space the storm under her was
+ * heard thundering; now a client whose camera is out of the clouds drops the bolt as it arrives. Never with the
+ * {@code fairOverClouds} setting off. Its calls come from {@code mixin.LevelRendererMixin}, {@code mixin.LevelMixin}
+ * and, for the lightning, the client's entities joining their level.
  */
 public final class ShipWeather {
     /** How far round the camera, across and up and down, rain and snow are drawn at most, in blocks: the game's own. */
     private static final int REACH = 10;
     /** How far over the clouds' top the weather has faded away, in blocks. */
     private static final double FAIR_OVER = 8;
+    /** How little of the weather a camera sees for a lightning bolt, its flash and its thunder to be kept from it. */
+    private static final float BOLTS_SEEN = 0.5F;
 
     /** The ships round the camera this frame, and the row the camera is in. */
     private static List<SableClient.Shelter> shelters = List.of();
@@ -68,6 +75,16 @@ public final class ShipWeather {
             }
         }
         return false;
+    }
+
+    /**
+     * Keeps a lightning bolt off the client while its camera is out of the clouds over the storm: it still strikes the
+     * land under them on the server, but neither it, nor its flash, nor its thunder reaches up out of the clouds.
+     */
+    public static void strikeBelow(EntityJoinLevelEvent event) {
+        if (event.getLevel() instanceof ClientLevel level && event.getEntity() instanceof LightningBolt && seen(level) < BOLTS_SEEN) {
+            event.setCanceled(true);
+        }
     }
 
     /** Whether a point of the world lies in a block of a ship that keeps the weather off: solid, or water. */

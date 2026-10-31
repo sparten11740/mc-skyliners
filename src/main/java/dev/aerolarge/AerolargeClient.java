@@ -94,6 +94,7 @@ import dev.aerolarge.client.SearchlightBeams;
 import dev.aerolarge.client.SelfDestructButtonRenderer;
 import dev.aerolarge.client.SelfDestructWarning;
 import dev.aerolarge.client.ShellModel;
+import dev.aerolarge.client.ShipWeather;
 import dev.aerolarge.client.ShipsColoursRenderer;
 import dev.aerolarge.client.ShipsPlaqueRenderer;
 import dev.aerolarge.client.SkyTrails;
@@ -197,6 +198,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::stage);
         NeoForge.EVENT_BUS.addListener(BlueprintPreview::stage);
         NeoForge.EVENT_BUS.addListener(CloudlessCabin::loggingOut);
+        NeoForge.EVENT_BUS.addListener(ShipWeather::strikeBelow);
         NeoForge.EVENT_BUS.addListener(SpaceSky::sky);
         NeoForge.EVENT_BUS.addListener(SpaceSky::fog);
         // The clouds' colour faded last of all before they are drawn, and put back first of all after the weather.

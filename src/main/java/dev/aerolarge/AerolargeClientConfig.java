@@ -90,8 +90,9 @@ public final class AerolargeClientConfig {
             .define("cloudlessCabin", true);
         FAIR_OVER_CLOUDS = builder
             .comment("Keep the weather fair over the clouds, as it is over a real storm: as you climb out of the top of the cloud",
-                "layer the rain and the snow fade away and the storm's grey sky clears, and they come back as you come down into",
-                "the clouds again. Off, it rains and snows at every height, as the game has it.")
+                "layer the rain and the snow fade away and the storm's grey sky clears, and its lightning, its flash and its",
+                "thunder stay down under the clouds, so space is silent; they come back as you come down into the clouds again.",
+                "Off, it rains, snows and thunders at every height, as the game has it.")
             .define("fairOverClouds", true);
         SPACE_SKY = builder
             .comment("Turn the sky to space far over the top of the world, as a rocket climbs: from y 400 it darkens to black by",
