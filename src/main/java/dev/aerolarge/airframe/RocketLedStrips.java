@@ -13,7 +13,6 @@ import dev.aerolarge.block.LedStripBlock;
 import dev.aerolarge.block.OvalWindowBlock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -59,8 +58,6 @@ final class RocketLedStrips implements RocketPiece {
      */
     private static final int WINDOW_FROM = 1;
     private static final int WINDOW_HALF = OvalWindowBlock.COLUMNS / 2;
-    /** How far over the cockpit's floor the console's bottom row stands, in blocks: on it. */
-    private static final int CONSOLE_UP = 1;
 
     private final RocketLayout layout;
 
@@ -199,62 +196,27 @@ final class RocketLedStrips implements RocketPiece {
     }
 
     /**
-     * The console in the cockpit, on her left against the glass, its middle level with her axis, facing in, as the
-     * camera display stands on her right: wired to each story's panel, as offsets from it; none where the glass is not
-     * there all across it, or there are no stories.
+     * The console in the cockpit, on the left wing of her flight deck (see {@link RocketFlightDeck}), facing in at the
+     * commander's left hand, as the camera display stands at the pilot's right: wired to each story's panel, as
+     * offsets from it; none where the flight deck has no left wing, or there are no stories.
      */
     private void console(List<BlockPos> panels, int[] spans) {
-        int columns = LedConsoleBlock.CONSOLE_COLUMNS;
-        int y = layout.cockpitFloor() + CONSOLE_UP;
-        // Facing east, the viewer's right is north: the console reaches north and up from its first part.
-        int first = columns - 1 - columns / 2;
-        OptionalInt x = againstLeftSkin(y, y + LedConsoleBlock.CONSOLE_ROWS - 1, first - columns + 1, first);
-        if (panels.isEmpty() || x.isEmpty()) {
+        BlockPos wing = layout.flightDeck().ledConsole();
+        if (panels.isEmpty() || wing == null) {
             return;
         }
+        int columns = LedConsoleBlock.CONSOLE_COLUMNS;
+        // Facing east, the viewer's right is north: the console reaches north and up from its first part, at the wing's
+        // back end.
+        BlockPos origin = wing.south(columns - 1);
         BlockState console = AerolargeRegistry.LED_CONSOLE.get().defaultBlockState().setValue(LedConsoleBlock.FACING, Direction.EAST);
         for (int part = 0; part < columns * LedConsoleBlock.CONSOLE_ROWS; part++) {
-            layout.set(x.getAsInt(), y + part / columns, first - part % columns, console.setValue(LedConsoleBlock.PART, part));
+            layout.set(origin.getX(), origin.getY() + part / columns, origin.getZ() - part % columns, console.setValue(LedConsoleBlock.PART, part));
         }
-        BlockPos origin = new BlockPos(x.getAsInt(), y, first);
         layout.fit(origin, (blockEntity, rotation) -> {
             if (blockEntity instanceof LedConsoleBlockEntity consoleEntity) {
                 consoleEntity.wire(panels.stream().map(panel -> panel.subtract(origin).rotate(rotation)).toList(), spans);
             }
         });
-    }
-
-    /**
-     * Where something flat standing against the skin on her left, out to the west, goes over a span of rows and of
-     * blocks along it, as {@link RocketLayout#againstRightSkin} finds on her right: just inside the skin where it comes
-     * furthest in; nothing where the skin is not there across them.
-     */
-    private OptionalInt againstLeftSkin(int fromY, int toY, int fromZ, int toZ) {
-        int along = toZ - fromZ + 1;
-        int found = Integer.MIN_VALUE;
-        for (int block = 0; block < along * (toY - fromY + 1); block++) {
-            OptionalInt x = insideLeftSkin(fromY + block / along, fromZ + block % along);
-            if (x.isEmpty()) {
-                return OptionalInt.empty();
-            }
-            found = Math.max(found, x.getAsInt());
-        }
-        return OptionalInt.of(found);
-    }
-
-    /**
-     * The first open block coming in from the skin on her left at a row and a block along, just inside it, whatever
-     * stands nearer the lift shaft, as her pilots' seats do.
-     */
-    private OptionalInt insideLeftSkin(int y, int z) {
-        boolean skin = false;
-        for (int x = -layout.reach(); x < -RocketLayout.SHAFT; x++) {
-            boolean open = layout.isOpen(x, y, z);
-            if (open && skin) {
-                return OptionalInt.of(x);
-            }
-            skin |= !open;
-        }
-        return OptionalInt.empty();
     }
 }

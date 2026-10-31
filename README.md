@@ -1871,8 +1871,8 @@ fins are its legs; between them her airstairs come down from her front door to t
 Inside, over an engine room, stories stand one above another round a lift shaft of dark, smoky
 glass up the middle, a doorway into the shaft on each and a big oval window out to each side and the back (and the
 front, but on the entry story, where the door is, and on the observation deck, which has a band of glass all round
-instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the front between two
-flight displays, two pilot seats behind it (the server config's `rocket.rooms` leaves them out with her rooms). The
+instead), and the cockpit sits in the glass of the nose, the autopilot's control head facing the front between the
+commander's seat and the pilot's, every instrument of her flight deck within their reach (see below). The
 windows' glass bulges out of the skin in a dome, the sun glinting off it, seated in a smooth steel collar with a dark
 rubber gasket, and sits inside in a recess lined with steel behind a steel lip; it dims electrically, all its glass at
 once: use one to darken its glass a step, from clear through light and medium to dark, and once more to
@@ -2179,7 +2179,23 @@ to back further in: in the food lab racks, now and then an algae column, another
 wet bench lab benches, jars, sample racks, scan screens, a microscope or a centrifuge on them, and stools pushed out
 before some. A rocket too small for a tank has the counters and the bays alone.
 
-Against the glass on the cockpit's right stands the large camera display, as in the zeppelin's control car (the server
+Her cockpit is a flight deck laid out to the room her nose has at her scale, so that whoever sits at the front reaches
+everything from the seat. Out of the lift an aisle runs straight forward to the autopilot's control head, facing the
+front, with the commander's seat on its left and the pilot's on its right, the airliner's pilot seats, each with its
+sidestick at the outboard hand. Ahead of them, past a row of legroom, a flight display stands dead ahead of each seat,
+and between the two the airliner's autopilot screen, its moving map drawing where she has been (touch the map to zoom,
+anywhere else to open the autopilot's settings); the panel's dark casing runs on from them to the glass as a
+glareshield. The commander has the LED console at the left hand and the pilot the livery selector, with the large camera
+display over it, at the right (see below), both standing on the floor facing in. Where there is room, two jump seats
+stand behind the pilots, and a row of launch seats at the back glass looks out, without sticks (the server config's
+`rocket.rooms` leaves every seat out with her rooms). Where the nose narrows too soon, the two consoles at the sides
+start a row further back; in the smallest rocket, a capsule, the pilots sit a row behind the head either side of the
+aisle, a flight display beside the head in front of each where there is room, and the screens that do not fit within
+their reach are left out. A big rocket keeps the deck at the front, open floor behind it. The lift's door, its call
+button and the walkway round its booth are always kept clear, as are the blocks beside and in front of the control head.
+Rockets built before keep the cockpit they were built with.
+
+At the pilot's right hand stands the large camera display, as in the zeppelin's control car (the server
 config's `cameraDisplay` leaves it out), showing her three outside cameras live: the orbit camera at first, circling
 the whole of her from well out, sky blue; then up her side, from low by the door to her nose against the sky, orange;
 and the landing leg, out on her front right fin's tip, looking in under her at the ground she lands on, green. Its
@@ -2212,7 +2228,7 @@ from the ceiling. Each story starts in its own mood, most in the colour of its b
 who presses a colour steps out into it: the entry snow white at two thirds, the cargo bay sunshine yellow, the galley
 and mess a warm full tangerine, the bunk room a dim grape breathing like a night light, the greenhouse a full pink grow
 light, the pool sky blue breathing like water, the techno club pulsing pink and ocean blue, the lab mint and the
-observation deck a dim ocean blue for the stars. Against the glass on the cockpit's left stands the LED console, her
+observation deck a dim ocean blue for the stars. At the commander's left hand stands the LED console, her
 silhouette along its top laid on her side, each story a band glowing as its strips do: touch a band to pick that story,
 or the little rocket beside it to pick them all, what is picked glowing softly green, then use the same swatches,
 suns and strips under them. Set for all of
@@ -2471,7 +2487,8 @@ turning as its `HelmBlockEntity` swings it, `TelegraphBlock` and `BurnerLeverBlo
 show what the autopilot does; `ZeppelinPilot` flies it, from the hot air its mass needs in the air where it is, through
 the autopilot's block entity, which `Craft` tells what it flies; `ZeppelinAssembly` gathers the blocks Sable assembles
 it from through `SableFlight.assemble`, and `SableFlight.keepLoaded` keeps it loaded once it is assembled.
-The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its skin by the same `SurfaceCut`
+The rocket is drawn in `RocketShape`'s metres and cut into blocks by `RocketLayout`, its cockpit's flight deck planned
+by `RocketFlightDeck` (where each seat, screen and console goes), its skin by the same `SurfaceCut`
 as the zeppelin's cover, its features `RocketPiece`s on the layout's list (`RocketLadder` the crew's ladder, or
 `RocketAirstairs` her airstairs in its place, kept by the `RocketStairsBlockEntity` of the `RocketStairsButtonBlock` by
 her door as `BoardingAirstairs` out of a bay, holding her countdown through `RocketPilot.holdCountdownWhile` till away,

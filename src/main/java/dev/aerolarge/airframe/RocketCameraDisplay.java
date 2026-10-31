@@ -2,20 +2,20 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.AerolargeConfig;
 import dev.aerolarge.AerolargeRegistry;
+import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.TailCameraDisplayBlock;
 import dev.aerolarge.block.TailCameraDisplayBlockEntity;
-import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The camera display in the rocket's cockpit, the airliner's own in its large size (see
- * {@link TailCameraDisplayBlock}), showing her outside cameras live (see {@link RocketCamera}): upright against the
- * glass on her right, beside the autopilot, at eye height over the livery selector (see {@link RocketLiverySelector}),
- * so whoever repaints her watches the new paint run down her. It shows the orbit camera at first, which sees the whole
- * of her as it circles her. Its back stands against the glass face to face where the
- * glass comes furthest in, so it is assembled with the rocket, and it holds nothing up.
+ * {@link TailCameraDisplayBlock}), showing her outside cameras live (see {@link RocketCamera}): upright on the right
+ * wing of her flight deck (see {@link RocketFlightDeck}), facing in at the pilot's right hand, at eye height over the
+ * livery selector (see {@link RocketLiverySelector}), so whoever repaints her watches the new paint run down her. It
+ * shows the orbit camera at first, which sees the whole of her as it circles her. It stands on blank panel casing,
+ * face to face, so it is assembled with the rocket; the livery selector, laid after it, takes the casing's place.
  */
 final class RocketCameraDisplay implements RocketPiece {
     /** How high over the cockpit's floor its bottom row is, in blocks: over the livery selector, at eye height. */
@@ -34,22 +34,26 @@ final class RocketCameraDisplay implements RocketPiece {
 
     @Override
     public void build() {
-        int columns = TailCameraDisplayBlock.LARGE_COLUMNS;
-        int y = layout.cockpitFloor() + UP;
-        // Facing west, the viewer's right is south: the display reaches south and up from its first part, its middle
-        // level with the axis.
-        int first = -columns / 2;
-        OptionalInt x = layout.cockpitWall(columns);
-        if (x.isEmpty()) {
+        BlockPos wing = layout.flightDeck().cameraWing();
+        if (wing == null) {
             return;
         }
+        int columns = TailCameraDisplayBlock.LARGE_COLUMNS;
+        int y = layout.cockpitFloor() + UP;
+        BlockState casing = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.WEST)
+            .setValue(InstrumentPanelBlock.BLANK, true);
         BlockState display = AerolargeRegistry.TAIL_CAMERA_DISPLAY.get().defaultBlockState()
             .setValue(TailCameraDisplayBlock.FACING, Direction.WEST)
             .setValue(TailCameraDisplayBlock.LARGE, true);
+        // Facing west, the viewer's right is south: the display reaches south and up from its first part, at the
+        // wing's front end.
         for (int part = 0; part < columns * TailCameraDisplayBlock.LARGE_ROWS; part++) {
-            layout.set(x.getAsInt(), y + part / columns, first + part % columns, display.setValue(TailCameraDisplayBlock.PART, part));
+            layout.set(wing.getX(), y + part / columns, wing.getZ() + part % columns, display.setValue(TailCameraDisplayBlock.PART, part));
         }
-        layout.fit(new BlockPos(x.getAsInt(), y, first), (blockEntity, rotation) -> {
+        for (int column = 0; column < columns; column++) {
+            layout.set(wing.getX(), wing.getY(), wing.getZ() + column, casing);
+        }
+        layout.fit(new BlockPos(wing.getX(), y, wing.getZ()), (blockEntity, rotation) -> {
             if (blockEntity instanceof TailCameraDisplayBlockEntity shown) {
                 shown.look(RocketCamera.ORBIT);
             }

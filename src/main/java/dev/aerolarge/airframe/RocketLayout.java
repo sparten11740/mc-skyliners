@@ -5,7 +5,10 @@ import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.autopilot.RocketPilot;
 import dev.aerolarge.block.AutopilotBlock;
+import dev.aerolarge.block.AutopilotScreenBlock;
+import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.FlightDisplayBlock;
+import dev.aerolarge.block.InstrumentPanelBlock;
 import dev.aerolarge.block.OvalWindowBlock;
 import dev.aerolarge.block.RocketFinish;
 import dev.aerolarge.block.RocketLiningPanelBlock;
@@ -16,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -38,8 +40,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@link RocketPilot}). Side jets in its skin, a ring of four near the nose and another near the bottom, push it
  * sideways and tilt it, which is how it stays upright. Inside, over an engine room, stories one above another round a
  * glass lift shaft up the middle, each floor's edge against the skin, a dimmable oval window out to each of the four
- * ways; the cockpit sits in smoked glass round the nose's lower part, its control head facing the front. The
- * features laid into it once it stands are pieces of their own (see {@link RocketPiece}).
+ * ways; the cockpit sits in smoked glass round the nose's lower part, its flight deck planned to the room it has (see
+ * {@link RocketFlightDeck}), its control head facing the front. The features laid into it once it stands are pieces of
+ * their own (see {@link RocketPiece}).
  *
  * <p>Sable flies the rocket as one body only as far as its blocks touch, face to face: the floors run out to the skin,
  * the fins are two blocks thick where they run between the four ways, and the shaft stands on the floors.
@@ -81,8 +84,6 @@ public final class RocketLayout implements Layout {
     /** How far up from the bottom and down from the nose's foot the rings of side jets are, in rows. */
     private static final int JETS_UP = 3;
     private static final int JETS_DOWN = 4;
-    /** How far behind the cockpit's front the control head stands, in blocks. */
-    private static final int HEAD_BACK = 4;
     /** The fins: one between each two of the four ways. */
     private static final int[][] FINS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     /**
@@ -115,11 +116,6 @@ public final class RocketLayout implements Layout {
         RocketPosters::new,
         RocketShaftDecor::new,
         RocketLedStrips::new);
-    /**
-     * How many rows over the cockpit's floor the wall on her right that the camera display and the livery selector
-     * stand against runs: the selector's row and the display's two over it.
-     */
-    private static final int COCKPIT_WALL_ROWS = 3;
     /** The livery she is built in, one of her own (see {@link Livery#swatches}). */
     private static final Livery BUILT_IN = Livery.MIDNIGHT;
 
@@ -150,6 +146,9 @@ public final class RocketLayout implements Layout {
     /** Where the autopilot's control head stands in the cockpit; null before it is laid. */
     @Nullable
     private BlockPos head;
+    /** Where everything on the cockpit's flight deck stands; null before the cockpit is laid. */
+    @Nullable
+    private RocketFlightDeck flightDeck;
     /** How her nose is finished inside over the ring of ceiling on the cockpit's glass: padded, or as the dome. */
     private RocketFinish nose = RocketFinish.COCKPIT;
 
@@ -443,47 +442,9 @@ public final class RocketLayout implements Layout {
         return head;
     }
 
-    /**
-     * Where the things standing against the cockpit's glass on her right go, so many blocks wide along it, their middle
-     * level with her axis: just inside the glass where it comes furthest in over the wall's rows, the same for all of
-     * them, so they stand flush one over another; nothing where the glass is not there across them.
-     */
-    OptionalInt cockpitWall(int columns) {
-        int first = -columns / 2;
-        return againstRightSkin(noseFoot + 1, noseFoot + COCKPIT_WALL_ROWS, first, first + columns - 1);
-    }
-
-    /**
-     * Where something flat standing against the skin on the rocket's right, out to the east, goes over a span of rows
-     * and of blocks along it: as far out as it can stand over all of them, just inside the skin where the skin comes
-     * furthest in, so it touches the skin there; nothing where the skin is not there across them.
-     */
-    OptionalInt againstRightSkin(int fromY, int toY, int fromZ, int toZ) {
-        int along = toZ - fromZ + 1;
-        int blocks = along * (toY - fromY + 1);
-        int found = Integer.MAX_VALUE;
-        for (int block = 0; block < blocks; block++) {
-            int x = insideRightSkin(fromY + block / along, fromZ + block % along);
-            if (x == Integer.MIN_VALUE) {
-                return OptionalInt.empty();
-            }
-            found = Math.min(found, x);
-        }
-        return OptionalInt.of(found);
-    }
-
-    /**
-     * The last open block going out to the right from beside the lift shaft at a row and a block along, just inside
-     * the skin; {@link Integer#MIN_VALUE} for none.
-     */
-    private int insideRightSkin(int y, int z) {
-        int out = (int) Math.ceil(radius) + 2;
-        for (int x = SHAFT + 1; x <= out; x++) {
-            if (!isOpen(x, y, z)) {
-                return x > SHAFT + 1 ? x - 1 : Integer.MIN_VALUE;
-            }
-        }
-        return Integer.MIN_VALUE;
+    /** Where everything on the cockpit's flight deck stands, its seats and wing consoles among them. */
+    RocketFlightDeck flightDeck() {
+        return flightDeck;
     }
 
     /**
@@ -803,21 +764,50 @@ public final class RocketLayout implements Layout {
     }
 
     /**
-     * The cockpit on the floor at the nose's foot: the autopilot's control head facing the front, a flight display on
-     * either side of it, wired once it stands.
+     * The cockpit on the floor at the nose's foot, its flight deck planned to the room left under the ring of ceiling
+     * (see {@link RocketFlightDeck}): the panel's blank casing and the glareshield ahead of it, a flight display in
+     * the panel dead ahead of each pilot's seat, the autopilot screen between them, and the autopilot's control head
+     * facing the front, wired once it stands. Her pieces lay the seats and the wing consoles where the plan says.
      */
     private void cockpit() {
         soffit();
-        int y = noseFoot + 1;
-        int front = frontWall(y);
-        head = new BlockPos(0, y, front + HEAD_BACK);
-        set(head.getX(), y, head.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
-        for (int side = -1; side <= 1; side += 2) {
-            set(side * 2, y, front + 1, AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH));
+        int front = -(int) Math.ceil(radius) - 1;
+        flightDeck = RocketFlightDeck.plan(noseFoot, front, this::isOpen, (x, y, z) -> inFrom(x, y, z, 0), this::inside);
+        BlockState casing = AerolargeRegistry.INSTRUMENT_PANEL.get().defaultBlockState().setValue(InstrumentPanelBlock.FACING, Direction.SOUTH)
+            .setValue(InstrumentPanelBlock.BLANK, true);
+        flightDeck.casing().forEach(at -> cells.put(at, casing));
+        BlockState display = AerolargeRegistry.FLIGHT_DISPLAY.get().defaultBlockState().setValue(FlightDisplayBlock.FACING, Direction.SOUTH);
+        flightDeck.flightDisplays().forEach(at -> cells.put(at, display));
+        head = flightDeck.head();
+        if (head == null) {
+            return;
         }
+        set(head.getX(), head.getY(), head.getZ(), AerolargeRegistry.AUTOPILOT.get().defaultBlockState().setValue(AutopilotBlock.FACING, Direction.NORTH));
         fit(head, (blockEntity, rotation) -> {
             if (blockEntity instanceof AutopilotBlockEntity autopilot) {
                 wire(autopilot, head, rotation);
+            }
+        });
+        if (flightDeck.screen() != null) {
+            autopilotScreen(flightDeck.screen());
+        }
+    }
+
+    /**
+     * The autopilot screen between the flight displays, facing the pilots, its first part where the plan says: linked
+     * to the control head once it stands, as the airliner's is.
+     */
+    private void autopilotScreen(BlockPos origin) {
+        BlockState screen = AerolargeRegistry.AUTOPILOT_SCREEN.get().defaultBlockState().setValue(AutopilotScreenBlock.FACING, Direction.SOUTH);
+        for (int part = 0; part < AutopilotScreenBlock.COLUMNS * AutopilotScreenBlock.ROWS; part++) {
+            // Facing south, the viewer's right is east.
+            cells.put(origin.offset(part % AutopilotScreenBlock.COLUMNS, part / AutopilotScreenBlock.COLUMNS, 0),
+                screen.setValue(AutopilotScreenBlock.PART, part));
+        }
+        BlockPos linked = head.subtract(origin);
+        fit(origin, (blockEntity, rotation) -> {
+            if (blockEntity instanceof AutopilotScreenBlockEntity shown) {
+                shown.configure(linked.rotate(rotation));
             }
         });
     }
@@ -838,15 +828,6 @@ public final class RocketLayout implements Layout {
                 set(x, y, z, AerolargeRegistry.CABIN_FLOOR.get().defaultBlockState());
             }
         }
-    }
-
-    /** How far forward the inside of the front wall is at a row, in blocks: the first block a skin's thickness in. */
-    private int frontWall(int y) {
-        int z = -(int) Math.ceil(radius) - 1;
-        while (z < 0 && !inside(0, y, z)) {
-            z++;
-        }
-        return z;
     }
 
     /**
