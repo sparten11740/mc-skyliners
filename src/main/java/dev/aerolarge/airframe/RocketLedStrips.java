@@ -224,14 +224,17 @@ final class RocketLedStrips implements RocketPiece {
     }
 
     /**
-     * The last open block going out to the left from beside the lift shaft at a row and a block along, inside the skin.
+     * The first open block coming in from the skin on her left at a row and a block along, just inside it, whatever
+     * stands nearer the lift shaft, as her pilots' seats do.
      */
     private OptionalInt insideLeftSkin(int y, int z) {
-        int beside = -RocketLayout.SHAFT - 1;
-        for (int x = beside; x >= -layout.reach(); x--) {
-            if (!layout.isOpen(x, y, z)) {
-                return x < beside ? OptionalInt.of(x + 1) : OptionalInt.empty();
+        boolean skin = false;
+        for (int x = -layout.reach(); x < -RocketLayout.SHAFT; x++) {
+            boolean open = layout.isOpen(x, y, z);
+            if (open && skin) {
+                return OptionalInt.of(x);
             }
+            skin |= !open;
         }
         return OptionalInt.empty();
     }
