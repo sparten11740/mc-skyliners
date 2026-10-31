@@ -16,7 +16,10 @@ airliner is a building.
 ## In game
 
 The blueprints are in the Aerolarge creative tab; there is no recipe for them. The tab sorts everything under
-banners: blueprints, airframe, flight deck, cabin, gym hall, skydiving and drops, and the airport.
+banners, each with the picture of its first item: blueprints; the airliner's airframe, the zeppelin's blocks and
+the rocket's; the flight deck; doors and stairs; the zeppelin's control car; crew kit; skydiving and drops; gadgets;
+zeppelin extras; seats; floors and walls; signs and washrooms; duty free; the hold; the garden; galley and coffee; the
+bar; the gym hall; the pool; the club; the den; lights; decorations; and the airport.
 
 - **Airliner Blueprint**: the airframe with an empty cabin on both decks.
 - **Furnished Airliner Blueprint**: the same airframe fitted out, front to back between the doors, with a business
@@ -1832,7 +1835,8 @@ control head is taken away. That costs a parked zeppelin's ticking, a little, wh
 
 The zeppelin's own blocks are in the Aerolarge creative tab under Zeppelin: its fabric, its girders, its catwalk
 grating, the propeller (placed by hand, it pulls the way you look, its blades turning toward you, and spins with the
-strongest redstone signal beside it), and the hand controls (placed by hand, each faces whoever places it, and a
+strongest redstone signal beside it), and, under Zeppelin Control Car, the hand controls (placed by hand, each faces
+whoever places it, and a
 telegraph rings for the port engines, on its red plate; they fly a zeppelin only where its blueprint laid them).
 
 ### The rocket
@@ -1889,7 +1893,7 @@ is shut in (see her entry story, below). A rocket built before them, or with `ro
 off, keeps her open doorway.
 
 A lift rides the glass shaft from the entry story to the cockpit, a steel girder up each of its corners (Steel Girder
-and Lift Glass are in the creative tab after the Halo Light, and can be crafted), where the shaft runs on up into a
+and Lift Glass are in the creative tab under Rocket, and can be crafted), where the shaft runs on up into a
 glass booth with the lift's machine on its roof, a brushed-steel casing banded with hazard stripes (the server config's
 `rocket.lift` leaves it out). By each landing's sliding doors is a call button, a lit push-button with an arrow up and
 an arrow down on its pale cap: press it and the car comes, the button glowing amber until it is there (busy with someone
@@ -1940,7 +1944,7 @@ chain hoists on trolleys riding the girders in the cargo bay, a yellow hook on e
 the mess; warm fairy lights looping along them in the bunk room; hanging baskets trailing green in the greenhouse;
 bunting in the pool's colours over the pool; stage spotlights in the club, angled down, throwing cones of pink and cyan
 light; and in the lab a ladder of cable tray, bundled cables of every colour along it (Girder Decoration, in the
-creative tab after the Shaft Decoration, hangs a chain hoist; put up by hand each takes its shape from where it goes:
+creative tab under Decorations, hangs a chain hoist; put up by hand each takes its shape from where it goes:
 under a ceiling it hangs as these do; on a wall the patches hang flat from a rod, the hoist from a braced jib arm,
 the pans from a rail, the lights and the bunting loop along it from hooks, the basket hangs from a curled bracket, the
 spotlight angles down and out from a clamp on an arm and the tray runs on a bracket; and on the floor a patch hangs
@@ -2037,7 +2041,7 @@ two Zero-G Floats, lime under a scoop of ice cream, for 30 seconds of Slow Falli
 with stars, which clear away effects as milk does; or one Rocket Fuel, fiery orange, for 30 seconds of Speed and Jump
 Boost, or one Supernova Sunrise, red, orange and yellow in layers, for five seconds of Regeneration II. Each is a sip of
 food and can be drunk whenever. Each sale it answers, shakes a cocktail shaker over its shoulder to the rattle of ice,
-pours it into the glass and sets the drink down on the bar. The bar's furniture is in the creative tab by the DJ Deck
+pours it into the glass and sets the drink down on the bar. The bar's furniture is in the creative tab under Bar
 and all of it craftable. A Drink Tap stands on a bar counter, three tall neon handles, pink, cyan and lime, on a chrome
 tower over a drip tray: use it and the handle you click tips down, and a stream of glowing Star Fizz runs fizzing into
 the tray for a second, filling a glass bottle held under it with a bottle of Star Fizz, a sparkling soda to drink (the
@@ -2094,7 +2098,7 @@ molecule of balls and sticks, an arrow and a graph climbing past a dashed line, 
 its corner. They go only where nothing else stands, a poster, the lift's call button or its LED panel, and never in
 front of
 the lift's doorway; nothing bumps into them, so the walkway round the shaft stays clear; and a story she is too small
-to have has none. Shaft Decoration is in the creative tab after the Lift Glass: used on the side of a block, it puts up
+to have has none. Shaft Decoration is in the creative tab under Decorations: used on the side of a block, it puts up
 a velvet curtain tied back against it. Any piece picked with the pick-block key puts up that piece, and a piece broken
 gives itself back as it was. Used on a floor or under a ceiling, a piece becomes its room's own small decoration, whole
 in one block: the departures board as a lit screen on a stand, or hung on two rods with the other destinations on its
