@@ -524,15 +524,31 @@ public final class RocketLayout implements Layout {
      * kept, so her skin stays closed.
      */
     private boolean behindGlass(int x, int y, int z, int shape) {
-        if (shape != ShellGeometry.WHOLE || !cockpitGlass(y)) {
-            return false;
-        }
+        return shape == ShellGeometry.WHOLE && cockpitGlass(y) && !touchesSky(x, y, z);
+    }
+
+    /** Whether a block has the sky beside it on any side. */
+    private boolean touchesSky(int x, int y, int z) {
         for (Direction side : Direction.values()) {
             if (sky(x + side.getStepX(), y + side.getStepY(), z + side.getStepZ())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * A block of her skin turned to glass, as the observation deck's band is: cut to her surface as the cover there
+     * was, so it sits flush with the cover over and under it; or left out where it is a whole block behind others,
+     * touching the sky on no side, so the glass is one pane thick, as round the cockpit (see {@link #behindGlass}).
+     */
+    void glaze(int x, int y, int z, BlockState glass) {
+        int shape = SurfaceCut.shape(surface, x - 0.5, y, z - 0.5);
+        if (shape == ShellGeometry.WHOLE && !touchesSky(x, y, z)) {
+            cells.remove(new BlockPos(x, y, z));
+            return;
+        }
+        set(x, y, z, shape == ShellGeometry.NONE ? glass : ShellBlock.withShape(glass, shape));
     }
 
     /** Whether a block lies wholly outside her surface, in the sky. */

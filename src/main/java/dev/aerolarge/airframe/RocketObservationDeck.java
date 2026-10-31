@@ -265,14 +265,17 @@ final class RocketObservationDeck extends RocketRoom {
         return treadZ(MEZZANINE_UP) + 1;
     }
 
-    /** The band of smoked glass: every block of her skin in its rows, cover or oval window, turned to glass. */
+    /**
+     * The band of smoked glass: every block of her skin in its rows, cover or oval window, turned to glass cut to her
+     * curve and one pane thick (see {@link RocketLayout#glaze}).
+     */
     private void band() {
         int reach = layout.reach();
         BlockState glass = AerolargeRegistry.SMOKED_GLASS.get().defaultBlockState();
         for (BlockPos at : BlockPos.betweenClosed(-reach, floor() + BAND_FROM, -reach, reach, floor() + BAND_TO, reach)) {
             BlockState skin = layout.stateAt(at.getX(), at.getY(), at.getZ());
             if (skin.is(AerolargeRegistry.ZEPPELIN_COVER.get()) || skin.is(AerolargeRegistry.OVAL_WINDOW.get())) {
-                layout.set(at.getX(), at.getY(), at.getZ(), glass);
+                layout.glaze(at.getX(), at.getY(), at.getZ(), glass);
             }
         }
     }
