@@ -18,9 +18,10 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
  * Keeps the rain and snow out of ships (Sable's assembled airframes, see {@link SableClient#shelters}), and the weather
  * fair over the clouds. The game lets rain and snow fall in each column of the world down to the highest of the world's
  * own blocks there, which knows nothing of a ship's blocks, so they fell straight through her into her cabins and
- * rooms. Here, each frame, the ships round the camera are looked up: in each column where rain or snow is drawn it
- * falls only down to the highest block of a ship over it within its reach, as on her roof, and its splashes and its
- * patter land there. The clouds are kept out of her by {@link CloudlessCabin}.
+ * rooms. Here, each frame it rains, the ships round the camera are looked up: in each column where rain or snow is
+ * drawn it falls only down to the highest block of a ship over it, as on her roof, and its splashes and its patter land
+ * there; so under a roof high over a story, as in the rocket's lower stories, none is drawn or heard at all. The
+ * clouds are kept out of her by {@link CloudlessCabin}.
  *
  * <p>Over the clouds the weather is fair, as it is over a real storm: as the camera climbs out of the top of the cloud
  * layer the rain and the snow fade away, the storm's grey sky clearing and their patter falling silent, and as it comes
@@ -33,6 +34,11 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 public final class ShipWeather {
     /** How far round the camera, across and up and down, rain and snow are drawn at most, in blocks: the game's own. */
     private static final int REACH = 10;
+    /**
+     * How far over the camera a ship's roof is looked for, in blocks: past the floors of several stories over the
+     * camera's, so that a story under them hears none of the rain on her roof.
+     */
+    private static final int ROOF_REACH = 48;
     /** How far over the clouds' top the weather has faded away, in blocks. */
     private static final double FAIR_OVER = 8;
     /** How little of the weather a camera sees for a lightning bolt, its flash and its thunder to be kept from it. */
@@ -45,36 +51,58 @@ public final class ShipWeather {
     private ShipWeather() {
     }
 
-    /** Looks up the ships round the camera: once a frame before the rain is drawn, once a tick before it splashes. */
+    /**
+     * Looks up the ships round the camera while it rains or snows: once a frame before the rain is drawn, once a tick
+     * before it splashes.
+     */
     public static void look(Level level, Vec3 camera, float partialTick) {
         cameraY = Mth.floor(camera.y);
-        shelters = SableClient.shelters(level, new AABB(camera, camera).inflate(REACH + 1), partialTick);
+        boolean falling = level.getRainLevel(partialTick) > 0;
+        shelters = falling ? SableClient.shelters(level, new AABB(camera, camera).inflate(REACH + 1).expandTowards(0, ROOF_REACH, 0), partialTick)
+            : List.of();
     }
 
     /**
      * How low rain and snow fall in a column of the world, given the row the game lets them fall to there: no lower
-     * than just over the highest block of a ship in the column within their reach of the camera.
+     * than just over the highest block of a ship in the column, as far over the camera as roofs are looked for.
      */
     public static int fallsTo(Level level, int x, int z, int height) {
-        if (shelters.isEmpty()) {
-            return height;
+        int falls = height;
+        for (SableClient.Shelter ship : shelters) {
+            falls = Math.max(falls, roof(level, ship, x, z, Math.max(height, cameraY - REACH)));
         }
-        for (int y = cameraY + REACH; y >= Math.max(height, cameraY - REACH); y--) {
-            if (sheltered(level, x, y, z)) {
+        return falls;
+    }
+
+    /**
+     * Just over a ship's highest block in a column of the world that keeps the weather off, from as far over the camera
+     * as roofs are looked for down to the lowest row given; lower than any row for none. The column is followed down
+     * among her blocks as she lies, a block at a time.
+     */
+    private static int roof(Level level, SableClient.Shelter ship, int x, int z, int lowest) {
+        AABB bounds = ship.bounds();
+        double middleX = x + 0.5;
+        double middleZ = z + 0.5;
+        if (middleX < bounds.minX || middleX > bounds.maxX || middleZ < bounds.minZ || middleZ > bounds.maxZ) {
+            return Integer.MIN_VALUE;
+        }
+        int top = Math.min(cameraY + ROOF_REACH, Mth.floor(bounds.maxY));
+        int bottom = Math.max(lowest, Mth.floor(bounds.minY));
+        Vec3 start = ship.among(middleX, top + 0.5, middleZ);
+        Vec3 up = ship.up();
+        BlockPos.MutableBlockPos cell = new BlockPos.MutableBlockPos();
+        for (int y = top; y >= bottom; y--) {
+            double down = top - y;
+            if (keepsOff(level.getBlockState(cell.set(start.x - up.x * down, start.y - up.y * down, start.z - up.z * down)))) {
                 return y + 1;
             }
         }
-        return height;
+        return Integer.MIN_VALUE;
     }
 
-    /** Whether a block of the world is filled by a ship's block that keeps the weather off, as the world's own would. */
-    private static boolean sheltered(Level level, int x, int y, int z) {
-        for (SableClient.Shelter ship : shelters) {
-            if (holds(level, ship, x + 0.5, y + 0.5, z + 0.5)) {
-                return true;
-            }
-        }
-        return false;
+    /** Whether a block keeps the weather off, as one of the world's own would: solid, or water. */
+    private static boolean keepsOff(BlockState state) {
+        return state.blocksMotion() || !state.getFluidState().isEmpty();
     }
 
     /**
@@ -85,15 +113,6 @@ public final class ShipWeather {
         if (event.getLevel() instanceof ClientLevel level && event.getEntity() instanceof LightningBolt && seen(level) < BOLTS_SEEN) {
             event.setCanceled(true);
         }
-    }
-
-    /** Whether a point of the world lies in a block of a ship that keeps the weather off: solid, or water. */
-    private static boolean holds(Level level, SableClient.Shelter ship, double x, double y, double z) {
-        if (!ship.bounds().contains(x, y, z)) {
-            return false;
-        }
-        BlockState state = level.getBlockState(BlockPos.containing(ship.among(x, y, z)));
-        return state.blocksMotion() || !state.getFluidState().isEmpty();
     }
 
     /**

@@ -240,12 +240,14 @@ public final class SableClient {
 
     /**
      * An assembled ship as drawn this frame, for the rain and snow to be kept out of her (see {@link ShipWeather}): her
-     * bounds in the world, and where a point of the world is among her blocks.
+     * bounds in the world, where a point of the world is among her blocks, and which way the world's up is among them.
      */
     interface Shelter {
         AABB bounds();
 
         Vec3 among(double x, double y, double z);
+
+        Vec3 up();
     }
 
     /**
@@ -488,14 +490,16 @@ public final class SableClient {
                 if (ship instanceof ClientSubLevel drawn) {
                     BoundingBox3dc bounds = drawn.boundingBox();
                     AABB world = new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ());
-                    found.add(new Sheltering(world, drawn.renderPose(partialTick)));
+                    Pose3dc pose = drawn.renderPose(partialTick);
+                    Vector3d up = pose.orientation().transformInverse(new Vector3d(0, 1, 0));
+                    found.add(new Sheltering(world, pose, new Vec3(up.x, up.y, up.z)));
                 }
             }
             return found;
         }
 
-        /** A ship's bounds in the world and how she lies as she is drawn. */
-        private record Sheltering(AABB bounds, Pose3dc pose) implements Shelter {
+        /** A ship's bounds in the world, how she lies as she is drawn, and the world's up among her blocks. */
+        private record Sheltering(AABB bounds, Pose3dc pose, Vec3 up) implements Shelter {
             @Override
             public Vec3 among(double x, double y, double z) {
                 return pose.transformPositionInverse(new Vec3(x, y, z));
