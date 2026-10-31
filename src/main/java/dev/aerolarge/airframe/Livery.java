@@ -2,6 +2,7 @@ package dev.aerolarge.airframe;
 
 import dev.aerolarge.autopilot.Craft;
 import it.unimi.dsi.fastutil.HashCommon;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
@@ -173,6 +174,25 @@ public enum Livery {
     /** The liveries a kind of ship is painted in from its livery board and livery selector, in their rows. */
     public static Livery[][] swatches(Craft craft) {
         return craft == Craft.ROCKET ? ROCKET_SWATCHES : ZEPPELIN_SWATCHES;
+    }
+
+    /**
+     * The livery at a place among a kind of ship's swatches, counted along each row from the left, the top row first,
+     * as a board's or a selector's tiles are; null for none (-1).
+     */
+    @Nullable
+    public static Livery swatch(Craft craft, int place) {
+        return place < 0 ? null : swatches(craft)[place / SWATCH_COLUMNS][place % SWATCH_COLUMNS];
+    }
+
+    /** Where a livery is among a kind of ship's swatches, counted as {@link #swatch} counts; -1 for one not there. */
+    public static int swatchPlace(Craft craft, @Nullable Livery livery) {
+        for (int place = 0; place < SWATCH_ROWS * SWATCH_COLUMNS; place++) {
+            if (livery != null && swatch(craft, place) == livery) {
+                return place;
+            }
+        }
+        return -1;
     }
 
     /** Whether a block is one of the gold stars midnight blue is scattered with, from the number its position gives. */

@@ -1576,7 +1576,9 @@ the End, the jungle and the frozen peaks, and four adverts (Creeper Insurance, t
 by Air), each under its headline; Colours, the banner flying from her flagstaff, as a flag; Map, a filled map handed to
 the board, so a player's own map art is shown on her side, handed back at a second press; Faces, the faces of everyone
 aboard, a few big or more smaller, a page at a time; Flight, her height and speed in huge figures, an arrow green as she
-climbs and amber as she sinks; and Off. A new picture flickers on with a click. The server config's `flankScreen` leaves
+climbs and amber as she sinks; and Off. A new picture flickers on with a click. The button showing glows green round its
+edge, one with nothing to show yet (Map before a map is handed over, Colours with no banner flying) is dimmed, and the
+one you look at lights up. The server config's `flankScreen` leaves
 the screens and the board off zeppelins built from then on; a Picture Board is crafted from three glass panes over
 redstone, glowstone dust and a stone button, over three dark oak planks.
 
@@ -1700,8 +1702,9 @@ there (before her first flight it only gives a low note). Locked planes stay loc
 already built hold nothing.
 
 On the starboard wall of the control car's lounge hangs the Skywriting Board, four picture buttons drawn in white on
-blue: a circle, a heart, a figure of eight and a wave. Press one while her autopilot flies her along (not while she
-takes off or lands) and a chime sounds, its button lights up gold, she slows to 4 blocks a second and her autopilot
+blue: a circle, a heart, a figure of eight and a wave, the one you look at lighting up. Press one while her autopilot
+flies her along (not while she takes off or lands) and a chime sounds, its button glows green round its edge, she slows
+to 4 blocks a second and her autopilot
 flies that shape across the sky, a few hundred blocks across, while coloured smoke streams from under her belly, puff
 after puff in her gas cells' colours, drawing the shape behind her. A circle takes about four minutes, the wave five,
 and the heart or the figure of eight about eight. Done, a bell rings and she flies on along the heading she ends
@@ -1793,10 +1796,12 @@ cheatline down each flank and its fins and engine cars blue), polar red with whi
 with gold stars. Use a picture and the zeppelin is repainted in it, on the ground or in flight: with the scrape of a
 brush the new paint sweeps from the nose to the tail over a minute, a painters' cradle on each flank riding its edge, a
 plank platform with a rail and a pot of paint slung on ropes over the hull from the crown, and the camera display over
-the selector shows it happening; the selector frames the livery the zeppelin wears in gold. The paint is only drawn, so
+the selector shows it happening; on the selector a soft green glow rings the livery the zeppelin wears, and the picture
+you look at lights up. The paint is only drawn, so
 no block changes and the zeppelin flies as before. The server config's `liveryBoard` leaves the selector off zeppelins
 built from then on, which keep their paint. Zeppelins built before it keep their Livery Board, six painted swatches on
-one block, which repaints her the same way. A Livery Board can be crafted from a red, a yellow and a blue dye over three
+one block, which repaints her and lights up the same way. A Livery Board can be crafted from a red, a yellow and a blue
+dye over three
 dark oak planks, and a Livery Selector from a Livery Board between two dark oak planks.
 
 Over the Livery Selector, at eye height on the same wall, hangs a camera display like the airliner's flight deck
@@ -2178,7 +2183,8 @@ Under it stands her livery selector (the server config's `liveryBoard` leaves it
 pictures of her laid on her side in her six liveries: the comic-book moon rocket's red and white checks, white with
 black roll stripes, silver with a red nose and fins, the airliner's white with a blue cheatline up each side and blue
 fins, polar red with white fins, and midnight blue with gold stars all over her (as she is built). The one she wears
-is framed in gold. Use a picture and the new paint runs down her from her nose to her foot over a minute, with a
+glows green round its edge, and the one you look at lights up. Use a picture and the new paint runs down her from her
+nose to her foot over a minute, with a
 brush's sound, dripping ahead of its edge in runs, a few long and most short, each running on in spurts as wet paint
 does; it is a tint, so no block of her changes, and her windows' frames take it too.
 
@@ -2486,7 +2492,9 @@ inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (
 the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels, as are the
 airliner's announcement panel and autopilot screen and her LED panels and console, `TouchPanelBlock`s laying out their
 tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the tile looked at and makes the one
-picked glow alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
+picked glow alike on every panel, and over the paint of the zeppelin's `LiveryBoardBlock`, `SkywritingBoardBlock` and
+`PictureBoardBlock`, whose buttons are painted on, as over the `LiverySelectorBlock`'s pictures); on the client
+`LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`

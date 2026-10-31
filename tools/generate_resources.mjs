@@ -1058,7 +1058,7 @@ cubes.propeller = null;
   dropsItself("searchlight_handle");
   cubes.searchlight_handle = null;
   // The skywriting board (see SkywritingBoardBlock): a board two sixteenths thick at the back of its block, its
-  // picture buttons on its face; the lit one's frame is drawn by its renderer (see SkywritingBoardRenderer).
+  // picture buttons on its face, which its renderer lights (see SkywritingBoardRenderer).
   write(`assets/${ID}/models/block/skywriting_board.json`, {
     parent: "minecraft:block/block",
     textures: { front: `${ID}:block/skywriting_board_front`, side: `${ID}:block/skywriting_board_side`, particle: `${ID}:block/skywriting_board_side` },

@@ -3977,8 +3977,8 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "oval_window_lip", (x, y) => mix(OVAL_RIM, OVAL_RIM_LIT, y / (SIZE - 1) * 0.6), 2);
   texture(blockOutput, "oval_window_reveal", (x, y) => mix(OVAL_RIM, FRAME_DARK, (y / (SIZE - 1)) * 0.6), 2);
   // The livery board in the control car: six painted swatches on dark wood in a lighter frame, two rows of three as
-  // LiveryBoardBlock lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with
-  // its white fins, midnight blue with gold stars), each where LiveryBoardRenderer frames the one the zeppelin wears.
+  // Livery lists them (silver, cream, navy grey; the airliner's white with its blue cheatline, polar red with its white
+  // fins, midnight blue with gold stars), each where LiveryBoardBlock lays out its touch panel's tiles to light them.
   const BOARD = [0x5e, 0x3b, 0x1c];
   const BOARD_FRAME = [0x9a, 0x6a, 0x3c];
   const swatches = [
@@ -4212,8 +4212,9 @@ blueprint("runway_blueprint", false, runwayFromAbove);
 }
 
 // The picture board on a zeppelin's upper deck: a dark frame, the little screen along its top (its picture drawn by
-// its renderer), and six buttons in two rows under it, each four pixels square and painted with what it shows: a
-// landscape for the posters, a flag, a map, a face, an arrow climbing, and a red power sign for off.
+// its renderer), and six buttons in two rows under it, four pixels wide, the top row three tall and the bottom four,
+// where PictureBoardBlock lays out its touch panel's tiles, each painted with what it shows: a landscape for the
+// posters, a flag, a map, a face, an arrow climbing, and a red power sign for off.
 {
   const FRAME = [0x2a, 0x2f, 0x36];
   const GLASS = [0x14, 0x18, 0x1e];
@@ -4367,9 +4368,10 @@ blueprint("runway_blueprint", false, runwayFromAbove);
   texture(blockOutput, "searchlight_lens_off", lens(false), 2);
 }
 
-// The skywriting board (see SkywritingBoardBlock): four picture buttons on deep blue in a wooden frame, each a shape
-// drawn in smoke-white: a circle, a heart, a figure of eight and a wave, its top left first. And a puff of the
-// skywriting's smoke (see SkyTrails): a soft round cloud, white so it takes any colour, fading out to its edge.
+// The skywriting board (see SkywritingBoardBlock, which lays out its touch panel's tiles where they are): four picture
+// buttons on deep blue in a wooden frame, each a shape drawn in smoke-white: a circle, a heart, a figure of eight and a
+// wave, its top left first. And a puff of the skywriting's smoke (see SkyTrails): a soft round cloud, white so it takes
+// any colour, fading out to its edge.
 {
   const BLUE = [0x1c, 0x3a, 0x6e];
   const WOOD = [0x5a, 0x40, 0x28];

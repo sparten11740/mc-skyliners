@@ -40,7 +40,8 @@ import org.joml.Vector3f;
  * round from either side, and the same picture small on the board itself, over its buttons. It shows a travel poster
  * or an advert under its headline, her colours flying as a flag, a map handed to the board, the faces of everyone
  * aboard, or her height and speed in huge figures; dark glass when off. A new picture flickers on. It glows at full
- * brightness, so it is seen at night.
+ * brightness, so it is seen at night. It also lights the board's painted buttons as a touch panel's (see
+ * {@link TouchPanelArt}).
  */
 public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBlockEntity> {
     /** How far off the screens are drawn, in blocks: a zeppelin's length. */
@@ -105,6 +106,9 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         float width = MINI_RIGHT - MINI_LEFT;
         float height = width * (float) (place.height() / place.length());
         draw(new Flat(MINI_LEFT, MINI_BOTTOM + height, width, height), pose.last(), buffers, picture, lit, glow, FLAT_STEP);
+        // From the face's bottom left corner, where its buttons are measured from.
+        pose.translate(-0.5F, -0.5F, 0);
+        buttons(board, level, pose.last(), buffers);
         pose.popPose();
         BlockPos screens = board.screens();
         if (screens == null) {
@@ -288,6 +292,32 @@ public class FlankScreenRenderer implements BlockEntityRenderer<PictureBoardBloc
         float fits = Math.min(1, frame.width() * 0.96F / wide);
         float u0 = (frame.u0() + frame.u1() - wide * fits) / 2;
         layers.add(Layer.texture(line.texture(), colour, u0, middle - tall * fits / 2, u0 + wide * fits, middle + tall * fits / 2, 0, 0, 1, 1));
+    }
+
+    /**
+     * The board's painted buttons, lit as every touch panel's tiles are (see {@link TouchPanelArt#painted}), on its
+     * face from its bottom left corner: the one showing on the screens marked as picked, the one the crosshair rests on
+     * lit up, and one with nothing to show yet dimmed.
+     */
+    private static void buttons(PictureBoardBlockEntity board, ClientLevel level, PoseStack.Pose pose, MultiBufferSource buffers) {
+        int looked = TouchPanelArt.lookedAt(board);
+        int showing = PictureBoardBlock.BUTTONS.indexOf(board.picture());
+        for (int button = 0; button < PictureBoardBlock.BUTTON_TILES.size(); button++) {
+            boolean shows = shows(board, level, PictureBoardBlock.BUTTONS.get(button));
+            TouchPanelArt.painted(buffers, pose, PictureBoardBlock.BUTTON_TILES.get(button), TouchPanelArt.Look.of(button, looked, showing, shows), 0);
+        }
+    }
+
+    /**
+     * Whether a button has something to show, as pressing it finds: Map once a map is handed to the board, Colours
+     * while her colours fly from the flagstaff, the rest always.
+     */
+    private static boolean shows(PictureBoardBlockEntity board, ClientLevel level, PictureBoardBlockEntity.Picture button) {
+        return switch (button) {
+            case MAP -> !board.map().isEmpty();
+            case COLOURS -> halyard(board, level) != null;
+            default -> true;
+        };
     }
 
     /** The halyard flying the colours of the zeppelin a board is in; null for none. */

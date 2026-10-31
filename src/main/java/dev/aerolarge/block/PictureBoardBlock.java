@@ -3,6 +3,7 @@ package dev.aerolarge.block;
 import com.mojang.serialization.MapCodec;
 import dev.aerolarge.AerolargeRegistry;
 import dev.aerolarge.autopilot.AutopilotBlockEntity;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -40,23 +41,26 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * inside; and its six buttons, each painted with what it shows. Posters, one travel poster or advert after another;
  * Colours, the ship's colours flown from her flagstaff; Map, a filled map handed to the board, so a player's own map
  * art is shown, handed back at a second press; Faces, the faces of everyone aboard; Flight, her height and speed in
- * huge figures; and Off. FACING is the way its face looks.
+ * huge figures; and Off. It is a touch panel (see {@link TouchPanel}), its buttons its tiles, lit over their paint by
+ * the client's {@code FlankScreenRenderer}. FACING is the way its face looks.
  */
-public class PictureBoardBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class PictureBoardBlock extends HorizontalDirectionalBlock implements EntityBlock, TouchPanelBlock {
     private static final MapCodec<PictureBoardBlock> CODEC = simpleCodec(PictureBoardBlock::new);
     /** How thick the board is, in sixteenths of a block, standing at the back of its block. */
     public static final int THICKNESS = 3;
-    /** The buttons, in their two rows under the little screen, top row first, each row from the left as it is seen. */
-    public static final PictureBoardBlockEntity.Picture[][] BUTTONS = {
-        {PictureBoardBlockEntity.Picture.POSTERS, PictureBoardBlockEntity.Picture.COLOURS, PictureBoardBlockEntity.Picture.MAP},
-        {PictureBoardBlockEntity.Picture.FACES, PictureBoardBlockEntity.Picture.FLIGHT, PictureBoardBlockEntity.Picture.OFF}
-    };
+    /** The buttons, in their two rows of three under the little screen, top row first, each from the left as seen. */
+    public static final List<PictureBoardBlockEntity.Picture> BUTTONS = List.of(
+        PictureBoardBlockEntity.Picture.POSTERS, PictureBoardBlockEntity.Picture.COLOURS, PictureBoardBlockEntity.Picture.MAP,
+        PictureBoardBlockEntity.Picture.FACES, PictureBoardBlockEntity.Picture.FLIGHT, PictureBoardBlockEntity.Picture.OFF);
     /**
-     * How high up its face the buttons reach, and how far up from its bottom they start, shares of it: the little
-     * screen is over them, a frame round them all.
+     * Where the buttons are painted on its face, in its texture's sixteen pixels to a block: their columns' left and
+     * right edges, and their rows' bottom and top edges, the top row first, a pixel shorter than the one under it.
      */
-    public static final double BUTTONS_TOP = 9 / 16.0;
-    public static final double BUTTONS_BOTTOM = 1 / 16.0;
+    private static final double[][] BUTTON_COLUMNS = {{1, 5}, {6, 10}, {11, 15}};
+    private static final double[][] BUTTON_ROWS = {{6, 9}, {1, 5}};
+    private static final double PIXELS = 16;
+    /** The buttons as the tiles of a touch panel, in {@link #BUTTONS}' order (see {@link TouchPanel}). */
+    public static final TouchPanel.Layout BUTTON_TILES = TouchPanel.Layout.crossings(BUTTON_COLUMNS, BUTTON_ROWS, PIXELS);
     private static final Map<Direction, VoxelShape> SHAPES = Map.of(
         Direction.NORTH, Block.box(0, 0, 16 - THICKNESS, 16, 16, 16),
         Direction.SOUTH, Block.box(0, 0, 0, 16, 16, THICKNESS),
@@ -107,13 +111,12 @@ public class PictureBoardBlock extends HorizontalDirectionalBlock implements Ent
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        Direction facing = state.getValue(FACING);
-        PictureBoardBlockEntity.Picture button = hit.getDirection() == facing ? button(facing, hit.getLocation().subtract(Vec3.atCenterOf(pos))) : null;
-        if (button == null || !(level.getBlockEntity(pos) instanceof PictureBoardBlockEntity board)) {
+        int button = tileAt(level, state, pos, hit, player.getLookAngle());
+        if (button < 0 || !(level.getBlockEntity(pos) instanceof PictureBoardBlockEntity board)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide) {
-            press(level, pos, board, button, player);
+            press(level, pos, board, BUTTONS.get(button), player);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -161,18 +164,10 @@ public class PictureBoardBlock extends HorizontalDirectionalBlock implements Ent
         level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.8F, 1.2F);
     }
 
-    /**
-     * The button at a place on the board's face, from the middle of its block; null on the little screen or between
-     * buttons. Seen from the front, the viewer's right is the board's counterclockwise side.
-     */
-    @Nullable
-    public static PictureBoardBlockEntity.Picture button(Direction facing, Vec3 touch) {
-        Direction right = facing.getCounterClockWise();
-        double across = touch.x * right.getStepX() + touch.z * right.getStepZ() + 0.5;
-        double up = touch.y + 0.5;
-        int column = (int) Math.floor(across * BUTTONS[0].length);
-        int row = (int) Math.floor((BUTTONS_TOP - up) / ((BUTTONS_TOP - BUTTONS_BOTTOM) / BUTTONS.length));
-        return up < BUTTONS_TOP && column >= 0 && column < BUTTONS[0].length && row >= 0 && row < BUTTONS.length ? BUTTONS[row][column] : null;
+    /** The button a hit on the board's face lands on, by its place in {@link #BUTTONS}; -1 off them. */
+    @Override
+    public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
+        return BUTTON_TILES.at(TouchPanel.touched(state.getValue(FACING), pos, hit));
     }
 
     /** Broken, it drops the map it held. */

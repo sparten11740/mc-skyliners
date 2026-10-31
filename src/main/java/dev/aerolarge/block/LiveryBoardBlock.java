@@ -33,14 +33,25 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The livery board in a zeppelin's control car: a wooden board painted with six swatches, one for each of the
  * zeppelin's liveries (see {@link Livery}), in two rows of three: silver, cream and navy grey over the airliner's
  * colours, polar red and midnight blue. Use a swatch and the zeppelin is repainted in it, the new paint sweeping from
- * its nose to its tail behind a painters' cradle, with the scrape of a brush; the board frames the swatch the
- * zeppelin wears in gold (see the client's {@code LiveryBoardRenderer}). Its zeppelin is the one whose autopilot is
+ * its nose to its tail behind a painters' cradle, with the scrape of a brush. It is a touch panel (see
+ * {@link TouchPanel}), its swatches its tiles, lit over their paint by the client's {@code LiveryBoardRenderer}: the
+ * one the zeppelin wears marked as picked, the one looked at lit up. Its zeppelin is the one whose autopilot is
  * nearest, on its flight deck. FACING is the way its painted face looks.
  */
-public class LiveryBoardBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class LiveryBoardBlock extends HorizontalDirectionalBlock implements EntityBlock, TouchPanelBlock {
     private static final MapCodec<LiveryBoardBlock> CODEC = simpleCodec(LiveryBoardBlock::new);
-    /** The swatches in their rows, top row first, each row from the left as the board is seen. */
-    public static final Livery[][] SWATCHES = Livery.swatches(Craft.ZEPPELIN);
+    /**
+     * Where the swatches are painted on the board's face, in its texture's sixteen pixels to a block: their columns'
+     * left and right edges, and their rows' bottom and top edges, the top row first.
+     */
+    private static final double[][] SWATCH_COLUMNS = {{1, 5}, {6, 10}, {11, 15}};
+    private static final double[][] SWATCH_ROWS = {{9, 14}, {2, 7}};
+    private static final double PIXELS = 16;
+    /**
+     * The swatches as the tiles of a touch panel (see {@link TouchPanel}), in the order of the zeppelin's liveries'
+     * swatches (see {@link Livery#swatch}).
+     */
+    public static final TouchPanel.Layout SWATCH_TILES = TouchPanel.Layout.crossings(SWATCH_COLUMNS, SWATCH_ROWS, PIXELS);
     /** How thick the board is, in sixteenths of a block, standing at the back of its block. */
     public static final int THICKNESS = 3;
     private static final Map<Direction, VoxelShape> SHAPES = Map.of(
@@ -78,12 +89,11 @@ public class LiveryBoardBlock extends HorizontalDirectionalBlock implements Enti
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        Direction facing = state.getValue(FACING);
-        if (hit.getDirection() != facing) {
+        if (hit.getDirection() != state.getValue(FACING)) {
             return InteractionResult.PASS;
         }
         if (level instanceof ServerLevel server) {
-            repaint(server, pos, player, swatch(facing, hit.getLocation().subtract(Vec3.atCenterOf(pos))));
+            repaint(server, pos, player, Livery.swatch(Craft.ZEPPELIN, tileAt(level, state, pos, hit, player.getLookAngle())));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -105,18 +115,10 @@ public class LiveryBoardBlock extends HorizontalDirectionalBlock implements Enti
         }
     }
 
-    /**
-     * The swatch at a place on the board's face, from the middle of its block; null between them. Seen from the front,
-     * the viewer's right is the board's counterclockwise side.
-     */
-    @Nullable
-    static Livery swatch(Direction facing, Vec3 touch) {
-        Direction right = facing.getCounterClockWise();
-        double across = touch.x * right.getStepX() + touch.z * right.getStepZ() + 0.5;
-        double up = touch.y + 0.5;
-        int column = (int) Math.floor(across * 3);
-        int row = up >= 0.5 ? 0 : 1;
-        return column >= 0 && column < 3 ? SWATCHES[row][column] : null;
+    /** The swatch a hit on the board's face lands on, by its place in {@link #SWATCH_TILES}; -1 off them. */
+    @Override
+    public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
+        return SWATCH_TILES.at(TouchPanel.touched(state.getValue(FACING), pos, hit));
     }
 
     /**

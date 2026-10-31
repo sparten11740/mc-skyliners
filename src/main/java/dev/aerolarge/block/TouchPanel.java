@@ -112,6 +112,21 @@ public final class TouchPanel {
         public static Layout column(int count, Tile area) {
             return grid(count, 1, area, true);
         }
+
+        /**
+         * A tile wherever one of the face's columns crosses one of its rows, as buttons painted in a grid on a block's
+         * texture are set out, gaps and all: each column its left and right edges, each row its bottom and top, in so
+         * many units to a block (the texture's pixels); the rows in the order given, each from the left.
+         */
+        public static Layout crossings(double[][] columns, double[][] rows, double perBlock) {
+            List<Tile> tiles = new ArrayList<>();
+            for (double[] row : rows) {
+                for (double[] column : columns) {
+                    tiles.add(new Tile(column[0] / perBlock, row[0] / perBlock, column[1] / perBlock, row[1] / perBlock));
+                }
+            }
+            return new Layout(tiles);
+        }
     }
 
     /**
