@@ -84,13 +84,17 @@ final class RocketPool extends RocketRoom {
             && layout.isOpen(x, floor() - 1, z) && layout.isOpen(x, floor() - DEPTH, z);
     }
 
-    /** The channel's water at a spot, from the floor down, and its glass bottom under it. */
+    /**
+     * The channel's water at a spot, from the floor down, and its glass bottom under it: clear glass that is cut out
+     * rather than see-through, so that, seen from the greenhouse under it, it never hides the water over it, as two
+     * see-through layers do wherever the nearer is drawn first, as a ship in flight may draw them.
+     */
     private void dig(int x, int z) {
         for (int y = floor() - DEPTH + 1; y <= floor(); y++) {
             layout.set(x, y, z, Blocks.WATER.defaultBlockState());
             water.add(new BlockPos(x, y, z));
         }
-        layout.set(x, floor() - DEPTH, z, AerolargeRegistry.HULL_GLASS.get().defaultBlockState());
+        layout.set(x, floor() - DEPTH, z, Blocks.GLASS.defaultBlockState());
     }
 
     /**
