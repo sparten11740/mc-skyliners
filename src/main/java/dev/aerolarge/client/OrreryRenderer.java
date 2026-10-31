@@ -103,11 +103,20 @@ public class OrreryRenderer implements BlockEntityRenderer<OrreryBlockEntity> {
             return;
         }
         orrery(orrery, partialTick, pose, buffers, overlay);
+        if (!dome.shaped()) {
+            return;
+        }
         // Each kind of quad in turn: taking another buffer finishes the one before.
-        if (dome.shaped()) {
-            PlanetariumShell.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(PlanetariumShell.SKY)), pose.last()));
-            OrreryBrush glow = new OrreryBrush(buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE)), pose.last());
-            PlanetariumShell.sparkles(dome, glow, OrreryBrush.Facing.of(pose.last()), level.getGameTime() + partialTick);
+        float ticks = level.getGameTime() + partialTick;
+        boolean ring = OculusRing.fits(dome);
+        if (ring) {
+            OculusRing.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(OrrerySheet.TEXTURE)), pose.last()));
+        }
+        PlanetariumShell.draw(dome, new OrreryBrush(buffers.getBuffer(RenderType.entityCutoutNoCull(PlanetariumShell.SKY)), pose.last()));
+        OrreryBrush glow = new OrreryBrush(buffers.getBuffer(RenderType.eyes(OrreryGlow.TEXTURE)), pose.last());
+        PlanetariumShell.sparkles(dome, glow, OrreryBrush.Facing.of(pose.last()), ticks);
+        if (ring) {
+            OculusRing.lamps(dome, glow, dome.autopilot(level), ticks);
         }
     }
 

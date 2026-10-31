@@ -1,5 +1,6 @@
 package dev.aerolarge.client;
 
+import dev.aerolarge.autopilot.AutopilotBlockEntity;
 import dev.aerolarge.block.OrreryBlock;
 import dev.aerolarge.block.OrreryBlockEntity;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -25,7 +27,8 @@ import org.joml.Vector3f;
  * <p>Found on the client by looking in along each row from outside her skin, a few dozen ways round, so that whatever
  * is built against the lining is soon seen and the sky drawn in front of it, while whatever stands out in the room, as
  * the orrery does, is not; looked over again every few seconds while it is drawn, and never further than just outside
- * her skin. Nothing of it is saved, so a rocket built before the planetarium has it too.
+ * her skin. Nothing of it is saved, so a rocket built before the planetarium has it too. Where her control head is,
+ * whose flight the oculus ring's lamps show (see {@link OculusRing}), is found with it.
  */
 final class OrreryDome {
     /** How long a dome is drawn as it was found before it is looked over again, in ticks. */
@@ -83,22 +86,29 @@ final class OrreryDome {
     private final boolean shaped;
     /** The row of the ring of ceiling over her cockpit's glass, from the mount's (a negative number of rows). */
     private final int floor;
+    /** How wide the hole in the ring of ceiling is, from her axis to the nearest of its blocks, in blocks. */
+    private final float oculus;
     /** How far out from her axis the outside of her skin round the dome is at most, in blocks. */
     private final float outer;
     /** The planetarium's shape, its rings from the dome's foot up to the top one, which is closed over. */
     private final List<Ring> shell;
+    /** Where her control head is, in the level; null where none was found. */
+    @Nullable
+    private final BlockPos autopilot;
 
     /**
-     * A dome found with its ring of ceiling at a row, so wide outside, and each row over that ring up to the mount's open
-     * so far out from her axis; none open where the ring was not found.
+     * A dome found with its ring of ceiling at a row, the hole in it so wide, so wide outside, and each row over that
+     * ring up to the mount's open so far out from her axis; none open where the ring was not found.
      */
-    private OrreryDome(long found, double drop, int floor, float outer, float[] open) {
+    private OrreryDome(long found, double drop, int floor, float oculus, float outer, float[] open, @Nullable BlockPos autopilot) {
         this.found = found;
         this.drop = drop;
         this.shaped = open.length > 0;
         this.floor = floor;
+        this.oculus = oculus;
         this.outer = outer;
         this.shell = shaped ? shell(floor, open) : List.of();
+        this.autopilot = autopilot;
     }
 
     /** An orrery's dome as last found, or found again if that was a while ago or the orrery has changed. */
@@ -121,8 +131,22 @@ final class OrreryDome {
         return shaped;
     }
 
+    int floor() {
+        return floor;
+    }
+
+    float oculus() {
+        return oculus;
+    }
+
     float outer() {
         return outer;
+    }
+
+    /** Her autopilot, whose flight the oculus ring's lamps show, if it is still where it was found. */
+    @Nullable
+    AutopilotBlockEntity autopilot(Level level) {
+        return autopilot != null && level.getBlockEntity(autopilot) instanceof AutopilotBlockEntity found ? found : null;
     }
 
     List<Ring> shell() {
@@ -164,12 +188,27 @@ final class OrreryDome {
             outer = Math.max(outer, widest(skin));
             open = Math.min(open, outer);
             if (row < sun && open < above - FLOOR_STEP) {
-                return new OrreryDome(now, orrery.drop(), row, outer, bottomUp(rows));
+                return new OrreryDome(now, orrery.drop(), row, open, outer, bottomUp(rows), controlHead(orrery, level));
             }
             rows.add(open);
             above = open;
         }
-        return new OrreryDome(now, orrery.drop(), 0, 0, new float[0]);
+        return new OrreryDome(now, orrery.drop(), 0, 0, 0, new float[0], null);
+    }
+
+    /**
+     * Where her control head is: where it was from the mount as she was built, if it is still there; otherwise, as for a
+     * rocket built before that was kept or turned since, the nearest autopilot to the sun, within its flight deck's reach.
+     */
+    @Nullable
+    private static BlockPos controlHead(OrreryBlockEntity orrery, Level level) {
+        BlockPos mount = orrery.getBlockPos();
+        BlockPos built = orrery.autopilot();
+        if (built != null && level.getBlockEntity(mount.offset(built)) instanceof AutopilotBlockEntity) {
+            return mount.offset(built);
+        }
+        AutopilotBlockEntity nearest = AutopilotBlockEntity.nearest(level, mount.below(Mth.floor(orrery.drop())));
+        return nearest != null ? nearest.getBlockPos() : null;
     }
 
     private static float[] bottomUp(List<Float> topDown) {

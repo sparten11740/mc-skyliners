@@ -14,6 +14,8 @@ final class OrreryGlow {
     private static final int HEIGHT = 128;
     /** A twinkling star's sparkle: a soft core with four thin points. */
     static final OrreryBrush.Patch SPARKLE = OrreryBrush.Patch.of(192, 0, 32, 32, WIDTH, HEIGHT);
+    /** The light in one of the oculus ring's lamps: a soft-edged rounded oblong. */
+    static final OrreryBrush.Patch LAMP = OrreryBrush.Patch.of(224, 0, 32, 32, WIDTH, HEIGHT);
 
     private OrreryGlow() {
     }

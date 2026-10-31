@@ -72,6 +72,7 @@ import dev.aerolarge.client.LookoutView;
 import dev.aerolarge.client.MistyWindows;
 import dev.aerolarge.client.NavLightRenderer;
 import dev.aerolarge.client.NightLights;
+import dev.aerolarge.client.OculusRing;
 import dev.aerolarge.client.OrreryRenderer;
 import dev.aerolarge.client.OvalWindowModel;
 import dev.aerolarge.client.PaperPlaneRenderer;
@@ -210,6 +211,7 @@ public final class AerolargeClient {
         NeoForge.EVENT_BUS.addListener(PilotHud::tick);
         NeoForge.EVENT_BUS.addListener(PilotHud::bossBar);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::heard);
+        NeoForge.EVENT_BUS.addListener(OculusRing::heard);
         NeoForge.EVENT_BUS.addListener(Earshot::heard);
         NeoForge.EVENT_BUS.addListener(CarriedAboard::onTick);
         NeoForge.EVENT_BUS.addListener(AtcHeadset::loggingOut);

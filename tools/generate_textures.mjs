@@ -5564,6 +5564,7 @@ function orreryTextures() {
 
 domeSkyTexture();
 orreryGlowTexture();
+orrerySheetTexture();
 
 // Smooth noise over the sky, for the planetarium's clouds and mottling: value noise on a lattice in three dimensions,
 // so a pattern sampled round a sphere has no seam, and its sum over a few octaves.
@@ -5801,9 +5802,53 @@ function domeSkyTexture() {
   writeFileSync(resolve(miscOutput, "dome_sky.png"), encodePng(sky.map((row) => row.map((c) => c.map((v) => clamp(Math.round(v)))))));
 }
 
+// The sheet the orrery's renderer draws the solid parts of the orrery and its dome from (see OrrerySheet), 256 by 128,
+// each picture at its place on it: polished brass, brushed along, at 160, 32; the dark gunmetal of the machined ring
+// round the hole over the cockpit, fine bright lines turned round it, at 224, 32; and a lamp's window in that ring,
+// smoked glass in a bright bezel, at 128, 64, 16 across.
+function orrerySheetTexture() {
+  const WIDTH = 256;
+  const HEIGHT = 128;
+  reseed("orrery_sheet");
+  const pixels = Array.from({ length: HEIGHT }, () => Array.from({ length: WIDTH }, () => [0, 0, 0, 0]));
+  // A picture so many pixels across and down with its top left corner at a point, painted pixel by pixel from there.
+  const picture = (left, top, width, height, paint) => {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        pixels[top + y][left + x] = paint(x, y).map((c, i) => (i < 3 ? clamp(Math.round(c)) : c));
+      }
+    }
+  };
+  const BRASS = [200, 156, 74];
+  const brushed = (base, depth) => (x, y) => {
+    const streak = (random() - 0.5) * depth + Math.sin(y * 1.7 + Math.sin(x * 0.3) * 0.6) * depth * 0.4;
+    return [...base.map((c) => c + streak), 255];
+  };
+  picture(160, 32, 32, 32, (x, y) => {
+    const [r, g, b, a] = brushed(BRASS, 14)(x, y);
+    const shine = Math.exp(-(((y - 10) / 6) ** 2)) * 46;
+    return [r + shine, g + shine * 0.9, b + shine * 0.6, a];
+  });
+  const GUNMETAL = [58, 64, 74];
+  picture(224, 32, 32, 32, (x, y) => {
+    const [r, g, b, a] = brushed(GUNMETAL, 8)(x, y);
+    const groove = y % 8 === 0 ? -14 : y % 8 === 1 ? 10 : 0;
+    return [r + groove, g + groove, b + groove + 2, a];
+  });
+  picture(128, 64, 16, 16, (x, y) => {
+    const edge = Math.min(x, y, 15 - x, 15 - y);
+    if (edge === 0) return [34, 38, 44, 255];
+    if (edge === 1) return [168, 174, 182, 255];
+    const glint = x + y < 12 && x - y > -3 && x - y < 3 ? 26 : 0;
+    return [18 + glint, 22 + glint, 28 + glint, 255];
+  });
+  writeFileSync(resolve(miscOutput, "orrery_sheet.png"), encodePng(pixels));
+}
+
 // The light the orrery's renderer adds over its dome (see OrreryRenderer), 256 by 128, smoothed and not repeated past
 // its edges, each picture white on black for the renderer to tint, a black margin round it: the sparkle of a twinkling
-// star, a soft core with four thin points, at 192, 0, 32 across.
+// star, a soft core with four thin points, at 192, 0, 32 across; and the light in one of the ring's lamps, a soft-edged
+// rounded oblong, at 224, 0.
 function orreryGlowTexture() {
   const WIDTH = 256;
   const HEIGHT = 128;
@@ -5821,6 +5866,10 @@ function orreryGlowTexture() {
     const core = Math.exp(-((Math.hypot(x, y) / 0.18) ** 2));
     const point = (across, along) => Math.exp(-((across / 0.06) ** 2)) * Math.max(0, 1 - Math.abs(along) / 0.9) ** 2.5;
     return core + point(x, y) + point(y, x);
+  });
+  picture(224, 0, 32, (x, y) => {
+    const outside = Math.hypot(Math.max(0, Math.abs(x) - 0.45), Math.max(0, Math.abs(y) - 0.3));
+    return Math.max(0, 1 - outside / 0.4) ** 2 * (1 - 0.25 * Math.hypot(x, y));
   });
   writeFileSync(resolve(miscOutput, "orrery_glow.png"), encodePng(pixels));
   writeFileSync(resolve(miscOutput, "orrery_glow.png.mcmeta"), JSON.stringify({ texture: { blur: true, clamp: true } }, null, 2) + "\n");

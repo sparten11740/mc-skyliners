@@ -51,9 +51,10 @@ final class RocketDome implements RocketPiece {
         layout.set(0, tip, 0, AerolargeRegistry.ORRERY.get().defaultBlockState());
         layout.set(0, sun, 0, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, SUN_LIGHT));
         double drop = tip - sun;
+        BlockPos head = layout.autopilot();
         layout.fit(mount, (blockEntity, rotation) -> {
             if (blockEntity instanceof OrreryBlockEntity orrery) {
-                orrery.configure(drop, reach);
+                orrery.configure(drop, reach, head == null ? null : head.subtract(mount).rotate(rotation));
             }
         });
     }
