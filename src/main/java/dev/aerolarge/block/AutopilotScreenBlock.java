@@ -31,12 +31,16 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * buttons (see {@link AutopilotScreenBlockEntity}). Every block of it is this block; PART says which, counting along
  * the bottom row from the viewer's left and then up, and part 0 holds the screen's block entity and draws the whole of
  * it. FACING is the way the screen faces, toward the pilots. Using any part touches the screen where it was used: the
- * map zooms, anywhere else opens the autopilot's settings.
+ * map zooms, anywhere else opens the autopilot's settings. It is a touch panel of those two tiles (see
+ * {@link TouchPanel}), so whichever the crosshair rests on lights up as on every other panel.
  */
-public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements EntityBlock, TouchPanelBlock {
     private static final MapCodec<AutopilotScreenBlock> CODEC = simpleCodec(AutopilotScreenBlock::new);
     public static final int COLUMNS = 3;
     public static final int ROWS = 2;
+    /** Its tiles: the moving map, which a touch zooms, and the rest of its face, where a touch opens the settings. */
+    public static final int MAP_TILE = 0;
+    public static final int SETTINGS_TILE = 1;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, COLUMNS * ROWS - 1);
     /**
      * How thick the screen is, in pixels of its block, against the back of it: as thick as the tail camera display's
@@ -82,23 +86,33 @@ public class AutopilotScreenBlock extends HorizontalDirectionalBlock implements 
         return pos.relative(right(state.getValue(FACING)), -(part % COLUMNS)).below(part / COLUMNS);
     }
 
+    /**
+     * The tile a hit on the screen's face lands on, measured from the bottom left corner of the whole screen: the map
+     * where it is drawn (see {@link AutopilotScreenBlockEntity#MAP}), else the rest of the face; -1 off its face.
+     */
+    @Override
+    public int tileAt(BlockGetter level, BlockState state, BlockPos pos, BlockHitResult hit, Vec3 look) {
+        WideScreenBlock.Touch touch = TouchPanel.touched(state.getValue(FACING), origin(state, pos), hit);
+        if (touch == null) {
+            return -1;
+        }
+        return AutopilotScreenBlockEntity.MAP.contains(touch.across(), touch.up()) ? MAP_TILE : SETTINGS_TILE;
+    }
+
+    @Override
+    public BlockPos panelOrigin(BlockState state, BlockPos pos) {
+        return origin(state, pos);
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (hit.getDirection() != state.getValue(FACING)) {
+        int tile = tileAt(level, state, pos, hit, player.getLookAngle());
+        if (tile < 0) {
             return InteractionResult.PASS;
         }
-        if (player instanceof ServerPlayer serverPlayer) {
-            BlockPos origin = origin(state, pos);
-            if (level.getBlockEntity(origin) instanceof AutopilotScreenBlockEntity screen) {
-                // Where on the screen it was touched, in blocks from its bottom left corner as the viewer sees it.
-                Vec3 right = Vec3.atLowerCornerOf(right(state.getValue(FACING)).getNormal());
-                Vec3 from = Vec3.atCenterOf(origin);
-                Vec3 touch = hit.getLocation().subtract(from);
-                double across = touch.x * right.x + touch.z * right.z + 0.5;
-                double up = touch.y + 0.5;
-                screen.touch(across, up, serverPlayer);
-                level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4F, 1.6F);
-            }
+        if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(origin(state, pos)) instanceof AutopilotScreenBlockEntity screen) {
+            screen.touch(tile, serverPlayer);
+            level.playSound(null, pos, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4F, 1.6F);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

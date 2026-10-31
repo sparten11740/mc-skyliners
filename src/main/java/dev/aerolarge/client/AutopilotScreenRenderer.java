@@ -9,6 +9,7 @@ import dev.aerolarge.block.AutopilotScreenBlock;
 import dev.aerolarge.block.AutopilotScreenBlockEntity;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Box;
 import dev.aerolarge.block.AutopilotScreenBlockEntity.Button;
+import dev.aerolarge.block.TouchPanel;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -27,8 +28,11 @@ import org.joml.Matrix4f;
  * the way the airliner is heading always up: the track it has flown, the circle it is flying round or the heading it
  * is turning to, a ring at half the map's reach, north marked, and the airliner in the middle of the lower part. Over
  * the map the autopilot's mode and targets; under it, how the airliner is flying now. On the right the buttons, the
- * ones for what the autopilot is doing lit. The airliner's place and heading come from its pose as the client draws
- * it, so the map turns as smoothly as the airliner does. It is only drawn with the camera in front of it.
+ * ones for what the autopilot is doing lit. The screen is a touch panel of two tiles that light up as every panel's do
+ * (see {@link TouchPanelArt}): with the crosshair on the map, which a touch zooms, its glass brightens; anywhere else,
+ * where a touch opens the settings, the line over the map and every button brighten together. The airliner's place and
+ * heading come from its pose as the client draws it, so the map turns as smoothly as the airliner does. It is only
+ * drawn with the camera in front of it.
  */
 public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScreenBlockEntity> {
     /**
@@ -40,6 +44,8 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
     private static final float TEXT_LIFT = 0.01F;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 170F;
+    /** How wide the edge round each button is, in blocks. */
+    private static final double BUTTON_EDGE_WIDTH = 0.012;
 
     /** The screen's colours, which the panels of its settings screen ({@link AutopilotSettingsScreen}, {@link PanelArt}) share. */
     static final int CASING = 0xFF15171B;
@@ -87,13 +93,16 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
         Font font = Minecraft.getInstance().font;
 
         MovingMap.box(fill, matrix, new Box(0, 0, AutopilotScreenBlockEntity.WIDTH, AutopilotScreenBlockEntity.HEIGHT), 0, CASING);
-        MovingMap.box(fill, matrix, AutopilotScreenBlockEntity.MAP, LAYER, GLASS);
-        MovingMap.box(fill, matrix, AutopilotScreenBlockEntity.HEADER, LAYER, GLASS);
+        int looked = TouchPanelArt.lookedAt(screen);
+        TouchPanelArt.Look map = TouchPanelArt.Look.of(AutopilotScreenBlock.MAP_TILE, looked, -1, true);
+        TouchPanelArt.Look settings = TouchPanelArt.Look.of(AutopilotScreenBlock.SETTINGS_TILE, looked, -1, true);
+        TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.MAP), GLASS, map, LAYER);
+        TouchPanelArt.tile(fill, matrix, tile(AutopilotScreenBlockEntity.HEADER), GLASS, settings, LAYER);
         MovingMap.draw(fill, matrix, AutopilotScreenBlockEntity.MAP, screen.track(), screen.range(), autopilot, here, heading, 2 * LAYER);
         for (Button button : Button.values()) {
             MovingMap.box(fill, matrix, button.box, LAYER, BUTTON_EDGE);
-            Box inner = new Box(button.box.x0() + 0.012, button.box.y0() + 0.012, button.box.x1() - 0.012, button.box.y1() - 0.012);
-            MovingMap.box(fill, matrix, inner, 2 * LAYER, lit(button, autopilot) ? BUTTON_LIT : BUTTON);
+            TouchPanelArt.tile(fill, matrix, tile(button.box).inset(BUTTON_EDGE_WIDTH), lit(button, autopilot) ? BUTTON_LIT : BUTTON, settings,
+                2 * LAYER);
         }
         // Text last: it takes its own buffer, which ends the one the shapes went into.
         header(font, pose, buffers, autopilot, attitude);
@@ -105,6 +114,11 @@ public class AutopilotScreenRenderer implements BlockEntityRenderer<AutopilotScr
             text(font, pose, buffers, label, (button.box.x0() + button.box.x1()) / 2, (button.box.y0() + button.box.y1()) / 2, WHITE, ScreenDrawing.Align.CENTRE);
         }
         pose.popPose();
+    }
+
+    /** A rectangle on the screen as a touch panel's tile, to be drawn as one (see {@link TouchPanelArt}). */
+    private static TouchPanel.Tile tile(Box box) {
+        return new TouchPanel.Tile(box.x0(), box.y0(), box.x1(), box.y1());
     }
 
     static boolean engaged(@Nullable AutopilotBlockEntity autopilot) {

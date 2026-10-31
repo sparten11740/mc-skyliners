@@ -141,10 +141,13 @@ public class AutopilotScreenBlockEntity extends BlockEntity {
         return RANGES[range];
     }
 
-    /** A touch at this point of the screen, on the server: zooms the map, or anywhere else opens the settings. */
-    void touch(double across, double up, ServerPlayer player) {
+    /**
+     * A touch on one of the screen's tiles (see {@link AutopilotScreenBlock#tileAt}), on the server: on the map it
+     * zooms it, anywhere else it opens the settings.
+     */
+    void touch(int tile, ServerPlayer player) {
         mendLink();
-        if (MAP.contains(across, up)) {
+        if (tile == AutopilotScreenBlock.MAP_TILE) {
             zoom();
             return;
         }

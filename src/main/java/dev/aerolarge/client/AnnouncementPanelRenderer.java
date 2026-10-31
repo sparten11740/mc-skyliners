@@ -7,14 +7,14 @@ import dev.aerolarge.Aerolarge;
 import dev.aerolarge.block.AnnouncementPanelBlock;
 import dev.aerolarge.block.AnnouncementPanelBlockEntity;
 import dev.aerolarge.block.Announcement;
+import dev.aerolarge.block.TouchPanel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -22,13 +22,14 @@ import org.joml.Matrix4f;
 
 /**
  * Draws the announcement panel over the whole of its face, the front of its blocks on a wall or their underside under
- * a ceiling, from the block that holds it:
- * a tile in each block, dark glass in a rim of the tile's own colour, its picture big in the middle and its name small
- * under it, the pictures saying it all for those who cannot read yet. A tile shows where its announcement stands (see
- * {@link Announcement.Standing}): ready, it glows in its colour; being made, it lights up in its colour, pulsing; waiting
- * its turn, its rim blinks; hushed while another is made, or resting after it was, it greys out. The face reads from
- * the top: on a wall its top row, under a ceiling the row nearest whoever looks up at it, as they face. It is only
- * drawn with the camera in front of it.
+ * a ceiling, from the block that holds it: a tile in each block, glass tinted in the tile's own colour, its picture big
+ * in the middle and its name small under it, the pictures saying it all for those who cannot read yet. Its tiles answer
+ * a player as every touch panel's do (see {@link TouchPanelArt}): the one under the crosshair brightens and stands out
+ * a hair. A tile shows where its announcement stands (see {@link Announcement.Standing}): ready, its glass glows softly
+ * in its colour; being made, it glows green round its edge, as what is on now does on every panel, its glass pulsing in
+ * its colour; waiting its turn, its glass blinks; hushed while another is made, or resting after it was, it is dimmed,
+ * its picture and name greyed. The face reads from the top: on a wall its top row, under a ceiling the row nearest
+ * whoever looks up at it, as they face. It is only drawn with the camera in front of it.
  */
 public class AnnouncementPanelRenderer implements BlockEntityRenderer<AnnouncementPanelBlockEntity> {
     /** Where the face is, from the middle of the block the way it looks: the panel's front, the drawing just off it. */
@@ -37,26 +38,28 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
     private static final float TEXT_LIFT = 0.01F;
     /** Text size: blocks per font pixel. */
     private static final float TEXT = 1 / 110F;
-    /** A tile's margin inside its block, its rim, its picture's size and how far the picture is lifted off its middle. */
+    /** A tile's margin inside its block, its picture's size and how far the picture is lifted off its middle. */
     private static final double MARGIN = 0.05;
-    private static final double RIM = 0.035;
     private static final double PICTURE = 0.64;
     private static final double PICTURE_UP = 0.07;
     /** How far up from the tile's bottom the name sits. */
     private static final double LABEL_UP = 0.1;
-    /** A lit tile's glow: how many rings, how wide each, and how strong the innermost at its brightest. */
-    private static final int GLOW_RINGS = 3;
-    private static final double GLOW_RING = MARGIN / GLOW_RINGS;
-    private static final int GLOW_ALPHA = 150;
-    /** How long a lit tile takes to pulse, and a waiting one to blink, in ms. */
+    /**
+     * How much of its colour a tile's glass takes on: ready; being made, at the height of its pulse (from the ready
+     * share at its depth); and waiting, at the dark of its blink (to the height of a pulse at its bright).
+     */
+    private static final float READY_TINT = 0.35F;
+    private static final float ON_AIR_TINT = 0.65F;
+    private static final float WAITING_TINT = 0.12F;
+    /** How long a tile being made takes to pulse, and a waiting one to blink, in ms. */
     private static final float PULSE_PERIOD = 1200;
     private static final float BLINK_PERIOD = 600;
-    /** How much of its colour a lit tile's glass takes on. */
-    private static final float LIT_TINT = 0.35F;
+    /** The panel's blocks on its face, by their parts, from its top left corner: each block's tile is its square. */
+    private static final TouchPanel.Layout PARTS = TouchPanel.Layout.grid(AnnouncementPanelBlock.COLUMNS * AnnouncementPanelBlock.ROWS,
+        AnnouncementPanelBlock.COLUMNS, new TouchPanel.Tile(0, -AnnouncementPanelBlock.ROWS, AnnouncementPanelBlock.COLUMNS, 0), true);
 
     private static final int CASING = AutopilotScreenRenderer.CASING;
     private static final int GLASS = 0xFF0B1017;
-    private static final int OFF = 0xFF4A515B;
     private static final int PICTURE_OFF = 0xFF555555;
     private static final int LABEL = AutopilotScreenRenderer.WHITE;
     private static final int LABEL_OFF = 0xFF6E7681;
@@ -97,89 +100,59 @@ public class AnnouncementPanelRenderer implements BlockEntityRenderer<Announceme
         VertexConsumer fill = ScreenDrawing.shapes(buffers);
         ScreenDrawing.rect(fill, matrix, 0, -AnnouncementPanelBlock.ROWS, AnnouncementPanelBlock.COLUMNS, 0, 0, CASING);
         Announcement[] announcements = Announcement.values();
+        int looked = TouchPanelArt.lookedAt(panel);
         for (Announcement announcement : announcements) {
-            tile(fill, matrix, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
+            Announcement.Standing standing = panel.standing(announcement);
+            TouchPanelArt.Look look = new TouchPanelArt.Look(announcement.ordinal() == looked, standing == Announcement.Standing.ON_AIR,
+                usable(standing));
+            TouchPanelArt.tile(fill, matrix, tile(announcement, state), glass(COLOURS[announcement.ordinal()], standing), look, LAYER);
         }
         // The pictures each take their own buffer, ending the shapes', and the names theirs after them.
         for (Announcement announcement : announcements) {
-            picture(buffers, matrix, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
+            picture(buffers, matrix, announcement, tile(announcement, state), panel.standing(announcement));
         }
         for (Announcement announcement : announcements) {
-            label(pose, buffers, announcement, AnnouncementPanelBlock.part(announcement, state), panel.standing(announcement));
+            label(pose, buffers, announcement, tile(announcement, state), panel.standing(announcement));
         }
         pose.popPose();
     }
 
-    /** Whether a tile shows its announcement can be asked for, or soon can, rather than greyed out. */
+    /** Whether a tile shows its announcement can be asked for, or soon can, rather than dimmed. */
     private static boolean usable(Announcement.Standing standing) {
         return standing != Announcement.Standing.HUSHED && standing != Announcement.Standing.RESTING;
     }
 
-    /** Where the left and top edges of the tile on a part of the panel are on the face, inside its margin. */
-    private static double left(int part) {
-        return part % AnnouncementPanelBlock.COLUMNS + MARGIN;
+    /** Where an announcement's tile is on the face: its block's square, inside the margin. */
+    private static TouchPanel.Tile tile(Announcement announcement, BlockState state) {
+        return PARTS.get(AnnouncementPanelBlock.part(announcement, state)).inset(MARGIN);
     }
 
-    private static double top(int part) {
-        return -(part / AnnouncementPanelBlock.COLUMNS) - MARGIN;
-    }
-
-    /** A tile's glass in its rim, lit or greyed for where it stands, and the glow round it while it is being made. */
-    private static void tile(VertexConsumer fill, Matrix4f matrix, Announcement announcement, int part, Announcement.Standing standing) {
-        double x0 = left(part);
-        double y1 = top(part);
-        double x1 = x0 + 1 - 2 * MARGIN;
-        double y0 = y1 - 1 + 2 * MARGIN;
-        int colour = COLOURS[announcement.ordinal()];
-        boolean onAir = standing == Announcement.Standing.ON_AIR;
-        if (onAir) {
-            float strength = PanelArt.pulse(PULSE_PERIOD);
-            for (int ring = GLOW_RINGS; ring >= 1; ring--) {
-                int alpha = Math.round(GLOW_ALPHA * strength / ring);
-                double out = ring * GLOW_RING;
-                ScreenDrawing.rect(fill, matrix, x0 - out, y0 - out, x1 + out, y1 + out, LAYER * (GLOW_RINGS - ring + 1) / (GLOW_RINGS + 1), alpha << 24 | colour & 0xFFFFFF);
-            }
-        }
-        ScreenDrawing.rect(fill, matrix, x0, y0, x1, y1, LAYER, rim(colour, standing));
-        int glass = onAir ? PanelArt.blend(GLASS, colour, LIT_TINT * (0.6F + 0.4F * PanelArt.pulse(PULSE_PERIOD))) : GLASS;
-        ScreenDrawing.rect(fill, matrix, x0 + RIM, y0 + RIM, x1 - RIM, y1 - RIM, 2 * LAYER, glass);
-    }
-
-    /** A tile's rim: its colour, full while it is made, blinking while it waits, a little dimmer at rest; grey if not usable. */
-    private static int rim(int colour, Announcement.Standing standing) {
-        return switch (standing) {
-            case ON_AIR -> colour;
-            case WAITING -> PanelArt.blend(PanelArt.shade(colour, 0.35F), colour, PanelArt.pulse(BLINK_PERIOD));
-            case READY -> PanelArt.shade(colour, 0.75F);
-            case HUSHED, RESTING -> OFF;
+    /**
+     * A tile's glass, tinted in its colour for where it stands: pulsing while it is made, blinking while it waits,
+     * steady otherwise (its look then dims it while it is hushed or resting; see {@link TouchPanelArt#colour}).
+     */
+    private static int glass(int colour, Announcement.Standing standing) {
+        float tint = switch (standing) {
+            case ON_AIR -> Mth.lerp(PanelArt.pulse(PULSE_PERIOD), READY_TINT, ON_AIR_TINT);
+            case WAITING -> Mth.lerp(PanelArt.pulse(BLINK_PERIOD), WAITING_TINT, ON_AIR_TINT);
+            case READY, HUSHED, RESTING -> READY_TINT;
         };
+        return PanelArt.blend(GLASS, colour, tint);
     }
 
     /** A tile's picture, in its own colours, or greyed out. */
-    private static void picture(MultiBufferSource buffers, Matrix4f matrix, Announcement announcement, int part, Announcement.Standing standing) {
-        double cx = left(part) + 0.5 - MARGIN;
-        double cy = top(part) - 0.5 + MARGIN + PICTURE_UP;
-        double half = PICTURE / 2;
-        int tint = usable(standing) ? 0xFFFFFFFF : PICTURE_OFF;
+    private static void picture(MultiBufferSource buffers, Matrix4f matrix, Announcement announcement, TouchPanel.Tile tile,
+                                Announcement.Standing standing) {
         ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(Aerolarge.MOD_ID, "textures/gui/announcement/" + announcement.key() + ".png");
-        VertexConsumer consumer = buffers.getBuffer(RenderType.text(texture));
-        float z = 3 * LAYER;
-        vertex(consumer, matrix, cx - half, cy - half, z, 0, 1, tint);
-        vertex(consumer, matrix, cx + half, cy - half, z, 1, 1, tint);
-        vertex(consumer, matrix, cx + half, cy + half, z, 1, 0, tint);
-        vertex(consumer, matrix, cx - half, cy + half, z, 0, 0, tint);
-    }
-
-    private static void vertex(VertexConsumer consumer, Matrix4f matrix, double x, double y, float z, float u, float v, int colour) {
-        consumer.addVertex(matrix, (float) x, (float) y, z).setColor(colour).setUv(u, v).setLight(LightTexture.FULL_BRIGHT);
+        ScreenDrawing.picture(buffers, matrix, texture, tile.middleX(), tile.middleY() + PICTURE_UP, PICTURE / 2, 3 * LAYER,
+            usable(standing) ? 0xFFFFFFFF : PICTURE_OFF);
     }
 
     /** A tile's name, small under its picture: for those who can read it. */
-    private static void label(PoseStack pose, MultiBufferSource buffers, Announcement announcement, int part, Announcement.Standing standing) {
-        double x = left(part) + 0.5 - MARGIN;
-        double y = top(part) - 1 + 2 * MARGIN + LABEL_UP;
+    private static void label(PoseStack pose, MultiBufferSource buffers, Announcement announcement, TouchPanel.Tile tile, Announcement.Standing standing) {
         Component name = Component.translatable("screen.aerolarge.announcement_panel." + announcement.key());
-        ScreenDrawing.text(Minecraft.getInstance().font, pose, buffers, name, x, y, TEXT_LIFT, TEXT, usable(standing) ? LABEL : LABEL_OFF, ScreenDrawing.Align.CENTRE);
+        ScreenDrawing.text(Minecraft.getInstance().font, pose, buffers, name, tile.middleX(), tile.bottom() + LABEL_UP, TEXT_LIFT, TEXT,
+            usable(standing) ? LABEL : LABEL_OFF, ScreenDrawing.Align.CENTRE);
     }
 
     @Override

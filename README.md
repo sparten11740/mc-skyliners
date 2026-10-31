@@ -393,8 +393,9 @@ stars: the cabin lights go down to their night glow), Landing (the airliner comi
 heart over the parked airliner). Where the wall leaves it no room, it hangs overhead instead, close under the ceiling
 over the pilots' seats (ahead of them over the centre console where the ceiling leaves room, else reaching back behind
 them, its rows then running the other way, so the first row, Welcome, Take-off and Seatbelts, hangs right over the
-seats, within a seated pilot's reach). A tile glows in its colour while it can be pressed, lights up and pulses while
-its announcement plays, blinks while it waits for the flight deck to fall quiet, and greys out while another is
+seats, within a seated pilot's reach). The tile you look at brightens and stands out a little, as on the lift's
+picture board. A tile glows softly in its colour while it can be pressed, glows green round its edge and pulses while
+its announcement plays, blinks while it waits for the flight deck to fall quiet, and dims while another is
 playing and for twenty seconds after its own. An Announcement Panel can be crafted and put up in your own builds too,
 on a wall or against the underside of a block, its middle tile where you put it (under a ceiling its top row nearest
 you as you face); it works the nearest airliner's autopilot within 24 blocks.
@@ -599,7 +600,8 @@ release it first (Unstuck leaves the brake as it is).
 The big screen shows the autopilot at work. Its right side is the autopilot's buttons, lit for what it is doing;
 touching them opens the settings. Its left side is a moving map, heading up: the track flown, the circle being
 flown or the heading being turned to, and north; touch the map to zoom it out, and again past the widest to zoom
-back in.
+back in. What you look at lights up: the map brightens under your crosshair, and anywhere else on the screen the
+buttons and the line over the map brighten together, since a touch there opens the settings.
 
 Wearing a Pilot Helmet (see Souvenirs) on the flight deck of an assembled airliner, within reach of the autopilot (in
 either pilot's seat, or standing at the console), its visor shows a head-up display: thin, see-through green lines and
@@ -2473,9 +2475,10 @@ on its shaft by a clock both sides share, with an unseen `LiftFloorBlock` floor 
 `LiftDoorBlock`s (each with a `LiftDoorBlockEntity`, whose
 `LiftDoorRenderer` draws its pane as it slides), a `LiftCallButtonBlock` by each landing's doors and a `LiftBoardBlock`
 inside on the shaft's back wall, each wired to it by its `LiftStopBlockEntity` (`LiftBoardRenderer` drawing the boards,
-the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels,
-`TouchPanelBlock`s laying out their tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the
-tile looked at and makes the one picked glow alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
+the floor looked at lit, and `HeightGauge` in flight; its board and the rover panel are touch panels, as are the
+airliner's announcement panel and autopilot screen and her LED panels and console, `TouchPanelBlock`s laying out their
+tiles with `TouchPanel` and drawing them with `TouchPanelArt`, which brightens the tile looked at and makes the one
+picked glow alike on every panel); on the client `LiftSounds` plays a riding car's hum, and its
 music for whoever rides it or
 stands right by it. `Livery` paints her as it does a zeppelin,
 by a `Livery.RocketSpot` measured up her and round her, `ZeppelinPaint` running a repaint down her, and `LiveryPreview`
